@@ -53,34 +53,34 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
      * Read available models from the subscribed catalogue and return as json.
      *
      */
-    def availableModels() {
+    def publishedModels() {
         SubscribedCatalogue subscribedCatalogue = queryForResource(params.subscribedCatalogueId)
 
         if (!subscribedCatalogue) {
             return notFound(SubscribedCatalogue, params.subscribedCatalogueId)
         }
-        respond subscribedCatalogueService.listAvailableModels(subscribedCatalogue)
+        respond subscribedCatalogueService.listPublishedModels(subscribedCatalogue)
     }
 
     @Override
+    @Transactional
     protected boolean validateResource(SubscribedCatalogue instance, String view) {
-        boolean valid = super.validateResource(instance, view)
-        // Dont try and test connection if the instance fails basic validation
-        if (!valid) return false
+        if (instance.hasErrors() || !instance.validate()) {
+            transactionStatus.setRollbackOnly()
+            respond instance.errors, view: view // STATUS CODE 422
+            // Dont try and test connection if the instance fails basic validation
+            return false
+        }
         // If the instance is valid then confirm the connection is possible,
         // i.e. there is a catalogue at the URL and the ApiKey works
-        try {
-            valid = subscribedCatalogueService.verifyConnectionToSubscribedCatalogue(instance)
-        } catch (Exception exception) {
-            valid = false
-            log.warn('Unable to confirm catalogue subscription due to exception', exception)
+        subscribedCatalogueService.verifyConnectionToSubscribedCatalogue(instance)
+
+        if (instance.hasErrors() || !instance.validate()) {
+            transactionStatus.setRollbackOnly()
+            respond instance.errors, view: view // STATUS CODE 422
+            return false
         }
-        if (!valid) {
-            instance.errors.reject('invalid.subscription.url.apikey',
-                                   [instance.url].toArray(),
-                                   'Invalid subscription to catalogue at [{0}] cannot connect using provided Api Key')
-        }
-        valid
+        true
     }
 
     @Override
@@ -115,6 +115,6 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
 
     @Override
     protected List<SubscribedCatalogue> listAllReadableResources(Map params) {
-        subscribedCatalogueService.list()
+        subscribedCatalogueService.list(params)
     }
 }

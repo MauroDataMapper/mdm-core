@@ -39,9 +39,6 @@ class ApiKeyAuthenticationInterceptor implements SecurityPolicyManagerIntercepto
     }
 
     boolean before() {
-
-        checkSessionIsValid()
-
         if (!securityPolicyManagerIsSet()) {
             String apikeyHeader = request.getHeader(API_KEY_HEADER)
             // No header then just carry on as if a normal request

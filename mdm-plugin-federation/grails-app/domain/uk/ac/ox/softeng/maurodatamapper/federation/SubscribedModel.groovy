@@ -17,43 +17,36 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.federation
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 
 import grails.gorm.DetachedCriteria
 
 import java.time.OffsetDateTime
 
-class SubscribedModel  implements CreatorAware, SecurableResource, EditHistoryAware {
+class SubscribedModel implements SecurableResource, EditHistoryAware {
 
     UUID id
 
     //The ID of the model on the remote (subscribed) catalogue
     UUID subscribedModelId
-    
-    String subscribedModelType    
-
+    String subscribedModelType
     //The folder that the model should be imported into
     UUID folderId
-
     //The last time that the model was last read from the remote (subscribed) catalogue
     OffsetDateTime lastRead
-
     //The ID of the model when imported into the local catalogue.
     UUID localModelId
-
-
     Boolean readableByEveryone
     Boolean readableByAuthenticatedUsers
-    
+
     static belongsTo = [subscribedCatalogue: SubscribedCatalogue]
 
     static constraints = {
         subscribedCatalogue nullable: false
         folderId nullable: false
-        subscribedModelId nullable: false
+        subscribedModelId nullable: false, unique: 'subscribedCatalogue' // Should prevent subscribing to the same modelId from same catalogue
+        subscribedModelType blank: false
         lastRead nullable: true
         localModelId nullable: true
     }
@@ -70,12 +63,12 @@ class SubscribedModel  implements CreatorAware, SecurableResource, EditHistoryAw
     @Override
     String getDomainType() {
         SubscribedModel.simpleName
-    }   
+    }
 
     @Override
     String getEditLabel() {
         "SubscribedModel:${id}"
-    }     
+    }
 
     static DetachedCriteria<SubscribedModel> by() {
         new DetachedCriteria<SubscribedModel>(SubscribedModel)
@@ -83,12 +76,12 @@ class SubscribedModel  implements CreatorAware, SecurableResource, EditHistoryAw
 
     static DetachedCriteria<SubscribedModel> bySubscribedCatalogueIdAndSubscribedModelId(UUID subscribedCatalogueId, UUID subscribedModelId) {
         by()
-        .eq('subscribedCatalogue.id', subscribedCatalogueId)
-        .eq('subscribedModelId', subscribedModelId)
+            .eq('subscribedCatalogue.id', subscribedCatalogueId)
+            .eq('subscribedModelId', subscribedModelId)
     }
 
     static DetachedCriteria<SubscribedModel> bySubscribedModelId(UUID subscribedModelId) {
         by()
-        .eq('subscribedModelId', subscribedModelId)
+            .eq('subscribedModelId', subscribedModelId)
     }
 }

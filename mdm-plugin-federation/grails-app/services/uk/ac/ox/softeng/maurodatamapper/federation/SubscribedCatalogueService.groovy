@@ -17,20 +17,22 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.federation
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.XmlImportMapping
 import uk.ac.ox.softeng.maurodatamapper.federation.web.FederationClient
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
+import grails.util.Environment
 import groovy.util.logging.Slf4j
-import groovy.util.slurpersupport.GPathResult
 import io.micronaut.http.client.HttpClientConfiguration
 import io.micronaut.http.client.ssl.NettyClientSslBuilder
 import io.micronaut.http.codec.MediaTypeCodecRegistry
 import org.springframework.beans.factory.annotation.Autowired
 
 import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 
 @Transactional
 @Slf4j
@@ -42,6 +44,8 @@ class SubscribedCatalogueService implements XmlImportMapping {
     NettyClientSslBuilder nettyClientSslBuilder
     @Autowired
     MediaTypeCodecRegistry mediaTypeCodecRegistry
+
+    AuthorityService authorityService
 
     SubscribedCatalogue get(Serializable id) {
         SubscribedCatalogue.get(id)
@@ -63,41 +67,67 @@ class SubscribedCatalogueService implements XmlImportMapping {
         subscribedCatalogue.save(failOnError: true, validate: false)
     }
 
-    boolean verifyConnectionToSubscribedCatalogue(SubscribedCatalogue subscribedCatalogue) {
-        FederationClient client = getFederationClientForSubscribedCatalogue(subscribedCatalogue)
-        client.isConnectionPossible(subscribedCatalogue.apiKey)
+    void verifyConnectionToSubscribedCatalogue(SubscribedCatalogue subscribedCatalogue) {
+        try {
+            FederationClient client = getFederationClientForSubscribedCatalogue(subscribedCatalogue)
+            Map<String, Object> catalogueModels = client.getSubscribedCatalogueModels(subscribedCatalogue.apiKey)
+            if (!catalogueModels) {
+                subscribedCatalogue.errors.reject('invalid.subscription.url.apikey',
+                                                  [subscribedCatalogue.url].toArray(),
+                                                  'Invalid subscription to catalogue at [{0}] cannot connect using provided Api Key')
+            }
+            Authority thisAuthority = authorityService.defaultAuthority
+
+            // Under prod mode dont let a connection to ourselves exist
+            if (Environment.current == Environment.PRODUCTION) {
+                if (catalogueModels.authority.label == thisAuthority.label && catalogueModels.authority.url == thisAuthority.url) {
+                    subscribedCatalogue.errors.reject(
+                        'invalid.subscription.url.authority',
+                        [subscribedCatalogue.url,
+                         catalogueModels.authority.label,
+                         catalogueModels.authority.url].toArray(),
+                        'Invalid subscription to catalogue at [{0}] as it has the same Authority as this instance [{1}:{2}]')
+                }
+            }
+        } catch (Exception exception) {
+            subscribedCatalogue.errors.reject('invalid.subscription.url.apikey',
+                                              [subscribedCatalogue.url].toArray(),
+                                              'Invalid subscription to catalogue at [{0}] cannot connect using provided Api Key')
+            log.warn('Unable to confirm catalogue subscription due to exception', exception)
+        }
+        subscribedCatalogue
     }
 
     /**
-     * Return a list of models available on the subscribed catalogue. 
-     * 1. Connect to the endpoint /api/feeds/all on the remote, authenticating by setting an api key in the header
+     * Return a list of models available on the subscribed catalogue.
+     * 1. Connect to the endpoint /api/published/models on the remote, authenticating by setting an api key in the header
      * 2. Parse the returned Atom feed, picking out <entry> nodes
      * 3. For each <entry>, create an AvailableModel
      * 4. Return the list of AvailableModel, in order that this can be rendered as json
      *
      * @param subscribedCatalogue The catalogue we want to query
-     * @return List<AvailableModel>        The list of available models returned by the catalogue
+     * @return List<AvailableModel>             The list of available models returned by the catalogue
      *
      */
-    List<AvailableModel> listAvailableModels(SubscribedCatalogue subscribedCatalogue) {
+    List<PublishedModel> listPublishedModels(SubscribedCatalogue subscribedCatalogue) {
 
         FederationClient client = getFederationClientForSubscribedCatalogue(subscribedCatalogue)
 
-        GPathResult feedData = client.getSubscribedCatalogueModels(subscribedCatalogue.apiKey)
+        Map<String, Object> subscribedCatalogueModels = client.getSubscribedCatalogueModels(subscribedCatalogue.apiKey)
 
-        //Iterate the <entry> nodes, making an AvailableModel for each one
-        def entries = feedData.entry
+        if (subscribedCatalogueModels.publishedModels.isEmpty()) return []
 
-        if (entries.isEmpty()) return []
-
-        entries.collect {entry ->
-            new AvailableModel(
-                id: Utils.toUuid(extractUuidFromUrn(entry.id.text())),
-                label: entry.title.text(),
-                description: entry.summary.text(),
-                modelType: entry.category.@term,
-                lastUpdated: OffsetDateTime.parse(entry.updated.text())
-            )
+        (subscribedCatalogueModels.publishedModels as List<Map<String, String>>).collect { pm ->
+            new PublishedModel().tap {
+                modelId = Utils.toUuid(pm.id)
+                title = pm.title
+                modelType = pm.modelType
+                lastUpdated = OffsetDateTime.parse(pm.lastUpdated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                dateCreated = OffsetDateTime.parse(pm.dateCreated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                datePublished = OffsetDateTime.parse(pm.datePublished, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                author = pm.author
+                description = pm.description
+            }
         }
     }
 
