@@ -101,6 +101,16 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
         diffs.sort()
     }
 
+    List<TriDirectionalDiff> getFlattenedDiffs() {
+        diffs.sort().collectMany { diff ->
+            if (diff.diffType == FieldMergeDiff.simpleName) return [diff]
+            if (diff.diffType == ArrayMergeDiff.simpleName) {
+                return (diff as ArrayMergeDiff).getFlattenedDiffs()
+            }
+            []
+        } as List<TriDirectionalDiff>
+    }
+
     @Override
     String toString() {
         String str = "${sourceIdentifier} --> ${targetIdentifier}"

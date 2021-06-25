@@ -22,13 +22,6 @@ json {
         key(((Metadata) mergeDiff.getTarget()).getKey())
     }
 
-    //    if (mergeDiff.getTarget() instanceof ModelItem && mergeDiff.getSource() instanceof ModelItem) {
-    //        ModelItem source = mergeDiff.getTarget() as ModelItem
-    //        ModelItem target = mergeDiff.getTarget() as ModelItem
-    //        sourceBreadcrumbs g.render(source.getBreadcrumbs())
-    //        targetBreadcrumbs g.render(target.getBreadcrumbs())
-    //    }
-
     count mergeDiff.getNumberOfDiffs()
-    diffs g.render(mergeDiff.getDiffs())
+    diffs g.render(mergeDiff.getFlattenedDiffs())
 }

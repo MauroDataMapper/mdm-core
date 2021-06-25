@@ -7,8 +7,9 @@ model {
 json {
     fieldName fieldMergeDiff.fieldName
     path fieldMergeDiff.fullyQualifiedPath
-    source fieldMergeDiff.getSource()
-    target fieldMergeDiff.getTarget()
-    commonAncestor fieldMergeDiff.commonAncestor
+    sourceValue fieldMergeDiff.getSource()
+    targetValue fieldMergeDiff.getTarget()
+    commonAncestorValue fieldMergeDiff.commonAncestor
     isMergeConflict fieldMergeDiff.mergeConflict
+    type 'modification'
 }

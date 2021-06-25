@@ -6,7 +6,7 @@ model {
 
 json {
     path creationMergeDiff.fullyQualifiedPath
-    //    objectCreated tmpl.'/diffable/diffable'(diffable: creationMergeDiff.created, renderBreadcrumbs: false)
     isMergeConflict creationMergeDiff.isMergeConflict()
     isSourceModificationAndTargetDeletion creationMergeDiff.isSourceModificationAndTargetDeletion()
+    type 'creation'
 }

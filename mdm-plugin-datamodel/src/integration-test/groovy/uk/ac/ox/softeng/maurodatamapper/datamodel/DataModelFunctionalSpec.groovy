@@ -439,7 +439,96 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     }
 
     String getExpectedMergeDiffJson() {
-      '{}'
+        '''{
+  "sourceId": "${json-unit.matches:id}",
+  "targetId": "${json-unit.matches:id}",
+  "path": "dm:Functional Test Model",
+  "label": "Functional Test Model",
+  "count": 11,
+  "diffs": [
+    {
+      "fieldName": "branchName",
+      "path": "dm:Functional Test Model:branchName",
+      "sourceValue": "source",
+      "targetValue": "main",
+      "commonAncestorValue": "main",
+      "isMergeConflict": false,
+      "type": "modification"
+    },
+    {
+      "fieldName": "description",
+      "path": "dm:Functional Test Model:description",
+      "sourceValue": "DescriptionLeft",
+      "targetValue": "DescriptionRight",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "path": "dm:Functional Test Model|dc:addLeftOnly",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "dm:Functional Test Model|dc:modifyAndDelete",
+      "isMergeConflict": true,
+      "isSourceModificationAndTargetDeletion": true,
+      "type": "creation"
+    },
+    {
+      "path": "dm:Functional Test Model|dc:deleteAndModify",
+      "isMergeConflict": true,
+      "isSourceDeletionAndTargetModification": true,
+      "type": "deletion"
+    },
+    {
+      "path": "dm:Functional Test Model|dc:deleteLeftOnly",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "fieldName": "description",
+      "path": "dm:Functional Test Model|dc:addAndAddReturningDifference:description",
+      "sourceValue": "DescriptionLeft",
+      "targetValue": "DescriptionRight",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "path": "dm:Functional Test Model|dc:existingClass|dc:addLeftToExistingClass",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "dm:Functional Test Model|dc:existingClass|dc:deleteLeftOnlyFromExistingClass",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "fieldName": "description",
+      "path": "dm:Functional Test Model|dc:modifyAndModifyReturningDifference:description",
+      "sourceValue": "DescriptionLeft",
+      "targetValue": "DescriptionRight",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "fieldName": "description",
+      "path": "dm:Functional Test Model|dc:modifyLeftOnly:description",
+      "sourceValue": "Description",
+      "targetValue": null,
+      "commonAncestorValue": null,
+      "isMergeConflict": false,
+      "type": "modification"
+    }
+  ]
+}'''
     }
 
     void 'test getting DataModel types'() {

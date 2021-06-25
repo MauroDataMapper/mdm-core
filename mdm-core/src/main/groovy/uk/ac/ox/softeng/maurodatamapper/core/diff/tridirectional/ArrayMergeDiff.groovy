@@ -94,13 +94,22 @@ class ArrayMergeDiff<C extends Diffable> extends FieldMergeDiff<Collection<C>> {
 
     @Override
     Integer getNumberOfDiffs() {
-        created.size() + deleted.size() + ((modified.sum {it.getNumberOfDiffs()} ?: 0) as Integer)
+        created.size() + deleted.size() + ((modified.sum { it.getNumberOfDiffs() } ?: 0) as Integer)
+    }
+
+    List<TriDirectionalDiff> getFlattenedDiffs() {
+        List<TriDirectionalDiff> flattenedDiffs = new ArrayList<>(numberOfDiffs)
+        flattenedDiffs.addAll(created.sort())
+        flattenedDiffs.addAll(deleted.sort())
+        flattenedDiffs.addAll(modified.sort().collectMany { it.getFlattenedDiffs() })
+        flattenedDiffs
     }
 
     @Override
     String toString() {
         String diffIdentifier = source?.first()?.diffIdentifier ?: target?.first()?.diffIdentifier ?: commonAncestor?.first()?.diffIdentifier
-        StringBuilder stringBuilder = new StringBuilder("${diffIdentifier}.${fieldName} :: ${source.size()} <> ${target.size()} :: ${commonAncestor.size()}")
+        StringBuilder stringBuilder = new StringBuilder(
+            "${diffIdentifier}.${fieldName} :: ${source.size()} <> ${target.size()} :: ${commonAncestor.size()}")
 
         if (created) {
             stringBuilder.append('\n').append(created.join('\n'))
