@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.RuleService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClassService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElementService
@@ -46,6 +47,8 @@ class BootStrap {
 
     MetadataService metadataService
 
+    RuleService ruleService
+
     AssetResourceLocator assetResourceLocator
 
     def init = { servletContext ->
@@ -68,7 +71,7 @@ class BootStrap {
                     }
                     if (DataModel.countByLabel(BootstrapModels.MODEL_VERSION_TREE_DATAMODEL_NAME) == 0) {
                         BootstrapModels.buildAndSaveModelVersionTree(messageSource, folder, authority, dataModelService, dataClassService,
-                                                                     dataElementService, metadataService, assetResourceLocator)
+                                                                     dataElementService, metadataService, ruleService, assetResourceLocator)
                     }
                     if (DataModel.countByAuthorityIsNull() != 0) {
                         log.warn('DataModels missing authority, updating with default authority')
