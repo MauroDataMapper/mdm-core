@@ -892,8 +892,8 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         then:
         verifyResponse OK, response
         responseBody().count == 2
-        responseBody().items.each { it.id in [newBranchId, latestDraftId] }
-        responseBody().items.each { it.label == validJson.label }
+        responseBody().items.each {it.id in [newBranchId, latestDraftId]}
+        responseBody().items.each {it.label == validJson.label}
 
         cleanup:
         removeValidIdObjectUsingTransaction(id)
@@ -1093,7 +1093,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
     }
 
     void cleanupModelVersionTree(Map<String, String> data) {
-        data.each { k, v ->
+        data.each {k, v ->
             removeValidIdObjectUsingTransaction(v)
         }
         cleanUpRoles(data.values())
@@ -1358,6 +1358,105 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
 
         when: 'getting the tree'
         GET("${data.anotherFork}/simpleModelVersionTree", STRING_ARG)
+
+        then:
+        verifyResponse OK, jsonCapableResponse
+        verifyJson(expectedJson, jsonCapableResponse.body(), false, true)
+
+        cleanup:
+        cleanupModelVersionTree(data)
+    }
+
+    void 'E28d : Test getting simple versionTreeModel for merge shows only branches and not the selected model'() {
+        given:
+        Map data = buildModelVersionTree()
+        loginEditor()
+        String expectedJson = """[
+  {
+    "id": "${data.newBranch}",
+    "branch": "newBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "displayName": "newBranch (V1.0.0)"
+  },
+  {
+    "id": "${data.testBranch}",
+    "branch": "testBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "displayName": "testBranch (V3.0.0)"
+  },
+  {
+    "id": "${data.main}",
+    "branch": "main",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "displayName": "main (V5.0.0)"
+  },
+    {
+    "id": "${data.anotherBranch}",
+    "branch": "anotherBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "displayName": "anotherBranch (V5.0.0)"
+  }
+]"""
+
+        when: 'getting the tree'
+        GET("${data.interestingBranch}/simpleModelVersionTree?forMerge=true", STRING_ARG)
+
+        then:
+        verifyResponse OK, jsonCapableResponse
+        verifyJson(expectedJson, jsonCapableResponse.body(), false, true)
+
+        cleanup:
+        cleanupModelVersionTree(data)
+    }
+
+    void 'E28e : Test getting simple versionTreeModel with branches only shows only branches'() {
+        given:
+        Map data = buildModelVersionTree()
+        loginEditor()
+        String expectedJson = """[
+  {
+    "id": "${data.newBranch}",
+    "branch": "newBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "displayName": "newBranch (V1.0.0)"
+  },
+  {
+    "id": "${data.testBranch}",
+    "branch": "testBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "displayName": "testBranch (V3.0.0)"
+  },
+  {
+    "id": "${data.main}",
+    "branch": "main",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "displayName": "main (V5.0.0)"
+  },
+    {
+    "id": "${data.anotherBranch}",
+    "branch": "anotherBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "displayName": "anotherBranch (V5.0.0)"
+  },
+  {
+    "id": "${data.interestingBranch}",
+    "branch": "interestingBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+   "displayName": "interestingBranch (V5.0.0)"
+  }
+]"""
+
+        when: 'getting the tree'
+        GET("${data.interestingBranch}/simpleModelVersionTree?branchesOnly=true", STRING_ARG)
 
         then:
         verifyResponse OK, jsonCapableResponse

@@ -411,12 +411,13 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     List<VersionTreeModel> buildModelVersionTree(K instance, VersionLinkType versionLinkType,
                                                  VersionTreeModel parentVersionTreeModel,
-                                                 boolean includeForks,
+                                                 boolean includeForks, boolean branchesOnly,
                                                  UserSecurityPolicyManager userSecurityPolicyManager) {
+
         if (!userSecurityPolicyManager.userCanReadSecuredResourceId(instance.class, instance.id)) return []
 
         VersionTreeModel rootVersionTreeModel = new VersionTreeModel(instance, versionLinkType, parentVersionTreeModel)
-        List<VersionTreeModel> versionTreeModelList = [rootVersionTreeModel]
+        List<VersionTreeModel> versionTreeModelList = instance.finalised && branchesOnly ? [] : [rootVersionTreeModel]
 
         // If fork then add to the list but dont proceed any further into that tree
         if (versionLinkType == VersionLinkType.NEW_FORK_OF) return includeForks ? versionTreeModelList : []
@@ -425,7 +426,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         versionLinks.each {link ->
             K linkedModel = get(link.multiFacetAwareItemId)
             versionTreeModelList.
-                addAll(buildModelVersionTree(linkedModel, link.linkType, rootVersionTreeModel, includeForks, userSecurityPolicyManager))
+                addAll(buildModelVersionTree(linkedModel, link.linkType, rootVersionTreeModel, includeForks, branchesOnly, userSecurityPolicyManager))
         }
         versionTreeModelList.sort()
     }
