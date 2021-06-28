@@ -79,8 +79,13 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
     }
 
     @Override
-    List<ReferenceDataModel> list(Map pagination = [:]) {
+    List<ReferenceDataModel> list(Map pagination) {
         ReferenceDataModel.list(pagination)
+    }
+
+    @Override
+    List<ReferenceDataModel> list() {
+        ReferenceDataModel.list().collect {unwrapIfProxy(it)}
     }
 
     Long count() {

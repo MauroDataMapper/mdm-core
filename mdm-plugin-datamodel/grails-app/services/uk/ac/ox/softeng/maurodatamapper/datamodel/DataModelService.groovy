@@ -86,8 +86,13 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     }
 
     @Override
-    List<DataModel> list(Map pagination = [:]) {
+    List<DataModel> list(Map pagination) {
         DataModel.list(pagination)
+    }
+
+    @Override
+    List<DataModel> list() {
+        DataModel.list().collect {unwrapIfProxy(it)}
     }
 
     @Override

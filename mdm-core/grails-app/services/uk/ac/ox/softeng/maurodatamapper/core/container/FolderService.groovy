@@ -120,8 +120,14 @@ class FolderService extends ContainerService<Folder> {
         null
     }
 
-    List<Folder> list(Map pagination = [:]) {
+    @Override
+    List<Folder> list(Map pagination) {
         Folder.list(pagination)
+    }
+
+    @Override
+    List<Folder> list() {
+        Folder.list().collect {unwrapIfProxy(it)}
     }
 
     Long count() {

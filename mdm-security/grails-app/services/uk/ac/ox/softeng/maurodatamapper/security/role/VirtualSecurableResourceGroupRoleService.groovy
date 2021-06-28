@@ -26,6 +26,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import grails.gorm.transactions.Transactional
+
+@Transactional
 class VirtualSecurableResourceGroupRoleService {
 
     VersionedFolderService versionedFolderService

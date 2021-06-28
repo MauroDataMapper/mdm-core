@@ -68,8 +68,13 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    List<Terminology> list(Map pagination = [:]) {
+    List<Terminology> list(Map pagination) {
         Terminology.list(pagination)
+    }
+
+    @Override
+    List<Terminology> list() {
+        Terminology.list().collect {unwrapIfProxy(it)}
     }
 
     @Override

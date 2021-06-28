@@ -68,8 +68,13 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    List<CodeSet> list(Map pagination = [:]) {
+    List<CodeSet> list(Map pagination) {
         CodeSet.list(pagination)
+    }
+
+    @Override
+    List<CodeSet> list() {
+        CodeSet.list().collect {unwrapIfProxy(it)}
     }
 
     @Override
