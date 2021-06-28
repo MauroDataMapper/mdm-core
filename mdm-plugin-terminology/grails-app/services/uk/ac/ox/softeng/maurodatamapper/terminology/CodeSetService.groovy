@@ -181,7 +181,11 @@ class CodeSetService extends ModelService<CodeSet> {
 
     List<CodeSet> findAllByReadableTermId(UUID termId){
         // finds term and returns associated code sets
-        Term.findById(termId).getCodeSets().asList()
+        def returnCodesets = []
+        if (Term.findById(termId) != null){
+            returnCodesets.addAll(Term.findById(termId).getCodeSets().asList())
+        }
+        returnCodesets
     }
 
     @Override
