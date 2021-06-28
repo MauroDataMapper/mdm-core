@@ -420,7 +420,10 @@ class BootstrapModels {
 
         Resource resource = assetResourceLocator.findAssetForURI('versioningModelDescription.txt')
 
-        v2DataModel.setDescription(resource.getInputStream().getText())
+        try { v2DataModel.setDescription(resource.getInputStream().getText()) }
+        catch (NullPointerException e) {  v2DataModel.setDescription('default description due to error reading file. see log')
+        log.debug('error reading the description file, please check the asset pipeline and ensure the versioningModelDescription.txt file is in the' +
+                  'available assets')}
 
         PrimitiveType v2PrimitiveType1 = new PrimitiveType(createdBy: DEVELOPMENT,
                                                            label: 'V2 Data Type')
