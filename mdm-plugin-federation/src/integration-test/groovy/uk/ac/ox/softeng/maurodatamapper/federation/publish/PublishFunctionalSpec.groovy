@@ -81,7 +81,7 @@ class PublishFunctionalSpec extends BaseFunctionalSpec {
             label             : 'FunctionalTest DataModel',
             readableByEveryone: true,
             finalised         : true,
-            dateFinalised     : publishedDateStr,
+            dateFinalised     : '2021-06-28T12:36:37Z',
             description       : 'Some random desc',
             modelVersion      : '1.0.0'
         ], MAP_ARG, true)

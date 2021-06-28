@@ -74,10 +74,16 @@ class SubscribedModel implements SecurableResource, EditHistoryAware {
         new DetachedCriteria<SubscribedModel>(SubscribedModel)
     }
 
+    static DetachedCriteria<SubscribedModel> bySubscribedCatalogueId(UUID subscribedCatalogueId) {
+        by().eq('subscribedCatalogue.id', subscribedCatalogueId)
+    }
+
     static DetachedCriteria<SubscribedModel> bySubscribedCatalogueIdAndSubscribedModelId(UUID subscribedCatalogueId, UUID subscribedModelId) {
-        by()
-            .eq('subscribedCatalogue.id', subscribedCatalogueId)
-            .eq('subscribedModelId', subscribedModelId)
+        bySubscribedCatalogueId(subscribedCatalogueId).eq('subscribedModelId', subscribedModelId)
+    }
+
+    static DetachedCriteria<SubscribedModel> bySubscribedCatalogueIdAndId(UUID subscribedCatalogueId, UUID id) {
+        bySubscribedCatalogueId(subscribedCatalogueId).idEq(id)
     }
 
     static DetachedCriteria<SubscribedModel> bySubscribedModelId(UUID subscribedModelId) {

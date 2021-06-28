@@ -101,7 +101,10 @@ class SubscribedModelFunctionalSpec extends ResourceFunctionalSpec<SubscribedMod
         '''{
   "id": "${json-unit.matches:id}",
   "subscribedModelId": "${json-unit.matches:id}",
-  "folderId": "${json-unit.matches:id}"
+  "folderId": "${json-unit.matches:id}",
+  "readableByEveryone": false,
+  "readableByAuthenticatedUsers": false,
+  "federated": false
 }'''
     }
 

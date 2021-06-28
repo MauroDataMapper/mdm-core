@@ -59,12 +59,21 @@ class SubscribedModelService {
         SubscribedModel.bySubscribedCatalogueIdAndSubscribedModelId(subscribedCatalogueId, subscribedModelId).get()
     }
 
+
+    SubscribedModel findBySubscribedCatalogueIdAndId(UUID subscribedCatalogueId, UUID id) {
+        SubscribedModel.bySubscribedCatalogueIdAndId(subscribedCatalogueId, id).get()
+    }
+
     SubscribedModel findBySubscribedModelId(UUID subscribedModelId) {
         SubscribedModel.bySubscribedModelId(subscribedModelId).get()
     }
 
-    List<SubscribedModel> list(Map pagination) {
-        pagination ? SubscribedModel.list(pagination) : SubscribedModel.list()
+    List<SubscribedModel> list(Map pagination = [:]) {
+        SubscribedModel.list(pagination)
+    }
+
+    List<SubscribedModel> findAllBySubscribedCatalogueId(UUID subscribedCatalogueId, Map pagination = [:]) {
+        SubscribedModel.bySubscribedCatalogueId(subscribedCatalogueId).list(pagination)
     }
 
     Long count() {
@@ -96,7 +105,7 @@ class SubscribedModelService {
             }
 
             //Get a ModelService to handle the domain type we are dealing with
-            ModelService modelService = modelServices.find { it.handles(subscribedModel.subscribedModelType) }
+            ModelService modelService = modelServices.find {it.handles(subscribedModel.subscribedModelType)}
             ModelImporterProviderService modelImporterProviderService = modelService.getJsonModelImporterProviderService()
 
             //Import the model
@@ -120,6 +129,14 @@ class SubscribedModelService {
                                               'Could not import SubscribedModel into local Catalogue')
                 return subscribedModel.errors
             }
+
+            if (modelService.countByAuthorityAndLabelAndVersion(model.authority, model.label, model.modelVersion)) {
+                subscribedModel.errors.reject('invalid.subscribedmodel.import.already.exists',
+                                              [model.authority, model.label, model.modelVersion].toArray(),
+                                              'Model from authority [{0}] with label [{1}] and version [{2}] already exists in catalogue')
+                return subscribedModel.errors
+            }
+
 
             model.folder = folder
 
@@ -189,7 +206,7 @@ class SubscribedModelService {
     String exportSubscribedModelFromSubscribedCatalogue(SubscribedModel subscribedModel) {
 
         //Get a ModelService to handle the domain type we are dealing with
-        ModelService modelService = modelServices.find { it.handles(subscribedModel.subscribedModelType) }
+        ModelService modelService = modelServices.find {it.handles(subscribedModel.subscribedModelType)}
 
         Map exporter = getJsonExporter(subscribedModel.subscribedCatalogue, modelService.getUrlResourceName())
 
@@ -211,7 +228,7 @@ class SubscribedModelService {
         }
 
         if (matches) {
-            matches.each { vl ->
+            matches.each {vl ->
                 log.debug("matched")
                 //Get Subscribed models for the new (source) and old (target) versions of the model
                 SubscribedModel sourceSubscribedModel = findBySubscribedModelId(UUID.fromString(vl.sourceModel.id))
@@ -260,7 +277,7 @@ class SubscribedModelService {
         List<Map<String, Object>> exporters = subscribedCatalogueService.getAvailableExportersForResourceType(subscribedCatalogue, urlModelType)
 
         //Find a json exporter
-        Map exporterMap = exporters.find { it.fileType == 'text/json' }
+        Map exporterMap = exporters.find {it.fileType == 'text/json'}
 
         //Can't use DataBindingUtils because of a clash with grails 'version' property
         if (!exporterMap) {

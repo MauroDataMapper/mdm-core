@@ -611,8 +611,8 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
 
         then: 'The response is unprocessable as subscribed/federated model has same authority and label as model already in storage'
         verifyResponse UNPROCESSABLE_ENTITY, response
-        responseBody().errors.first().message == 'Property [label] of class [class uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel] ' +
-        'with value [Finalised Example Test DataModel] must be unique by versions'
+        responseBody().errors.first().message == 'Model from authority [Mauro Data Mapper@http://localhost] with label [Finalised Example Test DataModel] ' +
+        'and version [1.0.0] already exists in catalogue'
 
     }
 

@@ -141,10 +141,17 @@ class SubscribedModelController extends EditLoggingController<SubscribedModel> {
     @Override
     @Transactional
     protected boolean validateResource(SubscribedModel instance, String view) {
+        // Make sure any existing errors are returned first..such as parse errors
+        if (instance.hasErrors()) {
+            transactionStatus.setRollbackOnly()
+            respond instance.errors, view: view // STATUS CODE 422
+            return false
+        }
+
         instance.validate()
 
         //Check we can import into the requested folder, and get the folder
-        if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(Folder, instance.folderId)) {
+        if (instance.folderId && !currentUserSecurityPolicyManager.userCanEditSecuredResourceId(Folder, instance.folderId)) {
             instance.errors.rejectValue('folderId', 'invalid.subscribedmodel.folderid.no.permissions',
                                         'Invalid folderId for subscribed model, user does not have the necessary permissions')
         }
@@ -159,11 +166,11 @@ class SubscribedModelController extends EditLoggingController<SubscribedModel> {
 
     @Override
     protected SubscribedModel queryForResource(Serializable id) {
-        subscribedModelService.get(id)
+        subscribedModelService.findBySubscribedCatalogueIdAndId(params.subscribedCatalogueId, id)
     }
 
     @Override
     protected List<SubscribedModel> listAllReadableResources(Map params) {
-        subscribedModelService.list(params)
+        subscribedModelService.findAllBySubscribedCatalogueId(params.subscribedCatalogueId, params)
     }
 }
