@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.terminology
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
@@ -306,6 +307,11 @@ class TerminologyService extends ModelService<Terminology> {
 
     int countAllByLabelAndBranchNameAndNotFinalised(String label, String branchName) {
         Terminology.countByLabelAndBranchNameAndFinalised(label, branchName, false)
+    }
+
+    @Override
+    int countByAuthorityAndLabelAndVersion(Authority authority, String label, Version modelVersion) {
+        Terminology.countByAuthorityAndLabelAndModelVersion(authority, label, modelVersion)
     }
 
     Terminology findLatestByDataLoaderPlugin(DataLoaderProviderService dataLoaderProviderService) {

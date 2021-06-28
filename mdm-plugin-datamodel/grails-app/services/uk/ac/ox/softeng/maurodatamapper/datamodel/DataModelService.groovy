@@ -453,6 +453,11 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         DataModel.countByLabelAndBranchNameAndFinalised(label, branchName, false)
     }
 
+    @Override
+    int countByAuthorityAndLabelAndVersion(Authority authority, String label, Version modelVersion) {
+        DataModel.countByAuthorityAndLabelAndModelVersion(authority, label, modelVersion)
+    }
+
     DataModel findLatestByDataLoaderPlugin(DataLoaderProviderService dataLoaderProviderService) {
         // If we get all the models with the DL metadata then sort by documentation version we should end up with the latest doc version.
         // We should do this rather than using the value of the metadata as its possible someone creates a new documentation version of the model

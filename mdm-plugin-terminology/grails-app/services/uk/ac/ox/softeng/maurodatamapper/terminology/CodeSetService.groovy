@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.terminology
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
@@ -392,6 +393,11 @@ class CodeSetService extends ModelService<CodeSet> {
 
     List<CodeSet> findAllModelSuperseded(UserSecurityPolicyManager userSecurityPolicyManager, Map pagination = [:]) {
         CodeSet.byIdInList(findAllModelSupersededIds(userSecurityPolicyManager.listReadableSecuredResourceIds(CodeSet))).list(pagination)
+    }
+
+    @Override
+    int countByAuthorityAndLabelAndVersion(Authority authority, String label, Version modelVersion) {
+        CodeSet.countByAuthorityAndLabelAndModelVersion(authority, label, modelVersion)
     }
 
     /**
