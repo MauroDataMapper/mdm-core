@@ -391,17 +391,18 @@ class BootstrapModels {
 
         checkAndSave(messageSource, v1DataModel)
 
-        v1DataModel.addToRules(new Rule (name: "Bootstrapped versioning Test Rule",
+        v1DataModel.addToRules(name: "Bootstrapped versioning Test Rule",
                                description: "versioning Model rule Description",
-                               createdBy: DEVELOPMENT))
+                               createdBy: DEVELOPMENT)
 
-        v1DataModel.addToRules(new Rule (name: "Bootstrapped modify rule",
+        v1DataModel.addToRules(name: "Bootstrapped modify rule",
                                description: "Bootstrapped rule for modification",
-                               createdBy: DEVELOPMENT))
+                               createdBy: DEVELOPMENT)
 
-        v1PrimitiveType1.addToRules(new Rule (name: "Bootstrapped versioning Test Rule",
-                                    description: "versioning Element Description",
-                                    createdBy: DEVELOPMENT))
+        //Causes a validation error when flushing, believe its an issue with dataElements and rules when copying or forking
+        //        v1PrimitiveType1.addToRules(name: "Bootstrapped versioning Test Rule",
+        //                                    description: "versioning Element Description",
+        //                                    createdBy: DEVELOPMENT)
 
         checkAndSave(messageSource, v1DataModel)
 
@@ -455,17 +456,18 @@ class BootstrapModels {
 
         checkAndSave(messageSource, v2DataModel)
 
-        v2DataModel.addToRules(new Rule (name: "Bootstrapped versioning V2Model Rule",
+        v2DataModel.addToRules(name: "Bootstrapped versioning V2Model Rule",
                                description: "versioning V2Model model Description",
-                               createdBy: DEVELOPMENT))
+                               createdBy: DEVELOPMENT)
 
-        v2DataModel.addToRules(new Rule (name: "Bootstrapped versioning Deletion Rule",
+        v2DataModel.addToRules(name: "Bootstrapped versioning Deletion Rule",
                                description: "versioning V2Model model for Deletion",
-                               createdBy: DEVELOPMENT))
+                               createdBy: DEVELOPMENT)
 
-        v2DataElement1.addToRules(new Rule (name: "Bootstrapped versioning V2Element Rule",
-                                  description: "versioning V2Element Description",
-                                  createdBy: DEVELOPMENT))
+        //Causes a validation error when flushing, believe its an issue with dataElements and rules when copying or forking
+        //        v2DataElement1.addToRules(name: "Bootstrapped versioning V2Element Rule",
+        //                                  description: "versioning V2Element Description",
+        //                                  createdBy: DEVELOPMENT)
 
         checkAndSave(messageSource, v2DataModel)
         return v2DataModel
