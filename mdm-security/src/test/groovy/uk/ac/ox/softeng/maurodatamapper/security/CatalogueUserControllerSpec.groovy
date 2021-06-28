@@ -986,19 +986,19 @@ json {
         }
 
         when: 'requesting a reset link'
-        params.emailAddress = reader.emailAddress
+        params.emailAddress = editor.emailAddress
         controller.sendPasswordResetLink()
 
         then:
         verifyResponse OK
 
         and: 'reset token is set'
-        reader.resetToken
+        editor.resetToken
 
         when: 'user then tries to use reset token'
         response.reset()
         params.currentUserSecurityPolicyManager = NoAccessSecurityPolicyManager.instance
-        params.catalogueUserId = reader.id.toString()
+        params.catalogueUserId = editor.id.toString()
         request.method = 'POST'
 
         request.json = '{"newPassword": "another", "resetToken":""}'
@@ -1026,7 +1026,7 @@ json {
             findByEmailAddress(_) >> { String em -> CatalogueUser.findByEmailAddress(em) }
             0 * generatePasswordResetLink(_, _)
             0 * changeUserPassword(_, _, _)
-            findOrCreateUserFromInterface(_) >> { User u ->
+            findOrCreateUserFromInterface(_) >> {User u ->
                 if (u instanceof CatalogueUser) return u
                 CatalogueUser catalogueUser = CatalogueUser.get(u.id) ?: CatalogueUser.findByEmailAddress(u.emailAddress)
                 catalogueUser ?: CatalogueUser.fromInterface(u)
@@ -1035,8 +1035,8 @@ json {
 
         when: 'user then tries to use reset token'
         request.method = 'POST'
-        params.catalogueUserId = reader.id.toString()
-        params.emailAddress = reader.emailAddress
+        params.catalogueUserId = editor.id.toString()
+        params.emailAddress = editor.emailAddress
         request.json = '{"newPassword": "another", "resetToken":""}'
         params.currentUserSecurityPolicyManager = NoAccessSecurityPolicyManager.instance
         controller.resetPassword()
@@ -1085,20 +1085,20 @@ json {
         }
 
         when: 'requesting a reset link'
-        params.emailAddress = reader.emailAddress
+        params.emailAddress = editor.emailAddress
         controller.sendPasswordResetLink()
 
         then:
         verifyResponse OK
 
         and: 'reset token is set'
-        reader.resetToken
+        editor.resetToken
 
         when: 'user then tries to use reset token'
-        UUID token = reader.resetToken
+        UUID token = editor.resetToken
         response.reset()
         params.currentUserSecurityPolicyManager = NoAccessSecurityPolicyManager.instance
-        params.catalogueUserId = reader.id.toString()
+        params.catalogueUserId = editor.id.toString()
         request.method = 'POST'
         request.json = "{\"newPassword\": \"another\", \"resetToken\":\"${token}\"}".toString()
         controller.resetPassword()
@@ -1107,7 +1107,7 @@ json {
         verifyResponse OK
 
         and:
-        !reader.resetToken
+        !editor.resetToken
 
     }
 
@@ -1151,32 +1151,32 @@ json {
         }
 
         when: 'requesting a reset link'
-        params.emailAddress = reader.emailAddress
+        params.emailAddress = editor.emailAddress
         controller.sendPasswordResetLink()
 
         then: 'reset token is set'
-        reader.resetToken
+        editor.resetToken
 
         when: 'user then logs in using known password'
-        UUID token = reader.resetToken
+        UUID token = editor.resetToken
         response.reset()
-        params.catalogueUserId = reader.id.toString()
-        controller.catalogueUserService.setUserLastLoggedIn(reader)
+        params.catalogueUserId = editor.id.toString()
+        controller.catalogueUserService.setUserLastLoggedIn(editor)
 
         then: 'token is removed'
-        !reader.resetToken
+        !editor.resetToken
 
         when: 'user then tries to use reset token'
         response.reset()
         params.currentUserSecurityPolicyManager = NoAccessSecurityPolicyManager.instance
-        params.catalogueUserId = reader.id.toString()
+        params.catalogueUserId = editor.id.toString()
         request.method = 'POST'
         request.json = "{\"newPassword\": \"another\", \"resetToken\":\"${token}\"}".toString()
         controller.resetPassword()
 
         then:
         verifyJsonResponse UNPROCESSABLE_ENTITY, '{"total":1, "errors": [{"message":' +
-                                                 '"Cannot change password for user [reader@test.com] as old password is not valid"}]}'
+                                                 '"Cannot change password for user [editor@test.com] as old password is not valid"}]}'
 
     }
 
