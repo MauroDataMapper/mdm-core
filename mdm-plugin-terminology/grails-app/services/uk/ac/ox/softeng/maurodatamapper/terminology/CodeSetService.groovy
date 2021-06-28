@@ -64,7 +64,7 @@ class CodeSetService extends ModelService<CodeSet> {
 
     @Override
     List<CodeSet> getAll(Collection<UUID> ids) {
-        CodeSet.getAll(ids).findAll()
+        CodeSet.getAll(ids).findAll().collect {unwrapIfProxy(it)}
     }
 
     @Override

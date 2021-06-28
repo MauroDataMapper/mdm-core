@@ -102,7 +102,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     @Override
     List<Folder> getAll(Collection<UUID> containerIds) {
-        VersionedFolder.getAll(containerIds)
+        VersionedFolder.getAll(containerIds).findAll().collect {unwrapIfProxy(it)}
     }
 
     @Override

@@ -64,7 +64,7 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     List<Terminology> getAll(Collection<UUID> ids) {
-        Terminology.getAll(ids).findAll()
+        Terminology.getAll(ids).findAll().collect {unwrapIfProxy(it)}
     }
 
     @Override

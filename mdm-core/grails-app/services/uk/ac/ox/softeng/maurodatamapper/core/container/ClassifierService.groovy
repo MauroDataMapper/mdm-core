@@ -66,7 +66,7 @@ class ClassifierService extends ContainerService<Classifier> {
 
     @Override
     List<Classifier> getAll(Collection<UUID> containerIds) {
-        Classifier.getAll(containerIds)
+        Classifier.getAll(containerIds).findAll().collect {unwrapIfProxy(it)}
     }
 
     @Override

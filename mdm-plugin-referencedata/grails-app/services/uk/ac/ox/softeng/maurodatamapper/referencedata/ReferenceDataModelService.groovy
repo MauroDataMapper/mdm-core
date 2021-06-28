@@ -75,7 +75,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
 
     @Override
     List<ReferenceDataModel> getAll(Collection<UUID> ids) {
-        ReferenceDataModel.getAll(ids).findAll()
+        ReferenceDataModel.getAll(ids).findAll().collect {unwrapIfProxy(it)}
     }
 
     @Override
