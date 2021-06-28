@@ -31,9 +31,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import grails.gorm.transactions.Transactional
 import org.springframework.http.HttpStatus
 
-import java.nio.file.Path
-import java.nio.file.Paths
-
 import static uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum.EMAIL_ADMIN_CONFIRM_REGISTRATION_BODY
 import static uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum.EMAIL_ADMIN_CONFIRM_REGISTRATION_SUBJECT
 import static uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum.EMAIL_ADMIN_REGISTER_BODY
@@ -162,7 +159,9 @@ class CatalogueUserController extends EditLoggingController<CatalogueUser> /* im
         CatalogueUser user = catalogueUserService.findByEmailAddress(params.emailAddress)
 
         // if no user, don't respond with notfound as this can be used to mine the DB
-        if (!user) return done()
+        // if no pwd set then also return as this means the user has not completed registration or has logged in using an alternative method
+        // Only an admin user can reset a users pwd in this situation
+        if (!user || !user.password) return done()
 
         // As this requires calls to database we only want to call it once in the method
         String siteUrlString = siteUrl
