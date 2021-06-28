@@ -135,7 +135,8 @@ class CatalogueUserControllerSpec extends ResourceControllerSpec<CatalogueUser> 
         }
       ],
       "disabled": false,
-      "id": "${json-unit.matches:id}"
+      "id": "${json-unit.matches:id}",
+      "creationMethod": "Standard"
     },
     {
       "availableActions": [ "delete", "show", "update"],
@@ -145,7 +146,8 @@ class CatalogueUserControllerSpec extends ResourceControllerSpec<CatalogueUser> 
       "createdBy": "unit-test@test.com",
       "pending": false,
       "disabled": false,
-      "id": "${json-unit.matches:id}"
+      "id": "${json-unit.matches:id}",
+      "creationMethod": "Standard"
     },
     {
       "availableActions": [ "delete", "show", "update"],
@@ -157,7 +159,8 @@ class CatalogueUserControllerSpec extends ResourceControllerSpec<CatalogueUser> 
       "jobTitle": "tester",
       "organisation": "Oxford",
       "disabled": false,
-      "id": "${json-unit.matches:id}"
+      "id": "${json-unit.matches:id}",
+      "creationMethod": "Standard"
     },
     {
       "availableActions": [ "delete", "show", "update"],
@@ -168,7 +171,8 @@ class CatalogueUserControllerSpec extends ResourceControllerSpec<CatalogueUser> 
       "createdBy": "unit-test@test.com",
       "pending": false,
       "disabled": false,
-      "id": "${json-unit.matches:id}"
+      "id": "${json-unit.matches:id}",
+      "creationMethod": "Standard"
     },
     {
       "availableActions": [ "delete", "show", "update"],
@@ -179,7 +183,8 @@ class CatalogueUserControllerSpec extends ResourceControllerSpec<CatalogueUser> 
       "createdBy": "unit-test@test.com",
       "pending": false,
       "disabled": false,
-      "id": "${json-unit.matches:id}"
+      "id": "${json-unit.matches:id}",
+      "creationMethod": "Standard"
     },
     {
       "availableActions": [ "delete", "show", "update"],
@@ -190,7 +195,8 @@ class CatalogueUserControllerSpec extends ResourceControllerSpec<CatalogueUser> 
       "createdBy": "unit-test@test.com",
       "pending": false,
       "disabled": false,
-      "id": "${json-unit.matches:id}"
+      "id": "${json-unit.matches:id}",
+      "creationMethod": "Standard"
     },
     {
       "availableActions": [ "delete", "show", "update"],
@@ -201,7 +207,8 @@ class CatalogueUserControllerSpec extends ResourceControllerSpec<CatalogueUser> 
       "createdBy": "unit-test@test.com",
       "pending": false,
       "disabled": false,
-      "id": "${json-unit.matches:id}"
+      "id": "${json-unit.matches:id}",
+      "creationMethod": "Standard"
     },
     {
       "availableActions": [ "delete", "show", "update"],
@@ -211,7 +218,8 @@ class CatalogueUserControllerSpec extends ResourceControllerSpec<CatalogueUser> 
       "createdBy": "unit-test@test.com",
       "pending": false,
       "disabled": false,
-      "id": "${json-unit.matches:id}"
+      "id": "${json-unit.matches:id}",
+      "creationMethod": "Standard"
     }
   ]
 }'''
@@ -246,7 +254,8 @@ class CatalogueUserControllerSpec extends ResourceControllerSpec<CatalogueUser> 
     "disabled": false,
     "id": "${json-unit.matches:id}",
     "pending": true,
-    "createdBy":"unit-test@test.com"
+    "createdBy":"unit-test@test.com",
+    "creationMethod": "Standard"
 }'''
     }
 
@@ -261,7 +270,8 @@ class CatalogueUserControllerSpec extends ResourceControllerSpec<CatalogueUser> 
     "id": "${json-unit.matches:id}",
     "pending": false,
     "needsToResetPassword": true,
-    "createdBy": "unit-test@test.com"
+    "createdBy": "unit-test@test.com",
+    "creationMethod": "Standard"
 }'''
     }
 
@@ -284,7 +294,8 @@ class CatalogueUserControllerSpec extends ResourceControllerSpec<CatalogueUser> 
     "organisation": "unit test",
     "jobTitle": "tester",
     "needsToResetPassword": true,
-    "createdBy": "unit-test@test.com"
+    "createdBy": "unit-test@test.com",
+    "creationMethod": "Standard"
 }'''
     }
 
@@ -328,7 +339,8 @@ class CatalogueUserControllerSpec extends ResourceControllerSpec<CatalogueUser> 
     "id": "${json-unit.matches:id}",
     "pending": false,
     "needsToResetPassword": true,
-    "createdBy": "unit-test@test.com"
+    "createdBy": "unit-test@test.com",
+    "creationMethod": "Standard"
 }'''
     }
 
@@ -595,7 +607,8 @@ json {
       "jobTitle": "tester",
       "organisation": "Oxford",
       "disabled": false,
-      "id": "${json-unit.matches:id}"
+      "id": "${json-unit.matches:id}",
+      "creationMethod": "Standard"
     }
       ]
     }'''
@@ -690,7 +703,8 @@ json {
   "availableActions": ["delete","show","update"],
   "pending": true,
   "disabled": false,
-  "id": "${json-unit.matches:id}"
+  "id": "${json-unit.matches:id}",
+  "creationMethod": "Standard"
 }'''
         // Invalid
         invalidUnsavedInstance       || UNPROCESSABLE_ENTITY | '{"total":1, "errors": [' +
@@ -748,7 +762,8 @@ json {
   "availableActions": ["delete","show","update"],
   "pending": false,
   "disabled": false,
-  "id": "${json-unit.matches:id}"
+  "id": "${json-unit.matches:id}",
+  "creationMethod": "Standard"
 }'''
 
         when:
@@ -811,7 +826,8 @@ json {
         "disabled": false,
         "id": "${json-unit.matches:id}",
         "pending": false,
-        "createdBy": "unit-test@test.com"
+        "createdBy": "unit-test@test.com",
+        "creationMethod": "Standard"
     }'''
 
         userName = userEmail ?: 'No user'
@@ -871,7 +887,8 @@ json {
   "jobTitle": "tester",
   "organisation": "Oxford",
   "disabled": false,
-  "id": "${json-unit.matches:id}"
+  "id": "${json-unit.matches:id}",
+  "creationMethod": "Standard"
 }'''
         // Invalid
         userEmailAddresses.reader   || UNPROCESSABLE_ENTITY | '{"total":1, "errors": [{"message"' +
@@ -931,7 +948,8 @@ json {
   "jobTitle": "tester",
   "organisation": "Oxford",
   "disabled": true,
-  "id": "${json-unit.matches:id}"
+  "id": "${json-unit.matches:id}",
+  "creationMethod": "Standard"
 }'''
         // Invalid
         userEmailAddresses.reader   || UNPROCESSABLE_ENTITY | '{"total":1, "errors": [{"message"' +
@@ -1223,7 +1241,8 @@ json {
   "availableActions": ["delete","show","update"],
   "pending": false,
   "disabled": false,
-  "id": "${json-unit.matches:id}"
+  "id": "${json-unit.matches:id}",
+  "creationMethod": "Standard"
 }'''
         and:
         editor.tempPassword
@@ -1273,6 +1292,7 @@ json {
   "pending": true,
   "disabled": false,
   "id": "${json-unit.matches:id}",
+  "creationMethod": "Standard",
   "groups": [{
                "id": "${json-unit.matches:id}",
                "name": "testgroup"
