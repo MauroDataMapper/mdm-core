@@ -149,9 +149,9 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         ruleService.findAllByMultiFacetAwareItemId(original.id).each { rule ->
             Rule copiedRule = new Rule(name: rule.name, description: rule.description, createdBy: copier.emailAddress)
             rule.ruleRepresentations.each { ruleRepresentation ->
-                copiedRule.addToRuleRepresentations(new RuleRepresentation(language: ruleRepresentation.language,
-                                                                           representation: ruleRepresentation.representation,
-                                                                           createdBy: copier.emailAddress))
+                copiedRule.addToRuleRepresentations(language: ruleRepresentation.language,
+                                                    representation: ruleRepresentation.representation,
+                                                    createdBy: copier.emailAddress)
             }
             copy.addToRules(copiedRule)
         }

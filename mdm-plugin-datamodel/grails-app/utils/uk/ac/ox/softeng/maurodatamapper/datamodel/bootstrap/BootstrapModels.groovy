@@ -251,7 +251,7 @@ class BootstrapModels {
 
     static void buildAndSaveModelVersionTree(MessageSource messageSource, Folder folder, Authority authority, DataModelService dataModelService,
                                              DataClassService dataClassService, DataElementService dataElementService,
-                                             MetadataService metadataService, RuleService ruleService, AssetResourceLocator assetResourceLocator) {
+                                             AssetResourceLocator assetResourceLocator) {
         /*
                                                  /- anotherFork
     v1 --------------------------- v2 -- v3  -- v4 --------------- v5 --- main
@@ -288,8 +288,7 @@ class BootstrapModels {
         // V2 main branch
         DataModel v2 = dataModelService.createNewBranchModelVersion('main', v1, dev, false, policyManager)
         v2 = populateV2(v2, messageSource, assetResourceLocator)
-        checkAndSave(messageSource, v2)
-        v2 = modifyV1(v2, messageSource, dataClassService, dataElementService, metadataService, ruleService)
+        v2 = modifyV1(v2, messageSource, dataClassService, dataElementService)
         checkAndSave(messageSource, v2)
 
         // newBranch from v1 (do this after is it creates the main branch if done before and then we have to hassle getting the id)
@@ -421,9 +420,12 @@ class BootstrapModels {
         Resource resource = assetResourceLocator.findAssetForURI('versioningModelDescription.txt')
 
         try { v2DataModel.setDescription(resource.getInputStream().getText()) }
-        catch (NullPointerException e) {  v2DataModel.setDescription('default description due to error reading file. see log')
-        log.debug('error reading the description file, please check the asset pipeline and ensure the versioningModelDescription.txt file is in the' +
-                  'available assets')}
+        catch (NullPointerException e) {
+            v2DataModel.setDescription('default description due to error reading file. see log')
+            log.debug(
+                'error reading the description file, please check the asset pipeline and ensure the versioningModelDescription.txt file is in the' +
+                'available assets')
+        }
 
         PrimitiveType v2PrimitiveType1 = new PrimitiveType(createdBy: DEVELOPMENT,
                                                            label: 'V2 Data Type')
@@ -504,21 +506,17 @@ class BootstrapModels {
     }
 
     static DataModel modifyV1(DataModel v2DataModel, MessageSource messageSource, DataClassService dataClassService,
-                              DataElementService dataElementService, MetadataService metadataService, RuleService ruleService) {
+                              DataElementService dataElementService) {
 
-        manipulateRules(v2DataModel, messageSource, ruleService)
-        manipulateDataElements(v2DataModel, messageSource, dataElementService)
-        manipulateDataClasses(v2DataModel, messageSource, dataClassService)
-        manipulateMetaData(v2DataModel, messageSource, metadataService)
-
-        v2DataModel = DataModel.findById(v2DataModel.id)
+        v2DataModel = manipulateRules(v2DataModel, messageSource)
+        v2DataModel = manipulateDataElements(v2DataModel, messageSource, dataElementService)
+        v2DataModel = manipulateDataClasses(v2DataModel, messageSource, dataClassService)
+        v2DataModel = manipulateMetaData(v2DataModel, messageSource)
 
         return v2DataModel
     }
 
-    static void manipulateDataClasses(DataModel v2DataModel, MessageSource messageSource, DataClassService dataClassService) {
-
-        v2DataModel = DataModel.findById(v2DataModel.id)
+    static DataModel manipulateDataClasses(DataModel v2DataModel, MessageSource messageSource, DataClassService dataClassService) {
 
         DataClass v1DataClass = v2DataModel.getDataClasses().find { it.label == 'V1 Finalised Data Class' }
         DataClass v1InternalDataClass = v1DataClass.getDataClasses().find { it.label == 'V1 Internal Data Class' }
@@ -526,67 +524,62 @@ class BootstrapModels {
         //modify dataClass and internal DataClass
         v1InternalDataClass.label = 'Modified this internal label name'
         v1DataClass.label = 'Modified this label name'
-        checkAndSave(messageSource, v1InternalDataClass)
-        checkAndSave(messageSource, v1DataClass)
-
-        //remove internal Dataclass, then remove DataClass
-        v1DataClass.dataClasses.remove(v1InternalDataClass)
-        dataClassService.delete(v1InternalDataClass.getId())
-        checkAndSave(messageSource, v1DataClass)
-        dataClassService.delete(v1DataClass.getId())
-
-        v2DataModel.dataClasses.remove(v1DataClass)
+        v1DataClass.addToDataClasses(v1InternalDataClass)
+        v2DataModel.addToDataClasses(v1DataClass)
         checkAndSave(messageSource, v2DataModel)
 
+        //remove internal Dataclass, then remove DataClass
+        dataClassService.delete(v1DataClass)
+
+        DataModel.findById(v2DataModel.id)
     }
 
 
-    static void manipulateDataElements(DataModel v2DataModel, MessageSource messageSource, DataElementService dataElementService) {
-
+    static DataModel manipulateDataElements(DataModel v2DataModel, MessageSource messageSource, DataElementService dataElementService) {
 
         DataClass v1ModifyDataClass = v2DataModel.getDataClasses().find { it.label == 'V1 Modify Data Class' }
 
         //Modify DataElement
         DataElement modifyDataElement1 = v1ModifyDataClass.getDataElements().find { it.label == 'V1 Modify DataElement' }
         modifyDataElement1.label = 'Modified Label On this element'
-        checkAndSave(messageSource, modifyDataElement1)
-
-        //Add modified and remove other data element
-        DataElement modifyDataElement2 = v1ModifyDataClass.getDataElements().find { it.label == 'V1 Modify DataElement 2' }
-        v1ModifyDataClass.dataElements.remove(modifyDataElement2)
-        dataElementService.delete(modifyDataElement2.getId())
-        checkAndSave(messageSource, v1ModifyDataClass)
         v1ModifyDataClass.addToDataElements(modifyDataElement1)
-        checkAndSave(messageSource, v1ModifyDataClass)
+        v2DataModel.addToDataClasses(v1ModifyDataClass)
+        checkAndSave(messageSource, v2DataModel)
+
+        //remove other data element
+        DataElement modifyDataElement2 = v1ModifyDataClass.getDataElements().find { it.label == 'V1 Modify DataElement 2' }
+        dataElementService.delete(modifyDataElement2)
+
+        DataModel.findById(v2DataModel.id)
     }
 
-    static void manipulateMetaData(DataModel v2DataModel, MessageSource messageSource, MetadataService metadataService) {
-
+    static DataModel manipulateMetaData(DataModel v2DataModel, MessageSource messageSource) {
 
         //modify metaData
         Metadata md1 = v2DataModel.getMetadata().find { it.key == 'jun1' }
         md1.value = 'mod1'
-        v2DataModel.metadata.add(md1)
         checkAndSave(messageSource, v2DataModel)
 
         //remove metaData
         Metadata md2 = v2DataModel.getMetadata().find { it.key == 'mdk2' }
-        metadataService.delete(md2.getId())
-        v2DataModel = DataModel.findById(v2DataModel.id)
         v2DataModel.metadata.remove(md2)
         checkAndSave(messageSource, v2DataModel)
+
+        v2DataModel
     }
 
-    static void manipulateRules(DataModel v2DataModel, MessageSource messageSource, RuleService ruleService) {
+    static DataModel manipulateRules(DataModel v2DataModel, MessageSource messageSource) {
 
         Rule modifyRule = v2DataModel.rules.find { it.name == 'Bootstrapped versioning V2Model Rule' }
         modifyRule.description = 'Modified this description'
-        checkAndSave(messageSource, modifyRule)
+        v2DataModel.addToRules(modifyRule)
+        checkAndSave(messageSource, v2DataModel)
 
         Rule deleteRule = v2DataModel.rules.find { it.name == 'Bootstrapped versioning Deletion Rule' }
-        ruleService.delete(deleteRule.getId())
         v2DataModel.rules.remove(deleteRule)
         checkAndSave(messageSource, v2DataModel)
+
+        v2DataModel
     }
 
 }
