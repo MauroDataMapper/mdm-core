@@ -19,7 +19,6 @@ package uk.ac.ox.softeng.maurodatamapper.federation.publish
 
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 
@@ -29,9 +28,6 @@ import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
 import spock.lang.Shared
-
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 
 @Slf4j
 @Integration
@@ -73,15 +69,14 @@ class PublishFunctionalSpec extends BaseFunctionalSpec {
 
     }
 
-    void 'test getting published models when model available'() {
+    void '2-test getting published models when model available'() {
         given:
-        OffsetDateTime publishedDate = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
-        String publishedDateStr = OffsetDateTimeConverter.toString(publishedDate)
+        String publishedDateStr = '2021-06-28T12:36:37Z'
         POST("folders/${folderId}/dataModels", [
             label             : 'FunctionalTest DataModel',
             readableByEveryone: true,
             finalised         : true,
-            dateFinalised     : '2021-06-28T12:36:37Z',
+            dateFinalised     : publishedDateStr,
             description       : 'Some random desc',
             modelVersion      : '1.0.0'
         ], MAP_ARG, true)
