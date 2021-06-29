@@ -9,6 +9,7 @@ model {
 
 json {
 
+    creationMethod catalogueUser.creationMethod
     availableActions userSecurityPolicyManager.userAvailableActions(CatalogueUser, catalogueUser.id)
     if (catalogueUser.lastLogin) lastLogin catalogueUser.lastLogin
 

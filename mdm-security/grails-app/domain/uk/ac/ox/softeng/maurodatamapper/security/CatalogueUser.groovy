@@ -55,6 +55,7 @@ class CatalogueUser implements Principal, EditHistoryAware, CreatorAware, User {
     String userPreferences
     Boolean disabled
     UUID resetToken
+    String creationMethod
 
     static belongsTo = UserGroup
 
@@ -105,6 +106,7 @@ class CatalogueUser implements Principal, EditHistoryAware, CreatorAware, User {
     }
 
     def beforeValidate() {
+        if (!creationMethod) creationMethod = 'Standard'
         if (pending == null) pending = false
         if (disabled == null) disabled = false
     }

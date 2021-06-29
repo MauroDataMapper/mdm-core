@@ -670,7 +670,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         T oldestAncestor = modelService.findOldestAncestor(instance) as T
 
         List<VersionTreeModel> versionTreeModelList = modelService.buildModelVersionTree(oldestAncestor, null,
-                                                                                         null, true,
+                                                                                         null, true, false,
                                                                                          currentUserSecurityPolicyManager)
         respond versionTreeModelList
     }
@@ -682,10 +682,16 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         T oldestAncestor = modelService.findOldestAncestor(instance) as T
 
+        boolean branchesOnly = params.boolean('branchesOnly', false)
+        boolean forMerge = params.boolean('forMerge', false)
+
         List<VersionTreeModel> versionTreeModelList = modelService.buildModelVersionTree(oldestAncestor, null,
                                                                                          null, false,
+                                                                                         branchesOnly || forMerge,
                                                                                          currentUserSecurityPolicyManager)
-        respond versionTreeModelList.findAll {!it.newFork}
+        respond versionTreeModelList.findAll {
+            (!(it.newFork || (forMerge && it.id == instance.id.toString())))
+        }
     }
 
     @Override
