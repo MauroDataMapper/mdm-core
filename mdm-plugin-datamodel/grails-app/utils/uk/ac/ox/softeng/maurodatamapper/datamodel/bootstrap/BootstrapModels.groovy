@@ -21,9 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
-import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
-import uk.ac.ox.softeng.maurodatamapper.core.facet.RuleService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -287,14 +285,15 @@ class BootstrapModels {
 
         // V2 main branch
         DataModel v2 = dataModelService.createNewBranchModelVersion('main', v1, dev, false, policyManager)
-        v2 = populateV2(v2, messageSource, assetResourceLocator)
-        v2 = modifyV1(v2, messageSource, dataClassService, dataElementService)
+        checkAndSave(messageSource, v2)
+        v2 = modifyV2(v2, messageSource, assetResourceLocator, dataClassService, dataElementService)
         checkAndSave(messageSource, v2)
 
         // newBranch from v1 (do this after is it creates the main branch if done before and then we have to hassle getting the id)
         DataModel newBranch = dataModelService.createNewBranchModelVersion('newBranch', v1, dev, false, policyManager)
         checkAndSave(messageSource, newBranch)
-        populateNewBranch(newBranch, messageSource)
+        modifyNewBranch(newBranch, messageSource)
+        checkAndSave(messageSource, newBranch)
 
         // Finalise the main branch to v2
         v2 = dataModelService.finaliseModel(v2, dev, Version.from('2'), null, null)
@@ -313,6 +312,8 @@ class BootstrapModels {
 
         // testBranch from v3 (do this after is it creates the main branch if done before and then we have to hassle getting the id)
         DataModel testBranch = dataModelService.createNewBranchModelVersion('testBranch', v3, dev, false, policyManager)
+        checkAndSave(messageSource, testBranch)
+        testBranch = modifyTestBranch(testBranch, messageSource)
         checkAndSave(messageSource, testBranch)
 
         // Finalise main branch to v4
@@ -336,6 +337,8 @@ class BootstrapModels {
         // Another branch
         DataModel anotherBranch = dataModelService.createNewBranchModelVersion('anotherBranch', v5, dev, false, policyManager)
         checkAndSave(messageSource, anotherBranch)
+        anotherBranch = modifyAnotherBranch(anotherBranch, messageSource)
+        checkAndSave(messageSource, anotherBranch)
 
         // Interesting branch
         DataModel interestingBranch = dataModelService.createNewBranchModelVersion('interestingBranch', v5, dev, false, policyManager)
@@ -349,9 +352,10 @@ class BootstrapModels {
             .addToMetadata(createdBy: DEVELOPMENT, namespace: 'v1Versioning.com', key: 'mdk2', value: 'mdv2')
 
         PrimitiveType v1PrimitiveType1 = new PrimitiveType(createdBy: DEVELOPMENT,
-                                                           label: 'V1 Finalised Data Type')
+                                                           label: 'V1 Data Type')
+        v1DataModel.addToDataTypes(v1PrimitiveType1)
         DataElement v1DataElement1 = new DataElement(createdBy: DEVELOPMENT,
-                                                     label: 'V1 Finalised Data Element',
+                                                     label: 'V1 Data Element',
                                                      minMultiplicity: 1,
                                                      maxMultiplicity: 1,
                                                      dataType: v1PrimitiveType1)
@@ -371,7 +375,7 @@ class BootstrapModels {
                                                            maxMultiplicity: 1,
                                                            dataType: v1PrimitiveType1)
         DataClass v1DataClass = new DataClass(createdBy: DEVELOPMENT,
-                                              label: 'V1 Finalised Data Class')
+                                              label: 'V1 Data Class')
         DataClass v1InternalDataClass = new DataClass(createdBy: DEVELOPMENT,
                                                       label: 'V1 Internal Data Class')
         DataClass v1ModifyDataClass = new DataClass(createdBy: DEVELOPMENT,
@@ -398,10 +402,14 @@ class BootstrapModels {
                                description: "Bootstrapped rule for modification",
                                createdBy: DEVELOPMENT)
 
-        //Causes a validation error when flushing, believe its an issue with dataElements and rules when copying or forking
-        //        v1PrimitiveType1.addToRules(name: "Bootstrapped versioning Test Rule",
-        //                                    description: "versioning Element Description",
-        //                                    createdBy: DEVELOPMENT)
+
+        v1DataModel.addToMetadata(namespace: 'versioning.com', key: 'map', value: '''
+                                             /- anotherFork
+v1 --------------------------- v2 -- v3  -- v4 --------------- v5 --- main
+  \\\\_ newBranch (v1)                  \\_ testBranch (v3)          \\__ anotherBranch (v5)
+   \\_ fork ---- main                                               \\_ interestingBranch (v5)
+ ''')
+
 
         checkAndSave(messageSource, v1DataModel)
 
@@ -409,8 +417,8 @@ class BootstrapModels {
 
     }
 
-    static DataModel populateV2(DataModel v2DataModel, MessageSource messageSource,
-                                AssetResourceLocator assetResourceLocator) {
+    static DataModel modifyV2(DataModel v2DataModel, MessageSource messageSource, AssetResourceLocator assetResourceLocator, DataClassService dataClassService,
+                              DataElementService dataElementService) {
         v2DataModel.addToMetadata(createdBy: DEVELOPMENT, namespace: 'JRDev.com/versioning', key: 'mkv1', value: 'mkv2')
             .addToMetadata(createdBy: DEVELOPMENT, namespace: 'JRDev.com/versioning', key: 'abc2', value: 'abc3')
 
@@ -419,7 +427,7 @@ class BootstrapModels {
 
         Resource resource = assetResourceLocator.findAssetForURI('versioningModelDescription.txt')
 
-        try { v2DataModel.setDescription(resource.getInputStream().getText()) }
+        try {v2DataModel.setDescription(resource.getInputStream().getText())}
         catch (NullPointerException e) {
             v2DataModel.setDescription('default description due to error reading file. see log')
             log.debug(
@@ -469,20 +477,80 @@ class BootstrapModels {
                                description: "versioning V2Model model for Deletion",
                                createdBy: DEVELOPMENT)
 
-        //Causes a validation error when flushing, believe its an issue with dataElements and rules when copying or forking
-        //        v2DataElement1.addToRules(name: "Bootstrapped versioning V2Element Rule",
-        //                                  description: "versioning V2Element Description",
-        //                                  createdBy: DEVELOPMENT)
-
         checkAndSave(messageSource, v2DataModel)
-        return v2DataModel
+
+        manipulateV2Rules(v2DataModel, messageSource)
+        manipulateV2DataElements(v2DataModel, messageSource, dataElementService)
+        manipulateV2DataClasses(v2DataModel, messageSource, dataClassService)
+        manipulateV2MetaData(v2DataModel, messageSource)
+
+        v2DataModel
 
     }
 
-    static DataModel populateNewBranch(DataModel newBranch, MessageSource messageSource) {
+    static void manipulateV2DataClasses(DataModel v2DataModel, MessageSource messageSource, DataClassService dataClassService) {
+
+        DataClass v1DataClass = v2DataModel.getDataClasses().find {it.label == 'V1 Data Class'}
+        DataClass v1InternalDataClass = v1DataClass.getDataClasses().find {it.label == 'V1 Internal Data Class'}
+        DataClass v1ModifyDataClass = v2DataModel.dataClasses.find {it.label == 'V1 Modify Data Class'}
+
+        //modify dataClass
+        v1DataClass.description = 'Modified this description for V2'
+        checkAndSave(messageSource, v1DataClass)
+
+        dataClassService.delete(v1InternalDataClass)
+
+        //Move internal DC, this counts as a deletion and an addition
+        DataClass moved = new DataClass(createdBy: DEVELOPMENT,
+                                        label: 'V1 Internal Data Class')
+        v1ModifyDataClass.addToDataClasses(moved)
+        v2DataModel.addToDataClasses(moved)
+        checkAndSave(messageSource, v1ModifyDataClass)
+        checkAndSave(messageSource, v2DataModel)
+    }
 
 
-        PrimitiveType stringPrimitive = new PrimitiveType(createdBy: DEVELOPMENT, label: 'string')
+    static void manipulateV2DataElements(DataModel v2DataModel, MessageSource messageSource, DataElementService dataElementService) {
+
+        DataClass v1ModifyDataClass = v2DataModel.dataClasses.find {it.label == 'V1 Modify Data Class'}
+
+        //Rename DataElement this counts as an addition and deletion
+        DataElement modifyDataElement1 = v1ModifyDataClass.dataElements.find {it.label == 'V1 Modify DataElement'}
+        modifyDataElement1.label = 'Modified Label On this element'
+        checkAndSave(messageSource, modifyDataElement1)
+
+        //remove other data element
+        DataElement modifyDataElement2 = v1ModifyDataClass.dataElements.find {it.label == 'V1 Modify DataElement 2'}
+        dataElementService.delete(modifyDataElement2)
+    }
+
+    static void manipulateV2MetaData(DataModel v2DataModel, MessageSource messageSource) {
+
+        //modify metaData
+        Metadata md1 = v2DataModel.metadata.find {it.key == 'jun1'}
+        md1.value = 'mod1'
+        checkAndSave(messageSource, md1)
+
+        //remove metaData
+        Metadata md2 = v2DataModel.metadata.find {it.key == 'mdk2'}
+        v2DataModel.metadata.remove(md2)
+        md2.delete()
+        checkAndSave(messageSource, v2DataModel)
+    }
+
+    static void manipulateV2Rules(DataModel v2DataModel, MessageSource messageSource) {
+
+        Rule modifyRule = v2DataModel.rules.find {it.name == 'Bootstrapped versioning V2Model Rule'}
+        modifyRule.description = 'Modified this description'
+        checkAndSave(messageSource, modifyRule)
+
+        Rule deleteRule = v2DataModel.rules.find {it.name == 'Bootstrapped versioning Deletion Rule'}
+        v2DataModel.rules.remove(deleteRule)
+        checkAndSave(messageSource, v2DataModel)
+    }
+
+
+    static DataModel modifyNewBranch(DataModel newBranch, MessageSource messageSource) {
 
         newBranch
             .addToMetadata(createdBy: DEVELOPMENT, namespace: 'versioning.com', key: 'mdk1', value: 'mdv1')
@@ -492,7 +560,7 @@ class BootstrapModels {
             .addToAnnotations(createdBy: DEVELOPMENT, label: 'versioning annotation 1')
             .addToAnnotations(createdBy: DEVELOPMENT, label: 'versioning annotation 2', description: 'with description')
 
-            .addToDataTypes(stringPrimitive)
+            .addToDataTypes(new PrimitiveType(createdBy: DEVELOPMENT, label: 'string'))
             .addToDataTypes(new PrimitiveType(createdBy: DEVELOPMENT, label: 'integer'))
 
             .addToDataClasses(createdBy: DEVELOPMENT, label: 'emptyVersioningClass', description: 'dataclass with desc')
@@ -505,81 +573,52 @@ class BootstrapModels {
 
     }
 
-    static DataModel modifyV1(DataModel v2DataModel, MessageSource messageSource, DataClassService dataClassService,
-                              DataElementService dataElementService) {
+    static DataModel modifyTestBranch(DataModel testBranch, MessageSource messageSource) {
+        DataClass v1DataClass = testBranch.getDataClasses().find {it.label == 'V1 Data Class'}
 
-        v2DataModel = manipulateRules(v2DataModel, messageSource)
-        v2DataModel = manipulateDataElements(v2DataModel, messageSource, dataElementService)
-        v2DataModel = manipulateDataClasses(v2DataModel, messageSource, dataClassService)
-        v2DataModel = manipulateMetaData(v2DataModel, messageSource)
+        v1DataClass.description = 'Modified this description for test branch'
+        checkAndSave(messageSource, v1DataClass)
 
-        return v2DataModel
+
+        DataElement de = v1DataClass.dataElements.find {it.label == 'V1 Second DataElement'}
+        de.description = 'Adding a description'
+        de.minMultiplicity = 0
+        checkAndSave(messageSource, de)
+
+        Metadata md1 = testBranch.metadata.find {it.key == 'jun1'}
+        md1.value = 'modtest'
+        checkAndSave(messageSource, md1)
+
+
+        testBranch
+
     }
 
-    static DataModel manipulateDataClasses(DataModel v2DataModel, MessageSource messageSource, DataClassService dataClassService) {
+    static DataModel modifyAnotherBranch(DataModel anotherBranch, MessageSource messageSource) {
+        DataClass v1DataClass = anotherBranch.getDataClasses().find {it.label == 'V1 Data Class'}
+        v1DataClass.description = 'Modified this description for test branch'
+        v1DataClass.addToMetadata(createdBy: DEVELOPMENT, namespace: 'versioning.com', key: 'mdk1', value: 'mdv1')
+        checkAndSave(messageSource, v1DataClass)
 
-        DataClass v1DataClass = v2DataModel.getDataClasses().find { it.label == 'V1 Finalised Data Class' }
-        DataClass v1InternalDataClass = v1DataClass.getDataClasses().find { it.label == 'V1 Internal Data Class' }
+        DataElement de = v1DataClass.dataElements.find {it.label == 'V1 Second DataElement'}
+        de.maxMultiplicity = -1
+        checkAndSave(messageSource, de)
 
-        //modify dataClass and internal DataClass
-        v1InternalDataClass.label = 'Modified this internal label name'
-        v1DataClass.label = 'Modified this label name'
-        v1DataClass.addToDataClasses(v1InternalDataClass)
-        v2DataModel.addToDataClasses(v1DataClass)
-        checkAndSave(messageSource, v2DataModel)
+        PrimitiveType string = new PrimitiveType(createdBy: DEVELOPMENT, label: 'string')
+        anotherBranch.addToDataTypes(string)
+        checkAndSave(messageSource, anotherBranch)
 
-        //remove internal Dataclass, then remove DataClass
-        dataClassService.delete(v1DataClass)
+        DataClass v2DataClass = anotherBranch.getDataClasses().find {it.label == 'V2 Data Class'}
+        de = v2DataClass.dataElements.find {it.label == 'V2 Data Element'}
+        de.dataType = string
+        checkAndSave(messageSource, de)
 
-        DataModel.findById(v2DataModel.id)
-    }
+        Metadata md1 = anotherBranch.metadata.find {it.key == 'jun1'}
+        md1.value = 'modanother'
+        checkAndSave(messageSource, md1)
 
+        anotherBranch
 
-    static DataModel manipulateDataElements(DataModel v2DataModel, MessageSource messageSource, DataElementService dataElementService) {
-
-        DataClass v1ModifyDataClass = v2DataModel.getDataClasses().find { it.label == 'V1 Modify Data Class' }
-
-        //Modify DataElement
-        DataElement modifyDataElement1 = v1ModifyDataClass.getDataElements().find { it.label == 'V1 Modify DataElement' }
-        modifyDataElement1.label = 'Modified Label On this element'
-        v1ModifyDataClass.addToDataElements(modifyDataElement1)
-        v2DataModel.addToDataClasses(v1ModifyDataClass)
-        checkAndSave(messageSource, v2DataModel)
-
-        //remove other data element
-        DataElement modifyDataElement2 = v1ModifyDataClass.getDataElements().find { it.label == 'V1 Modify DataElement 2' }
-        dataElementService.delete(modifyDataElement2)
-
-        DataModel.findById(v2DataModel.id)
-    }
-
-    static DataModel manipulateMetaData(DataModel v2DataModel, MessageSource messageSource) {
-
-        //modify metaData
-        Metadata md1 = v2DataModel.getMetadata().find { it.key == 'jun1' }
-        md1.value = 'mod1'
-        checkAndSave(messageSource, v2DataModel)
-
-        //remove metaData
-        Metadata md2 = v2DataModel.getMetadata().find { it.key == 'mdk2' }
-        v2DataModel.metadata.remove(md2)
-        checkAndSave(messageSource, v2DataModel)
-
-        v2DataModel
-    }
-
-    static DataModel manipulateRules(DataModel v2DataModel, MessageSource messageSource) {
-
-        Rule modifyRule = v2DataModel.rules.find { it.name == 'Bootstrapped versioning V2Model Rule' }
-        modifyRule.description = 'Modified this description'
-        v2DataModel.addToRules(modifyRule)
-        checkAndSave(messageSource, v2DataModel)
-
-        Rule deleteRule = v2DataModel.rules.find { it.name == 'Bootstrapped versioning Deletion Rule' }
-        v2DataModel.rules.remove(deleteRule)
-        checkAndSave(messageSource, v2DataModel)
-
-        v2DataModel
     }
 
 }
