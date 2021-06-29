@@ -56,6 +56,7 @@ class SubscribedCatalogue implements SecurableResource, EditHistoryAware, Inform
         label unique: true
         refreshPeriod nullable: true
         lastRead nullable: true
+        apiKey nullable: true
     }
 
     static mapping = {

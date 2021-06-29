@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -69,7 +68,7 @@ class FolderService extends ContainerService<Folder> {
 
     @Override
     List<Folder> getAll(Collection<UUID> containerIds) {
-        Folder.getAll(containerIds)
+        Folder.getAll(containerIds).findAll().collect {unwrapIfProxy(it)}
     }
 
     @Override
@@ -121,8 +120,14 @@ class FolderService extends ContainerService<Folder> {
         null
     }
 
-    List<Folder> list(Map pagination = [:]) {
+    @Override
+    List<Folder> list(Map pagination) {
         Folder.list(pagination)
+    }
+
+    @Override
+    List<Folder> list() {
+        Folder.list().collect {unwrapIfProxy(it)}
     }
 
     Long count() {

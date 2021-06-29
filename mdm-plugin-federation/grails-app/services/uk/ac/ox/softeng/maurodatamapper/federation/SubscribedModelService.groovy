@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital 
+ * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,25 @@
 package uk.ac.ox.softeng.maurodatamapper.federation
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FileParameter
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
+import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
+
+import java.time.OffsetDateTime
 
 @Slf4j
 @Transactional
@@ -35,6 +46,10 @@ class SubscribedModelService {
     List<ModelService> modelServices
 
     SubscribedCatalogueService subscribedCatalogueService
+    FolderService folderService
+
+    @Autowired(required = false)
+    SecurityPolicyManagerService securityPolicyManagerService
 
     SubscribedModel get(Serializable id) {
         SubscribedModel.get(id)
@@ -44,12 +59,21 @@ class SubscribedModelService {
         SubscribedModel.bySubscribedCatalogueIdAndSubscribedModelId(subscribedCatalogueId, subscribedModelId).get()
     }
 
+
+    SubscribedModel findBySubscribedCatalogueIdAndId(UUID subscribedCatalogueId, UUID id) {
+        SubscribedModel.bySubscribedCatalogueIdAndId(subscribedCatalogueId, id).get()
+    }
+
     SubscribedModel findBySubscribedModelId(UUID subscribedModelId) {
         SubscribedModel.bySubscribedModelId(subscribedModelId).get()
     }
 
-    List<SubscribedModel> list(Map pagination) {
-        pagination ? SubscribedModel.list(pagination) : SubscribedModel.list()
+    List<SubscribedModel> list(Map pagination = [:]) {
+        SubscribedModel.list(pagination)
+    }
+
+    List<SubscribedModel> findAllBySubscribedCatalogueId(UUID subscribedCatalogueId, Map pagination = [:]) {
+        SubscribedModel.bySubscribedCatalogueId(subscribedCatalogueId).list(pagination)
     }
 
     Long count() {
@@ -62,6 +86,99 @@ class SubscribedModelService {
 
     SubscribedModel save(SubscribedModel subscribedModel) {
         subscribedModel.save(failOnError: true, validate: false)
+    }
+
+    def federateSubscribedModel(SubscribedModel subscribedModel, UserSecurityPolicyManager userSecurityPolicyManager) {
+
+        Folder folder = folderService.get(subscribedModel.folderId)
+
+        //Export the requested model from the SubscribedCatalogue
+        log.debug("Exporting SubscribedModel")
+        try {
+            String exportedJson = exportSubscribedModelFromSubscribedCatalogue(subscribedModel)
+
+            if (!exportedJson) {
+                log.debug("No Json exported")
+                subscribedModel.errors.reject('invalid.subscribedmodel.export',
+                                              'Could not export SubscribedModel from SubscribedCatalogue')
+                return subscribedModel.errors
+            }
+
+            //Get a ModelService to handle the domain type we are dealing with
+            ModelService modelService = modelServices.find {it.handles(subscribedModel.subscribedModelType)}
+            ModelImporterProviderService modelImporterProviderService = modelService.getJsonModelImporterProviderService()
+
+            //Import the model
+            ModelImporterProviderServiceParameters parameters =
+                modelImporterProviderService.createNewImporterProviderServiceParameters() as ModelImporterProviderServiceParameters
+
+            if (parameters.hasProperty('importFile')?.type != FileParameter) {
+                throw new ApiInternalException('MSXX', "Assigned JSON importer ${modelImporterProviderService.class.simpleName} " +
+                                                       "for model cannot import file content")
+            }
+
+            parameters.importFile = new FileParameter(fileContents: exportedJson.getBytes())
+            parameters.folderId = folder.id
+            parameters.finalised = true
+            parameters.useDefaultAuthority = false
+
+            Model model = modelImporterProviderService.importDomain(userSecurityPolicyManager.user, parameters)
+
+            if (!model) {
+                subscribedModel.errors.reject('invalid.subscribedmodel.import',
+                                              'Could not import SubscribedModel into local Catalogue')
+                return subscribedModel.errors
+            }
+
+            if (modelService.countByAuthorityAndLabelAndVersion(model.authority, model.label, model.modelVersion)) {
+                subscribedModel.errors.reject('invalid.subscribedmodel.import.already.exists',
+                                              [model.authority, model.label, model.modelVersion].toArray(),
+                                              'Model from authority [{0}] with label [{1}] and version [{2}] already exists in catalogue')
+                return subscribedModel.errors
+            }
+
+
+            model.folder = folder
+
+            modelService.validate(model)
+
+            if (model.hasErrors()) {
+                return model.errors
+            }
+
+            log.debug('No errors in imported model')
+
+            Model savedModel = modelService.saveModelWithContent(model)
+            log.debug('Saved model')
+
+            if (userSecurityPolicyManager) {
+                log.debug("add security to saved model")
+                userSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(savedModel,
+                                                                                                         userSecurityPolicyManager.user,
+                                                                                                         savedModel.label)
+            }
+
+
+            //Record the ID of the imported model against the subscription makes it easier to track version links later.
+            subscribedModel.lastRead = OffsetDateTime.now()
+            subscribedModel.localModelId = savedModel.id
+
+            //Handle version linking
+            Map versionLinks = getVersionLinks(modelService.getUrlResourceName(), subscribedModel)
+            if (versionLinks) {
+                log.debug("add version links")
+                addVersionLinksToImportedModel(userSecurityPolicyManager.user, versionLinks, modelService, subscribedModel)
+            }
+
+        } catch (ApiException exception) {
+            log.warn("Failed to federate subscribedModel due to [${exception.message}]")
+            subscribedModel.errors.reject('invalid.subscribedmodel.federate.exception',
+                                          [exception.message].toArray(),
+                                          'Could not federate SubscribedModel into local Catalogue due to [{0}]')
+            return subscribedModel.errors
+        }
+
+        subscribedModel
     }
 
     /**
@@ -168,4 +285,5 @@ class SubscribedModelService {
         }
         exporterMap
     }
+
 }

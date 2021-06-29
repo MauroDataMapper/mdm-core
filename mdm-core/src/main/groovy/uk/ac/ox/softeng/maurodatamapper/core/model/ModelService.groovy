@@ -130,6 +130,8 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     abstract int countAllByLabelAndBranchNameAndNotFinalised(String label, String branchName)
 
+    abstract int countByAuthorityAndLabelAndVersion(Authority authority, String label, Version modelVersion)
+
     abstract K copyModel(K original,
                          Folder folderToCopyInto,
                          User copier,

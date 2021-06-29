@@ -33,12 +33,13 @@ class SubscribedModelInterceptor extends SecurableResourceInterceptor {
     @Override
     void checkIds() {
         Utils.toUuid(params, 'id')
+        Utils.toUuid(params, 'subscribedModelId')
         Utils.toUuid(params, 'subscribedCatalogueId')
     }
 
     @Override
     UUID getId() {
-        params.id
+        params.subscribedModelId ?: params.id
     }
 
     boolean before() {

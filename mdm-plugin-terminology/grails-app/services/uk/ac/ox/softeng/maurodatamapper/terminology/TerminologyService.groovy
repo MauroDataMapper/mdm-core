@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.terminology
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
@@ -63,12 +64,17 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     List<Terminology> getAll(Collection<UUID> ids) {
-        Terminology.getAll(ids).findAll()
+        Terminology.getAll(ids).findAll().collect {unwrapIfProxy(it)}
     }
 
     @Override
-    List<Terminology> list(Map pagination = [:]) {
+    List<Terminology> list(Map pagination) {
         Terminology.list(pagination)
+    }
+
+    @Override
+    List<Terminology> list() {
+        Terminology.list().collect {unwrapIfProxy(it)}
     }
 
     @Override
@@ -306,6 +312,11 @@ class TerminologyService extends ModelService<Terminology> {
 
     int countAllByLabelAndBranchNameAndNotFinalised(String label, String branchName) {
         Terminology.countByLabelAndBranchNameAndFinalised(label, branchName, false)
+    }
+
+    @Override
+    int countByAuthorityAndLabelAndVersion(Authority authority, String label, Version modelVersion) {
+        Terminology.countByAuthorityAndLabelAndModelVersion(authority, label, modelVersion)
     }
 
     Terminology findLatestByDataLoaderPlugin(DataLoaderProviderService dataLoaderProviderService) {

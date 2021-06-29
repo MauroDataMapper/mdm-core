@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.testing.functional.federation
+package uk.ac.ox.softeng.maurodatamapper.testing.functional.federation.atom
 
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
@@ -35,7 +35,7 @@ import static io.micronaut.http.HttpStatus.OK
  * </pre>
  *
  *
- * @see uk.ac.ox.softeng.maurodatamapper.federation.FeedController
+ * @see uk.ac.ox.softeng.maurodatamapper.federation.atom.FeedController
  */
 @Integration
 @Slf4j

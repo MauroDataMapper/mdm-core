@@ -82,12 +82,17 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
     @Override
     List<DataModel> getAll(Collection<UUID> ids) {
-        DataModel.getAll(ids).findAll()
+        DataModel.getAll(ids).findAll().collect {unwrapIfProxy(it)}
     }
 
     @Override
-    List<DataModel> list(Map pagination = [:]) {
+    List<DataModel> list(Map pagination) {
         DataModel.list(pagination)
+    }
+
+    @Override
+    List<DataModel> list() {
+        DataModel.list().collect {unwrapIfProxy(it)}
     }
 
     @Override
@@ -451,6 +456,11 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
     int countAllByLabelAndBranchNameAndNotFinalised(String label, String branchName) {
         DataModel.countByLabelAndBranchNameAndFinalised(label, branchName, false)
+    }
+
+    @Override
+    int countByAuthorityAndLabelAndVersion(Authority authority, String label, Version modelVersion) {
+        DataModel.countByAuthorityAndLabelAndModelVersion(authority, label, modelVersion)
     }
 
     DataModel findLatestByDataLoaderPlugin(DataLoaderProviderService dataLoaderProviderService) {

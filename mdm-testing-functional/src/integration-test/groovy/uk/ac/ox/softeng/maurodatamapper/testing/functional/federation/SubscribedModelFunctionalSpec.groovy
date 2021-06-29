@@ -18,7 +18,10 @@
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.federation
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogue
+import uk.ac.ox.softeng.maurodatamapper.security.authentication.ApiKey
 import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -30,7 +33,9 @@ import groovy.util.logging.Slf4j
 import spock.lang.Shared
 
 import java.nio.file.Path
+import java.time.LocalDate
 
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.ADMIN
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
 
 import static io.micronaut.http.HttpStatus.CREATED
@@ -47,31 +52,40 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
     @Shared
     UUID subscribedCatalogueId
 
+    @Shared
+    UUID adminApiKey
+
     @OnceBefore
     @Transactional
     def checkAndSetupData() {
         log.debug('Check and setup test data for SubscribedModelFunctionalSpec')
         sessionFactory.currentSession.flush()
 
-        subscribedCatalogueId = new SubscribedCatalogue(url: 'http://functional-test.example.com',
-                                                        apiKey: UUID.randomUUID(),
+        adminApiKey = new ApiKey(catalogueUser: getUserByEmailAddress(ADMIN),
+                                 name: "Functional Test",
+                                 expiryDate: LocalDate.now().plusDays(5),
+                                 createdBy: FUNCTIONAL_TEST).save(flush: true).id
+
+
+        subscribedCatalogueId = new SubscribedCatalogue(url: "http://localhost:$serverPort/".toString(),
+                                                        apiKey: adminApiKey,
                                                         label: 'Functional Test Label',
                                                         description: 'Functional Test Description',
                                                         refreshPeriod: 7,
                                                         createdBy: FUNCTIONAL_TEST).save(flush: true).id
         assert subscribedCatalogueId
-        
+
     }
 
     @Transactional
     String getFolderId() {
         Folder.findByLabel('Functional Test Folder').id.toString()
-    }    
+    }
 
     def cleanupSpec() {
         log.debug('CleanupSpec SubscribedModelFunctionalSpec')
-        cleanUpResources(SubscribedCatalogue)
-    }  
+        cleanUpResources(SubscribedCatalogue, ApiKey)
+    }
 
     @Shared
     Path resourcesPath
@@ -83,7 +97,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
 
     String getValidId() {
         loginAdmin()
-        POST('', validJson)
+        POST('?federate=false', validJson)
         verifyResponse CREATED, response
         String id = response.body().id
         logout()
@@ -103,12 +117,12 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         log.debug('Cleaning up {} roles for ids {}', SecurableResourceGroupRole.count(), ids)
         SecurableResourceGroupRole.bySecurableResourceIds(ids.collect { Utils.toUuid(it) }).deleteAll()
         sessionFactory.currentSession.flush()
-    }    
+    }
 
     Map getValidJson() {
         [
-            subscribedModelId: '67421316-66a5-4830-9156-b1ba77bba5d1',
-            folderId: getFolderId(),
+            subscribedModelId  : '67421316-66a5-4830-9156-b1ba77bba5d1',
+            folderId           : getFolderId(),
             subscribedModelType: 'DataModel'
         ]
     }
@@ -125,11 +139,12 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
             subscribedModelId: '67421316-66a5-4830-9156-b1ba77bba5d1',
             folderId: getFolderId()
         ]
-    }   
+    }
 
     /*
       * Logged in as editor testing
       */
+
     void 'E02 : Test the show and index action correctly renders an instance for set user (as editor)'() {
         given:
         String id = getValidId()
@@ -145,7 +160,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         GET('')
 
         then:
-        verifyResponse OK, response        
+        verifyResponse OK, response
 
         cleanup:
         removeValidIdObject(id)
@@ -155,6 +170,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
     /*
      * Logged out testing
      */
+
     void 'L02 : Test the show and index action does not render an instance for set user (not logged in)'() {
         given:
         String id = getValidId()
@@ -169,7 +185,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         GET('')
 
         then:
-        verifyResponse NOT_FOUND, response        
+        verifyResponse NOT_FOUND, response
 
         cleanup:
         removeValidIdObject(id)
@@ -194,7 +210,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         GET('')
 
         then:
-        verifyResponse OK, response        
+        verifyResponse OK, response
 
         cleanup:
         removeValidIdObject(id)
@@ -219,16 +235,17 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         GET('')
 
         then:
-        verifyResponse OK, response        
+        verifyResponse OK, response
 
         cleanup:
         removeValidIdObject(id)
         cleanUpRoles(id)
     }
 
-   /*
-    * Logged in as admin testing
-    */
+    /*
+     * Logged in as admin testing
+     */
+
     void 'A02 : Test the show action correctly renders an instance for set user (as admin)'() {
         given:
         String id = getValidId()
@@ -245,10 +262,11 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         cleanUpRoles(id)
     }
 
-  /*
-   * Logged in as editor testing
-   */
-   void 'E03a : Test the save action is forbidden (as editor)'() {
+    /*
+     * Logged in as editor testing
+     */
+
+    void 'E03a : Test the save action is forbidden (as editor)'() {
         given:
         loginEditor()
 
@@ -271,7 +289,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         verifyResponse FORBIDDEN, response
     }
 
-   void 'E03b : Test the save action is forbidden when using  PUT (as editor)'() {
+    void 'E03b : Test the save action is forbidden when using  PUT (as editor)'() {
         given:
         String id = getValidId()
         loginEditor()
@@ -289,9 +307,9 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         verifyResponse FORBIDDEN, response
 
         cleanup:
-        removeValidIdObject(id)   
-        cleanUpRoles(id)     
-    }    
+        removeValidIdObject(id)
+        cleanUpRoles(id)
+    }
 
     void 'E04 : Test the delete action is forbidden (as editor)'() {
         given:
@@ -305,15 +323,15 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         verifyResponse FORBIDDEN, response
 
         cleanup:
-        removeValidIdObject(id)   
-        cleanUpRoles(id)       
+        removeValidIdObject(id)
+        cleanUpRoles(id)
     }
 
     /*
      * Logged out testing
      */
 
-   void 'L03a : Test the save action is not found (as not logged in)'() {
+    void 'L03a : Test the save action is not found (as not logged in)'() {
         given:
 
         when: 'The save action is executed with no content'
@@ -335,7 +353,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         verifyResponse NOT_FOUND, response
     }
 
-   void 'L03b : Test the save action is not found when using  PUT (as not logged in)'() {
+    void 'L03b : Test the save action is not found when using  PUT (as not logged in)'() {
         given:
         String id = getValidId()
 
@@ -352,9 +370,9 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         verifyResponse NOT_FOUND, response
 
         cleanup:
-        removeValidIdObject(id) 
-        cleanUpRoles(id)       
-    }    
+        removeValidIdObject(id)
+        cleanUpRoles(id)
+    }
 
     void 'L04 : Test the delete action is not found (as not logged in)'() {
         given:
@@ -367,15 +385,15 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         verifyResponse NOT_FOUND, response
 
         cleanup:
-        removeValidIdObject(id)  
-        cleanUpRoles(id)        
+        removeValidIdObject(id)
+        cleanUpRoles(id)
     }
 
     /**
      * Testing when logged in as a no access/authenticated user
      */
 
-   void 'N03a : Test the save action is forbidden (as authenticated)'() {
+    void 'N03a : Test the save action is forbidden (as authenticated)'() {
         given:
         loginAuthenticated()
 
@@ -398,7 +416,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         verifyResponse FORBIDDEN, response
     }
 
-   void 'N03b : Test the save action is forbidden when using  PUT (as authenticated)'() {
+    void 'N03b : Test the save action is forbidden when using  PUT (as authenticated)'() {
         given:
         String id = getValidId()
         loginAuthenticated()
@@ -417,8 +435,8 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
 
         cleanup:
         removeValidIdObject(id)
-        cleanUpRoles(id)    
-    }    
+        cleanUpRoles(id)
+    }
 
     void 'N04 : Test the delete action is forbidden (as authenticated)'() {
         given:
@@ -433,14 +451,14 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
 
         cleanup:
         removeValidIdObject(id)
-        cleanUpRoles(id)      
+        cleanUpRoles(id)
     }
 
     /**
      * Testing when logged in as a reader only user
      */
 
-   void 'R03a : Test the save action is forbidden (as reader)'() {
+    void 'R03a : Test the save action is forbidden (as reader)'() {
         given:
         loginReader()
 
@@ -463,7 +481,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         verifyResponse FORBIDDEN, response
     }
 
-   void 'R03b : Test the save action is forbidden when using  PUT (as reader)'() {
+    void 'R03b : Test the save action is forbidden when using  PUT (as reader)'() {
         given:
         String id = getValidId()
         loginReader()
@@ -483,7 +501,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         cleanup:
         removeValidIdObject(id)
         cleanUpRoles(id)
-    }    
+    }
 
     void 'R04 : Test the delete action is forbidden (as reader)'() {
         given:
@@ -498,14 +516,15 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
 
         cleanup:
         removeValidIdObject(id)
-        cleanUpRoles(id)   
+        cleanUpRoles(id)
     }
 
     /*
     * Logged in as admin testing
     * This proves that admin users can mess with items created by other users
     */
-   void 'A03a : Test the save action is ok (as admin)'() {
+
+    void 'A03a : Test the save action is ok (as admin)'() {
         given:
         loginAdmin()
 
@@ -522,7 +541,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         verifyResponse UNPROCESSABLE_ENTITY, response
 
         when: 'The save action is executed with valid data'
-        POST('', validJson)
+        POST('?federate=false', validJson)
 
         then: 'The response is correct'
         verifyResponse CREATED, response
@@ -533,7 +552,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         cleanUpRoles(id)
     }
 
-   void 'A03b : Test the save action is OK when using PUT (as admin)'() {
+    void 'A03b : Test the save action is OK when using PUT (as admin)'() {
         given:
         String id = getValidId()
         loginAdmin()
@@ -552,9 +571,9 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
 
         cleanup:
         removeValidIdObject(id)
-        cleanUpRoles(id) 
+        cleanUpRoles(id)
     }
-     
+
 
     void 'A04 : Test the delete action is ok (as admin)'() {
         given:
@@ -568,6 +587,37 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         verifyResponse NO_CONTENT, response
 
         cleanup:
-        cleanUpRoles(id) 
-    }    
+        cleanUpRoles(id)
+    }
+
+    void 'A05 : Test the save action with attempted federation (as admin)'() {
+        given:
+        loginAdmin()
+
+        //        when: 'The save action is executed with non-existent published model id'
+        //        POST('?federate=true', validJson)
+        //
+        //        then: 'The response is unprocessable as no export endpoint'
+        //        verifyResponse UNPROCESSABLE_ENTITY, response
+        //        responseBody().errors.first().message == 'Could not federate SubscribedModel into local Catalogue due to ' +
+        //        "[Requested endpoint could not be found http://localhost:$serverPort/api/dataModels/67421316-66a5-4830-9156-b1ba77bba5d1/export]"
+
+        when: 'The save action is executed with existing published model id'
+        POST('?federate=true', [
+            subscribedModelId  : getPublishedDataModelId(),
+            folderId           : getFolderId(),
+            subscribedModelType: 'DataModel'
+        ])
+
+        then: 'The response is unprocessable as subscribed/federated model has same authority and label as model already in storage'
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == 'Model from authority [Mauro Data Mapper@http://localhost] with label [Finalised Example Test DataModel] ' +
+        'and version [1.0.0] already exists in catalogue'
+
+    }
+
+    @Transactional
+    String getPublishedDataModelId() {
+        DataModel.findByLabel(BootstrapModels.FINALISED_EXAMPLE_DATAMODEL_NAME).id.toString()
+    }
 }

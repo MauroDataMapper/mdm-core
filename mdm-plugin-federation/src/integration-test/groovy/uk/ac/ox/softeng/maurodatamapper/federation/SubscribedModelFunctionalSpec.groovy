@@ -25,6 +25,7 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
+import io.micronaut.http.HttpStatus
 import spock.lang.Shared
 
 /**
@@ -54,31 +55,36 @@ class SubscribedModelFunctionalSpec extends ResourceFunctionalSpec<SubscribedMod
         folderId = new Folder(label: 'Functional Test Folder', createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true).id
         assert folderId
 
-        subscribedCatalogueId = new SubscribedCatalogue(url: 'http://functional-test.example.com',
+        subscribedCatalogueId = new SubscribedCatalogue(url: "http://localhost:$serverPort".toString(),
                                                         apiKey: '67421316-66a5-4830-9156-b1ba77bba5d1',
                                                         label: 'Functional Test Label',
                                                         description: 'Functional Test Description',
                                                         refreshPeriod: 7,
                                                         createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true).id
         assert subscribedCatalogueId
-        
+
     }
 
     @Transactional
     def cleanupSpec() {
         log.debug('CleanupSpec SubscribedModelFunctionalSpec')
         cleanUpResources(Folder, SubscribedCatalogue)
-    }    
+    }
 
     @Override
     String getResourcePath() {
         "subscribedCatalogues/${getSubscribedCatalogueId()}/subscribedModels"
     }
 
+    @Override
+    String getSavePath() {
+        "${getResourcePath()}?federate=false"
+    }
+
     Map getValidJson() {
         [
-            subscribedModelId: '67421316-66a5-4830-9156-b1ba77bba5d1',
-            folderId: getFolderId(),
+            subscribedModelId  : '67421316-66a5-4830-9156-b1ba77bba5d1',
+            folderId           : getFolderId(),
             subscribedModelType: 'DataModel'
         ]
     }
@@ -95,7 +101,19 @@ class SubscribedModelFunctionalSpec extends ResourceFunctionalSpec<SubscribedMod
         '''{
   "id": "${json-unit.matches:id}",
   "subscribedModelId": "${json-unit.matches:id}",
-  "folderId": "${json-unit.matches:id}"
+  "folderId": "${json-unit.matches:id}",
+  "readableByEveryone": false,
+  "readableByAuthenticatedUsers": false,
+  "federated": false
 }'''
+    }
+
+    void 'R2a : Test the save action with federation turned on'() {
+        when:
+        POST('', validJson)
+
+        then: 'cannot federate as the sub model id doesnt actually exist'
+        verifyResponse(HttpStatus.UNPROCESSABLE_ENTITY, response)
+
     }
 }

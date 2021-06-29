@@ -4,8 +4,4 @@ model {
     SubscribedModel subscribedModel
 }
 
-json {
-    id subscribedModel.id
-    subscribedModelId subscribedModel.subscribedModelId
-    folderId subscribedModel.folderId
-}
+json tmpl.fullSubscribedModel(subscribedModel)

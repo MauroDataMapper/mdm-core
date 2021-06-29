@@ -1,0 +1,18 @@
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.federation.PublishedModel
+
+import java.time.OffsetDateTime
+
+model {
+    Authority authority
+    List<PublishedModel> publishedModels
+}
+
+json {
+    authority {
+        label authority.label
+        url authority.url
+    }
+    lastUpdated publishedModels?.max { it.lastUpdated }?.lastUpdated ?: OffsetDateTime.now()
+    publishedModels tmpl.'/publishedModel/publishedModel'(publishedModels ?: [])
+}

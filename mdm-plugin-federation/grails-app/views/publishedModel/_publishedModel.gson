@@ -1,0 +1,16 @@
+import uk.ac.ox.softeng.maurodatamapper.federation.PublishedModel
+
+model {
+    PublishedModel publishedModel
+}
+
+json {
+    modelId publishedModel.modelId
+    title publishedModel.title
+    modelType publishedModel.modelType
+    lastUpdated publishedModel.lastUpdated
+    dateCreated publishedModel.dateCreated
+    datePublished publishedModel.datePublished
+    if (publishedModel.author) author publishedModel.author
+    if (publishedModel.description) description publishedModel.description
+}

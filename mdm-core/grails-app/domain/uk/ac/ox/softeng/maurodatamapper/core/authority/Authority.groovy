@@ -54,4 +54,10 @@ class Authority implements InformationAware, CreatorAware, SecurableResource {
     String getDomainType() {
         Authority.simpleName
     }
+
+
+    @Override
+    String toString() {
+        "${label}@${url}"
+    }
 }

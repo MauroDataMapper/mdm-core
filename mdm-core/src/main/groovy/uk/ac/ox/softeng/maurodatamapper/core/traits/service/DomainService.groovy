@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.traits.service
 
+import org.grails.datastore.mapping.proxy.EntityProxy
+
 trait DomainService<K> {
 
     abstract K get(Serializable id)
@@ -34,5 +36,9 @@ trait DomainService<K> {
 
     K save(Map args, K domain) {
         domain.save(args)
+    }
+
+    K unwrapIfProxy(def ge) {
+        (ge instanceof EntityProxy ? ((EntityProxy) ge).getTarget() : ge) as K
     }
 }

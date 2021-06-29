@@ -23,7 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FileParameter
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
-import uk.ac.ox.softeng.maurodatamapper.federation.AvailableModel
+import uk.ac.ox.softeng.maurodatamapper.federation.PublishedModel
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogue
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedModel
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedModelService
@@ -43,8 +43,8 @@ import java.time.OffsetDateTime
 @Rollback
 abstract class BaseSubscribedModelServiceIntegrationSpec<K extends Model> extends BaseIntegrationSpec {
 
-    AvailableModel availableModelVersion1
-    AvailableModel availableModelVersion2
+    PublishedModel availableModelVersion1
+    PublishedModel availableModelVersion2
 
     SubscribedCatalogue subscribedCatalogue
     SubscribedModelService subscribedModelService
@@ -79,14 +79,14 @@ abstract class BaseSubscribedModelServiceIntegrationSpec<K extends Model> extend
 
         //Note: ID is hardcoded because we are mocking an external input rather than a domain created locally.
         //Don't need to save AvailableModel
-        availableModelVersion1 = new AvailableModel(id: Utils.toUuid("c8023de6-5329-4b8b-8a1b-27c2abeaffcd"),
-                                                    label: 'Remote Model 1.0.0',
+        availableModelVersion1 = new PublishedModel(modelId: Utils.toUuid("c8023de6-5329-4b8b-8a1b-27c2abeaffcd"),
+                                                    title: 'Remote Model 1.0.0',
                                                     description: 'Remote Model Description',
                                                     modelType: getModelType(),
                                                     lastUpdated: OffsetDateTime.now())
 
-        availableModelVersion2 = new AvailableModel(id: Utils.toUuid("d8023de6-5329-4b8b-8a1b-27c2abeaffcd"),
-                                                    label: 'Remote Model 2.0.0',
+        availableModelVersion2 = new PublishedModel(modelId: Utils.toUuid("d8023de6-5329-4b8b-8a1b-27c2abeaffcd"),
+                                                    title: 'Remote Model 2.0.0',
                                                     description: 'Remote Model Description',
                                                     modelType: getModelType(),
                                                     lastUpdated: OffsetDateTime.now())

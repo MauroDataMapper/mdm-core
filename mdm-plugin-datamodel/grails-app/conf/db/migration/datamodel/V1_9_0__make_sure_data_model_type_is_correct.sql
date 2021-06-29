@@ -1,4 +1,4 @@
-UPDATE maurodatamapper.datamodel.data_model
+UPDATE datamodel.data_model
 SET model_type = CASE
                      WHEN model_type IN ('DATA_ASSET', 'Data Asset')
                          THEN 'Data Asset'
