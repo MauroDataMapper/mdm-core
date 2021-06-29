@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge
 
-
 import grails.validation.Validateable
 
 /**
@@ -30,6 +29,9 @@ class ObjectPatchData<T> implements Validateable {
     String label
     private List<FieldPatchData> patches
 
+    @Deprecated
+    List<FieldPatchData> diffs
+
     static constraints = {
         sourceId nullable: false
         targetId nullable: false
@@ -39,14 +41,15 @@ class ObjectPatchData<T> implements Validateable {
 
     ObjectPatchData() {
         patches = []
+        diffs = []
     }
 
     boolean hasPatches() {
-        patches.any {it.hasPatches()}
+        getPatches().any {it.hasPatches()}
     }
 
     List<FieldPatchData> getPatches() {
-        patches.findAll {it.hasPatches()}
+        patches.findAll {it.hasPatches()} + diffs.findAll {it.hasPatches()}
     }
 
     @Deprecated
@@ -57,5 +60,15 @@ class ObjectPatchData<T> implements Validateable {
     @Deprecated
     void setRightId(UUID rightId) {
         this.sourceId = rightId
+    }
+
+    @Deprecated
+    UUID getLeftId() {
+        this.targetId
+    }
+
+    @Deprecated
+    UUID getRightId() {
+        this.sourceId
     }
 }

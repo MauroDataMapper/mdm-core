@@ -1315,7 +1315,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         cleanUpData(id)
     }
 
-    void 'VB08 : test finding merge difference of two Model<T> (as editor)'() {
+    void 'MD01 : test finding merge difference of two Model<T> (as editor)'() {
         given:
         String id = createNewItem(validJson)
         PUT("$id/finalise", [versionChangeType: "Major"])
@@ -1361,7 +1361,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         cleanUpData(id)
     }
 
-    void 'VB09a : test merging diff with no patch data'() {
+    void 'MP01 : test merging diff with no patch data'() {
         given:
         String id = createNewItem(validJson)
 
@@ -1388,7 +1388,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         cleanUpData(id)
     }
 
-    void 'VB09b : test merging diff with URI id not matching body id'() {
+    void 'MP02: test merging diff with URI id not matching body id'() {
         given:
         String id = createNewItem(validJson)
 
@@ -1437,7 +1437,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         cleanUpData(id)
     }
 
-    void 'VB09c : test merging diff into draft model'() {
+    void 'MP04 : test merging diff into draft model'() {
         given:
         String id = createNewItem(validJson)
 

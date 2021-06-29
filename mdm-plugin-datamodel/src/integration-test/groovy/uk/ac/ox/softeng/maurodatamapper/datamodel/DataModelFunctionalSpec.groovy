@@ -2172,123 +2172,123 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         then:
         verifyJsonResponse OK, '''
 {
-    "leftId": "${json-unit.matches:id}",
-    "rightId": "${json-unit.matches:id}",
-    "label": "Functional Test Model",
-    "count": 7,
-    "diffs": [
-        {
-            "description": {
-                "left": "DescriptionRight",
-                "right": "DescriptionLeft",
-                "isMergeConflict": true,
-                "commonAncestorValue": null
-            }
-        },
-        {
-            "metadata": {
-                "deleted": [
+  "leftId": "${json-unit.matches:id}",
+  "rightId": "${json-unit.matches:id}",
+  "label": "Functional Test Model",
+  "count": 7,
+  "diffs": [
+    {
+      "branchName": {
+        "left": "main",
+        "right": "source",
+        "isMergeConflict": false
+      }
+    },
+    {
+      "description": {
+        "left": "DescriptionRight",
+        "right": "DescriptionLeft",
+        "isMergeConflict": true,
+        "commonAncestorValue": null
+      }
+    },
+    {
+      "dataClasses": {
+        "modified": [
+          {
+            "leftId": "${json-unit.matches:id}",
+            "rightId": "${json-unit.matches:id}",
+            "label": "modifyLeftOnly",
+            "leftBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test Model",
+                "domainType": "DataModel",
+                "finalised": true
+              }
+            ],
+            "rightBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test Model",
+                "domainType": "DataModel",
+                "finalised": true
+              }
+            ],
+            "count": 2,
+            "diffs": [
+              {
+                "description": {
+                  "left": null,
+                  "right": "Description",
+                  "isMergeConflict": false
+                }
+              },
+              {
+                "metadata": {
+                  "created": [
                     {
-                        "value": {
-                            "id": "${json-unit.matches:id}",
-                            "namespace": "functional.test.namespace",
-                            "key": "deleteMetadataSource",
-                            "value": "original"
-                        },
-                        "isMergeConflict": false
-                    }
-                ],
-                "created": [
-                    {
-                        "value": {
-                            "id": "${json-unit.matches:id}",
-                            "namespace": "functional.test.namespace",
-                            "key": "addMetadataSource",
-                            "value": "original"
-                        },
-                        "isMergeConflict": false
-                    }
-                ],
-                "modified": [
-                    {
-                        "leftId": "${json-unit.matches:id}",
-                        "rightId": "${json-unit.matches:id}",
+                      "value": {
+                        "id": "${json-unit.matches:id}",
                         "namespace": "functional.test.namespace",
-                        "key": "modifyMetadataSource",
-                        "count": 1,
-                        "diffs": [
-                            {
-                                "value": {
-                                    "left": "original",
-                                    "right": "Modified Description",
-                                    "isMergeConflict": false
-                                }
-                            }
-                        ]
+                        "key": "addMetadataModifyLeftOnly",
+                        "value": "original"
+                      },
+                      "isMergeConflict": false
                     }
-                ]
-            }
-        },
-        {
-            "branchName": {
-                "left": "main",
-                "right": "source",
-                "isMergeConflict": false
-            }
-        },
-        {
-            "dataClasses": {
-                "modified": [
-                    {
-                        "leftId": "${json-unit.matches:id}",
-                        "rightId": "${json-unit.matches:id}",
-                        "label": "modifyLeftOnly",
-                        "leftBreadcrumbs": [
-                            {
-                                "id": "${json-unit.matches:id}",
-                                "label": "Functional Test Model",
-                                "domainType": "DataModel",
-                                "finalised": false
-                            }
-                        ],
-                        "rightBreadcrumbs": [
-                            {
-                                "id": "${json-unit.matches:id}",
-                                "label": "Functional Test Model",
-                                "domainType": "DataModel",
-                                "finalised": false
-                            }
-                        ],
-                        "count": 2,
-                        "diffs": [
-                            {
-                                "description": {
-                                    "left": null,
-                                    "right": "Description",
-                                    "isMergeConflict": false
-                                }
-                            },
-                            {
-                                "metadata": {
-                                    "created": [
-                                        {
-                                            "value": {
-                                                "id": "${json-unit.matches:id}",
-                                                "namespace": "functional.test.namespace",
-                                                "key": "addMetadataModifyLeftOnly",
-                                                "value": "original"
-                                            },
-                                            "isMergeConflict": false
-                                        }
-                                    ]
-                                }
-                            }
-                        ]
-                    }
-                ]
-            }
-        }
-    ]
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "deleted": [
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "namespace": "functional.test.namespace",
+              "key": "deleteMetadataSource",
+              "value": "original"
+            },
+            "isMergeConflict": false
+          }
+        ],
+        "created": [
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "namespace": "functional.test.namespace",
+              "key": "addMetadataSource",
+              "value": "original"
+            },
+            "isMergeConflict": false
+          }
+        ],
+        "modified": [
+          {
+            "leftId": "${json-unit.matches:id}",
+            "rightId": "${json-unit.matches:id}",
+            "namespace": "functional.test.namespace",
+            "key": "modifyMetadataSource",
+            "count": 1,
+            "diffs": [
+              {
+                "value": {
+                  "left": "original",
+                  "right": "Modified Description",
+                  "isMergeConflict": false
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
 }'''
 
         when:
