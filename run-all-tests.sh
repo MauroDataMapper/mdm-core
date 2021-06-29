@@ -46,5 +46,6 @@ echo ">> E2E Tests <<"
 ./gradlew --build-cache -Dgradle.test.package=referencedata :mdm-testing-functional:integrationTest
 ./gradlew --build-cache -Dgradle.test.package=federation :mdm-testing-functional:integrationTest
 echo ">> Root Test Report <<"
-./gradlew --build-cache rootTestReport jacocoTestReport
+./gradlew --build-cache rootTestReport
+#./gradlew --build-cache jacocoTestReport
 #./gradlew --build-cache staticCodeAnalysis

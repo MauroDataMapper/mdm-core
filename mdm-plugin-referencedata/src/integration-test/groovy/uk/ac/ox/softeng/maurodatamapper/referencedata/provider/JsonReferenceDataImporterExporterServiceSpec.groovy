@@ -195,7 +195,8 @@ class JsonReferenceDataImporterExporterServiceSpec extends BaseReferenceDataMode
         ObjectDiff diff = referenceDataModelService.getDiffForModels(referenceDataModelService.get(exampleReferenceDataModelId), imported)
 
         then:
-        diff.objectsAreIdentical()
+        diff.numberOfDiffs == 1
+        diff.diffs.find {it.fieldName == 'rule'}.deleted.size() == 1
     }
 
 void 'RDM03: test empty data import'() {
