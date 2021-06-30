@@ -29,6 +29,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
+import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
@@ -520,6 +521,107 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         cleanup:
         removeValidIdObject(folderId)
+    }
+
+    void 'I01 :  Test importing non-finalised model into a top level VF (as admin)'() {
+        given:
+        String id = getValidId()
+
+        when:
+        loginAdmin()
+        POST('dataModels/import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/2.0', [
+            finalised : false,
+            modelName : 'Functional Test Import',
+            folderId  : id,
+            importFile: [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: '''{
+            "dataModel": {
+                "id": "d8023de6-5329-4b8b-8a1b-27c2abeaffcd",
+                "label": "Import Model",
+                "lastUpdated": "2021-02-11T17:43:53.2Z",
+                "author": "Import Author",
+                "organisation": "Import Organisation",
+                "documentationVersion": "1.0.0",
+                "finalised": false,
+                "authority": {
+                    "id": "82429f5a-c3f9-45f2-8ed5-0426f5b0030d",
+                    "url": "http://localhost",
+                    "label": "Mauro Data Mapper"
+                }
+            },
+            "exportMetadata": {
+                "exportedBy": "Admin User",
+                "exportedOn": "2021-02-14T18:32:37.522Z",
+                "exporter": {
+                    "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
+                    "name": "DataModelJsonExporterService",
+                    "version": "2.0"
+                }
+            }
+        }'''.bytes.toList()
+            ]
+        ], MAP_ARG, true)
+
+        then:
+        verifyResponse CREATED, response
+
+        cleanup:
+        cleanupIds(id)
+
+    }
+
+    void 'I02 :  Test importing non-finalised model into a sub level VF (as admin)'() {
+        given:
+        loginEditor()
+        POST("folders/${testFolderId}/versionedFolders", validJson, MAP_ARG, true)
+        verifyResponse CREATED, response
+        String id = response.body().id
+
+        when:
+        loginAdmin()
+        POST('dataModels/import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/2.0', [
+            finalised : false,
+            modelName : 'Functional Test Import',
+            folderId  : id,
+            importFile: [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: '''{
+            "dataModel": {
+                "id": "d8023de6-5329-4b8b-8a1b-27c2abeaffcd",
+                "label": "Import Model",
+                "lastUpdated": "2021-02-11T17:43:53.2Z",
+                "author": "Import Author",
+                "organisation": "Import Organisation",
+                "documentationVersion": "1.0.0",
+                "finalised": false,
+                "authority": {
+                    "id": "82429f5a-c3f9-45f2-8ed5-0426f5b0030d",
+                    "url": "http://localhost",
+                    "label": "Mauro Data Mapper"
+                }
+            },
+            "exportMetadata": {
+                "exportedBy": "Admin User",
+                "exportedOn": "2021-02-14T18:32:37.522Z",
+                "exporter": {
+                    "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
+                    "name": "DataModelJsonExporterService",
+                    "version": "2.0"
+                }
+            }
+        }'''.bytes.toList()
+            ]
+        ], MAP_ARG, true)
+
+        then:
+        verifyResponse CREATED, response
+
+        cleanup:
+        cleanupIds(id)
+
     }
 
     void 'F01 : Test finalising Model (as reader)'() {
