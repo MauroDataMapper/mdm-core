@@ -59,6 +59,8 @@ abstract class ModelImporterProviderService<M extends Model, P extends ModelImpo
 
     M checkImport(User currentUser, M importedModel, P params) {
         classifierService.checkClassifiers(currentUser, importedModel)
+
+        // Mst check this first to ensure its in place for finding existing models
         modelService.checkAuthority(currentUser, importedModel, params.useDefaultAuthority)
 
         modelService.checkDocumentationVersion(importedModel, params.importAsNewDocumentationVersion, currentUser)

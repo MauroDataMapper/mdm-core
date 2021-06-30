@@ -92,8 +92,8 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
         ReferenceDataModel.count()
     }
 
-    int countByLabel(String label) {
-        ReferenceDataModel.countByLabel(label)
+    int countByAuthorityAndLabel(Authority authority, String label) {
+        ReferenceDataModel.countByAuthorityAndLabel(authority, label)
     }
 
     ReferenceDataModel validate(ReferenceDataModel referenceDataModel) {
@@ -279,8 +279,8 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
         ReferenceDataModel.findAllByReadableByAuthenticatedUsers(true)
     }
 
-    List<ReferenceDataModel> findAllByLabel(String label) {
-        ReferenceDataModel.findAllByLabel(label)
+    List<ReferenceDataModel> findAllByAuthorityAndLabel(Authority authority, String label) {
+        ReferenceDataModel.findAllByAuthorityAndLabel(authority, label)
     }
 
     @Override
@@ -300,8 +300,9 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
         ReferenceDataModel.byDeleted().list(pagination)
     }
 
-    int countAllByLabelAndBranchNameAndNotFinalised(String label, String branchName) {
-        ReferenceDataModel.countByLabelAndBranchNameAndFinalised(label, branchName, false)
+    @Override
+    int countByAuthorityAndLabelAndBranchNameAndNotFinalised(Authority authority, String label, String branchName) {
+        ReferenceDataModel.countByAuthorityAndLabelAndBranchNameAndFinalised(authority, label, branchName, false)
     }
 
     @Override

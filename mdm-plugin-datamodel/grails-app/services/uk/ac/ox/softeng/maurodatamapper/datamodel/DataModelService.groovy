@@ -109,14 +109,14 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
      * DataModel allows the import of DataType and DataClass
      *
      @Override
-      List<Class>   domainImportableModelItemClasses() {[DataType, DataClass, PrimitiveType, EnumerationType, ReferenceType]}
+      List<Class>    domainImportableModelItemClasses() {[DataType, DataClass, PrimitiveType, EnumerationType, ReferenceType]}
      */
     Long count() {
         DataModel.count()
     }
 
-    int countByLabel(String label) {
-        DataModel.countByLabel(label)
+    int countByAuthorityAndLabel(Authority authority, String label) {
+        DataModel.countByAuthorityAndLabel(authority, label)
     }
 
     DataModel validate(DataModel dataModel) {
@@ -126,7 +126,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         if (dataModel.hasErrors()) {
             Errors existingErrors = dataModel.errors
             Errors cleanedErrors = new ValidationErrors(dataModel)
-            existingErrors.fieldErrors.each { fe ->
+            existingErrors.fieldErrors.each {fe ->
                 if (!fe.field.contains('dataModel')) {
                     cleanedErrors.rejectValue(fe.field, fe.code, fe.arguments, fe.defaultMessage)
                 }
@@ -422,8 +422,8 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     }
 
     @Override
-    List<DataModel> findAllByLabel(String label) {
-        DataModel.findAllByLabel(label)
+    List<DataModel> findAllByAuthorityAndLabel(Authority authority, String label) {
+        DataModel.findAllByAuthorityAndLabel(authority, label)
     }
 
     @Override
@@ -454,8 +454,9 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         DataModel.byDeleted().list(pagination) as List<DataModel>
     }
 
-    int countAllByLabelAndBranchNameAndNotFinalised(String label, String branchName) {
-        DataModel.countByLabelAndBranchNameAndFinalised(label, branchName, false)
+    @Override
+    int countByAuthorityAndLabelAndBranchNameAndNotFinalised(Authority authority, String label, String branchName) {
+        DataModel.countByAuthorityAndLabelAndBranchNameAndFinalised(authority, label, branchName, false)
     }
 
     @Override
