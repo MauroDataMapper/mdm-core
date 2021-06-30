@@ -251,7 +251,7 @@ class FolderService extends ContainerService<Folder> {
         copy.label = original.label
         copy.description = original.description
 
-        metadataService.findAllByMultiFacetAwareItemId(original.id).each {copy.addToMetadata(it.namespace, it.key, it.value, copier)}
+        metadataService.findAllByMultiFacetAwareItemId(original.id).each {copy.addToMetadata(it.namespace, it.key, it.value, copier.emailAddress)}
         ruleService.findAllByMultiFacetAwareItemId(original.id).each {rule ->
             Rule copiedRule = new Rule(name: rule.name, description: rule.description, createdBy: copier.emailAddress)
             rule.ruleRepresentations.each {ruleRepresentation ->

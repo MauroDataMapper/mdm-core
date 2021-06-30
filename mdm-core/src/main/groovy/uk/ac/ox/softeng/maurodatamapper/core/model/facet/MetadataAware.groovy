@@ -59,6 +59,7 @@ trait MetadataAware {
         addToMetadata(new Metadata(args))
     }
 
+    @Deprecated
     def addToMetadata(String namespace, String key, String value, User createdBy) {
         addToMetadata(namespace, key, value, createdBy.emailAddress)
     }

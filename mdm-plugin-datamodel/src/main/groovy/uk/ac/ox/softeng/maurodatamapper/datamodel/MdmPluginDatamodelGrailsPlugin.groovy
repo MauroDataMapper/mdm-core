@@ -61,7 +61,8 @@ The DataModel domain, services and controllers for the Mauro Data Mapper backend
     def scm = [url: "https://github.com/mauroDataMapper/mdm-core"]
 
     def dependsOn = [
-        mdmCore: '4.0.0 > *'
+        mdmCore      : '4.0.0 > *',
+        assetPipeline: '3.0.11 > *',
     ]
 
     Closure doWithSpring() {

@@ -20,8 +20,13 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.RuleService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClassService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElementService
 
+import asset.pipeline.grails.AssetResourceLocator
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
@@ -36,7 +41,17 @@ class BootStrap {
 
     DataModelService dataModelService
 
-    def init = {servletContext ->
+    DataElementService dataElementService
+
+    DataClassService dataClassService
+
+    MetadataService metadataService
+
+    RuleService ruleService
+
+    AssetResourceLocator assetResourceLocator
+
+    def init = { servletContext ->
 
         log.debug('Main bootstrap complete')
 
@@ -55,7 +70,8 @@ class BootStrap {
                         BootstrapModels.buildAndSaveFinalisedSimpleDataModel(messageSource, folder, authority)
                     }
                     if (DataModel.countByLabel(BootstrapModels.MODEL_VERSION_TREE_DATAMODEL_NAME) == 0) {
-                        BootstrapModels.buildAndSaveModelVersionTree(messageSource, folder, authority, dataModelService)
+                        BootstrapModels.buildAndSaveModelVersionTree(messageSource, folder, authority, dataModelService, dataClassService,
+                                                                     dataElementService, assetResourceLocator)
                     }
                     if (DataModel.countByAuthorityIsNull() != 0) {
                         log.warn('DataModels missing authority, updating with default authority')

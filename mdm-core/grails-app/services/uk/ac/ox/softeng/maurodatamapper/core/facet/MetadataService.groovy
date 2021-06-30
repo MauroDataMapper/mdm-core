@@ -67,7 +67,7 @@ class MetadataService implements MultiFacetItemAwareService<Metadata> {
     }
 
     void copy(MultiFacetAware target, Metadata item, UserSecurityPolicyManager userSecurityPolicyManager) {
-        target.addToMetadata(item.namespace, item.key, item.value, userSecurityPolicyManager.user)
+        target.addToMetadata(item.namespace, item.key, item.value, userSecurityPolicyManager.user.emailAddress)
     }
 
     @Override
