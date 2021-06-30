@@ -1556,168 +1556,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(mergeData.id)
     }
 
-    Map<String, String> buildComplexDataModelsForMerging() {
-
-        String id = createNewItem(validJson)
-
-        POST("$id/dataClasses", [label: 'deleteLeftOnly'])
-        verifyResponse CREATED, response
-        POST("$id/dataClasses", [label: 'deleteRightOnly'])
-        verifyResponse CREATED, response
-        POST("$id/dataClasses", [label: 'modifyLeftOnly'])
-        verifyResponse CREATED, response
-        POST("$id/dataClasses", [label: 'modifyRightOnly'])
-        verifyResponse CREATED, response
-        POST("$id/dataClasses", [label: 'deleteAndDelete'])
-        verifyResponse CREATED, response
-        POST("$id/dataClasses", [label: 'deleteAndModify'])
-        verifyResponse CREATED, response
-        POST("$id/dataClasses", [label: 'modifyAndDelete'])
-        verifyResponse CREATED, response
-        POST("$id/dataClasses", [label: 'modifyAndModifyReturningNoDifference'])
-        verifyResponse CREATED, response
-        POST("$id/dataClasses", [label: 'modifyAndModifyReturningDifference'])
-        verifyResponse CREATED, response
-        POST("$id/dataClasses", [label: 'existingClass'])
-        verifyResponse CREATED, response
-        String existingClass = responseBody().id
-        POST("$id/dataClasses/$existingClass/dataClasses", [label: 'deleteLeftOnlyFromExistingClass'])
-        verifyResponse CREATED, response
-        POST("$id/dataClasses/$existingClass/dataClasses", [label: 'deleteRightOnlyFromExistingClass'])
-        verifyResponse CREATED, response
-
-        PUT("$id/finalise", [versionChangeType: 'Major'])
-        verifyResponse OK, response
-        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
-        verifyResponse CREATED, response
-        String target = responseBody().id
-        PUT("$id/newBranchModelVersion", [branchName: 'source'])
-        verifyResponse CREATED, response
-        String source = responseBody().id
-
-        GET("$source/path/dm%3A%7Cdc%3AexistingClass")
-        verifyResponse OK, response
-        existingClass = responseBody().id
-        GET("dataClasses/$existingClass/path/dc%3A%7Cdc%3AdeleteLeftOnlyFromExistingClass", MAP_ARG, true)
-        verifyResponse OK, response
-        String deleteLeftOnlyFromExistingClass = responseBody().id
-        GET("$source/path/dm%3A%7Cdc%3AdeleteLeftOnly")
-        verifyResponse OK, response
-        String deleteLeftOnly = responseBody().id
-        GET("$source/path/dm%3A%7Cdc%3AdeleteAndDelete")
-        verifyResponse OK, response
-        String deleteAndDelete = responseBody().id
-        GET("$source/path/dm%3A%7Cdc%3AdeleteAndModify")
-        verifyResponse OK, response
-        String deleteAndModify = responseBody().id
-
-        GET("$source/path/dm%3A%7Cdc%3AmodifyLeftOnly")
-        verifyResponse OK, response
-        String modifyLeftOnly = responseBody().id
-        GET("$source/path/dm%3A%7Cdc%3AmodifyAndDelete")
-        verifyResponse OK, response
-        String modifyAndDelete = responseBody().id
-        GET("$source/path/dm%3A%7Cdc%3AmodifyAndModifyReturningNoDifference")
-        verifyResponse OK, response
-        String modifyAndModifyReturningNoDifference = responseBody().id
-        GET("$source/path/dm%3A%7Cdc%3AmodifyAndModifyReturningDifference")
-        verifyResponse OK, response
-        String modifyAndModifyReturningDifference = responseBody().id
-
-        DELETE("$source/dataClasses/$deleteAndDelete")
-        verifyResponse NO_CONTENT, response
-        DELETE("$source/dataClasses/$existingClass/dataClasses/$deleteLeftOnlyFromExistingClass")
-        verifyResponse NO_CONTENT, response
-        DELETE("$source/dataClasses/$deleteLeftOnly")
-        verifyResponse NO_CONTENT, response
-        DELETE("$source/dataClasses/$deleteAndModify")
-        verifyResponse NO_CONTENT, response
-
-        PUT("$source/dataClasses/$modifyLeftOnly", [description: 'Description'])
-        verifyResponse OK, response
-        PUT("$source/dataClasses/$modifyAndDelete", [description: 'Description'])
-        verifyResponse OK, response
-        PUT("$source/dataClasses/$modifyAndModifyReturningNoDifference", [description: 'Description'])
-        verifyResponse OK, response
-        PUT("$source/dataClasses/$modifyAndModifyReturningDifference", [description: 'DescriptionLeft'])
-        verifyResponse OK, response
-
-        POST("$source/dataClasses/$existingClass/dataClasses", [label: 'addLeftToExistingClass'])
-        verifyResponse CREATED, response
-        POST("$source/dataClasses", [label: 'addLeftOnly'])
-        verifyResponse CREATED, response
-        POST("$source/dataClasses", [label: 'addAndAddReturningNoDifference'])
-        verifyResponse CREATED, response
-        POST("$source/dataClasses", [label: 'addAndAddReturningDifference', description: 'DescriptionLeft'])
-        verifyResponse CREATED, response
-
-        PUT("$source", [description: 'DescriptionLeft'])
-        verifyResponse OK, response
-
-        GET("$target/path/dm%3A%7Cdc%3AexistingClass")
-        verifyResponse OK, response
-        existingClass = responseBody().id
-        GET("dataClasses/$existingClass/path/dc%3A%7Cdc%3AdeleteRightOnlyFromExistingClass", MAP_ARG, true)
-        verifyResponse OK, response
-        String deleteRightOnlyFromExistingClass = responseBody().id
-        GET("$target/path/dm%3A%7Cdc%3AdeleteRightOnly")
-        verifyResponse OK, response
-        String deleteRightOnly = responseBody().id
-        GET("$target/path/dm%3A%7Cdc%3AdeleteAndDelete")
-        verifyResponse OK, response
-        deleteAndDelete = responseBody().id
-        GET("$target/path/dm%3A%7Cdc%3AmodifyAndDelete")
-        verifyResponse OK, response
-        modifyAndDelete = responseBody().id
-
-        GET("$target/path/dm%3A%7Cdc%3AmodifyRightOnly")
-        verifyResponse OK, response
-        String modifyRightOnly = responseBody().id
-        GET("$target/path/dm%3A%7Cdc%3AdeleteAndModify")
-        verifyResponse OK, response
-        deleteAndModify = responseBody().id
-        GET("$target/path/dm%3A%7Cdc%3AmodifyAndModifyReturningNoDifference")
-        verifyResponse OK, response
-        modifyAndModifyReturningNoDifference = responseBody().id
-        GET("$target/path/dm%3A%7Cdc%3AmodifyAndModifyReturningDifference")
-        verifyResponse OK, response
-        modifyAndModifyReturningDifference = responseBody().id
-
-        DELETE("$target/dataClasses/$existingClass/dataClasses/$deleteRightOnlyFromExistingClass")
-        verifyResponse NO_CONTENT, response
-        DELETE("$target/dataClasses/$deleteRightOnly")
-        verifyResponse NO_CONTENT, response
-        DELETE("$target/dataClasses/$deleteAndDelete")
-        verifyResponse NO_CONTENT, response
-        DELETE("$target/dataClasses/$modifyAndDelete")
-        verifyResponse NO_CONTENT, response
-
-        PUT("$target/dataClasses/$modifyRightOnly", [description: 'Description'])
-        verifyResponse OK, response
-        PUT("$target/dataClasses/$deleteAndModify", [description: 'Description'])
-        verifyResponse OK, response
-        PUT("$target/dataClasses/$modifyAndModifyReturningNoDifference", [description: 'Description'])
-        verifyResponse OK, response
-        PUT("$target/dataClasses/$modifyAndModifyReturningDifference", [description: 'DescriptionRight'])
-        verifyResponse OK, response
-
-        POST("$target/dataClasses/$existingClass/dataClasses", [label: 'addRightToExistingClass'])
-        verifyResponse CREATED, response
-        POST("$target/dataClasses", [label: 'addRightOnly'])
-        verifyResponse CREATED, response
-        POST("$target/dataClasses", [label: 'addAndAddReturningNoDifference'])
-        verifyResponse CREATED, response
-        POST("$target/dataClasses", [label: 'addAndAddReturningDifference', description: 'DescriptionRight'])
-        verifyResponse CREATED, response
-
-        PUT("$target", [description: 'DescriptionRight'])
-        verifyResponse OK, response
-
-        [id    : id,
-         source: source,
-         target: target]
-    }
-
     void 'MP01 : test merging diff with no patch data'() {
         given:
         String id = createNewItem(validJson)
@@ -1796,159 +1634,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
     void 'MP03 : test merging diff into draft model'() {
         given:
-        String id = createNewItem(validJson)
-
-        POST("$id/dataClasses", [label: 'deleteLeftOnly'])
-        verifyResponse CREATED, response
-        POST("$id/dataClasses", [label: 'modifyLeftOnly'])
-        verifyResponse CREATED, response
-        POST("$id/dataClasses", [label: 'deleteAndModify'])
-        verifyResponse CREATED, response
-        POST("$id/dataClasses", [label: 'modifyAndDelete'])
-        verifyResponse CREATED, response
-        POST("$id/dataClasses", [label: 'modifyAndModifyReturningDifference'])
-        verifyResponse CREATED, response
-        POST("$id/dataClasses", [label: 'existingClass'])
-        verifyResponse CREATED, response
-        String existingClass = responseBody().id
-        POST("$id/dataClasses/$existingClass/dataClasses", [label: 'deleteLeftOnlyFromExistingClass'])
-        verifyResponse CREATED, response
-
-        //        POST("$id/dataTypes", [label: 'deleteDataTypeSource', domainType: 'PrimitiveType'])
-        //        verifyResponse CREATED, response
-        //        POST("$id/dataTypes", [label: 'modifyDataTypeSource', domainType: 'PrimitiveType'])
-        //        verifyResponse CREATED, response
-
-        PUT("$id/finalise", [versionChangeType: 'Major'])
-        verifyResponse OK, response
-        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
-        verifyResponse CREATED, response
-        String target = responseBody().id
-        PUT("$id/newBranchModelVersion", [branchName: 'source'])
-        verifyResponse CREATED, response
-        String source = responseBody().id
+        Map<String, String> mergeData = buildComplexDataModelsForMerging()
 
         when:
-        //to delete
-        GET("$source/path/dm%3A%7Cdc%3AexistingClass")
-        verifyResponse OK, response
-        existingClass = responseBody().id
-        GET("dataClasses/$existingClass/path/dc%3A%7Cdc%3AdeleteLeftOnlyFromExistingClass", MAP_ARG, true)
-        verifyResponse OK, response
-        String deleteLeftOnlyFromExistingClass = responseBody().id
-        GET("$source/path/dm%3A%7Cdc%3AdeleteLeftOnly")
-        verifyResponse OK, response
-        String deleteLeftOnly = responseBody().id
-        GET("$source/path/dm%3A%7Cdc%3AdeleteAndModify")
-        verifyResponse OK, response
-        String deleteAndModify = responseBody().id
-        //to modify
-        GET("$source/path/dm%3A%7Cdc%3AmodifyLeftOnly")
-        verifyResponse OK, response
-        String modifyLeftOnly = responseBody().id
-        GET("$source/path/dm%3A%7Cdc%3AmodifyAndDelete")
-        verifyResponse OK, response
-        String sourceModifyAndDelete = responseBody().id
-        GET("$source/path/dm%3A%7Cdc%3AmodifyAndModifyReturningDifference")
-        verifyResponse OK, response
-        String modifyAndModifyReturningDifference = responseBody().id
-
-        //        GET("$source/path/dm%3A%7Cdt%3AdeleteDataTypeSource")
-        //        verifyResponse OK, response
-        //        String deleteDataTypeSource = responseBody().id
-        //        GET("$source/path/dm%3A%7Cdt%3AmodifyDataTypeSource")
-        //        verifyResponse OK, response
-        //        String modifyDataTypeSource = responseBody().id
-
-        then:
-        //dataModel description
-        PUT("$source", [description: 'DescriptionLeft'])
-        verifyResponse OK, response
-
-        //dataClasses
-        DELETE("$source/dataClasses/$deleteLeftOnly")
-        verifyResponse NO_CONTENT, response
-        DELETE("$source/dataClasses/$deleteAndModify")
-        verifyResponse NO_CONTENT, response
-        DELETE("$source/dataClasses/$existingClass/dataClasses/$deleteLeftOnlyFromExistingClass")
-        verifyResponse NO_CONTENT, response
-
-        PUT("$source/dataClasses/$modifyLeftOnly", [description: 'Description'])
-        verifyResponse OK, response
-        PUT("$source/dataClasses/$sourceModifyAndDelete", [description: 'Description'])
-        verifyResponse OK, response
-        PUT("$source/dataClasses/$modifyAndModifyReturningDifference", [description: 'DescriptionLeft'])
-        verifyResponse OK, response
-
-        POST("$source/dataClasses/$existingClass/dataClasses", [label: 'addLeftToExistingClass'])
-        verifyResponse CREATED, response
-        String addLeftToExistingClass = responseBody().id
-        POST("$source/dataClasses", [label: 'addLeftOnly'])
-        verifyResponse CREATED, response
-        String addLeftOnly = responseBody().id
-        POST("$source/dataClasses", [label: 'addAndAddReturningDifference', description: 'DescriptionLeft'])
-        verifyResponse CREATED, response
-
-        //dataTypes
-        //        DELETE("$source/dataTypes/$deleteDataTypeSource")
-        //        verifyResponse NO_CONTENT, response
-        //
-        //        PUT("$source/dataClasses/$modifyDataTypeSource", [description: 'Description'])
-        //        verifyResponse OK, response
-        //
-        //        POST("$source/dataTypes", [label: 'addDataTypeSource', domainType: 'PrimitiveType'])
-        //        verifyResponse CREATED, response
-        //        String addDataTypeSource = responseBody().id
-
-        when:
-        // for mergeInto json
-        GET("$target/path/dm%3A%7Cdc%3AexistingClass")
-        verifyResponse OK, response
-        existingClass = responseBody().id
-        GET("$target/path/dm%3A%7Cdc%3AmodifyAndDelete")
-        verifyResponse OK, response
-        String targetModifyAndDelete = responseBody().id
-
-        GET("$target/path/dm%3A%7Cdc%3AdeleteAndModify")
-        verifyResponse OK, response
-        deleteAndModify = responseBody().id
-        GET("$target/path/dm%3A%7Cdc%3AmodifyAndModifyReturningDifference")
-        verifyResponse OK, response
-        modifyAndModifyReturningDifference = responseBody().id
-
-        then:
-        //dataModel description
-        PUT("$target", [description: 'DescriptionRight'])
-        verifyResponse OK, response
-
-        //dataClasses
-        DELETE("$target/dataClasses/$targetModifyAndDelete")
-        verifyResponse NO_CONTENT, response
-
-        PUT("$target/dataClasses/$deleteAndModify", [description: 'Description'])
-        verifyResponse OK, response
-        PUT("$target/dataClasses/$modifyAndModifyReturningDifference", [description: 'DescriptionRight'])
-        verifyResponse OK, response
-
-        POST("$target/dataClasses/$existingClass/dataClasses", [label: 'addRightToExistingClass'])
-        verifyResponse CREATED, response
-        POST("$target/dataClasses", [label: 'addAndAddReturningDifference', description: 'DescriptionRight'])
-        verifyResponse CREATED, response
-        String addAndAddReturningDifference = responseBody().id
-
-        when:
-        // for mergeInto json
-        GET("$target/path/dm%3A%7Cdc%3AdeleteLeftOnly")
-        verifyResponse OK, response
-        deleteLeftOnly = responseBody().id
-        GET("$target/path/dm%3A%7Cdc%3AmodifyLeftOnly")
-        verifyResponse OK, response
-        modifyLeftOnly = responseBody().id
-        GET("dataClasses/$existingClass/path/dc%3A%7Cdc%3AdeleteLeftOnlyFromExistingClass", MAP_ARG, true)
-        verifyResponse OK, response
-        deleteLeftOnlyFromExistingClass = responseBody().id
-
-        GET("$source/mergeDiff/$target", STRING_ARG)
+        GET("$mergeData.source/mergeDiff/$mergeData.target", STRING_ARG)
 
         then:
         verifyJsonResponse OK, expectedLegacyMergeDiffJson
@@ -1959,8 +1648,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         def requestBody = [
             changeNotice: 'Functional Test Merge Change Notice',
             patch       : [
-                leftId : target,
-                rightId: source,
+                leftId : mergeData.target,
+                rightId: mergeData.source,
                 label  : "Functional Test Model",
                 diffs  : [
                     [
@@ -1972,27 +1661,27 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
                         deleted  : [
                             [
-                                id   : deleteAndModify,
+                                id   : mergeData.deleteAndModify,
                                 label: "deleteAndModify"
                             ],
                             [
-                                id   : deleteLeftOnly,
+                                id   : mergeData.deleteLeftOnly,
                                 label: "deleteLeftOnly"
                             ]
                         ],
                         created  : [
                             [
-                                id   : addLeftOnly,
+                                id   : mergeData.addLeftOnly,
                                 label: "addLeftOnly"
                             ],
                             [
-                                id   : sourceModifyAndDelete,
+                                id   : mergeData.modifyAndDelete,
                                 label: "modifyAndDelete"
                             ]
                         ],
                         modified : [
                             [
-                                leftId: addAndAddReturningDifference,
+                                leftId: mergeData.addAndAddReturningDifference,
                                 label : "addAndAddReturningDifference",
                                 diffs : [
                                     [
@@ -2002,7 +1691,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                                 ]
                             ],
                             [
-                                leftId: existingClass,
+                                leftId: mergeData.existingClass,
                                 label : "existingClass",
                                 diffs : [
                                     [
@@ -2010,13 +1699,13 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
                                         deleted  : [
                                             [
-                                                id   : deleteLeftOnlyFromExistingClass,
+                                                id   : mergeData.deleteLeftOnlyFromExistingClass,
                                                 label: "deleteLeftOnlyFromExistingClass"
                                             ]
                                         ],
                                         created  : [
                                             [
-                                                id   : addLeftToExistingClass,
+                                                id   : mergeData.addLeftToExistingClass,
                                                 label: "addLeftToExistingClass"
                                             ]
                                         ]
@@ -2025,7 +1714,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                                 ]
                             ],
                             [
-                                leftId: modifyAndModifyReturningDifference,
+                                leftId: mergeData.modifyAndModifyReturningDifference,
                                 label : "modifyAndModifyReturningDifference",
                                 diffs : [
                                     [
@@ -2035,7 +1724,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                                 ]
                             ],
                             [
-                                leftId: modifyLeftOnly,
+                                leftId: mergeData.modifyLeftOnly,
                                 label : "modifyLeftOnly",
                                 diffs : [
                                     [
@@ -2051,32 +1740,33 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         ]
 
 
-        PUT("$source/mergeInto/$target", requestBody)
+        PUT("$mergeData.source/mergeInto/$mergeData.target", requestBody)
 
         then:
         verifyResponse OK, response
-        responseBody().id == target
+        responseBody().id == mergeData.target
         responseBody().description == modifiedDescriptionSource
 
         when:
-        GET("$target/dataClasses")
+        GET("$mergeData.target/dataClasses")
 
         then:
         responseBody().items.label as Set == ['existingClass', 'modifyAndModifyReturningDifference', 'modifyLeftOnly',
-                                              'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly'] as Set
+                                              'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly',
+                                              'modifyRightOnly', 'addRightOnly', 'modifyAndModifyReturningNoDifference', 'addAndAddReturningNoDifference'] as Set
         responseBody().items.find {dataClass -> dataClass.label == 'modifyAndDelete'}.description == 'Description'
         responseBody().items.find {dataClass -> dataClass.label == 'addAndAddReturningDifference'}.description == 'addedDescriptionSource'
         responseBody().items.find {dataClass -> dataClass.label == 'modifyAndModifyReturningDifference'}.description == modifiedDescriptionSource
         responseBody().items.find {dataClass -> dataClass.label == 'modifyLeftOnly'}.description == 'modifiedDescriptionSourceOnly'
 
         when:
-        GET("$target/dataClasses/$existingClass/dataClasses")
+        GET("$mergeData.target/dataClasses/$mergeData.existingClass/dataClasses")
 
         then:
         responseBody().items.label as Set == ['addRightToExistingClass', 'addLeftToExistingClass'] as Set
 
         when: 'List edits for the Target DataModel'
-        GET("$target/edits", MAP_ARG)
+        GET("$mergeData.target/edits", MAP_ARG)
 
         then: 'The response is OK'
         verifyResponse OK, response
@@ -2087,9 +1777,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         }
 
         cleanup:
-        cleanUpData(source)
-        cleanUpData(target)
-        cleanUpData(id)
+        cleanUpData(mergeData.source)
+        cleanUpData(mergeData.target)
+        cleanUpData(mergeData.id)
     }
 
     void 'MP04 : test merging metadata diff into draft model'() {
@@ -2533,6 +2223,199 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanup:
         cleanUpData(sourceDataModelId)
         cleanUpData(id)
+    }
+
+    Map<String, String> buildComplexDataModelsForMerging() {
+
+        String id = createNewItem(validJson)
+
+        POST("$id/dataClasses", [label: 'deleteLeftOnly'])
+        verifyResponse CREATED, response
+        POST("$id/dataClasses", [label: 'deleteRightOnly'])
+        verifyResponse CREATED, response
+        POST("$id/dataClasses", [label: 'modifyLeftOnly'])
+        verifyResponse CREATED, response
+        POST("$id/dataClasses", [label: 'modifyRightOnly'])
+        verifyResponse CREATED, response
+        POST("$id/dataClasses", [label: 'deleteAndDelete'])
+        verifyResponse CREATED, response
+        POST("$id/dataClasses", [label: 'deleteAndModify'])
+        verifyResponse CREATED, response
+        POST("$id/dataClasses", [label: 'modifyAndDelete'])
+        verifyResponse CREATED, response
+        POST("$id/dataClasses", [label: 'modifyAndModifyReturningNoDifference'])
+        verifyResponse CREATED, response
+        POST("$id/dataClasses", [label: 'modifyAndModifyReturningDifference'])
+        verifyResponse CREATED, response
+        POST("$id/dataClasses", [label: 'existingClass'])
+        verifyResponse CREATED, response
+        String existingClass = responseBody().id
+        POST("$id/dataClasses/$existingClass/dataClasses", [label: 'deleteLeftOnlyFromExistingClass'])
+        verifyResponse CREATED, response
+        POST("$id/dataClasses/$existingClass/dataClasses", [label: 'deleteRightOnlyFromExistingClass'])
+        verifyResponse CREATED, response
+
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String target = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'source'])
+        verifyResponse CREATED, response
+        String source = responseBody().id
+
+        GET("$source/path/dm%3A%7Cdc%3AexistingClass")
+        verifyResponse OK, response
+        existingClass = responseBody().id
+        GET("dataClasses/$existingClass/path/dc%3A%7Cdc%3AdeleteLeftOnlyFromExistingClass", MAP_ARG, true)
+        verifyResponse OK, response
+        String deleteLeftOnlyFromExistingClass = responseBody().id
+        GET("$source/path/dm%3A%7Cdc%3AdeleteLeftOnly")
+        verifyResponse OK, response
+        String deleteLeftOnly = responseBody().id
+        GET("$source/path/dm%3A%7Cdc%3AdeleteAndDelete")
+        verifyResponse OK, response
+        String deleteAndDelete = responseBody().id
+        GET("$source/path/dm%3A%7Cdc%3AdeleteAndModify")
+        verifyResponse OK, response
+        String deleteAndModify = responseBody().id
+
+        GET("$source/path/dm%3A%7Cdc%3AmodifyLeftOnly")
+        verifyResponse OK, response
+        String modifyLeftOnly = responseBody().id
+        GET("$source/path/dm%3A%7Cdc%3AmodifyAndDelete")
+        verifyResponse OK, response
+        String modifyAndDelete = responseBody().id
+        GET("$source/path/dm%3A%7Cdc%3AmodifyAndModifyReturningNoDifference")
+        verifyResponse OK, response
+        String modifyAndModifyReturningNoDifference = responseBody().id
+        GET("$source/path/dm%3A%7Cdc%3AmodifyAndModifyReturningDifference")
+        verifyResponse OK, response
+        String modifyAndModifyReturningDifference = responseBody().id
+
+        DELETE("$source/dataClasses/$deleteAndDelete")
+        verifyResponse NO_CONTENT, response
+        DELETE("$source/dataClasses/$existingClass/dataClasses/$deleteLeftOnlyFromExistingClass")
+        verifyResponse NO_CONTENT, response
+        DELETE("$source/dataClasses/$deleteLeftOnly")
+        verifyResponse NO_CONTENT, response
+        DELETE("$source/dataClasses/$deleteAndModify")
+        verifyResponse NO_CONTENT, response
+
+        PUT("$source/dataClasses/$modifyLeftOnly", [description: 'Description'])
+        verifyResponse OK, response
+        PUT("$source/dataClasses/$modifyAndDelete", [description: 'Description'])
+        verifyResponse OK, response
+        PUT("$source/dataClasses/$modifyAndModifyReturningNoDifference", [description: 'Description'])
+        verifyResponse OK, response
+        PUT("$source/dataClasses/$modifyAndModifyReturningDifference", [description: 'DescriptionLeft'])
+        verifyResponse OK, response
+
+        POST("$source/dataClasses/$existingClass/dataClasses", [label: 'addLeftToExistingClass'])
+        verifyResponse CREATED, response
+        String addLeftToExistingClass = responseBody().id
+        POST("$source/dataClasses", [label: 'addLeftOnly'])
+        verifyResponse CREATED, response
+        String addLeftOnly = responseBody().id
+        POST("$source/dataClasses", [label: 'addAndAddReturningNoDifference'])
+        verifyResponse CREATED, response
+        POST("$source/dataClasses", [label: 'addAndAddReturningDifference', description: 'DescriptionLeft'])
+        verifyResponse CREATED, response
+        String addAndAddReturningDifference = responseBody().id
+
+        PUT("$source", [description: 'DescriptionLeft'])
+        verifyResponse OK, response
+
+        GET("$target/path/dm%3A%7Cdc%3AexistingClass")
+        verifyResponse OK, response
+        existingClass = responseBody().id
+        GET("dataClasses/$existingClass/path/dc%3A%7Cdc%3AdeleteRightOnlyFromExistingClass", MAP_ARG, true)
+        verifyResponse OK, response
+        String deleteRightOnlyFromExistingClass = responseBody().id
+        GET("$target/path/dm%3A%7Cdc%3AdeleteRightOnly")
+        verifyResponse OK, response
+        String deleteRightOnly = responseBody().id
+        GET("$target/path/dm%3A%7Cdc%3AdeleteAndDelete")
+        verifyResponse OK, response
+        deleteAndDelete = responseBody().id
+        GET("$target/path/dm%3A%7Cdc%3AmodifyAndDelete")
+        verifyResponse OK, response
+        String targetModifyAndDelete = responseBody().id
+
+        GET("$target/path/dm%3A%7Cdc%3AmodifyRightOnly")
+        verifyResponse OK, response
+        String modifyRightOnly = responseBody().id
+        GET("$target/path/dm%3A%7Cdc%3AdeleteAndModify")
+        verifyResponse OK, response
+        deleteAndModify = responseBody().id
+        GET("$target/path/dm%3A%7Cdc%3AmodifyAndModifyReturningNoDifference")
+        verifyResponse OK, response
+        modifyAndModifyReturningNoDifference = responseBody().id
+        GET("$target/path/dm%3A%7Cdc%3AmodifyAndModifyReturningDifference")
+        verifyResponse OK, response
+        modifyAndModifyReturningDifference = responseBody().id
+
+        DELETE("$target/dataClasses/$existingClass/dataClasses/$deleteRightOnlyFromExistingClass")
+        verifyResponse NO_CONTENT, response
+        DELETE("$target/dataClasses/$deleteRightOnly")
+        verifyResponse NO_CONTENT, response
+        DELETE("$target/dataClasses/$deleteAndDelete")
+        verifyResponse NO_CONTENT, response
+        DELETE("$target/dataClasses/$targetModifyAndDelete")
+        verifyResponse NO_CONTENT, response
+
+        PUT("$target/dataClasses/$modifyRightOnly", [description: 'Description'])
+        verifyResponse OK, response
+        PUT("$target/dataClasses/$deleteAndModify", [description: 'Description'])
+        verifyResponse OK, response
+        PUT("$target/dataClasses/$modifyAndModifyReturningNoDifference", [description: 'Description'])
+        verifyResponse OK, response
+        PUT("$target/dataClasses/$modifyAndModifyReturningDifference", [description: 'DescriptionRight'])
+        verifyResponse OK, response
+
+        POST("$target/dataClasses/$existingClass/dataClasses", [label: 'addRightToExistingClass'])
+        verifyResponse CREATED, response
+        POST("$target/dataClasses", [label: 'addRightOnly'])
+        verifyResponse CREATED, response
+        POST("$target/dataClasses", [label: 'addAndAddReturningNoDifference'])
+        verifyResponse CREATED, response
+        POST("$target/dataClasses", [label: 'addAndAddReturningDifference', description: 'DescriptionRight'])
+        verifyResponse CREATED, response
+        addAndAddReturningDifference = responseBody().id
+
+        PUT("$target", [description: 'DescriptionRight'])
+        verifyResponse OK, response
+
+        // for mergeInto json
+        GET("$target/path/dm%3A%7Cdc%3AdeleteLeftOnly")
+        verifyResponse OK, response
+        deleteLeftOnly = responseBody().id
+        GET("$target/path/dm%3A%7Cdc%3AmodifyLeftOnly")
+        verifyResponse OK, response
+        modifyLeftOnly = responseBody().id
+        GET("dataClasses/$existingClass/path/dc%3A%7Cdc%3AdeleteLeftOnlyFromExistingClass", MAP_ARG, true)
+        verifyResponse OK, response
+        deleteLeftOnlyFromExistingClass = responseBody().id
+
+        [id                                  : id,
+         source                              : source,
+         target                              : target,
+         // For legacy testing
+         existingClass                       : existingClass,
+         deleteLeftOnlyFromExistingClass     : deleteLeftOnlyFromExistingClass,
+         deleteLeftOnly                      : deleteLeftOnly,
+         deleteAndDelete                     : deleteAndDelete,
+         deleteAndModify                     : deleteAndModify,
+         modifyLeftOnly                      : modifyLeftOnly,
+         modifyAndDelete                     : modifyAndDelete,
+         modifyAndModifyReturningNoDifference: modifyAndModifyReturningNoDifference,
+         modifyAndModifyReturningDifference  : modifyAndModifyReturningDifference,
+         deleteRightOnlyFromExistingClass    : deleteRightOnlyFromExistingClass,
+         deleteRightOnly                     : deleteRightOnly,
+         modifyRightOnly                     : modifyRightOnly,
+         addLeftOnly                         : addLeftOnly,
+         addAndAddReturningDifference        : addAndAddReturningDifference,
+         addLeftToExistingClass              : addLeftToExistingClass]
     }
 
     void 'test changing folder from DataModel context'() {
