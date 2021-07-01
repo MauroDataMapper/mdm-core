@@ -155,7 +155,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
   "authority": {
     "id": "${json-unit.matches:id}",
     "url": "http://localhost",
-    "label": "Mauro Data Mapper"
+    "label": "Test Authority"
   }
 }'''
     }
@@ -2128,7 +2128,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                 "authority": {
                     "id": "${json-unit.matches:id}",
                     "url": "http://localhost",
-                    "label": "Mauro Data Mapper"
+                    "label": "Test Authority"
                 }
             },
            "exportMetadata": {
@@ -2183,7 +2183,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                     "authority": {
                         "id": "${json-unit.matches:id}",
                         "url": "http://localhost",
-                        "label": "Mauro Data Mapper"
+                        "label": "Test Authority"
                     }
                 }
             ]
@@ -2214,7 +2214,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                 "authority": {
                     "id": "${json-unit.matches:id}",
                     "url": "http://localhost",
-                    "label": "Mauro Data Mapper"
+                    "label": "Test Authority"
                 }
             },
             "exportMetadata": {
@@ -2275,7 +2275,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                     "authority": {
                         "id": "${json-unit.matches:id}",
                         "url": "http://localhost",
-                        "label": "Mauro Data Mapper"
+                        "label": "Test Authority"
                     }
                 }
             ]
@@ -2309,7 +2309,6 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         def id = response.body().items[0].id
         String expected = new String(loadTestFile('simpleTerminology')).replaceFirst('"exportedBy": "Admin User",',
                                                                                      '"exportedBy": "Unlogged User",')
-            .replace(/Test Authority/, 'Mauro Data Mapper')
 
 
         expect:
@@ -2365,7 +2364,6 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         def id = response.body().items[0].id
         String expected = new String(loadTestFile('complexTerminology')).replaceFirst('"exportedBy": "Admin User",',
                                                                                       '"exportedBy": "Unlogged User",')
-            .replace(/Test Authority/, 'Mauro Data Mapper')
 
         expect:
         id

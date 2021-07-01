@@ -11,7 +11,7 @@
         "authority": {
             "id": "107adf2e-7051-4ffc-b785-1122f598f13a",
             "url": "http://localhost",
-            "label": "Mauro Data Mapper"
+            "label": "Test Authority"
         }
     },
    "exportMetadata": {

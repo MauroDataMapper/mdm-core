@@ -189,7 +189,7 @@ class XmlCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         String exported = exportModel(simpleCodeSetId)
 
         then:
-        validateExportedModel('bootstrappedSimpleCodeSet', exported.replace(/Test Authority/, 'Mauro Data Mapper'))
+        validateExportedModel('bootstrappedSimpleCodeSet', exported)
 
         //note: importing does not actually save
         when:
@@ -243,7 +243,7 @@ class XmlCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         cs.organisation == 'Test Organisation'
         cs.documentationVersion.toString() == '1.0.0'
         cs.finalised == false
-        cs.authority.label == 'Mauro Data Mapper'
+        cs.authority.label == 'Test Authority'
         cs.authority.url == 'http://localhost'
         !cs.aliases
         !cs.annotations
@@ -278,7 +278,7 @@ class XmlCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         cs.documentationVersion.toString() == '1.0.0'
         cs.modelVersion.toString() == '6.3.1'
         cs.finalised == true
-        cs.authority.label == 'Mauro Data Mapper'
+        cs.authority.label == 'Test Authority'
         cs.authority.url == 'http://localhost'
         !cs.aliases
         !cs.annotations
@@ -312,7 +312,7 @@ class XmlCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         cs.organisation == 'Test Organisation'
         cs.documentationVersion.toString() == '1.0.0'
         cs.finalised == false
-        cs.authority.label == 'Mauro Data Mapper'
+        cs.authority.label == 'Test Authority'
         cs.authority.url == 'http://localhost'
         cs.aliases.size() == 2
         'Alias 1' in cs.aliases
@@ -327,7 +327,7 @@ class XmlCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
 
         then:
         validateExportedModel('codeSetSimpleWithAliases', exported)
-    }    
+    }
 
     void 'test simple data import with annotations'() {
         given:
@@ -348,7 +348,7 @@ class XmlCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         cs.organisation == 'Test Organisation'
         cs.documentationVersion.toString() == '1.0.0'
         cs.finalised == false
-        cs.authority.label == 'Mauro Data Mapper'
+        cs.authority.label == 'Test Authority'
         cs.authority.url == 'http://localhost'
         !cs.aliases
         cs.annotations.size() == 1
@@ -361,7 +361,7 @@ class XmlCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
 
         then:
         ann.description == 'test annotation 1 description'
-        ann.label == 'test annotation 1 label'          
+        ann.label == 'test annotation 1 label'
 
         when:
         String exported = exportModel(cs.id)
@@ -389,7 +389,7 @@ class XmlCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         cs.organisation == 'Test Organisation'
         cs.documentationVersion.toString() == '1.0.0'
         cs.finalised == false
-        cs.authority.label == 'Mauro Data Mapper'
+        cs.authority.label == 'Test Authority'
         cs.authority.url == 'http://localhost'
         !cs.aliases
         !cs.annotations
@@ -423,7 +423,7 @@ class XmlCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         cs.organisation == 'Test Organisation'
         cs.documentationVersion.toString() == '1.0.0'
         cs.finalised == false
-        cs.authority.label == 'Mauro Data Mapper'
+        cs.authority.label == 'Test Authority'
         cs.authority.url == 'http://localhost'
         !cs.aliases
         !cs.annotations
@@ -457,7 +457,7 @@ class XmlCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         cs.organisation == 'Test Organisation'
         cs.documentationVersion.toString() == '1.0.0'
         cs.finalised == false
-        cs.authority.label == 'Mauro Data Mapper'
+        cs.authority.label == 'Test Authority'
         cs.authority.url == 'http://localhost'
         !cs.aliases
         !cs.annotations
@@ -469,7 +469,7 @@ class XmlCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         Term term0 = cs.terms[0]
 
         then:
-        term0.label == 'STT01: Simple Test Term 01'       
+        term0.label == 'STT01: Simple Test Term 01'
 
         when:
         String exported = exportModel(cs.id)
@@ -497,7 +497,7 @@ class XmlCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         cs.organisation == 'Test Organisation'
         cs.documentationVersion.toString() == '1.0.0'
         cs.finalised == false
-        cs.authority.label == 'Mauro Data Mapper'
+        cs.authority.label == 'Test Authority'
         cs.authority.url == 'http://localhost'
         !cs.aliases
         !cs.annotations
@@ -555,5 +555,5 @@ class XmlCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         then:
         ApiBadRequestException exception = thrown(ApiBadRequestException)
         exception.errorCode == 'CSS01'
-    } 
+    }
 }

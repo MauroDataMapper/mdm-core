@@ -69,7 +69,7 @@ class EnumerationValueFunctionalSpec extends ResourceFunctionalSpec<EnumerationV
         log.debug('Check and setup test data')
         folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
         checkAndSave(folder)
-        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: FUNCTIONAL_TEST)
+        Authority testAuthority = Authority.findByLabel('Test Authority')
         checkAndSave(testAuthority)
         DataModel dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: FUNCTIONAL_TEST,
                                             folder: folder, authority: testAuthority).save(flush: true)
@@ -90,7 +90,6 @@ class EnumerationValueFunctionalSpec extends ResourceFunctionalSpec<EnumerationV
     def cleanupSpec() {
         log.debug('CleanupSpec EnumerationValueFunctionalSpec')
         cleanUpResources(EnumerationType, DataType, DataModel, Folder)
-        Authority.findByLabel('Test Authority').delete(flush: true)
     }
 
     @Override

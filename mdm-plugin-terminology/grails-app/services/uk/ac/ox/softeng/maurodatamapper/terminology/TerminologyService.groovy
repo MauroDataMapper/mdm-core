@@ -91,8 +91,8 @@ class TerminologyService extends ModelService<Terminology> {
         Terminology.count()
     }
 
-    int countByLabel(String label) {
-        Terminology.countByLabel(label)
+    int countByAuthorityAndLabel(Authority authority, String label) {
+        Terminology.countByAuthorityAndLabel(authority, label)
     }
 
     Terminology validate(Terminology terminology) {
@@ -279,8 +279,8 @@ class TerminologyService extends ModelService<Terminology> {
         Terminology.findAllByReadableByAuthenticatedUsers(true)
     }
 
-    List<Terminology> findAllByLabel(String label) {
-        Terminology.findAllByLabel(label)
+    List<Terminology> findAllByAuthorityAndLabel(Authority authority, String label) {
+        Terminology.findAllByAuthorityAndLabel(authority, label)
     }
 
     @Override
@@ -310,8 +310,9 @@ class TerminologyService extends ModelService<Terminology> {
         Terminology.byDeleted().list(pagination)
     }
 
-    int countAllByLabelAndBranchNameAndNotFinalised(String label, String branchName) {
-        Terminology.countByLabelAndBranchNameAndFinalised(label, branchName, false)
+    @Override
+    int countByAuthorityAndLabelAndBranchNameAndNotFinalised(Authority authority, String label, String branchName) {
+        Terminology.countByAuthorityAndLabelAndBranchNameAndFinalised(authority, label, branchName, false)
     }
 
     @Override

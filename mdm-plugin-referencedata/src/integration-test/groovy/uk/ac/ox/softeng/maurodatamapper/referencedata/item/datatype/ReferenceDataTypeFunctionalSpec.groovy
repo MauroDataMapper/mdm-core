@@ -66,7 +66,7 @@ class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDa
         log.debug('Check and setup test data')
         folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
         checkAndSave(folder)
-        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: FUNCTIONAL_TEST)
+        Authority testAuthority = Authority.findByLabel('Test Authority')
         checkAndSave(testAuthority)
         ReferenceDataModel referenceDataModel = new ReferenceDataModel(label: 'Functional Test ReferenceDataModel', createdBy: FUNCTIONAL_TEST,
                                             folder: folder, authority: testAuthority).save(flush: true)
@@ -81,7 +81,6 @@ class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDa
     def cleanupSpec() {
         log.debug('CleanupSpec ReferenceDataTypeFunctionalSpec')
         cleanUpResources(ReferenceDataModel, Folder)
-        Authority.findByLabel('Test Authority').delete(flush: true)
     }
 
     @Override

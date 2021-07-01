@@ -146,7 +146,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
   "authority": {
     "id": "${json-unit.matches:id}",
     "url": "http://localhost",
-    "label": "Mauro Data Mapper"
+    "label": "Test Authority"
   }
 }'''
     }
@@ -989,8 +989,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         ])
         verifyResponse CREATED, response
         def id = response.body().items[0].id
-        PUT("$id/finalise", [versionChangeType: 'Major'])
-        verifyResponse OK, response
 
         when:
         long start = System.currentTimeMillis()
@@ -1020,8 +1018,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         ])
         verifyResponse CREATED, response
         def id = response.body().items[0].id
-        PUT("$id/finalise", [versionChangeType: 'Major'])
-        verifyResponse OK, response
 
         when:
         long start = System.currentTimeMillis()
@@ -2251,7 +2247,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
     /**
      * In this test we create a DataModel containing one DataClass. The DataModel is finalised, and a new branch 'source'
-     * created. On the source branch, a DataElement is added to the DataClass. The source branch is then merged 
+     * created. On the source branch, a DataElement is added to the DataClass. The source branch is then merged
      * back into main, and we check that the DataElement which was created on the source branch is correctly added to the
      * DataClass on the main branch.
      */
@@ -2602,7 +2598,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     "authority": {
       "id": "${json-unit.matches:id}",
       "url": "http://localhost",
-      "label": "Mauro Data Mapper"
+      "label": "Test Authority"
     }
   },
   "exportMetadata": {
@@ -2642,7 +2638,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     "authority": {
       "id": "${json-unit.matches:id}",
       "url": "http://localhost",
-      "label": "Mauro Data Mapper"
+      "label": "Test Authority"
     }
   },
   "exportMetadata": {
@@ -2791,7 +2787,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                       "label": "Functional Test Model",
                       "type": "Data Standard",
                       "branchName": "main",
-                      "documentationVersion": "1.0.0"
+                      "documentationVersion": "1.0.0",
+                      "modelVersion": "2.0.0"
                     }
                   ]
                 }'''
@@ -2818,7 +2815,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         when:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/2.0', [
-            finalised                      : true,
+            finalised                      : false,
             modelName                      : 'Functional Test Model',
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -2847,7 +2844,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         when:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/2.0', [
-            finalised                      : true,
+            finalised                      : false,
             modelName                      : 'Functional Test Model',
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -2867,7 +2864,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         when:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/2.0', [
-            finalised                      : true,
+            finalised                      : false,
             modelName                      : 'Functional Test Model',
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -3076,7 +3073,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         def id = response.body().items[0].id
         String expected = new String(loadTestFile('simpleDataModel'))
             .replaceFirst('"exportedBy": "Admin User",', '"exportedBy": "Unlogged User",')
-            .replace(/Test Authority/, 'Mauro Data Mapper')
 
         expect:
         id
@@ -3108,7 +3104,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         def id = response.body().items[0].id
         String expected = new String(loadTestFile('complexDataModel'))
             .replaceFirst('"exportedBy": "Admin User",', '"exportedBy": "Unlogged User",')
-            .replace(/Test Authority/, 'Mauro Data Mapper')
 
         expect:
         id
@@ -3176,7 +3171,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
   "authority": {
       "id": "${json-unit.matches:id}",
       "url": "http://localhost",
-      "label": "Mauro Data Mapper"
+      "label": "Test Authority"
     },
   "id": "${json-unit.matches:id}",
   "label": "Simple Test DataModel",
@@ -3247,7 +3242,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
   "authority": {
       "id": "${json-unit.matches:id}",
       "url": "http://localhost",
-      "label": "Mauro Data Mapper"
+      "label": "Test Authority"
   },
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,

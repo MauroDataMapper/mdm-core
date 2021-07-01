@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata.test
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
-import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
@@ -39,7 +38,7 @@ abstract class BaseReferenceDataModelIntegrationSpec extends BaseIntegrationSpec
     void preDomainDataSetup() {
         folder = new Folder(label: 'catalogue', createdBy: admin.emailAddress)
         checkAndSave(folder)
-        testAuthority = new Authority(label: 'Test Authority', url: 'http://localhost', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        testAuthority = Authority.findByLabel('Test Authority')
         checkAndSave(testAuthority)
     }
 
@@ -49,5 +48,5 @@ abstract class BaseReferenceDataModelIntegrationSpec extends BaseIntegrationSpec
 
     ReferenceDataModel buildSecondExampleReferenceDataModel() {
         BootstrapModels.buildAndSaveSecondExampleReferenceDataModel(messageSource, folder, testAuthority)
-    }    
+    }
 }

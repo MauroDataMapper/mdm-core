@@ -39,7 +39,7 @@
         "authority": {
             "id": "1c666218-5b86-4999-97dc-f072be10ede8",
             "url": "http://localhost",
-            "label": "Mauro Data Mapper"
+            "label": "Test Authority"
         },
         "referenceDataTypes": [
             {

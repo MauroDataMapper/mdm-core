@@ -91,8 +91,8 @@ class CodeSetService extends ModelService<CodeSet> {
         CodeSet.count()
     }
 
-    int countByLabel(String label) {
-        CodeSet.countByLabel(label)
+    int countByAuthorityAndLabel(Authority authority, String label) {
+        CodeSet.countByAuthorityAndLabel(authority, label)
     }
 
     CodeSet validate(CodeSet codeSet) {
@@ -164,8 +164,8 @@ class CodeSetService extends ModelService<CodeSet> {
         CodeSet.findAllByReadableByAuthenticatedUsers(true)
     }
 
-    List<CodeSet> findAllByLabel(String label) {
-        CodeSet.findAllByLabel(label)
+    List<CodeSet> findAllByAuthorityAndLabel(Authority authority, String label) {
+        CodeSet.findAllByAuthorityAndLabel(authority, label)
     }
 
     @Override
@@ -185,8 +185,9 @@ class CodeSetService extends ModelService<CodeSet> {
         CodeSet.byDeleted().list(pagination)
     }
 
-    int countAllByLabelAndBranchNameAndNotFinalised(String label, String branchName) {
-        CodeSet.countByLabelAndBranchNameAndFinalised(label, branchName, false)
+    @Override
+    int countByAuthorityAndLabelAndBranchNameAndNotFinalised(Authority authority, String label, String branchName) {
+        CodeSet.countByAuthorityAndLabelAndBranchNameAndFinalised(authority, label, branchName, false)
     }
 
     CodeSet findLatestByDataLoaderPlugin(DataLoaderProviderService dataLoaderProviderService) {

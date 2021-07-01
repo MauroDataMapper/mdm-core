@@ -87,7 +87,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     def checkAndSetupData() {
         log.debug('Check and setup test data')
 
-        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: FUNCTIONAL_TEST)
+        Authority testAuthority = Authority.findByLabel('Test Authority')
         checkAndSave(testAuthority)
 
         folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
@@ -115,7 +115,6 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     def cleanupSpec() {
         log.debug('CleanupSpec')
         cleanUpResources(Terminology, CodeSet, Folder, Classifier)
-        Authority.findByLabel('Test Authority').delete(flush: true)
     }
 
     @Transactional

@@ -89,7 +89,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     UUID movingFolderId
 
     @Shared
-    Path csvResourcesPath    
+    Path csvResourcesPath
 
     @OnceBefore
     @Transactional
@@ -135,12 +135,12 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         Path testFilePath = csvResourcesPath.resolve("${filename}.csv")
         assert Files.exists(testFilePath)
         Files.readAllBytes(testFilePath)
-    }    
+    }
 
     @OnceBefore
     void setupCsvResourcesPath() {
         csvResourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', 'csv').toAbsolutePath()
-    }    
+    }
 
     @Override
     String getDeleteEndpoint(String id) {
@@ -164,7 +164,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
   "authority": {
     "id": "${json-unit.matches:id}",
     "url": "http://localhost",
-    "label": "Mauro Data Mapper"
+    "label": "Test Authority"
   }
 }'''
     }
@@ -1110,7 +1110,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     "authority": {
       "id": "${json-unit.matches:id}",
       "url": "http://localhost",
-      "label": "Mauro Data Mapper"
+      "label": "Test Authority"
     }
   },
   "exportMetadata": {
@@ -1150,7 +1150,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     "authority": {
       "id": "${json-unit.matches:id}",
       "url": "http://localhost",
-      "label": "Mauro Data Mapper"
+      "label": "Test Authority"
     }
   },
   "exportMetadata": {
@@ -1394,7 +1394,6 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         def id = response.body().items[0].id
         String expected = new String(loadTestFile('importSimpleValue'))
             .replaceFirst('"exportedBy": "Admin User",', '"exportedBy": "Unlogged User",')
-            .replace(/Test Authority/, 'Mauro Data Mapper')
 
         expect:
         id
@@ -1463,7 +1462,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
   "authority": {
       "id": "${json-unit.matches:id}",
       "url": "http://localhost",
-      "label": "Mauro Data Mapper"
+      "label": "Test Authority"
     },
   "id": "${json-unit.matches:id}",
   "label": "Simple Test DataModel",
@@ -1535,7 +1534,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
   "authority": {
       "id": "${json-unit.matches:id}",
       "url": "http://localhost",
-      "label": "Mauro Data Mapper"
+      "label": "Test Authority"
   },
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
@@ -2747,7 +2746,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         verifyJsonResponse OK, new String(loadTestFile('expectedGetValuesMax'))
 
         when:
-        GET("${id}/referenceDataValues?asRows=true", STRING_ARG)        
+        GET("${id}/referenceDataValues?asRows=true", STRING_ARG)
 
         then:
         verifyJsonResponse OK, new String(loadTestFile('expectedGetValuesAsRows'))
@@ -2756,7 +2755,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         GET("${id}/referenceDataValues?asRows=true&max=2", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, new String(loadTestFile('expectedGetValuesAsRowsMax'))     
+        verifyJsonResponse OK, new String(loadTestFile('expectedGetValuesAsRowsMax'))
 
         when:
         GET("${id}/referenceDataValues/search?search=Row6Value2", STRING_ARG)
@@ -2768,7 +2767,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         GET("${id}/referenceDataValues/search?search=Row6Value2&asRows=true", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, new String(loadTestFile('expectedSearchValuesRow6AsRows'))                 
+        verifyJsonResponse OK, new String(loadTestFile('expectedSearchValuesRow6AsRows'))
 
         cleanup:
         cleanUpData(id)

@@ -55,15 +55,13 @@ abstract class CatalogueItemFacetFunctionalSpec<D extends GormEntity> extends Re
         log.debug('Check and setup test data')
         folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
         checkAndSave(folder)
-        testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: FUNCTIONAL_TEST)
-        checkAndSave(testAuthority)
+        testAuthority = Authority.findByLabel('Test Authority')
     }
 
     @Transactional
     def cleanupSpec() {
         log.debug('CleanupSpec CatalogueItemFacetFunctionalSpec')
         cleanUpResources(Folder)
-        Authority.findByLabel('Test Authority').delete(flush: true)
     }
 
     String getCopyResourcePath(String copyId) {

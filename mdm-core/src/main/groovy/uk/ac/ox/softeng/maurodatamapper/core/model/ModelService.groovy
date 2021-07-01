@@ -124,13 +124,13 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     abstract void delete(K model, boolean permanent, boolean flush)
 
-    abstract int countByLabel(String label)
-
-    abstract List<K> findAllByLabel(String label)
-
-    abstract int countAllByLabelAndBranchNameAndNotFinalised(String label, String branchName)
+    abstract int countByAuthorityAndLabelAndBranchNameAndNotFinalised(Authority authority, String label, String branchName)
 
     abstract int countByAuthorityAndLabelAndVersion(Authority authority, String label, Version modelVersion)
+
+    abstract int countByAuthorityAndLabel(Authority authority, String label)
+
+    abstract List<K> findAllByAuthorityAndLabel(Authority authority, String label)
 
     abstract K copyModel(K original,
                          Folder folderToCopyInto,
@@ -197,7 +197,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         findAllReadableModels(constrainedIds, includeDeleted)
     }
 
-    K finaliseModel(K model, User user, Version modelVersion, VersionChangeType versionChangeType,
+    K finaliseModel(K model, User user, Version requestedModelVersion, VersionChangeType versionChangeType,
                     String versionTag) {
         log.debug('Finalising model')
         long start = System.currentTimeMillis()
@@ -207,7 +207,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         // No requirement to have a breadcrumbtree
         breadcrumbTreeService.finalise(model.breadcrumbTree)
 
-        model.modelVersion = getNextModelVersion(model, modelVersion, versionChangeType)
+        model.modelVersion = getNextModelVersion(model, requestedModelVersion, versionChangeType)
 
         model.modelVersionTag = versionTag
 
@@ -289,7 +289,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         if (!newVersionCreationIsAllowed(model)) return model
 
         // Check if the branch name is already being used
-        if (countAllByLabelAndBranchNameAndNotFinalised(model.label, branchName) > 0) {
+        if (countByAuthorityAndLabelAndBranchNameAndNotFinalised(model.authority, model.label, branchName) > 0) {
             (model as GormValidateable).errors.reject('version.aware.label.branch.name.already.exists',
                                                       ['branchName', getModelClass(), branchName, model.label] as Object[],
                                                       'Property [{0}] of class [{1}] with value [{2}] already exists for label [{3}]')
@@ -297,7 +297,8 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         }
 
         // We know at this point the datamodel is finalised which means its branch name == main so we need to check no unfinalised main branch exists
-        boolean draftModelOnMainBranchForLabel = countAllByLabelAndBranchNameAndNotFinalised(model.label, VersionAwareConstraints.DEFAULT_BRANCH_NAME) > 0
+        boolean draftModelOnMainBranchForLabel = countByAuthorityAndLabelAndBranchNameAndNotFinalised(model.authority, model.label,
+                                                                                                      VersionAwareConstraints.DEFAULT_BRANCH_NAME) > 0
 
         if (!draftModelOnMainBranchForLabel) {
             K newMainBranchModelVersion = copyModelAsNewBranchModel(model,
@@ -570,20 +571,13 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         catalogueItem
     }
 
-    Version getParentModelVersion(K currentModel) {
-        VersionLink versionLink = versionLinkService.findBySourceModelIdAndLinkType(currentModel.id, VersionLinkType.NEW_MODEL_VERSION_OF)
-        if (!versionLink) return null
-        Model parent = get(versionLink.targetModelId)
-        parent.modelVersion
-    }
-
     Version getNextModelVersion(K model, Version requestedModelVersion, VersionChangeType requestedVersionChangeType) {
         if (requestedModelVersion) {
             // Prefer requested model version
             return requestedModelVersion
         }
         // We need to get the parent model version first so we can work out what to increment
-        Version parentModelVersion = getParentModelVersion(model)
+        Version parentModelVersion = getLatestModelVersionByLabel(model.label)
 
         if (!parentModelVersion) {
             // No parent model then set the current version to 0 to allow the first finalisation to be defined using the versionChangeType
@@ -609,13 +603,20 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         Version.nextMajorVersion(parentModelVersion)
     }
 
-    void checkfinaliseModel(K model, Boolean finalised) {
-        if (finalised && !model.finalised) {
-            model.finalised = finalised
-            model.dateFinalised = model.finalised ? OffsetDateTime.now() : null
+    void checkFinaliseModel(K model, Boolean finalise, Boolean importAsNewBranchModelVersion = false) {
+        if (finalise && (!model.finalised || !model.modelVersion)) {
+            // Parameter update will have set the model as finalised, but it wont have set the model version
+            // If the actual import data includes finalised data then it will also containt the model version
+            // If the model hasnt been imported as a new branch model version then we need to check if any existing models
+            // If existing models then we cant finalise as we need to link the imported model
+            if (!importAsNewBranchModelVersion && countByAuthorityAndLabel(model.authority, model.label)) {
+                throw new ApiBadRequestException('MSXX', 'Request to finalise import without creating newBranchModelVersion to existing models')
+            }
+            model.finalised = true
         }
-        if (model.finalised && !model.modelVersion) {
-            model.modelVersion = Version.from('1.0.0')
+        if (model.finalised) {
+            model.dateFinalised = model.dateFinalised ?: OffsetDateTime.now()
+            model.modelVersion = model.modelVersion ?: getNextModelVersion(model, null, VersionChangeType.MAJOR)
         }
     }
 
@@ -628,8 +629,8 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     void checkDocumentationVersion(K model, boolean importAsNewDocumentationVersion, User catalogueUser) {
         if (importAsNewDocumentationVersion) {
 
-            if (countByLabel(model.label)) {
-                List<K> existingModels = findAllByLabel(model.label)
+            if (countByAuthorityAndLabel(model.authority, model.label)) {
+                List<K> existingModels = findAllByAuthorityAndLabel(model.authority, model.label)
                 existingModels.each {existing ->
                     log.debug('Setting Model as new documentation version of [{}:{}]', existing.label, existing.documentationVersion)
                     if (!existing.finalised) finaliseModel(existing, catalogueUser, null, null, null)
@@ -645,8 +646,17 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     void checkBranchModelVersion(K model, Boolean importAsNewBranchModelVersion, String branchName, User catalogueUser) {
         if (importAsNewBranchModelVersion) {
 
-            if (countByLabel(model.label)) {
+            if (countByAuthorityAndLabel(model.authority, model.label)) {
                 K latest = findLatestFinalisedModelByLabel(model.label)
+
+                if (!latest) {
+                    log.info('No finalised model to create branch from so finalising existing main branch')
+                    latest = findCurrentMainBranchByLabel(model.label)
+                    finaliseModel(latest, catalogueUser, Version.from('1'), null, null)
+                    save(latest, flush: true, validate: false)
+                }
+
+                // Now we have a finalised model to work from
                 if (latest) {
                     setModelIsNewBranchModelVersionOfModel(model, latest, catalogueUser)
                     model.dateFinalised = null
@@ -655,7 +665,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
                     model.branchName = branchName ?: VersionAwareConstraints.DEFAULT_BRANCH_NAME
                     model.documentationVersion = Version.from('1')
                 } else {
-                    throw new ApiBadRequestException('MSXX', 'Request to importAsNewBranchModelVersion but no finalised model to use')
+                    throw new ApiBadRequestException('MSXX', 'Request to importAsNewBranchModelVersion but no finalised model or main branch available')
                 }
             } else log.info('Marked as importAsNewBranchModelVersion but no existing Models with label [{}]', model.label)
         }

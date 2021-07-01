@@ -160,6 +160,10 @@ dataSource:
 ---
 environments:
     test:
+        maurodatamapper:
+            authority:
+                name: 'Test Authority'
+                url: 'http://localhost'
         spring.flyway.enabled: false
         database:
             name: 'mpdTest'

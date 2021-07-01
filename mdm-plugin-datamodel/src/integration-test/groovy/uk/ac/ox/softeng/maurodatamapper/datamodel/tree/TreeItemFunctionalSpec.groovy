@@ -67,13 +67,13 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     UUID importingDataModelId
 
     @Shared
-    UUID importingParentDataClassId    
+    UUID importingParentDataClassId
 
     @Shared
-    UUID importedParentDataClassId       
+    UUID importedParentDataClassId
 
     @Shared
-    UUID importedDataModelId    
+    UUID importedDataModelId
 
     @OnceBefore
     @Transactional
@@ -82,7 +82,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
         folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
         checkAndSave(folder)
-        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: FUNCTIONAL_TEST)
+        Authority testAuthority = Authority.findByLabel('Test Authority')
         checkAndSave(testAuthority)
 
         DataModel dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: FUNCTIONAL_TEST,
@@ -114,7 +114,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
          *         - Data Class: Functional Test Imported Parent DataClass (imported)
          *     - Data Model: Functional Test Imported DataModel
          *         - Data Class: Functional Test Imported Parent DataClass (directly owned)
-         *             - Data Class: Functional Test Imported Child DataClass (directly owned)         
+         *             - Data Class: Functional Test Imported Child DataClass (directly owned)
          */
         importTestFolder = new Folder(label: 'Functional Test Import Test Folder', createdBy: FUNCTIONAL_TEST)
         checkAndSave(importTestFolder)
@@ -123,27 +123,27 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
                                             folder: importTestFolder, authority: testAuthority).save(flush: true)
         importingDataModelId = importingDataModel.id
 
-        DataClass importingParentDataClass = new DataClass(label: 'Functional Test Importing Parent DataClass', 
+        DataClass importingParentDataClass = new DataClass(label: 'Functional Test Importing Parent DataClass',
                                                            createdBy: FUNCTIONAL_TEST,
                                                            dataModel: importingDataModel)
-                                                          .save(flush: true)
+            .save(flush: true)
 
-        importingParentDataClassId = importingParentDataClass.id                                                          
+        importingParentDataClassId = importingParentDataClass.id
 
         importingDataModel
-        .addToDataClasses(importingParentDataClass)                                                          
+            .addToDataClasses(importingParentDataClass)
 
         DataModel importedDataModel = new DataModel(label: 'Functional Test Imported DataModel', createdBy: FUNCTIONAL_TEST,
-                                            folder: importTestFolder, authority: testAuthority).save(flush: true)
+                                                    folder: importTestFolder, authority: testAuthority).save(flush: true)
         importedDataModelId = importedDataModel.id
 
-        DataClass importedParentDataClass = new DataClass(label: 'Functional Test Imported Parent DataClass', 
+        DataClass importedParentDataClass = new DataClass(label: 'Functional Test Imported Parent DataClass',
                                                           createdBy: FUNCTIONAL_TEST,
                                                           dataModel: importedDataModel)
 
-        importedParentDataClassId = importedParentDataClass.id                                                           
-        
-        DataClass importedChildDataClass = new DataClass(label: 'Functional Test Imported Child DataClass', 
+        importedParentDataClassId = importedParentDataClass.id
+
+        DataClass importedChildDataClass = new DataClass(label: 'Functional Test Imported Child DataClass',
                                                          createdBy: FUNCTIONAL_TEST)
 
         importedParentDataClass
@@ -172,7 +172,6 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     def cleanupSpec() {
         log.debug('CleanupSpec')
         cleanUpResources(DataModel, Folder, Classifier, DataClass)
-        Authority.findByLabel('Test Authority').delete(flush: true)
     }
 
     @Override

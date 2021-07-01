@@ -93,7 +93,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
         Path testFilePath = resourcesPath.resolve("${filename}").toAbsolutePath()
         assert Files.exists(testFilePath)
         Files.readAllBytes(testFilePath)
-    }    
+    }
 
     @Transactional
     String getTestFolderId() {
@@ -769,7 +769,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
         verifyJsonResponse OK, new String(loadTestFile('expectedGetValuesMax.json'))
 
         when:
-        GET("${id}/referenceDataValues?asRows=true", STRING_ARG)        
+        GET("${id}/referenceDataValues?asRows=true", STRING_ARG)
 
         then:
         verifyJsonResponse OK, new String(loadTestFile('expectedGetValuesAsRows.json'))
@@ -778,7 +778,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
         GET("${id}/referenceDataValues?asRows=true&max=2", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, new String(loadTestFile('expectedGetValuesAsRowsMax.json'))     
+        verifyJsonResponse OK, new String(loadTestFile('expectedGetValuesAsRowsMax.json'))
 
         when:
         GET("${id}/referenceDataValues/search?search=Row6Value2", STRING_ARG)
@@ -790,10 +790,10 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
         GET("${id}/referenceDataValues/search?search=Row6Value2&asRows=true", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, new String(loadTestFile('expectedSearchValuesRow6AsRows.json'))            
+        verifyJsonResponse OK, new String(loadTestFile('expectedSearchValuesRow6AsRows.json'))
 
         cleanup:
         logout()
         removeValidIdObjectUsingTransaction(id)
-    }    
+    }
 }
