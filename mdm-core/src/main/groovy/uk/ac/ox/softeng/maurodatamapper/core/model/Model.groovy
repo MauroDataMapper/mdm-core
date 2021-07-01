@@ -57,6 +57,11 @@ trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableRes
     }
 
     @Override
+    String getPathIdentifier() {
+        "${label}.${modelVersion ?: branchName}"
+    }
+
+    @Override
     int compareTo(D that) {
         int res = 0
         if (that instanceof CatalogueItem) {

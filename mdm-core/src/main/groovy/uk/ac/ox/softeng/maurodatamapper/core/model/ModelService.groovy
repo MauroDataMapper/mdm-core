@@ -34,12 +34,14 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.VersionLinkAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
@@ -49,6 +51,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
+import grails.gorm.DetachedCriteria
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormValidateable
 import org.grails.orm.hibernate.proxy.HibernateProxyHandler
@@ -69,6 +72,9 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     @Autowired(required = false)
     Set<ModelItemService> modelItemServices
 
+    @Autowired(required = false)
+    Set<DomainService> domainServices
+
     @Autowired
     VersionLinkService versionLinkService
 
@@ -86,6 +92,9 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     @Autowired(required = false)
     SecurityPolicyManagerService securityPolicyManagerService
+
+    @Autowired
+    PathService pathService
 
     @Override
     Class<K> getCatalogueItemClass() {
@@ -197,6 +206,21 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         }
         if (!constrainedIds) return []
         findAllReadableModels(constrainedIds, includeDeleted)
+    }
+
+    @Override
+    K findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        String split = pathIdentifier.split(/\./)
+        DetachedCriteria criteria = parentId ? modelClass.byFolderId(parentId) : modelClass.by()
+
+        criteria.eq('label', split[0])
+
+        if (Version.isVersionable(split[1])) {
+            criteria.eq('modelVersion', Version.from(split[1]))
+        } else {
+            criteria.eq('branchName', split[1])
+        }
+        criteria.get() as K
     }
 
     K finaliseModel(K model, User user, Version requestedModelVersion, VersionChangeType versionChangeType,
@@ -396,7 +420,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         if (!objectPatchData.hasPatches()) return targetModel
 
         log.debug('Merging {} diffs into model {}', objectPatchData.getPatches().size(), targetModel.label)
-        objectPatchData.getPatches().each {mergeFieldDiff ->
+        objectPatchData.getPatches().each { mergeFieldDiff ->
             log.debug('{}', mergeFieldDiff.summary)
 
             if (mergeFieldDiff.isFieldChange()) {
@@ -404,7 +428,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
             } else if (mergeFieldDiff.isMetadataChange()) {
                 mergeMetadataIntoCatalogueItem(mergeFieldDiff, targetModel, userSecurityPolicyManager)
             } else {
-                ModelItemService modelItemService = modelItemServices.find {it.handles(mergeFieldDiff.fieldName)}
+                ModelItemService modelItemService = modelItemServices.find { it.handles(mergeFieldDiff.fieldName) }
                 if (modelItemService) {
                     modelItemService.processFieldPatchData(mergeFieldDiff, targetModel, userSecurityPolicyManager)
                 } else {

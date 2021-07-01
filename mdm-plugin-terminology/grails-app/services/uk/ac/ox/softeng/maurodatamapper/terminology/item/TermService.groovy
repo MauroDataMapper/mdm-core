@@ -19,7 +19,6 @@ package uk.ac.ox.softeng.maurodatamapper.terminology.item
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
@@ -453,8 +452,21 @@ class TermService extends ModelItemService<Term> {
      */
 
     @Override
-    Term findByParentAndLabel(CatalogueItem parentCatalogueItem, String label) {
-        findTerm(parentCatalogueItem, label)
+    Term findByParentIdAndLabel(UUID parentId, String label) {
+        Term term = Term.byCodeSetId(parentId).eq('label', label).get()
+        if (!term) {
+            term = Term.byTerminologyId(parentId).eq('label', label).get()
+        }
+        term
+    }
+
+    @Override
+    Term findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        Term term = Term.byCodeSetId(parentId).eq('code', pathIdentifier).get()
+        if (!term) {
+            term = Term.byTerminologyId(parentId).eq('code', pathIdentifier).get()
+        }
+        term
     }
 
     @Override

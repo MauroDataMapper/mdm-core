@@ -26,14 +26,13 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.PathAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class Annotation implements MultiFacetItemAware, PathAware, InformationAware, CreatorAware, Diffable<Annotation> {
+class Annotation implements MultiFacetItemAware, PathAware, InformationAware, Diffable<Annotation> {
 
     UUID id
     Annotation parentAnnotation
@@ -83,13 +82,18 @@ class Annotation implements MultiFacetItemAware, PathAware, InformationAware, Cr
     }
 
     @Override
+    String getPathIdentifier() {
+        label
+    }
+
+    @Override
     Annotation getPathParent() {
         parentAnnotation
     }
 
     def beforeValidate() {
         buildPath()
-        childAnnotations.eachWithIndex {ann, i ->
+        childAnnotations.eachWithIndex { ann, i ->
             if (!ann.label) ann.label = "$label [$i]"
             if (multiFacetAwareItem) {
                 ann.setMultiFacetAwareItem(this.multiFacetAwareItem)

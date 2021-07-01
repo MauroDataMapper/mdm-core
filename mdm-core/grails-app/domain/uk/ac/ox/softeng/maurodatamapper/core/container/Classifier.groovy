@@ -100,6 +100,11 @@ class Classifier implements Container {
     }
 
     @Override
+    String getPathIdentifier() {
+        label
+    }
+
+    @Override
     Classifier getPathParent() {
         parentClassifier
     }
@@ -107,7 +112,7 @@ class Classifier implements Container {
     @Override
     def beforeValidate() {
         buildPath()
-        childClassifiers.each {it.beforeValidate()}
+        childClassifiers.each { it.beforeValidate() }
     }
 
     @Override

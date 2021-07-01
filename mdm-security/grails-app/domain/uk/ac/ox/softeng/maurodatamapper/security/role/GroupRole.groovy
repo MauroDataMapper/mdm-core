@@ -120,6 +120,11 @@ class GroupRole implements EditHistoryAware, PathAware, SecurableResource, Compa
     }
 
     @Override
+    String getPathIdentifier() {
+        name
+    }
+
+    @Override
     Boolean getReadableByEveryone() {
         false
     }

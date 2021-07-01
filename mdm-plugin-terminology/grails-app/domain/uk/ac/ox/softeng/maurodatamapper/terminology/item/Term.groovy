@@ -122,6 +122,11 @@ class Term implements ModelItem<Term, Terminology> {
     }
 
     @Override
+    String getPathIdentifier() {
+        code
+    }
+
+    @Override
     String getPathPrefix() {
         'tm'
     }

@@ -17,14 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.VersionLinkAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.databinding.BindUsing
@@ -32,11 +30,11 @@ import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class VersionLink implements MultiFacetItemAware, CreatorAware {
+class VersionLink implements MultiFacetItemAware {
 
     UUID id
 
-    @BindUsing({obj, source -> VersionLinkType.findFromMap(source)})
+    @BindUsing({ obj, source -> VersionLinkType.findFromMap(source) })
     VersionLinkType linkType
     VersionLinkAware targetModel
     UUID targetModelId
@@ -77,6 +75,11 @@ class VersionLink implements MultiFacetItemAware, CreatorAware {
     @Override
     String getPathPrefix() {
         'vl'
+    }
+
+    @Override
+    String getPathIdentifier() {
+        "${linkType}.${targetModelId}"
     }
 
     @Override

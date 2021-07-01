@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationService
@@ -34,10 +34,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.core.GrailsApplication
-import grails.core.GrailsClass
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
 import org.hibernate.SessionFactory
@@ -61,18 +59,6 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
 
     Class<K> getMultiFacetAwareClass() {
         getCatalogueItemClass()
-    }
-
-    boolean handles(Class clazz) {
-        clazz == getCatalogueItemClass()
-    }
-
-    boolean handles(String domainType) {
-        GrailsClass grailsClass = Utils.lookupGrailsDomain(grailsApplication, domainType)
-        if (!grailsClass) {
-            throw new ApiBadRequestException('CISXX', "Unrecognised domain class resource [${domainType}]")
-        }
-        handles(grailsClass.clazz)
     }
 
     boolean handlesPathPrefix(String pathPrefix) {
@@ -189,25 +175,34 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
      */
 
     K findByParentAndLabel(CatalogueItem parentCatalogueItem, String label) {
+        findByParentIdAndLabel(parentCatalogueItem.id, label)
+    }
+
+    K findByParentIdAndLabel(UUID parentId, String label) {
         null
+    }
+
+    @Override
+    K findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        findByParentIdAndLabel(parentId, pathIdentifier)
     }
 
     void mergeMetadataIntoCatalogueItem(FieldPatchData fieldPatchData, K targetCatalogueItem,
                                         UserSecurityPolicyManager userSecurityPolicyManager) {
         log.debug('Merging Metadata into Catalogue Item')
         // call metadataService version of below
-        fieldPatchData.deleted.each {deletedItemPatchData ->
+        fieldPatchData.deleted.each { deletedItemPatchData ->
             Metadata metadata = metadataService.get(deletedItemPatchData.id)
             metadataService.delete(metadata)
         }
 
         // copy additions from source to target object
-        fieldPatchData.created.each {createdItemPatchData ->
+        fieldPatchData.created.each { createdItemPatchData ->
             Metadata metadata = metadataService.get(createdItemPatchData.id)
             metadataService.copy(targetCatalogueItem, metadata, userSecurityPolicyManager)
         }
         // for modifications, recursively call this method
-        fieldPatchData.modified.each {modifiedObjectPatchData ->
+        fieldPatchData.modified.each { modifiedObjectPatchData ->
             metadataService.mergeMetadataIntoCatalogueItem(targetCatalogueItem, modifiedObjectPatchData)
         }
     }

@@ -66,6 +66,11 @@ class ReferenceDataValue implements CreatorAware, Diffable<ReferenceDataValue> {
     }
 
     @Override
+    String getPathIdentifier() {
+        rowNumber
+    }
+
+    @Override
     String getDiffIdentifier() {
         this.id
     }

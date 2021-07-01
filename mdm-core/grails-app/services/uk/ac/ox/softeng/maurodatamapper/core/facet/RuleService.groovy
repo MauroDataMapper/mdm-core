@@ -142,7 +142,13 @@ class RuleService implements MultiFacetItemAwareService<Rule> {
                                                                  UUID multiFacetAwareItemId) {
         EditHistoryAware multiFacetAwareItem =
             findMultiFacetAwareItemByDomainTypeAndId(multiFacetAwareItemDomainType, multiFacetAwareItemId) as EditHistoryAware
-        multiFacetAwareItem.addToEditsTransactionally EditTitle.DELETE,deleter, "[$domain.editLabel] removed from component [${multiFacetAwareItem.editLabel}]"
+        multiFacetAwareItem.addToEditsTransactionally(EditTitle.DELETE, deleter, "[$domain.editLabel] removed from component " +
+                                                                                 "[${multiFacetAwareItem.editLabel}]")
         domain
+    }
+
+    @Override
+    Rule findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        Rule.byMultiFacetAwareItemId(parentId).eq('name', pathIdentifier).get()
     }
 }

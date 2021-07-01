@@ -89,4 +89,9 @@ class ReferenceSummaryMetadataService implements MultiFacetItemAwareService<Refe
     DetachedCriteria<ReferenceSummaryMetadata> getBaseDeleteCriteria() {
         ReferenceSummaryMetadata.by()
     }
+
+    @Override
+    ReferenceSummaryMetadata findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        ReferenceSummaryMetadata.byMultiFacetAwareItemId(parentId).eq('label', pathIdentifier).get()
+    }
 }

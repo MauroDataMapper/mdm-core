@@ -34,7 +34,7 @@ import java.security.Principal
 import java.time.OffsetDateTime
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class CatalogueUser implements Principal, EditHistoryAware, CreatorAware, User {
+class CatalogueUser implements Principal, EditHistoryAware, User {
 
     UUID id
     String emailAddress
@@ -43,7 +43,7 @@ class CatalogueUser implements Principal, EditHistoryAware, CreatorAware, User {
     OffsetDateTime lastLogin
     String organisation
 
-    @BindUsing({obj, source ->
+    @BindUsing({ obj, source ->
         SecurityUtils.getHash(source['password'] as String, obj.salt)
     })
     byte[] password
@@ -141,6 +141,11 @@ class CatalogueUser implements Principal, EditHistoryAware, CreatorAware, User {
     @Override
     String getPathPrefix() {
         'cu'
+    }
+
+    @Override
+    String getPathIdentifier() {
+        emailAddress
     }
 
     boolean isDisabled() {

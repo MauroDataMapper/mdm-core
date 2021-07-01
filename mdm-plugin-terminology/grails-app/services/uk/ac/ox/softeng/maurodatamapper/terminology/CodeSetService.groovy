@@ -35,12 +35,12 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelIm
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchData
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipTypeService
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationshipService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.CodeSetJsonImporterService
+import uk.ac.ox.softeng.maurodatamapper.util.Path
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
@@ -54,8 +54,8 @@ class CodeSetService extends ModelService<CodeSet> {
     TermRelationshipTypeService termRelationshipTypeService
     TermService termService
     TermRelationshipService termRelationshipService
-    PathService pathService
     CodeSetJsonImporterService codeSetJsonImporterService
+    PathService pathService
 
     @Override
     CodeSet get(Serializable id) {
@@ -447,14 +447,13 @@ class CodeSetService extends ModelService<CodeSet> {
         //Here we check that each path does retrieve a known term.
         if (bindingMap.termPaths) {
             bindingMap.termPaths.each {
-                String path = it.termPath
-                Map pathParams = [path: path, catalogueItemDomainType: Terminology.simpleName]
+                Path path = Path.from(it.termPath)
 
                 //pathService requires a UserSecurityPolicyManager.
                 //Assumption is that if we got this far then it is OK to read the Terms because either (i) we came via a controller in which case
                 //the user's ability to import a CodeSet has already been tested, or (ii) we are calling this method from a service test spec in which
                 //case it is OK to read.
-                Term term = pathService.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, pathParams)
+                Term term = pathService.findResourceByPathFromRootClass(Terminology, path) as Term
 
                 if (term) {
                     codeSet.addToTerms(term)

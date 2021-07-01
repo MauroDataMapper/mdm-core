@@ -102,14 +102,14 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     @Override
     List<Folder> getAll(Collection<UUID> containerIds) {
-        VersionedFolder.getAll(containerIds).findAll().collect {unwrapIfProxy(it)}
+        VersionedFolder.getAll(containerIds).findAll().collect { unwrapIfProxy(it) }
     }
 
     @Override
     List<VersionedFolder> findAllReadableContainersBySearchTerm(UserSecurityPolicyManager userSecurityPolicyManager, String searchTerm) {
         log.debug('Searching readable folders for search term in label')
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Folder)
-        VersionedFolder.luceneTreeLabelSearch(readableIds.collect {it.toString()}, searchTerm)
+        VersionedFolder.luceneTreeLabelSearch(readableIds.collect { it.toString() }, searchTerm)
     }
 
     @Override
@@ -123,8 +123,21 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     }
 
     @Override
-    VersionedFolder findDomainByParentIdAndLabel(UUID parentId, String label) {
+    VersionedFolder findByParentIdAndLabel(UUID parentId, String label) {
         VersionedFolder.byParentFolderIdAndLabel(parentId, label.trim()).get()
+    }
+
+    @Override
+    VersionedFolder findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        String split = pathIdentifier.split(/\./)
+        DetachedCriteria criteria = VersionedFolder.byParentFolderId(parentId).eq('label', split[0])
+
+        if (Version.isVersionable(split[1])) {
+            criteria.eq('modelVersion', Version.from(split[1]))
+        } else {
+            criteria.eq('branchName', split[1])
+        }
+        criteria.get()
     }
 
     @Override
@@ -181,16 +194,16 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         long start = System.currentTimeMillis()
 
         log.debug('Finalising models inside folder')
-        modelServices.each {service ->
+        modelServices.each { service ->
             Collection<Model> modelsInFolder = service.findAllByFolderId(folder.id)
-            modelsInFolder.each {model ->
+            modelsInFolder.each { model ->
                 service.finaliseModel(model as Model, user, folderVersion, null, folderVersionTag)
             }
         }
 
         List<Folder> folders = findAllByParentId(folder.id)
         log.debug('Finalising {} sub folders inside folder', folders.size())
-        folders.each {childFolder ->
+        folders.each { childFolder ->
             finaliseFolderContents(childFolder, user, folderVersion, folderVersionTag)
         }
 
@@ -282,7 +295,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     @Override
     List<VersionedFolder> list() {
-        VersionedFolder.list().collect {unwrapIfProxy(it)}
+        VersionedFolder.list().collect { unwrapIfProxy(it) }
     }
 
     Long count() {
@@ -502,9 +515,9 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         String labelSuffix = folderCopy.label == original.label ? '' : " (${folderCopy.label})"
 
         log.debug('Copying models from original folder into copied folder')
-        modelServices.each {service ->
+        modelServices.each { service ->
             List<Model> originalModels = service.findAllByContainerId(original.id) as List<Model>
-            List<Model> copiedModels = originalModels.collect {Model model ->
+            List<Model> copiedModels = originalModels.collect { Model model ->
 
                 service.copyModel(model, folderCopy, copier, copyPermissions,
                                   "${model.label}${labelSuffix}",
@@ -512,7 +525,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
                                   userSecurityPolicyManager)
             }
             // We can't save until after all copied as the save clears the sessions
-            copiedModels.each {copy ->
+            copiedModels.each { copy ->
                 log.debug('Validating and saving model copy')
                 service.validate(copy)
                 if (copy.hasErrors()) {
@@ -524,7 +537,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
         List<Folder> folders = findAllByParentId(original.id)
         log.debug('Copying {} sub folders inside folder', folders.size())
-        folders.each {childFolder ->
+        folders.each { childFolder ->
             Folder childCopy = new Folder(parentFolder: folderCopy, deleted: false)
             childCopy = folderService.copyBasicFolderInformation(childFolder, childCopy, copier)
             folderService.validate(childCopy)
@@ -579,7 +592,8 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     VersionedFolder findOldestAncestor(VersionedFolder versionedFolder) {
         // Look for model version or doc version only
         VersionLink versionLink = versionLinkService.findBySourceModelIdAndLinkType(versionedFolder.id, VersionLinkType.NEW_MODEL_VERSION_OF)
-        versionLink = versionLink ?: versionLinkService.findBySourceModelIdAndLinkType(versionedFolder.id, VersionLinkType.NEW_DOCUMENTATION_VERSION_OF)
+        versionLink =
+            versionLink ?: versionLinkService.findBySourceModelIdAndLinkType(versionedFolder.id, VersionLinkType.NEW_DOCUMENTATION_VERSION_OF)
 
         // If no versionlink then we're at the oldest ancestor
         if (!versionLink) {
@@ -602,7 +616,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
         List<VersionLink> versionLinks = versionLinkService.findAllByTargetModelId(instance.id)
 
-        versionLinks.each {link ->
+        versionLinks.each { link ->
             VersionedFolder linkedModel = get(link.multiFacetAwareItemId)
             versionTreeModelList.
                 addAll(buildModelVersionTree(linkedModel, link.linkType, rootVersionTreeModel, includeForks, userSecurityPolicyManager))
@@ -613,8 +627,10 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     VersionedFolder findCommonAncestorBetweenModels(VersionedFolder leftModel, VersionedFolder rightModel) {
 
         if (leftModel.label != rightModel.label) {
-            throw new ApiBadRequestException('VFS03', "VersionedFolder [${leftModel.id}] does not share its label with [${rightModel.id}] therefore they cannot have a " +
-                                                      "common ancestor")
+            throw new ApiBadRequestException('VFS03',
+                                             "VersionedFolder [${leftModel.id}] does not share its label with [${rightModel.id}] therefore they " +
+                                             "cannot have a " +
+                                             "common ancestor")
         }
 
         VersionedFolder finalisedLeftParent = getFinalisedParent(leftModel)
@@ -665,7 +681,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     }
 
     boolean doesDepthTreeContainVersionedFolder(Folder folder) {
-        folder.instanceOf(VersionedFolder) || folderService.findAllByParentId(folder.id).any {doesDepthTreeContainVersionedFolder(it)}
+        folder.instanceOf(VersionedFolder) || folderService.findAllByParentId(folder.id).any { doesDepthTreeContainVersionedFolder(it) }
     }
 
     boolean isVersionedFolderFamily(Folder folder) {
@@ -674,6 +690,6 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     boolean doesDepthTreeContainFinalisedModel(Folder folder) {
         List<Model> models = folderService.findAllModelsInFolder(folder)
-        models.any {it.finalised} || findAllByParentId(folder.id).any {doesDepthTreeContainFinalisedModel(it)}
+        models.any { it.finalised } || findAllByParentId(folder.id).any { doesDepthTreeContainFinalisedModel(it) }
     }
 }

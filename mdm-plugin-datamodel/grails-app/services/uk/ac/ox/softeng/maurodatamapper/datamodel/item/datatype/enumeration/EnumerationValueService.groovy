@@ -67,6 +67,11 @@ class EnumerationValueService extends ModelItemService<EnumerationValue> impleme
         }
     }
 
+    @Override
+    EnumerationValue findByParentIdAndLabel(UUID parentId, String label) {
+        EnumerationValue.byEnumerationType(parentId).eq('label', label).get()
+    }
+
     void deleteAllByModelId(UUID dataModelId) {
         //Assume DataElements gone by this point
         List<UUID> enumerationValueIds = EnumerationValue.by().where {

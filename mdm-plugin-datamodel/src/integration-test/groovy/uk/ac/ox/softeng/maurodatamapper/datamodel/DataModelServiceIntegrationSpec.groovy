@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.ArrayMergeDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.CreationMergeDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.DeletionMergeDiff
@@ -47,12 +46,10 @@ import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import org.spockframework.util.Assert
 import spock.lang.PendingFeature
-import spock.lang.Stepwise
 
 @Slf4j
 @Integration
 @Rollback
-@Stepwise
 class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
     DataModel complexDataModel

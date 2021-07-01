@@ -56,7 +56,7 @@ abstract class ContainerService<K extends Container> implements SecurableResourc
 
     abstract K findDomainByLabel(String label)
 
-    abstract K findDomainByParentIdAndLabel(UUID parentId, String label)
+    abstract K findByParentIdAndLabel(UUID parentId, String label)
 
     abstract List<K> findAllByParentId(UUID parentId)
 
@@ -72,6 +72,11 @@ abstract class ContainerService<K extends Container> implements SecurableResourc
 
     Class<K> getMultiFacetAwareClass() {
         getContainerClass()
+    }
+
+    @Override
+    K findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        findByParentIdAndLabel(parentId, pathIdentifier)
     }
 
     K findByPath(String path) {
@@ -94,11 +99,11 @@ abstract class ContainerService<K extends Container> implements SecurableResourc
 
     K findByPath(K parent, List<String> pathLabels) {
         if (pathLabels.size() == 1) {
-            return findDomainByParentIdAndLabel(parent.id, pathLabels[0])
+            return findByParentIdAndLabel(parent.id, pathLabels[0])
         }
 
         String nextParentLabel = pathLabels.remove(0)
-        K nextParent = findDomainByParentIdAndLabel(parent.id, nextParentLabel)
+        K nextParent = findByParentIdAndLabel(parent.id, nextParentLabel)
         findByPath(nextParent, pathLabels)
     }
 

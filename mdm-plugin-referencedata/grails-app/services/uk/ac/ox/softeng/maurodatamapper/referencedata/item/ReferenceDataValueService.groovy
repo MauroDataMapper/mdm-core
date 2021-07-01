@@ -122,7 +122,7 @@ class ReferenceDataValueService implements DomainService<ReferenceDataValue> {
 
     List<ReferenceDataValue> findAllByReferenceDataModelIdAndRowNumberIn(Serializable referenceDataModelId, List rowNumbers, Map params = [:]) {
         ReferenceDataValue.withFilter(ReferenceDataValue.byReferenceDataModelIdAndRowNumberIn(referenceDataModelId, rowNumbers), params).list(params)
-    }    
+    }
 
     Integer countRowsByReferenceDataModelId(Serializable referenceDataModelId) {
         ReferenceDataValue.countByReferenceDataModelId(referenceDataModelId).list()[0]
@@ -141,7 +141,8 @@ class ReferenceDataValueService implements DomainService<ReferenceDataValue> {
         referenceDataValue.createdBy = importingUser.emailAddress
 
         //Get the reference data element for this value by getting the matching reference data element for the model
-        referenceDataValue.referenceDataElement = referenceDataModel.referenceDataElements.find {it.label == referenceDataValue.referenceDataElement.label}
+        referenceDataValue.referenceDataElement =
+            referenceDataModel.referenceDataElements.find { it.label == referenceDataValue.referenceDataElement.label }
     }
 
     List<ReferenceDataValue> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
@@ -150,5 +151,10 @@ class ReferenceDataValueService implements DomainService<ReferenceDataValue> {
 
     List<ReferenceDataValue> findAllByMetadataNamespace(String namespace, Map pagination) {
         ReferenceDataValue.byMetadataNamespace(namespace).list(pagination)
+    }
+
+    @Override
+    ReferenceDataValue findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        ReferenceDataValue.byReferenceDataModelId(parentId).eq('rowNumber', pathIdentifier.toInteger()).get()
     }
 }

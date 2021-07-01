@@ -36,7 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired
  * @since 31/01/2020
  */
 @Slf4j
-trait MultiFacetItemAwareService<K> extends DomainService<K> {
+trait MultiFacetItemAwareService<M extends MultiFacetItemAware> extends DomainService<M> {
 
     @Autowired(required = false)
     List<CatalogueItemService> catalogueItemServices
@@ -44,19 +44,19 @@ trait MultiFacetItemAwareService<K> extends DomainService<K> {
     @Autowired(required = false)
     List<ContainerService> containerServices
 
-    abstract K findByMultiFacetAwareItemIdAndId(UUID multiFacetAwareItemId, Serializable id)
+    abstract M findByMultiFacetAwareItemIdAndId(UUID multiFacetAwareItemId, Serializable id)
 
-    abstract List<K> findAllByMultiFacetAwareItemId(UUID multiFacetAwareItemId, Map pagination)
+    abstract List<M> findAllByMultiFacetAwareItemId(UUID multiFacetAwareItemId, Map pagination)
 
-    abstract DetachedCriteria<K> getBaseDeleteCriteria()
+    abstract DetachedCriteria<M> getBaseDeleteCriteria()
 
-    abstract void saveMultiFacetAwareItem(K facet)
+    abstract void saveMultiFacetAwareItem(M facet)
 
-    abstract void delete(K facet, boolean flush)
+    abstract void delete(M facet, boolean flush)
 
-    abstract void addFacetToDomain(K facet, String domainType, UUID domainId)
+    abstract void addFacetToDomain(M facet, String domainType, UUID domainId)
 
-    K addCreatedEditToMultiFacetAwareItem(User creator, K domain, String multiFacetAwareItemDomainType, UUID multiFacetAwareItemId) {
+    M addCreatedEditToMultiFacetAwareItem(User creator, M domain, String multiFacetAwareItemDomainType, UUID multiFacetAwareItemId) {
         EditHistoryAware multiFacetAwareItem =
             findMultiFacetAwareItemByDomainTypeAndId(multiFacetAwareItemDomainType, multiFacetAwareItemId) as EditHistoryAware
         multiFacetAwareItem.addToEditsTransactionally EditTitle.CREATE, creator, "[$domain.editLabel] added to component " +
@@ -64,15 +64,15 @@ trait MultiFacetItemAwareService<K> extends DomainService<K> {
         domain
     }
 
-    K addUpdatedEditToMultiFacetAwareItem(User editor, K domain, String multiFacetAwareItemDomainType, UUID multiFacetAwareItemId,
+    M addUpdatedEditToMultiFacetAwareItem(User editor, M domain, String multiFacetAwareItemDomainType, UUID multiFacetAwareItemId,
                                           List<String> dirtyPropertyNames) {
         EditHistoryAware multiFacetAwareItem =
             findMultiFacetAwareItemByDomainTypeAndId(multiFacetAwareItemDomainType, multiFacetAwareItemId) as EditHistoryAware
-        multiFacetAwareItem.addToEditsTransactionally EditTitle.UPDATE,editor, domain.editLabel, dirtyPropertyNames
+        multiFacetAwareItem.addToEditsTransactionally EditTitle.UPDATE, editor, domain.editLabel, dirtyPropertyNames
         domain
     }
 
-    K addDeletedEditToMultiFacetAwareItem(User deleter, K domain, String multiFacetAwareItemDomainType, UUID multiFacetAwareItemId) {
+    M addDeletedEditToMultiFacetAwareItem(User deleter, M domain, String multiFacetAwareItemDomainType, UUID multiFacetAwareItemId) {
         EditHistoryAware multiFacetAwareItem =
             findMultiFacetAwareItemByDomainTypeAndId(multiFacetAwareItemDomainType, multiFacetAwareItemId) as EditHistoryAware
         multiFacetAwareItem.addToEditsTransactionally EditTitle.DELETE, deleter, "[$domain.editLabel] removed from component " +

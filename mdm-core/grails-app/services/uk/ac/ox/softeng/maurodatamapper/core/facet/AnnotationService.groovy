@@ -114,4 +114,9 @@ class AnnotationService implements MultiFacetItemAwareService<Annotation> {
     Number countWhereRootAnnotationOfMultiFacetAwareItemId(UUID multiFacetAwareItemId) {
         Annotation.whereRootAnnotationOfMultiFacetAwareItemId(multiFacetAwareItemId).count()
     }
+
+    @Override
+    Annotation findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        Annotation.byMultiFacetAwareItemId(parentId).eq('label', pathIdentifier).get()
+    }
 }

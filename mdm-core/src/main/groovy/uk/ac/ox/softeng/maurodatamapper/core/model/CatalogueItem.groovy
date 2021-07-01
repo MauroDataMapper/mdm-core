@@ -88,6 +88,11 @@ trait CatalogueItem<D extends Diffable> implements InformationAware, EditHistory
         label
     }
 
+    @Override
+    String getPathIdentifier() {
+        label
+    }
+
     void updateChildIndexes(ModelItem updated, Integer oldIndex) {
         // no-op
     }

@@ -19,9 +19,9 @@ package uk.ac.ox.softeng.maurodatamapper.core.model
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -64,7 +64,7 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
         //TODO validation on saving merges
         if (!objectPatchData.hasPatches()) return targetModel
         log.debug('Merging {} diffs into modelItem [{}]', objectPatchData.getPatches().size(), targetModelItem.label)
-        objectPatchData.getPatches().each {mergeFieldDiff ->
+        objectPatchData.getPatches().each { mergeFieldDiff ->
             log.debug('{}', mergeFieldDiff.summary)
 
             if (mergeFieldDiff.isFieldChange()) {
@@ -95,15 +95,16 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
         targetModel
     }
 
-    void processFieldPatchData(FieldPatchData fieldPatchData, Model targetModel, UserSecurityPolicyManager userSecurityPolicyManager, UUID parentId = null) {
+    void processFieldPatchData(FieldPatchData fieldPatchData, Model targetModel, UserSecurityPolicyManager userSecurityPolicyManager,
+                               UUID parentId = null) {
         // apply deletions of children to target object
-        fieldPatchData.deleted.each {deletedItemPatchData ->
+        fieldPatchData.deleted.each { deletedItemPatchData ->
             ModelItem modelItem = get(deletedItemPatchData.id) as ModelItem
             delete(modelItem)
         }
 
         // copy additions from source to target object
-        fieldPatchData.created.each {createdItemPatchData ->
+        fieldPatchData.created.each { createdItemPatchData ->
             ModelItem modelItem = get(createdItemPatchData.id) as ModelItem
             ModelItem copyModelItem
             if (parentId) {

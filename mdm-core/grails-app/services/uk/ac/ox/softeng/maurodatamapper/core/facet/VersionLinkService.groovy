@@ -84,6 +84,15 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
     }
 
     @Override
+    VersionLink findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        String[] split = pathIdentifier
+        VersionLink.byModelId(parentId)
+            .eq('linkType', SemanticLinkType.findForLabel(split[0]))
+            .eq('targetModelId', Utils.toUuid(split[1]))
+            .get()
+    }
+
+    @Override
     void addFacetToDomain(VersionLink facet, String domainType, UUID domainId) {
         if (!facet) return
         VersionLinkAware domain = findVersionLinkAwareByDomainTypeAndId(domainType, domainId)

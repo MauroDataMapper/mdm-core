@@ -88,4 +88,9 @@ class SummaryMetadataService implements MultiFacetItemAwareService<SummaryMetada
     DetachedCriteria<SummaryMetadata> getBaseDeleteCriteria() {
         SummaryMetadata.by()
     }
+
+    @Override
+    SummaryMetadata findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        SummaryMetadata.byMultiFacetAwareItemId(parentId).eq('label', pathIdentifier).get()
+    }
 }

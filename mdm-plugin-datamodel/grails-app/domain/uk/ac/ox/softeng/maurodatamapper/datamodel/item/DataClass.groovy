@@ -298,6 +298,10 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         byDataModelId(dataModelId).eq('parentDataClass.id', dataClassId)
     }
 
+    static DetachedCriteria<DataClass> byParentDataClassId(UUID dataClassId) {
+        new DetachedCriteria<DataClass>(DataClass).eq('parentDataClass.id', dataClassId)
+    }
+
     static DetachedCriteria<DataClass> byDataModelIdAndParentDataClassIdIncludingImported(UUID dataModelId, UUID dataClassId) {
         new DetachedCriteria<DataClass>(DataClass).or {
             and {

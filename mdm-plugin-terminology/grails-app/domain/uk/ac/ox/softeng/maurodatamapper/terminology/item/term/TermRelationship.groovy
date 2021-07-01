@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.item.term
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
@@ -76,6 +75,11 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
     @Override
     String getPathPrefix() {
         'tr'
+    }
+
+    @Override
+    String getPathIdentifier() {
+        "${sourceTerm.code}-${relationshipType.label}-${targetTerm.code}"
     }
 
     def beforeValidate() {
@@ -179,6 +183,20 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
     static DetachedCriteria<TermRelationship> withFilter(DetachedCriteria<TermRelationship> criteria, Map filters) {
         if (filters.relationshipType) criteria = criteria.ilike('relationshipType.label', "%${filters.relationshipType}%")
         criteria
+    }
+
+    static DetachedCriteria<TermRelationship> byPathIdentifierFields(String sourceTermCode, String relationshipTypeLabel, String targetTermCode) {
+        where {
+            sourceTerm {
+                eq 'code', sourceTermCode
+            }
+            targetTerm {
+                eq 'code', targetTermCode
+            }
+            relationshipType {
+                eq 'label', relationshipTypeLabel
+            }
+        }
     }
 
     static DetachedCriteria<TermRelationship> byTermIdIsParent(UUID termId) {

@@ -104,6 +104,11 @@ class Folder implements Container {
         'fo'
     }
 
+    @Override
+    String getPathIdentifier() {
+        label
+    }
+
     boolean hasChildFolders() {
         Folder.countByParentFolder(this)
     }

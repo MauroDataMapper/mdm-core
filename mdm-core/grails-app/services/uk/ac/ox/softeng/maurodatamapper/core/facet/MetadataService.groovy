@@ -265,4 +265,12 @@ class MetadataService implements MultiFacetItemAwareService<Metadata> {
 
         log.trace('Batch save took {}', Utils.getTimeString(System.currentTimeMillis() - start))
     }
+
+    @Override
+    Metadata findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        Metadata.byMultiFacetAwareItemId(parentId)
+            .eq('namespace', pathIdentifier.split(/\./)[0])
+            .eq('key', pathIdentifier.split(/\./)[1])
+            .get()
+    }
 }

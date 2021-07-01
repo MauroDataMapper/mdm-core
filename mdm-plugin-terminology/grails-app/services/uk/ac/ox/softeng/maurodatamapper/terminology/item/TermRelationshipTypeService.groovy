@@ -187,4 +187,9 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
     List<TermRelationshipType> findAllByMetadataNamespace(String namespace, Map pagination) {
         TermRelationshipType.byMetadataNamespace(namespace).list(pagination)
     }
+
+    @Override
+    TermRelationshipType findByParentIdAndLabel(UUID parentId, String label) {
+        TermRelationshipType.byTerminologyId(parentId).eq('label', label).get()
+    }
 }

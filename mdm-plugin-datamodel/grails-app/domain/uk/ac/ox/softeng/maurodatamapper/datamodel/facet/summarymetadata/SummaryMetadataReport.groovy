@@ -27,9 +27,13 @@ import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
 class SummaryMetadataReport implements CreatorAware {
+
+    static final DateTimeFormatter PATH_FORMATTER = DateTimeFormatter.ofPattern('yyyyMMddHHmmssSSSSSSX')
 
     UUID id
     OffsetDateTime reportDate
@@ -58,6 +62,11 @@ class SummaryMetadataReport implements CreatorAware {
     @Override
     String getPathPrefix() {
         'smr'
+    }
+
+    @Override
+    String getPathIdentifier() {
+        reportDate.withOffsetSameInstant(ZoneOffset.UTC).format(PATH_FORMATTER)
     }
 
     String getEditLabel() {

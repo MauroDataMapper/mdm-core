@@ -50,7 +50,7 @@ class SubscribedCatalogue implements SecurableResource, EditHistoryAware, Inform
 
     static constraints = {
         CallableConstraints.call(InformationAwareConstraints, delegate)
-        url blank: false, validator: {val ->
+        url blank: false, validator: { val ->
             new UrlValidator(UrlValidator.ALLOW_LOCAL_URLS).isValid(val) ?: ['default.invalid.url.message']
         }
         label unique: true
@@ -84,7 +84,12 @@ class SubscribedCatalogue implements SecurableResource, EditHistoryAware, Inform
 
     @Override
     String getPathPrefix() {
-        'subc'
+        null
+    }
+
+    @Override
+    String getPathIdentifier() {
+        null
     }
 
     @Override

@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security
 
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRoleService
 
@@ -24,7 +25,7 @@ import grails.gorm.transactions.Transactional
 import grails.validation.ValidationException
 
 @Transactional
-class UserGroupService {
+class UserGroupService implements DomainService<UserGroup> {
 
     GroupRoleService groupRoleService
 
@@ -55,13 +56,18 @@ class UserGroupService {
         group.delete(flush: true)
     }
 
+    @Override
+    UserGroup findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        findByName(pathIdentifier)
+    }
+
     UserGroup findByName(String name) {
         UserGroup.findByName(name)
     }
 
     UserGroup createNewGroup(CatalogueUser createdBy, String name, String description = null, List<CatalogueUser> members = []) {
         UserGroup group = new UserGroup(createdBy: createdBy.emailAddress, name: name, description: description)
-        members.each {group.addToGroupMembers(it)}
+        members.each { group.addToGroupMembers(it) }
         group.addToGroupMembers(createdBy)
     }
 

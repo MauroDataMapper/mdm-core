@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.item.term
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
@@ -86,7 +87,7 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
 
             log.trace('Removing {} TermRelationships', termRelationshipIds.size())
             sessionFactory.currentSession
-                .createSQLQuery('delete from terminology.term_relationship where id in :ids')
+                .createSQLQuery('DELETE FROM terminology.term_relationship WHERE id IN :ids')
                 .setParameter('ids', termRelationshipIds)
                 .executeUpdate()
 
@@ -202,5 +203,15 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
     @Override
     List<TermRelationship> findAllByMetadataNamespace(String namespace, Map pagination) {
         TermRelationship.byMetadataNamespace(namespace).list(pagination)
+    }
+
+    @Override
+    TermRelationship findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        String[] split = pathIdentifier.split(/-/)
+        if (split.size() != 3) throw new ApiBadRequestException('TRS01', "TermRelationship Path identifier is invalid [${pathIdentifier}]")
+        TermRelationship.byPathIdentifierFields(split[0], split[1], split[2]).or {
+            eq 'sourceTerm.id', parentId
+            eq 'targetTerm.id', parentId
+        }.get()
     }
 }
