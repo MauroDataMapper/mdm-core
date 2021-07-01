@@ -6,7 +6,7 @@
       "type": "ReferenceDataModel",
       "documentationVersion": "1.0.0",
       "finalised": true,
-      "dateFinalised": null,
+      "dateFinalised": "${json-unit.matches:offsetDateTime}",
       "modelVersion": "1.0.0",
       "authority": {
         "id": "${json-unit.matches:id}",

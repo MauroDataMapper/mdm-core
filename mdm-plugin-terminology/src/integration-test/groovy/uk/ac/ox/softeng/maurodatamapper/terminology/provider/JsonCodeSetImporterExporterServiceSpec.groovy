@@ -96,7 +96,7 @@ class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
             Assert.fail("Expected export file ${expectedPath} does not exist")
         }
 
-        String expectedJson = replaceContentWithMatchers(Files.readString(expectedPath)).replace(/Test Authority/, 'Mauro Data Mapper')
+        String expectedJson = replaceContentWithMatchers(Files.readString(expectedPath))
         verifyJson(expectedJson, exportedModel)
     }
 
@@ -190,7 +190,7 @@ class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         String exported = exportModel(simpleCodeSetId)
 
         then:
-        validateExportedModel('bootstrappedSimpleCodeSet', exported.replace(/Test Authority/, 'Mauro Data Mapper'))
+        validateExportedModel('bootstrappedSimpleCodeSet', exported)
 
         //note: importing does not actually save
         when:
@@ -244,7 +244,7 @@ class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         cs.organisation == 'Test Organisation'
         cs.documentationVersion.toString() == '1.0.0'
         cs.finalised == false
-        cs.authority.label == 'Mauro Data Mapper'
+        cs.authority.label == 'Test Authority'
         cs.authority.url == 'http://localhost'
         !cs.aliases
         !cs.annotations
@@ -279,7 +279,7 @@ class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         cs.documentationVersion.toString() == '1.0.0'
         cs.modelVersion.toString() == '6.3.1'
         cs.finalised == true
-        cs.authority.label == 'Mauro Data Mapper'
+        cs.authority.label == 'Test Authority'
         cs.authority.url == 'http://localhost'
         !cs.aliases
         !cs.annotations
@@ -313,7 +313,7 @@ class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         cs.organisation == 'Test Organisation'
         cs.documentationVersion.toString() == '1.0.0'
         cs.finalised == false
-        cs.authority.label == 'Mauro Data Mapper'
+        cs.authority.label == 'Test Authority'
         cs.authority.url == 'http://localhost'
         cs.aliases.size() == 2
         'Alias 1' in cs.aliases
@@ -328,7 +328,7 @@ class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
 
         then:
         validateExportedModel('codeSetSimpleWithAliases', exported)
-    }    
+    }
 
     void 'test simple data import with annotations'() {
         given:
@@ -349,7 +349,7 @@ class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         cs.organisation == 'Test Organisation'
         cs.documentationVersion.toString() == '1.0.0'
         cs.finalised == false
-        cs.authority.label == 'Mauro Data Mapper'
+        cs.authority.label == 'Test Authority'
         cs.authority.url == 'http://localhost'
         !cs.aliases
         cs.annotations.size() == 1
@@ -362,7 +362,7 @@ class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
 
         then:
         ann.description == 'test annotation 1 description'
-        ann.label == 'test annotation 1 label'          
+        ann.label == 'test annotation 1 label'
 
         when:
         String exported = exportModel(cs.id)
@@ -390,7 +390,7 @@ class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         cs.organisation == 'Test Organisation'
         cs.documentationVersion.toString() == '1.0.0'
         cs.finalised == false
-        cs.authority.label == 'Mauro Data Mapper'
+        cs.authority.label == 'Test Authority'
         cs.authority.url == 'http://localhost'
         !cs.aliases
         !cs.annotations
@@ -424,7 +424,7 @@ class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         cs.organisation == 'Test Organisation'
         cs.documentationVersion.toString() == '1.0.0'
         cs.finalised == false
-        cs.authority.label == 'Mauro Data Mapper'
+        cs.authority.label == 'Test Authority'
         cs.authority.url == 'http://localhost'
         !cs.aliases
         !cs.annotations
@@ -458,7 +458,7 @@ class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         cs.organisation == 'Test Organisation'
         cs.documentationVersion.toString() == '1.0.0'
         cs.finalised == false
-        cs.authority.label == 'Mauro Data Mapper'
+        cs.authority.label == 'Test Authority'
         cs.authority.url == 'http://localhost'
         !cs.aliases
         !cs.annotations
@@ -470,7 +470,7 @@ class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         Term term0 = cs.terms[0]
 
         then:
-        term0.label == 'STT01: Simple Test Term 01'       
+        term0.label == 'STT01: Simple Test Term 01'
 
         when:
         String exported = exportModel(cs.id)
@@ -498,7 +498,7 @@ class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         cs.organisation == 'Test Organisation'
         cs.documentationVersion.toString() == '1.0.0'
         cs.finalised == false
-        cs.authority.label == 'Mauro Data Mapper'
+        cs.authority.label == 'Test Authority'
         cs.authority.url == 'http://localhost'
         !cs.aliases
         !cs.annotations
@@ -556,5 +556,5 @@ class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         then:
         ApiBadRequestException exception = thrown(ApiBadRequestException)
         exception.errorCode == 'CSS01'
-    }        
+    }
 }

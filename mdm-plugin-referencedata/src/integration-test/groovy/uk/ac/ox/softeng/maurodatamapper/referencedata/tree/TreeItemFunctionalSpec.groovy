@@ -60,7 +60,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
         folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
         checkAndSave(folder)
-        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: FUNCTIONAL_TEST)
+        Authority testAuthority = Authority.findByLabel('Test Authority')
         checkAndSave(testAuthority)
 
         ReferenceDataModel dataModel = new ReferenceDataModel(label: 'Functional Test DataModel', createdBy: FUNCTIONAL_TEST,
@@ -80,7 +80,6 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     def cleanupSpec() {
         log.debug('CleanupSpec')
         cleanUpResources(ReferenceDataModel, Folder, Classifier)
-        Authority.findByLabel('Test Authority').delete(flush: true)
     }
 
     @Override

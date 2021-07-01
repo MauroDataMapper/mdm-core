@@ -603,8 +603,10 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         Version.nextMajorVersion(parentModelVersion)
     }
 
-    void checkFinaliseModel(K model, Boolean finalised, Boolean importAsNewBranchModelVersion = false) {
-        if (finalised && !model.finalised) {
+    void checkFinaliseModel(K model, Boolean finalise, Boolean importAsNewBranchModelVersion = false) {
+        if (finalise && (!model.finalised || !model.modelVersion)) {
+            // Parameter update will have set the model as finalised, but it wont have set the model version
+            // If the actual import data includes finalised data then it will also containt the model version
             // If the model hasnt been imported as a new branch model version then we need to check if any existing models
             // If existing models then we cant finalise as we need to link the imported model
             if (!importAsNewBranchModelVersion && countByAuthorityAndLabel(model.authority, model.label)) {

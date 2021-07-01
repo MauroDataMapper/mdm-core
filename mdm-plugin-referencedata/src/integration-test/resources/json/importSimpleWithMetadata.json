@@ -18,24 +18,24 @@
               "value": "mdv2",
               "lastUpdated": "${json-unit.matches:offsetDateTime}"
             },
-            {
-              "id": "${json-unit.matches:id}",
-              "namespace": "codeset.test.com/simple",
-              "key": "mdk2",
-              "value": "mdv2",
-              "lastUpdated": "${json-unit.matches:offsetDateTime}"
-            }
-          ],        
-        "type": "ReferenceDataModel",
-        "documentationVersion": "1.0.0",
-        "author": "Test Author",
-        "organisation": "Test Organisation",
-        "finalised": false,
-        "authority": {
-            "id": "107adf2e-7051-4ffc-b785-1122f598f13a",
-            "url": "http://localhost",
-            "label": "Mauro Data Mapper"
-        }
+          {
+            "id": "${json-unit.matches:id}",
+            "namespace": "codeset.test.com/simple",
+            "key": "mdk2",
+            "value": "mdv2",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}"
+          }
+        ],
+      "type": "ReferenceDataModel",
+      "documentationVersion": "1.0.0",
+      "author": "Test Author",
+      "organisation": "Test Organisation",
+      "finalised": false,
+      "authority": {
+        "id": "107adf2e-7051-4ffc-b785-1122f598f13a",
+        "url": "http://localhost",
+        "label": "Test Authority"
+      }
     },
    "exportMetadata": {
         "exportedBy": "Admin User",

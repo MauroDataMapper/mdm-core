@@ -130,7 +130,7 @@ class XmlReferenceDataImporterExporterServiceSpec extends BaseReferenceDataModel
         assert referenceDataModel.breadcrumbTree
         assert referenceDataModel.breadcrumbTree.domainId == referenceDataModel.id
         assert referenceDataModel.breadcrumbTree.label == referenceDataModel.label
-    }    
+    }
 
     @Override
     void setupDomainData() {
@@ -138,7 +138,7 @@ class XmlReferenceDataImporterExporterServiceSpec extends BaseReferenceDataModel
 
         exampleReferenceDataModelId = buildExampleReferenceDataModel().id
         secondExampleReferenceDataModelId = buildSecondExampleReferenceDataModel().id
-    }    
+    }
 
     void validateExportedModel(String testName, String exportedModel, Map exclude = [:]) {
         assert exportedModel, 'There must be an exported model string'
@@ -148,11 +148,10 @@ class XmlReferenceDataImporterExporterServiceSpec extends BaseReferenceDataModel
             Files.writeString(expectedPath, (prettyPrint(exportedModel)))
             Assert.fail("Expected export file ${expectedPath} does not exist")
         }
-        //validateAndCompareXml(Files.readString(expectedPath), exportedModel.replace(/Mauro Data Mapper/, 'Test Authority'), 'export', exporterService.version)
 
-        String expected = Files.readString(expectedPath)
+        String expected = Files.readString(expectedPath).replace(/Mauro Data Mapper/, 'Test Authority')
         String actual = exportedModel
-          
+
         validateAndCompareXml(expected, actual, 'export', exporterService.version)
     }
 
@@ -232,7 +231,7 @@ class XmlReferenceDataImporterExporterServiceSpec extends BaseReferenceDataModel
         rdm.organisation == 'Test Organisation'
         rdm.documentationVersion.toString() == '1.0.0'
         rdm.finalised == false
-        rdm.authority.label == 'Mauro Data Mapper'
+        rdm.authority.label == 'Test Authority'
         rdm.authority.url == 'http://localhost'
         !rdm.aliases
         !rdm.annotations
@@ -269,7 +268,7 @@ class XmlReferenceDataImporterExporterServiceSpec extends BaseReferenceDataModel
         rdm.organisation == 'Test Organisation'
         rdm.documentationVersion.toString() == '1.0.0'
         rdm.finalised == false
-        rdm.authority.label == 'Mauro Data Mapper'
+        rdm.authority.label == 'Test Authority'
         rdm.authority.url == 'http://localhost'
         rdm.aliases.size() == 2
         'Alias 1' in rdm.aliases
@@ -308,7 +307,7 @@ class XmlReferenceDataImporterExporterServiceSpec extends BaseReferenceDataModel
         rdm.organisation == 'Test Organisation'
         rdm.documentationVersion.toString() == '1.0.0'
         rdm.finalised == false
-        rdm.authority.label == 'Mauro Data Mapper'
+        rdm.authority.label == 'Test Authority'
         rdm.authority.url == 'http://localhost'
         !rdm.aliases
         rdm.annotations.size() == 1
@@ -323,7 +322,7 @@ class XmlReferenceDataImporterExporterServiceSpec extends BaseReferenceDataModel
 
         then:
         ann.description == 'test annotation 1 description'
-        ann.label == 'test annotation 1 label'          
+        ann.label == 'test annotation 1 label'
 
         when:
         String exported = exportModel(rdm.id)
@@ -351,7 +350,7 @@ class XmlReferenceDataImporterExporterServiceSpec extends BaseReferenceDataModel
         rdm.organisation == 'Test Organisation'
         rdm.documentationVersion.toString() == '1.0.0'
         rdm.finalised == false
-        rdm.authority.label == 'Mauro Data Mapper'
+        rdm.authority.label == 'Test Authority'
         rdm.authority.url == 'http://localhost'
         !rdm.aliases
         !rdm.annotations
@@ -360,7 +359,7 @@ class XmlReferenceDataImporterExporterServiceSpec extends BaseReferenceDataModel
         !rdm.referenceDataTypes
         !rdm.referenceDataElements
         !rdm.referenceDataValues
-         
+
 
         when:
         String exported = exportModel(rdm.id)
@@ -388,7 +387,7 @@ class XmlReferenceDataImporterExporterServiceSpec extends BaseReferenceDataModel
         rdm.organisation == 'Test Organisation'
         rdm.documentationVersion.toString() == '1.0.0'
         rdm.finalised == false
-        rdm.authority.label == 'Mauro Data Mapper'
+        rdm.authority.label == 'Test Authority'
         rdm.authority.url == 'http://localhost'
         !rdm.aliases
         !rdm.annotations
@@ -397,7 +396,7 @@ class XmlReferenceDataImporterExporterServiceSpec extends BaseReferenceDataModel
         !rdm.referenceDataTypes
         !rdm.referenceDataElements
         !rdm.referenceDataValues
-         
+
 
         when:
         String exported = exportModel(rdm.id)
@@ -425,27 +424,27 @@ class XmlReferenceDataImporterExporterServiceSpec extends BaseReferenceDataModel
         rdm.organisation == 'Test Organisation'
         rdm.documentationVersion.toString() == '1.0.0'
         rdm.finalised == false
-        rdm.authority.label == 'Mauro Data Mapper'
+        rdm.authority.label == 'Test Authority'
         rdm.authority.url == 'http://localhost'
         !rdm.aliases
         !rdm.annotations
-        
+
         //Metadata
         rdm.metadata.size() == 3
 
         //Classifiers
         rdm.classifiers.size() == 1
         rdm.classifiers[0].label == "An imported classifier"
-        
+
         //Reference Data Types
         rdm.referenceDataTypes.size() == 2
-        
+
         //Reference Data Elements
         rdm.referenceDataElements.size() == 2
 
         //Reference Data Values (100 rows of 2 columns)
         rdm.referenceDataValues.size() == 200
-         
+
         when:
         String exported = exportModel(rdm.id)
 

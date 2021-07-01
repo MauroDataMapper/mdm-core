@@ -99,7 +99,7 @@ class VersionedFolderFunctionalSpec extends ResourceFunctionalSpec<VersionedFold
   "authority": {
     "id": "${json-unit.matches:id}",
     "url": "http://localhost",
-    "label": "Mauro Data Mapper"
+    "label": "Test Authority"
   }
 }'''
     }
@@ -197,7 +197,7 @@ class VersionedFolderFunctionalSpec extends ResourceFunctionalSpec<VersionedFold
   "authority": {
     "id": "${json-unit.matches:id}",
     "url": "http://localhost",
-    "label": "Mauro Data Mapper"
+    "label": "Test Authority"
   }
 }''')
 

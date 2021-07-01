@@ -80,7 +80,7 @@ abstract class BaseImportExportTerminologySpec extends BaseTerminologyIntegratio
         assert terminology.organisation == 'Test Organisation'
         assert terminology.documentationVersion.toString() == '1.0.0'
         assert !terminology.finalised
-        assert terminology.authority.label == 'Mauro Data Mapper'
+        assert terminology.authority.label == 'Test Authority'
         assert terminology.authority.url == 'http://localhost'
         assert terminology.breadcrumbTree
         assert terminology.breadcrumbTree.domainId == terminology.id
