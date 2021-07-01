@@ -1,26 +1,16 @@
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
-import uk.ac.ox.softeng.maurodatamapper.core.model.Model
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 
 import java.beans.Introspector
 
 model {
-    CatalogueItem catalogueItem
+    CreatorAware pathedResource
     UserSecurityPolicyManager userSecurityPolicyManager
 }
 
-//Path controller, service and view are in mdm-core and need to return details of classes which are
-//unknown because they are defined in plugin projects.
-//For example, when rendering an EnumerationType, it is required to display EnumerationValues,
-//but this cannot be easily done from within a CatalogueItem.
-//(Possibilities in this example would be g.render(catalogueItem, [deep: true])) which renders too much
-//information, or g.render(catalogueItem, [expand:['enumerationValues']]) which requires knowledge of the properties
-//to be rendered.
-//So instead here we define a template based on the domainType of the catalogueItem. It is up to plugins to ensure
-//that a suitable template is available.
-//Note: using a template called 'path' does not work, hence 'showPath'.
+String modelName = Introspector.decapitalize(pathedResource.domainType)
+Map<String, Object> modelMap = new HashMap<>()
+modelMap.userSecurityPolicyManager = userSecurityPolicyManager
+modelMap.put(modelName, pathedResource)
 
-String template = "/${Introspector.decapitalize(catalogueItem.domainType)}/showPath"
-json g.render(template: template, model: [catalogueItem: catalogueItem,
-                                          userSecurityPolicyManager: userSecurityPolicyManager])
+json g.render(model: modelMap)

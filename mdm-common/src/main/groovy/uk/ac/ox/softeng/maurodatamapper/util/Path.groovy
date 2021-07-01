@@ -17,6 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.util
 
+import groovy.transform.stc.ClosureParams
+import groovy.transform.stc.SimpleType
+
 /**
  * @since 28/08/2020
  */
@@ -30,13 +33,18 @@ class Path {
 
     List<PathNode> pathNodes
 
+    Path() {
+
+    }
+
     /*
      * Make a list of PathNode from the provided path string. The path string is like dm:|dc:class-label|de:element-label
      * which means 'The DataElement labelled element-label which belongs to the DataClass labelled class-label which
      * belongs to the current DataModel'
      * @param path The path
      */
-    Path (String path) {
+
+    Path(String path) {
         pathNodes = []
 
         if (path) {
@@ -48,4 +56,35 @@ class Path {
         }
     }
 
+    int getSize() {
+        pathNodes.size()
+    }
+
+    PathNode getAt(int i) {
+        pathNodes[i]
+    }
+
+    PathNode last() {
+        pathNodes.last()
+    }
+
+    PathNode first() {
+        pathNodes.first()
+    }
+
+    boolean isEmpty() {
+        pathNodes.isEmpty()
+    }
+
+    void each(@DelegatesTo(List) @ClosureParams(value = SimpleType, options = 'uk.ac.ox.softeng.maurodatamapper.util.PathNode') Closure closure) {
+        pathNodes.each closure
+    }
+
+    Path getChildPath() {
+        new Path(pathNodes: pathNodes[1..size - 1])
+    }
+
+    String toString() {
+        pathNodes.join('|')
+    }
 }

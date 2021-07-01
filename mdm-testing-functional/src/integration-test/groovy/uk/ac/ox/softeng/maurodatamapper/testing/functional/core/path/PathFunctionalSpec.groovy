@@ -499,7 +499,7 @@ class PathFunctionalSpec extends FunctionalSpec {
               "parentDataClass": "${json-unit.matches:id}"
             }            
         }'''
-    }     
+    }
 
     void 'Get Terminology by path and ID when not logged in'() {
         String node
@@ -803,7 +803,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         verifyJsonResponse OK, getExpectedSimpleTermJson()
     }
 
-    void 'Get DataModel by path and ID when not logged in'() {
+    void 'DM01 : Get DataModel by path and ID when not logged in'() {
         String node
 
         //No ID

@@ -44,10 +44,16 @@ class PathNode {
         }
 
         //If there are characters after the : then extract these as the label
-        if (index < node.length() -1) {
+        if (index < node.length() - 1) {
             label = node.substring(index + 1)
         }
-
     }
 
+    boolean hasTypePrefix() {
+        typePrefix
+    }
+
+    String toString() {
+        "${typePrefix}:${label}"
+    }
 }
