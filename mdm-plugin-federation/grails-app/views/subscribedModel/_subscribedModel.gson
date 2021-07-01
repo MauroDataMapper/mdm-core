@@ -8,4 +8,8 @@ json {
     id subscribedModel.id
     subscribedModelId subscribedModel.subscribedModelId
     folderId subscribedModel.folderId
+    federated subscribedModel.localModelId ? true : false
+    if (subscribedModel.localModelId) {
+        localModelId subscribedModel.localModelId
+    }
 }

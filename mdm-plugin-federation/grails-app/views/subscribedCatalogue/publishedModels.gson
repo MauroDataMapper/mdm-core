@@ -1,0 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.federation.PublishedModel
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<PublishedModel> publishedModelList
+}
+
+json {
+    count publishedModelList instanceof PagedResultList ? ((PagedResultList) publishedModelList).getTotalCount() : publishedModelList?.size() ?: 0
+    items g.render(publishedModelList ?: [])
+}

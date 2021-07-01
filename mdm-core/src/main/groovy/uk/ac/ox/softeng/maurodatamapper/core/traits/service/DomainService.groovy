@@ -17,7 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.traits.service
 
+
+import org.grails.orm.hibernate.proxy.HibernateProxyHandler
+
 trait DomainService<K> {
+
+    final static HibernateProxyHandler HIBERNATE_PROXY_HANDLER = new HibernateProxyHandler()
 
     abstract K get(Serializable id)
 
@@ -34,5 +39,9 @@ trait DomainService<K> {
 
     K save(Map args, K domain) {
         domain.save(args)
+    }
+
+    K unwrapIfProxy(def ge) {
+        HIBERNATE_PROXY_HANDLER.unwrapIfProxy(ge) as K
     }
 }

@@ -17,21 +17,44 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.federation
 
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import java.time.OffsetDateTime
 
 
-class AvailableModel {
+class PublishedModel {
 
-    UUID id
+    UUID modelId
     String modelLabel
     Version modelVersion
     String description
     String modelType
     OffsetDateTime lastUpdated
+    OffsetDateTime dateCreated
+    OffsetDateTime datePublished
+    String author
 
-    void setLabel(String label) {
+    PublishedModel() {
+    }
+
+    PublishedModel(Model model) {
+        modelId = model.id
+        modelLabel = model.label
+        modelVersion = model.modelVersion
+        modelType = model.domainType
+        lastUpdated = model.lastUpdated
+        dateCreated = model.dateCreated
+        datePublished = model.dateFinalised
+        author = model.author
+        description = model.description
+    }
+
+    String getTitle() {
+        "${modelLabel} ${modelVersion}"
+    }
+
+    void setTitle(String label) {
         String version = label.find(Version.VERSION_PATTERN)
         if (version) {
             modelVersion = Version.from(version)
@@ -41,15 +64,11 @@ class AvailableModel {
         }
     }
 
-    String getLabel() {
-        "${modelLabel ?: ''} ${modelVersion ?: ''}".trim()
-    }
-
     String getDescription() {
-        description == label ? null : description
+        description == title ? null : description
     }
 
     void setDescription(String description) {
-        if (description && description != modelLabel) this.description = description
+        if (description && description != title) this.description = description
     }
 }

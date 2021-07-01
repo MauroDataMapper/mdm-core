@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.terminology
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
@@ -63,12 +64,17 @@ class CodeSetService extends ModelService<CodeSet> {
 
     @Override
     List<CodeSet> getAll(Collection<UUID> ids) {
-        CodeSet.getAll(ids).findAll()
+        CodeSet.getAll(ids).findAll().collect {unwrapIfProxy(it)}
     }
 
     @Override
-    List<CodeSet> list(Map pagination = [:]) {
+    List<CodeSet> list(Map pagination) {
         CodeSet.list(pagination)
+    }
+
+    @Override
+    List<CodeSet> list() {
+        CodeSet.list().collect {unwrapIfProxy(it)}
     }
 
     @Override
@@ -85,8 +91,8 @@ class CodeSetService extends ModelService<CodeSet> {
         CodeSet.count()
     }
 
-    int countByLabel(String label) {
-        CodeSet.countByLabel(label)
+    int countByAuthorityAndLabel(Authority authority, String label) {
+        CodeSet.countByAuthorityAndLabel(authority, label)
     }
 
     CodeSet validate(CodeSet codeSet) {
@@ -158,8 +164,8 @@ class CodeSetService extends ModelService<CodeSet> {
         CodeSet.findAllByReadableByAuthenticatedUsers(true)
     }
 
-    List<CodeSet> findAllByLabel(String label) {
-        CodeSet.findAllByLabel(label)
+    List<CodeSet> findAllByAuthorityAndLabel(Authority authority, String label) {
+        CodeSet.findAllByAuthorityAndLabel(authority, label)
     }
 
     @Override
@@ -179,8 +185,9 @@ class CodeSetService extends ModelService<CodeSet> {
         CodeSet.byDeleted().list(pagination)
     }
 
-    int countAllByLabelAndBranchNameAndNotFinalised(String label, String branchName) {
-        CodeSet.countByLabelAndBranchNameAndFinalised(label, branchName, false)
+    @Override
+    int countByAuthorityAndLabelAndBranchNameAndNotFinalised(Authority authority, String label, String branchName) {
+        CodeSet.countByAuthorityAndLabelAndBranchNameAndFinalised(authority, label, branchName, false)
     }
 
     CodeSet findLatestByDataLoaderPlugin(DataLoaderProviderService dataLoaderProviderService) {
@@ -392,6 +399,11 @@ class CodeSetService extends ModelService<CodeSet> {
 
     List<CodeSet> findAllModelSuperseded(UserSecurityPolicyManager userSecurityPolicyManager, Map pagination = [:]) {
         CodeSet.byIdInList(findAllModelSupersededIds(userSecurityPolicyManager.listReadableSecuredResourceIds(CodeSet))).list(pagination)
+    }
+
+    @Override
+    int countByAuthorityAndLabelAndVersion(Authority authority, String label, Version modelVersion) {
+        CodeSet.countByAuthorityAndLabelAndModelVersion(authority, label, modelVersion)
     }
 
     /**

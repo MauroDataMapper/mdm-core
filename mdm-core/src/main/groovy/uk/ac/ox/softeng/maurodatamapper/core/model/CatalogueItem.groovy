@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
+
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
@@ -112,13 +113,14 @@ trait CatalogueItem<D extends Diffable> implements InformationAware, EditHistory
     static <T extends CatalogueItem> PaginatedLuceneResult<T> luceneStandardSearch(Class<T> clazz, String searchTerm, List<UUID> allowedIds,
                                                                                    Map pagination,
                                                                                    @DelegatesTo(HibernateSearchApi) Closure additional = null) {
+
         Lucene.securedPaginatedList(clazz, allowedIds, pagination) {
             if (searchTerm) {
                 simpleQueryString(searchTerm, 'label', 'description', 'aliasesString', 'metadata.key', 'metadata.value')
             }
             if (additional) {
                 additional.setResolveStrategy(Closure.DELEGATE_FIRST)
-                additional.setDelegate(delegate)
+                additional.setDelegate(getDelegate())
                 additional.call()
             }
         }

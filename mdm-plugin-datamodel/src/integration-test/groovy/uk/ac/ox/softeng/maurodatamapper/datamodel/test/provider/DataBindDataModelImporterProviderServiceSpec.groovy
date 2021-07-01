@@ -17,11 +17,11 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.test.provider
 
-
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FileParameter
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -32,7 +32,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataBindDataModelImporterProviderService
-import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelImporterProviderServiceParameters
+import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters
 
 import grails.gorm.transactions.Rollback
 import groovy.util.logging.Slf4j
@@ -55,31 +55,32 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
     DataModelService dataModelService
 
     @Shared
-    DataModelImporterProviderServiceParameters basicParameters
+    DataModelFileImporterProviderServiceParameters basicParameters
 
     def setupSpec() {
-        basicParameters = new DataModelImporterProviderServiceParameters().tap {
+        basicParameters = new DataModelFileImporterProviderServiceParameters().tap {
             importAsNewBranchModelVersion = false
             importAsNewDocumentationVersion = false
             finalised = false
         }
     }
 
-    DataModel importAndConfirm(byte[] bytes) {
-
+    DataModel importModel(byte[] bytes) {
         log.trace('Importing:\n {}', new String(bytes))
+        basicParameters.importFile = new FileParameter(fileContents: bytes)
 
-        DataModel imported = importerService.importDataModel(admin, bytes)
-        assert imported
+        DataModel imported = importerService.importDomain(admin, basicParameters) as DataModel
         imported.folder = testFolder
-        log.debug('Check and save imported model')
-        importerService.checkImport(admin, imported, basicParameters)
         check(imported)
         dataModelService.saveModelWithContent(imported)
         sessionFactory.currentSession.flush()
-        assert dataModelService.count() == 3
         log.debug('DataModel saved')
-        DataModel dm = dataModelService.get(imported.id)
+        dataModelService.get(imported.id)
+    }
+
+    DataModel importAndConfirm(byte[] bytes) {
+        DataModel dm = importModel(bytes)
+        assert dataModelService.count() == 3
         confirmDataModel(dm)
         dm
     }
@@ -267,7 +268,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         !dataType.annotations
         !dataType.metadata
 
-    }    
+    }
 
     void 'I08 : test inc single primitive type with metadata data import'() {
         given:

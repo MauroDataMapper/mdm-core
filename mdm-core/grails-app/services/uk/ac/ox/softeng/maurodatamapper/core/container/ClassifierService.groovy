@@ -66,7 +66,7 @@ class ClassifierService extends ContainerService<Classifier> {
 
     @Override
     List<Classifier> getAll(Collection<UUID> containerIds) {
-        Classifier.getAll(containerIds)
+        Classifier.getAll(containerIds).findAll().collect {unwrapIfProxy(it)}
     }
 
     @Override
@@ -79,12 +79,19 @@ class ClassifierService extends ContainerService<Classifier> {
         Classifier.findAllByReadableByAuthenticatedUsers(true)
     }
 
+    @Override
     Classifier get(Serializable id) {
         Classifier.get(id)
     }
 
-    List<Classifier> list(Map pagination = [:]) {
+    @Override
+    List<Classifier> list(Map pagination) {
         Classifier.list(pagination)
+    }
+
+    @Override
+    List<Classifier> list() {
+        Classifier.list().collect {unwrapIfProxy(it)}
     }
 
     @Override

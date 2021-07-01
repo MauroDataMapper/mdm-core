@@ -184,6 +184,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
   "availableActions": ["show"],
   "disabled": false,
   "id": "${json-unit.matches:id}",
+  "creationMethod": "Standard",
   "pending": true
 }'''
     }
@@ -205,6 +206,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
       "pending": false,
       "disabled": false,
       "createdBy": "functional-test@test.com",
+      "creationMethod": "Standard",
       "availableActions": ["update","disable","show"]
     },
     {
@@ -216,6 +218,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
       "disabled": false,
       "needsToResetPassword": true,
       "createdBy": "functional-test@test.com",
+      "creationMethod": "Standard",
       "availableActions": ["update","disable","show"]
     },
     {
@@ -227,6 +230,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
       "disabled": false,
       "needsToResetPassword": true,
       "createdBy": "functional-test@test.com",
+      "creationMethod": "Standard",
       "availableActions": ["update","disable","show"]
     },
     {
@@ -237,6 +241,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
       "pending": false,
       "disabled": false,
       "createdBy": "admin@maurodatamapper.com",
+      "creationMethod": "Standard",
       "availableActions": ["update","disable","show"],
       "organisation": "Oxford BRC Informatics",
       "jobTitle": "God",
@@ -255,6 +260,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
       "pending": false,
       "disabled": false,
       "createdBy": "unlogged_user@mdm-core.com",
+      "creationMethod": "Standard",
       "availableActions": ["update","disable","show"]
     },
     {
@@ -265,6 +271,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
       "pending": true,
       "disabled": false,
       "createdBy": "functional-test@test.com",
+      "creationMethod": "Standard",
       "availableActions": ["update","disable","show"],
       "organisation": "Oxford",
       "jobTitle": "tester"
@@ -278,6 +285,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
       "disabled": false,
       "needsToResetPassword": true,
       "createdBy": "functional-test@test.com",
+      "creationMethod": "Standard",
       "availableActions": ["update","disable","show"]
     },
     {
@@ -288,6 +296,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
       "pending": false,
       "disabled": false,
       "createdBy": "functional-test@test.com",
+      "creationMethod": "Standard",
       "availableActions": ["update","disable","show"]
     },
     {
@@ -299,6 +308,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
       "disabled": false,
       "needsToResetPassword": true,
       "createdBy": "functional-test@test.com",
+      "creationMethod": "Standard",
       "availableActions": ["update","disable","show"]
     }
   ]
@@ -359,6 +369,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
   "disabled": false,
   "id": "${json-unit.matches:id}",
   "createdBy": "admin@maurodatamapper.com",
+  "creationMethod": "Standard",
   "pending": false
 }'''
     }
@@ -394,7 +405,8 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
   "pending": false,
   "createdBy": "functional-test@test.com",
   "disabled": false,
-  "id": "${json-unit.matches:id}"
+  "id": "${json-unit.matches:id}",
+  "creationMethod": "Standard"
 }'''
     }
 

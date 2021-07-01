@@ -160,7 +160,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
   "authority": {
     "id": "${json-unit.matches:id}",
     "url": "http://localhost",
-    "label": "Mauro Data Mapper"
+    "label": "Test Authority"
   }
 }'''
     }
@@ -1892,7 +1892,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
                 "authority": {
                     "id": "${json-unit.matches:id}",
                     "url": "http://localhost",
-                    "label": "Mauro Data Mapper"
+                    "label": "Test Authority"
                 }
             },
            "exportMetadata": {
@@ -1947,7 +1947,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
                     "authority": {
                         "id": "${json-unit.matches:id}",
                         "url": "http://localhost",
-                        "label": "Mauro Data Mapper"
+                        "label": "Test Authority"
                     }
                 }
             ]
@@ -1978,7 +1978,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
                 "authority": {
                     "id": "${json-unit.matches:id}",
                     "url": "http://localhost",
-                    "label": "Mauro Data Mapper"
+                    "label": "Test Authority"
                 }
             },
             "exportMetadata": {
@@ -2039,7 +2039,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
                     "authority": {
                         "id": "${json-unit.matches:id}",
                         "url": "http://localhost",
-                        "label": "Mauro Data Mapper"
+                        "label": "Test Authority"
                     }
                 }
             ]
@@ -2066,7 +2066,6 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         def id = response.body().items[0].id
         String expected = new String(loadTestFile('simpleCodeSet')).replaceFirst('"exportedBy": "Admin User",',
                                                                                  '"exportedBy": "Unlogged User",')
-            .replace(/Test Authority/, 'Mauro Data Mapper')
 
 
         expect:
@@ -2133,7 +2132,6 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
         String expected = new String(loadTestFile('codeSetFunctionalTest')).replaceFirst('"exportedBy": "Admin User",',
                                                                                          '"exportedBy": "Unlogged User",')
-            .replace(/Test Authority/, 'Mauro Data Mapper')
 
 
         expect:

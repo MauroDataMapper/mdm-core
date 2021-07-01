@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.test.functional.facet
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
@@ -27,8 +26,6 @@ import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
 import spock.lang.Shared
-
-import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
 
 @Slf4j
 abstract class ContainerFacetFunctionalSpec<D extends GormEntity> extends ResourceFunctionalSpec<D> {
@@ -51,7 +48,7 @@ abstract class ContainerFacetFunctionalSpec<D extends GormEntity> extends Resour
     @Transactional
     def checkAndSetupFolderAndAuthority() {
         log.debug('Check and setup test data')
-        testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: FUNCTIONAL_TEST)
+        testAuthority = Authority.findByLabel('Test Authority')
         checkAndSave(testAuthority)
     }
 
@@ -59,6 +56,5 @@ abstract class ContainerFacetFunctionalSpec<D extends GormEntity> extends Resour
     def cleanupSpec() {
         log.debug('CleanupSpec ContainerFacetFunctionalSpec')
         cleanUpResources(Folder)
-        Authority.findByLabel('Test Authority').delete(flush: true)
     }
 }

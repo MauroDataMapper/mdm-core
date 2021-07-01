@@ -42,6 +42,7 @@ import io.reactivex.Flowable
 import org.springframework.context.ApplicationContext
 import org.xml.sax.SAXException
 
+import java.time.Duration
 import java.util.concurrent.ThreadFactory
 
 /**
@@ -102,6 +103,7 @@ class FederationClient {
                      MediaTypeCodecRegistry mediaTypeCodecRegistry) {
         this.hostUrl = hostUrl
         this.contextPath = contextPath
+        httpClientConfiguration.setReadTimeout(Duration.ofMinutes(5))
         client = new DefaultHttpClient(LoadBalancer.fixed(hostUrl.toURL()),
                                        httpClientConfiguration,
                                        contextPath,
@@ -112,13 +114,13 @@ class FederationClient {
         log.debug('Client created to connect to {}', hostUrl)
     }
 
-    boolean isConnectionPossible(UUID apiKey) {
-        getSubscribedCatalogueModels(apiKey)
-    }
-
-    GPathResult getSubscribedCatalogueModels(UUID apiKey) {
+    GPathResult getSubscribedCatalogueModelsFromAtomFeed(UUID apiKey) {
         // Currently we use the ATOM feed which is XML and the micronaut client isnt designed to decode XML
         retrieveXmlDataFromClient(UriBuilder.of('feeds/all'), apiKey)
+    }
+
+    Map<String, Object> getSubscribedCatalogueModels(UUID apiKey) {
+        retrieveMapFromClient(UriBuilder.of('published/models'), apiKey)
     }
 
     List<Map<String, Object>> getAvailableExporters(UUID apiKey, String urlResourceType) {
@@ -133,9 +135,9 @@ class FederationClient {
         retrieveStringFromClient(UriBuilder.of(urlResourceType)
                                      .path(resourceId.toString())
                                      .path('export')
-                                     .path(exporterInfo.exporterNamespace)
-                                     .path(exporterInfo.exporterName)
-                                     .path(exporterInfo.exporterVersion),
+                                     .path(exporterInfo.namespace)
+                                     .path(exporterInfo.name)
+                                     .path(exporterInfo.version),
                                  apiKey
         )
     }

@@ -102,7 +102,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     @Override
     List<Folder> getAll(Collection<UUID> containerIds) {
-        VersionedFolder.getAll(containerIds)
+        VersionedFolder.getAll(containerIds).findAll().collect {unwrapIfProxy(it)}
     }
 
     @Override
@@ -275,8 +275,14 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         null
     }
 
-    List<VersionedFolder> list(Map pagination = [:]) {
+    @Override
+    List<VersionedFolder> list(Map pagination) {
         VersionedFolder.list(pagination)
+    }
+
+    @Override
+    List<VersionedFolder> list() {
+        VersionedFolder.list().collect {unwrapIfProxy(it)}
     }
 
     Long count() {

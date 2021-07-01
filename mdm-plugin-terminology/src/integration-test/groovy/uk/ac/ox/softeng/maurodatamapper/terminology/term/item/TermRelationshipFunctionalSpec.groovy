@@ -72,7 +72,7 @@ class TermRelationshipFunctionalSpec extends ResourceFunctionalSpec<TermRelation
     @Transactional
     def checkAndSetupData() {
         log.debug('Check and setup test data')
-        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: FUNCTIONAL_TEST)
+        Authority testAuthority = Authority.findByLabel('Test Authority')
         checkAndSave(testAuthority)
         folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
         checkAndSave(folder)
@@ -95,7 +95,6 @@ class TermRelationshipFunctionalSpec extends ResourceFunctionalSpec<TermRelation
     def cleanupSpec() {
         log.debug('CleanupSpec TermFunctionalSpec')
         cleanUpResources(TermRelationship, Term, TermRelationshipType, Terminology, Folder)
-        Authority.findByLabel('Test Authority').delete(flush: true)
     }
 
     @Override

@@ -125,6 +125,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
   "lastName": "new user",
   "needsToResetPassword": true,
   "emailAddress": "user@functional-test.com",
+  "creationMethod": "Standard",
   "availableActions": ["disable","show", "update"],
   "disabled": false,
   "id": "${json-unit.matches:id}",
@@ -140,6 +141,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
   "disabled": false,
   "id": "${json-unit.matches:id}",
   "pending": true,
+  "creationMethod": "Standard",
   "createdBy": "user@functional-test.com"
 }'''
 
@@ -173,6 +175,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "pending": false,
       "disabled": false,
       "createdBy": "admin@maurodatamapper.com",
+      "creationMethod": "Standard",
       "availableActions": [
         "update",
         "disable",
@@ -197,6 +200,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "disabled": false,
       "needsToResetPassword": true,
       "createdBy": "functional-test@test.com",
+      "creationMethod": "Standard",
       "availableActions": [
         "update",
         "disable",
@@ -213,6 +217,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "disabled": false,
       "needsToResetPassword": true,
       "createdBy": "functional-test@test.com",
+      "creationMethod": "Standard",
       "availableActions": [
         "update",
         "disable",
@@ -233,6 +238,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "pending": false,
       "disabled": false,
       "createdBy": "functional-test@test.com",
+      "creationMethod": "Standard",
       "availableActions": [
         "update",
         "disable",
@@ -253,6 +259,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "pending": false,
       "disabled": false,
       "createdBy": "functional-test@test.com",
+      "creationMethod": "Standard",
       "availableActions": [
         "update",
         "disable",
@@ -274,6 +281,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "pending": true,
       "disabled": false,
       "createdBy": "functional-test@test.com",
+      "creationMethod": "Standard",
       "availableActions": [
         "update",
         "disable",
@@ -291,6 +299,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "disabled": false,
       "needsToResetPassword": true,
       "createdBy": "functional-test@test.com",
+      "creationMethod": "Standard",
       "availableActions": [
         "update",
         "disable",
@@ -313,6 +322,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "disabled": false,
       "needsToResetPassword": true,
       "createdBy": "functional-test@test.com",
+      "creationMethod": "Standard",
       "availableActions": [
         "update",
         "disable",
@@ -333,6 +343,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "pending": false,
       "disabled": false,
       "createdBy": "unlogged_user@mdm-core.com",
+      "creationMethod": "Standard",
       "availableActions": [
         "update",
         "disable",
@@ -487,6 +498,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "pending": false,
       "disabled": false,
       "createdBy": "functional-test@test.com",
+      "creationMethod": "Standard",
       "availableActions": ["disable","show", "update"],
       "lastLogin": "${json-unit.matches:offsetDateTime}",
       "groups": [
@@ -510,6 +522,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "pending": false,
       "disabled": false,
       "createdBy": "functional-test@test.com",
+      "creationMethod": "Standard",
       "availableActions": ["disable","show", "update"],
       "lastLogin": "${json-unit.matches:offsetDateTime}",
       "groups": [
@@ -851,6 +864,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "pending": true,
       "disabled": false,
       "createdBy": "functional-test@test.com",
+      "creationMethod": "Standard",
       "availableActions": [ "update","disable","show"],
       "organisation": "Oxford",
       "jobTitle": "tester"
@@ -863,6 +877,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "pending": true,
       "disabled": true,
       "createdBy": "user@functional-test.com",
+      "creationMethod": "Standard",
       "availableActions": [ "update","disable","show"]
     }
   ]
@@ -890,6 +905,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "pending": true,
       "disabled": true,
       "createdBy": "user@functional-test.com",
+      "creationMethod": "Standard",
       "availableActions": [ "update","disable","show"]
     }
   ]

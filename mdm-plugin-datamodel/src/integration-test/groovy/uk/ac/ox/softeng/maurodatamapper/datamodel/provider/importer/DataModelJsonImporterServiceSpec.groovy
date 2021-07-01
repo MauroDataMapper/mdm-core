@@ -18,9 +18,12 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FileParameter
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.provider.DataBindDataModelImporterProviderServiceSpec
+import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
@@ -68,5 +71,211 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         then:
         parameters.hasProperty('importFile')
         parameters.hasProperty('importFile').type == FileParameter
+    }
+
+    void 'F01 : test import as finalised'() {
+        given:
+        setupData()
+        basicParameters.finalised = true
+
+        expect:
+        DataModel.count() == 2
+
+        when:
+        DataModel dm = importAndConfirm(loadTestFile('simple'))
+
+        then:
+        dm
+        dm.finalised
+        dm.dateFinalised
+        dm.modelVersion == Version.from('1')
+
+        cleanup:
+        basicParameters.finalised = false
+
+    }
+
+    void 'F02 : test import as finalised when already imported as finalised'() {
+        given:
+        setupData()
+        basicParameters.finalised = true
+        importAndConfirm(loadTestFile('simple'))
+
+        when:
+        importModel(loadTestFile('simple'))
+
+        then:
+        ApiBadRequestException exception = thrown(ApiBadRequestException)
+        exception.message == 'Request to finalise import without creating newBranchModelVersion to existing models'
+
+        cleanup:
+        basicParameters.finalised = false
+
+    }
+
+    void 'F03 : test import as finalised when already imported as not finalised'() {
+        given:
+        setupData()
+        importAndConfirm(loadTestFile('simple'))
+
+        when:
+        basicParameters.finalised = true
+        importModel(loadTestFile('simple'))
+
+        then:
+        ApiBadRequestException exception = thrown(ApiBadRequestException)
+        exception.message == 'Request to finalise import without creating newBranchModelVersion to existing models'
+
+        cleanup:
+        basicParameters.finalised = false
+    }
+
+
+    void 'MV01 : test import as newBranchModelVersion with no existing model'() {
+        given:
+        setupData()
+        basicParameters.importAsNewBranchModelVersion = true
+
+        when:
+        DataModel dm = importModel(loadTestFile('simple'))
+
+        then:
+        dm
+        !dm.finalised
+        !dm.dateFinalised
+        !dm.modelVersion
+        dm.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+
+        cleanup:
+        basicParameters.importAsNewBranchModelVersion = false
+
+    }
+
+    void 'MV02 : test import as newBranchModelVersion with existing finalised model'() {
+        given:
+        setupData()
+        basicParameters.finalised = true
+        DataModel v1 = importAndConfirm(loadTestFile('simple'))
+        basicParameters.finalised = false
+        basicParameters.importAsNewBranchModelVersion = true
+
+        when:
+        DataModel dm = importModel(loadTestFile('simple'))
+
+        then:
+        dm
+        !dm.finalised
+        !dm.dateFinalised
+        !dm.modelVersion
+        dm.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+        dm.versionLinks.size() == 1
+        dm.versionLinks.find {it.targetModelId == v1.id}
+
+        cleanup:
+        basicParameters.importAsNewBranchModelVersion = false
+
+    }
+
+    void 'MV03 : test import as newBranchModelVersion with existing non-finalised model'() {
+        given:
+        setupData()
+        DataModel v1 = importAndConfirm(loadTestFile('simple'))
+        basicParameters.importAsNewBranchModelVersion = true
+
+        when:
+        DataModel dm = importModel(loadTestFile('simple'))
+
+        then:
+        dm
+        !dm.finalised
+        !dm.dateFinalised
+        !dm.modelVersion
+        dm.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+        dm.versionLinks.size() == 1
+        dm.versionLinks.find {it.targetModelId == v1.id}
+
+        and:
+        v1.finalised
+        v1.modelVersion == Version.from('1')
+
+        cleanup:
+        basicParameters.importAsNewBranchModelVersion = false
+
+    }
+
+    void 'MV04 : test import as finalised and newBranchModelVersion with no existing model'() {
+        given:
+        setupData()
+        basicParameters.finalised = true
+        basicParameters.importAsNewBranchModelVersion = true
+
+        when:
+        DataModel dm = importModel(loadTestFile('simple'))
+
+        then:
+        dm
+        dm.finalised
+        dm.dateFinalised
+        dm.modelVersion == Version.from('1')
+        dm.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+
+        cleanup:
+        basicParameters.finalised = false
+        basicParameters.importAsNewBranchModelVersion = false
+
+    }
+
+    void 'MV05 : test import as finalised and newBranchModelVersion with existing finalised model'() {
+        given:
+        setupData()
+        basicParameters.finalised = true
+        DataModel v1 = importAndConfirm(loadTestFile('simple'))
+        basicParameters.importAsNewBranchModelVersion = true
+
+        when:
+        DataModel dm = importModel(loadTestFile('simple'))
+
+        then:
+        dm
+        dm.finalised
+        dm.dateFinalised
+        dm.modelVersion == Version.from('2')
+        dm.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+        dm.versionLinks.size() == 1
+        dm.versionLinks.find {it.targetModelId == v1.id}
+
+        cleanup:
+        basicParameters.importAsNewBranchModelVersion = false
+        basicParameters.finalised = false
+
+    }
+
+    void 'MV06 : test import as finalised and newBranchModelVersion with existing non-finalised model'() {
+        given:
+        setupData()
+        DataModel v1 = importAndConfirm(loadTestFile('simple'))
+        basicParameters.importAsNewBranchModelVersion = true
+        basicParameters.finalised = true
+
+        when:
+        DataModel dm = importModel(loadTestFile('simple'))
+
+        then:
+        dm
+        dm.finalised
+        dm.dateFinalised
+        dm.modelVersion == Version.from('2')
+        dm.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+        dm.versionLinks.size() == 1
+        dm.versionLinks.find {it.targetModelId == v1.id}
+
+        and:
+        v1.modelVersion == Version.from('1')
+        v1.finalised
+
+        cleanup:
+        basicParameters.importAsNewBranchModelVersion = false
+        basicParameters.finalised = false
+
     }
 }

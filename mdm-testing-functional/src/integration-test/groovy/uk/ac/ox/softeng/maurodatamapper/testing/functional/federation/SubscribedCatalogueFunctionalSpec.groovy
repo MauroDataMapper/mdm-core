@@ -588,11 +588,11 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
     }
 
     /**
-     * Test the availableModels endpoint. This would be on a remote host, but in this functional test
+     * Test the publishedModels endpoint. This would be on a remote host, but in this functional test
      * we use the localhost. Test setup and execution is as follows:
      * 1. Login as Admin and create an API Key for Admin
      * 2. Subscribe to the local catalogue (in real life this would be remote), specifying the API key created above
-     * 3. Get the local /availableModels endpoint. In real life this would connect to /api/feeds/all on the remote,
+     * 3. Get the local /publishedModels endpoint. In real life this would connect to /api/feeds/all on the remote,
      * but here we use the local.
      * 4. Cleanup
      */
@@ -628,7 +628,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         String subscribedCatalogueId = responseBody().id
 
         when:
-        GET("${subscribedCatalogueId}/availableModels", STRING_ARG)
+        GET("${subscribedCatalogueId}/publishedModels", STRING_ARG)
 
         then:
         verifyJsonResponse OK, '''
@@ -636,16 +636,21 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
   "count": 2,
   "items": [
     {
-      "modelId": "${json-unit.matches:id}",
-      "label": "Simple Test CodeSet 1.0.0",
-      "description": null,
-      "modelType": "CodeSet"
+      "modelId": null,
+      "title": "Simple Test CodeSet 1.0.0",
+      "modelType": "CodeSet",
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "dateCreated": "${json-unit.matches:offsetDateTime}",
+      "datePublished": "${json-unit.matches:offsetDateTime}",
+      "author": "Test Bootstrap"
     },
     {
-      "modelId": "${json-unit.matches:id}",
-      "label": "Finalised Example Test DataModel 1.0.0",
-      "description": null,
-      "modelType": "DataModel"
+      "modelId": null,
+      "title": "Finalised Example Test DataModel 1.0.0",
+      "modelType": "DataModel",
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "dateCreated": "${json-unit.matches:offsetDateTime}",
+      "datePublished": "${json-unit.matches:offsetDateTime}"
     }
   ]
 }

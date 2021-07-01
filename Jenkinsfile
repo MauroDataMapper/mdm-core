@@ -98,6 +98,12 @@ pipeline {
         Unit Tests
          */
         stage('Unit Tests') {
+            // Dont run these on main branch
+            when {
+                not {
+                    branch 'main'
+                }
+            }
             steps {
                 sh "./gradlew --build-cache test"
             }
@@ -112,6 +118,12 @@ pipeline {
         Integration Tests
          */
         stage('Integration Tests') {
+            // Dont run these on main branch
+            when {
+                not {
+                    branch 'main'
+                }
+            }
             steps {
                 sh './gradlew --build-cache -Dgradle.integrationTest=true ' + [
                     'mdm-core',
@@ -138,6 +150,12 @@ pipeline {
         Functional Tests
          */
         stage('Functional Test: mdm-core') {
+            // Dont run these on main branch
+            when {
+                not {
+                    branch 'main'
+                }
+            }
             steps {
                 sh "./gradlew -Dgradle.functionalTest=true :mdm-core:integrationTest"
             }
@@ -148,6 +166,12 @@ pipeline {
             }
         }
         stage('Functional Test: mdm-plugin-authentication-apikey') {
+            // Dont run these on main branch
+            when {
+                not {
+                    branch 'main'
+                }
+            }
             steps {
                 sh "./gradlew -Dgradle.functionalTest=true :mdm-plugin-authentication-apikey:integrationTest"
             }
@@ -158,6 +182,12 @@ pipeline {
             }
         }
         stage('Functional Test: mdm-plugin-authentication-basic') {
+            // Dont run these on main branch
+            when {
+                not {
+                    branch 'main'
+                }
+            }
             steps {
                 sh "./gradlew -Dgradle.functionalTest=true :mdm-plugin-authentication-basic:integrationTest"
             }
@@ -168,6 +198,12 @@ pipeline {
             }
         }
         stage('Functional Test: mdm-plugin-dataflow') {
+            // Dont run these on main branch
+            when {
+                not {
+                    branch 'main'
+                }
+            }
             steps {
                 sh "./gradlew -Dgradle.functionalTest=true :mdm-plugin-dataflow:integrationTest"
             }
@@ -178,6 +214,12 @@ pipeline {
             }
         }
         stage('Functional Test: mdm-plugin-datamodel') {
+            // Dont run these on main branch
+            when {
+                not {
+                    branch 'main'
+                }
+            }
             steps {
                 sh "./gradlew -Dgradle.functionalTest=true :mdm-plugin-datamodel:integrationTest"
             }
@@ -188,6 +230,12 @@ pipeline {
             }
         }
         stage('Functional Test: mdm-plugin-referencedata') {
+            // Dont run these on main branch
+            when {
+                not {
+                    branch 'main'
+                }
+            }
             steps {
                 sh "./gradlew -Dgradle.functionalTest=true :mdm-plugin-referencedata:integrationTest"
             }
@@ -198,6 +246,12 @@ pipeline {
             }
         }
         stage('Functional Test: mdm-plugin-terminology') {
+            // Dont run these on main branch
+            when {
+                not {
+                    branch 'main'
+                }
+            }
             steps {
                 sh "./gradlew -Dgradle.functionalTest=true :mdm-plugin-terminology:integrationTest"
             }
@@ -208,6 +262,12 @@ pipeline {
             }
         }
         stage('Functional Test: mdm-security') {
+            // Dont run these on main branch
+            when {
+                not {
+                    branch 'main'
+                }
+            }
             steps {
                 sh "./gradlew -Dgradle.functionalTest=true :mdm-security:integrationTest"
             }
@@ -218,6 +278,12 @@ pipeline {
             }
         }
         stage('Functional Test: mdm-plugin-profile') {
+            // Dont run these on main branch
+            when {
+                not {
+                    branch 'main'
+                }
+            }
             steps {
                 sh "./gradlew -Dgradle.functionalTest=true :mdm-plugin-profile:integrationTest"
             }
@@ -228,6 +294,12 @@ pipeline {
             }
         }
         stage('Functional Test: mdm-plugin-federation') {
+            // Dont run these on main branch
+            when {
+                not {
+                    branch 'main'
+                }
+            }
             steps {
                 sh "./gradlew -Dgradle.functionalTest=true :mdm-plugin-federation:integrationTest"
             }
@@ -321,16 +393,16 @@ pipeline {
                 }
             }
         }
-//        stage('E2E Profile Functional Test') {
-//            steps {
-//                sh "./gradlew -Dgradle.test.package=profile :mdm-testing-functional:integrationTest"
-//            }
-//            post {
-//                always {
-//                    junit allowEmptyResults: true, testResults: 'mdm-testing-functional/build/test-results/profile/*.xml'
-//                }
-//            }
-//        }
+        //        stage('E2E Profile Functional Test') {
+        //            steps {
+        //                sh "./gradlew -Dgradle.test.package=profile :mdm-testing-functional:integrationTest"
+        //            }
+        //            post {
+        //                always {
+        //                    junit allowEmptyResults: true, testResults: 'mdm-testing-functional/build/test-results/profile/*.xml'
+        //                }
+        //            }
+        //        }
 
         stage('Compile complete Test Report') {
             steps {
@@ -359,7 +431,7 @@ pipeline {
 
         stage('Sonarqube') {
             when {
-                    branch 'develop'
+                branch 'develop'
             }
             steps {
                 withSonarQubeEnv('JenkinsQube') {
@@ -395,7 +467,8 @@ pipeline {
 
             publishCoverage adapters: [jacocoAdapter('**/reports/jacoco/jacocoTestReport.xml')]
             outputTestResults()
-            jacoco classPattern: '**/build/classes', execPattern: '**/build/jacoco/*.exec', sourceInclusionPattern: '**/*.java,**/*.groovy', sourcePattern: '**/src/main/groovy,**/grails-app/controllers,**/grails-app/domain,**/grails-app/services,**/grails-app/utils'
+            jacoco classPattern: '**/build/classes', execPattern: '**/build/jacoco/*.exec', sourceInclusionPattern: '**/*.java,**/*.groovy',
+                   sourcePattern: '**/src/main/groovy,**/grails-app/controllers,**/grails-app/domain,**/grails-app/services,**/grails-app/utils'
             archiveArtifacts allowEmptyArchive: true, artifacts: '**/*.log'
             slackNotification()
             zulipNotification(topic: 'mdm-core')

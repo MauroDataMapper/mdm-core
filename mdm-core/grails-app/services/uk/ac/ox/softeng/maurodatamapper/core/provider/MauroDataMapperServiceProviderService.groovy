@@ -107,6 +107,15 @@ class MauroDataMapperServiceProviderService extends MauroDataMapperProviderServi
 
     static <T extends MauroDataMapperService, P extends T> T findService(Set<T> beans, String namespace,
                                                                          String name, String version) {
+        if (!version) {
+            // return the latest version of the service if theres more than 1
+            return beans.findAll {
+                it.namespace.equalsIgnoreCase(namespace) &&
+                it.name.equalsIgnoreCase(name)
+            }
+                .sort()
+                .last()
+        }
         beans.find {
             it.namespace.equalsIgnoreCase(namespace) &&
             it.name.equalsIgnoreCase(name) &&

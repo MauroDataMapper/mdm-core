@@ -29,10 +29,13 @@ class UrlMappings {
             get "/feeds/all"(controller: 'feed', action: 'index')
 
             '/subscribedCatalogues'(resources: 'subscribedCatalogue') {
-                get '/availableModels'(controller: 'subscribedCatalogue', action: 'availableModels')
+                get '/availableModels'(controller: 'subscribedCatalogue', action: 'publishedModels') // to be removed
+                get '/publishedModels'(controller: 'subscribedCatalogue', action: 'publishedModels')
                 '/subscribedModels'(resources: 'subscribedModel', excludes: DEFAULT_EXCLUDES)
             }
             post "/subscribedModels/$subscribedModelId/federate"(controller: 'subscribedModel', action: 'federate')
+
+            get '/published/models'(controller: 'publish', action: 'index')
         }
     }
 }

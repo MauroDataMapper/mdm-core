@@ -1,0 +1,18 @@
+import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedModel
+
+model {
+    SubscribedModel subscribedModel
+}
+
+json {
+    id subscribedModel.id
+    subscribedModelId subscribedModel.subscribedModelId
+    folderId subscribedModel.folderId
+    readableByEveryone subscribedModel.readableByEveryone
+    readableByAuthenticatedUsers subscribedModel.readableByAuthenticatedUsers
+    federated subscribedModel.localModelId ? true : false
+    if (subscribedModel.localModelId) {
+        localModelId subscribedModel.localModelId
+        lastRead subscribedModel.lastRead
+    }
+}

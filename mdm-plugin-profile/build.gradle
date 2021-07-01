@@ -11,6 +11,8 @@ buildscript {
         classpath "org.grails:grails-gradle-plugin:$grailsVersion"
         classpath "org.grails.plugins:hibernate5:$grailsHibernate5Version"
         classpath "org.grails.plugins:views-gradle:$grailsViewsVersion"
+        classpath "com.bertramlabs.plugins:asset-pipeline-gradle:$assetPipelineVersion"
+
     }
 }
 
@@ -24,6 +26,7 @@ apply plugin: "org.grails.grails-plugin"
 apply plugin: "org.grails.grails-plugin-publish"
 apply plugin: "org.grails.plugins.views-json"
 apply plugin: "org.grails.plugins.views-markup"
+apply plugin: "com.bertramlabs.asset-pipeline"
 
 apply plugin: 'ox.softeng.grails'
 
@@ -67,6 +70,7 @@ dependencies {
     compile "org.grails.plugins:views-json:$grailsViewsVersion"
     compile "org.grails.plugins:views-json-templates:$grailsViewsVersion"
     compile "org.grails.plugins:views-markup:$grailsViewsVersion"
+    compile "com.bertramlabs.plugins:asset-pipeline-grails:$assetPipelineVersion"
     compileOnly "io.micronaut:micronaut-inject-groovy"
     console "org.grails:grails-console"
     // Until the fixes are published we need to use our versions of the profiles
