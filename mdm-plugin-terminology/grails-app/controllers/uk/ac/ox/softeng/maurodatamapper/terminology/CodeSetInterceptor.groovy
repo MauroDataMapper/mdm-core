@@ -18,8 +18,10 @@
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.interceptor.ModelInterceptor
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import org.grails.web.json.JSONArray
@@ -36,6 +38,8 @@ class CodeSetInterceptor extends ModelInterceptor {
     void checkIds() {
         super.checkIds()
         Utils.toUuid(params, 'codeSetId')
+        Utils.toUuid(params, 'terminologyId')
+        Utils.toUuid(params, 'termId')
     }
 
     @Override
@@ -63,7 +67,7 @@ class CodeSetInterceptor extends ModelInterceptor {
     }
 
     boolean before() {
-
+        checkIds()
         securableResourceChecks()
 
         boolean canRead = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(CodeSet, getId())
@@ -77,7 +81,8 @@ class CodeSetInterceptor extends ModelInterceptor {
 
         if (isIndex() && params.containsKey('terminologyId')) {
             // checks user's accessibility to resources based on terminologyId
-            return currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Terminology , Utils.toUuid(params.get('terminologyId')))
+            boolean canRead = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Terminology , params.get('terminologyId'))
+            return canRead ?: notFound(Term, params.termId)
         }
 
         checkModelActionsAuthorised()

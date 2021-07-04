@@ -66,7 +66,7 @@ class CodeSetController extends ModelController<CodeSet> {
     @Override
     protected List<CodeSet> listAllReadableResources(Map params) {
         if (params.termId) {
-            return codeSetService.findAllByReadableTermId(Utils.toUuid(params.termId))
+            return codeSetService.findAllByReadableTermId(params.termId)
         }
         super.listAllReadableResources(params)
     }
