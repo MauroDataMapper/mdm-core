@@ -17,12 +17,14 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.TerminologyPluginMergeBuilder
 import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.TestMergeData
@@ -36,9 +38,17 @@ import groovy.util.logging.Slf4j
 import spock.lang.PendingFeature
 import spock.lang.Shared
 
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getDEVELOPMENT
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getFUNCTIONAL_TEST
+
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.FORBIDDEN
+import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
@@ -96,6 +106,12 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
     @Shared
     TerminologyPluginMergeBuilder builder
 
+    @Shared
+    UUID terminologyId
+
+    @Shared
+    UUID termId
+
     @OnceBefore
     @Transactional
     def checkAndSetupData() {
@@ -103,18 +119,47 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         sessionFactory.currentSession.flush()
         assert Folder.count() == 0
         assert CodeSet.count() == 0
-        folderId = new Folder(label: 'Functional Test Folder', createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true).id
+
+        Folder folder = new Folder(label: 'Functional Test Folder', createdBy: StandardEmailAddress.FUNCTIONAL_TEST)
+        folder.save(flush:true)
+        folderId = folder.id
+
+        Folder movingFolder = new Folder(label: 'Functional Test Folder 2', createdBy: StandardEmailAddress.FUNCTIONAL_TEST)
+        movingFolder.save(flush: true)
+        movingFolderId = movingFolder.id
+
         assert folderId
-        movingFolderId = new Folder(label: 'Functional Test Folder 2', createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true).id
         assert movingFolderId
 
         builder = new TerminologyPluginMergeBuilder(this)
+
+
+        //        Terminology terminology = new Terminology(label: 'Functional Test Terminology H', createdBy: FUNCTIONAL_TEST, folder: folder, authority:
+        //            testAuthority)
+        //        terminology.save(flush: true)
+        //
+        //        terminologyId = terminology.id
+        //
+        //        Term term = new Term(terminology:terminology, createdBy: FUNCTIONAL_TEST, code: "T01", definition: "term 01")
+        //        check(term)
+        //        term.save(flush: true)
+        //        termId = term.id
+
+        //        CodeSet codeSet = new CodeSet(id: 'SCS1',  createdBy: FUNCTIONAL_TEST, label: "Simple Codeset 1", authority: testAuthority, folder: folder)
+        //        checkAndSave(codeSet)
+        //
+        //        term.addToCodeSets(codeSet)
+        //        term.save(flush: term)
+
+        //        terminology.addToTerms(term)
+        //        terminology.save(flush: true)
     }
 
     @Transactional
     def cleanupSpec() {
         log.debug('CleanupSpec CodeSetFunctionalSpec')
-        cleanUpResources(Terminology, Folder, Classifier)
+        cleanUpResources(CodeSet, Term, Terminology, Folder, Classifier)
+        Authority.findByLabel('Test Authority').delete(flush: true)
     }
 
     @Override
@@ -1779,7 +1824,6 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         String expected = new String(loadTestFile('simpleCodeSet')).replaceFirst('"exportedBy": "Admin User",',
                                                                                  '"exportedBy": "Unlogged User",')
 
-
         expect:
         id
 
@@ -1857,6 +1901,100 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
         cleanup:
         cleanUpData(id)
+    }
+
+
+    void 'test getting the CodeSet(s) that a Term belongs to'() {
+        /*
+        WIP - the Terminology and CodeSet exist from the previous tests (IM05) that were run.
+        There are no terms that were associated with the Codeset.
+
+        I cannot understand how to make this association using the PUT REST call.
+        Also thought this would have been imported as part of the previous test.
+
+        If i try to declare terminology, term and codeset earlier checkAndSetupData(),
+        the declaration of checkAndSetupData() breaks earlier tests: R01
+         */
+
+        given:
+        //            //getting variables that exist due to previous tests
+        terminologyId = Terminology.findByLabel('Simple Test Terminology For CodeSet').id
+        termId = Term.findByLabel('CST01: Test Term 01').id
+
+
+        //trying to codeset objects using createNewItem that uses PUT . Does not work.
+        //            String id = createNewItem([
+        //                id: 'SCS1',  createdBy: FUNCTIONAL_TEST, label: "Simple Codeset 1", authority: a, folder: f
+        //            ])
+        //            PUT('codeSets/${id}',[:], MAP_ARG, true)
+
+
+        // trying to create distinct Codeset objects to associate with term. Does not work
+        /*
+                    CodeSet c1 = new CodeSet(id: 'SCS1',  createdBy: FUNCTIONAL_TEST, label: "Simple Codeset 1", authority: a, folder: f)
+                    check(c1)
+                    c1.save(flush: true)
+
+                    CodeSet c2 = new CodeSet(id: 'SCS2', createdBy: FUNCTIONAL_TEST, label: "Simple Codeset 2", authority: a, folder: f)
+                    check(c2)
+                    c2.save(flush: true)
+
+        //           associating codeset with term
+                    simpleTestTerminology.terms.each{
+                        if (it.label == 'CST01: Test Term 01'){
+                            it.addToCodeSets(c2)
+                        }
+                        it.addToCodeSets(c1)
+                    }
+
+                    System.out.println("checking if term now associated with codeset")
+                    simpleTestTerminology.terms.each{
+                        System.out.println("=>Term: " + it.label)
+                        it.codeSets.each {
+                            System.out.println("=>Codeset: " + it.label)
+                        }
+                    }
+        */
+
+        // check what terminologies exist (from previous test)
+        when: 'check what terminologies exist'
+        GET("terminologies/", MAP_ARG, true)
+
+        then:
+        verifyResponse OK, response
+        System.out.println(responseBody())
+
+
+        // check what codesets exist (from previous test)
+        when: 'check codesets'
+        GET("/codeSets", MAP_ARG, true)
+
+        then:
+        verifyResponse OK, response
+        System.out.println(responseBody())
+
+
+        // actual tests for mc-9503
+        when: 'the Terminology that the Term belongs does not exist.'
+        GET("terminologies/618d9d3b-03d0-48f7-8bac-28e4f189a0ff/terms/618d9d3b-03d0-48f7-8bac-28e49189aaaa/codeSets", MAP_ARG, true)
+        then:
+        verifyResponse NOT_FOUND, response
+
+        when: 'the Terminology exists but the Term being searched for does not exist'
+        GET("terminologies/$terminologyId/terms/618d9d3b-03d0-48f7-8bac-28e49189aaaa/codeSets", MAP_ARG, true)
+        then:
+        verifyResponse OK, response
+        responseBody().count == 0
+
+        // this test will currently fail since terms not associated with any codeset.
+        when: 'the Terminology and the Term exists. And the Term belongs to CodeSet(s)'
+        GET("terminologies/$terminologyId/terms/$termId/codeSets", MAP_ARG, true)
+        then:
+        verifyResponse OK, response
+        responseBody().count == 2
+
+        //            cleanup:
+        //            cleanUpData(id)
     }
 
     String getExpectedMergeDiffJson() {
