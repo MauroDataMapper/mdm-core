@@ -19,6 +19,10 @@ Controller: annotation
  |  DELETE  | /api/${catalogueItemDomainType}/${catalogueItemId}/annotations/${id}  | Action: delete
  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/annotations/${id}  | Action: show
 
+Controller: authority
+ |   GET    | /api/authorities  | Action: index
+ |   GET    | /api/authorities/${id}  | Action: show
+
 Controller: authenticating
  |    *     | /api/authentication/logout  | Action: logout
  |   POST   | /api/authentication/login  | Action: login

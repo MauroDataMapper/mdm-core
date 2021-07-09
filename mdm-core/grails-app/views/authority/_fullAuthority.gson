@@ -1,0 +1,15 @@
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+
+inherits template: '/authority/authority'
+
+model {
+    Authority authority
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json {
+    readableByEveryone authority.readableByEveryone
+    readableByAuthenticatedUsers authority.readableByAuthenticatedUsers
+    availableActions userSecurityPolicyManager.userAvailableActions(authority.getClass(), authority.id)
+}

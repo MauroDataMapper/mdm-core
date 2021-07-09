@@ -21,7 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.profile.provider.JsonProfileProviderServ
 import groovy.util.logging.Slf4j
 
 @Slf4j
-class ProfileSpecificationProfileService extends JsonProfileProviderService {
+    class ProfileSpecificationProfileService extends JsonProfileProviderService {
 
     @Override
     String getMetadataNamespace() {

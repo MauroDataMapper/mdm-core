@@ -4,9 +4,6 @@ The current API endpoints have no functional test present in this testing plugin
 and therefore there is no guarantee they will work as expected.
 
 ```
-Controller: authority
- |   GET    | /api/authorities  | Action: index
- |   GET    | /api/authorities/${id}  | Action: show
 
 Controller: classifier
  |   POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/classifiers  | Action: save
