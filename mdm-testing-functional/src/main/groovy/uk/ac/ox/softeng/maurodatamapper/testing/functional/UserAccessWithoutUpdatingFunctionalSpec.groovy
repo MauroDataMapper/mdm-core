@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.testing.functional
 
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
+import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
+import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
@@ -30,6 +32,7 @@ import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import org.apache.commons.lang3.NotImplementedException
 import org.junit.Assert
+import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Stepwise
 
 import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
@@ -274,11 +277,7 @@ abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAcces
             List<SecurableResourceGroupRole> rolesLeftOver = SecurableResourceGroupRole.byUserGroupIds(groupsToDelete*.id).list()
             if (rolesLeftOver) {
                 log.warn('Roles not cleaned up : {}', rolesLeftOver.size())
-                rolesLeftOver.each { role ->
-                    log.warn('Left over role resource {}:{}:{}:{}', role.groupRole.name, role.userGroup.name, role.securableResourceDomainType, role.securableResourceId)
-                }
-                Assert.fail('Roles remaining these need to be cleaned up from another test.' +
-                            '\nSee logs to find out what roles and resources havent been cleaned')
+                cleanupOrphanedRoles(rolesLeftOver)
             }
             UserGroup.byNameNotInList(getPermanentGroupNames()).deleteAll()
         }
@@ -286,6 +285,30 @@ abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAcces
         sessionFactory.currentSession.flush()
         assert UserGroup.count() == getPermanentGroupNames().size()
     }
+
+    @Autowired(required = false)
+    List<SecurableResourceService> securableResourceServices
+
+    void cleanupOrphanedRoles(List<SecurableResourceGroupRole> rolesLeftOver) {
+
+        rolesLeftOver.each {srgr ->
+            log.warn('Left over role resource {}:{}:{}:{}', srgr.groupRole.name, srgr.userGroup.name, srgr.securableResourceDomainType, srgr.securableResourceId)
+            SecurableResourceService service = securableResourceServices.find {it.handles(srgr.securableResourceDomainType)}
+
+            if (!service) {
+                Assert.fail('Roles remaining these need to be cleaned up from another test and cannot remote clean them as no service to handle securable resource.' +
+                            '\nSee logs to find out what roles and resources havent been cleaned')
+            }
+            SecurableResource resource = service.get(srgr.securableResourceId)
+            if (resource) {
+                log.warn('Resource {}:{} was not cleaned up', resource.domainType, resource.resourceId)
+                service.delete(resource)
+            }
+        }
+        SecurableResourceGroupRole.deleteAll(rolesLeftOver)
+        sessionFactory.currentSession.flush()
+    }
+
 
     List<String> getPermanentGroupNames() {
         ['validIdGroup', 'administrators', 'readers', 'editors']
