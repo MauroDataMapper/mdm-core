@@ -4,10 +4,10 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnu
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
-inherits template: '/catalogueItem/fullCatalogueItem', model: [catalogueItem               : referenceDataType,
-                                                               userSecurityPolicyManager   : userSecurityPolicyManager,
-                                                               owningSecurableResourceId   : referenceDataType.modelId,
-                                                               owningSecurableResourceClass: ReferenceDataModel]
+inherits template: '/catalogueItem/catalogueItem_full', model: [catalogueItem               : referenceDataType,
+                                                                userSecurityPolicyManager   : userSecurityPolicyManager,
+                                                                owningSecurableResourceId   : referenceDataType.modelId,
+                                                                owningSecurableResourceClass: ReferenceDataModel]
 model {
     ReferenceDataType referenceDataType
     UserSecurityPolicyManager userSecurityPolicyManager

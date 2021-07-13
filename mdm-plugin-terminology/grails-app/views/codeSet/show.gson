@@ -6,5 +6,5 @@ model {
     UserSecurityPolicyManager userSecurityPolicyManager
 }
 
-json tmpl.fullCodeSet(codeSet: codeSet, userSecurityPolicyManager: userSecurityPolicyManager)
+json tmpl.codeSet_full(codeSet: codeSet, userSecurityPolicyManager: userSecurityPolicyManager)
 

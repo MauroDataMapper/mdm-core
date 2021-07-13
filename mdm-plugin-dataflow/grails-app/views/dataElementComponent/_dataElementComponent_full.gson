@@ -2,10 +2,10 @@ import uk.ac.ox.softeng.maurodatamapper.dataflow.component.DataElementComponent
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
-inherits template: '/catalogueItem/fullCatalogueItem', model: [catalogueItem               : dataElementComponent,
-                                                               userSecurityPolicyManager   : userSecurityPolicyManager,
-                                                               owningSecurableResourceId   : dataElementComponent.model.id,
-                                                               owningSecurableResourceClass: DataModel]
+inherits template: '/catalogueItem/catalogueItem_full', model: [catalogueItem               : dataElementComponent,
+                                                                userSecurityPolicyManager   : userSecurityPolicyManager,
+                                                                owningSecurableResourceId   : dataElementComponent.model.id,
+                                                                owningSecurableResourceClass: DataModel]
 model {
     DataElementComponent dataElementComponent
     UserSecurityPolicyManager userSecurityPolicyManager

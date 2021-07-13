@@ -2,10 +2,10 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
 
-inherits template: '/catalogueItem/fullCatalogueItem', model: [catalogueItem               : termRelationship,
-                                                               userSecurityPolicyManager   : userSecurityPolicyManager,
-                                                               owningSecurableResourceId   : termRelationship.model.id,
-                                                               owningSecurableResourceClass: Terminology]
+inherits template: '/catalogueItem/catalogueItem_full', model: [catalogueItem               : termRelationship,
+                                                                userSecurityPolicyManager   : userSecurityPolicyManager,
+                                                                owningSecurableResourceId   : termRelationship.model.id,
+                                                                owningSecurableResourceClass: Terminology]
 
 model {
     TermRelationship termRelationship

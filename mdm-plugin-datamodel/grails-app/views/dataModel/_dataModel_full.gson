@@ -1,8 +1,8 @@
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
-inherits template: '/catalogueItem/fullCatalogueItem', model: [catalogueItem            : dataModel,
-                                                               userSecurityPolicyManager: userSecurityPolicyManager]
+inherits template: '/catalogueItem/catalogueItem_full', model: [catalogueItem            : dataModel,
+                                                                userSecurityPolicyManager: userSecurityPolicyManager]
 
 model {
     DataModel dataModel

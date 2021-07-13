@@ -1,0 +1,11 @@
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
+
+inherits template: '/dataType/dataType', model: [dataType: referenceType]
+
+model {
+    ReferenceType referenceType
+}
+
+json {
+
+}

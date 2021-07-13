@@ -6,4 +6,4 @@ model {
     UserSecurityPolicyManager userSecurityPolicyManager
 }
 
-json tmpl.fullClassifier(classifier: classifier, userSecurityPolicyManager: userSecurityPolicyManager)
+json tmpl.classifier_full(classifier: classifier, userSecurityPolicyManager: userSecurityPolicyManager)

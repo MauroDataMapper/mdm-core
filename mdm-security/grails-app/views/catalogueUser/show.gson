@@ -6,4 +6,4 @@ model {
     UserSecurityPolicyManager userSecurityPolicyManager
 }
 
-json tmpl.fullCatalogueUser(catalogueUser: catalogueUser, userSecurityPolicyManager: userSecurityPolicyManager)
+json tmpl.catalogueUser_full(catalogueUser: catalogueUser, userSecurityPolicyManager: userSecurityPolicyManager)

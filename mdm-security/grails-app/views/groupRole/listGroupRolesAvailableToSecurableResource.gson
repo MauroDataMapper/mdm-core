@@ -8,5 +8,5 @@ model {
 
 json {
     count groupRoleSet.size()
-    items tmpl.fullGroupRole(groupRoleSet, [userSecurityPolicyManager: userSecurityPolicyManager])
+    items tmpl.groupRole_full(groupRoleSet, [userSecurityPolicyManager: userSecurityPolicyManager])
 }

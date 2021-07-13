@@ -6,4 +6,4 @@ model {
     UserSecurityPolicyManager userSecurityPolicyManager
 }
 
-json tmpl.fullUserGroup(userGroup: userGroup, userSecurityPolicyManager: userSecurityPolicyManager)
+json tmpl.userGroup_full(userGroup: userGroup, userSecurityPolicyManager: userSecurityPolicyManager)

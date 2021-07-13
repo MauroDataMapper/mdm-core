@@ -4,4 +4,4 @@ model {
     SubscribedModel subscribedModel
 }
 
-json tmpl.fullSubscribedModel(subscribedModel)
+json tmpl.subscribedModel_full(subscribedModel)

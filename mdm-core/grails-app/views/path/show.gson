@@ -1,6 +1,8 @@
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 
+import grails.plugin.json.view.template.JsonViewTemplate
+
 import java.beans.Introspector
 
 model {
@@ -8,9 +10,17 @@ model {
     UserSecurityPolicyManager userSecurityPolicyManager
 }
 
-String modelName = Introspector.decapitalize(pathedResource.domainType)
-Map<String, Object> modelMap = new HashMap<>()
-modelMap.userSecurityPolicyManager = userSecurityPolicyManager
-modelMap.put(modelName, pathedResource)
+def template = (JsonViewTemplate) templateEngine.resolveTemplate(pathedResource.class, locale, 'full')
 
-json g.render(model: modelMap)
+// If we find a "full" template then use that otherwise use the standard grails template resolution whcih should find the "basic" template we've defined
+if (template) {
+    String modelName = Introspector.decapitalize(pathedResource.domainType)
+    Map<String, Object> modelMap = new HashMap<>()
+    modelMap.userSecurityPolicyManager = userSecurityPolicyManager
+    modelMap[modelName] = pathedResource
+
+    String templatePath = template.templatePath.find(/(.+?\/)_(.+?).gson/) {match, pp, tp -> "$pp$tp"}
+    json g.render(template: templatePath, model: modelMap)
+} else {
+    json g.render(pathedResource)
+}

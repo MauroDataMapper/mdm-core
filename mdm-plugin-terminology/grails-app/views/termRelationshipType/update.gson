@@ -6,4 +6,4 @@ model {
     UserSecurityPolicyManager userSecurityPolicyManager
 }
 
-json tmpl.fullTermRelationshipType(termRelationshipType: termRelationshipType, userSecurityPolicyManager: userSecurityPolicyManager)
+json tmpl.termRelationshipType_full(termRelationshipType: termRelationshipType, userSecurityPolicyManager: userSecurityPolicyManager)

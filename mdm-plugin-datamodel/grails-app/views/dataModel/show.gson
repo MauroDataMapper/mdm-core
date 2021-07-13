@@ -6,5 +6,5 @@ model {
     UserSecurityPolicyManager userSecurityPolicyManager
 }
 
-json tmpl.fullDataModel(dataModel: dataModel, userSecurityPolicyManager: userSecurityPolicyManager)
+json tmpl.dataModel_full(dataModel: dataModel, userSecurityPolicyManager: userSecurityPolicyManager)
 

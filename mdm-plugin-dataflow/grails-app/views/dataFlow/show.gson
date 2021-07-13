@@ -6,4 +6,4 @@ model {
     UserSecurityPolicyManager userSecurityPolicyManager
 }
 
-json tmpl.fullDataFlow(dataFlow: dataFlow, userSecurityPolicyManager: userSecurityPolicyManager)
+json tmpl.dataFlow_full(dataFlow: dataFlow, userSecurityPolicyManager: userSecurityPolicyManager)

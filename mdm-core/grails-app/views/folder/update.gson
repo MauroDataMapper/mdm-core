@@ -6,4 +6,4 @@ model {
     UserSecurityPolicyManager userSecurityPolicyManager
 }
 
-json tmpl.fullFolder(folder: folder, userSecurityPolicyManager: userSecurityPolicyManager)
+json tmpl.folder_full(folder: folder, userSecurityPolicyManager: userSecurityPolicyManager)

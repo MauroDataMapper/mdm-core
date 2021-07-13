@@ -6,10 +6,10 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
-inherits template: '/catalogueItem/fullCatalogueItem', model: [catalogueItem               : dataType,
-                                                               userSecurityPolicyManager   : userSecurityPolicyManager,
-                                                               owningSecurableResourceId   : dataType.modelId,
-                                                               owningSecurableResourceClass: DataModel]
+inherits template: '/catalogueItem/catalogueItem_full', model: [catalogueItem               : dataType,
+                                                                userSecurityPolicyManager   : userSecurityPolicyManager,
+                                                                owningSecurableResourceId   : dataType.modelId,
+                                                                owningSecurableResourceClass: DataModel]
 model {
     DataType dataType
     UserSecurityPolicyManager userSecurityPolicyManager

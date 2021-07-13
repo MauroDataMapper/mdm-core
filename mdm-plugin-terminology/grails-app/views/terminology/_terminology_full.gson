@@ -1,8 +1,8 @@
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 
-inherits template: '/catalogueItem/fullCatalogueItem', model: [catalogueItem            : terminology,
-                                                               userSecurityPolicyManager: userSecurityPolicyManager]
+inherits template: '/catalogueItem/catalogueItem_full', model: [catalogueItem            : terminology,
+                                                                userSecurityPolicyManager: userSecurityPolicyManager]
 
 model {
     Terminology terminology

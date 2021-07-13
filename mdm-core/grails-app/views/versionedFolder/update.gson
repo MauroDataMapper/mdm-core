@@ -6,4 +6,4 @@ model {
     UserSecurityPolicyManager userSecurityPolicyManager
 }
 
-json tmpl.fullVersionedFolder(versionedFolder: versionedFolder, userSecurityPolicyManager: userSecurityPolicyManager)
+json tmpl.versionedFolder_full(versionedFolder: versionedFolder, userSecurityPolicyManager: userSecurityPolicyManager)
