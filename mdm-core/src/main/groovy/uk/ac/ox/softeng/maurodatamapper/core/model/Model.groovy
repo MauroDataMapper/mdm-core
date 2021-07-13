@@ -58,7 +58,7 @@ trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableRes
 
     @Override
     String getPathIdentifier() {
-        "${label}.${modelVersion ?: branchName}"
+        "${label}:${modelVersion ?: branchName}"
     }
 
     @Override

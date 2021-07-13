@@ -18,17 +18,19 @@
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.path
 
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 
+import grails.artefact.DomainClass
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import io.micronaut.http.HttpResponse
 
-import static io.micronaut.http.HttpStatus.NOT_FOUND
+import java.nio.charset.Charset
+
 import static io.micronaut.http.HttpStatus.OK
 
 /**
@@ -40,8 +42,7 @@ import static io.micronaut.http.HttpStatus.OK
  *  |   GET   | /api/codeSets/path/$path                           | Action: show
  *  |   GET   | /api/dataModels/$dataModelId/path/$path            | Action: show
  *  |   GET   | /api/dataModels/path/$path                         | Action: show
- *  |   GET   | /api/dataClasses/$dataClassId/path/$path           | Action: show
- *  |   GET   | /api/dataClasses/path/$path                        | Action: show
+ *  |   GET   | /api/path/$path                                    | Action: show
  * </pre>
  *
  *
@@ -62,6 +63,7 @@ class PathFunctionalSpec extends FunctionalSpec {
     String PRIMITIVE_DATA_TYPE_NAME = 'integer'
     String ENUMERATION_DATA_TYPE_NAME = 'yesnounknown'
     String REFERENCE_DATA_TYPE_NAME = 'child'
+    String node
 
     @Override
     String getResourcePath() {
@@ -88,42 +90,661 @@ class PathFunctionalSpec extends FunctionalSpec {
         DataModel.findByLabel(COMPLEX_DATAMODEL_NAME).id.toString()
     }
 
-    @Transactional
-    String getParentDataClassId() {
-        DataClass.findByLabel(PARENT_DATACLASS_NAME).id.toString()
-    }
-
-    @Transactional
-    String getChildDataClassId() {
-        DataClass.findByLabel(CHILD_DATACLASS_NAME).id.toString()
-    }
-
-    @Transactional
-    String getContentDataClassId() {
-        DataClass.findByLabel(CONTENT_DATACLASS_NAME).id.toString()
-    }
-
-    @Transactional
-    String getDataElementId() {
-        DataClass.findByLabel(DATA_ELEMENT_NAME).id.toString()
-    }
-
     String makePathNode(String prefix, String label) {
         prefix + ":" + label
     }
 
-    String makePath(List<String> nodes) {
-        //java.net.URLEncoder.encode turns spaces into +, and these are decoded by grails as +. So do a replace.
-        URLEncoder.encode(String.join("|", nodes)).replace("+", "%20")
+    String makePathNodes(String... pathNodes) {
+        pathNodes.join('|')
     }
 
-    String getNotFoundPathJson() {
-        '''
-        {
-            path: "${json-unit.any-string}",
-            resource: "CatalogueItem",
-            id: "${json-unit.any-string}"
-        }'''
+    String makePath(String node) {
+        //java.net.URLEncoder.encode turns spaces into +, and these are decoded by grails as +. So do a replace.
+        URLEncoder.encode(node, Charset.defaultCharset()).replace("+", "%20")
+    }
+
+    def cleanup() {
+        node = null
+    }
+
+    void verifyNotFound(HttpResponse<Map> response, Object id, Class resourceClass = DomainClass) {
+        super.verifyNotFound(response, id)
+        assert response.body().resource == resourceClass.simpleName
+    }
+
+    void 'T01: Get Terminology by path and ID when not logged in'() {
+        //No ID
+        when:
+        node = makePathNode('te', SIMPLE_TERMINOLOGY_NAME)
+        GET("/api/terminologies/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, node)
+
+        //With ID
+        when:
+        node = makePathNode('te', SIMPLE_TERMINOLOGY_NAME)
+        GET("/api/terminologies/${getSimpleTerminologyId()}/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, getSimpleTerminologyId(), Terminology)
+
+        //No ID
+        when:
+        node = makePathNode('te', COMPLEX_TERMINOLOGY_NAME)
+        GET("/api/terminologies/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, node)
+
+        //With ID
+        when:
+        node = makePathNode('te', COMPLEX_TERMINOLOGY_NAME)
+        GET("/api/terminologies/${getComplexTerminologyId()}/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, getComplexTerminologyId(), Terminology)
+    }
+
+    void 'T02 : Get Terminology by path and ID when logged in'() {
+        given:
+        loginReader()
+
+        //No ID
+        when:
+        node = makePathNode('te', SIMPLE_TERMINOLOGY_NAME)
+        GET("/api/terminologies/path/${makePath(node)}", STRING_ARG)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, getExpectedSimpleTerminologyJson()
+
+        //With ID
+        when:
+        node = makePathNode('te', SIMPLE_TERMINOLOGY_NAME)
+        GET("/api/terminologies/${getSimpleTerminologyId()}/path/${makePath(node)}", STRING_ARG)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, getExpectedSimpleTerminologyJson()
+
+        //No ID
+        when:
+        node = makePathNode('te', COMPLEX_TERMINOLOGY_NAME)
+        GET("/api/terminologies/path/${makePath(node)}", STRING_ARG)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, getExpectedComplexTerminologyJson()
+
+        //With ID
+        when:
+        node = makePathNode('te', COMPLEX_TERMINOLOGY_NAME)
+        GET("/api/terminologies/${getComplexTerminologyId()}/path/${makePath(node)}", STRING_ARG)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, getExpectedComplexTerminologyJson()
+    }
+
+    void 'T03 : get a Terminology but use the wrong prefix when not logged in'() {
+        //No ID
+        when:
+        node = makePathNode('tm', SIMPLE_TERMINOLOGY_NAME)
+        GET("/api/terminologies/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, node)
+
+        //With ID (this shouldnt work as no read access to simple terminology id)
+        when:
+        node = makePathNode('tm', SIMPLE_TERMINOLOGY_NAME)
+        GET("/api/terminologies/${getSimpleTerminologyId()}/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, getSimpleTerminologyId(), Terminology)
+    }
+
+    void 'T04 : get a Terminology but use the wrong prefix when logged in'() {
+        given:
+        loginReader()
+
+        //No ID
+        when:
+        node = makePathNode('tm', SIMPLE_TERMINOLOGY_NAME)
+        GET("/api/terminologies/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, node)
+
+        //With ID (shouldnt work as the prefix is wrong)
+        when:
+        node = makePathNode('tm', SIMPLE_TERMINOLOGY_NAME)
+        GET("/api/terminologies/${getSimpleTerminologyId()}/path/${makePath(node)}")
+
+        then: "The response is OK because the ID is used"
+        verifyNotFound(response, node)
+    }
+
+    void 'C01 : Get CodeSet by path and ID when not logged in'() {
+        //No ID
+        when:
+        node = makePathNode('cs', SIMPLE_CODESET_NAME)
+        GET("/api/codeSets/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, node)
+
+        //With ID
+        when:
+        node = makePathNode('cs', SIMPLE_CODESET_NAME)
+        GET("/api/codeSets/${getSimpleCodeSetId()}/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, getSimpleCodeSetId(), CodeSet)
+    }
+
+    void 'C02 : Get CodeSet by path and ID when logged in'() {
+        given:
+        loginReader()
+
+        //No ID
+        when:
+        node = makePathNode('cs', SIMPLE_CODESET_NAME)
+        GET("/api/codeSets/path/${makePath(node)}", STRING_ARG)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, getExpectedSimpleCodeSetJson()
+
+        //With ID
+        when:
+        node = makePathNode('cs', SIMPLE_CODESET_NAME)
+        GET("/api/codeSets/${getSimpleCodeSetId()}/path/${makePath(node)}", STRING_ARG)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, getExpectedSimpleCodeSetJson()
+    }
+
+    void 'C03 : get a CodeSet but use the wrong prefix when not logged in'() {
+        //No ID
+        when:
+        node = makePathNode('tm', SIMPLE_CODESET_NAME)
+        GET("/api/codeSets/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, node)
+
+        //With ID (no access to the ID'd codeset)
+        when:
+        node = makePathNode('tm', SIMPLE_CODESET_NAME)
+        GET("/api/codeSets/${getSimpleCodeSetId()}/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, getSimpleCodeSetId(), CodeSet)
+    }
+
+    void 'C04 : get a CodeSet but use the wrong prefix when logged in'() {
+        given:
+        loginReader()
+
+        //No ID
+        when:
+        node = makePathNode('tm', SIMPLE_CODESET_NAME)
+        GET("/api/codeSets/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, node)
+
+        //With ID (shouldnt work as the prefix is wrong)
+        when:
+        node = makePathNode('tm', SIMPLE_CODESET_NAME)
+        GET("/api/codeSets/${getSimpleCodeSetId()}/path/${makePath(node)}")
+
+        then: "The response is OK because the ID is used"
+        verifyNotFound(response, node)
+    }
+
+    void 'TM01 : get a Term for a Terminology when not logged in'() {
+        //No Terminology ID
+        when:
+        node = makePathNodes(makePathNode('te', SIMPLE_TERMINOLOGY_NAME),
+                             makePathNode('tm', 'STT01: Simple Test Term 01'))
+        GET("/api/terminologies/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, node)
+
+        //With Terminology ID and label
+        when:
+        node = makePathNodes(makePathNode('te', SIMPLE_TERMINOLOGY_NAME),
+                             makePathNode('tm', 'STT01: Simple Test Term 01'))
+        GET("/api/terminologies/${getSimpleTerminologyId()}/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, getSimpleTerminologyId(), Terminology)
+
+        //With Terminology ID and no label
+        when:
+        node = makePathNodes(makePathNode('te', ''),
+                             makePathNode('tm', 'STT01: Simple Test Term 01'))
+        GET("/api/terminologies/${getSimpleTerminologyId()}/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, getSimpleTerminologyId(), Terminology)
+    }
+
+    void 'TM02 : get a Term for a Terminology when logged in'() {
+        given:
+        loginReader()
+
+        //No Terminology ID
+        when:
+        node = makePathNodes(makePathNode('te', SIMPLE_TERMINOLOGY_NAME),
+                             makePathNode('tm', 'STT01: Simple Test Term 01'))
+        GET("/api/terminologies/path/${makePath(node)}", STRING_ARG)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, getExpectedSimpleTermJson()
+
+        //With Terminology ID and label
+        when:
+        node = makePathNodes(makePathNode('te', SIMPLE_TERMINOLOGY_NAME),
+                             makePathNode('tm', 'STT01: Simple Test Term 01'))
+        GET("/api/terminologies/${getSimpleTerminologyId()}/path/${makePath(node)}", STRING_ARG)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, getExpectedSimpleTermJson()
+
+        //With Terminology ID and no label
+        when:
+        node = makePathNodes(makePathNode('te', ''),
+                             makePathNode('tm', 'STT01: Simple Test Term 01'))
+        GET("/api/terminologies/${getSimpleTerminologyId()}/path/${makePath(node)}", STRING_ARG)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, getExpectedSimpleTermJson()
+    }
+
+    void 'TM03 : get a Term for a CodeSet when not logged in'() {
+        //No CodeSet ID
+        when:
+        node = makePathNodes(makePathNode('cs', SIMPLE_CODESET_NAME),
+                             makePathNode('tm', 'STT01: Simple Test Term 01'))
+        GET("/api/codeSets/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, node)
+
+        //With CodeSet ID and label
+        when:
+        node = makePathNodes(makePathNode('cs', SIMPLE_CODESET_NAME),
+                             makePathNode('tm', 'STT01: Simple Test Term 01'))
+        GET("/api/codeSets/${getSimpleCodeSetId()}/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, getSimpleCodeSetId(), CodeSet)
+
+        //With CodeSet ID and no label
+        when:
+        node = makePathNodes(makePathNode('cs', ''),
+                             makePathNode('tm', 'STT01: Simple Test Term 01'))
+        GET("/api/codeSets/${getSimpleCodeSetId()}/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, getSimpleCodeSetId(), CodeSet)
+    }
+
+    void 'TM04 : get a Term for a CodeSet when logged in'() {
+        given:
+        loginReader()
+
+        //No CodeSet ID
+        when:
+        node = makePathNodes(makePathNode('cs', SIMPLE_CODESET_NAME),
+                             makePathNode('tm', 'STT01: Simple Test Term 01'))
+        GET("/api/codeSets/path/${makePath(node)}", STRING_ARG)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, getExpectedSimpleTermJson()
+
+        //With CodeSet ID and label
+        when:
+        node = makePathNodes(makePathNode('cs', SIMPLE_CODESET_NAME),
+                             makePathNode('tm', 'STT01: Simple Test Term 01'))
+        GET("/api/codeSets/${getSimpleCodeSetId()}/path/${makePath(node)}", STRING_ARG)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, getExpectedSimpleTermJson()
+
+        //With CodeSet ID and no label
+        when:
+        node = makePathNodes(makePathNode('cs', ''),
+                             makePathNode('tm', 'STT01: Simple Test Term 01'))
+        GET("/api/codeSets/${getSimpleCodeSetId()}/path/${makePath(node)}", STRING_ARG)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, getExpectedSimpleTermJson()
+    }
+
+    void 'TM05 : get a Term for a Terminology when logged in and term not in terminology'() {
+        given:
+        loginReader()
+
+        //No Terminology ID
+        when:
+        node = makePathNodes(makePathNode('te', SIMPLE_TERMINOLOGY_NAME),
+                             makePathNode('tm', 'CTT01'))
+        GET("/api/terminologies/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, node)
+
+        //With Terminology ID and label
+        when:
+        node = makePathNodes(makePathNode('te', SIMPLE_TERMINOLOGY_NAME),
+                             makePathNode('tm', 'CTT01'))
+        GET("/api/terminologies/${getSimpleTerminologyId()}/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, node)
+    }
+
+    void 'DM01 : Get DataModel by path and ID when not logged in'() {
+        //No ID
+        when:
+        node = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
+        GET("/api/dataModels/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, node)
+
+        //With ID
+        when:
+        node = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
+        GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, getComplexDataModelId(), DataModel)
+    }
+
+    void 'DM02 : Get DataModel by path and ID when logged in'() {
+        given:
+        loginReader()
+
+        //No ID
+        when:
+        node = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
+        GET("/api/dataModels/path/${makePath(node)}", STRING_ARG)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, getExpectedComplexDataModelJson()
+
+        //With ID
+        when:
+        node = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
+        GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath(node)}", STRING_ARG)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, getExpectedComplexDataModelJson()
+    }
+
+    void 'DC01 : Get DataClass with DataModel by path and ID when not logged in'() {
+        //No ID
+        when:
+        node = makePathNodes(makePathNode('dm', COMPLEX_DATAMODEL_NAME),
+                             makePathNode('dc', PARENT_DATACLASS_NAME))
+        GET("/api/dataModels/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, node)
+
+        //With ID
+        when:
+        node = makePathNodes(makePathNode('dm', COMPLEX_DATAMODEL_NAME),
+                             makePathNode('dc', PARENT_DATACLASS_NAME))
+        GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, getComplexDataModelId(), DataModel)
+    }
+
+    void 'DC02 : Get DataClass with DataModel by path and ID when logged in'() {
+        given:
+        loginReader()
+
+        //No ID
+        when:
+        node = makePathNodes(makePathNode('dm', COMPLEX_DATAMODEL_NAME),
+                             makePathNode('dc', PARENT_DATACLASS_NAME))
+        GET("/api/dataModels/path/${makePath(node)}", STRING_ARG)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, getExpectedParentDataClassJson()
+
+        //With ID
+        when:
+        node = makePathNodes(makePathNode('dm', COMPLEX_DATAMODEL_NAME),
+                             makePathNode('dc', PARENT_DATACLASS_NAME))
+        GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath(node)}", STRING_ARG)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, getExpectedParentDataClassJson()
+    }
+
+    void 'DC03 : Get non-existent DataClass with DataModel by path and ID when logged in'() {
+        given:
+        loginReader()
+
+        //No ID
+        when:
+        node = makePathNodes(makePathNode('dm', COMPLEX_DATAMODEL_NAME),
+                             makePathNode('dc', 'simple'))
+        GET("/api/dataModels/path/${makePath(node)}")
+
+        then: "The response is OK"
+        verifyNotFound(response, node)
+
+        //With ID
+        when:
+        node = makePathNodes(makePathNode('dm', COMPLEX_DATAMODEL_NAME),
+                             makePathNode('dc', 'simple'))
+        GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath(node)}")
+
+        then: "The response is OK"
+        verifyNotFound(response, node)
+    }
+
+    void 'DE01 : Get DataElement by path and ID when not logged in'() {
+        //No ID
+        when:
+        node = makePathNodes(makePathNode('dm', COMPLEX_DATAMODEL_NAME),
+                             makePathNode('dc', CONTENT_DATACLASS_NAME),
+                             makePathNode('de', DATA_ELEMENT_NAME))
+        GET("/api/dataModels/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, node)
+
+        //With ID
+        when:
+        node = makePathNodes(makePathNode('dm', COMPLEX_DATAMODEL_NAME),
+                             makePathNode('dc', CONTENT_DATACLASS_NAME),
+                             makePathNode('de', DATA_ELEMENT_NAME))
+        GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, getComplexDataModelId(), DataModel)
+    }
+
+    void 'DE02 : Get DataElement by DataClass, path and ID when logged in'() {
+        given:
+        loginReader()
+
+        //No ID
+        when:
+        node = makePathNodes(makePathNode('dm', COMPLEX_DATAMODEL_NAME),
+                             makePathNode('dc', CONTENT_DATACLASS_NAME),
+                             makePathNode('de', DATA_ELEMENT_NAME))
+        GET("/api/dataModels/path/${makePath(node)}", STRING_ARG)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, getExpectedDataElementJson()
+
+        //With ID
+        when:
+        node = makePathNodes(makePathNode('dm', COMPLEX_DATAMODEL_NAME),
+                             makePathNode('dc', CONTENT_DATACLASS_NAME),
+                             makePathNode('de', DATA_ELEMENT_NAME))
+        GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath(node)}", STRING_ARG)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, getExpectedDataElementJson()
+    }
+
+    void 'DT01 : Get PrimitiveDataType by DataModel, path and ID when not logged in'() {
+        //No ID
+        when:
+        node = makePathNodes(makePathNode('dm', COMPLEX_DATAMODEL_NAME),
+                             makePathNode('dt', PRIMITIVE_DATA_TYPE_NAME))
+        GET("/api/dataModels/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, node)
+
+        //With ID
+        when:
+        node = makePathNodes(makePathNode('dm', COMPLEX_DATAMODEL_NAME),
+                             makePathNode('dt', PRIMITIVE_DATA_TYPE_NAME))
+        GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, getComplexDataModelId(), DataModel)
+    }
+
+    void 'DT02 : Get PrimitiveDataType by DataModel, path and ID when logged in'() {
+        given:
+        loginReader()
+
+        //No ID
+        when:
+        node = makePathNodes(makePathNode('dm', COMPLEX_DATAMODEL_NAME),
+                             makePathNode('dt', PRIMITIVE_DATA_TYPE_NAME))
+        GET("/api/dataModels/path/${makePath(node)}", STRING_ARG)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, getExpectedPrimitiveTypeJson()
+
+        //With ID
+        when:
+        node = makePathNodes(makePathNode('dm', COMPLEX_DATAMODEL_NAME),
+                             makePathNode('dt', PRIMITIVE_DATA_TYPE_NAME))
+        GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath(node)}", STRING_ARG)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, getExpectedPrimitiveTypeJson()
+    }
+
+    void 'DT03 : Get EnumerationType by DataModel, path and ID when not logged in'() {
+        //No ID
+        when:
+        node = makePathNodes(makePathNode('dm', COMPLEX_DATAMODEL_NAME),
+                             makePathNode('dt', ENUMERATION_DATA_TYPE_NAME))
+        GET("/api/dataModels/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, node)
+
+        //With ID
+        when:
+        node = makePathNodes(makePathNode('dm', COMPLEX_DATAMODEL_NAME),
+                             makePathNode('dt', ENUMERATION_DATA_TYPE_NAME))
+        GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, getComplexDataModelId(), DataModel)
+    }
+
+    void 'DT04 : Get EnumerationType by DataModel, path and ID when logged in'() {
+        given:
+        loginReader()
+
+        //No ID
+        when:
+        node = makePathNodes(makePathNode('dm', COMPLEX_DATAMODEL_NAME),
+                             makePathNode('dt', ENUMERATION_DATA_TYPE_NAME))
+        GET("/api/dataModels/path/${makePath(node)}", STRING_ARG)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, getExpectedEnumerationTypeJson()
+
+        //With ID
+        when:
+        node = makePathNodes(makePathNode('dm', COMPLEX_DATAMODEL_NAME),
+                             makePathNode('dt', ENUMERATION_DATA_TYPE_NAME))
+        GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath(node)}", STRING_ARG)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, getExpectedEnumerationTypeJson()
+    }
+
+    void 'DT05 : Get ReferenceType by DataModel, path and ID when not logged in'() {
+        //No ID
+        when:
+        node = makePathNodes(makePathNode('dm', COMPLEX_DATAMODEL_NAME),
+                             makePathNode('dt', REFERENCE_DATA_TYPE_NAME))
+        GET("/api/dataModels/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, node)
+
+        //With ID
+        when:
+        node = makePathNodes(makePathNode('dm', COMPLEX_DATAMODEL_NAME),
+                             makePathNode('dt', REFERENCE_DATA_TYPE_NAME))
+        GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath(node)}")
+
+        then: "The response is Not Found"
+        verifyNotFound(response, getComplexDataModelId(), DataModel)
+    }
+
+    void 'DT06 : Get ReferenceType by DataModel, path and ID when logged in'() {
+        given:
+        loginReader()
+
+        //No ID
+        when:
+        node = makePathNodes(makePathNode('dm', COMPLEX_DATAMODEL_NAME),
+                             makePathNode('dt', REFERENCE_DATA_TYPE_NAME))
+        GET("/api/dataModels/path/${makePath(node)}", STRING_ARG)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, getExpectedReferenceTypeJson()
+
+        //With ID
+        when:
+        node = makePathNodes(makePathNode('dm', COMPLEX_DATAMODEL_NAME),
+                             makePathNode('dt', REFERENCE_DATA_TYPE_NAME))
+        GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath(node)}", STRING_ARG)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, getExpectedReferenceTypeJson()
+    }
+
+    void 'PP : Confirm all path prefixes are unique'() {
+        when:
+        GET('path/prefixMappings', STRING_ARG)
+        log.debug('{}', jsonResponseBody())
+
+        and:
+        GET('path/prefixMappings')
+
+        then:
+        verifyResponse(OK, response)
+
+        when:
+        Map<String, Map<String, String>> grouped = (responseBody() as Map<String, String>).groupBy {it.key}
+
+        then:
+        grouped.each {
+            log.debug('Checking {}', it.key)
+            assert it.value.size() == 1
+        }
     }
 
     String getExpectedSimpleTerminologyJson() {
@@ -501,689 +1122,4 @@ class PathFunctionalSpec extends FunctionalSpec {
         }'''
     }
 
-    void 'Get Terminology by path and ID when not logged in'() {
-        String node
-
-        //No ID
-        when:
-        node = makePathNode('te', SIMPLE_TERMINOLOGY_NAME)
-        GET("/api/terminologies/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-
-        //With ID
-        when:
-        node = makePathNode('te', SIMPLE_TERMINOLOGY_NAME)
-        GET("/api/terminologies/${getSimpleTerminologyId()}/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-
-        //No ID
-        when:
-        node = makePathNode('te', COMPLEX_TERMINOLOGY_NAME)
-        GET("/api/terminologies/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-
-        //With ID
-        when:
-        node = makePathNode('te', COMPLEX_TERMINOLOGY_NAME)
-        GET("/api/terminologies/${getComplexTerminologyId()}/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-    }
-
-    void 'Get Terminology by path and ID when logged in'() {
-        String node
-
-        given:
-        loginReader()
-
-        //No ID
-        when:
-        node = makePathNode('te', SIMPLE_TERMINOLOGY_NAME)
-        GET("/api/terminologies/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is OK"
-        verifyJsonResponse OK, getExpectedSimpleTerminologyJson()
-
-        //With ID
-        when:
-        node = makePathNode('te', SIMPLE_TERMINOLOGY_NAME)
-        GET("/api/terminologies/${getSimpleTerminologyId()}/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is OK"
-        verifyJsonResponse OK, getExpectedSimpleTerminologyJson()
-
-        //No ID
-        when:
-        node = makePathNode('te', COMPLEX_TERMINOLOGY_NAME)
-        GET("/api/terminologies/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is OK"
-        verifyJsonResponse OK, getExpectedComplexTerminologyJson()
-
-        //With ID
-        when:
-        node = makePathNode('te', COMPLEX_TERMINOLOGY_NAME)
-        GET("/api/terminologies/${getComplexTerminologyId()}/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is OK"
-        verifyJsonResponse OK, getExpectedComplexTerminologyJson()
-    }
-
-    void 'get a Terminology but use the wrong prefix when not logged in'() {
-        String node
-
-        //No ID
-        when:
-        node = makePathNode('tm', SIMPLE_TERMINOLOGY_NAME)
-        GET("/api/terminologies/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-
-        //With ID (this should work because the ID is used)
-        when:
-        node = makePathNode('tm', COMPLEX_TERMINOLOGY_NAME)
-        GET("/api/terminologies/${getSimpleTerminologyId()}/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-    }
-
-    void 'get a Terminology but use the wrong prefix when logged in'() {
-        String node
-
-        given:
-        loginReader()
-
-        //No ID
-        when:
-        node = makePathNode('tm', SIMPLE_TERMINOLOGY_NAME)
-        GET("/api/terminologies/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-
-        //With ID (this should work because the ID is used)
-        when:
-        node = makePathNode('tm', COMPLEX_TERMINOLOGY_NAME)
-        GET("/api/terminologies/${getSimpleTerminologyId()}/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is OK because the ID is used"
-        verifyJsonResponse OK, getExpectedSimpleTerminologyJson()
-    }
-
-    void 'Get CodeSet by path and ID when not logged in'() {
-        String node
-
-        //No ID
-        when:
-        node = makePathNode('cs', SIMPLE_CODESET_NAME)
-        GET("/api/codeSets/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-
-        //With ID
-        when:
-        node = makePathNode('cs', SIMPLE_CODESET_NAME)
-        GET("/api/codeSets/${getSimpleCodeSetId()}/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-    }
-
-    void 'Get CodeSet by path and ID when logged in'() {
-        String node
-
-        given:
-        loginReader()
-
-        //No ID
-        when:
-        node = makePathNode('cs', SIMPLE_CODESET_NAME)
-        GET("/api/codeSets/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is OK"
-        verifyJsonResponse OK, getExpectedSimpleCodeSetJson()
-
-        //With ID
-        when:
-        node = makePathNode('cs', SIMPLE_CODESET_NAME)
-        GET("/api/codeSets/${getSimpleCodeSetId()}/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is OK"
-        verifyJsonResponse OK, getExpectedSimpleCodeSetJson()
-    }
-
-    void 'get a CodeSet but use the wrong prefix when not logged in'() {
-        String node
-
-        //No ID
-        when:
-        node = makePathNode('tm', SIMPLE_CODESET_NAME)
-        GET("/api/codeSets/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-
-        //With ID (this should work because the ID is used)
-        when:
-        node = makePathNode('tm', SIMPLE_CODESET_NAME)
-        GET("/api/codeSets/${getSimpleCodeSetId()}/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-    }
-
-    void 'get a CodeSet but use the wrong prefix when logged in'() {
-        String node
-
-        given:
-        loginReader()
-
-        //No ID
-        when:
-        node = makePathNode('tm', SIMPLE_CODESET_NAME)
-        GET("/api/codeSets/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-
-        //With ID (this should work because the ID is used)
-        when:
-        node = makePathNode('tm', SIMPLE_CODESET_NAME)
-        GET("/api/codeSets/${getSimpleCodeSetId()}/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is OK because the ID is used"
-        verifyJsonResponse OK, getExpectedSimpleCodeSetJson()
-    }
-
-    void 'get a Term for a Terminology when not logged in'() {
-        String node1
-        String node2
-
-        //No Terminology ID
-        when:
-        node1 = makePathNode('te', SIMPLE_TERMINOLOGY_NAME)
-        node2 = makePathNode('tm', 'STT01: Simple Test Term 01')
-        GET("/api/terminologies/path/${makePath([node1, node2])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-
-        //With Terminology ID and no label
-        when:
-        node1 = makePathNode('te', '')
-        node2 = makePathNode('tm', 'STT01: Simple Test Term 01')
-        GET("/api/terminologies/${getSimpleTerminologyId()}/path/${makePath([node1, node2])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-    }
-
-    void 'get a Term for a Terminology when logged in'() {
-        String node1
-        String node2
-
-        given:
-        loginReader()
-
-        //No Terminology ID
-        when:
-        node1 = makePathNode('te', SIMPLE_TERMINOLOGY_NAME)
-        node2 = makePathNode('tm', 'STT01: Simple Test Term 01')
-        GET("/api/terminologies/path/${makePath([node1, node2])}", STRING_ARG, true)
-
-        then: "The response is OK"
-        verifyJsonResponse OK, getExpectedSimpleTermJson()
-
-        //With Terminology ID and no label
-        when:
-        node1 = makePathNode('te', '')
-        node2 = makePathNode('tm', 'STT01: Simple Test Term 01')
-        GET("/api/terminologies/${getSimpleTerminologyId()}/path/${makePath([node1, node2])}", STRING_ARG, true)
-
-        then: "The response is OK"
-        verifyJsonResponse OK, getExpectedSimpleTermJson()
-    }
-
-    void 'get a Term for a CodeSet when not logged in'() {
-        String node1
-        String node2
-
-        //No CodeSet ID
-        when:
-        node1 = makePathNode('cs', SIMPLE_CODESET_NAME)
-        node2 = makePathNode('tm', 'STT01: Simple Test Term 01')
-        GET("/api/codeSets/path/${makePath([node1, node2])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-
-        //With CodeSet ID and no label
-        when:
-        node1 = makePathNode('cs', '')
-        node2 = makePathNode('tm', 'STT01: Simple Test Term 01')
-        GET("/api/codeSets/${getSimpleCodeSetId()}/path/${makePath([node1, node2])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-    }
-
-    void 'get a Term for a CodeSet when logged in'() {
-        String node1
-        String node2
-
-        given:
-        loginReader()
-
-        //No CodeSet ID
-        when:
-        node1 = makePathNode('cs', SIMPLE_CODESET_NAME)
-        node2 = makePathNode('tm', 'STT01: Simple Test Term 01')
-        GET("/api/codeSets/path/${makePath([node1, node2])}", STRING_ARG, true)
-
-        then: "The response is OK"
-        verifyJsonResponse OK, getExpectedSimpleTermJson()
-
-        //With CodeSet ID and no label
-        when:
-        node1 = makePathNode('cs', '')
-        node2 = makePathNode('tm', 'STT01: Simple Test Term 01')
-        GET("/api/codeSets/${getSimpleCodeSetId()}/path/${makePath([node1, node2])}", STRING_ARG, true)
-
-        then: "The response is OK"
-        verifyJsonResponse OK, getExpectedSimpleTermJson()
-    }
-
-    void 'DM01 : Get DataModel by path and ID when not logged in'() {
-        String node
-
-        //No ID
-        when:
-        node = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
-        GET("/api/dataModels/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-
-        //With ID
-        when:
-        node = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
-        GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-    }
-
-    void 'Get DataModel by path and ID when logged in'() {
-        String node
-
-        given:
-        loginReader()
-
-        //No ID
-        when:
-        node = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
-        GET("/api/dataModels/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is OK"
-        verifyJsonResponse OK, getExpectedComplexDataModelJson()
-
-        //With ID
-        when:
-        node = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
-        GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is OK"
-        verifyJsonResponse OK, getExpectedComplexDataModelJson()
-    }
-
-    void 'Get DataClass with DataModel by path and ID when not logged in'() {
-        String node1
-        String node2
-
-        //No ID
-        when:
-        node1 = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
-        node2 = makePathNode('dc', PARENT_DATACLASS_NAME)
-        GET("/api/dataModels/path/${makePath([node1, node2])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-
-        //With ID
-        when:
-        node1 = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
-        node2 = makePathNode('dc', PARENT_DATACLASS_NAME)
-        GET("/api/dataModels/path/${makePath([node1, node2])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-    }
-
-    void 'Get DataClass with DataModel by path and ID when logged in'() {
-        String node1
-        String node2
-
-        given:
-        loginReader()
-
-        //No ID
-        when:
-        node1 = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
-        node2 = makePathNode('dc', PARENT_DATACLASS_NAME)
-        GET("/api/dataModels/path/${makePath([node1, node2])}", STRING_ARG, true)
-
-        then: "The response is OK"
-        verifyJsonResponse OK, getExpectedParentDataClassJson()
-
-        //With ID
-        when:
-        node1 = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
-        node2 = makePathNode('dc', PARENT_DATACLASS_NAME)
-        GET("/api/dataModels/path/${makePath([node1, node2])}", STRING_ARG, true)
-
-        then: "The response is OK"
-        verifyJsonResponse OK, getExpectedParentDataClassJson()
-    }
-
-    void 'Get DataClass by path and ID when not logged in'() {
-        String node
-
-        //No ID
-        when:
-        node = makePathNode('dc', PARENT_DATACLASS_NAME)
-        GET("/api/dataClasses/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-
-        //With ID
-        when:
-        node = makePathNode('dc', PARENT_DATACLASS_NAME)
-        GET("/api/dataClasses/${getParentDataClassId()}/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-
-        //No ID
-        when:
-        node = makePathNode('dc', CHILD_DATACLASS_NAME)
-        GET("/api/dataClasses/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-
-        //With ID
-        when:
-        node = makePathNode('dc', CHILD_DATACLASS_NAME)
-        GET("/api/dataClasses/${getParentDataClassId()}/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-    }
-
-    void 'Get DataClass by path and ID when logged in'() {
-        String node
-
-        given:
-        loginReader()
-
-        //No ID
-        when:
-        node = makePathNode('dc', PARENT_DATACLASS_NAME)
-        GET("/api/dataClasses/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is OK"
-        verifyJsonResponse OK, getExpectedParentDataClassJson()
-
-        //With ID
-        when:
-        node = makePathNode('dc', PARENT_DATACLASS_NAME)
-        GET("/api/dataClasses/${getParentDataClassId()}/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is OK"
-        verifyJsonResponse OK, getExpectedParentDataClassJson()
-
-        //No ID
-        when:
-        node = makePathNode('dc', CHILD_DATACLASS_NAME)
-        GET("/api/dataClasses/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is OK"
-        verifyJsonResponse OK, getExpectedChildDataClassJson()
-
-        //With ID
-        when:
-        node = makePathNode('dc', CHILD_DATACLASS_NAME)
-        GET("/api/dataClasses/${getChildDataClassId()}/path/${makePath([node])}", STRING_ARG, true)
-
-        then: "The response is OK"
-        verifyJsonResponse OK, getExpectedChildDataClassJson()
-    }
-
-    void 'Get DataElement by path and ID when not logged in'() {
-        String node1
-        String node2
-
-        //No ID
-        when:
-        node1 = makePathNode('dc', CONTENT_DATACLASS_NAME)
-        node2 = makePathNode('de', DATA_ELEMENT_NAME)
-        GET("/api/dataClasses/path/${makePath([node1, node2])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-
-        //With ID
-        when:
-        node1 = makePathNode('dc', CONTENT_DATACLASS_NAME)
-        node2 = makePathNode('de', DATA_ELEMENT_NAME)
-        GET("/api/dataClasses/${getContentDataClassId()}/path/${makePath([node1, node2])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-    }
-
-    void 'Get DataElement by DataClass, path and ID when logged in'() {
-        String node1
-        String node2
-
-        given:
-        loginReader()
-
-        //No ID
-        when:
-        node1 = makePathNode('dc', CONTENT_DATACLASS_NAME)
-        node2 = makePathNode('de', DATA_ELEMENT_NAME)
-        GET("/api/dataClasses/path/${makePath([node1, node2])}", STRING_ARG, true)
-
-        then: "The response is OK"
-        verifyJsonResponse OK, getExpectedDataElementJson()
-
-        //With ID
-        when:
-        node1 = makePathNode('dc', CONTENT_DATACLASS_NAME)
-        node2 = makePathNode('de', DATA_ELEMENT_NAME)
-        GET("/api/dataClasses/${getContentDataClassId()}/path/${makePath([node1, node2])}", STRING_ARG, true)
-
-        then: "The response is OK"
-        verifyJsonResponse OK, getExpectedDataElementJson()
-    }
-
-    void 'Get PrimitiveDataType by DataModel, path and ID when not logged in'() {
-        String node1
-        String node2
-
-        //No ID
-        when:
-        node1 = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
-        node2 = makePathNode('dt', PRIMITIVE_DATA_TYPE_NAME)
-        GET("/api/dataModels/path/${makePath([node1, node2])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-
-        //With ID
-        when:
-        node1 = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
-        node2 = makePathNode('dt', PRIMITIVE_DATA_TYPE_NAME)
-        GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath([node1, node2])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-    }
-
-    void 'Get PrimitiveDataType by DataModel, path and ID when logged in'() {
-        String node1
-        String node2
-
-        given:
-        loginReader()
-
-        //No ID
-        when:
-        node1 = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
-        node2 = makePathNode('dt', PRIMITIVE_DATA_TYPE_NAME)
-        GET("/api/dataModels/path/${makePath([node1, node2])}", STRING_ARG, true)
-
-        then: "The response is OK"
-        verifyJsonResponse OK, getExpectedPrimitiveTypeJson()
-
-        //With ID
-        when:
-        node1 = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
-        node2 = makePathNode('dt', PRIMITIVE_DATA_TYPE_NAME)
-        GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath([node1, node2])}", STRING_ARG, true)
-
-        then: "The response is OK"
-        verifyJsonResponse OK, getExpectedPrimitiveTypeJson()
-    }
-
-    void 'Get EnumerationType by DataModel, path and ID when not logged in'() {
-        String node1
-        String node2
-
-        //No ID
-        when:
-        node1 = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
-        node2 = makePathNode('dt', ENUMERATION_DATA_TYPE_NAME)
-        GET("/api/dataModels/path/${makePath([node1, node2])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-
-        //With ID
-        when:
-        node1 = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
-        node2 = makePathNode('dt', ENUMERATION_DATA_TYPE_NAME)
-        GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath([node1, node2])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-    }
-
-    void 'Get EnumerationType by DataModel, path and ID when logged in'() {
-        String node1
-        String node2
-
-        given:
-        loginReader()
-
-        //No ID
-        when:
-        node1 = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
-        node2 = makePathNode('dt', ENUMERATION_DATA_TYPE_NAME)
-        GET("/api/dataModels/path/${makePath([node1, node2])}", STRING_ARG, true)
-
-        then: "The response is OK"
-        verifyJsonResponse OK, getExpectedEnumerationTypeJson()
-
-        //With ID
-        when:
-        node1 = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
-        node2 = makePathNode('dt', ENUMERATION_DATA_TYPE_NAME)
-        GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath([node1, node2])}", STRING_ARG, true)
-
-        then: "The response is OK"
-        verifyJsonResponse OK, getExpectedEnumerationTypeJson()
-    }
-
-    void 'Get ReferenceType by DataModel, path and ID when not logged in'() {
-        String node1
-        String node2
-
-        //No ID
-        when:
-        node1 = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
-        node2 = makePathNode('dt', REFERENCE_DATA_TYPE_NAME)
-        GET("/api/dataModels/path/${makePath([node1, node2])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-
-        //With ID
-        when:
-        node1 = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
-        node2 = makePathNode('dt', REFERENCE_DATA_TYPE_NAME)
-        GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath([node1, node2])}", STRING_ARG, true)
-
-        then: "The response is Not Found"
-        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
-    }
-
-    void 'Get ReferenceType by DataModel, path and ID when logged in'() {
-        String node1
-        String node2
-
-        given:
-        loginReader()
-
-        //No ID
-        when:
-        node1 = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
-        node2 = makePathNode('dt', REFERENCE_DATA_TYPE_NAME)
-        GET("/api/dataModels/path/${makePath([node1, node2])}", STRING_ARG, true)
-
-        then: "The response is OK"
-        verifyJsonResponse OK, getExpectedReferenceTypeJson()
-
-        //With ID
-        when:
-        node1 = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
-        node2 = makePathNode('dt', REFERENCE_DATA_TYPE_NAME)
-        GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath([node1, node2])}", STRING_ARG, true)
-
-        then: "The response is OK"
-        verifyJsonResponse OK, getExpectedReferenceTypeJson()
-    }
-
-    void 'Confirm all path prefixes are unique'() {
-        when:
-        GET('path/prefixMappings', STRING_ARG)
-        log.debug('{}', jsonResponseBody())
-
-        and:
-        GET('path/prefixMappings')
-
-        then:
-        verifyResponse(OK, response)
-
-        when:
-        Map<String, Map<String, String>> grouped = (responseBody() as Map<String, String>).groupBy {it.key}
-
-        then:
-        grouped.each {
-            log.debug('Checking {}', it.key)
-            assert it.value.size() == 1
-        }
-    }
 }

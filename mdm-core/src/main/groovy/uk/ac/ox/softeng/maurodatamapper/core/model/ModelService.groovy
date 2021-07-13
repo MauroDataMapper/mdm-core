@@ -34,7 +34,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
-import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
@@ -92,9 +91,6 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     @Autowired(required = false)
     SecurityPolicyManagerService securityPolicyManagerService
-
-    @Autowired
-    PathService pathService
 
     @Override
     Class<K> getCatalogueItemClass() {
@@ -210,15 +206,19 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     @Override
     K findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
-        String split = pathIdentifier.split(/\./)
+        String[] split = pathIdentifier.split(/:/)
+        String label = split[0]
+        // Default to main branch
+        String identity = split.size() == 1 ? 'main' : split[1]
+
         DetachedCriteria criteria = parentId ? modelClass.byFolderId(parentId) : modelClass.by()
 
-        criteria.eq('label', split[0])
+        criteria.eq('label', label)
 
-        if (Version.isVersionable(split[1])) {
-            criteria.eq('modelVersion', Version.from(split[1]))
+        if (Version.isVersionable(identity)) {
+            criteria.eq('modelVersion', Version.from(identity))
         } else {
-            criteria.eq('branchName', split[1])
+            criteria.eq('branchName', identity)
         }
         criteria.get() as K
     }

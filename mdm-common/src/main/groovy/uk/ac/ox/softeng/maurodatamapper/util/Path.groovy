@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.util
 
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.SimpleType
 
@@ -26,7 +28,7 @@ import groovy.transform.stc.SimpleType
 class Path {
 
     //Need to escape the vertical bar which we are using as the split delimiter
-    static String PATH_DELIMITER = "\\|"
+    static String PATH_DELIMITER = '\\|'
 
     //Arbitrary maximum number of nodes, to avoid unexpectedly long iteration
     static int MAX_NODES = 10
@@ -86,5 +88,21 @@ class Path {
 
     String toString() {
         pathNodes.join('|')
+    }
+
+    static Path from(String path) {
+        new Path(path)
+    }
+
+    static Path from(String prefix, String pathIdentifier) {
+        new Path().tap {
+            pathNodes = [new PathNode(prefix, pathIdentifier)]
+        }
+    }
+
+    static Path from(CreatorAware... domains) {
+        new Path().tap {
+            pathNodes = domains.collect {new PathNode(it.pathPrefix, it.pathIdentifier)}
+        }
     }
 }

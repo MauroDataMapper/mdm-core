@@ -28,7 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.dataflow.component.DataClassComponentSer
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.util.Path
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
@@ -108,7 +108,7 @@ class DataFlowService extends ModelItemService<DataFlow> {
 
             log.trace('Removing {} DataFlows', dataFlowIds.size())
             sessionFactory.currentSession
-                .createSQLQuery('delete from dataflow.data_flow where source_id = :id or target_id = :id')
+                .createSQLQuery('DELETE FROM dataflow.data_flow WHERE source_id = :id OR target_id = :id')
                 .setParameter('id', modelId)
                 .executeUpdate()
 
@@ -152,17 +152,17 @@ class DataFlowService extends ModelItemService<DataFlow> {
 
         Set<DataFlow> dataFlows = [] as Set
 
-        dataFlows.addAll buildTargetChain(allReadableDataFlows, allReadableDataFlows.findAll { it.refersToDataModelId(dataModelId) })
-        dataFlows.addAll buildSourceChain(allReadableDataFlows, allReadableDataFlows.findAll { it.refersToDataModelId(dataModelId) })
+        dataFlows.addAll buildTargetChain(allReadableDataFlows, allReadableDataFlows.findAll {it.refersToDataModelId(dataModelId)})
+        dataFlows.addAll buildSourceChain(allReadableDataFlows, allReadableDataFlows.findAll {it.refersToDataModelId(dataModelId)})
 
         dataFlows.toList() as List<DataFlow>
     }
 
     def buildTargetChain(List<DataFlow> readableDataFlows, Collection<DataFlow> dataFlowChain) {
 
-        Set<DataModel> targets = dataFlowChain.collect { it.target }.toSet()
+        Set<DataModel> targets = dataFlowChain.collect {it.target}.toSet()
 
-        Set<DataFlow> targetDataFlows = readableDataFlows.findAll { it.source in targets }.toSet()
+        Set<DataFlow> targetDataFlows = readableDataFlows.findAll {it.source in targets}.toSet()
 
         if (targetDataFlows) {
             targetDataFlows = buildTargetChain(readableDataFlows - targetDataFlows, targetDataFlows)
@@ -173,9 +173,9 @@ class DataFlowService extends ModelItemService<DataFlow> {
 
     def buildSourceChain(List<DataFlow> readableDataFlows, Collection<DataFlow> dataFlowChain) {
 
-        Set<DataModel> sources = dataFlowChain.collect { it.source }.toSet()
+        Set<DataModel> sources = dataFlowChain.collect {it.source}.toSet()
 
-        Set<DataFlow> sourceDataFlows = readableDataFlows.findAll { it.target in sources }.toSet()
+        Set<DataFlow> sourceDataFlows = readableDataFlows.findAll {it.target in sources}.toSet()
 
         if (sourceDataFlows) {
             sourceDataFlows = buildSourceChain(readableDataFlows - sourceDataFlows, sourceDataFlows)
@@ -275,7 +275,7 @@ class DataFlowService extends ModelItemService<DataFlow> {
 
     @Override
     List<DataFlow> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        DataFlow.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id) }
+        DataFlow.byClassifierId(classifier.id).list().findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)}
     }
 
     @Override
@@ -293,7 +293,7 @@ class DataFlowService extends ModelItemService<DataFlow> {
         thisDataFlow.diff(otherDataFlow)
     }
 
-   /**
+    /**
      * When importing a DataFlow, do checks and setting of required values as follows:
      * (1) Set the createdBy of the DataFlow to be the importing user
      * (2) Check facets
@@ -315,11 +315,8 @@ class DataFlowService extends ModelItemService<DataFlow> {
         checkFacetsAfterImportingCatalogueItem(dataFlow)
 
         //source and target data model are imported by use of a path like "dm:my-data-model"
-        String sourcePath = "dm:${bindingMap.source.label}"
-        DataModel sourceDataModel = pathService.findCatalogueItemByPath(
-            PublicAccessSecurityPolicyManager.instance,
-            [path: sourcePath, catalogueItemDomainType: DataModel.simpleName]
-        )
+        Path sourcePath = Path.from('dm', bindingMap.source.label)
+        DataModel sourceDataModel = pathService.findResourceByPathFromRootClass(DataModel, sourcePath) as DataModel
 
         if (sourceDataModel) {
             dataFlow.source = sourceDataModel
@@ -327,11 +324,8 @@ class DataFlowService extends ModelItemService<DataFlow> {
             throw new ApiBadRequestException('DFI01', "Source DataModel retrieval for ${sourcePath} failed")
         }
 
-        String targetPath = "dm:${bindingMap.target.label}"
-        DataModel targetDataModel = pathService.findCatalogueItemByPath(
-            PublicAccessSecurityPolicyManager.instance,
-            [path: targetPath, catalogueItemDomainType: DataModel.simpleName]
-        )
+        Path targetPath = Path.from('dm', bindingMap.target.label)
+        DataModel targetDataModel = pathService.findResourceByPathFromRootClass(DataModel, targetPath) as DataModel
 
         if (targetDataModel) {
             dataFlow.target = targetDataModel
@@ -341,7 +335,7 @@ class DataFlowService extends ModelItemService<DataFlow> {
 
         //Check associations for the dataClassComponents
         if (dataFlow.dataClassComponents) {
-            dataFlow.dataClassComponents.each { dcc ->
+            dataFlow.dataClassComponents.each {dcc ->
                 dataClassComponentService.checkImportedDataClassComponentAssociations(importingUser, dataFlow, dcc)
             }
 

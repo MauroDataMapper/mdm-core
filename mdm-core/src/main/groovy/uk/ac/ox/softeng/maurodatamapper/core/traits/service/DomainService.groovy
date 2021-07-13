@@ -57,7 +57,11 @@ trait DomainService<K extends CreatorAware> {
     }
 
     Class<K> getDomainClass() {
-        (Class<K>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0]
+        ParameterizedType parameterizedType = this.getClass().getGenericInterfaces().find {it instanceof ParameterizedType}
+        if (!parameterizedType) {
+            parameterizedType = this.getClass().getGenericSuperclass()
+        }
+        (Class<K>) parameterizedType.getActualTypeArguments()[0]
     }
 
     boolean handles(Class clazz) {

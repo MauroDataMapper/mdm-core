@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 
+import grails.artefact.DomainClass
 import grails.rest.RestfulController
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -57,10 +58,10 @@ class PathController extends RestfulController<CatalogueItem> implements MdmCont
             // Permissions have been checked as part of the interceptor
             pathedResource = pathService.findResourceByPathFromRootResource(resource as CreatorAware, params.path)
         } else {
-            pathedResource = pathService.findResourceByPathFromRootClass(params.securableResourceClass, params.path)
+            pathedResource = pathService.findResourceByPathFromRootClass(params.securableResourceClass, params.path, currentUserSecurityPolicyManager)
         }
 
-        if (!pathedResource) return notFound(CreatorAware, params.path)
+        if (!pathedResource) return notFound(DomainClass, params.path)
 
         respond(pathedResource, [model: [userSecurityPolicyManager: currentUserSecurityPolicyManager,
                                          pathedResource           : pathedResource],
@@ -69,5 +70,6 @@ class PathController extends RestfulController<CatalogueItem> implements MdmCont
 
     def listAllPrefixMappings() {
         respond pathService.listAllPrefixMappings()
+
     }
 }

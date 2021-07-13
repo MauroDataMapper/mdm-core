@@ -816,7 +816,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
      */
     @Override
     DataClass findByParentIdAndLabel(UUID parentId, String label) {
-        DataClass dataClass = findByDataModelIdAndId(parentId, label)
+        DataClass dataClass = findByDataModelIdAndLabel(parentId, label)
         if (!dataClass) {
             dataClass = DataClass.byParentDataClassId(parentId).eq('label', label).get()
         }

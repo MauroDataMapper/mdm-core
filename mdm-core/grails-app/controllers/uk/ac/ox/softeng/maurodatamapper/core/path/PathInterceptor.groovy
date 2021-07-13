@@ -23,6 +23,8 @@ import uk.ac.ox.softeng.maurodatamapper.util.Path
 class PathInterceptor implements MdmInterceptor {
 
     boolean before() {
+        if (actionName == 'listAllPrefixMappings') return true
+
         mapDomainTypeToClass('securableResource', true)
         params.path = new Path(params.path)
 

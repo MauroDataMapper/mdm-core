@@ -462,9 +462,12 @@ class TermService extends ModelItemService<Term> {
 
     @Override
     Term findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
-        Term term = Term.byCodeSetId(parentId).eq('code', pathIdentifier).get()
+        // Older code used the full term label which is not great but we should be able to handle this here
+        String legacyHandlingPathIdentifier = pathIdentifier.split(':')[0]
+
+        Term term = Term.byCodeSetId(parentId).eq('code', legacyHandlingPathIdentifier).get()
         if (!term) {
-            term = Term.byTerminologyId(parentId).eq('code', pathIdentifier).get()
+            term = Term.byTerminologyId(parentId).eq('code', legacyHandlingPathIdentifier).get()
         }
         term
     }

@@ -27,7 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.util.Path
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
@@ -210,12 +210,9 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
         Set<DataClass> resolvedSourceDataClasses = []
 
         if (rawSourceDataClasses) {
-            rawSourceDataClasses.each { sdc ->
-                String path = "dm:${dataFlow.source.label}|dc:${sdc.label}"
-                DataClass sourceDataClass = pathService.findCatalogueItemByPath(
-                        PublicAccessSecurityPolicyManager.instance,
-                        [path: path, catalogueItemDomainType: DataModel.simpleName]
-                )
+            rawSourceDataClasses.each {sdc ->
+                Path path = Path.from(dataFlow.source, sdc)
+                DataClass sourceDataClass = pathService.findResourceByPathFromRootClass(DataModel, path) as DataClass
 
                 if (sourceDataClass) {
                     resolvedSourceDataClasses.add(sourceDataClass)
@@ -232,12 +229,9 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
         Set<DataClass> resolvedTargetDataClasses = []
 
         if (rawTargetDataClasses) {
-            rawTargetDataClasses.each { tdc ->
-                String path = "dm:${dataFlow.target.label}|dc:${tdc.label}"
-                DataClass targetDataClass = pathService.findCatalogueItemByPath(
-                        PublicAccessSecurityPolicyManager.instance,
-                        [path: path, catalogueItemDomainType: DataModel.simpleName]
-                )
+            rawTargetDataClasses.each {tdc ->
+                Path path = Path.from(dataFlow.target, tdc)
+                DataClass targetDataClass = pathService.findResourceByPathFromRootClass(DataModel, path) as DataClass
 
                 if (targetDataClass) {
                     resolvedTargetDataClasses.add(targetDataClass)

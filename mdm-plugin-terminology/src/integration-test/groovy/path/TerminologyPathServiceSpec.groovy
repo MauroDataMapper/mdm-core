@@ -15,34 +15,33 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.path
+package path
 
-import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
-import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
-import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSetService
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
-import uk.ac.ox.softeng.maurodatamapper.terminology.TerminologyService
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
-import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
-import uk.ac.ox.softeng.maurodatamapper.test.unit.service.CatalogueItemServiceSpec
+import uk.ac.ox.softeng.maurodatamapper.terminology.test.BaseTerminologyIntegrationSpec
+import uk.ac.ox.softeng.maurodatamapper.util.Path
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
-import grails.testing.services.ServiceUnitTest
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import spock.lang.PendingFeature
 import spock.lang.Stepwise
 
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
 @Slf4j
+@Integration
+@Rollback
 @Stepwise
-class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements ServiceUnitTest<PathService> {
-    
-    UserSecurityPolicyManager userSecurityPolicyManager
+class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
+
+    PathService pathService
 
     Terminology terminology1
     Term terminology1_term1
@@ -59,7 +58,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
     Terminology terminology4notFinalised
 
     Terminology terminology5first
-    Terminology terminology5second    
+    Terminology terminology5second
 
     CodeSet codeSet1
 
@@ -93,14 +92,9 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
            ->     "terminology 2 term 1"
            ->     "terminology 2 term 2"
      */
-    def setup() {
-        log.debug('Setting up TerminologyPathServiceSpec Unit')
 
-        mockArtefact(BreadcrumbTreeService)
-        mockArtefact(TermService)
-        mockArtefact(TerminologyService)
-        mockArtefact(CodeSetService)
-        mockDomains(Terminology, CodeSet, Term)
+    void setupDomainData() {
+        log.debug('Setting up TerminologyPathServiceSpec Unit')
 
         terminology1 = new Terminology(createdByUser: admin, label: 'terminology 1', folder: testFolder, authority: testAuthority)
         checkAndSave(terminology1)
@@ -123,10 +117,12 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
         terminology3main = new Terminology(createdByUser: admin, label: 'terminology 3', description: 'terminology 3 on main', folder: testFolder, authority: testAuthority)
         checkAndSave(terminology3main)
 
-        terminology3draft = new Terminology(createdByUser: admin, label: 'terminology 3', description: 'terminology 3 on draft', folder: testFolder, authority: testAuthority, branchName: 'draft')
+        terminology3draft = new Terminology(createdByUser: admin, label: 'terminology 3', description: 'terminology 3 on draft', folder: testFolder, authority: testAuthority,
+                                            branchName: 'draft')
         checkAndSave(terminology3draft)
 
-        terminology4finalised = new Terminology(createdByUser: admin, label: 'terminology 4', description: 'terminology 4 finalised', folder: testFolder, authority: testAuthority)
+        terminology4finalised =
+            new Terminology(createdByUser: admin, label: 'terminology 4', description: 'terminology 4 finalised', folder: testFolder, authority: testAuthority)
         checkAndSave(terminology4finalised)
         terminology4finalised.finalised = true
         terminology4finalised.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
@@ -134,8 +130,9 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
         terminology4finalised.modelVersion = Version.from('1.0.0')
         checkAndSave(terminology4finalised)
 
-        terminology4notFinalised = new Terminology(createdByUser: admin, label: 'terminology 4', description: 'terminology 4 not finalised', folder: testFolder, authority: testAuthority)
-        checkAndSave(terminology4notFinalised)    
+        terminology4notFinalised =
+            new Terminology(createdByUser: admin, label: 'terminology 4', description: 'terminology 4 not finalised', folder: testFolder, authority: testAuthority)
+        checkAndSave(terminology4notFinalised)
 
         terminology5first = new Terminology(createdByUser: admin, label: 'terminology 5', description: 'terminology 5 1.0.0', folder: testFolder, authority: testAuthority)
         checkAndSave(terminology5first)
@@ -151,7 +148,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
         terminology5second.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
         terminology5second.breadcrumbTree.finalised = true
         terminology5second.modelVersion = Version.from('2.0.0')
-        checkAndSave(terminology5second)                 
+        checkAndSave(terminology5second)
 
         codeSet1 = new CodeSet(createdByUser: admin, label: 'codeset 1', folder: testFolder, authority: testAuthority)
         checkAndSave(codeSet1)
@@ -169,173 +166,187 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
 
     }
 
-    void "test truth"() {
-        when:
-        int a = 42
-
-        then:
-        a == 42
-    }
-
     void "test getting terminology by ID and path"() {
-        Map params
+        given:
+        setupData()
         CatalogueItem catalogueItem
 
         /*
         Terminology 1 by ID
          */
         when:
-        params = ['catalogueItemDomainType': 'terminologies', 'catalogueItemId': terminology1.id.toString(), 'path': "te:"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        Path path = Path.from('te:')
+        catalogueItem = pathService.findResourceByPathFromRootResource(terminology1, path) as CatalogueItem
 
         then:
         catalogueItem.label == terminology1.label
         catalogueItem.domainType == "Terminology"
-        catalogueItem.id.equals(terminology1.id)
+        catalogueItem.id == terminology1.id
 
         /*
         Terminology 2 by ID
         */
         when:
-        params = ['catalogueItemDomainType': 'terminologies', 'catalogueItemId': terminology2.id.toString(), 'path': "te:"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        path = Path.from('te:')
+        catalogueItem = pathService.findResourceByPathFromRootResource(terminology2, path) as CatalogueItem
 
         then:
         catalogueItem.label == terminology2.label
         catalogueItem.domainType == "Terminology"
-        catalogueItem.id.equals(terminology2.id)
+        catalogueItem.id == terminology2.id
 
         /*
         Terminology 1 by ID and path
          */
         when:
-        params = ['catalogueItemDomainType': 'terminologies', 'catalogueItemId': terminology1.id.toString(), 'path': "te:${terminology1.label}"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        path = Path.from(terminology1)
+        catalogueItem = pathService.findResourceByPathFromRootResource(terminology1, path) as CatalogueItem
 
         then:
         catalogueItem.label == terminology1.label
         catalogueItem.domainType == "Terminology"
-        catalogueItem.id.equals(terminology1.id)
+        catalogueItem.id == terminology1.id
 
         /*
         Terminology 2 by ID and path
          */
         when:
-        params = ['catalogueItemDomainType': 'terminologies', 'catalogueItemId': terminology2.id.toString(), 'path': "te:${terminology2.label}"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        path = Path.from(terminology2)
+        catalogueItem = pathService.findResourceByPathFromRootResource(terminology2, path) as CatalogueItem
 
         then:
         catalogueItem.label == terminology2.label
         catalogueItem.domainType == "Terminology"
-        catalogueItem.id.equals(terminology2.id)
+        catalogueItem.id == terminology2.id
 
         /*
          Terminology 1 by ID and wrong path
         */
         when:
-        params = ['catalogueItemDomainType': 'terminologies', 'catalogueItemId': terminology1.id.toString(), 'path': "te:${terminology2.label}"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        path = Path.from(terminology2)
+        catalogueItem = pathService.findResourceByPathFromRootResource(terminology1, path) as CatalogueItem
 
         then:
-        catalogueItem.label == terminology1.label
-        catalogueItem.domainType == "Terminology"
-        catalogueItem.id.equals(terminology1.id)
+        !catalogueItem
 
         /*
         Terminology 2 by ID and wrong path
          */
         when:
-        params = ['catalogueItemDomainType': 'terminologies', 'catalogueItemId': terminology2.id.toString(), 'path': "te:${terminology1.label}"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        path = Path.from(terminology1)
+        catalogueItem = pathService.findResourceByPathFromRootResource(terminology2, path) as CatalogueItem
 
         then:
-        catalogueItem.label == terminology2.label
-        catalogueItem.domainType == "Terminology"
-        catalogueItem.id.equals(terminology2.id)
+        !catalogueItem
 
         /*
         Terminology 1 by path
         */
         when:
-        params = ['catalogueItemDomainType': 'terminologies', 'path': "te:${terminology1.label}"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        path = Path.from(terminology1)
+        catalogueItem = pathService.findResourceByPathFromRootClass(Terminology, path) as CatalogueItem
 
         then:
         catalogueItem.label == terminology1.label
         catalogueItem.domainType == "Terminology"
-        catalogueItem.id.equals(terminology1.id)
+        catalogueItem.id == terminology1.id
 
         /*
         Terminology 2 by path
         */
         when:
-        params = ['catalogueItemDomainType': 'terminologies', 'path': "te:${terminology2.label}"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        path = Path.from(terminology2)
+        catalogueItem = pathService.findResourceByPathFromRootClass(Terminology, path) as CatalogueItem
 
         then:
         catalogueItem.label == terminology2.label
         catalogueItem.domainType == "Terminology"
-        catalogueItem.id.equals(terminology2.id)
+        catalogueItem.id == terminology2.id
     }
 
     void "test getting terms for terminology"() {
-        Map params
+        given:
+        setupData()
         CatalogueItem catalogueItem
 
         /*
         Terminology 1 Term 1
          */
         when:
-        params = ['catalogueItemDomainType': 'terminologies', 'catalogueItemId': terminology1.id.toString(), 'path': "te:|tm:${terminology1_term1.label}"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        Path path = Path.from("te:|tm:${terminology1_term1.pathIdentifier}")
+        catalogueItem = pathService.findResourceByPathFromRootResource(terminology1, path) as CatalogueItem
 
         then:
         catalogueItem.label == terminology1_term1.label
         catalogueItem.domainType == "Term"
-        catalogueItem.id.equals(terminology1_term1.id)
+        catalogueItem.id == terminology1_term1.id
+
+        /*
+       Terminology 1 Term 1
+        */
+        when: 'using the label'
+        path = Path.from("te:|tm:${terminology1_term1.label}")
+        catalogueItem = pathService.findResourceByPathFromRootResource(terminology1, path) as CatalogueItem
+
+        then:
+        catalogueItem.label == terminology1_term1.label
+        catalogueItem.domainType == "Term"
+        catalogueItem.id == terminology1_term1.id
 
         /*
         Terminology 1 Term 2
         */
         when:
-        params = ['catalogueItemDomainType': 'terminologies', 'catalogueItemId': terminology1.id.toString(), 'path': "te:|tm:${terminology1_term2.label}"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        path = Path.from("te:|tm:${terminology1_term2.pathIdentifier}")
+        catalogueItem = pathService.findResourceByPathFromRootResource(terminology1, path) as CatalogueItem
 
         then:
         catalogueItem.label == terminology1_term2.label
         catalogueItem.domainType == "Term"
-        catalogueItem.id.equals(terminology1_term2.id)
+        catalogueItem.id == terminology1_term2.id
 
         /*
         Terminology 2 Term 1
         */
         when:
-        params = ['catalogueItemDomainType': 'terminologies', 'catalogueItemId': terminology2.id.toString(), 'path': "te:|tm:${terminology2_term1.label}"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        path = Path.from("te:|tm:${terminology2_term1.pathIdentifier}")
+        catalogueItem = pathService.findResourceByPathFromRootResource(terminology2, path) as CatalogueItem
 
         then:
         catalogueItem.label == terminology2_term1.label
         catalogueItem.domainType == "Term"
-        catalogueItem.id.equals(terminology2_term1.id)
+        catalogueItem.id == terminology2_term1.id
 
         /*
         Terminology 2 Term 2
         */
         when:
-        params = ['catalogueItemDomainType': 'terminologies', 'catalogueItemId': terminology2.id.toString(), 'path': "te:|tm:${terminology2_term2.label}"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        path = Path.from("te:|tm:${terminology2_term2.pathIdentifier}")
+        catalogueItem = pathService.findResourceByPathFromRootResource(terminology2, path) as CatalogueItem
 
         then:
         catalogueItem.label == terminology2_term2.label
         catalogueItem.domainType == "Term"
-        catalogueItem.id.equals(terminology2_term2.id)
+        catalogueItem.id == terminology2_term2.id
+
+        /*
+        By path alone
+         */
+        when:
+        path = Path.from(terminology2, terminology2_term2)
+        catalogueItem = pathService.findResourceByPathFromRootClass(Terminology, path) as CatalogueItem
+
+        then:
+        catalogueItem.label == terminology2_term2.label
+        catalogueItem.domainType == "Term"
+        catalogueItem.id == terminology2_term2.id
 
         /*
         Try to get a term which doesn't exist on Terminology 1
         */
         when:
-        params = ['catalogueItemDomainType': 'terminologies', 'catalogueItemId': terminology1.id.toString(), 'path': "te:|tm:${terminology2_term1.label}"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        path = Path.from("te:|tm:${terminology2_term1.pathIdentifier}")
+        catalogueItem = pathService.findResourceByPathFromRootResource(terminology1, path) as CatalogueItem
 
         then:
         catalogueItem == null
@@ -344,172 +355,170 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
         Try to get a term which doesn't exist on Terminology 2
         */
         when:
-        params = ['catalogueItemDomainType': 'terminologies', 'catalogueItemId': terminology2.id.toString(), 'path': "te:|tm:${terminology1_term1.label}"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        path = Path.from("te:|tm:${terminology1_term1.pathIdentifier}")
+        catalogueItem = pathService.findResourceByPathFromRootResource(terminology2, path) as CatalogueItem
 
         then:
         catalogueItem == null
     }
 
     void "test getting code set by ID and path"() {
-        Map params
+        given:
+        setupData()
         CatalogueItem catalogueItem
 
         /*
         CodeSet 1 by ID
          */
         when:
-        params = ['catalogueItemDomainType': 'codeSets', 'catalogueItemId': codeSet1.id.toString(), 'path': "cs:"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        Path path = Path.from('cs:')
+        catalogueItem = pathService.findResourceByPathFromRootResource(codeSet1, path) as CatalogueItem
 
         then:
         catalogueItem.label == codeSet1.label
         catalogueItem.domainType == "CodeSet"
-        catalogueItem.id.equals(codeSet1.id)
+        catalogueItem.id == codeSet1.id
 
         /*
         CodeSet 2 by ID
         */
         when:
-        params = ['catalogueItemDomainType': 'codeSets', 'catalogueItemId': codeSet2.id.toString(), 'path': "cs:"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        path = Path.from('cs:')
+        catalogueItem = pathService.findResourceByPathFromRootResource(codeSet2, path) as CatalogueItem
 
         then:
         catalogueItem.label == codeSet2.label
         catalogueItem.domainType == "CodeSet"
-        catalogueItem.id.equals(codeSet2.id)
+        catalogueItem.id == codeSet2.id
 
         /*
         CodeSet 1 by ID and path
          */
         when:
-        params = ['catalogueItemDomainType': 'codeSets', 'catalogueItemId': codeSet1.id.toString(), 'path': "cs:${codeSet1.label}"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        path = Path.from(codeSet1)
+        catalogueItem = pathService.findResourceByPathFromRootResource(codeSet1, path) as CatalogueItem
 
         then:
         catalogueItem.label == codeSet1.label
         catalogueItem.domainType == "CodeSet"
-        catalogueItem.id.equals(codeSet1.id)
+        catalogueItem.id == codeSet1.id
 
         /*
         CodeSet 2 by ID and path
          */
         when:
-        params = ['catalogueItemDomainType': 'codeSets', 'catalogueItemId': codeSet2.id.toString(), 'path': "cs:${codeSet2.label}"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        path = Path.from(codeSet2)
+        catalogueItem = pathService.findResourceByPathFromRootResource(codeSet2, path) as CatalogueItem
 
         then:
         catalogueItem.label == codeSet2.label
         catalogueItem.domainType == "CodeSet"
-        catalogueItem.id.equals(codeSet2.id)
+        catalogueItem.id == codeSet2.id
 
         /*
         Code Set 1 by ID and wrong path
         */
         when:
-        params = ['catalogueItemDomainType': 'codeSets', 'catalogueItemId': codeSet1.id.toString(), 'path': "cs:${codeSet2.label}"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        path = Path.from(codeSet2)
+        catalogueItem = pathService.findResourceByPathFromRootResource(codeSet1, path) as CatalogueItem
 
         then:
-        catalogueItem.label == codeSet1.label
-        catalogueItem.domainType == "CodeSet"
-        catalogueItem.id.equals(codeSet1.id)
+        !catalogueItem
 
         /*
         CodeSet 2 by ID and wrong path
          */
         when:
-        params = ['catalogueItemDomainType': 'codeSets', 'catalogueItemId': codeSet2.id.toString(), 'path': "cs:${codeSet1.label}"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        path = Path.from(codeSet1)
+        catalogueItem = pathService.findResourceByPathFromRootResource(codeSet2, path) as CatalogueItem
 
         then:
-        catalogueItem.label == codeSet2.label
-        catalogueItem.domainType == "CodeSet"
-        catalogueItem.id.equals(codeSet2.id)
+        !catalogueItem
 
         /*
         CodeSet 1 by path
         */
         when:
-        params = ['catalogueItemDomainType': 'codeSets', 'path': "cs:${codeSet1.label}"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        path = Path.from(codeSet1)
+        catalogueItem = pathService.findResourceByPathFromRootClass(CodeSet, path) as CatalogueItem
 
         then:
         catalogueItem.label == codeSet1.label
         catalogueItem.domainType == "CodeSet"
-        catalogueItem.id.equals(codeSet1.id)
+        catalogueItem.id == codeSet1.id
 
         /*
         CodeSet 2 by path
         */
         when:
-        params = ['catalogueItemDomainType': 'codeSets', 'path': "cs:${codeSet2.label}"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        path = Path.from(codeSet2)
+        catalogueItem = pathService.findResourceByPathFromRootClass(CodeSet, path) as CatalogueItem
 
         then:
         catalogueItem.label == codeSet2.label
         catalogueItem.domainType == "CodeSet"
-        catalogueItem.id.equals(codeSet2.id)
+        catalogueItem.id == codeSet2.id
     }
 
     void "test getting terms for codeset"() {
-        Map params
+        given:
+        setupData()
         CatalogueItem catalogueItem
 
         /*
         CodeSet 1 Term 1
          */
         when:
-        params = ['catalogueItemDomainType': 'codeSets', 'catalogueItemId': codeSet1.id.toString(), 'path': "cs:|tm:${terminology1_term1.label}"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        Path path = Path.from("cs:|tm:${terminology1_term1.pathIdentifier}")
+        catalogueItem = pathService.findResourceByPathFromRootResource(codeSet1, path) as CatalogueItem
 
         then:
         catalogueItem.label == terminology1_term1.label
         catalogueItem.domainType == "Term"
-        catalogueItem.id.equals(terminology1_term1.id)
+        catalogueItem.id == terminology1_term1.id
 
         /*
         CodeSet 1 Term 2
         */
         when:
-        params = ['catalogueItemDomainType': 'codeSets', 'catalogueItemId': codeSet1.id.toString(), 'path': "cs:|tm:${terminology1_term2.label}"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        path = Path.from("cs:|tm:${terminology1_term2.pathIdentifier}")
+        catalogueItem = pathService.findResourceByPathFromRootResource(codeSet1, path) as CatalogueItem
 
         then:
         catalogueItem.label == terminology1_term2.label
         catalogueItem.domainType == "Term"
-        catalogueItem.id.equals(terminology1_term2.id)
+        catalogueItem.id == terminology1_term2.id
 
         /*
         CodeSet 2 Term 1
         */
         when:
-        params = ['catalogueItemDomainType': 'codeSets', 'catalogueItemId': codeSet2.id.toString(), 'path': "cs:|tm:${terminology2_term1.label}"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        path = Path.from("cs:|tm:${terminology2_term1.pathIdentifier}")
+        catalogueItem = pathService.findResourceByPathFromRootResource(codeSet2, path) as CatalogueItem
 
         then:
         catalogueItem.label == terminology2_term1.label
         catalogueItem.domainType == "Term"
-        catalogueItem.id.equals(terminology2_term1.id)
+        catalogueItem.id == terminology2_term1.id
 
         /*
         CodeSet 2 Term 2
         */
         when:
-        params = ['catalogueItemDomainType': 'codeSets', 'catalogueItemId': codeSet2.id.toString(), 'path': "cs:|tm:${terminology2_term2.label}"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        path = Path.from("cs:|tm:${terminology2_term2.pathIdentifier}")
+        catalogueItem = pathService.findResourceByPathFromRootResource(codeSet2, path) as CatalogueItem
 
         then:
         catalogueItem.label == terminology2_term2.label
         catalogueItem.domainType == "Term"
-        catalogueItem.id.equals(terminology2_term2.id)
+        catalogueItem.id == terminology2_term2.id
 
         /*
         Try to get a term which doesn't exist on CodeSet 1
         */
         when:
-        params = ['catalogueItemDomainType': 'codeSets', 'catalogueItemId': codeSet1.id.toString(), 'path': "cs:|tm:${terminology2_term1.label}"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        path = Path.from("cs:|tm:${terminology2_term1.pathIdentifier}")
+        catalogueItem = pathService.findResourceByPathFromRootResource(codeSet1, path) as CatalogueItem
 
         then:
         catalogueItem == null
@@ -518,72 +527,132 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
         Try to get a term which doesn't exist on CodeSet 2
         */
         when:
-        params = ['catalogueItemDomainType': 'codeSets', 'catalogueItemId': codeSet2.id.toString(), 'path': "cs:|tm:${terminology1_term1.label}"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        path = Path.from("cs:|tm:${terminology1_term1.pathIdentifier}")
+        catalogueItem = pathService.findResourceByPathFromRootResource(codeSet2, path) as CatalogueItem
 
         then:
         catalogueItem == null
     }
 
     void "test get Terminology by path when there is a branch"() {
-        Map params
+        given:
+        setupData()
         CatalogueItem catalogueItem
-        
+
         /*
         Terminology 3 by path. When using the label 'terminology 3' we expect to retrieve the terminology on the 
         main branch, rather than the one on the draft branch
         */
         when:
-        params = ['catalogueItemDomainType': 'terminologies', 'path': "te:terminology 3"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        Path path = Path.from('te:terminology 3')
+        catalogueItem = pathService.findResourceByPathFromRootClass(Terminology, path) as CatalogueItem
 
         then:
         catalogueItem.label == 'terminology 3'
         catalogueItem.domainType == "Terminology"
-        catalogueItem.id.equals(terminology3main.id)
-        catalogueItem.description.equals(terminology3main.description)
+        catalogueItem.id == terminology3main.id
+        catalogueItem.description == terminology3main.description
+
+        when: 'using the branch name main'
+        path = Path.from('te:terminology 3:main')
+        catalogueItem = pathService.findResourceByPathFromRootClass(Terminology, path) as CatalogueItem
+
+        then:
+        catalogueItem.label == 'terminology 3'
+        catalogueItem.domainType == "Terminology"
+        catalogueItem.id == terminology3main.id
+
+        when: 'using the branch name draft'
+        path = Path.from('te:terminology 3:draft')
+        catalogueItem = pathService.findResourceByPathFromRootClass(Terminology, path) as CatalogueItem
+
+        then:
+        catalogueItem.label == 'terminology 3'
+        catalogueItem.domainType == "Terminology"
+        catalogueItem.id == terminology3draft.id
 
     }
 
+    @PendingFeature
     void "test get Terminology by path when there are finalised and non-finalised versions"() {
-        Map params
+        given:
+        setupData()
         CatalogueItem catalogueItem
-        
+
         /*
         Terminology 4 by path. When using the label 'terminology 4' we expect to retrieve the
-        non-finalised version.
+        non-finalised version. which will be the main branch
         */
         when:
-        params = ['catalogueItemDomainType': 'terminologies', 'path': "te:terminology 4"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        Path path = Path.from('te:terminology 4')
+        catalogueItem = pathService.findResourceByPathFromRootClass(Terminology, path) as CatalogueItem
 
         then:
         catalogueItem.label == 'terminology 4'
         catalogueItem.domainType == "Terminology"
-        catalogueItem.id.equals(terminology4notFinalised.id)
-        catalogueItem.description.equals(terminology4notFinalised.description)
+        catalogueItem.id == terminology4notFinalised.id
+        catalogueItem.description == terminology4notFinalised.description
 
-    }    
+        when: 'using the version'
+        path = Path.from('te:terminology 4:1.0.0')
+        catalogueItem = pathService.findResourceByPathFromRootClass(Terminology, path) as CatalogueItem
 
+        then:
+        catalogueItem.label == 'terminology 4'
+        catalogueItem.domainType == "Terminology"
+        catalogueItem.id == terminology4finalised.id
+
+    }
+
+    @PendingFeature
     void "test get Terminology by path when there are two finalised versions"() {
-        Map params
+        given:
+        setupData()
         CatalogueItem catalogueItem
-        
+
         /*
         Terminology 5 by path. When using the label 'terminology 5' we expect to retrieve the
         finalised version 2.0.0.
         */
         when:
-        params = ['catalogueItemDomainType': 'terminologies', 'path': "te:terminology 5"]
-        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+        Path path = Path.from('te:terminology 5')
+        catalogueItem = pathService.findResourceByPathFromRootClass(Terminology, path) as CatalogueItem
 
         then:
         catalogueItem.label == 'terminology 5'
         catalogueItem.domainType == "Terminology"
-        catalogueItem.id.equals(terminology5second.id)
-        catalogueItem.description.equals(terminology5second.description)
+        catalogueItem.id == terminology5second.id
         catalogueItem.modelVersion.toString() == '2.0.0'
 
-    }      
+        when: 'using version 2.0.0'
+        path = Path.from('te:terminology 5:2.0.0')
+        catalogueItem = pathService.findResourceByPathFromRootClass(Terminology, path) as CatalogueItem
+
+        then:
+        catalogueItem.label == 'terminology 5'
+        catalogueItem.domainType == "Terminology"
+        catalogueItem.id == terminology5second.id
+        catalogueItem.modelVersion.toString() == '2.0.0'
+
+        when: 'using version 2'
+        path = Path.from('te:terminology 5:2')
+        catalogueItem = pathService.findResourceByPathFromRootClass(Terminology, path) as CatalogueItem
+
+        then:
+        catalogueItem.label == 'terminology 5'
+        catalogueItem.domainType == "Terminology"
+        catalogueItem.id == terminology5second.id
+        catalogueItem.modelVersion.toString() == '2.0.0'
+
+        when: 'using version 1'
+        path = Path.from('te:terminology 5:1')
+        catalogueItem = pathService.findResourceByPathFromRootClass(Terminology, path) as CatalogueItem
+
+        then:
+        catalogueItem.label == 'terminology 5'
+        catalogueItem.domainType == "Terminology"
+        catalogueItem.id == terminology5second.id
+        catalogueItem.modelVersion.toString() == '2.0.0'
+    }
 
 }

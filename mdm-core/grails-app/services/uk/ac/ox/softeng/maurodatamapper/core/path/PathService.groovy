@@ -18,11 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.path
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
-import uk.ac.ox.softeng.maurodatamapper.core.model.Model
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
@@ -30,12 +26,9 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 import uk.ac.ox.softeng.maurodatamapper.util.Path
 import uk.ac.ox.softeng.maurodatamapper.util.PathNode
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.core.GrailsApplication
-import grails.core.GrailsClass
 import grails.gorm.transactions.Transactional
-import grails.web.servlet.mvc.GrailsParameterMap
 import groovy.util.logging.Slf4j
 import org.grails.core.artefact.DomainClassArtefactHandler
 import org.grails.orm.hibernate.proxy.HibernateProxyHandler
@@ -59,22 +52,23 @@ class PathService {
     private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler()
 
     SecurableResource findSecurableResourceByDomainClassAndId(Class resourceClass, UUID resourceId) {
-        SecurableResourceService securableResourceService = securableResourceServices.find { it.handles(resourceClass) }
+        SecurableResourceService securableResourceService = securableResourceServices.find {it.handles(resourceClass)}
         if (!securableResourceService) throw new ApiBadRequestException('PS03', "No service available to handle [${resourceClass.simpleName}]")
         securableResourceService.get(resourceId)
     }
 
     Map<String, String> listAllPrefixMappings() {
-        grailsApplication.getArtefacts(DomainClassArtefactHandler.TYPE)
-            .findAll { CreatorAware.isAssignableFrom(it.clazz) && !it.isAbstract() }
-            .collectEntries { grailsClass ->
-                def domain = grailsClass.newInstance()
+        List<CreatorAware> domains = grailsApplication.getArtefacts(DomainClassArtefactHandler.TYPE)
+            .findAll {CreatorAware.isAssignableFrom(it.clazz) && !it.isAbstract()}
+            .collect {grailsClass ->
                 // Allow unqualified path domains to exist without breaking the system
-                if (domain instanceof CreatorAware && domain.pathPrefix) {
-                    [domain.pathPrefix, domain.domainType]
-                }
-                null
-            }.findAll().sort() as Map<String, String>
+                CreatorAware domain = grailsClass.newInstance() as CreatorAware
+                domain.pathPrefix ? domain : null
+            }.findAll()
+
+        domains.collectEntries {domain ->
+            [domain.pathPrefix, domain.domainType]
+        }.sort() as Map<String, String>
     }
 
     CreatorAware findResourceByPathFromRootResource(CreatorAware rootResourceOfPath, Path path) {
@@ -82,45 +76,60 @@ class PathService {
             throw new ApiBadRequestException('PS06', 'Must have a path to search')
         }
 
-        if (path.first().label != rootResourceOfPath.pathIdentifier) {
-            throw new ApiBadRequestException('PS01', 'Path cannot exist inside resource as first path node is not the resource node')
+        if (!(path.first().matches(rootResourceOfPath))) {
+            log.warn('Path cannot exist inside resource as first path node is not the resource node')
+            return null
         }
+
         // Confirmed the path is inside the model
         // If only one node then return the model
-        if (path.size == 1) return rootResourceOfPath as CreatorAware
+        if (path.size == 1) return rootResourceOfPath
 
         // Only 2 nodes in path, first is model
         // Last part of path is a field access as has no type prefix so return the model
-        if (path.size == 2 && !path.last().hasTypePrefix()) return rootResourceOfPath as CreatorAware
+        if (path.size == 2 && !path.last().hasTypePrefix()) return rootResourceOfPath
 
         // Find the first child in the path
         Path childPath = path.childPath
         PathNode childNode = childPath.first()
 
-        DomainService domainService = domainServices.find { service ->
+        DomainService domainService = domainServices.find {service ->
             service.handlesPathPrefix(childNode.typePrefix)
         }
 
+        if (!domainService) {
+            log.warn("Unknown path prefix [${childNode.typePrefix}] in path")
+            return null
+        }
+
         log.debug('Found service [{}] to handle [{}]', domainService.class.simpleName, childNode.typePrefix)
-        CreatorAware child = domainService.findByParentIdAndPathIdentifier(rootResourceOfPath.id, childNode.label)
+        def child = domainService.findByParentIdAndPathIdentifier(rootResourceOfPath.id, childNode.label)
 
         if (!child) {
-            log.debug("Child [${childNode}] does not exist in path [${path}]")
-            throw new ApiBadRequestException('PS02', "Child [${childNode}] in path cannot be found inside domain")
+            log.warn("Child [${childNode}] does not exist in path [${path}]")
+            return null
         }
 
         // Recurse down the path for that child
         findResourceByPathFromRootResource(child, childPath)
     }
 
+    CreatorAware findResourceByPathFromRootClass(Class<? extends SecurableResource> rootClass, String path) {
+        findResourceByPathFromRootClass(rootClass, Path.from(path))
+    }
+
     CreatorAware findResourceByPathFromRootClass(Class<? extends SecurableResource> rootClass, Path path) {
+        findResourceByPathFromRootClass(rootClass, path, null)
+    }
+
+    CreatorAware findResourceByPathFromRootClass(Class<? extends SecurableResource> rootClass, Path path, UserSecurityPolicyManager userSecurityPolicyManager) {
         if (path.isEmpty()) {
             throw new ApiBadRequestException('PS05', 'Must have a path to search')
         }
 
         PathNode rootNode = path.first()
 
-        SecurableResourceService securableResourceService = securableResourceServices.find { it.handles(rootClass) }
+        SecurableResourceService securableResourceService = securableResourceServices.find {it.handles(rootClass)}
         if (!securableResourceService) {
             throw new ApiBadRequestException('PS03', "No service available to handle [${rootClass.simpleName}]")
         }
@@ -130,88 +139,23 @@ class PathService {
 
         CreatorAware rootResource = securableResourceService.findByParentIdAndPathIdentifier(null, rootNode.label)
         if (!rootResource) return null
+
+        // Confirm root resource exists and its prefix matches the pathed prefix
+        // We dont need to check the prefix in the findResourceByPathFromRootResource method as we "have" a resource at this point
+        // And all subsequent calls in that method use the prefix to find the domain service
+        if (rootResource.pathPrefix != rootNode.typePrefix) {
+            log.warn("Root resource prefix [${rootNode.typePrefix}] does not match the root class to search")
+            return null
+        }
+
+        // Check readabliity if possible
+        // If no policymanager then assume readability has already been performed
+        // Cannot read root then return null
+        if (
+        userSecurityPolicyManager && !userSecurityPolicyManager.userCanReadSecuredResourceId(rootResource.getClass() as Class<? extends SecurableResource>, rootResource.id)) {
+            return null
+        }
+
         findResourceByPathFromRootResource(rootResource, path)
     }
-
-    @Deprecated
-    CatalogueItem findCatalogueItemByPath(UserSecurityPolicyManager userSecurityPolicyManager, Map params) {
-        Path path = new Path(params.path)
-        CatalogueItemService service = catalogueItemServices.find { it.handles(params.catalogueItemDomainType) }
-        CatalogueItem catalogueItem
-
-        /*
-        Iterate over nodes in the path
-         */
-        boolean first = true
-        path.pathNodes.each { PathNode node ->
-            /*
-            On first iteration, if params.catalogueItemId is provided then use this to get the top CatalogueItem by ID.
-            Else if the service handles the typePrefix then use this service to find the top CatalogueItem by label.
-            */
-            if (first) {
-                if (params.catalogueItemId) {
-                    catalogueItem = service.get(params.catalogueItemId)
-                } else {
-                    if (service.handlesPathPrefix(node.typePrefix) && node.label) {
-                        catalogueItem = service.findByLabel(node.label)
-                        if (service instanceof ModelService) {
-                            catalogueItem = service.findLatestModelByLabel(node.label)
-                        } else {
-                            catalogueItem = service.findByLabel(node.label)
-                        }
-                    }
-                }
-
-                /*
-                Only return anything if the first item retrieved is a model which is securable and readable, or it belongs to a model which is
-                securable and readable
-                 */
-                boolean readable = false
-                if (catalogueItem instanceof Model) {
-                    readable = userSecurityPolicyManager.userCanReadSecuredResourceId(catalogueItem.getClass(), catalogueItem.id)
-                } else if (catalogueItem instanceof ModelItem) {
-                    CatalogueItem model = proxyHandler.unwrapIfProxy(catalogueItem.getModel())
-                    readable = userSecurityPolicyManager.userCanReadResourceId(catalogueItem.getClass(), catalogueItem.id, model.getClass(), model.id)
-                }
-
-                if (!readable) {
-                    catalogueItem = null
-                }
-
-
-                first = false
-            } else {
-                if (catalogueItem) {
-                    //Try to find the child of this catalogue item by prefix and label
-                    service = catalogueItemServices.find { it.handlesPathPrefix(node.typePrefix) }
-
-                    //Use the service to find a child CatalogueItem whose parent is catalogueItem and which has the specified label
-                    //Missing method exception means the path tried to retrieve a type of parent that is not expected
-                    try {
-                        catalogueItem = service.findByParentAndLabel(catalogueItem, node.label)
-                    } catch (groovy.lang.MissingMethodException ex) {
-                        catalogueItem = null
-                    }
-
-                }
-            }
-        }
-
-        catalogueItem
-    }
-
-    GrailsClass getGrailsResource(GrailsParameterMap params, String resourceParam) {
-        String lookup = params[resourceParam]
-
-        if (!lookup) {
-            throw new ApiBadRequestException('MCI01', "No domain class resource provided")
-        }
-
-        GrailsClass grailsClass = Utils.lookupGrailsDomain(grailsApplication, lookup)
-        if (!grailsClass) {
-            throw new ApiBadRequestException('MCI02', "Unrecognised domain class resource [${params[resourceParam]}]")
-        }
-        grailsClass
-    }
-
 }
