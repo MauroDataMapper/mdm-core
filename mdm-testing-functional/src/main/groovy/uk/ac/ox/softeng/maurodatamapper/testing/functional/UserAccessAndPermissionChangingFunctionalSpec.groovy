@@ -25,7 +25,6 @@ import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityUtils
 import grails.gorm.transactions.Transactional
 import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
-import spock.lang.Stepwise
 
 import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
 
@@ -50,7 +49,6 @@ import static io.micronaut.http.HttpStatus.OK
  *  |  POST    | /api/${securableResourceDomainType}/${securableResourceId}/groupRoles/${groupRoleId}/userGroups/${userGroupId}  | Action: save
  *  </pre>
  */
-@Stepwise
 @Slf4j
 abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessFunctionalSpec {
 

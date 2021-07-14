@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -32,10 +31,8 @@ import uk.ac.ox.softeng.maurodatamapper.test.unit.service.CatalogueItemServiceSp
 
 import grails.testing.services.ServiceUnitTest
 import groovy.util.logging.Slf4j
-import spock.lang.Stepwise
 
 @Slf4j
-@Stepwise
 class EnumerationValueServiceSpec extends CatalogueItemServiceSpec implements ServiceUnitTest<EnumerationValueService> {
 
     DataModel dataModel

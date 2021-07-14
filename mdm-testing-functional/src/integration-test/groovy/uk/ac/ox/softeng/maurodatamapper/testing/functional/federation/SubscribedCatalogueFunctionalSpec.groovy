@@ -25,7 +25,6 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
-import spock.lang.Stepwise
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -41,7 +40,6 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 @Integration
 @Slf4j
-@Stepwise
 class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
 
     @Override

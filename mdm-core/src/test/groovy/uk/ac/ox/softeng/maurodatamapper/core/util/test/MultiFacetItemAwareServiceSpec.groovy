@@ -22,12 +22,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.test.unit.core.MultiFacetItemAwareServiceSpec as FrameworkMultiFacetItemAwareServiceSpec
 
-import spock.lang.Stepwise
-
 /**
  * @since 03/02/2020
  */
-@Stepwise
 abstract class MultiFacetItemAwareServiceSpec<D extends MultiFacetItemAware, T extends MultiFacetItemAwareService>
     extends FrameworkMultiFacetItemAwareServiceSpec<D, T> {
 

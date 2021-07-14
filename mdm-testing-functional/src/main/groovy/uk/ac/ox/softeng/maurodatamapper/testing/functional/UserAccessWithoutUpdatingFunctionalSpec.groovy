@@ -33,7 +33,6 @@ import io.micronaut.http.HttpStatus
 import org.apache.commons.lang3.NotImplementedException
 import org.junit.Assert
 import org.springframework.beans.factory.annotation.Autowired
-import spock.lang.Stepwise
 
 import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
 
@@ -52,7 +51,6 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
  *  | GET    | /api/${resourcePath}/${id} | Action: show   | [inherited test]
  * </pre>
  */
-@Stepwise
 @Slf4j
 abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAccessFunctionalSpec {
 

@@ -29,7 +29,6 @@ import grails.gorm.transactions.Rollback
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Shared
-import spock.lang.Stepwise
 import spock.lang.Unroll
 
 import java.nio.charset.Charset
@@ -39,7 +38,6 @@ import java.nio.charset.Charset
  */
 @Rollback
 @Slf4j
-@Stepwise
 abstract class DataBindTerminologyImportAndDefaultExporterServiceSpec<I extends DataBindTerminologyImporterProviderService, E extends TerminologyExporterProviderService>
     extends BaseImportExportTerminologySpec {
 

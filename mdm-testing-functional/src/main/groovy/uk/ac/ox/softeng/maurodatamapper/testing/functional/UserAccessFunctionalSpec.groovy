@@ -22,12 +22,11 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
-import spock.lang.Stepwise
 
 import java.util.regex.Pattern
 
-import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.CREATED
+import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 /**
@@ -44,7 +43,6 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
  * </pre>
  * @see uk.ac.ox.softeng.maurodatamapper.core.facet.EditController
  */
-@Stepwise
 @Slf4j
 abstract class UserAccessFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec {
 

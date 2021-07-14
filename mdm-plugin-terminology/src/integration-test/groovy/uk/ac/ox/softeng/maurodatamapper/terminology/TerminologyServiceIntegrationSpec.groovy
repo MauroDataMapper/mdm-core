@@ -31,7 +31,6 @@ import org.spockframework.util.Assert
 @Slf4j
 @Integration
 @Rollback
-//@Stepwise
 class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
 
     @Override

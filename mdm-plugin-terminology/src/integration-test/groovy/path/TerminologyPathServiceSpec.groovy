@@ -30,7 +30,6 @@ import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import spock.lang.PendingFeature
-import spock.lang.Stepwise
 
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -38,7 +37,6 @@ import java.time.ZoneOffset
 @Slf4j
 @Integration
 @Rollback
-@Stepwise
 class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
     PathService pathService

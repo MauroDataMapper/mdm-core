@@ -29,7 +29,6 @@ import grails.gorm.transactions.Rollback
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Shared
-import spock.lang.Stepwise
 import spock.lang.Unroll
 
 import java.nio.charset.Charset
@@ -41,7 +40,6 @@ import java.nio.file.Path
  */
 @Rollback
 @Slf4j
-@Stepwise
 abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDataModelImporterProviderService, E extends ExporterProviderService>
     extends BaseImportExportSpec {
 
