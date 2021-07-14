@@ -74,7 +74,6 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
  */
 @Integration
 @Slf4j
-//@Stepwise
 class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
     @Shared
@@ -2249,10 +2248,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse CREATED, response
         POST("$id/dataClasses", [label: 'existingClass'])
         verifyResponse CREATED, response
-        String existingClass = responseBody().id
-        POST("$id/dataClasses/$existingClass/dataClasses", [label: 'deleteLeftOnlyFromExistingClass'])
+        String caExistingClass = responseBody().id
+        POST("$id/dataClasses/$caExistingClass/dataClasses", [label: 'deleteLeftOnlyFromExistingClass'])
         verifyResponse CREATED, response
-        POST("$id/dataClasses/$existingClass/dataClasses", [label: 'deleteRightOnlyFromExistingClass'])
+        POST("$id/dataClasses/$caExistingClass/dataClasses", [label: 'deleteRightOnlyFromExistingClass'])
         verifyResponse CREATED, response
 
         PUT("$id/finalise", [versionChangeType: 'Major'])
@@ -2266,8 +2265,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         GET("$source/path/dm%3A%7Cdc%3AexistingClass")
         verifyResponse OK, response
-        existingClass = responseBody().id
-        GET("dataClasses/$existingClass/path/dc%3A%7Cdc%3AdeleteLeftOnlyFromExistingClass", MAP_ARG, true)
+        String sourceExistingClass = responseBody().id
+        GET("$source/path/dm%3A%7Cdc%3AexistingClass%7Cdc%3AdeleteLeftOnlyFromExistingClass")
         verifyResponse OK, response
         String deleteLeftOnlyFromExistingClass = responseBody().id
         GET("$source/path/dm%3A%7Cdc%3AdeleteLeftOnly")
@@ -2295,7 +2294,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         DELETE("$source/dataClasses/$deleteAndDelete")
         verifyResponse NO_CONTENT, response
-        DELETE("$source/dataClasses/$existingClass/dataClasses/$deleteLeftOnlyFromExistingClass")
+        DELETE("$source/dataClasses/$sourceExistingClass/dataClasses/$deleteLeftOnlyFromExistingClass")
         verifyResponse NO_CONTENT, response
         DELETE("$source/dataClasses/$deleteLeftOnly")
         verifyResponse NO_CONTENT, response
@@ -2311,7 +2310,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         PUT("$source/dataClasses/$modifyAndModifyReturningDifference", [description: 'DescriptionLeft'])
         verifyResponse OK, response
 
-        POST("$source/dataClasses/$existingClass/dataClasses", [label: 'addLeftToExistingClass'])
+        POST("$source/dataClasses/$sourceExistingClass/dataClasses", [label: 'addLeftToExistingClass'])
         verifyResponse CREATED, response
         String addLeftToExistingClass = responseBody().id
         POST("$source/dataClasses", [label: 'addLeftOnly'])
@@ -2328,8 +2327,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         GET("$target/path/dm%3A%7Cdc%3AexistingClass")
         verifyResponse OK, response
-        existingClass = responseBody().id
-        GET("dataClasses/$existingClass/path/dc%3A%7Cdc%3AdeleteRightOnlyFromExistingClass", MAP_ARG, true)
+        String targetExistingClass = responseBody().id
+        GET("$target/path/dm%3A%7Cdc%3AexistingClass%7Cdc%3AdeleteRightOnlyFromExistingClass")
         verifyResponse OK, response
         String deleteRightOnlyFromExistingClass = responseBody().id
         GET("$target/path/dm%3A%7Cdc%3AdeleteRightOnly")
@@ -2355,7 +2354,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse OK, response
         modifyAndModifyReturningDifference = responseBody().id
 
-        DELETE("$target/dataClasses/$existingClass/dataClasses/$deleteRightOnlyFromExistingClass")
+        DELETE("$target/dataClasses/$targetExistingClass/dataClasses/$deleteRightOnlyFromExistingClass")
         verifyResponse NO_CONTENT, response
         DELETE("$target/dataClasses/$deleteRightOnly")
         verifyResponse NO_CONTENT, response
@@ -2373,7 +2372,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         PUT("$target/dataClasses/$modifyAndModifyReturningDifference", [description: 'DescriptionRight'])
         verifyResponse OK, response
 
-        POST("$target/dataClasses/$existingClass/dataClasses", [label: 'addRightToExistingClass'])
+        POST("$target/dataClasses/$targetExistingClass/dataClasses", [label: 'addRightToExistingClass'])
         verifyResponse CREATED, response
         POST("$target/dataClasses", [label: 'addRightOnly'])
         verifyResponse CREATED, response
@@ -2393,7 +2392,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         GET("$target/path/dm%3A%7Cdc%3AmodifyLeftOnly")
         verifyResponse OK, response
         modifyLeftOnly = responseBody().id
-        GET("dataClasses/$existingClass/path/dc%3A%7Cdc%3AdeleteLeftOnlyFromExistingClass", MAP_ARG, true)
+        GET("$target/path/dm%3A%7Cdc%3AexistingClass%7Cdc%3AdeleteLeftOnlyFromExistingClass")
         verifyResponse OK, response
         deleteLeftOnlyFromExistingClass = responseBody().id
 
@@ -2401,7 +2400,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
          source                              : source,
          target                              : target,
          // For legacy testing
-         existingClass                       : existingClass,
+         existingClass                       : targetExistingClass,
          deleteLeftOnlyFromExistingClass     : deleteLeftOnlyFromExistingClass,
          deleteLeftOnly                      : deleteLeftOnly,
          deleteAndDelete                     : deleteAndDelete,
