@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge
 
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.legacy.LegacyFieldPatchData
+
 import grails.validation.Validateable
 
 /**
@@ -30,13 +32,15 @@ class ObjectPatchData<T> implements Validateable {
     private List<FieldPatchData> patches
 
     @Deprecated
-    List<FieldPatchData> diffs
+    List<LegacyFieldPatchData> diffs
 
     static constraints = {
         sourceId nullable: false
         targetId nullable: false
         label nullable: true, blank: false
-        patches minSize: 1
+        patches validator: {val, obj ->
+            if (!val && !obj.diffs) ['default.invalid.min.message', 1]
+        }
     }
 
     ObjectPatchData() {
@@ -45,11 +49,16 @@ class ObjectPatchData<T> implements Validateable {
     }
 
     boolean hasPatches() {
-        getPatches().any {it.hasPatches()}
+        patches || getDiffsWithContent()
     }
 
     List<FieldPatchData> getPatches() {
-        patches.findAll {it.hasPatches()} + diffs.findAll {it.hasPatches()}
+        return patches
+    }
+
+    @Deprecated
+    List<LegacyFieldPatchData> getDiffsWithContent() {
+        diffs.findAll {it.hasPatches()}
     }
 
     @Deprecated

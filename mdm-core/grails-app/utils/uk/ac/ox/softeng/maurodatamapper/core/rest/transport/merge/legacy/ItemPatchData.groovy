@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge
+package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.legacy
 
 
 import grails.validation.Validateable

@@ -28,7 +28,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
-import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
@@ -55,7 +54,6 @@ class CodeSetService extends ModelService<CodeSet> {
     TermService termService
     TermRelationshipService termRelationshipService
     CodeSetJsonImporterService codeSetJsonImporterService
-    PathService pathService
 
     @Override
     CodeSet get(Serializable id) {
@@ -203,18 +201,18 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    CodeSet mergeObjectPatchDataIntoModel(ObjectPatchData objectPatchData, CodeSet targetModel,
-                                          UserSecurityPolicyManager userSecurityPolicyManager) {
+    CodeSet mergeLegacyObjectPatchDataIntoModel(ObjectPatchData objectPatchData, CodeSet targetModel,
+                                                UserSecurityPolicyManager userSecurityPolicyManager) {
 
 
         if (!objectPatchData.hasPatches()) return targetModel
 
-        objectPatchData.getPatches().each {mergeFieldDiff ->
+        objectPatchData.getDiffsWithContent().each {mergeFieldDiff ->
 
             if (mergeFieldDiff.isFieldChange()) {
                 targetModel.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
             } else if (mergeFieldDiff.isMetadataChange()) {
-                mergeMetadataIntoCatalogueItem(mergeFieldDiff, targetModel, userSecurityPolicyManager)
+                mergeLegacyMetadataIntoCatalogueItem(mergeFieldDiff, targetModel, userSecurityPolicyManager)
             } else {
                 ModelItemService modelItemService = modelItemServices.find {it.handles(mergeFieldDiff.fieldName)}
 
@@ -253,9 +251,10 @@ class CodeSetService extends ModelService<CodeSet> {
                             modelItemService.copy(targetModel, modelItem, userSecurityPolicyManager)
                         }
                         // for modifications, recursively call this method
-                        mergeFieldDiff.modified.each { mergeObjectDiffData ->
+                        mergeFieldDiff.modified.each {mergeObjectDiffData ->
                             ModelItem modelItem = modelItemService.get(mergeObjectDiffData.leftId) as ModelItem
-                            modelItemService.mergeObjectPatchDataIntoModelItem(mergeObjectDiffData, modelItem, targetModel, userSecurityPolicyManager)
+                            modelItemService.
+                                mergeLegacyObjectPatchDataIntoModelItem(mergeObjectDiffData, modelItem, targetModel, userSecurityPolicyManager)
                         }
                     }
                 } else {

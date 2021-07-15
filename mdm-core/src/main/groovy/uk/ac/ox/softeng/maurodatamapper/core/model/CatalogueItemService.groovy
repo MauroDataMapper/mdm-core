@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationService
@@ -28,7 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.RuleService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.legacy.LegacyFieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
@@ -142,7 +141,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         metadataService.findAllByMultiFacetAwareItemId(original.id).each {copy.addToMetadata(it.namespace, it.key, it.value, copier.emailAddress)}
         ruleService.findAllByMultiFacetAwareItemId(original.id).each {rule ->
             Rule copiedRule = new Rule(name: rule.name, description: rule.description, createdBy: copier.emailAddress)
-            rule.ruleRepresentations.each { ruleRepresentation ->
+            rule.ruleRepresentations.each {ruleRepresentation ->
                 copiedRule.addToRuleRepresentations(language: ruleRepresentation.language,
                                                     representation: ruleRepresentation.representation,
                                                     createdBy: copier.emailAddress)
@@ -196,17 +195,17 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         findByParentIdAndLabel(parentId, pathIdentifier)
     }
 
-    void mergeMetadataIntoCatalogueItem(FieldPatchData fieldPatchData, K targetCatalogueItem,
-                                        UserSecurityPolicyManager userSecurityPolicyManager) {
+    void mergeLegacyMetadataIntoCatalogueItem(LegacyFieldPatchData fieldPatchData, K targetCatalogueItem,
+                                              UserSecurityPolicyManager userSecurityPolicyManager) {
         log.debug('Merging Metadata into Catalogue Item')
         // call metadataService version of below
-        fieldPatchData.deleted.each { deletedItemPatchData ->
+        fieldPatchData.deleted.each {deletedItemPatchData ->
             Metadata metadata = metadataService.get(deletedItemPatchData.id)
             metadataService.delete(metadata)
         }
 
         // copy additions from source to target object
-        fieldPatchData.created.each { createdItemPatchData ->
+        fieldPatchData.created.each {createdItemPatchData ->
             Metadata metadata = metadataService.get(createdItemPatchData.id)
             metadataService.copy(targetCatalogueItem, metadata, userSecurityPolicyManager)
         }

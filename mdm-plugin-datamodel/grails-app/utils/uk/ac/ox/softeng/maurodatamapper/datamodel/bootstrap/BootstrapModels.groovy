@@ -657,31 +657,31 @@ v1 --------------------------- v2 -- v3  -- v4 --------------- v5 --- main
 
 
         // Generate main/target branch
-        UUID rightMainId = createAndSaveNewBranchModel(VersionAwareConstraints.DEFAULT_BRANCH_NAME, commonAncestor, creator, dataModelService,
-                                                       messageSource, policyManager)
+        UUID targetModelId = createAndSaveNewBranchModel(VersionAwareConstraints.DEFAULT_BRANCH_NAME, commonAncestor, creator, dataModelService,
+                                                         messageSource, policyManager)
 
-        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(rightMainId, 'deleteTargetOnlyFromExistingClass'))
-        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(rightMainId, 'deleteTargetOnly'))
-        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(rightMainId, 'deleteBoth'))
-        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(rightMainId, 'modifySourceAndDeleteTarget'))
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(targetModelId, 'deleteTargetOnlyFromExistingClass'))
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(targetModelId, 'deleteTargetOnly'))
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(targetModelId, 'deleteBoth'))
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(targetModelId, 'modifySourceAndDeleteTarget'))
 
-        checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(rightMainId, 'modifyTargetOnly').tap {
+        checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(targetModelId, 'modifyTargetOnly').tap {
             description = 'Description'
         }
-        checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(rightMainId, 'deleteSourceAndModifyTarget').tap {
+        checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(targetModelId, 'deleteSourceAndModifyTarget').tap {
             description = 'Description'
         }
-        checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(rightMainId, 'modifyBothReturningNoDifference').tap {
+        checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(targetModelId, 'modifyBothReturningNoDifference').tap {
             description = 'Description'
         }
-        checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(rightMainId, 'modifyBothReturningDifference').tap {
+        checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(targetModelId, 'modifyBothReturningDifference').tap {
             description = 'DescriptionTarget'
         }
 
-        checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(rightMainId, 'existingClass')
+        checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(targetModelId, 'existingClass')
             .addToDataClasses(new DataClass(createdBy: creator.emailAddress, label: 'addTargetToExistingClass'))
 
-        DataModel draftModel = dataModelService.get(rightMainId)
+        DataModel draftModel = dataModelService.get(targetModelId)
         draftModel.author = 'dick'
         checkAndSave messageSource, new DataClass(createdBy: creator.emailAddress, label: 'addTargetWithNestedChild', dataModel: draftModel)
             .addToDataClasses(new DataClass(createdBy: creator.emailAddress, label: 'addTargetNestedChild', dataModel: draftModel))
@@ -689,7 +689,7 @@ v1 --------------------------- v2 -- v3  -- v4 --------------- v5 --- main
         checkAndSave messageSource, new DataClass(createdBy: creator.emailAddress, label: 'addBothReturningNoDifference', dataModel: draftModel)
         checkAndSave messageSource, new DataClass(createdBy: creator.emailAddress, label: 'addBothReturningDifference', description: 'target', dataModel: draftModel)
 
-        checkAndSave messageSource, dataModelService.get(rightMainId).tap {
+        checkAndSave messageSource, dataModelService.get(targetModelId).tap {
             description = 'DescriptionTarget'
         }
 
@@ -698,31 +698,31 @@ v1 --------------------------- v2 -- v3  -- v4 --------------- v5 --- main
 
 
         // Generate test/source branch
-        UUID leftTestId = createAndSaveNewBranchModel('test', commonAncestor, creator, dataModelService, messageSource, policyManager)
+        UUID sourceModelId = createAndSaveNewBranchModel('test', commonAncestor, creator, dataModelService, messageSource, policyManager)
 
-        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(leftTestId, 'deleteSourceOnlyFromExistingClass'))
-        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(leftTestId, 'deleteSourceOnly'))
-        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(leftTestId, 'deleteBoth'))
-        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(leftTestId, 'deleteSourceAndModifyTarget'))
-        metadataService.delete(metadataService.findAllByMultiFacetAwareItemId(leftTestId).find {it.key == 'deleteSourceOnly'})
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(sourceModelId, 'deleteSourceOnlyFromExistingClass'))
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(sourceModelId, 'deleteSourceOnly'))
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(sourceModelId, 'deleteBoth'))
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(sourceModelId, 'deleteSourceAndModifyTarget'))
+        metadataService.delete(metadataService.findAllByMultiFacetAwareItemId(sourceModelId).find {it.key == 'deleteSourceOnly'})
 
-        checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(leftTestId, 'modifySourceOnly').tap {
+        checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(sourceModelId, 'modifySourceOnly').tap {
             description = 'Description'
         }
-        checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(leftTestId, 'modifySourceAndDeleteTarget').tap {
+        checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(sourceModelId, 'modifySourceAndDeleteTarget').tap {
             description = 'Description'
         }
-        checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(leftTestId, 'modifyBothReturningNoDifference').tap {
+        checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(sourceModelId, 'modifyBothReturningNoDifference').tap {
             description = 'Description'
         }
-        checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(leftTestId, 'modifyBothReturningDifference').tap {
+        checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(sourceModelId, 'modifyBothReturningDifference').tap {
             description = 'DescriptionSource'
         }
 
-        checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(leftTestId, 'existingClass')
+        checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(sourceModelId, 'existingClass')
             .addToDataClasses(new DataClass(createdBy: creator.emailAddress, label: 'addSourceToExistingClass'))
 
-        DataModel testModel = dataModelService.get(leftTestId)
+        DataModel testModel = dataModelService.get(sourceModelId)
         testModel.organisation = 'under test'
         testModel.author = 'harry'
         checkAndSave messageSource, new DataClass(createdBy: creator.emailAddress, label: 'addSourceWithNestedChild', dataModel: testModel)
@@ -734,7 +734,7 @@ v1 --------------------------- v2 -- v3  -- v4 --------------- v5 --- main
         checkAndSave messageSource, new PrimitiveType(createdBy: StandardEmailAddress.ADMIN, label: 'addSourceOnlyOnlyChangeInArray', dataModel: testModel)
 
 
-        checkAndSave messageSource, metadataService.findAllByMultiFacetAwareItemId(leftTestId).find {it.key == 'modifySourceOnly'}.tap {
+        checkAndSave messageSource, metadataService.findAllByMultiFacetAwareItemId(sourceModelId).find {it.key == 'modifySourceOnly'}.tap {
             value = 'altered'
         }
 
@@ -742,8 +742,8 @@ v1 --------------------------- v2 -- v3  -- v4 --------------- v5 --- main
         sessionFactory.currentSession.clear()
 
         [commonAncestorId: commonAncestor.id,
-         sourceId        : leftTestId,
-         targetId        : rightMainId]
+         sourceId        : sourceModelId,
+         targetId        : targetModelId]
     }
 
     static UUID createAndSaveNewBranchModel(String branchName, DataModel base, User creator, DataModelService dataModelService, MessageSource messageSource,

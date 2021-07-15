@@ -19,9 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.core.model
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchData
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.legacy.LegacyFieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -61,18 +60,17 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
         throw new ApiNotYetImplementedException('MIS03', "copy [for ModelItem ${getModelItemClass().simpleName}]")
     }
 
-    Model mergeObjectPatchDataIntoModelItem(ObjectPatchData objectPatchData, K targetModelItem, Model targetModel,
-                                            UserSecurityPolicyManager userSecurityPolicyManager) {
-        //TODO validation on saving merges
+    Model mergeLegacyObjectPatchDataIntoModelItem(ObjectPatchData objectPatchData, K targetModelItem, Model targetModel,
+                                                  UserSecurityPolicyManager userSecurityPolicyManager) {
         if (!objectPatchData.hasPatches()) return targetModel
-        log.debug('Merging {} diffs into modelItem [{}]', objectPatchData.getPatches().size(), targetModelItem.label)
-        objectPatchData.getPatches().each { mergeFieldDiff ->
+        log.debug('Merging {} diffs into modelItem [{}]', objectPatchData.getDiffsWithContent().size(), targetModelItem.label)
+        objectPatchData.getDiffsWithContent().each {mergeFieldDiff ->
             log.debug('{}', mergeFieldDiff.summary)
 
             if (mergeFieldDiff.isFieldChange()) {
                 targetModelItem.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
             } else if (mergeFieldDiff.isMetadataChange()) {
-                mergeMetadataIntoCatalogueItem(mergeFieldDiff, targetModelItem, userSecurityPolicyManager)
+                mergeLegacyMetadataIntoCatalogueItem(mergeFieldDiff, targetModelItem, userSecurityPolicyManager)
             } else {
                 ModelItemService modelItemService
                 UUID parentId
@@ -85,7 +83,7 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
                 }
 
                 if (modelItemService) {
-                    modelItemService.processFieldPatchData(mergeFieldDiff, targetModel, userSecurityPolicyManager, parentId)
+                    modelItemService.processLegacyFieldPatchData(mergeFieldDiff, targetModel, userSecurityPolicyManager, parentId)
 
                 } else {
                     log.error('Unknown ModelItem field to merge [{}]', mergeFieldDiff.fieldName)
@@ -97,20 +95,20 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
         targetModel
     }
 
-    void processFieldPatchData(FieldPatchData fieldPatchData, Model targetModel, UserSecurityPolicyManager userSecurityPolicyManager,
-                               UUID parentId = null) {
+    void processLegacyFieldPatchData(LegacyFieldPatchData fieldPatchData, Model targetModel, UserSecurityPolicyManager userSecurityPolicyManager,
+                                     UUID parentId = null) {
         // apply deletions of children to target object
-        fieldPatchData.deleted.each { deletedItemPatchData ->
+        fieldPatchData.deleted.each {deletedItemPatchData ->
             ModelItem modelItem = get(deletedItemPatchData.id) as ModelItem
             delete(modelItem)
         }
 
         // copy additions from source to target object
-        fieldPatchData.created.each { createdItemPatchData ->
+        fieldPatchData.created.each {createdItemPatchData ->
             ModelItem modelItem = get(createdItemPatchData.id) as ModelItem
             ModelItem copyModelItem
             if (parentId) {
-                copyModelItem = copy(targetModel, modelItem, userSecurityPolicyManager, parentId)
+                copyModelItem = copy(targetModel, modelItem, parentId, userSecurityPolicyManager)
             } else {
                 copyModelItem = copy(targetModel, modelItem, userSecurityPolicyManager)
             }
@@ -120,7 +118,7 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
         // for modifications, recursively call this method
         fieldPatchData.modified.each {modifiedObjectPatchData ->
             ModelItem modelItem = get(modifiedObjectPatchData.targetId) as ModelItem
-            mergeObjectPatchDataIntoModelItem(modifiedObjectPatchData, modelItem, targetModel, userSecurityPolicyManager)
+            mergeLegacyObjectPatchDataIntoModelItem(modifiedObjectPatchData, modelItem, targetModel, userSecurityPolicyManager)
         }
     }
 

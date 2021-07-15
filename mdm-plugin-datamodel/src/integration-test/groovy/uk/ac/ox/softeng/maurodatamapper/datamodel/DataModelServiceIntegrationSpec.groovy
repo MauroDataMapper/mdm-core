@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.ArrayMergeDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.CreationMergeDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.DeletionMergeDiff
@@ -27,8 +28,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ItemPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.legacy.ItemPatchData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.legacy.LegacyFieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClassService
@@ -39,6 +41,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.BaseDataModelIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
+import uk.ac.ox.softeng.maurodatamapper.util.Path
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.gorm.transactions.Rollback
@@ -46,6 +49,8 @@ import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import org.spockframework.util.Assert
 import spock.lang.PendingFeature
+
+import java.util.function.Predicate
 
 @Slf4j
 @Integration
@@ -1143,7 +1148,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         existingClassDiff.deleted.first().commonAncestor
     }
 
-    void 'DMSM02 : test merging diff into draft model'() {
+    void 'DMSM02 : test merging legacy diff into draft model'() {
         given:
         setupData()
 
@@ -1165,12 +1170,12 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         def patch = new ObjectPatchData(
             targetId: rightMain.id,
             sourceId: leftTest.id,
-            patches: [
-                new FieldPatchData(
+            diffs: [
+                new LegacyFieldPatchData(
                     fieldName: 'description',
                     value: 'DescriptionLeft'
                 ),
-                new FieldPatchData(
+                new LegacyFieldPatchData(
                     fieldName: 'dataClasses',
                     deleted: [
                         new ItemPatchData(
@@ -1196,8 +1201,8 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
                         new ObjectPatchData(
                             targetId: dataClassService.findByParentAndLabel(rightMain, 'addBothReturningDifference').id,
                             label: 'addBothReturningDifference',
-                            patches: [
-                                new FieldPatchData(
+                            diffs: [
+                                new LegacyFieldPatchData(
                                     fieldName: 'description',
                                     value: 'addedDescriptionSource'
                                 )
@@ -1206,8 +1211,8 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
                         new ObjectPatchData(
                             targetId: targetExistingClass.id,
                             label: 'existingClass',
-                            patches: [
-                                new FieldPatchData(
+                            diffs: [
+                                new LegacyFieldPatchData(
                                     fieldName: "dataClasses",
                                     deleted: [
                                         new ItemPatchData(
@@ -1228,8 +1233,8 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
                         new ObjectPatchData(
                             targetId: dataClassService.findByParentAndLabel(rightMain, 'modifyBothReturningDifference').id,
                             label: 'modifyBothReturningDifference',
-                            patches: [
-                                new FieldPatchData(
+                            diffs: [
+                                new LegacyFieldPatchData(
                                     fieldName: 'description',
                                     value: 'DescriptionSource'
                                 ),
@@ -1238,8 +1243,8 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
                         new ObjectPatchData(
                             targetId: dataClassService.findByParentAndLabel(rightMain, 'modifySourceOnly').id,
                             label: 'modifySourceOnly',
-                            patches: [
-                                new FieldPatchData(
+                            diffs: [
+                                new LegacyFieldPatchData(
                                     fieldName: 'description',
                                     value: 'DescriptionSource'
                                 )
@@ -1255,7 +1260,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         check(patch)
 
         when:
-        def mergedModel = dataModelService.mergeObjectPatchDataIntoModel(patch, rightMain, adminSecurityPolicyManager)
+        def mergedModel = dataModelService.mergeLegacyObjectPatchDataIntoModel(patch, rightMain, adminSecurityPolicyManager)
         List<String> dataClassLabels = mergedModel.dataClasses*.label
 
         then:
@@ -1280,6 +1285,338 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         mergedModel.dataClasses.find {it.label == 'modifySourceOnly'}.description == 'DescriptionSource'
     }
 
+
+    void 'DMSM03 : test merging new style single modification diff into draft model'() {
+        given:
+        setupData()
+
+        when: 'generate models'
+        Map<String, UUID> mergeData = BootstrapModels.buildMergeModelsForTestingOnly(id, admin, dataModelService, dataClassService, metadataService, sessionFactory,
+                                                                                     messageSource)
+        DataModel targetModel = dataModelService.get(mergeData.targetId)
+        DataModel sourceModel = dataModelService.get(mergeData.sourceId)
+        MergeDiff mergeDiff = dataModelService.getMergeDiffForModels(sourceModel, targetModel)
+
+        then:
+        !mergeDiff.isEmpty()
+
+        when:
+        def diff = mergeDiff.diffs.find {it.fieldName == 'author'}
+
+        then:
+        diff
+
+        when: 'using a patch pulled from the actual diff'
+        def patch = new ObjectPatchData(
+            targetId: targetModel.id,
+            sourceId: sourceModel.id,
+            patches: [FieldPatchData.from(diff)])
+
+        then:
+        check(patch)
+
+        when:
+        DataModel mergedModel = mergeObjectPatchDataIntoModel(patch, targetModel, sourceModel)
+
+        then:
+        mergedModel.author == 'harry'
+    }
+
+    void 'DMSM04 : test merging new style single dataclass modification diff into draft model'() {
+        given:
+        setupData()
+
+        when: 'generate models'
+        Map<String, UUID> mergeData = BootstrapModels.buildMergeModelsForTestingOnly(id, admin, dataModelService, dataClassService, metadataService, sessionFactory,
+                                                                                     messageSource)
+        DataModel targetModel = dataModelService.get(mergeData.targetId)
+        DataModel sourceModel = dataModelService.get(mergeData.sourceId)
+        MergeDiff mergeDiff = dataModelService.getMergeDiffForModels(sourceModel, targetModel)
+
+        then:
+        !mergeDiff.isEmpty()
+
+        when:
+        FieldMergeDiff diff = mergeDiff.flattenedDiffs.findAll {it instanceof FieldMergeDiff}
+            .find {FieldMergeDiff fmd ->
+                fmd.fieldName == 'description' && Path.from('dm:test database:test|dc:modifyBothReturningDifference').matches(fmd.getFullyQualifiedObjectPath())
+            }
+
+        then:
+        diff
+
+        when: 'using a patch pulled from the actual diff'
+        def patch = new ObjectPatchData(
+            targetId: targetModel.id,
+            sourceId: sourceModel.id,
+            patches: [FieldPatchData.from(diff)])
+
+        then:
+        check(patch)
+
+        when:
+        DataModel mergedModel = mergeObjectPatchDataIntoModel(patch, targetModel, sourceModel)
+
+        then:
+        mergedModel.dataClasses.find {it.label == 'modifyBothReturningDifference'}.description == 'DescriptionSource'
+    }
+
+    void 'DMSM05 : test merging new style modification diffs into draft model'() {
+        given:
+        setupData()
+
+        when: 'generate models'
+        Map<String, UUID> mergeData = BootstrapModels.buildMergeModelsForTestingOnly(id, admin, dataModelService, dataClassService, metadataService, sessionFactory,
+                                                                                     messageSource)
+        DataModel targetModel = dataModelService.get(mergeData.targetId)
+        DataModel sourceModel = dataModelService.get(mergeData.sourceId)
+        MergeDiff mergeDiff = dataModelService.getMergeDiffForModels(sourceModel, targetModel)
+
+        then:
+        !mergeDiff.isEmpty()
+
+        when:
+        List<FieldMergeDiff> diffs = mergeDiff.flattenedDiffs.findAll {it instanceof FieldMergeDiff}
+        diffs.removeIf([test: {FieldMergeDiff fieldMergeDiff ->
+            fieldMergeDiff.fieldName == 'branchName'
+        }] as Predicate)
+
+        then:
+        diffs
+        diffs.size() == 6
+
+        when: 'using a patch pulled from the actual diff'
+        def patch = new ObjectPatchData(
+            targetId: targetModel.id,
+            sourceId: sourceModel.id,
+            patches: diffs.collect {FieldPatchData.from(it)}
+        )
+
+        then:
+        check(patch)
+
+        when:
+        DataModel mergedModel = mergeObjectPatchDataIntoModel(patch, targetModel, sourceModel)
+
+        then:
+        mergedModel.author == 'harry'
+        mergedModel.organisation == 'under test'
+        mergedModel.dataClasses.find {it.label == 'modifyBothReturningDifference'}.description == 'DescriptionSource'
+        mergedModel.dataClasses.find {it.label == 'addBothReturningDifference'}.description == 'source'
+        mergedModel.dataClasses.find {it.label == 'modifySourceOnly'}.description == 'Description'
+        mergedModel.metadata.find {it.namespace == 'test' && it.key == 'modifySourceOnly'}.value == 'altered'
+    }
+
+    void 'DMSM06 : test merging new style single deletion diff into draft model'() {
+        given:
+        setupData()
+
+        when: 'generate models'
+        Map<String, UUID> mergeData = BootstrapModels.buildMergeModelsForTestingOnly(id, admin, dataModelService, dataClassService, metadataService, sessionFactory,
+                                                                                     messageSource)
+        DataModel targetModel = dataModelService.get(mergeData.targetId)
+        DataModel sourceModel = dataModelService.get(mergeData.sourceId)
+        MergeDiff mergeDiff = dataModelService.getMergeDiffForModels(sourceModel, targetModel)
+
+        then:
+        !mergeDiff.isEmpty()
+
+        when:
+        DeletionMergeDiff diff = mergeDiff.flattenedDiffs.findAll {it instanceof DeletionMergeDiff}
+            .find {DeletionMergeDiff dmd -> dmd.value.label == 'deleteSourceOnly'}
+
+        then:
+        diff
+
+        when: 'using a patch pulled from the actual diff'
+        def patch = new ObjectPatchData(
+            targetId: targetModel.id,
+            sourceId: sourceModel.id,
+            patches: [FieldPatchData.from(diff)])
+
+        then:
+        check(patch)
+
+        when:
+        DataModel mergedModel = mergeObjectPatchDataIntoModel(patch, targetModel, sourceModel)
+
+        then:
+        !mergedModel.dataClasses.find {it.label == 'deleteSourceOnly'}
+    }
+
+    void 'DMSM07 : test merging new style all deletion diff into draft model'() {
+        given:
+        setupData()
+
+        when: 'generate models'
+        Map<String, UUID> mergeData = BootstrapModels.buildMergeModelsForTestingOnly(id, admin, dataModelService, dataClassService, metadataService, sessionFactory,
+                                                                                     messageSource)
+        DataModel targetModel = dataModelService.get(mergeData.targetId)
+        DataModel sourceModel = dataModelService.get(mergeData.sourceId)
+        MergeDiff mergeDiff = dataModelService.getMergeDiffForModels(sourceModel, targetModel)
+
+        then:
+        !mergeDiff.isEmpty()
+
+        when:
+        List<DeletionMergeDiff> diffs = mergeDiff.flattenedDiffs.findAll {it instanceof DeletionMergeDiff}
+
+        then:
+        diffs
+        diffs.size() == 4
+
+        when: 'using a patch pulled from the actual diff'
+        def patch = new ObjectPatchData(
+            targetId: targetModel.id,
+            sourceId: sourceModel.id,
+            patches: diffs.collect {FieldPatchData.from(it)}
+        )
+
+        then:
+        check(patch)
+
+        when:
+        DataModel mergedModel = mergeObjectPatchDataIntoModel(patch, targetModel, sourceModel)
+
+        then:
+        !mergedModel.dataClasses.find {it.label == 'deleteSourceOnly'}
+        !mergedModel.dataClasses.find {it.label == 'deleteSourceAndModifyTarget'}
+        !mergedModel.dataClasses.find {it.label == 'deleteSourceOnlyFromExistingClass'}
+        !mergedModel.metadata.find {it.namespace == 'test' && it.key == 'deleteSourceOnly'}
+    }
+
+    DataModel mergeObjectPatchDataIntoModel(ObjectPatchData patch, DataModel targetModel, DataModel sourceModel) {
+        DataModel mergedModel = dataModelService.mergeObjectPatchDataIntoModel(patch, targetModel, sourceModel, false, adminSecurityPolicyManager)
+        sessionFactory.currentSession.flush()
+        dataModelService.get(mergedModel.id)
+    }
+
+    void 'DMSM08 : test merging new style single creation diff into draft model'() {
+        given:
+        setupData()
+
+        when: 'generate models'
+        Map<String, UUID> mergeData = BootstrapModels.buildMergeModelsForTestingOnly(id, admin, dataModelService, dataClassService, metadataService, sessionFactory,
+                                                                                     messageSource)
+        DataModel targetModel = dataModelService.get(mergeData.targetId)
+        DataModel sourceModel = dataModelService.get(mergeData.sourceId)
+        MergeDiff mergeDiff = dataModelService.getMergeDiffForModels(sourceModel, targetModel)
+
+        then:
+        !mergeDiff.isEmpty()
+
+        when:
+        CreationMergeDiff diff = mergeDiff.flattenedDiffs.findAll {it instanceof CreationMergeDiff}
+            .find {CreationMergeDiff cmd -> cmd.value.label == 'addSourceOnly'}
+
+        then:
+        diff
+
+        when: 'using a patch pulled from the actual diff'
+        def patch = new ObjectPatchData(
+            targetId: targetModel.id,
+            sourceId: sourceModel.id,
+            patches: [FieldPatchData.from(diff)])
+
+        then:
+        check(patch)
+
+        when:
+        DataModel mergedModel = mergeObjectPatchDataIntoModel(patch, targetModel, sourceModel)
+
+        then:
+        mergedModel.dataClasses.find {it.label == 'addSourceOnly'}
+    }
+
+
+    void 'DMSM09 : test merging new style creation diffs into draft model'() {
+        given:
+        setupData()
+
+        when: 'generate models'
+        Map<String, UUID> mergeData = BootstrapModels.buildMergeModelsForTestingOnly(id, admin, dataModelService, dataClassService, metadataService, sessionFactory,
+                                                                                     messageSource)
+        DataModel targetModel = dataModelService.get(mergeData.targetId)
+        DataModel sourceModel = dataModelService.get(mergeData.sourceId)
+        MergeDiff mergeDiff = dataModelService.getMergeDiffForModels(sourceModel, targetModel)
+
+        then:
+        !mergeDiff.isEmpty()
+
+        when:
+        List<CreationMergeDiff> diffs = mergeDiff.flattenedDiffs.findAll {it instanceof CreationMergeDiff}
+
+        then:
+        diffs
+        diffs.size() == 5
+
+        when: 'using a patch pulled from the actual diff'
+        def patch = new ObjectPatchData(
+            targetId: targetModel.id,
+            sourceId: sourceModel.id,
+            patches: diffs.collect {FieldPatchData.from(it)}
+        )
+
+        then:
+        check(patch)
+
+        when:
+        DataModel mergedModel = mergeObjectPatchDataIntoModel(patch, targetModel, sourceModel)
+
+        then:
+        mergedModel.dataClasses.find {it.label == 'addSourceOnly'}
+        mergedModel.dataClasses.find {it.label == 'addSourceWithNestedChild'}
+        mergedModel.dataClasses.find {it.label == 'modifySourceAndDeleteTarget'}
+        mergedModel.dataClasses.find {it.label == 'addSourceToExistingClass'}
+        mergedModel.dataClasses.find {it.label == 'existingClass'}.dataClasses.find {it.label == 'addSourceToExistingClass'}
+        mergedModel.dataTypes.find {it.label == 'addSourceOnlyOnlyChangeInArray'}
+    }
+
+    void 'DMSM10 : test merging new style facet creation diff into draft model'() {
+        given:
+        setupData()
+
+        when: 'generate models'
+        Map<String, UUID> mergeData = BootstrapModels.buildMergeModelsForTestingOnly(id, admin, dataModelService, dataClassService, metadataService, sessionFactory,
+                                                                                     messageSource)
+        DataModel targetModel = dataModelService.get(mergeData.targetId)
+        DataModel sourceModel = dataModelService.get(mergeData.sourceId)
+        sourceModel.addToMetadata('test', 'addSourceOnly', 'addSourceOnly', StandardEmailAddress.INTEGRATION_TEST)
+        sourceModel.dataClasses.find {it.label == 'existingClass'}.addToMetadata('test', 'addDCSourceOnly', 'addDCSourceOnly',
+                                                                                 StandardEmailAddress.INTEGRATION_TEST)
+        checkAndSave(sourceModel)
+
+        MergeDiff mergeDiff = dataModelService.getMergeDiffForModels(sourceModel, targetModel)
+
+        then:
+        !mergeDiff.isEmpty()
+
+        when:
+        List<CreationMergeDiff> diffs = mergeDiff.flattenedDiffs
+            .findAll {it instanceof CreationMergeDiff}
+            .findAll {CreationMergeDiff cmd -> cmd.created instanceof Metadata}
+
+        then:
+        diffs
+        diffs.size() == 2
+
+        when: 'using a patch pulled from the actual diff'
+        def patch = new ObjectPatchData(
+            targetId: targetModel.id,
+            sourceId: sourceModel.id,
+            patches: diffs.collect {FieldPatchData.from(it)}
+        )
+
+        then:
+        check(patch)
+
+        when:
+        DataModel mergedModel = mergeObjectPatchDataIntoModel(patch, targetModel, sourceModel)
+
+        then:
+        mergedModel.metadata.find {it.key == 'addSourceOnly'}
+        sourceModel.dataClasses.find {it.label == 'existingClass'}.metadata.find {it.key == 'addDCSourceOnly'}
+    }
 
     void 'DMSV01 : test validation on valid model'() {
         given:

@@ -17,54 +17,104 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge
 
+import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
+import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.CreationMergeDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.DeletionMergeDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.FieldMergeDiff
+import uk.ac.ox.softeng.maurodatamapper.util.Path
 
 import grails.validation.Validateable
 
 /**
  * @since 07/02/2018
  */
-class FieldPatchData<T, K> implements Validateable {
+class FieldPatchData<T> implements Validateable {
 
     String fieldName
-    T value
-    Collection<ItemPatchData> created
-    Collection<ItemPatchData> deleted
-    Collection<ObjectPatchData> modified
+    Path path
+    T sourceValue
+    T targetValue
+    T commonAncestorValue
+    boolean isMergeConflict
+    String type
 
     static constraints = {
         fieldName nullable: false, blank: false
-        value validator: {val, obj ->
-            if (val && (created || deleted || modified)) return ['invalid.patch.value.and.array.changes']
-            if (!val && !created && !deleted && !modified) return ['invalid.patch.no.changes']
-            true
-        }
-    }
+        path nullable: false, blank: false
+        sourceValue nullable: true
+        targetValue nullable: true
+        commonAncestorValue nullable: true
+        type nullable: false, blank: false, inList: ['creation', 'deletion', 'modification']
 
-    FieldPatchData() {
-        created = []
-        deleted = []
-        modified = []
-    }
-
-    boolean hasPatches() {
-        value || !created.isEmpty() || !deleted.isEmpty() || modified.any {it.hasPatches()}
-    }
-
-    boolean isFieldChange() {
-        value
     }
 
     boolean isMetadataChange() {
-        fieldName == 'metadata'
+        false
     }
 
-    String getSummary() {
-        String prefix = "Merge patch summary on field [${fieldName}]"
-        if (isFieldChange()) return "${prefix}: Changing value"
-        "${prefix}: Creating ${created.size()} Deleting ${deleted.size()} Modifying ${modified.size()}"
+    boolean isCreation() {
+        type == 'creation'
+    }
+
+    boolean isDeletion() {
+        type == 'deletion'
+    }
+
+    boolean isModification() {
+        type == 'modification'
     }
 
     String toString() {
-        "Merge patch on field [${fieldName}]"
+        "Merge ${type} patch on ${path} :: Changing ${targetValue} to ${sourceValue}"
+    }
+
+    void setPath(String path) {
+        this.path = Path.from(path)
+    }
+
+    void setPath(Path path) {
+        this.path = path
+    }
+
+    Path getRootIndependentPath() {
+        this.path.clone().tap {
+            first().label = null
+        }
+    }
+
+    static <P> FieldPatchData<P> from(FieldMergeDiff<P> fieldMergeDiff) {
+        new FieldPatchData().tap {
+            fieldName = fieldMergeDiff.fieldName
+            sourceValue = fieldMergeDiff.source
+            targetValue = fieldMergeDiff.target
+            commonAncestorValue = fieldMergeDiff.commonAncestor
+            path = fieldMergeDiff.fullyQualifiedPath
+            isMergeConflict = fieldMergeDiff.isMergeConflict()
+            type = 'modification'
+        }
+    }
+
+    static <P extends Diffable> FieldPatchData<P> from(CreationMergeDiff<P> creationMergeDiff) {
+        new FieldPatchData().tap {
+            //            fieldName = creationMergeDiff.fieldName
+            sourceValue = creationMergeDiff.source
+            targetValue = creationMergeDiff.target
+            commonAncestorValue = creationMergeDiff.commonAncestor
+            path = creationMergeDiff.fullyQualifiedPath
+            isMergeConflict = creationMergeDiff.isMergeConflict()
+            type = 'creation'
+        }
+    }
+
+    static <P extends Diffable> FieldPatchData<P> from(DeletionMergeDiff<P> deletionMergeDiff) {
+        new FieldPatchData().tap {
+            //            fieldName = deletionMergeDiff.fieldName
+            sourceValue = deletionMergeDiff.source
+            targetValue = deletionMergeDiff.target
+            commonAncestorValue = deletionMergeDiff.commonAncestor
+            path = deletionMergeDiff.fullyQualifiedPath
+            isMergeConflict = deletionMergeDiff.isMergeConflict()
+            type = 'deletion'
+        }
     }
 }
