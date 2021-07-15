@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.provider
 
 
-import uk.ac.ox.softeng.maurodatamapper.util.Version
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j

@@ -7,7 +7,7 @@ model {
 json {
     id versionTreeModel.id
     branch versionTreeModel.branchName
-    modelVersion versionTreeModel.modelVersion?.toString()
-    documentationVersion versionTreeModel.documentationVersion?.toString()
+    modelVersion versionTreeModel.modelVersion
+    documentationVersion versionTreeModel.documentationVersion
     displayName versionTreeModel.simpleDisplayName
 }

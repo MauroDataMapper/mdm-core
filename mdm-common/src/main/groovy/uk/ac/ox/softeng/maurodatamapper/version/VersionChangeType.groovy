@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.util
+package uk.ac.ox.softeng.maurodatamapper.version
 
 import grails.databinding.DataBindingSource;
 

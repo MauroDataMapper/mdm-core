@@ -40,7 +40,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMeta
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataValue
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
-import uk.ac.ox.softeng.maurodatamapper.util.Version
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource

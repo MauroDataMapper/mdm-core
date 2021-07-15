@@ -1,1 +1,2 @@
 uk.ac.ox.softeng.maurodatamapper.path.PathJsonConverter
+uk.ac.ox.softeng.maurodatamapper.version.VersionJsonConverter

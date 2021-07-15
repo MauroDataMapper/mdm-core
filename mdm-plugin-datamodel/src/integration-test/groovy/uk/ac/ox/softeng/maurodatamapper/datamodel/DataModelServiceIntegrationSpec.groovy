@@ -42,7 +42,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilari
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.BaseDataModelIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
-import uk.ac.ox.softeng.maurodatamapper.util.Version
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration

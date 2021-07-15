@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.hibernate
 
-import uk.ac.ox.softeng.maurodatamapper.util.Version
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import org.hibernate.dialect.Dialect
 import org.hibernate.type.AbstractSingleColumnStandardBasicType

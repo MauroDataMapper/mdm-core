@@ -41,7 +41,7 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationshipService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.CodeSetJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
-import uk.ac.ox.softeng.maurodatamapper.util.Version
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j

@@ -39,8 +39,8 @@ import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
-import uk.ac.ox.softeng.maurodatamapper.util.Version
-import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
+import uk.ac.ox.softeng.maurodatamapper.version.Version
+import uk.ac.ox.softeng.maurodatamapper.version.VersionChangeType
 
 import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional

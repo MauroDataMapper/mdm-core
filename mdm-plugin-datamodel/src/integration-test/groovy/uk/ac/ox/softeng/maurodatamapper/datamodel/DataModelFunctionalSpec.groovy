@@ -26,7 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwa
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
-import uk.ac.ox.softeng.maurodatamapper.util.Version
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration

@@ -12,7 +12,7 @@ model {
 json {
     type terminology.modelType
     branchName terminology.branchName
-    documentationVersion terminology.documentationVersion.toString()
+    documentationVersion terminology.documentationVersion
     finalised terminology.finalised
     readableByEveryone terminology.readableByEveryone
     readableByAuthenticatedUsers terminology.readableByAuthenticatedUsers
@@ -22,7 +22,7 @@ json {
     if (terminology.deleted) deleted terminology.deleted
     if (terminology.author) author terminology.author
     if (terminology.organisation) organisation terminology.organisation
-    if (terminology.modelVersion) modelVersion terminology.modelVersion.toString()
+    if (terminology.modelVersion) modelVersion terminology.modelVersion
     if (terminology.modelVersionTag) modelVersionTag terminology.modelVersionTag
 
     authority tmpl.'/authority/authority'(terminology.authority)

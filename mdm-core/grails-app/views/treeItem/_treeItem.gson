@@ -20,8 +20,8 @@ json {
         if (cti.containerId) parentFolder cti.containerId
         if (cti.versionAware) {
             finalised cti.finalised
-            documentationVersion cti.documentationVersion.toString()
-            if (cti.modelVersion) modelVersion cti.modelVersion.toString()
+            documentationVersion cti.documentationVersion
+            if (cti.modelVersion) modelVersion cti.modelVersion
             if (cti.modelVersionTag) modelVersionTag cti.modelVersionTag
             if (cti.branchName && !cti.modelVersion) branchName cti.branchName
         }
@@ -30,10 +30,10 @@ json {
         deleted mti.deleted
         finalised mti.finalised
         superseded mti.superseded
-        documentationVersion mti.documentationVersion.toString()
+        documentationVersion mti.documentationVersion
         folder mti.containerId
         type mti.modelType
-        if (mti.modelVersion) modelVersion mti.modelVersion.toString()
+        if (mti.modelVersion) modelVersion mti.modelVersion
         if (mti.modelVersionTag) modelVersionTag mti.modelVersionTag
         if (mti.branchName && !mti.modelVersion) branchName mti.branchName
     } else if (treeItem instanceof ModelItemTreeItem) {

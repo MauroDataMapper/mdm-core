@@ -10,10 +10,10 @@ model {
 
 json {
     branchName versionedFolder.branchName
-    documentationVersion versionedFolder.documentationVersion.toString()
+    documentationVersion versionedFolder.documentationVersion
     finalised versionedFolder.finalised
     if (versionedFolder.finalised) dateFinalised versionedFolder.dateFinalised
-    if (versionedFolder.modelVersion) modelVersion versionedFolder.modelVersion.toString()
+    if (versionedFolder.modelVersion) modelVersion versionedFolder.modelVersion
     if (versionedFolder.modelVersionTag) modelVersionTag versionedFolder.modelVersionTag
 
     authority tmpl.'/authority/authority'(versionedFolder.authority)

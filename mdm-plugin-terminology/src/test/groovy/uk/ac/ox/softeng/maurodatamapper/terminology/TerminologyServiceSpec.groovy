@@ -29,7 +29,7 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationshipService
 import uk.ac.ox.softeng.maurodatamapper.test.unit.service.CatalogueItemServiceSpec
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
-import uk.ac.ox.softeng.maurodatamapper.util.Version
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.testing.services.ServiceUnitTest
 import groovy.util.logging.Slf4j

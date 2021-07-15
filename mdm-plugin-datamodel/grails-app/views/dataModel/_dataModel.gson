@@ -9,8 +9,8 @@ model {
 json {
     type dataModel.modelType
     branchName dataModel.branchName
-    documentationVersion dataModel.documentationVersion.toString()
-    if (dataModel.modelVersion) modelVersion dataModel.modelVersion.toString()
+    documentationVersion dataModel.documentationVersion
+    if (dataModel.modelVersion) modelVersion dataModel.modelVersion
     if (dataModel.modelVersionTag) modelVersionTag dataModel.modelVersionTag
 
     if (dataModel.classifiers) classifiers g.render(dataModel.classifiers)

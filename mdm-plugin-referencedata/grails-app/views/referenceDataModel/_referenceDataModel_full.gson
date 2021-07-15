@@ -12,7 +12,7 @@ model {
 json {
     type referenceDataModel.modelType
     branchName referenceDataModel.branchName
-    documentationVersion referenceDataModel.documentationVersion.toString()
+    documentationVersion referenceDataModel.documentationVersion
     finalised referenceDataModel.finalised
     readableByEveryone referenceDataModel.readableByEveryone
     readableByAuthenticatedUsers referenceDataModel.readableByAuthenticatedUsers
@@ -22,7 +22,7 @@ json {
     if (referenceDataModel.deleted) deleted referenceDataModel.deleted
     if (referenceDataModel.author) author referenceDataModel.author
     if (referenceDataModel.organisation) organisation referenceDataModel.organisation
-    if (referenceDataModel.modelVersion) modelVersion referenceDataModel.modelVersion.toString()
+    if (referenceDataModel.modelVersion) modelVersion referenceDataModel.modelVersion
     if (referenceDataModel.modelVersionTag) modelVersionTag referenceDataModel.modelVersionTag
 
     authority tmpl.'/authority/authority'(referenceDataModel.authority)

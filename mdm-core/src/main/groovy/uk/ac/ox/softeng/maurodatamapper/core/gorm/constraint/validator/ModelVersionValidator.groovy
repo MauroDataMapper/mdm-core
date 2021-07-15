@@ -20,7 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.validator
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.Validator
-import uk.ac.ox.softeng.maurodatamapper.util.Version
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 class ModelVersionValidator implements Validator<Version> {
 

@@ -11,7 +11,7 @@ model {
 json {
     type codeSet.modelType
     branchName codeSet.branchName
-    documentationVersion codeSet.documentationVersion.toString()
+    documentationVersion codeSet.documentationVersion
     finalised codeSet.finalised
     readableByEveryone codeSet.readableByEveryone
     readableByAuthenticatedUsers codeSet.readableByAuthenticatedUsers
@@ -21,7 +21,7 @@ json {
     if (codeSet.deleted) deleted codeSet.deleted
     if (codeSet.author) author codeSet.author
     if (codeSet.organisation) organisation codeSet.organisation
-    if (codeSet.modelVersion) modelVersion codeSet.modelVersion.toString()
+    if (codeSet.modelVersion) modelVersion codeSet.modelVersion
     if (codeSet.modelVersionTag) modelVersionTag codeSet.modelVersionTag
 
     authority tmpl.'/authority/authority'(codeSet.authority)

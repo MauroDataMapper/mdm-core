@@ -32,7 +32,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePri
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.test.unit.service.CatalogueItemServiceSpec
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
-import uk.ac.ox.softeng.maurodatamapper.util.Version
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.testing.services.ServiceUnitTest
 import groovy.util.logging.Slf4j

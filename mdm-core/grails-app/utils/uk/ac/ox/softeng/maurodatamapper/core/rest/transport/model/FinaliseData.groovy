@@ -17,8 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model
 
-import uk.ac.ox.softeng.maurodatamapper.util.Version
-import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
+import uk.ac.ox.softeng.maurodatamapper.version.Version
+import uk.ac.ox.softeng.maurodatamapper.version.VersionChangeType
 
 import grails.databinding.BindUsing
 import grails.validation.Validateable
