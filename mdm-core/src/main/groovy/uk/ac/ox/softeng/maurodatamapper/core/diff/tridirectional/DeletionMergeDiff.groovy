@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
-import uk.ac.ox.softeng.maurodatamapper.util.Path
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 
 import groovy.transform.CompileStatic
 

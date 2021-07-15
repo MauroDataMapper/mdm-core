@@ -20,12 +20,12 @@ package uk.ac.ox.softeng.maurodatamapper.core.path
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
+import uk.ac.ox.softeng.maurodatamapper.path.Path
+import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
-import uk.ac.ox.softeng.maurodatamapper.util.Path
-import uk.ac.ox.softeng.maurodatamapper.util.PathNode
 
 import grails.core.GrailsApplication
 import grails.gorm.transactions.Transactional

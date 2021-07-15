@@ -17,15 +17,14 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ArrayDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.FieldDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.unidirectional.CreationDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.unidirectional.DeletionDiff
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
-import uk.ac.ox.softeng.maurodatamapper.util.Path
 
 import groovy.transform.CompileStatic
 import groovy.transform.stc.ClosureParams

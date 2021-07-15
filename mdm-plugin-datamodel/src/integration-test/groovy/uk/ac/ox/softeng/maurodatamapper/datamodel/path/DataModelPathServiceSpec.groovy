@@ -26,7 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.BaseDataModelIntegrationSpec
-import uk.ac.ox.softeng.maurodatamapper.util.Path
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration

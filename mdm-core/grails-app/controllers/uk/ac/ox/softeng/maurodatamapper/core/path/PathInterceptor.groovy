@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.path
 
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmInterceptor
-import uk.ac.ox.softeng.maurodatamapper.util.Path
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 
 class PathInterceptor implements MdmInterceptor {
 

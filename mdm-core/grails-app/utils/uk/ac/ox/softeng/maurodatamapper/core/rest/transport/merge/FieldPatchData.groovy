@@ -21,7 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.CreationMergeDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.DeletionMergeDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.FieldMergeDiff
-import uk.ac.ox.softeng.maurodatamapper.util.Path
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 
 import grails.validation.Validateable
 
