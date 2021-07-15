@@ -127,11 +127,6 @@ class DataFlow implements ModelItem<DataFlow, DataModel> {
     }
 
     @Override
-    String getDiffIdentifier() {
-        this.label
-    }
-
-    @Override
     Boolean hasChildren() {
         dataClassComponents
     }

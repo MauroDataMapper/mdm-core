@@ -181,7 +181,7 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
 
     @Override
     String getDiffIdentifier() {
-        "${dataClass.getDiffIdentifier()}/${label}"
+        "${dataClass.getDiffIdentifier()}/${pathIdentifier}"
     }
 
     @Override

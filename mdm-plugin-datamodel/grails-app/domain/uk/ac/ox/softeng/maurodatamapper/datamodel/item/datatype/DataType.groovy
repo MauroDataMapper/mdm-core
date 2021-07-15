@@ -155,11 +155,6 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
     }
 
     @Override
-    String getDiffIdentifier() {
-        this.label
-    }
-
-    @Override
     Boolean hasChildren() {
         false
     }

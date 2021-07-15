@@ -77,11 +77,6 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
         'tr'
     }
 
-    @Override
-    String getPathIdentifier() {
-        "${sourceTerm.code}-${relationshipType.label}-${targetTerm.code}"
-    }
-
     def beforeValidate() {
         label = relationshipType?.label
         beforeValidateModelItem()
@@ -125,9 +120,9 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
     }
 
     @Override
-    String getDiffIdentifier() {
+    String getPathIdentifier() {
         if (!label) label = relationshipType?.label
-        "$sourceTerm.label-$label-$targetTerm.label"
+        "$sourceTerm.label:$label:$targetTerm.label"
     }
 
     ObjectDiff<TermRelationship> diff(TermRelationship obj) {

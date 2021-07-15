@@ -125,11 +125,6 @@ class DataClassComponent implements ModelItem<DataClassComponent, DataModel> {
     }
 
     @Override
-    String getDiffIdentifier() {
-        this.label
-    }
-
-    @Override
     Boolean hasChildren() {
         dataElementComponents
     }

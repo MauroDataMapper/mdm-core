@@ -70,11 +70,6 @@ class ReferenceDataValue implements CreatorAware, Diffable<ReferenceDataValue> {
         rowNumber
     }
 
-    @Override
-    String getDiffIdentifier() {
-        this.id
-    }
-
     ObjectDiff<ReferenceDataValue> diff(ReferenceDataValue otherValue) {
         String lhsId = this.id ?: "Left:Unsaved_${this.domainType}"
         String rhsId = otherValue.id ?: "Right:Unsaved_${otherValue.domainType}"

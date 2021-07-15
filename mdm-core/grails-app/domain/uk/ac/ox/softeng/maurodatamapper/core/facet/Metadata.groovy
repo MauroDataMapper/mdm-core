@@ -103,11 +103,6 @@ class Metadata implements MultiFacetItemAware, Diffable<Metadata> {
     }
 
     @Override
-    String getDiffIdentifier() {
-        "${this.namespace}.${this.key}"
-    }
-
-    @Override
     String getPathIdentifier() {
         "${this.namespace}.${this.key}"
     }

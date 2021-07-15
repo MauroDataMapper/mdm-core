@@ -18,15 +18,20 @@
 package uk.ac.ox.softeng.maurodatamapper.core.diff
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 
 import grails.compiler.GrailsCompileStatic
+import groovy.transform.SelfType
 
+@SelfType(CreatorAware)
 @GrailsCompileStatic
-interface Diffable<T extends Diffable> {
+trait Diffable<T extends Diffable> {
 
-    ObjectDiff<T> diff(T obj)
+    abstract ObjectDiff<T> diff(T obj)
 
-    String getDiffIdentifier()
+    String getDiffIdentifier() {
+        getPathIdentifier()
+    }
 
-    String getPathPrefix()
+    abstract String getPathPrefix()
 }

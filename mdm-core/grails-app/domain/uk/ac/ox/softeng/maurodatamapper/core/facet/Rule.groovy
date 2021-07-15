@@ -105,11 +105,6 @@ class Rule implements MultiFacetItemAware, Diffable<Rule> {
             .appendList(RuleRepresentation, 'ruleRepresentations', this.ruleRepresentations, obj.ruleRepresentations)
     }
 
-    @Override
-    String getDiffIdentifier() {
-        this.name
-    }
-
     static DetachedCriteria<Rule> by() {
         new DetachedCriteria<Rule>(Rule)
     }

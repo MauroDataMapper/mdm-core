@@ -128,7 +128,7 @@ class ReferenceEnumerationValue implements ModelItem<ReferenceEnumerationValue, 
     }
 
     @Override
-    String getDiffIdentifier() {
+    String getPathIdentifier() {
         this.key
     }
 

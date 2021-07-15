@@ -138,11 +138,6 @@ abstract class ReferenceDataType<D> implements ModelItem<D, ReferenceDataModel>,
     }
 
     @Override
-    String getDiffIdentifier() {
-        this.label
-    }
-
-    @Override
     Boolean hasChildren() {
         false
     }

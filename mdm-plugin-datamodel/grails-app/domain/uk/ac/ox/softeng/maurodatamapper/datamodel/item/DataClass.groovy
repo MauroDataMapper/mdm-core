@@ -233,8 +233,8 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
 
     @Override
     String getDiffIdentifier() {
-        if (!parentDataClass) return this.label
-        parentDataClass.getDiffIdentifier() + "/" + this.label
+        if (!parentDataClass) return this.pathIdentifier
+        "${parentDataClass.getDiffIdentifier()}/${this.pathIdentifier}"
     }
 
     CatalogueItem getParent() {

@@ -130,11 +130,6 @@ class Annotation implements MultiFacetItemAware, PathAware, InformationAware, Di
 
     }
 
-    @Override
-    String getDiffIdentifier() {
-        this.label
-    }
-
     static DetachedCriteria<Annotation> by() {
         new DetachedCriteria<Annotation>(Annotation)
     }

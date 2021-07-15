@@ -84,11 +84,6 @@ trait CatalogueItem<D extends Diffable> implements InformationAware, EditHistory
     }
 
     @Override
-    String getDiffIdentifier() {
-        label
-    }
-
-    @Override
     String getPathIdentifier() {
         label
     }

@@ -161,7 +161,7 @@ class ReferenceDataElement implements ModelItem<ReferenceDataElement, ReferenceD
 
     @Override
     String getDiffIdentifier() {
-        "${referenceDataModel.getDiffIdentifier()}/${label}"
+        "${referenceDataModel.getDiffIdentifier()}/${pathIdentifier}"
     }
 
     @Override

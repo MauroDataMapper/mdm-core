@@ -129,7 +129,7 @@ class EnumerationValue implements ModelItem<EnumerationValue, DataModel> {
     }
 
     @Override
-    String getDiffIdentifier() {
+    String getPathIdentifier() {
         this.key
     }
 
