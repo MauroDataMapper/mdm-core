@@ -92,10 +92,6 @@ Controller: classifier
  |  DELETE  | /api/classifiers/${id}                                                                                                                                                           | Action: delete
  |   PUT    | /api/classifiers/${id}                                                                                                                                                           | Action: update
  |   GET    | /api/classifiers/${id}                                                                                                                                                           | Action: show
- |   POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/classifiers                                                                                                                   | Action: save
- |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/classifiers                                                                                                                   | Action: index
- |  DELETE  | /api/${catalogueItemDomainType}/${catalogueItemId}/classifiers/${id}                                                                                                             | Action: delete
- |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/classifiers/${id}                                                                                                             | Action: show
 
 Controller: codeSet
  |   GET    | /api/codeSets/providers/importers                                                                                                                                                | Action: importerProviders
