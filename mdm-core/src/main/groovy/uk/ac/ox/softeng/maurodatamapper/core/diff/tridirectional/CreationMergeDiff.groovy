@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
+import uk.ac.ox.softeng.maurodatamapper.util.Path
 
 import groovy.transform.CompileStatic
 
@@ -41,9 +42,9 @@ class CreationMergeDiff<C extends Diffable> extends TriDirectionalDiff<C> implem
         created.diffIdentifier
     }
 
-    String getFullyQualifiedPath() {
+    Path getFullyQualifiedPath() {
         String cleanedIdentifier = createdIdentifier.split('/').last()
-        "${fullyQualifiedObjectPath}|${created.pathPrefix}:${cleanedIdentifier}"
+        Path.from(fullyQualifiedObjectPath, created.pathPrefix, cleanedIdentifier)
     }
 
     boolean isSourceModificationAndTargetDeletion() {
@@ -55,7 +56,7 @@ class CreationMergeDiff<C extends Diffable> extends TriDirectionalDiff<C> implem
         withSource(object) as CreationMergeDiff<C>
     }
 
-    CreationMergeDiff<C> insideFullyQualifiedObjectPath(String fullyQualifiedObjectPath) {
+    CreationMergeDiff<C> insideFullyQualifiedObjectPath(Path fullyQualifiedObjectPath) {
         super.insideFullyQualifiedObjectPath(fullyQualifiedObjectPath) as CreationMergeDiff<C>
     }
 

@@ -31,7 +31,6 @@ import grails.core.GrailsApplication
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.grails.core.artefact.DomainClassArtefactHandler
-import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 import org.springframework.beans.factory.annotation.Autowired
 
 @Transactional
@@ -48,8 +47,6 @@ class PathService {
     List<SecurableResourceService> securableResourceServices
 
     GrailsApplication grailsApplication
-
-    private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler()
 
     SecurableResource findSecurableResourceByDomainClassAndId(Class resourceClass, UUID resourceId) {
         SecurableResourceService securableResourceService = securableResourceServices.find {it.handles(resourceClass)}
@@ -72,6 +69,7 @@ class PathService {
     }
 
     CreatorAware findResourceByPathFromRootResource(CreatorAware rootResourceOfPath, Path path) {
+        log.debug('Searching for path {} inside {}:{}', path, rootResourceOfPath.pathPrefix, rootResourceOfPath.pathIdentifier)
         if (path.isEmpty()) {
             throw new ApiBadRequestException('PS06', 'Must have a path to search')
         }
@@ -83,11 +81,11 @@ class PathService {
 
         // Confirmed the path is inside the model
         // If only one node then return the model
-        if (path.size == 1) return rootResourceOfPath
+        if (path.size() == 1) return rootResourceOfPath
 
         // Only 2 nodes in path, first is model
         // Last part of path is a field access as has no type prefix so return the model
-        if (path.size == 2 && !path.last().hasTypePrefix()) return rootResourceOfPath
+        if (path.size() == 2 && !path.last().hasTypePrefix()) return rootResourceOfPath
 
         // Find the first child in the path
         Path childPath = path.childPath
@@ -102,7 +100,7 @@ class PathService {
             return null
         }
 
-        log.debug('Found service [{}] to handle [{}]', domainService.class.simpleName, childNode.typePrefix)
+        log.trace('Found service [{}] to handle prefix [{}]', domainService.class.simpleName, childNode.typePrefix)
         def child = domainService.findByParentIdAndPathIdentifier(rootResourceOfPath.id, childNode.label)
 
         if (!child) {

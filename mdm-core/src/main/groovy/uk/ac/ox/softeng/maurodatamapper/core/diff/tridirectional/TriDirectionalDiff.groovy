@@ -19,13 +19,14 @@ package uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.BiDirectionalDiff
+import uk.ac.ox.softeng.maurodatamapper.util.Path
 
 import groovy.transform.CompileStatic
 
 @CompileStatic
 abstract class TriDirectionalDiff<T> extends BiDirectionalDiff<T> {
 
-    protected String fullyQualifiedObjectPath
+    protected Path fullyQualifiedObjectPath
     private Boolean mergeConflict
     private T commonAncestor
 
@@ -33,6 +34,8 @@ abstract class TriDirectionalDiff<T> extends BiDirectionalDiff<T> {
         super(targetClass)
         mergeConflict = false
     }
+
+    abstract Path getFullyQualifiedPath()
 
     @Override
     boolean equals(o) {
@@ -47,7 +50,7 @@ abstract class TriDirectionalDiff<T> extends BiDirectionalDiff<T> {
         return true
     }
 
-    TriDirectionalDiff<T> insideFullyQualifiedObjectPath(String fullyQualifiedObjectPath) {
+    TriDirectionalDiff<T> insideFullyQualifiedObjectPath(Path fullyQualifiedObjectPath) {
         this.fullyQualifiedObjectPath = fullyQualifiedObjectPath
         this
     }
@@ -88,6 +91,10 @@ abstract class TriDirectionalDiff<T> extends BiDirectionalDiff<T> {
 
     T getSource() {
         super.getLeft()
+    }
+
+    Path getFullyQualifiedObjectPath() {
+        fullyQualifiedObjectPath
     }
 
     @Deprecated

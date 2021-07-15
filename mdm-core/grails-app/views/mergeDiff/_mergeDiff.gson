@@ -11,7 +11,7 @@ json {
     sourceId mergeDiff.getSourceId()
     targetId mergeDiff.getTargetId()
 
-    path mergeDiff.fullyQualifiedPath
+    path mergeDiff.fullyQualifiedPath.toString()
 
     if (mergeDiff.getTarget() instanceof InformationAware) {
         label(((InformationAware) mergeDiff.getTarget()).getLabel())

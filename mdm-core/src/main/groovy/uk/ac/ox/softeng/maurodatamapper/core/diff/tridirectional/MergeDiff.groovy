@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.unidirectional.CreationDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.unidirectional.DeletionDiff
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.util.Path
 
 import groovy.transform.CompileStatic
 import groovy.transform.stc.ClosureParams
@@ -96,10 +97,9 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
         (target as CreatorAware).id
     }
 
-    String getFullyQualifiedPath() {
+    Path getFullyQualifiedPath() {
         String cleanedIdentifier = sourceIdentifier.split('/').last()
-        String localPath = "${source.pathPrefix}:${cleanedIdentifier}"
-        fullyQualifiedObjectPath ? "${fullyQualifiedObjectPath}|${localPath}" : localPath
+        Path.from(fullyQualifiedObjectPath, source.pathPrefix, cleanedIdentifier)
     }
 
     FieldMergeDiff first() {
@@ -140,7 +140,7 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
     }
 
     @Override
-    MergeDiff<M> insideFullyQualifiedObjectPath(String fullyQualifiedObjectPath) {
+    MergeDiff<M> insideFullyQualifiedObjectPath(Path fullyQualifiedObjectPath) {
         super.insideFullyQualifiedObjectPath(fullyQualifiedObjectPath) as MergeDiff<M>
     }
 
@@ -287,7 +287,7 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
         this
     }
 
-    static <A extends Diffable> ArrayMergeDiff<A> createArrayMergeDiffFromSourceTargetArrayDiff(String fullyQualifiedObjectPath, ArrayDiff<A> sourceTargetArrayDiff) {
+    static <A extends Diffable> ArrayMergeDiff<A> createArrayMergeDiffFromSourceTargetArrayDiff(Path fullyQualifiedObjectPath, ArrayDiff<A> sourceTargetArrayDiff) {
         log.debug('[{}] Processing array differences against target from source', sourceTargetArrayDiff.fieldName)
         // Created and Deleted diffs in this array are left as-is as they are guaranteed to be unique and no issue
         arrayMergeDiff(sourceTargetArrayDiff.targetClass)
@@ -317,7 +317,7 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
 
     }
 
-    static <A extends Diffable> ArrayMergeDiff<A> createBaseArrayMergeDiffPresentOnOneSide(String fullyQualifiedObjectPath,
+    static <A extends Diffable> ArrayMergeDiff<A> createBaseArrayMergeDiffPresentOnOneSide(Path fullyQualifiedObjectPath,
                                                                                            ArrayDiff<A> caSourceArrayDiff) {
 
         // Created and Deleted diffs in this array are left as-is as they are guaranteed to be unique and no issue
@@ -330,7 +330,7 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
             .withCommonAncestor(caSourceArrayDiff.left) // both diffs have the same LHS
     }
 
-    static <A extends Diffable> ArrayMergeDiff<A> createArrayMergeDiffPresentOnBothSides(String fullyQualifiedObjectPath,
+    static <A extends Diffable> ArrayMergeDiff<A> createArrayMergeDiffPresentOnBothSides(Path fullyQualifiedObjectPath,
                                                                                          ArrayDiff<A> caSourceArrayDiff,
                                                                                          ArrayDiff<A> caTargetArrayDiff) {
         log.debug('[{}] Processing array differences against common ancestor on both sides', caSourceArrayDiff.fieldName)
@@ -343,7 +343,7 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
     }
 
 
-    static <A extends Diffable> ArrayMergeDiff<A> createArrayMergeDiffPresentOnOneSide(String fullyQualifiedObjectPath,
+    static <A extends Diffable> ArrayMergeDiff<A> createArrayMergeDiffPresentOnOneSide(Path fullyQualifiedObjectPath,
                                                                                        ArrayDiff<A> caSourceArrayDiff) {
         log.debug('[{}] Processing array differences against common ancestor on one side', caSourceArrayDiff.fieldName)
         // Created and Deleted diffs in this array are left as-is as they are guaranteed to be unique and no issue
@@ -354,7 +354,7 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
             .getValidOnly()
     }
 
-    static <F> FieldMergeDiff<F> createFieldMergeDiffFromSourceTargetFieldDiff(String fullyQualifiedObjectPath, FieldDiff<F> sourceTargetFieldDiff) {
+    static <F> FieldMergeDiff<F> createFieldMergeDiffFromSourceTargetFieldDiff(Path fullyQualifiedObjectPath, FieldDiff<F> sourceTargetFieldDiff) {
         log.debug('[{}] Processing field difference against target from source', sourceTargetFieldDiff.fieldName)
         fieldMergeDiff(sourceTargetFieldDiff.targetClass)
             .forFieldName(sourceTargetFieldDiff.fieldName)
@@ -366,7 +366,7 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
             .getValidOnly()
     }
 
-    static <F> FieldMergeDiff<F> createFieldMergeDiffPresentOnBothSides(String fullyQualifiedObjectPath, FieldDiff<F> caSourceFieldDiff, FieldDiff<F> caTargetFieldDiff) {
+    static <F> FieldMergeDiff<F> createFieldMergeDiffPresentOnBothSides(Path fullyQualifiedObjectPath, FieldDiff<F> caSourceFieldDiff, FieldDiff<F> caTargetFieldDiff) {
         log.debug('[{}] Processing field difference against common ancestor on both sides', caSourceFieldDiff.fieldName)
         createBaseFieldMergeDiffPresentOnOneSide(fullyQualifiedObjectPath, caSourceFieldDiff)
             .withTarget(caTargetFieldDiff.right)
@@ -374,7 +374,7 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
             .getValidOnly() // This is a safety check to handle when 2 diffs are used with modifications but no actual difference
     }
 
-    static <F> FieldMergeDiff<F> createFieldMergeDiffPresentOnOneSide(String fullyQualifiedObjectPath, FieldDiff<F> caSourceFieldDiff) {
+    static <F> FieldMergeDiff<F> createFieldMergeDiffPresentOnOneSide(Path fullyQualifiedObjectPath, FieldDiff<F> caSourceFieldDiff) {
         log.debug('[{}] Processing field difference against common ancestor on one side', caSourceFieldDiff.fieldName)
         createBaseFieldMergeDiffPresentOnOneSide(fullyQualifiedObjectPath, caSourceFieldDiff)
         // just use whats in the commonAncestor as no caTarget data denotes no difference between the CA and the target
@@ -382,7 +382,7 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
             .getValidOnly()
     }
 
-    static <F> FieldMergeDiff<F> createBaseFieldMergeDiffPresentOnOneSide(String fullyQualifiedObjectPath, FieldDiff<F> caSourceFieldDiff) {
+    static <F> FieldMergeDiff<F> createBaseFieldMergeDiffPresentOnOneSide(Path fullyQualifiedObjectPath, FieldDiff<F> caSourceFieldDiff) {
         fieldMergeDiff(caSourceFieldDiff.targetClass)
             .forFieldName(caSourceFieldDiff.fieldName)
             .insideFullyQualifiedObjectPath(fullyQualifiedObjectPath)
@@ -390,7 +390,7 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
             .withCommonAncestor(caSourceFieldDiff.left) // both diffs have the same LHS
     }
 
-    static <C extends Diffable> Collection<CreationMergeDiff<C>> createCreationMergeDiffsPresentOnOneSide(String fullyQualifiedObjectPath,
+    static <C extends Diffable> Collection<CreationMergeDiff<C>> createCreationMergeDiffsPresentOnOneSide(Path fullyQualifiedObjectPath,
                                                                                                           Collection<CreationDiff<C>> caSourceCreatedDiffs) {
         caSourceCreatedDiffs.collect {created ->
             creationMergeDiff(created.targetClass)
@@ -405,13 +405,13 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
      * Important to note that due to the way diff works the same object cannot exist in more than one of created, deleted, modified in an
      * ArrayDIff
      */
-    static <C extends Diffable> Collection<CreationMergeDiff> createCreationMergeDiffsPresentOnBothSides(String fullyQualifiedObjectPath,
+    static <C extends Diffable> Collection<CreationMergeDiff> createCreationMergeDiffsPresentOnBothSides(Path fullyQualifiedObjectPath,
                                                                                                          ArrayDiff<C> caSourceDiff,
                                                                                                          ArrayDiff<C> caTargetDiff) {
         Collection<CreationMergeDiff> modificationCreationMergeDiffs = caSourceDiff.modified.collect {caSourceModificationDiff ->
             DeletionDiff caTargetDeletionDiff = caTargetDiff.deleted.find {it.deletedIdentifier == caSourceModificationDiff.leftIdentifier}
             if (caTargetDeletionDiff) {
-                log.debug('[{}] ca/source modified exists in ca/target deleted.')
+                log.debug('[{}] ca/source modified exists in ca/target deleted.', caSourceModificationDiff.leftIdentifier)
                 return creationMergeDiff(caSourceModificationDiff.targetClass)
                     .whichCreated(caSourceModificationDiff.right)
                     .insideFullyQualifiedObjectPath(fullyQualifiedObjectPath)
@@ -446,7 +446,7 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
     }
 
 
-    static <D extends Diffable> Collection<DeletionMergeDiff<D>> createDeletionMergeDiffsPresentOnOneSide(String fullyQualifiedObjectPath,
+    static <D extends Diffable> Collection<DeletionMergeDiff<D>> createDeletionMergeDiffsPresentOnOneSide(Path fullyQualifiedObjectPath,
                                                                                                           Collection<DeletionDiff<D>> caSourceDeletionDiffs) {
         caSourceDeletionDiffs.collect {deleted ->
             deletionMergeDiff(deleted.targetClass)
@@ -462,7 +462,7 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
      * ArrayDIff
      *
      */
-    static <D extends Diffable> Collection<DeletionMergeDiff> createDeletionMergeDiffsPresentOnBothSides(String fullyQualifiedObjectPath,
+    static <D extends Diffable> Collection<DeletionMergeDiff> createDeletionMergeDiffsPresentOnBothSides(Path fullyQualifiedObjectPath,
                                                                                                          Collection<DeletionDiff<D>> caSourceDeletedDiffs,
                                                                                                          ArrayDiff<D> caTargetDiff) {
         caSourceDeletedDiffs.collect {diff ->
@@ -495,7 +495,7 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
         }.findAll()
     }
 
-    static <M extends Diffable> Collection<MergeDiff<M>> createModifiedMergeDiffsPresentOnOneSide(String fullyQualifiedObjectPath,
+    static <M extends Diffable> Collection<MergeDiff<M>> createModifiedMergeDiffsPresentOnOneSide(Path fullyQualifiedObjectPath,
                                                                                                   Collection<ObjectDiff<M>> caSourceModifiedDiffs) {
         // Modified diffs represent diffs which have modifications down the chain but no changes on the target side
         // Therefore we can use an empty object diff
@@ -511,7 +511,7 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
         }
     }
 
-    static <M extends Diffable> Collection<MergeDiff<M>> createModifiedMergeDiffsPresentOnBothSides(String fullyQualifiedObjectPath,
+    static <M extends Diffable> Collection<MergeDiff<M>> createModifiedMergeDiffsPresentOnBothSides(Path fullyQualifiedObjectPath,
                                                                                                     ArrayDiff<M> caSourceDiff,
                                                                                                     ArrayDiff<M> caTargetDiff) {
 

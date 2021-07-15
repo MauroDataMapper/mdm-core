@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional
 
+import uk.ac.ox.softeng.maurodatamapper.util.Path
 
 import groovy.transform.CompileStatic
 
@@ -34,7 +35,7 @@ class FieldMergeDiff<F> extends TriDirectionalDiff<F> implements Comparable<Fiel
         this
     }
 
-    FieldMergeDiff<F> insideFullyQualifiedObjectPath(String fullyQualifiedObjectPath) {
+    FieldMergeDiff<F> insideFullyQualifiedObjectPath(Path fullyQualifiedObjectPath) {
         super.insideFullyQualifiedObjectPath(fullyQualifiedObjectPath) as FieldMergeDiff<F>
     }
 
@@ -79,8 +80,8 @@ class FieldMergeDiff<F> extends TriDirectionalDiff<F> implements Comparable<Fiel
         1
     }
 
-    String getFullyQualifiedPath() {
-        "${fullyQualifiedObjectPath}:${fieldName}"
+    Path getFullyQualifiedPath() {
+        Path.from(fullyQualifiedObjectPath, null, fieldName)
     }
 
     boolean hasDiff() {
@@ -93,7 +94,7 @@ class FieldMergeDiff<F> extends TriDirectionalDiff<F> implements Comparable<Fiel
 
     @Override
     String toString() {
-        "${fieldName} :: ${source} <> ${target} :: ${commonAncestor}"
+        "${getFullyQualifiedPath()} :: ${source} <> ${target} :: ${commonAncestor}"
     }
 
     @Override

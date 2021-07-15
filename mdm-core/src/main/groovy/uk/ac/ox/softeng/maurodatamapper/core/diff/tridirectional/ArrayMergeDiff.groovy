@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
+import uk.ac.ox.softeng.maurodatamapper.util.Path
 
 import groovy.transform.CompileStatic
 
@@ -59,7 +60,7 @@ class ArrayMergeDiff<C extends Diffable> extends FieldMergeDiff<Collection<C>> {
         super.forFieldName(fieldName) as ArrayMergeDiff<C>
     }
 
-    ArrayMergeDiff<C> insideFullyQualifiedObjectPath(String fullyQualifiedObjectPath) {
+    ArrayMergeDiff<C> insideFullyQualifiedObjectPath(Path fullyQualifiedObjectPath) {
         super.insideFullyQualifiedObjectPath(fullyQualifiedObjectPath) as ArrayMergeDiff<C>
     }
 

@@ -65,14 +65,20 @@ class PathNode {
     }
 
     String toString() {
-        "${typePrefix}:${label}"
+        if (typePrefix && label) return "${typePrefix}:${label}"
+        if (typePrefix) return typePrefix
+        label
+    }
+
+    boolean matches(PathNode pathNode) {
+        matches(pathNode.typePrefix, pathNode.label)
     }
 
     boolean matches(CreatorAware creatorAware) {
-        matches(creatorAware.pathIdentifier, creatorAware.pathPrefix)
+        matches(creatorAware.pathPrefix, creatorAware.pathIdentifier)
     }
 
-    boolean matches(String pathIdentifier, String pathPrefix) {
+    boolean matches(String pathPrefix, String pathIdentifier) {
         matchesLabel(pathIdentifier) && matchesPrefix(pathPrefix)
     }
 
@@ -101,5 +107,9 @@ class PathNode {
             return false
         }
         true
+    }
+
+    PathNode clone() {
+        new PathNode(this.typePrefix, this.label)
     }
 }

@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.util.Path
 
 import groovy.transform.CompileStatic
 
@@ -48,9 +49,9 @@ class DeletionMergeDiff<D extends Diffable> extends TriDirectionalDiff<D> implem
         mergeModificationDiff != null
     }
 
-    String getFullyQualifiedPath() {
+    Path getFullyQualifiedPath() {
         String cleanedIdentifier = deletedIdentifier.split('/').last()
-        "${fullyQualifiedObjectPath}|${deleted.pathPrefix}:${cleanedIdentifier}"
+        Path.from(fullyQualifiedObjectPath, deleted.pathPrefix, cleanedIdentifier)
     }
 
     DeletionMergeDiff<D> whichDeleted(D object) {
@@ -59,7 +60,7 @@ class DeletionMergeDiff<D extends Diffable> extends TriDirectionalDiff<D> implem
     }
 
     @Override
-    DeletionMergeDiff<D> insideFullyQualifiedObjectPath(String fullyQualifiedObjectPath) {
+    DeletionMergeDiff<D> insideFullyQualifiedObjectPath(Path fullyQualifiedObjectPath) {
         super.insideFullyQualifiedObjectPath(fullyQualifiedObjectPath) as DeletionMergeDiff<D>
     }
 
@@ -93,7 +94,7 @@ class DeletionMergeDiff<D extends Diffable> extends TriDirectionalDiff<D> implem
 
     @Override
     String toString() {
-        String str = "Deleted :: ${deletedIdentifier}"
+        String str = "Deleted :: ${getFullyQualifiedPath()}"
         mergeModificationDiff ? "${str}\n    >> Modified :: ${mergeModificationDiff}" : str
     }
 

@@ -26,7 +26,7 @@ class PathInterceptor implements MdmInterceptor {
         if (actionName == 'listAllPrefixMappings') return true
 
         mapDomainTypeToClass('securableResource', true)
-        params.path = new Path(params.path)
+        params.path = Path.from(params.path)
 
         if (params.containsKey('securableResourceId')) {
             return currentUserSecurityPolicyManager.userCanReadSecuredResourceId(params.securableResourceClass, params.securableResourceId) ?:

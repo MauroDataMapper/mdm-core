@@ -35,8 +35,8 @@ class Path {
 
     List<PathNode> pathNodes
 
-    Path() {
-
+    private Path() {
+        pathNodes = []
     }
 
     /*
@@ -46,8 +46,8 @@ class Path {
      * @param path The path
      */
 
-    Path(String path) {
-        pathNodes = []
+    private Path(String path) {
+        this()
 
         if (path) {
             String[] splits = path.split(PATH_DELIMITER, MAX_NODES)
@@ -58,7 +58,7 @@ class Path {
         }
     }
 
-    int getSize() {
+    int size() {
         pathNodes.size()
     }
 
@@ -74,6 +74,21 @@ class Path {
         pathNodes.first()
     }
 
+    Path addToPathNodes(PathNode pathNode) {
+        pathNodes.add(pathNode)
+        this
+    }
+
+    Path addToPathNodes(String prefix, String pathIdentifier) {
+        addToPathNodes(new PathNode(prefix, pathIdentifier))
+    }
+
+    Path getParent() {
+        clone().tap {
+            pathNodes.removeLast()
+        }
+    }
+
     boolean isEmpty() {
         pathNodes.isEmpty()
     }
@@ -83,11 +98,26 @@ class Path {
     }
 
     Path getChildPath() {
-        new Path(pathNodes: pathNodes[1..size - 1])
+        new Path(pathNodes: pathNodes[1..size() - 1])
     }
 
     String toString() {
         pathNodes.join('|')
+    }
+
+    Path clone() {
+        Path local = this
+        new Path().tap {
+            pathNodes = local.pathNodes.collect {it.clone()}
+        }
+    }
+
+    boolean matches(Path otherPath) {
+        if (size() != otherPath.size()) return false
+        for (i in 0..<size()) {
+            if (!this[i].matches(otherPath[i])) return false
+        }
+        true
     }
 
     static Path from(String path) {
@@ -96,8 +126,16 @@ class Path {
 
     static Path from(String prefix, String pathIdentifier) {
         new Path().tap {
-            pathNodes = [new PathNode(prefix, pathIdentifier)]
+            addToPathNodes(prefix, pathIdentifier)
         }
+    }
+
+    static Path from(Path parentPath, String prefix, String pathIdentifier) {
+        parentPath ? parentPath.clone().addToPathNodes(prefix, pathIdentifier) : from(prefix, pathIdentifier)
+    }
+
+    static Path from(String parentPath, String prefix, String pathIdentifier) {
+        from(from(parentPath), prefix, pathIdentifier)
     }
 
     static Path from(CreatorAware... domains) {
