@@ -441,13 +441,13 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         '''{
   "sourceId": "${json-unit.matches:id}",
   "targetId": "${json-unit.matches:id}",
-  "path": "dm:Functional Test Model",
+  "path": "dm:Functional Test Model:source",
   "label": "Functional Test Model",
   "count": 11,
   "diffs": [
     {
       "fieldName": "branchName",
-      "path": "dm:Functional Test Model:branchName",
+      "path": "dm:Functional Test Model:source|branchName",
       "sourceValue": "source",
       "targetValue": "main",
       "commonAncestorValue": "main",
@@ -456,7 +456,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     },
     {
       "fieldName": "description",
-      "path": "dm:Functional Test Model:description",
+      "path": "dm:Functional Test Model:source|description",
       "sourceValue": "DescriptionLeft",
       "targetValue": "DescriptionRight",
       "commonAncestorValue": null,
@@ -464,32 +464,32 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
       "type": "modification"
     },
     {
-      "path": "dm:Functional Test Model|dc:addLeftOnly",
+      "path": "dm:Functional Test Model:source|dc:addLeftOnly",
       "isMergeConflict": false,
       "isSourceModificationAndTargetDeletion": false,
       "type": "creation"
     },
     {
-      "path": "dm:Functional Test Model|dc:modifyAndDelete",
+      "path": "dm:Functional Test Model:source|dc:modifyAndDelete",
       "isMergeConflict": true,
       "isSourceModificationAndTargetDeletion": true,
       "type": "creation"
     },
     {
-      "path": "dm:Functional Test Model|dc:deleteAndModify",
+      "path": "dm:Functional Test Model:source|dc:deleteAndModify",
       "isMergeConflict": true,
       "isSourceDeletionAndTargetModification": true,
       "type": "deletion"
     },
     {
-      "path": "dm:Functional Test Model|dc:deleteLeftOnly",
+      "path": "dm:Functional Test Model:source|dc:deleteLeftOnly",
       "isMergeConflict": false,
       "isSourceDeletionAndTargetModification": false,
       "type": "deletion"
     },
     {
       "fieldName": "description",
-      "path": "dm:Functional Test Model|dc:addAndAddReturningDifference:description",
+      "path": "dm:Functional Test Model:source|dc:addAndAddReturningDifference|description",
       "sourceValue": "DescriptionLeft",
       "targetValue": "DescriptionRight",
       "commonAncestorValue": null,
@@ -497,20 +497,20 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
       "type": "modification"
     },
     {
-      "path": "dm:Functional Test Model|dc:existingClass|dc:addLeftToExistingClass",
+      "path": "dm:Functional Test Model:source|dc:existingClass|dc:addLeftToExistingClass",
       "isMergeConflict": false,
       "isSourceModificationAndTargetDeletion": false,
       "type": "creation"
     },
     {
-      "path": "dm:Functional Test Model|dc:existingClass|dc:deleteLeftOnlyFromExistingClass",
+      "path": "dm:Functional Test Model:source|dc:existingClass|dc:deleteLeftOnlyFromExistingClass",
       "isMergeConflict": false,
       "isSourceDeletionAndTargetModification": false,
       "type": "deletion"
     },
     {
       "fieldName": "description",
-      "path": "dm:Functional Test Model|dc:modifyAndModifyReturningDifference:description",
+      "path": "dm:Functional Test Model:source|dc:modifyAndModifyReturningDifference|description",
       "sourceValue": "DescriptionLeft",
       "targetValue": "DescriptionRight",
       "commonAncestorValue": null,
@@ -519,7 +519,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     },
     {
       "fieldName": "description",
-      "path": "dm:Functional Test Model|dc:modifyLeftOnly:description",
+      "path": "dm:Functional Test Model:source|dc:modifyLeftOnly|description",
       "sourceValue": "Description",
       "targetValue": null,
       "commonAncestorValue": null,
