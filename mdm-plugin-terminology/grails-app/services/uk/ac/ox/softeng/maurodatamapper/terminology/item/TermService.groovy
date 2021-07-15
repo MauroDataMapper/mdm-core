@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.terminology.item
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
@@ -210,7 +211,7 @@ class TermService extends ModelItemService<Term> {
         Term.byTerminologyIdAndNotChild(terminologyId).list(pagination)
     }
 
-    Term copy(Model copiedModel, Term original, UserSecurityPolicyManager userSecurityPolicyManager) {
+    Term copy(Model copiedModel, Term original, CatalogueItem nonModelParent, UserSecurityPolicyManager userSecurityPolicyManager) {
         Term copy = copyTerm(original, userSecurityPolicyManager.user, userSecurityPolicyManager)
         if (copiedModel.instanceOf(Terminology)) {
             (copiedModel as Terminology).addToTerms(copy)

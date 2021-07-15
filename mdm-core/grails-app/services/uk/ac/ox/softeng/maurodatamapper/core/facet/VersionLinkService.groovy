@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.VersionLinkAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
@@ -68,6 +69,16 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
         service.removeVersionLinkFromModel(versionLink.multiFacetAwareItemId, versionLink)
 
         versionLink.delete(flush: flush)
+    }
+
+    @Override
+    VersionLink copy(VersionLink facetToCopy, MultiFacetAware multiFacetAwareItemToCopyInto) {
+        VersionLink copy = new VersionLink(linkType: facetToCopy.linkType,
+                                           targetModelDomainType: facetToCopy.targetModelDomainType,
+                                           targetModelId: facetToCopy.targetModelId,
+                                           createdBy: facetToCopy.createdBy)
+        (multiFacetAwareItemToCopyInto as Model).addToVersionLinks(copy)
+        copy
     }
 
     void deleteBySourceModelAndTargetModelAndLinkType(Model sourceModel, Model targetModel,

@@ -60,6 +60,16 @@ class RuleService implements MultiFacetItemAwareService<Rule> {
     }
 
     @Override
+    Rule copy(Rule facetToCopy, MultiFacetAware multiFacetAwareItemToCopyInto) {
+        Rule copy = new Rule(name: facetToCopy.name, description: facetToCopy.description, createdBy: facetToCopy.createdBy)
+        facetToCopy.ruleRepresentations.each {rr ->
+            copy.addToRuleRepresentations(language: rr.language, representation: rr.representation, createdBy: rr.createdBy)
+        }
+        multiFacetAwareItemToCopyInto.addToRules(copy)
+        copy
+    }
+
+    @Override
     void saveMultiFacetAwareItem(Rule facet) {
         if (!facet) return
         MultiFacetAwareService service = findServiceForMultiFacetAwareDomainType(facet.multiFacetAwareItemDomainType)

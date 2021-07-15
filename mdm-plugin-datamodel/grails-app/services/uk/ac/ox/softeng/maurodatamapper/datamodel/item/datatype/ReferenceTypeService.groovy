@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
@@ -37,6 +39,7 @@ import org.grails.datastore.mapping.model.PersistentEntity
 class ReferenceTypeService extends ModelItemService<ReferenceType> implements SummaryMetadataAwareService {
 
     SummaryMetadataService summaryMetadataService
+    DataTypeService dataTypeService
 
     @Override
     ReferenceType get(Serializable id) {
@@ -87,12 +90,17 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> implements Su
 
             log.trace('Removing {} ReferenceTypes', referenceTypeIds.size())
             sessionFactory.currentSession
-                .createSQLQuery('delete from datamodel.data_type where id in :ids')
+                .createSQLQuery('DELETE FROM datamodel.data_type WHERE id IN :ids')
                 .setParameter('ids', referenceTypeIds)
                 .executeUpdate()
 
             log.trace('ReferenceTypes removed')
         }
+    }
+
+    @Override
+    ReferenceType copy(Model copiedDataModel, ReferenceType original, CatalogueItem nonModelParent, UserSecurityPolicyManager userSecurityPolicyManager) {
+        dataTypeService.copy(copiedDataModel, original, nonModelParent, userSecurityPolicyManager) as ReferenceType
     }
 
     @Override

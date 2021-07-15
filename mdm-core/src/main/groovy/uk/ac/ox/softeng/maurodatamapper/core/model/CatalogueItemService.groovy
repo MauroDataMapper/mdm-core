@@ -127,11 +127,20 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
     }
 
     K copyCatalogueItemInformation(K original, K copy, User copier, UserSecurityPolicyManager userSecurityPolicyManager,
-                                   CopyInformation copyInformation = new CopyInformation()) {
-        copy = populateCopyData(original, copy, copier, copyInformation)
-        classifierService.findAllByCatalogueItemId(userSecurityPolicyManager, original.id).each { copy.addToClassifiers(it) }
-        metadataService.findAllByMultiFacetAwareItemId(original.id).each { copy.addToMetadata(it.namespace, it.key, it.value, copier.emailAddress) }
-        ruleService.findAllByMultiFacetAwareItemId(original.id).each { rule ->
+                                   CopyInformation copyInformation = null) {
+        copy.createdBy = copier.emailAddress
+        copy.description = original.description
+
+        // Allow copying with a new label
+        if (copyInformation && copyInformation.validate()) {
+            copy.label = copyInformation.copyLabel
+        } else {
+            copy.label = original.label
+        }
+
+        classifierService.findAllByCatalogueItemId(userSecurityPolicyManager, original.id).each {copy.addToClassifiers(it)}
+        metadataService.findAllByMultiFacetAwareItemId(original.id).each {copy.addToMetadata(it.namespace, it.key, it.value, copier.emailAddress)}
+        ruleService.findAllByMultiFacetAwareItemId(original.id).each {rule ->
             Rule copiedRule = new Rule(name: rule.name, description: rule.description, createdBy: copier.emailAddress)
             rule.ruleRepresentations.each { ruleRepresentation ->
                 copiedRule.addToRuleRepresentations(language: ruleRepresentation.language,
@@ -205,17 +214,5 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         fieldPatchData.modified.each { modifiedObjectPatchData ->
             metadataService.mergeMetadataIntoCatalogueItem(targetCatalogueItem, modifiedObjectPatchData)
         }
-    }
-
-    K populateCopyData(K original, K copy, User copier, CopyInformation copyInformation) {
-        copy.createdBy = copier.emailAddress
-        copy.description = original.description
-        if (copyInformation.validate()) {
-            copy.label = copyInformation.copyLabel
-        } else {
-            copy.label = original.label
-            log.debug('Creating Copy with original label as provided label is empty or Invalid')
-        }
-        return copy
     }
 }

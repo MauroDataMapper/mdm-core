@@ -27,7 +27,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareServi
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
 import uk.ac.ox.softeng.maurodatamapper.provider.MauroDataMapperService
-import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
@@ -66,8 +65,11 @@ class MetadataService implements MultiFacetItemAwareService<Metadata> {
         metadata.delete(flush: flush)
     }
 
-    void copy(MultiFacetAware target, Metadata item, UserSecurityPolicyManager userSecurityPolicyManager) {
-        target.addToMetadata(item.namespace, item.key, item.value, userSecurityPolicyManager.user.emailAddress)
+    @Override
+    Metadata copy(Metadata facetToCopy, MultiFacetAware multiFacetAwareItemToCopyInto) {
+        Metadata copy = new Metadata(namespace: facetToCopy.namespace, key: facetToCopy.key, value: facetToCopy.value, createdBy: facetToCopy.createdBy)
+        multiFacetAwareItemToCopyInto.addToMetadata(copy)
+        copy
     }
 
     @Override

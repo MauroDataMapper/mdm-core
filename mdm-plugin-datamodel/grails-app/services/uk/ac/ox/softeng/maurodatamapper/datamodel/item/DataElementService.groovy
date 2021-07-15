@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
@@ -322,13 +323,12 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     }
 
     //Put the dataClass lookup in this method for use when merging
-    DataElement copy(Model copiedDataModel, DataElement original, UserSecurityPolicyManager userSecurityPolicyManager) {
+    @Override
+    DataElement copy(Model copiedDataModel, DataElement original, CatalogueItem parentDataClass, UserSecurityPolicyManager userSecurityPolicyManager) {
         DataElement copy = copyDataElement(copiedDataModel as DataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
-        DataClass dataClass = copiedDataModel.getDataClasses()?.find { it.label == original.dataClass.label }
-        if (dataClass) {
-            dataClass.addToDataElements(copy)
+        if (parentDataClass) {
+            (parentDataClass as DataClass).addToDataElements(copy)
         }
-
         copy
     }
 

@@ -47,16 +47,18 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
         throw new ApiNotYetImplementedException('MIS01', "deleteAllByModelId for ${getModelItemClass().simpleName}")
     }
 
+    @Deprecated
     K copy(Model copiedModelInto, K original, UserSecurityPolicyManager userSecurityPolicyManager) {
-        throw new ApiNotYetImplementedException('MIS02', "copy [for ModelItem ${getModelItemClass().simpleName}]")
+        copy(copiedModelInto, original, null, userSecurityPolicyManager)
     }
 
-    K copy(Model copiedModelInto, K original, UserSecurityPolicyManager userSecurityPolicyManager, UUID parentId) {
+    @Deprecated
+    K copy(Model copiedModelInto, K original, UUID nonModelParentId, UserSecurityPolicyManager userSecurityPolicyManager) {
         throw new ApiNotYetImplementedException('MIS03', "copy [for ModelItem ${getModelItemClass().simpleName}] (with parent id)")
     }
 
-    K copy(Model copiedModelInto, K original, UserSecurityPolicyManager userSecurityPolicyManager, UUID parentId, CopyInformation copyInformation) {
-        throw new ApiNotYetImplementedException('MIS03', "copy [for ModelItem ${getModelItemClass().simpleName}] (with parent id), and relabel")
+    K copy(Model copiedModelInto, K original, CatalogueItem nonModelParent, UserSecurityPolicyManager userSecurityPolicyManager) {
+        throw new ApiNotYetImplementedException('MIS03', "copy [for ModelItem ${getModelItemClass().simpleName}]")
     }
 
     Model mergeObjectPatchDataIntoModelItem(ObjectPatchData objectPatchData, K targetModelItem, Model targetModel,

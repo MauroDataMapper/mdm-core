@@ -66,6 +66,14 @@ class ReferenceFileService implements CatalogueFileService<ReferenceFile>, Multi
     }
 
     @Override
+    ReferenceFile copy(ReferenceFile facetToCopy, MultiFacetAware multiFacetAwareItemToCopyInto) {
+        ReferenceFile copy = new ReferenceFile(fileContents: facetToCopy.fileContents, fileName: facetToCopy.fileName, fileSize: facetToCopy.fileSize,
+                                               fileType: facetToCopy.fileSize, createdBy: facetToCopy.createdBy)
+        multiFacetAwareItemToCopyInto.addToReferenceFiles(copy)
+        copy
+    }
+
+    @Override
     ReferenceFile createNewFile(String name, byte[] contents, String type, User user) {
         createNewFileBase(name, contents, type, user.emailAddress)
     }

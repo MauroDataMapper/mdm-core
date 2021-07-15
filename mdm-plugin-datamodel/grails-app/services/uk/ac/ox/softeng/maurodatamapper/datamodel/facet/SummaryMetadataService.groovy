@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.facet
 
+
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
@@ -72,6 +73,16 @@ class SummaryMetadataService implements MultiFacetItemAwareService<SummaryMetada
         SummaryMetadataAware domain = findMultiFacetAwareItemByDomainTypeAndId(domainType, domainId) as SummaryMetadataAware
         facet.multiFacetAwareItem = domain as MultiFacetAware
         domain.addToSummaryMetadata(facet)
+    }
+
+    @Override
+    SummaryMetadata copy(SummaryMetadata facetToCopy, MultiFacetAware multiFacetAwareItemToCopyInto) {
+        SummaryMetadata copy = new SummaryMetadata(summaryMetadataType: facetToCopy.summaryMetadataType, createdBy: facetToCopy.createdBy)
+        facetToCopy.summaryMetadataReports.each {smr ->
+            copy.addToSummaryMetadataReports(reportDate: smr.reportDate, reportValue: smr.reportValue)
+        }
+        (multiFacetAwareItemToCopyInto as SummaryMetadataAware).addToSummaryMetadata(copy)
+        copy
     }
 
     @Override

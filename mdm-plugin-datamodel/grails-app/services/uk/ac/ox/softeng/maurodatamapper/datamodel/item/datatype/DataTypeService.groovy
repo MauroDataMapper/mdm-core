@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
@@ -342,12 +343,13 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
             }
         } else {
             log.trace('Making best guess for matching reference class as no path nor bound class')
-            DataClass dataClass = dataModel.dataClasses.find { it.label == bindingMap.referenceClass.label }
+            DataClass dataClass = dataModel.dataClasses.find {it.label == bindingMap.referenceClass.label}
             if (dataClass) dataClass.addToReferenceTypes(referenceType)
         }
     }
 
-    DataType copy(Model copiedDataModel, DataType original, UserSecurityPolicyManager userSecurityPolicyManager) {
+    @Override
+    DataType copy(Model copiedDataModel, DataType original, CatalogueItem nonModelParent, UserSecurityPolicyManager userSecurityPolicyManager) {
         copyDataType(copiedDataModel as DataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
     }
 

@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -38,6 +40,7 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> implement
 
     EnumerationValueService enumerationValueService
     SummaryMetadataService summaryMetadataService
+    DataTypeService dataTypeService
 
     @Override
     EnumerationType get(Serializable id) {
@@ -70,6 +73,11 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> implement
 
     void delete(EnumerationType enumerationType, boolean flush) {
         enumerationType.delete(flush: flush)
+    }
+
+    @Override
+    EnumerationType copy(Model copiedDataModel, EnumerationType original, CatalogueItem nonModelParent, UserSecurityPolicyManager userSecurityPolicyManager) {
+        dataTypeService.copy(copiedDataModel, original, nonModelParent, userSecurityPolicyManager) as EnumerationType
     }
 
     @Override

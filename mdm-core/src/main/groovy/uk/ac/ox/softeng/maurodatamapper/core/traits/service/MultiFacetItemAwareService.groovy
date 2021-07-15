@@ -56,6 +56,8 @@ trait MultiFacetItemAwareService<M extends MultiFacetItemAware> extends DomainSe
 
     abstract void addFacetToDomain(M facet, String domainType, UUID domainId)
 
+    abstract M copy(M facetToCopy, MultiFacetAware multiFacetAwareItemToCopyInto)
+
     M addCreatedEditToMultiFacetAwareItem(User creator, M domain, String multiFacetAwareItemDomainType, UUID multiFacetAwareItemId) {
         EditHistoryAware multiFacetAwareItem =
             findMultiFacetAwareItemByDomainTypeAndId(multiFacetAwareItemDomainType, multiFacetAwareItemId) as EditHistoryAware

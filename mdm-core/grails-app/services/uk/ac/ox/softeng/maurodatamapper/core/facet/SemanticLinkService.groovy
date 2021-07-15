@@ -63,6 +63,16 @@ class SemanticLinkService implements MultiFacetItemAwareService<SemanticLink> {
             .get()
     }
 
+    @Override
+    SemanticLink copy(SemanticLink facetToCopy, MultiFacetAware multiFacetAwareItemToCopyInto) {
+        SemanticLink copy = new SemanticLink(linkType: facetToCopy.linkType,
+                                             targetMultiFacetAwareItemDomainType: facetToCopy.targetMultiFacetAwareItemDomainType,
+                                             targetMultiFacetAwareItemId: facetToCopy.targetMultiFacetAwareItemId,
+                                             createdBy: facetToCopy.createdBy)
+        multiFacetAwareItemToCopyInto.addToSemanticLinks(copy)
+        copy
+    }
+
     void delete(SemanticLink semanticLink, boolean flush = false) {
         if (!semanticLink) return
         MultiFacetAwareService service = findServiceForMultiFacetAwareDomainType(semanticLink.multiFacetAwareItemDomainType)
