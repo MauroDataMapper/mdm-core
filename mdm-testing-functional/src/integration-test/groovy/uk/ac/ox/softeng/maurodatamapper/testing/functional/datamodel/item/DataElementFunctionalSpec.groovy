@@ -33,6 +33,7 @@ import io.micronaut.http.HttpStatus
 /**
  * <pre>
  * Controller: dataElement
+ *  |  GET     | /api/dataModels/${dataModelId}/dataElements                                   | Action: index
  *  |  POST    | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/dataElements        | Action: save
  *  |  GET     | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/dataElements        | Action: index
  *  |  DELETE  | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/dataElements/${id}  | Action: delete
@@ -303,6 +304,39 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsFunction
         assert body.dataType.breadcrumbs[0].label == 'Simple Test DataModel'
         assert body.dataType.breadcrumbs[0].domainType == 'DataModel'
         assert body.dataType.breadcrumbs[0].finalised == false
+    }
+
+    void 'test getting all DataElements for a DataModel'() {
+        given:
+        String endpoint = "/api/dataModels/${getComplexDataModelId()}/dataElements"
+
+        when: 'not logged in'
+        def response = GET(endpoint, MAP_ARG, true)
+
+        then:
+        verifyResponse HttpStatus.NOT_FOUND, response
+
+        when: 'logged in as reader'
+        loginReader()
+        response = GET(endpoint, MAP_ARG, true)
+
+        then:
+        verifyResponse HttpStatus.OK, response
+        responseBody().count == 3
+        responseBody().items[0].domainType == 'DataElement'
+        responseBody().items[1].domainType == 'DataElement'
+        responseBody().items[2].domainType == 'DataElement'
+
+        when: 'logged in as writer'
+        loginEditor()
+        response = GET(endpoint, MAP_ARG, true)
+
+        then:
+        verifyResponse HttpStatus.OK, response
+        responseBody().count == 3
+        responseBody().items[0].domainType == 'DataElement'
+        responseBody().items[1].domainType == 'DataElement'
+        responseBody().items[2].domainType == 'DataElement'
     }
 
     /*
