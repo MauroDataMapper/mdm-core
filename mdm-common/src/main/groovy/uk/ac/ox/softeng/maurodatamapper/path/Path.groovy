@@ -89,6 +89,12 @@ class Path {
         }
     }
 
+    Path getRootIndependentPath() {
+        clone().tap {
+            first().label = null
+        }
+    }
+
     boolean isEmpty() {
         pathNodes.isEmpty()
     }
@@ -139,6 +145,12 @@ class Path {
     }
 
     static Path from(CreatorAware... domains) {
+        new Path().tap {
+            pathNodes = domains.collect {new PathNode(it.pathPrefix, it.pathIdentifier)}
+        }
+    }
+
+    static Path from(List<CreatorAware> domains) {
         new Path().tap {
             pathNodes = domains.collect {new PathNode(it.pathPrefix, it.pathIdentifier)}
         }

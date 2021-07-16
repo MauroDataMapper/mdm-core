@@ -65,7 +65,8 @@ class FieldPatchData<T> implements Validateable {
     }
 
     String toString() {
-        "Merge ${type} patch on ${path} :: Changing ${targetValue} to ${sourceValue}"
+        String base = "Merge ${type} patch on ${path}"
+        type == 'modification' ? "${base} :: Changing ${targetValue} to ${sourceValue}" : base
     }
 
     void setPath(String path) {
@@ -77,9 +78,7 @@ class FieldPatchData<T> implements Validateable {
     }
 
     Path getRootIndependentPath() {
-        this.path.clone().tap {
-            first().label = null
-        }
+        this.path.rootIndependentPath
     }
 
     static <P> FieldPatchData<P> from(FieldMergeDiff<P> fieldMergeDiff) {

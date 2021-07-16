@@ -66,8 +66,8 @@ class PathNode {
 
     String toString() {
         if (typePrefix && label) return "${typePrefix}:${label}"
-        if (typePrefix) return typePrefix
-        label
+        if (typePrefix) return "${typePrefix}:"
+        ":${label}"
     }
 
     boolean matches(PathNode pathNode) {

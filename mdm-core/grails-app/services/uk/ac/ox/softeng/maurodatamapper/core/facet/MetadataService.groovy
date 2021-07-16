@@ -236,7 +236,7 @@ class MetadataService implements MultiFacetItemAwareService<Metadata> {
 
     }
 
-    void mergeMetadataIntoCatalogueItem(CatalogueItem targetCatalogueItem, ObjectPatchData objectPatchData) {
+    void mergeLegacyMetadataIntoCatalogueItem(CatalogueItem targetCatalogueItem, ObjectPatchData objectPatchData) {
 
         if (!objectPatchData.hasPatches()) return
 
@@ -246,7 +246,7 @@ class MetadataService implements MultiFacetItemAwareService<Metadata> {
                       targetCatalogueItem.id)
         }
 
-        objectPatchData.getPatches().each {fieldPatchData ->
+        objectPatchData.getDiffsWithContent().each {fieldPatchData ->
             if (fieldPatchData.value) {
                 targetMetadata.setProperty(fieldPatchData.fieldName, fieldPatchData.value)
             } else {

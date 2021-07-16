@@ -207,11 +207,11 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         // copy additions from source to target object
         fieldPatchData.created.each {createdItemPatchData ->
             Metadata metadata = metadataService.get(createdItemPatchData.id)
-            metadataService.copy(targetCatalogueItem, metadata, userSecurityPolicyManager)
+            metadataService.copy(metadata, targetCatalogueItem)
         }
         // for modifications, recursively call this method
         fieldPatchData.modified.each { modifiedObjectPatchData ->
-            metadataService.mergeMetadataIntoCatalogueItem(targetCatalogueItem, modifiedObjectPatchData)
+            metadataService.mergeLegacyMetadataIntoCatalogueItem(targetCatalogueItem, modifiedObjectPatchData)
         }
     }
 }

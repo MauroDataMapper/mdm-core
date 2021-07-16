@@ -177,6 +177,11 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         throw new ApiNotYetImplementedException('MSXX', 'deleteModelAndContent')
     }
 
+    Set<DomainService> getDomainServices() {
+        domainServices.add(this)
+        domainServices
+    }
+
     K shallowValidate(K model) {
         log.debug('Shallow validating model')
         long st = System.currentTimeMillis()
@@ -490,6 +495,12 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         String fieldName = modificationPatch.fieldName
         log.debug('Modifying [{}] in [{}]', fieldName, modificationPatch.rootIndependentPath)
         domain."${fieldName}" = modificationPatch.sourceValue
+        DomainService domainService = getDomainServices().find {it.handles(domain.class)}
+        if (!domainService) throw new ApiInternalException('MSXX', "No domain service to handle modification of [${domain.domainType}]")
+
+        if (!domain.validate())
+            throw new ApiInvalidModelException('MS01', 'Modified domain is invalid', domain.errors, messageSource)
+        domainService.save(domain, flush: false, validate: false)
     }
 
     void processDeletionPatchOfModelItem(ModelItem modelItem) {

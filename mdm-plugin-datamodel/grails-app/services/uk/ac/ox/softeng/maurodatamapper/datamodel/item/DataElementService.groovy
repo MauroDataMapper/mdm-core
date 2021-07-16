@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
+import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -33,8 +34,10 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
@@ -55,6 +58,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     DataClassService dataClassService
     DataTypeService dataTypeService
     SummaryMetadataService summaryMetadataService
+    PathService pathService
 
     @Override
     DataElement get(Serializable id) {
@@ -82,7 +86,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
 
     @Override
     void deleteAll(Collection<DataElement> dataElements) {
-        dataElements.each { delete(it) }
+        dataElements.each {delete(it)}
     }
 
     void delete(UUID id) {
@@ -154,10 +158,10 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     DataElement checkFacetsAfterImportingCatalogueItem(DataElement catalogueItem) {
         super.checkFacetsAfterImportingCatalogueItem(catalogueItem)
         if (catalogueItem.summaryMetadata) {
-            catalogueItem.summaryMetadata.each { sm ->
+            catalogueItem.summaryMetadata.each {sm ->
                 sm.multiFacetAwareItemId = catalogueItem.id
                 sm.createdBy = sm.createdBy ?: catalogueItem.createdBy
-                sm.summaryMetadataReports.each { smr ->
+                sm.summaryMetadataReports.each {smr ->
                     smr.createdBy = catalogueItem.createdBy
                 }
             }
@@ -179,7 +183,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
 
     @Override
     List<DataElement> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        DataElement.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id) }
+        DataElement.byClassifierId(classifier.id).list().findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)}
     }
 
     @Override
@@ -213,13 +217,13 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     void matchUpDataTypes(DataModel dataModel, Collection<DataElement> dataElements) {
         if (dataElements) {
             log.debug("Matching up {} DataElements to a possible {} DataTypes", dataElements.size(), dataModel.dataTypes.size())
-            def grouped = dataElements.groupBy { it.dataType.label }.sort { a, b ->
+            def grouped = dataElements.groupBy {it.dataType.label}.sort {a, b ->
                 def res = a.value.size() <=> b.value.size()
                 if (res == 0) res = a.key <=> b.key
                 res
             }
             log.debug('Grouped {} DataElements by DataType label', grouped.size())
-            grouped.each { label, elements ->
+            grouped.each {label, elements ->
                 log.trace('Matching {} elements to DataType label {}', elements.size(), label)
                 DataType dataType = dataModel.findDataTypeByLabel(label)
 
@@ -230,7 +234,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
                     dataType.createdBy = dataElement.createdBy
                     dataModel.addToDataTypes(dataType)
                 }
-                elements.each { dataType.addToDataElements(it) }
+                elements.each {dataType.addToDataElements(it)}
             }
         }
     }
@@ -322,7 +326,31 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
         dataElement
     }
 
-    //Put the dataClass lookup in this method for use when merging
+    Path buildDataElementPath(DataElement dataElement) {
+        DataClass parent = dataElement.dataClass
+        List<DataClass> parents = []
+
+        while (parent) {
+            parents << parent
+            parent = parent.parentDataClass
+        }
+
+        List<CreatorAware> pathObjects = []
+        pathObjects << dataElement.model
+        pathObjects.addAll(parents.reverse())
+        pathObjects << dataElement
+        Path.from(pathObjects)
+    }
+
+    @Deprecated
+    @Override
+    DataElement copy(Model copiedModelInto, DataElement original, UserSecurityPolicyManager userSecurityPolicyManager) {
+        // The old code just searched for a label that matched which could result in the wrong DC being used, the path is better and more reliable
+        Path originalPath = buildDataElementPath(original)
+        DataClass parentToCopyInto = pathService.findResourceByPathFromRootResource(copiedModelInto, originalPath.rootIndependentPath.parent)
+        copy(copiedModelInto, original, parentToCopyInto, userSecurityPolicyManager)
+    }
+
     @Override
     DataElement copy(Model copiedDataModel, DataElement original, CatalogueItem parentDataClass, UserSecurityPolicyManager userSecurityPolicyManager) {
         DataElement copy = copyDataElement(copiedDataModel as DataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
@@ -434,10 +462,10 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
         List<SemanticLink> alreadyExistingLinks =
             semanticLinkService.findAllBySourceMultiFacetAwareItemIdInListAndTargetMultiFacetAwareItemIdInListAndLinkType(
                 dataElements*.id, fromDataElements*.id, SemanticLinkType.IS_FROM)
-        dataElements.each { de ->
-            fromDataElements.each { fde ->
+        dataElements.each {de ->
+            fromDataElements.each {fde ->
                 // If no link already exists then add a new one
-                if (!alreadyExistingLinks.any { it.multiFacetAwareItemId == de.id && it.targetMultiFacetAwareItemId == fde.id }) {
+                if (!alreadyExistingLinks.any {it.multiFacetAwareItemId == de.id && it.targetMultiFacetAwareItemId == fde.id}) {
                     setDataElementIsFromDataElement(de, fde, user)
                 }
             }
@@ -469,7 +497,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
      * @param label The label of the DataElement being sought
      */
     DataElement findDataElement(DataClass dataClass, String label) {
-        dataClass.dataElements.find { it.label == label.trim() }
+        dataClass.dataElements.find {it.label == label.trim()}
     }
 
     /**
