@@ -20,14 +20,17 @@ package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 
+import grails.gorm.transactions.Rollback
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import spock.lang.Shared
 
+import static io.micronaut.http.HttpStatus.FORBIDDEN
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.OK
 
+@Rollback
 @Integration
 @Slf4j
 class AuthorityFunctionalSpec extends FunctionalSpec {
@@ -51,23 +54,29 @@ class AuthorityFunctionalSpec extends FunctionalSpec {
     def cleanup() {
     }
 
+    //    •	authenticated users can read and list
+    //    •	no-one can edit
+
     void 'A01 : Test getting an authority while not logged in'() {
 
         when: 'making a get request'
         GET('/')
-        then: 'expect an ok response with the default authority'
-        verifyResponse OK, response
-        responseBody().count == 1
-        responseBody().items.any { it.label == label }
+        then: 'expect a not found response'
+        verifyResponse FORBIDDEN, response
 
         when: 'making a get request with an id, still not logged in'
         GET("/${getAuthorityId()}")
         then: 'expect a not found response'
-        verifyResponse NOT_FOUND, response
+        verifyResponse FORBIDDEN, response
 
         when: 'making a get request with an id that does not exist'
         GET("/${UUID.randomUUID()}")
         then: 'expect a not found response'
+        verifyResponse FORBIDDEN, response
+
+        when: 'The update action is called with valid data'
+        PUT("${getAuthorityId()}", [label: 'Test Updated Label'])
+        then: 'Expect a not found response'
         verifyResponse NOT_FOUND, response
 
     }
@@ -86,11 +95,17 @@ class AuthorityFunctionalSpec extends FunctionalSpec {
         when: 'making a get request with an id while authenticated'
         GET("/${getAuthorityId()}")
         then: 'expect a not found response'
-        verifyResponse NOT_FOUND, response
+        verifyResponse OK, response
+        responseBody().label == label
 
         when: 'making a get request with an id that does while authenticated'
         GET("/${UUID.randomUUID()}")
         then: 'expect a not found response'
+        verifyResponse NOT_FOUND, response
+
+        when: 'The update action is called with valid data'
+        PUT("${getAuthorityId()}", [label: 'Test Updated Label'])
+        then: 'Expect a not found response'
         verifyResponse NOT_FOUND, response
     }
 
@@ -103,18 +118,22 @@ class AuthorityFunctionalSpec extends FunctionalSpec {
         then: 'expect an ok response with the default authority'
         verifyResponse OK, response
         responseBody().count == 1
-        responseBody().items.any {it.label == label}
+        responseBody().items.any { it.label == label }
 
         when: 'making a get request with an id while Admin'
         GET("/${getAuthorityId()}")
         then: 'expect an ok response with the default authority'
         verifyResponse OK, response
-        responseBody().count == 1
-        responseBody().items.any {it.label == label}
+        responseBody().label == label
 
         when: 'making a get request with an id that does not exist as an Admin'
         GET("/${UUID.randomUUID()}")
         then: 'expect a not found response'
+        verifyResponse NOT_FOUND, response
+
+        when: 'The update action is called with valid data as an Admin'
+        PUT("${getAuthorityId()}", [label: 'Test Updated Label'])
+        then: 'Expect a not found response'
         verifyResponse NOT_FOUND, response
     }
 
@@ -131,14 +150,20 @@ class AuthorityFunctionalSpec extends FunctionalSpec {
 
         when: 'making a get request with an id while Editor'
         GET("/${getAuthorityId()}")
-        then: 'expect a not found response'
-        verifyResponse NOT_FOUND, response
+        then: 'expect an ok response with the default authority'
+        verifyResponse OK, response
+        responseBody().label == label
 
         when: 'making a get request with an id that does not exist as an Editor'
         GET("/${UUID.randomUUID()}")
         then: 'expect a not found response'
         verifyResponse NOT_FOUND, response
-   
+
+        when: 'The update action is called with valid data as an Editor'
+        PUT("${getAuthorityId()}", [label: 'Test Updated Label'])
+        then: 'Expect a not found response'
+        verifyResponse NOT_FOUND, response
+
     }
 
     void 'A05 : Test getting an authority as a reader'() {
@@ -154,12 +179,18 @@ class AuthorityFunctionalSpec extends FunctionalSpec {
 
         when: 'making a get request with an id while reader'
         GET("/${getAuthorityId()}")
-        then: 'expect a not found response'
-        verifyResponse NOT_FOUND, response
+        then: 'expect an ok response with the default authority'
+        verifyResponse OK, response
+        responseBody().label == label
 
         when: 'making a get request with an id that does not exist as a reader'
         GET("/${UUID.randomUUID()}")
         then: 'expect a not found response'
+        verifyResponse NOT_FOUND, response
+
+        when: 'The update action is called with valid dataas a reader'
+        PUT("${getAuthorityId()}", [label: 'Test Updated Label'])
+        then: 'Expect a not found response'
         verifyResponse NOT_FOUND, response
     }
 
@@ -167,8 +198,6 @@ class AuthorityFunctionalSpec extends FunctionalSpec {
     String getAuthorityId(String label = this.label) {
         def string = Authority.findByLabel(label).id.toString()
         return string
-
-
     }
 
 }

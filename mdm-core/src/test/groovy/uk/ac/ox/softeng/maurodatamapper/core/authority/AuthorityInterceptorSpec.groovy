@@ -17,31 +17,22 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.authority
 
-import uk.ac.ox.softeng.maurodatamapper.test.unit.interceptor.ResourceInterceptorUnitSpec
+import uk.ac.ox.softeng.maurodatamapper.test.unit.interceptor.SimpleInterceptorUnitSpec
 
 import grails.testing.web.interceptor.InterceptorUnitTest
-import io.micronaut.http.HttpStatus
+import spock.lang.Shared
 
-class AuthorityInterceptorSpec extends ResourceInterceptorUnitSpec implements InterceptorUnitTest<AuthorityInterceptor> {
+class AuthorityInterceptorSpec extends SimpleInterceptorUnitSpec implements InterceptorUnitTest<AuthorityInterceptor> {
 
     @Override
     String getControllerName() {
         'authority'
     }
 
-    @Override
-    boolean getNoAccessIndexAllowedState() {
-        true
-    }
-
-    @Override
-    HttpStatus getNoAccessIndexAllowedCode() {
-        HttpStatus.OK
-    }
-
-    @Override
-    HttpStatus getSaveAllowedCode() {
-        HttpStatus.FORBIDDEN
-    }
+    @Shared
+    List<String> actions = [
+        'index',
+        'show',
+    ]
 
 }

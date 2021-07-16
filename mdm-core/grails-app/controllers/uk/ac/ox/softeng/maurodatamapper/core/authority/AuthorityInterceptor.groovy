@@ -47,9 +47,8 @@ class AuthorityInterceptor extends SecurableResourceInterceptor {
             if (isShow() || isIndex()) {
                 return true
             }
-            return forbiddenDueToPermissions()
         }
-        // Otherwise not found
-        notFound(Authority, getId())
+        // Otherwise forbidden
+        return forbiddenDueToPermissions()
     }
 }

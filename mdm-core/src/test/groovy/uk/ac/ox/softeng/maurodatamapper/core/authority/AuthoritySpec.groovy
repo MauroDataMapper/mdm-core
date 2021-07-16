@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.authority
 
-
 import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
 
 import grails.testing.gorm.DomainUnitTest
