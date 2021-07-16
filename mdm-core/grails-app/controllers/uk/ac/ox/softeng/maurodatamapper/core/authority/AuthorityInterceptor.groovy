@@ -42,6 +42,14 @@ class AuthorityInterceptor extends SecurableResourceInterceptor {
 
     boolean before() {
         securableResourceChecks()
-        checkActionAuthorisationOnSecuredResource(Authority, getId(), true)
+        // If authenticated then allow show or index otherwise actions are forbidden
+        if (currentUserSecurityPolicyManager.isAuthenticated()) {
+            if (isShow() || isIndex()) {
+                return true
+            }
+            return forbiddenDueToPermissions()
+        }
+        // Otherwise not found
+        notFound(Authority, getId())
     }
 }

@@ -103,14 +103,14 @@ class AuthorityFunctionalSpec extends FunctionalSpec {
         then: 'expect an ok response with the default authority'
         verifyResponse OK, response
         responseBody().count == 1
-        responseBody().items.any { it.label == label }
+        responseBody().items.any {it.label == label}
 
-//        when: 'making a get request with an id while Admin'
-//        GET("/${getAuthorityId()}")
-//        then: 'expect an ok response with the default authority'
-//        verifyResponse OK, response
-//        responseBody().count == 1
-//        responseBody().items.any { it.label == label }
+        when: 'making a get request with an id while Admin'
+        GET("/${getAuthorityId()}")
+        then: 'expect an ok response with the default authority'
+        verifyResponse OK, response
+        responseBody().count == 1
+        responseBody().items.any {it.label == label}
 
         when: 'making a get request with an id that does not exist as an Admin'
         GET("/${UUID.randomUUID()}")
