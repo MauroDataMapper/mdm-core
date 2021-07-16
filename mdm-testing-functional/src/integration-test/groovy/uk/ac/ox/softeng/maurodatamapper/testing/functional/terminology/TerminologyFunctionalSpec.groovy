@@ -907,7 +907,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
   "leftId": "${json-unit.matches:id}",
   "rightId": "${json-unit.matches:id}",
   "label": "Complex Test Terminology",
-  "count": 111,
+  "count": 112,
   "diffs": [
     {
       "label": {
@@ -921,13 +921,24 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
           {
             "value": {
               "id": "${json-unit.matches:id}",
-              "label": "test annotation 2"
+              "label": "test annotation 1"
             }
           },
           {
             "value": {
               "id": "${json-unit.matches:id}",
-              "label": "test annotation 1"
+              "label": "test annotation 2"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "rule": {
+        "deleted": [
+          {
+            "value": {
+              "id": "${json-unit.matches:id}"
             }
           }
         ]
@@ -939,7 +950,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
           {
             "value": {
               "id": "${json-unit.matches:id}",
-              "label": "CTT9: Complex Test Term 9",
+              "label": "CTT53: Complex Test Term 53",
               "breadcrumbs": [
                 {
                   "id": "${json-unit.matches:id}",
@@ -953,7 +964,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
           {
             "value": {
               "id": "${json-unit.matches:id}",
-              "label": "CTT16: Complex Test Term 16",
+              "label": "CTT44: Complex Test Term 44",
               "breadcrumbs": [
                 {
                   "id": "${json-unit.matches:id}",
@@ -967,427 +978,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
           {
             "value": {
               "id": "${json-unit.matches:id}",
-              "label": "CTT57: Complex Test Term 57",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT92: Complex Test Term 92",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT14: Complex Test Term 14",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT25: Complex Test Term 25",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT46: Complex Test Term 46",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT38: Complex Test Term 38",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT24: Complex Test Term 24",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT11: Complex Test Term 11",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT15: Complex Test Term 15",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT61: Complex Test Term 61",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT88: Complex Test Term 88",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT71: Complex Test Term 71",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT6: Complex Test Term 6",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT78: Complex Test Term 78",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT13: Complex Test Term 13",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT42: Complex Test Term 42",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT50: Complex Test Term 50",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT19: Complex Test Term 19",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT39: Complex Test Term 39",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT91: Complex Test Term 91",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT48: Complex Test Term 48",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT89: Complex Test Term 89",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT83: Complex Test Term 83",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT73: Complex Test Term 73",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT49: Complex Test Term 49",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT33: Complex Test Term 33",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT80: Complex Test Term 80",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT87: Complex Test Term 87",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT75: Complex Test Term 75",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT32: Complex Test Term 32",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT20: Complex Test Term 20",
+              "label": "CTT70: Complex Test Term 70",
               "breadcrumbs": [
                 {
                   "id": "${json-unit.matches:id}",
@@ -1415,7 +1006,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
           {
             "value": {
               "id": "${json-unit.matches:id}",
-              "label": "CTT69: Complex Test Term 69",
+              "label": "CTT88: Complex Test Term 88",
               "breadcrumbs": [
                 {
                   "id": "${json-unit.matches:id}",
@@ -1429,7 +1020,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
           {
             "value": {
               "id": "${json-unit.matches:id}",
-              "label": "CTT63: Complex Test Term 63",
+              "label": "CTT20: Complex Test Term 20",
               "breadcrumbs": [
                 {
                   "id": "${json-unit.matches:id}",
@@ -1443,7 +1034,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
           {
             "value": {
               "id": "${json-unit.matches:id}",
-              "label": "CTT53: Complex Test Term 53",
+              "label": "CTT42: Complex Test Term 42",
               "breadcrumbs": [
                 {
                   "id": "${json-unit.matches:id}",
@@ -1457,651 +1048,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
           {
             "value": {
               "id": "${json-unit.matches:id}",
-              "label": "CTT77: Complex Test Term 77",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT1: Complex Test Term 1",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT100: Complex Test Term 100",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT54: Complex Test Term 54",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT65: Complex Test Term 65",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT28: Complex Test Term 28",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT74: Complex Test Term 74",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT82: Complex Test Term 82",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT22: Complex Test Term 22",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT4: Complex Test Term 4",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT51: Complex Test Term 51",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT67: Complex Test Term 67",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT84: Complex Test Term 84",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT5: Complex Test Term 5",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT36: Complex Test Term 36",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT95: Complex Test Term 95",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT31: Complex Test Term 31",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT00: Complex Test Term 00",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT30: Complex Test Term 30",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT18: Complex Test Term 18",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT68: Complex Test Term 68",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT29: Complex Test Term 29",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT10: Complex Test Term 10",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT60: Complex Test Term 60",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT94: Complex Test Term 94",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT45: Complex Test Term 45",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT76: Complex Test Term 76",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT8: Complex Test Term 8",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT79: Complex Test Term 79",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT64: Complex Test Term 64",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT96: Complex Test Term 96",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT23: Complex Test Term 23",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT43: Complex Test Term 43",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT98: Complex Test Term 98",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT26: Complex Test Term 26",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT35: Complex Test Term 35",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT34: Complex Test Term 34",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT27: Complex Test Term 27",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT7: Complex Test Term 7",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT85: Complex Test Term 85",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT86: Complex Test Term 86",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT41: Complex Test Term 41",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT40: Complex Test Term 40",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT58: Complex Test Term 58",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT52: Complex Test Term 52",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT59: Complex Test Term 59",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test Terminology",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "CTT62: Complex Test Term 62",
+              "label": "CTT91: Complex Test Term 91",
               "breadcrumbs": [
                 {
                   "id": "${json-unit.matches:id}",
@@ -2129,7 +1076,567 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
           {
             "value": {
               "id": "${json-unit.matches:id}",
-              "label": "CTT37: Complex Test Term 37",
+              "label": "CTT1: Complex Test Term 1",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT31: Complex Test Term 31",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT39: Complex Test Term 39",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT22: Complex Test Term 22",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT41: Complex Test Term 41",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT49: Complex Test Term 49",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT63: Complex Test Term 63",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT100: Complex Test Term 100",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT13: Complex Test Term 13",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT50: Complex Test Term 50",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT92: Complex Test Term 92",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT101",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT58: Complex Test Term 58",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT61: Complex Test Term 61",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT54: Complex Test Term 54",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT48: Complex Test Term 48",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT56: Complex Test Term 56",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT21: Complex Test Term 21",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT30: Complex Test Term 30",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT25: Complex Test Term 25",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT74: Complex Test Term 74",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT11: Complex Test Term 11",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT73: Complex Test Term 73",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT99: Complex Test Term 99",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT62: Complex Test Term 62",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT19: Complex Test Term 19",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT51: Complex Test Term 51",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT83: Complex Test Term 83",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT47: Complex Test Term 47",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT36: Complex Test Term 36",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT29: Complex Test Term 29",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT86: Complex Test Term 86",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT16: Complex Test Term 16",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT90: Complex Test Term 90",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT67: Complex Test Term 67",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT60: Complex Test Term 60",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT3: Complex Test Term 3",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT23: Complex Test Term 23",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT40: Complex Test Term 40",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT78: Complex Test Term 78",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT38: Complex Test Term 38",
               "breadcrumbs": [
                 {
                   "id": "${json-unit.matches:id}",
@@ -2171,6 +1678,202 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
           {
             "value": {
               "id": "${json-unit.matches:id}",
+              "label": "CTT66: Complex Test Term 66",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT27: Complex Test Term 27",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT14: Complex Test Term 14",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT18: Complex Test Term 18",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT95: Complex Test Term 95",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT28: Complex Test Term 28",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT80: Complex Test Term 80",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT59: Complex Test Term 59",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT94: Complex Test Term 94",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT26: Complex Test Term 26",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT15: Complex Test Term 15",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT24: Complex Test Term 24",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT65: Complex Test Term 65",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT43: Complex Test Term 43",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
               "label": "CTT72: Complex Test Term 72",
               "breadcrumbs": [
                 {
@@ -2185,7 +1888,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
           {
             "value": {
               "id": "${json-unit.matches:id}",
-              "label": "CTT90: Complex Test Term 90",
+              "label": "CTT46: Complex Test Term 46",
               "breadcrumbs": [
                 {
                   "id": "${json-unit.matches:id}",
@@ -2199,7 +1902,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
           {
             "value": {
               "id": "${json-unit.matches:id}",
-              "label": "CTT3: Complex Test Term 3",
+              "label": "CTT64: Complex Test Term 64",
               "breadcrumbs": [
                 {
                   "id": "${json-unit.matches:id}",
@@ -2213,7 +1916,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
           {
             "value": {
               "id": "${json-unit.matches:id}",
-              "label": "CTT56: Complex Test Term 56",
+              "label": "CTT85: Complex Test Term 85",
               "breadcrumbs": [
                 {
                   "id": "${json-unit.matches:id}",
@@ -2227,7 +1930,35 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
           {
             "value": {
               "id": "${json-unit.matches:id}",
-              "label": "CTT47: Complex Test Term 47",
+              "label": "CTT96: Complex Test Term 96",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT33: Complex Test Term 33",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT10: Complex Test Term 10",
               "breadcrumbs": [
                 {
                   "id": "${json-unit.matches:id}",
@@ -2269,7 +2000,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
           {
             "value": {
               "id": "${json-unit.matches:id}",
-              "label": "CTT66: Complex Test Term 66",
+              "label": "CTT98: Complex Test Term 98",
               "breadcrumbs": [
                 {
                   "id": "${json-unit.matches:id}",
@@ -2283,7 +2014,259 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
           {
             "value": {
               "id": "${json-unit.matches:id}",
-              "label": "CTT44: Complex Test Term 44",
+              "label": "CTT68: Complex Test Term 68",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT82: Complex Test Term 82",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT00: Complex Test Term 00",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT5: Complex Test Term 5",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT75: Complex Test Term 75",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT71: Complex Test Term 71",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT7: Complex Test Term 7",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT35: Complex Test Term 35",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT37: Complex Test Term 37",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT32: Complex Test Term 32",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT8: Complex Test Term 8",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT4: Complex Test Term 4",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT34: Complex Test Term 34",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT57: Complex Test Term 57",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT76: Complex Test Term 76",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT6: Complex Test Term 6",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT77: Complex Test Term 77",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT52: Complex Test Term 52",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT45: Complex Test Term 45",
               "breadcrumbs": [
                 {
                   "id": "${json-unit.matches:id}",
@@ -2311,7 +2294,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
           {
             "value": {
               "id": "${json-unit.matches:id}",
-              "label": "CTT99: Complex Test Term 99",
+              "label": "CTT87: Complex Test Term 87",
               "breadcrumbs": [
                 {
                   "id": "${json-unit.matches:id}",
@@ -2325,7 +2308,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
           {
             "value": {
               "id": "${json-unit.matches:id}",
-              "label": "CTT21: Complex Test Term 21",
+              "label": "CTT9: Complex Test Term 9",
               "breadcrumbs": [
                 {
                   "id": "${json-unit.matches:id}",
@@ -2339,7 +2322,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
           {
             "value": {
               "id": "${json-unit.matches:id}",
-              "label": "CTT70: Complex Test Term 70",
+              "label": "CTT79: Complex Test Term 79",
               "breadcrumbs": [
                 {
                   "id": "${json-unit.matches:id}",
@@ -2353,7 +2336,35 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
           {
             "value": {
               "id": "${json-unit.matches:id}",
-              "label": "CTT101",
+              "label": "CTT89: Complex Test Term 89",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT84: Complex Test Term 84",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "CTT69: Complex Test Term 69",
               "breadcrumbs": [
                 {
                   "id": "${json-unit.matches:id}",
@@ -2369,7 +2380,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
           {
             "value": {
               "id": "${json-unit.matches:id}",
-              "label": "STT01: Simple Test Term 01",
+              "label": "STT02: Simple Test Term 02",
               "breadcrumbs": [
                 {
                   "id": "${json-unit.matches:id}",
@@ -2383,7 +2394,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
           {
             "value": {
               "id": "${json-unit.matches:id}",
-              "label": "STT02: Simple Test Term 02",
+              "label": "STT01: Simple Test Term 01",
               "breadcrumbs": [
                 {
                   "id": "${json-unit.matches:id}",
@@ -2417,7 +2428,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
           {
             "value": {
               "id": "${json-unit.matches:id}",
-              "label": "is-a-part-of",
+              "label": "is-a",
               "breadcrumbs": [
                 {
                   "id": "${json-unit.matches:id}",
@@ -2445,7 +2456,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
           {
             "value": {
               "id": "${json-unit.matches:id}",
-              "label": "is-a",
+              "label": "is-a-part-of",
               "breadcrumbs": [
                 {
                   "id": "${json-unit.matches:id}",
