@@ -30,7 +30,11 @@ import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
+import org.hibernate.annotations.NotFound
 import spock.lang.Unroll
+
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getFUNCTIONAL_TEST
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getFUNCTIONAL_TEST
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.FORBIDDEN
@@ -452,8 +456,8 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
         then:
         response.status() == OK
         responseBody().extendsDataClasses.size() == 2
-        responseBody().extendsDataClasses.any {it.id == externalExtendableId && it.model == finalisedDataModelId.toString()}
-        responseBody().extendsDataClasses.any {it.id == internalExtendableId && it.model == complexDataModelId.toString()}
+        responseBody().extendsDataClasses.any { it.id == externalExtendableId && it.model == finalisedDataModelId.toString() }
+        responseBody().extendsDataClasses.any { it.id == internalExtendableId && it.model == complexDataModelId.toString() }
 
         cleanup:
         removeValidIdObject(id)
@@ -557,7 +561,7 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
         then:
         verifyResponse OK, response
         responseBody().items.size() == 1
-        responseBody().items.any {it.id == data.internalId && !it.imported}
+        responseBody().items.any { it.id == data.internalId && !it.imported }
 
         cleanup:
         cleanupImportData(data)
@@ -615,9 +619,9 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
         then:
         verifyResponse OK, response
         responseBody().items.size() == 3
-        responseBody().items.any {it.id == data.internalId && !it.imported}
-        responseBody().items.any {it.id == data.sameModelImportableId && it.imported}
-        responseBody().items.any {it.id == data.importableId && it.imported}
+        responseBody().items.any { it.id == data.internalId && !it.imported }
+        responseBody().items.any { it.id == data.sameModelImportableId && it.imported }
+        responseBody().items.any { it.id == data.importableId && it.imported }
 
         cleanup:
         cleanupImportData(data)
@@ -698,8 +702,8 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
         then:
         verifyResponse OK, response
         responseBody().items.size() == 2
-        responseBody().items.any {it.id == data.internalId}
-        responseBody().items.any {it.id == data.importableId && it.imported}
+        responseBody().items.any { it.id == data.internalId }
+        responseBody().items.any { it.id == data.importableId && it.imported }
 
         cleanup:
         cleanupImportData(data)
@@ -742,7 +746,7 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
         then:
         verifyResponse OK, response
         responseBody().items.size() == 1
-        responseBody().items.any {it.id == data.internalId}
+        responseBody().items.any { it.id == data.internalId }
 
         cleanup:
         cleanupImportData(data)
@@ -849,7 +853,7 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
         then:
         verifyResponse OK, response
         responseBody().items.size() == 1
-        responseBody().items.any {it.id == data.internalId && !it.imported}
+        responseBody().items.any { it.id == data.internalId && !it.imported }
 
         cleanup:
         cleanupImportData(data)
@@ -907,9 +911,9 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
         then:
         verifyResponse OK, response
         responseBody().items.size() == 3
-        responseBody().items.any {it.id == data.internalId && !it.imported}
-        responseBody().items.any {it.id == data.sameModelImportableId && it.imported}
-        responseBody().items.any {it.id == data.importableId && it.imported}
+        responseBody().items.any { it.id == data.internalId && !it.imported }
+        responseBody().items.any { it.id == data.sameModelImportableId && it.imported }
+        responseBody().items.any { it.id == data.importableId && it.imported }
 
         cleanup:
         cleanupImportData(data)
@@ -990,8 +994,8 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
         then:
         verifyResponse OK, response
         responseBody().items.size() == 2
-        responseBody().items.any {it.id == data.internalId}
-        responseBody().items.any {it.id == data.importableId && it.imported}
+        responseBody().items.any { it.id == data.internalId }
+        responseBody().items.any { it.id == data.importableId && it.imported }
 
         cleanup:
         cleanupImportData(data)
@@ -1037,7 +1041,7 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
         then:
         verifyResponse OK, response
         responseBody().items.size() == 1
-        responseBody().items.any {it.id == data.internalId}
+        responseBody().items.any { it.id == data.internalId }
 
 
         cleanup:
@@ -1136,6 +1140,131 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
         } else {
             removeValidIdObject(data.sameModelImportableId)
         }
+    }
+
+    void 'DM01 testing getting dataClass content using the dataModel id and the dataClass id'() {
+        when: 'calling the endpoint with a dataModelID and a dataClassID while not logged in'
+        GET("dataModels/${getFinalisedDataModelId()}/dataClasses/${getFinalisedDataClassId()}/content", MAP_ARG, true)
+
+        then: 'Expect to be rejected'
+        verifyResponse(NOT_FOUND, response)
+
+        when: 'calling the endpoint with '
+        loginAuthenticated()
+        GET("dataModels/${getFinalisedDataModelId()}/dataClasses/${getFinalisedDataClassId()}/content", MAP_ARG, true)
+
+        then: 'expect not found'
+        verifyResponse(NOT_FOUND, response)
+
+        when: 'calling the endpoint with a random uuid'
+        loginEditor()
+        GET("dataModels/${UUID.randomUUID()}/dataClasses/${UUID.randomUUID()}/content", MAP_ARG, true)
+
+        then: 'expect not found'
+        verifyResponse(NOT_FOUND, response)
+
+    }
+
+    void 'DM01A testing getting dataClass as an admin'() {
+        when: 'calling the endpoint with '
+        loginAdmin()
+        GET("dataModels/${getFinalisedDataModelId()}/dataClasses/${getFinalisedDataClassId()}/content", MAP_ARG, true)
+
+        then: 'expect not found'
+        verifyResponse(OK, response)
+        assert responseBody().count == 2
+        assert responseBody().items.any { it.label == 'Finalised Data Element' }
+        assert responseBody().items.any { it.label == 'Another DataElement' }
+    }
+
+    void 'DM01B testing getting dataClass as an Editor'() {
+
+        when: 'calling the endpoint with a dataModelID and a dataClassID as an editor'
+        loginEditor()
+        GET("dataModels/${getFinalisedDataModelId()}/dataClasses/${getFinalisedDataClassId()}/content", MAP_ARG, true)
+
+        then: 'Expect the ok response containing the content of that dataClass'
+        verifyResponse(OK, response)
+        assert responseBody().count == 2
+        assert responseBody().items.any { it.label == 'Finalised Data Element' }
+        assert responseBody().items.any { it.label == 'Another DataElement' }
+    }
+
+    void 'DM01C testing getting dataClass as an Reader'() {
+        when: 'calling the endpoint with'
+        loginReader()
+        GET("dataModels/${getFinalisedDataModelId()}/dataClasses/${getFinalisedDataClassId()}/content", MAP_ARG, true)
+
+        then: 'expect not found'
+        verifyResponse(OK, response)
+        assert responseBody().items.any { it.label == 'Finalised Data Element' }
+        assert responseBody().items.any { it.label == 'Another DataElement' }
+    }
+
+    void 'DM02 testing getting dataClasses by the DataModelId'() {
+        when: 'calling the endpoint with a dataModelID while not logged in'
+        GET("dataModels/${getComplexDataModelId()}/allDataClasses", MAP_ARG, true)
+
+        then: 'Expect to be rejected'
+        verifyResponse(NOT_FOUND, response)
+
+        when: 'calling the endpoint with a dataModelID while Authenticated'
+        loginAuthenticated()
+        GET("dataModels/${getComplexDataModelId()}/allDataClasses", MAP_ARG, true)
+
+        then: 'Expect to be rejected'
+        verifyResponse(NOT_FOUND, response)
+
+        when: 'calling the endpoint with a dataModelID and a dataClassID with random uuid'
+        loginEditor()
+        GET("dataModels/${UUID.randomUUID()}/allDataClasses", MAP_ARG, true)
+
+        then: 'expect not found'
+        verifyResponse(NOT_FOUND, response)
+    }
+
+
+    void 'DM02A testing getting dataClasses by the DataModelId as an admin'() {
+        when: 'calling the endpoint with '
+        loginAdmin()
+        GET("dataModels/${getComplexDataModelId()}/allDataClasses", MAP_ARG, true)
+
+        then: 'check that the response is ok and includes the expected dataclasses for the provided dataModelID'
+        verifyResponse(OK, response)
+        assert responseBody().count == 4
+        assert responseBody().items.any { it.label == 'child' }
+        assert responseBody().items.any { it.label == 'emptyclass' }
+        assert responseBody().items.any { it.label == 'parent' }
+        assert responseBody().items.any { it.label == 'content' }
+    }
+
+    void 'DM02B testing getting dataClasses by the DataModelId as an Editor'() {
+
+        when: 'calling the endpoint with a dataModelID and a dataClassID'
+        loginEditor()
+        GET("dataModels/${getComplexDataModelId()}/allDataClasses", MAP_ARG, true)
+
+        then: 'check that the response is ok and includes the expected dataclasses for the provided dataModelID'
+        verifyResponse(OK, response)
+        assert responseBody().count == 4
+        assert responseBody().items.any { it.label == 'child' }
+        assert responseBody().items.any { it.label == 'emptyclass' }
+        assert responseBody().items.any { it.label == 'parent' }
+        assert responseBody().items.any { it.label == 'content' }
+    }
+
+    void 'DM02C testing getting dataClasses by the DataModelId as an Reader'() {
+        when: 'calling the endpoint with'
+        loginReader()
+        GET("dataModels/${getComplexDataModelId()}/allDataClasses", MAP_ARG, true)
+
+        then: 'check that the response is ok and includes the expected dataclasses for the provided dataModelID'
+        verifyResponse(OK, response)
+        assert responseBody().count == 4
+        assert responseBody().items.any { it.label == 'child' }
+        assert responseBody().items.any { it.label == 'emptyclass' }
+        assert responseBody().items.any { it.label == 'parent' }
+        assert responseBody().items.any { it.label == 'content' }
     }
 
 
@@ -1261,9 +1390,7 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
   ]
 }'''
     }
-
-    void 'Test getting all content of a DataClass'() {
-        when: 'not logged in'
+en: 'not logged in'
         def response = restGet("${DataClass.findByDataModelAndLabel(testDataModel, 'parent').id}/content")
 
         then:
