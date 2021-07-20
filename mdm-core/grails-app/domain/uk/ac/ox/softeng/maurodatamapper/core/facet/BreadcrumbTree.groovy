@@ -37,7 +37,6 @@ class BreadcrumbTree {
     String domainType
     String label
     Boolean finalised
-    Breadcrumb breadcrumb
     Boolean topBreadcrumbTree
     CatalogueItem domainEntity
 
@@ -115,8 +114,11 @@ class BreadcrumbTree {
             markDirty('label', domainEntity.label, getOriginalValue('label'))
         }
         checkTree()
-        children?.each {
-            it.beforeValidate()
+        // After checking the tree, if its changed (or we havent been saved before) then we will need to update all the children
+        if (!id || isDirty('treeString')) {
+            children?.each {
+                it.beforeValidate()
+            }
         }
     }
 
