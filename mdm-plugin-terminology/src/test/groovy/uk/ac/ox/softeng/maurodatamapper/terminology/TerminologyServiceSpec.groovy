@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.terminology
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
@@ -50,6 +51,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
         mockArtefact(BreadcrumbTreeService)
         mockArtefact(TermRelationshipService)
         mockArtefact(TermRelationshipTypeService)
+        mockArtefact(PathService)
         mockDomains(Terminology, Term, TermRelationship, TermRelationshipType)
 
         service.breadcrumbTreeService = Stub(BreadcrumbTreeService) {

@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
@@ -50,6 +51,7 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
         mockArtefact(ReferenceDataElementService)
         mockArtefact(ReferenceDataTypeService)
         mockArtefact(ReferenceSummaryMetadataService)
+        mockArtefact(PathService)
         mockDomains(ReferenceDataModel, ReferenceDataType, ReferencePrimitiveType,
                     ReferenceEnumerationType, ReferenceEnumerationValue, ReferenceDataElement)
 

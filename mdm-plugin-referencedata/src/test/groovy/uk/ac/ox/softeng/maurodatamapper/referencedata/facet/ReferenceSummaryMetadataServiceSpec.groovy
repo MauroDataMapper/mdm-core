@@ -32,6 +32,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
+import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata.ReferenceSummaryMetadataReport
@@ -55,6 +56,7 @@ class ReferenceSummaryMetadataServiceSpec extends MultiFacetItemAwareServiceSpec
         mockArtefact(SemanticLinkService)
         mockArtefact(EditService)
         mockArtefact(MetadataService)
+        mockArtefact(PathService)
         mockArtefact(ReferenceDataTypeService)
         mockDomains(Folder, ReferenceDataModel, Edit, ReferenceSummaryMetadata, ReferenceSummaryMetadataReport, Authority, Metadata, VersionLink, SemanticLink, Classifier)
         mockArtefact(ReferenceDataModelService)
