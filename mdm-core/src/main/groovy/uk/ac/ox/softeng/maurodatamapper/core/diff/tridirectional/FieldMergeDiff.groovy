@@ -81,7 +81,7 @@ class FieldMergeDiff<F> extends TriDirectionalDiff<F> implements Comparable<Fiel
     }
 
     Path getFullyQualifiedPath() {
-        Path.from(fullyQualifiedObjectPath, null, fieldName)
+        Path.forAttributeOnPath(fullyQualifiedObjectPath, fieldName)
     }
 
     boolean hasDiff() {

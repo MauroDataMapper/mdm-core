@@ -1218,13 +1218,13 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         verifyResponse OK, response
 
         //to modify
-        GET("terminologies/$sourceTerminology/path/te%3A%7Ctm%3AMLO:%20modifyLeftOnly", MAP_ARG, true)
+        GET("terminologies/$sourceTerminology/path/tm%3AMLO:%20modifyLeftOnly", MAP_ARG, true)
         verifyResponse OK, response
         String sourceModifyLeftOnly = responseBody().id
-        GET("terminologies/$sourceTerminology/path/te%3A%7Ctm%3AMAD:%20modifyAndDelete", MAP_ARG, true)
+        GET("terminologies/$sourceTerminology/path/tm%3AMAD:%20modifyAndDelete", MAP_ARG, true)
         verifyResponse OK, response
         String sourceModifyAndDelete = responseBody().id
-        GET("terminologies/$sourceTerminology/path/te%3A%7Ctm%3AMAMRD:%20modifyAndModifyReturningDifference", MAP_ARG, true)
+        GET("terminologies/$sourceTerminology/path/tm%3AMAMRD:%20modifyAndModifyReturningDifference", MAP_ARG, true)
         verifyResponse OK, response
         String sourceModifyAndModifyReturningDifference = responseBody().id
 
@@ -1259,17 +1259,17 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         verifyResponse OK, response
 
 
-        GET("terminologies/$targetTerminology/path/te%3A%7Ctm%3ADAM:%20deleteAndModify", MAP_ARG, true)
+        GET("terminologies/$targetTerminology/path/tm%3ADAM:%20deleteAndModify", MAP_ARG, true)
         verifyResponse OK, response
         deleteAndModify = responseBody().id
-        GET("terminologies/$targetTerminology/path/te%3A%7Ctm%3AMAMRD:%20modifyAndModifyReturningDifference", MAP_ARG, true)
+        GET("terminologies/$targetTerminology/path/tm%3AMAMRD:%20modifyAndModifyReturningDifference", MAP_ARG, true)
         verifyResponse OK, response
         modifyAndModifyReturningDifference = responseBody().id
 
-        GET("terminologies/$targetTerminology//path/te%3A%7Ctm%3ADLO:%20deleteLeftOnly", MAP_ARG, true)
+        GET("terminologies/$targetTerminology//path/tm%3ADLO:%20deleteLeftOnly", MAP_ARG, true)
         verifyResponse OK, response
         deleteLeftOnly = responseBody().id
-        GET("terminologies/$targetTerminology/path/te%3A%7Ctm%3AMLO:%20modifyLeftOnly", MAP_ARG, true)
+        GET("terminologies/$targetTerminology/path/tm%3AMLO:%20modifyLeftOnly", MAP_ARG, true)
         verifyResponse OK, response
         modifyLeftOnly = responseBody().id
 

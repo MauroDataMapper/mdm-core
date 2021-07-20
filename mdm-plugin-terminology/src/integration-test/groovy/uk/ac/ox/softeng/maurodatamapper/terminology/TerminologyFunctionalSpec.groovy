@@ -1506,23 +1506,23 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
 
         when:
         //to delete
-        GET("$source/path/te%3A%7Ctm%3ADLO:%20deleteLeftOnly")
+        GET("$source/path/tm%3ADLO:%20deleteLeftOnly")
         verifyResponse OK, response
         String deleteLeftOnly = responseBody().id
-        GET("$source/path/te%3A%7Ctm%3ADAM:%20deleteAndModify")
+        GET("$source/path/tm%3ADAM:%20deleteAndModify")
         verifyResponse OK, response
         deleteAndModify = responseBody().id
         //to modify
-        GET("$source/path/te%3A%7Ctm%3AMLO:%20modifyLeftOnly")
+        GET("$source/path/tm%3AMLO:%20modifyLeftOnly")
         verifyResponse OK, response
         modifyLeftOnly = responseBody().id
-        GET("$source/path/te%3A%7Ctm%3ASMLO:%20secondModifyLeftOnly")
+        GET("$source/path/tm%3ASMLO:%20secondModifyLeftOnly")
         verifyResponse OK, response
         secondModifyLeftOnly = responseBody().id
-        GET("$source/path/te%3A%7Ctm%3AMAD:%20modifyAndDelete")
+        GET("$source/path/tm%3AMAD:%20modifyAndDelete")
         verifyResponse OK, response
         String sourceModifyAndDelete = responseBody().id
-        GET("$source/path/te%3A%7Ctm%3AMAMRD:%20modifyAndModifyReturningDifference")
+        GET("$source/path/tm%3AMAMRD:%20modifyAndModifyReturningDifference")
         verifyResponse OK, response
         modifyAndModifyReturningDifference = responseBody().id
 
@@ -1616,14 +1616,14 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
 
         when:
         // for mergeInto json
-        GET("$target/path/te%3A%7Ctm%3AMAD:%20modifyAndDelete")
+        GET("$target/path/tm%3AMAD:%20modifyAndDelete")
         verifyResponse OK, response
         String targetModifyAndDelete = responseBody().id
 
-        GET("$target/path/te%3A%7Ctm%3ADAM:%20deleteAndModify")
+        GET("$target/path/tm%3ADAM:%20deleteAndModify")
         verifyResponse OK, response
         deleteAndModify = responseBody().id
-        GET("$target/path/te%3A%7Ctm%3AMAMRD:%20modifyAndModifyReturningDifference")
+        GET("$target/path/tm%3AMAMRD:%20modifyAndModifyReturningDifference")
         verifyResponse OK, response
         modifyAndModifyReturningDifference = responseBody().id
 
@@ -1647,13 +1647,13 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
 
         when:
         // for mergeInto json
-        GET("$target/path/te%3A%7Ctm%3ADLO:%20deleteLeftOnly")
+        GET("$target/path/tm%3ADLO:%20deleteLeftOnly")
         verifyResponse OK, response
         deleteLeftOnly = responseBody().id
-        GET("$target/path/te%3A%7Ctm%3AMLO:%20modifyLeftOnly")
+        GET("$target/path/tm%3AMLO:%20modifyLeftOnly")
         verifyResponse OK, response
         modifyLeftOnly = responseBody().id
-        GET("$target/path/te%3A%7Ctm%3ASMLO:%20secondModifyLeftOnly")
+        GET("$target/path/tm%3ASMLO:%20secondModifyLeftOnly")
         verifyResponse OK, response
         secondModifyLeftOnly = responseBody().id
 

@@ -222,6 +222,13 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         then:
         catalogueItem.label == "data model 1"
         catalogueItem.domainType == "DataModel"
+
+        when: 'providing the ID and using absolute path from the id'
+        catalogueItem = pathService.findResourceByPathFromRootResource(dataModel1, path) as CatalogueItem
+
+        then:
+        catalogueItem.label == "data model 1"
+        catalogueItem.domainType == "DataModel"
     }
 
     /*
@@ -252,7 +259,7 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         CatalogueItem catalogueItem
 
         when:
-        Path path = Path.from('dm:|dc:data class 1')
+        Path path = Path.from('dc:data class 1')
         catalogueItem = pathService.findResourceByPathFromRootResource(dataModel1, path) as CatalogueItem
 
         then:
@@ -262,7 +269,7 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
 
         //This is the nested data class
         when:
-        path = Path.from('dm:|dc:data class 1|dc:data class 1_1')
+        path = Path.from('dc:data class 1|dc:data class 1_1')
         catalogueItem = pathService.findResourceByPathFromRootResource(dataModel1, path) as CatalogueItem
 
         then:
@@ -271,7 +278,7 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         catalogueItem.model.id == dataModel1.id
 
         when:
-        path = Path.from('dm:|dc:data class 2')
+        path = Path.from('dc:data class 2')
         catalogueItem = pathService.findResourceByPathFromRootResource(dataModel1, path) as CatalogueItem
 
         then:
@@ -280,7 +287,7 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         catalogueItem.model.id == dataModel1.id
 
         when:
-        path = Path.from('dm:|dc:data class 3')
+        path = Path.from('dc:data class 3')
         catalogueItem = pathService.findResourceByPathFromRootResource(dataModel1, path) as CatalogueItem
 
         then:
@@ -289,11 +296,20 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         catalogueItem.model.id == dataModel1.id
 
         when:
-        path = Path.from('dm:|dc:data class 4')
+        path = Path.from('dc:data class 4')
         catalogueItem = pathService.findResourceByPathFromRootResource(dataModel1, path) as CatalogueItem
 
         then:
         catalogueItem == null
+
+        when: 'absolute path of DC with the correct DM'
+        path = Path.from(dataModel1, dataClass1_1)
+        catalogueItem = pathService.findResourceByPathFromRootResource(dataModel1, path) as CatalogueItem
+
+        then:
+        catalogueItem.label == "data class 1"
+        catalogueItem.domainType == "DataClass"
+        catalogueItem.model.id == dataModel1.id
     }
 
     /*
@@ -307,7 +323,7 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         CatalogueItem catalogueItem
 
         when:
-        Path path = Path.from('dm:|dc:data class 1')
+        Path path = Path.from('dc:data class 1')
         catalogueItem = pathService.findResourceByPathFromRootResource(dataModel2, path) as CatalogueItem
 
         then:
@@ -316,7 +332,7 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         catalogueItem.model.id == dataModel2.id
 
         when:
-        path = Path.from('dm:|dc:data class 2')
+        path = Path.from('dc:data class 2')
         catalogueItem = pathService.findResourceByPathFromRootResource(dataModel2, path) as CatalogueItem
 
         then:
@@ -325,7 +341,7 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         catalogueItem.model.id == dataModel2.id
 
         when:
-        path = Path.from('dm:|dc:data class 3')
+        path = Path.from('dc:data class 3')
         catalogueItem = pathService.findResourceByPathFromRootResource(dataModel2, path) as CatalogueItem
 
         then:
@@ -334,7 +350,7 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         catalogueItem.model.id == dataModel2.id
 
         when:
-        path = Path.from('dm:|dc:data class 4')
+        path = Path.from('dc:data class 4')
         catalogueItem = pathService.findResourceByPathFromRootResource(dataModel2, path) as CatalogueItem
 
         then:
@@ -364,7 +380,7 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
 
         //When the data model is root
         when:
-        path = Path.from('dm:|dc:data class 1|de:data element 1')
+        path = Path.from('dc:data class 1|de:data element 1')
         catalogueItem = pathService.findResourceByPathFromRootResource(dataModel2, path) as CatalogueItem
 
         then:
@@ -384,7 +400,7 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
 
         //When the data model ID is provided
         when:
-        Path path = Path.from('dm:|dt:path service test data type')
+        Path path = Path.from('dt:path service test data type')
         catalogueItem = pathService.findResourceByPathFromRootResource(dataModel2, path) as CatalogueItem
 
         then:

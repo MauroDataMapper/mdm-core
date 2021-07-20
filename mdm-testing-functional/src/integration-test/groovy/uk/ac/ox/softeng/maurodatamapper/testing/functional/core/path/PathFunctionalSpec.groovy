@@ -353,8 +353,7 @@ class PathFunctionalSpec extends FunctionalSpec {
 
         //With Terminology ID and no label
         when:
-        node = makePathNodes(makePathNode('te', ''),
-                             makePathNode('tm', 'STT01: Simple Test Term 01'))
+        node = makePathNodes(makePathNode('tm', 'STT01: Simple Test Term 01'))
         GET("/api/terminologies/${getSimpleTerminologyId()}/path/${makePath(node)}", STRING_ARG)
 
         then: "The response is OK"
@@ -382,8 +381,7 @@ class PathFunctionalSpec extends FunctionalSpec {
 
         //With CodeSet ID and no label
         when:
-        node = makePathNodes(makePathNode('cs', ''),
-                             makePathNode('tm', 'STT01: Simple Test Term 01'))
+        node = makePathNodes(makePathNode('tm', 'STT01: Simple Test Term 01'))
         GET("/api/codeSets/${getSimpleCodeSetId()}/path/${makePath(node)}")
 
         then: "The response is Not Found"
@@ -414,8 +412,7 @@ class PathFunctionalSpec extends FunctionalSpec {
 
         //With CodeSet ID and no label
         when:
-        node = makePathNodes(makePathNode('cs', ''),
-                             makePathNode('tm', 'STT01: Simple Test Term 01'))
+        node = makePathNodes(makePathNode('tm', 'STT01: Simple Test Term 01'))
         GET("/api/codeSets/${getSimpleCodeSetId()}/path/${makePath(node)}", STRING_ARG)
 
         then: "The response is OK"

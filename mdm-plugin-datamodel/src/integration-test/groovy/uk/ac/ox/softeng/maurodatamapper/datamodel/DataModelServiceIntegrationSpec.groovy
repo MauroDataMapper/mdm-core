@@ -1339,7 +1339,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         when:
         FieldMergeDiff diff = mergeDiff.flattenedDiffs.findAll {it instanceof FieldMergeDiff}
             .find {FieldMergeDiff fmd ->
-                fmd.fieldName == 'description' && Path.from('dm:test database:test|dc:modifyBothReturningDifference').matches(fmd.getFullyQualifiedObjectPath())
+                fmd.fieldName == 'description' && Path.from('dm:test database$test|dc:modifyBothReturningDifference').matches(fmd.getFullyQualifiedObjectPath())
             }
 
         then:

@@ -53,6 +53,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.VersionLinkAwareService
 import uk.ac.ox.softeng.maurodatamapper.path.Path
+import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -229,22 +230,30 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     @Override
     K findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
-        String[] split = pathIdentifier.split(/:/)
+        String[] split = pathIdentifier.split(PathNode.ESCAPED_MODEL_PATH_IDENTIFIER_SEPARATOR)
         String label = split[0]
-        // Default to main branch
-        String identity = split.size() == 1 ? 'main' : split[1]
 
-        DetachedCriteria criteria = parentId ? modelClass.byFolderId(parentId) : modelClass.by()
+        // A specific identity of the model has been requested so make sure we limit to that
+        if (split.size() == 2) {
+            String identity = split[1]
+            DetachedCriteria criteria = parentId ? modelClass.byFolderId(parentId) : modelClass.by()
 
-        criteria.eq('label', label)
+            criteria.eq('label', label)
 
-        if (Version.isVersionable(identity)) {
-            criteria.eq('modelVersion', Version.from(identity))
-        } else {
-            criteria.eq('branchName', identity)
+            // Try the search by modelVersion or branchName and no modelVersion
+            // This will return the requested model or the latest non-finalised main branch
+            if (Version.isVersionable(identity)) {
+                criteria.eq('modelVersion', Version.from(identity))
+            } else {
+                // Need to make sure that if the main branch is requested we return the one without a modelVersion
+                criteria.eq('branchName', identity)
+                    .isNull('modelVersion')
+            }
+            return criteria.get() as K
         }
 
-        criteria.get() as K
+        // If no identity part then we can just get the latest model by the label
+        findLatestModelByLabel(label)
     }
 
     K finaliseModel(K model, User user, Version requestedModelVersion, VersionChangeType versionChangeType,
@@ -467,33 +476,33 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     void processCreationPatchIntoModel(FieldPatchData creationPatch, K targetModel, K sourceModel, UserSecurityPolicyManager userSecurityPolicyManager) {
         CreatorAware domainToCopy = pathService.findResourceByPathFromRootResource(sourceModel, creationPatch.path)
-        log.debug('Creating {} into {}', creationPatch.path, creationPatch.rootIndependentPath.parent)
+        log.debug('Creating {} into {}', creationPatch.path, creationPatch.relativePathToRoot.parent)
         // Potential deletions are modelitems or facets from model or modelitem
         if (Utils.parentClassIsAssignableFromChild(ModelItem, domainToCopy.class)) {
-            processCreationPatchOfModelItem(domainToCopy as ModelItem, targetModel, creationPatch.rootIndependentPath.parent, userSecurityPolicyManager)
+            processCreationPatchOfModelItem(domainToCopy as ModelItem, targetModel, creationPatch.relativePathToRoot.parent, userSecurityPolicyManager)
         }
         if (Utils.parentClassIsAssignableFromChild(MultiFacetItemAware, domainToCopy.class)) {
-            processCreationPatchOfFacet(domainToCopy as MultiFacetItemAware, targetModel, creationPatch.rootIndependentPath.parent, userSecurityPolicyManager)
+            processCreationPatchOfFacet(domainToCopy as MultiFacetItemAware, targetModel, creationPatch.relativePathToRoot.parent, userSecurityPolicyManager)
         }
     }
 
     void processDeletionPatchIntoModel(FieldPatchData deletionPatch, K targetModel) {
-        CreatorAware domain = pathService.findResourceByPathFromRootResource(targetModel, deletionPatch.rootIndependentPath)
-        log.debug('Deleting [{}]', deletionPatch.rootIndependentPath)
+        CreatorAware domain = pathService.findResourceByPathFromRootResource(targetModel, deletionPatch.relativePathToRoot)
+        log.debug('Deleting [{}]', deletionPatch.relativePathToRoot)
 
         // Potential deletions are modelitems or facets from model or modelitem
         if (Utils.parentClassIsAssignableFromChild(ModelItem, domain.class)) {
             processDeletionPatchOfModelItem(domain as ModelItem)
         }
         if (Utils.parentClassIsAssignableFromChild(MultiFacetItemAware, domain.class)) {
-            processDeletionPatchOfFacet(domain as MultiFacetItemAware, targetModel, deletionPatch.rootIndependentPath)
+            processDeletionPatchOfFacet(domain as MultiFacetItemAware, targetModel, deletionPatch.relativePathToRoot)
         }
     }
 
     void processModificationPatchIntoModel(FieldPatchData modificationPatch, K targetModel) {
-        CreatorAware domain = pathService.findResourceByPathFromRootResource(targetModel, modificationPatch.rootIndependentPath)
+        CreatorAware domain = pathService.findResourceByPathFromRootResource(targetModel, modificationPatch.relativePathToRoot)
         String fieldName = modificationPatch.fieldName
-        log.debug('Modifying [{}] in [{}]', fieldName, modificationPatch.rootIndependentPath)
+        log.debug('Modifying [{}] in [{}]', fieldName, modificationPatch.relativePathToRoot)
         domain."${fieldName}" = modificationPatch.sourceValue
         DomainService domainService = getDomainServices().find {it.handles(domain.class)}
         if (!domainService) throw new ApiInternalException('MSXX', "No domain service to handle modification of [${domain.domainType}]")

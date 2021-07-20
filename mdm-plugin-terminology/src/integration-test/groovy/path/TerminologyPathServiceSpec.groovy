@@ -29,7 +29,6 @@ import uk.ac.ox.softeng.maurodatamapper.version.Version
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
-import spock.lang.PendingFeature
 
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -173,7 +172,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         Terminology 1 by ID
          */
         when:
-        Path path = Path.from('te:')
+        Path path = Path.from('')
         catalogueItem = pathService.findResourceByPathFromRootResource(terminology1, path) as CatalogueItem
 
         then:
@@ -185,7 +184,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         Terminology 2 by ID
         */
         when:
-        path = Path.from('te:')
+        path = Path.from('')
         catalogueItem = pathService.findResourceByPathFromRootResource(terminology2, path) as CatalogueItem
 
         then:
@@ -271,7 +270,16 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         Terminology 1 Term 1
          */
         when:
-        Path path = Path.from("te:|tm:${terminology1_term1.pathIdentifier}")
+        Path path = Path.from("tm:${terminology1_term1.pathIdentifier}")
+        catalogueItem = pathService.findResourceByPathFromRootResource(terminology1, path) as CatalogueItem
+
+        then:
+        catalogueItem.label == terminology1_term1.label
+        catalogueItem.domainType == "Term"
+        catalogueItem.id == terminology1_term1.id
+
+        when:
+        path = Path.from("te:${terminology1.pathIdentifier}|tm:${terminology1_term1.pathIdentifier}")
         catalogueItem = pathService.findResourceByPathFromRootResource(terminology1, path) as CatalogueItem
 
         then:
@@ -283,7 +291,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
        Terminology 1 Term 1
         */
         when: 'using the label'
-        path = Path.from("te:|tm:${terminology1_term1.label}")
+        path = Path.from("tm:${terminology1_term1.label}")
         catalogueItem = pathService.findResourceByPathFromRootResource(terminology1, path) as CatalogueItem
 
         then:
@@ -295,7 +303,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         Terminology 1 Term 2
         */
         when:
-        path = Path.from("te:|tm:${terminology1_term2.pathIdentifier}")
+        path = Path.from("tm:${terminology1_term2.pathIdentifier}")
         catalogueItem = pathService.findResourceByPathFromRootResource(terminology1, path) as CatalogueItem
 
         then:
@@ -307,7 +315,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         Terminology 2 Term 1
         */
         when:
-        path = Path.from("te:|tm:${terminology2_term1.pathIdentifier}")
+        path = Path.from("tm:${terminology2_term1.pathIdentifier}")
         catalogueItem = pathService.findResourceByPathFromRootResource(terminology2, path) as CatalogueItem
 
         then:
@@ -319,7 +327,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         Terminology 2 Term 2
         */
         when:
-        path = Path.from("te:|tm:${terminology2_term2.pathIdentifier}")
+        path = Path.from("tm:${terminology2_term2.pathIdentifier}")
         catalogueItem = pathService.findResourceByPathFromRootResource(terminology2, path) as CatalogueItem
 
         then:
@@ -343,7 +351,14 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         Try to get a term which doesn't exist on Terminology 1
         */
         when:
-        path = Path.from("te:|tm:${terminology2_term1.pathIdentifier}")
+        path = Path.from("tm:${terminology2_term1.pathIdentifier}")
+        catalogueItem = pathService.findResourceByPathFromRootResource(terminology1, path) as CatalogueItem
+
+        then:
+        catalogueItem == null
+
+        when:
+        path = Path.from("te:${terminology1.pathIdentifier}|tm:${terminology2_term1.pathIdentifier}")
         catalogueItem = pathService.findResourceByPathFromRootResource(terminology1, path) as CatalogueItem
 
         then:
@@ -353,7 +368,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         Try to get a term which doesn't exist on Terminology 2
         */
         when:
-        path = Path.from("te:|tm:${terminology1_term1.pathIdentifier}")
+        path = Path.from("tm:${terminology1_term1.pathIdentifier}")
         catalogueItem = pathService.findResourceByPathFromRootResource(terminology2, path) as CatalogueItem
 
         then:
@@ -369,7 +384,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         CodeSet 1 by ID
          */
         when:
-        Path path = Path.from('cs:')
+        Path path = Path.from('')
         catalogueItem = pathService.findResourceByPathFromRootResource(codeSet1, path) as CatalogueItem
 
         then:
@@ -381,7 +396,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         CodeSet 2 by ID
         */
         when:
-        path = Path.from('cs:')
+        path = Path.from('')
         catalogueItem = pathService.findResourceByPathFromRootResource(codeSet2, path) as CatalogueItem
 
         then:
@@ -467,7 +482,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         CodeSet 1 Term 1
          */
         when:
-        Path path = Path.from("cs:|tm:${terminology1_term1.pathIdentifier}")
+        Path path = Path.from("tm:${terminology1_term1.pathIdentifier}")
         catalogueItem = pathService.findResourceByPathFromRootResource(codeSet1, path) as CatalogueItem
 
         then:
@@ -479,7 +494,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         CodeSet 1 Term 2
         */
         when:
-        path = Path.from("cs:|tm:${terminology1_term2.pathIdentifier}")
+        path = Path.from("tm:${terminology1_term2.pathIdentifier}")
         catalogueItem = pathService.findResourceByPathFromRootResource(codeSet1, path) as CatalogueItem
 
         then:
@@ -491,7 +506,16 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         CodeSet 2 Term 1
         */
         when:
-        path = Path.from("cs:|tm:${terminology2_term1.pathIdentifier}")
+        path = Path.from("tm:${terminology2_term1.pathIdentifier}")
+        catalogueItem = pathService.findResourceByPathFromRootResource(codeSet2, path) as CatalogueItem
+
+        then:
+        catalogueItem.label == terminology2_term1.label
+        catalogueItem.domainType == "Term"
+        catalogueItem.id == terminology2_term1.id
+
+        when:
+        path = Path.from("cs:${codeSet2.pathIdentifier}|tm:${terminology2_term1.pathIdentifier}")
         catalogueItem = pathService.findResourceByPathFromRootResource(codeSet2, path) as CatalogueItem
 
         then:
@@ -503,7 +527,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         CodeSet 2 Term 2
         */
         when:
-        path = Path.from("cs:|tm:${terminology2_term2.pathIdentifier}")
+        path = Path.from("tm:${terminology2_term2.pathIdentifier}")
         catalogueItem = pathService.findResourceByPathFromRootResource(codeSet2, path) as CatalogueItem
 
         then:
@@ -515,7 +539,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         Try to get a term which doesn't exist on CodeSet 1
         */
         when:
-        path = Path.from("cs:|tm:${terminology2_term1.pathIdentifier}")
+        path = Path.from("tm:${terminology2_term1.pathIdentifier}")
         catalogueItem = pathService.findResourceByPathFromRootResource(codeSet1, path) as CatalogueItem
 
         then:
@@ -525,7 +549,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         Try to get a term which doesn't exist on CodeSet 2
         */
         when:
-        path = Path.from("cs:|tm:${terminology1_term1.pathIdentifier}")
+        path = Path.from("tm:${terminology1_term1.pathIdentifier}")
         catalogueItem = pathService.findResourceByPathFromRootResource(codeSet2, path) as CatalogueItem
 
         then:
@@ -552,7 +576,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         catalogueItem.description == terminology3main.description
 
         when: 'using the branch name main'
-        path = Path.from('te:terminology 3:main')
+        path = Path.from('te:terminology 3$main')
         catalogueItem = pathService.findResourceByPathFromRootClass(Terminology, path) as CatalogueItem
 
         then:
@@ -561,17 +585,15 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         catalogueItem.id == terminology3main.id
 
         when: 'using the branch name draft'
-        path = Path.from('te:terminology 3:draft')
+        path = Path.from('te:terminology 3$draft')
         catalogueItem = pathService.findResourceByPathFromRootClass(Terminology, path) as CatalogueItem
 
         then:
         catalogueItem.label == 'terminology 3'
         catalogueItem.domainType == "Terminology"
         catalogueItem.id == terminology3draft.id
-
     }
 
-    @PendingFeature
     void "test get Terminology by path when there are finalised and non-finalised versions"() {
         given:
         setupData()
@@ -592,7 +614,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         catalogueItem.description == terminology4notFinalised.description
 
         when: 'using the version'
-        path = Path.from('te:terminology 4:1.0.0')
+        path = Path.from('te:terminology 4$1.0.0')
         catalogueItem = pathService.findResourceByPathFromRootClass(Terminology, path) as CatalogueItem
 
         then:
@@ -602,8 +624,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
     }
 
-    @PendingFeature
-    void "test get Terminology by path when there are two finalised versions"() {
+    void "FV : test get Terminology by path when there are two finalised versions"() {
         given:
         setupData()
         CatalogueItem catalogueItem
@@ -623,7 +644,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         catalogueItem.modelVersion.toString() == '2.0.0'
 
         when: 'using version 2.0.0'
-        path = Path.from('te:terminology 5:2.0.0')
+        path = Path.from('te:terminology 5$2.0.0')
         catalogueItem = pathService.findResourceByPathFromRootClass(Terminology, path) as CatalogueItem
 
         then:
@@ -633,7 +654,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         catalogueItem.modelVersion.toString() == '2.0.0'
 
         when: 'using version 2'
-        path = Path.from('te:terminology 5:2')
+        path = Path.from('te:terminology 5$2')
         catalogueItem = pathService.findResourceByPathFromRootClass(Terminology, path) as CatalogueItem
 
         then:
@@ -643,14 +664,14 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         catalogueItem.modelVersion.toString() == '2.0.0'
 
         when: 'using version 1'
-        path = Path.from('te:terminology 5:1')
+        path = Path.from('te:terminology 5$1')
         catalogueItem = pathService.findResourceByPathFromRootClass(Terminology, path) as CatalogueItem
 
         then:
         catalogueItem.label == 'terminology 5'
         catalogueItem.domainType == "Terminology"
-        catalogueItem.id == terminology5second.id
-        catalogueItem.modelVersion.toString() == '2.0.0'
+        catalogueItem.id == terminology5first.id
+        catalogueItem.modelVersion.toString() == '1.0.0'
     }
 
 }

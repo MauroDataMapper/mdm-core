@@ -443,13 +443,13 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         '''{
   "sourceId": "${json-unit.matches:id}",
   "targetId": "${json-unit.matches:id}",
-  "path": "dm:Functional Test Model:source",
+  "path": "dm:Functional Test Model$source",
   "label": "Functional Test Model",
   "count": 11,
   "diffs": [
     {
       "fieldName": "branchName",
-      "path": "dm:Functional Test Model:source|branchName",
+      "path": "dm:Functional Test Model$source@branchName",
       "sourceValue": "source",
       "targetValue": "main",
       "commonAncestorValue": "main",
@@ -458,7 +458,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     },
     {
       "fieldName": "description",
-      "path": "dm:Functional Test Model:source|description",
+      "path": "dm:Functional Test Model$source@description",
       "sourceValue": "DescriptionLeft",
       "targetValue": "DescriptionRight",
       "commonAncestorValue": null,
@@ -466,32 +466,32 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
       "type": "modification"
     },
     {
-      "path": "dm:Functional Test Model:source|dc:addLeftOnly",
+      "path": "dm:Functional Test Model$source|dc:addLeftOnly",
       "isMergeConflict": false,
       "isSourceModificationAndTargetDeletion": false,
       "type": "creation"
     },
     {
-      "path": "dm:Functional Test Model:source|dc:modifyAndDelete",
+      "path": "dm:Functional Test Model$source|dc:modifyAndDelete",
       "isMergeConflict": true,
       "isSourceModificationAndTargetDeletion": true,
       "type": "creation"
     },
     {
-      "path": "dm:Functional Test Model:source|dc:deleteAndModify",
+      "path": "dm:Functional Test Model$source|dc:deleteAndModify",
       "isMergeConflict": true,
       "isSourceDeletionAndTargetModification": true,
       "type": "deletion"
     },
     {
-      "path": "dm:Functional Test Model:source|dc:deleteLeftOnly",
+      "path": "dm:Functional Test Model$source|dc:deleteLeftOnly",
       "isMergeConflict": false,
       "isSourceDeletionAndTargetModification": false,
       "type": "deletion"
     },
     {
       "fieldName": "description",
-      "path": "dm:Functional Test Model:source|dc:addAndAddReturningDifference|description",
+      "path": "dm:Functional Test Model$source|dc:addAndAddReturningDifference@description",
       "sourceValue": "DescriptionLeft",
       "targetValue": "DescriptionRight",
       "commonAncestorValue": null,
@@ -499,20 +499,20 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
       "type": "modification"
     },
     {
-      "path": "dm:Functional Test Model:source|dc:existingClass|dc:addLeftToExistingClass",
+      "path": "dm:Functional Test Model$source|dc:existingClass|dc:addLeftToExistingClass",
       "isMergeConflict": false,
       "isSourceModificationAndTargetDeletion": false,
       "type": "creation"
     },
     {
-      "path": "dm:Functional Test Model:source|dc:existingClass|dc:deleteLeftOnlyFromExistingClass",
+      "path": "dm:Functional Test Model$source|dc:existingClass|dc:deleteLeftOnlyFromExistingClass",
       "isMergeConflict": false,
       "isSourceDeletionAndTargetModification": false,
       "type": "deletion"
     },
     {
       "fieldName": "description",
-      "path": "dm:Functional Test Model:source|dc:modifyAndModifyReturningDifference|description",
+      "path": "dm:Functional Test Model$source|dc:modifyAndModifyReturningDifference@description",
       "sourceValue": "DescriptionLeft",
       "targetValue": "DescriptionRight",
       "commonAncestorValue": null,
@@ -521,7 +521,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     },
     {
       "fieldName": "description",
-      "path": "dm:Functional Test Model:source|dc:modifyLeftOnly|description",
+      "path": "dm:Functional Test Model$source|dc:modifyLeftOnly@description",
       "sourceValue": "Description",
       "targetValue": null,
       "commonAncestorValue": null,
@@ -1806,7 +1806,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         when:
         //to modify
-        GET("$source/path/dm%3A%7Cdc%3AmodifyLeftOnly")
+        GET("$source/path/dc%3AmodifyLeftOnly")
         verifyResponse OK, response
         String modifyLeftOnly = responseBody().id
 
@@ -1849,7 +1849,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         when:
         // for mergeInto json
-        GET("$target/path/dm%3A%7Cdc%3AmodifyLeftOnly")
+        GET("$target/path/dc%3AmodifyLeftOnly")
         verifyResponse OK, response
         modifyLeftOnly = responseBody().id
 
@@ -2410,32 +2410,32 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse CREATED, response
         String source = responseBody().id
 
-        GET("$source/path/dm%3A%7Cdc%3AexistingClass")
+        GET("$source/path/dc%3AexistingClass")
         verifyResponse OK, response
         String sourceExistingClass = responseBody().id
-        GET("$source/path/dm%3A%7Cdc%3AexistingClass%7Cdc%3AdeleteLeftOnlyFromExistingClass")
+        GET("$source/path/dc%3AexistingClass%7Cdc%3AdeleteLeftOnlyFromExistingClass")
         verifyResponse OK, response
         String deleteLeftOnlyFromExistingClass = responseBody().id
-        GET("$source/path/dm%3A%7Cdc%3AdeleteLeftOnly")
+        GET("$source/path/dc%3AdeleteLeftOnly")
         verifyResponse OK, response
         String deleteLeftOnly = responseBody().id
-        GET("$source/path/dm%3A%7Cdc%3AdeleteAndDelete")
+        GET("$source/path/dc%3AdeleteAndDelete")
         verifyResponse OK, response
         String deleteAndDelete = responseBody().id
-        GET("$source/path/dm%3A%7Cdc%3AdeleteAndModify")
+        GET("$source/path/dc%3AdeleteAndModify")
         verifyResponse OK, response
         String deleteAndModify = responseBody().id
 
-        GET("$source/path/dm%3A%7Cdc%3AmodifyLeftOnly")
+        GET("$source/path/dc%3AmodifyLeftOnly")
         verifyResponse OK, response
         String modifyLeftOnly = responseBody().id
-        GET("$source/path/dm%3A%7Cdc%3AmodifyAndDelete")
+        GET("$source/path/dc%3AmodifyAndDelete")
         verifyResponse OK, response
         String modifyAndDelete = responseBody().id
-        GET("$source/path/dm%3A%7Cdc%3AmodifyAndModifyReturningNoDifference")
+        GET("$source/path/dc%3AmodifyAndModifyReturningNoDifference")
         verifyResponse OK, response
         String modifyAndModifyReturningNoDifference = responseBody().id
-        GET("$source/path/dm%3A%7Cdc%3AmodifyAndModifyReturningDifference")
+        GET("$source/path/dc%3AmodifyAndModifyReturningDifference")
         verifyResponse OK, response
         String modifyAndModifyReturningDifference = responseBody().id
 
@@ -2472,32 +2472,32 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         PUT("$source", [description: 'DescriptionLeft'])
         verifyResponse OK, response
 
-        GET("$target/path/dm%3A%7Cdc%3AexistingClass")
+        GET("$target/path/dc%3AexistingClass")
         verifyResponse OK, response
         String targetExistingClass = responseBody().id
-        GET("$target/path/dm%3A%7Cdc%3AexistingClass%7Cdc%3AdeleteRightOnlyFromExistingClass")
+        GET("$target/path/dc%3AexistingClass%7Cdc%3AdeleteRightOnlyFromExistingClass")
         verifyResponse OK, response
         String deleteRightOnlyFromExistingClass = responseBody().id
-        GET("$target/path/dm%3A%7Cdc%3AdeleteRightOnly")
+        GET("$target/path/dc%3AdeleteRightOnly")
         verifyResponse OK, response
         String deleteRightOnly = responseBody().id
-        GET("$target/path/dm%3A%7Cdc%3AdeleteAndDelete")
+        GET("$target/path/dc%3AdeleteAndDelete")
         verifyResponse OK, response
         deleteAndDelete = responseBody().id
-        GET("$target/path/dm%3A%7Cdc%3AmodifyAndDelete")
+        GET("$target/path/dc%3AmodifyAndDelete")
         verifyResponse OK, response
         String targetModifyAndDelete = responseBody().id
 
-        GET("$target/path/dm%3A%7Cdc%3AmodifyRightOnly")
+        GET("$target/path/dc%3AmodifyRightOnly")
         verifyResponse OK, response
         String modifyRightOnly = responseBody().id
-        GET("$target/path/dm%3A%7Cdc%3AdeleteAndModify")
+        GET("$target/path/dc%3AdeleteAndModify")
         verifyResponse OK, response
         deleteAndModify = responseBody().id
-        GET("$target/path/dm%3A%7Cdc%3AmodifyAndModifyReturningNoDifference")
+        GET("$target/path/dc%3AmodifyAndModifyReturningNoDifference")
         verifyResponse OK, response
         modifyAndModifyReturningNoDifference = responseBody().id
-        GET("$target/path/dm%3A%7Cdc%3AmodifyAndModifyReturningDifference")
+        GET("$target/path/dc%3AmodifyAndModifyReturningDifference")
         verifyResponse OK, response
         modifyAndModifyReturningDifference = responseBody().id
 
@@ -2533,13 +2533,13 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse OK, response
 
         // for mergeInto json
-        GET("$target/path/dm%3A%7Cdc%3AdeleteLeftOnly")
+        GET("$target/path/dc%3AdeleteLeftOnly")
         verifyResponse OK, response
         deleteLeftOnly = responseBody().id
-        GET("$target/path/dm%3A%7Cdc%3AmodifyLeftOnly")
+        GET("$target/path/dc%3AmodifyLeftOnly")
         verifyResponse OK, response
         modifyLeftOnly = responseBody().id
-        GET("$target/path/dm%3A%7Cdc%3AexistingClass%7Cdc%3AdeleteLeftOnlyFromExistingClass")
+        GET("$target/path/dc%3AexistingClass%7Cdc%3AdeleteLeftOnlyFromExistingClass")
         verifyResponse OK, response
         deleteLeftOnlyFromExistingClass = responseBody().id
 

@@ -77,8 +77,8 @@ class FieldPatchData<T> implements Validateable {
         this.path = path
     }
 
-    Path getRootIndependentPath() {
-        this.path.rootIndependentPath
+    Path getRelativePathToRoot() {
+        this.path.childPath
     }
 
     static <P> FieldPatchData<P> from(FieldMergeDiff<P> fieldMergeDiff) {

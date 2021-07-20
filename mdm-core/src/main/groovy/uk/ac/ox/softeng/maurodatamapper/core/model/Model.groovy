@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.VersionLinkAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
+import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 
 import grails.gorm.DetachedCriteria
@@ -58,7 +59,7 @@ trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableRes
 
     @Override
     String getPathIdentifier() {
-        "${label}:${modelVersion ?: branchName}"
+        "${label}${PathNode.MODEL_PATH_IDENTIFIER_SEPARATOR}${modelVersion ?: branchName}"
     }
 
     @Override

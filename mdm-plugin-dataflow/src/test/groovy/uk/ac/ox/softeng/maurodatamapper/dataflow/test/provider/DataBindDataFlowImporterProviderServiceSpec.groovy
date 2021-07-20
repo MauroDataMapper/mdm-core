@@ -267,7 +267,7 @@ abstract class DataBindDataFlowImporterProviderServiceSpec<K extends DataBindDat
         then:
         DataFlow.count() == 1
         ApiBadRequestException exception = thrown(ApiBadRequestException)
-        exception.message.contains('Source DataClass retrieval for dm:SourceFlowDataModel:main|dc:Invalid tableB failed')
+        exception.message.contains('Source DataClass retrieval for dm:SourceFlowDataModel$main|dc:Invalid tableB failed')
     }
 
     void 'I11 : test import with failed pathing on a target dataclass'() {
@@ -283,7 +283,7 @@ abstract class DataBindDataFlowImporterProviderServiceSpec<K extends DataBindDat
         then:
         DataFlow.count() == 1
         ApiBadRequestException exception = thrown(ApiBadRequestException)
-        exception.message.contains('Target DataClass retrieval for dm:TargetFlowDataModel:main|dc:Invalid tableD failed')
+        exception.message.contains('Target DataClass retrieval for dm:TargetFlowDataModel$main|dc:Invalid tableD failed')
     }
 
     void 'I12 : test import with failed pathing on a source dataelement'() {
@@ -299,7 +299,7 @@ abstract class DataBindDataFlowImporterProviderServiceSpec<K extends DataBindDat
         then:
         DataFlow.count() == 1
         ApiBadRequestException exception = thrown(ApiBadRequestException)
-        exception.message.contains('Source DataElement retrieval for dm:SourceFlowDataModel:main|dc:tableA|de:Invalid columnA failed')
+        exception.message.contains('Source DataElement retrieval for dm:SourceFlowDataModel$main|dc:tableA|de:Invalid columnA failed')
     }     
 
     void 'I13 : test import with failed pathing on a source dataelement when the dataclass label is wrong'() {
@@ -315,7 +315,7 @@ abstract class DataBindDataFlowImporterProviderServiceSpec<K extends DataBindDat
         then:
         DataFlow.count() == 1
         ApiBadRequestException exception = thrown(ApiBadRequestException)
-        exception.message.contains('Source DataElement retrieval for dm:SourceFlowDataModel:main|dc:Invalid tableA|de:columnA failed')
+        exception.message.contains('Source DataElement retrieval for dm:SourceFlowDataModel$main|dc:Invalid tableA|de:columnA failed')
     }   
 
     void 'I14 : test import with failed pathing on a target dataelement'() {
@@ -331,7 +331,7 @@ abstract class DataBindDataFlowImporterProviderServiceSpec<K extends DataBindDat
         then:
         DataFlow.count() == 1
         ApiBadRequestException exception = thrown(ApiBadRequestException)
-        exception.message.contains('Target DataElement retrieval for dm:TargetFlowDataModel:main|dc:tableD|de:Invalid columnN failed')
+        exception.message.contains('Target DataElement retrieval for dm:TargetFlowDataModel$main|dc:tableD|de:Invalid columnN failed')
     }     
 
     void 'I15 : test import with failed pathing on a target dataelement when the dataclass label is wrong'() {
@@ -347,7 +347,7 @@ abstract class DataBindDataFlowImporterProviderServiceSpec<K extends DataBindDat
         then:
         DataFlow.count() == 1
         ApiBadRequestException exception = thrown(ApiBadRequestException)
-        exception.message.contains('Target DataElement retrieval for dm:TargetFlowDataModel:main|dc:Invalid tableD|de:columnN failed')
+        exception.message.contains('Target DataElement retrieval for dm:TargetFlowDataModel$main|dc:Invalid tableD|de:columnN failed')
     }          
 
 }

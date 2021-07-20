@@ -347,7 +347,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     DataElement copy(Model copiedModelInto, DataElement original, UserSecurityPolicyManager userSecurityPolicyManager) {
         // The old code just searched for a label that matched which could result in the wrong DC being used, the path is better and more reliable
         Path originalPath = buildDataElementPath(original)
-        DataClass parentToCopyInto = pathService.findResourceByPathFromRootResource(copiedModelInto, originalPath.rootIndependentPath.parent)
+        DataClass parentToCopyInto = pathService.findResourceByPathFromRootResource(copiedModelInto, originalPath.childPath.parent)
         copy(copiedModelInto, original, parentToCopyInto, userSecurityPolicyManager)
     }
 

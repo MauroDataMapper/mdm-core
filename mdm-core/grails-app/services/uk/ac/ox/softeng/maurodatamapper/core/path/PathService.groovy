@@ -71,37 +71,30 @@ class PathService {
     CreatorAware findResourceByPathFromRootResource(CreatorAware rootResourceOfPath, Path path) {
         log.debug('Searching for path {} inside {}:{}', path, rootResourceOfPath.pathPrefix, rootResourceOfPath.pathIdentifier)
         if (path.isEmpty()) {
-            throw new ApiBadRequestException('PS06', 'Must have a path to search')
+            // assume we're in an empty/relative root which means we want the root resource
+            return rootResourceOfPath
         }
 
-        if (!(path.first().matches(rootResourceOfPath))) {
-            log.warn('Path cannot exist inside resource as first path node is not the resource node')
-            return null
-        }
+        // If the current path is absolute to the root then get the relative path so we can search into the root
+        Path pathToFind = path.isAbsoluteTo(rootResourceOfPath) ? path.childPath : path
 
-        // Confirmed the path is inside the model
-        // If only one node then return the model
-        if (path.size() == 1) return rootResourceOfPath
-
-        // Only 2 nodes in path, first is model
-        // Last part of path is a field access as has no type prefix so return the model
-        if (path.size() == 2 && !path.last().hasTypePrefix()) return rootResourceOfPath
+        // If no nodes in the pathToFind then return the model
+        if (pathToFind.isEmpty()) return rootResourceOfPath
 
         // Find the first child in the path
-        Path childPath = path.childPath
-        PathNode childNode = childPath.first()
+        PathNode childNode = pathToFind.first()
 
         DomainService domainService = domainServices.find {service ->
-            service.handlesPathPrefix(childNode.typePrefix)
+            service.handlesPathPrefix(childNode.prefix)
         }
 
         if (!domainService) {
-            log.warn("Unknown path prefix [${childNode.typePrefix}] in path")
+            log.warn("Unknown path prefix [${childNode.prefix}] in path")
             return null
         }
 
-        log.trace('Found service [{}] to handle prefix [{}]', domainService.class.simpleName, childNode.typePrefix)
-        def child = domainService.findByParentIdAndPathIdentifier(rootResourceOfPath.id, childNode.label)
+        log.trace('Found service [{}] to handle prefix [{}]', domainService.class.simpleName, childNode.prefix)
+        def child = domainService.findByParentIdAndPathIdentifier(rootResourceOfPath.id, childNode.getFullIdentifier())
 
         if (!child) {
             log.warn("Child [${childNode}] does not exist in path [${path}]")
@@ -109,11 +102,7 @@ class PathService {
         }
 
         // Recurse down the path for that child
-        findResourceByPathFromRootResource(child, childPath)
-    }
-
-    CreatorAware findResourceByPathFromRootClass(Class<? extends SecurableResource> rootClass, String path) {
-        findResourceByPathFromRootClass(rootClass, Path.from(path))
+        findResourceByPathFromRootResource(child, pathToFind)
     }
 
     CreatorAware findResourceByPathFromRootClass(Class<? extends SecurableResource> rootClass, Path path) {
@@ -135,14 +124,14 @@ class PathService {
             throw new ApiBadRequestException('PS04', "[${rootClass.simpleName}] is not a pathable resource")
         }
 
-        CreatorAware rootResource = securableResourceService.findByParentIdAndPathIdentifier(null, rootNode.label)
+        CreatorAware rootResource = securableResourceService.findByParentIdAndPathIdentifier(null, rootNode.getFullIdentifier())
         if (!rootResource) return null
 
         // Confirm root resource exists and its prefix matches the pathed prefix
         // We dont need to check the prefix in the findResourceByPathFromRootResource method as we "have" a resource at this point
         // And all subsequent calls in that method use the prefix to find the domain service
-        if (rootResource.pathPrefix != rootNode.typePrefix) {
-            log.warn("Root resource prefix [${rootNode.typePrefix}] does not match the root class to search")
+        if (rootResource.pathPrefix != rootNode.prefix) {
+            log.warn("Root resource prefix [${rootNode.prefix}] does not match the root class to search")
             return null
         }
 

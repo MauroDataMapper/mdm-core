@@ -40,7 +40,7 @@ class Path {
     }
 
     /*
-     * Make a list of PathNode from the provided path string. The path string is like dm:|dc:class-label|de:element-label
+     * Make a list of PathNode from the provided path string. The path string is like dc:class-label|de:element-label
      * which means 'The DataElement labelled element-label which belongs to the DataClass labelled class-label which
      * belongs to the current DataModel'
      * @param path The path
@@ -51,9 +51,10 @@ class Path {
 
         if (path) {
             String[] splits = path.split(PATH_DELIMITER, MAX_NODES)
+            int lastIndex = splits.size() - 1
 
-            for (String s : splits) {
-                pathNodes << new PathNode(s)
+            splits.eachWithIndex {String node, int i ->
+                pathNodes << new PathNode(node, i == 0, i == lastIndex)
             }
         }
     }
@@ -79,8 +80,8 @@ class Path {
         this
     }
 
-    Path addToPathNodes(String prefix, String pathIdentifier) {
-        addToPathNodes(new PathNode(prefix, pathIdentifier))
+    Path addToPathNodes(String prefix, String pathIdentifier, boolean isLast) {
+        addToPathNodes(new PathNode(prefix, pathIdentifier, pathNodes.isEmpty(), isLast))
     }
 
     Path getParent() {
@@ -89,10 +90,17 @@ class Path {
         }
     }
 
-    Path getRootIndependentPath() {
-        clone().tap {
-            first().label = null
-        }
+    boolean isAbsoluteTo(CreatorAware creatorAware) {
+        // If the first node in this path matches the supplied object then this path is absolute against the supplied object,
+        // otherwise it may be relative or may not be inside this object
+        Path rootPath = from(creatorAware)
+        isAbsoluteTo(rootPath)
+    }
+
+    boolean isAbsoluteTo(Path rootPath) {
+        // If the first node in this path matches the supplied object then this path is absolute against the supplied object,
+        // otherwise it may be relative or may not be inside this object
+        rootPath.first().matches(this.first())
     }
 
     boolean isEmpty() {
@@ -104,7 +112,9 @@ class Path {
     }
 
     Path getChildPath() {
-        new Path(pathNodes: pathNodes[1..size() - 1])
+        clone().tap {
+            pathNodes.removeAt(0)
+        }
     }
 
     String toString() {
@@ -132,12 +142,12 @@ class Path {
 
     static Path from(String prefix, String pathIdentifier) {
         new Path().tap {
-            addToPathNodes(prefix, pathIdentifier)
+            pathNodes << new PathNode(prefix, pathIdentifier, true, true)
         }
     }
 
     static Path from(Path parentPath, String prefix, String pathIdentifier) {
-        parentPath ? parentPath.clone().addToPathNodes(prefix, pathIdentifier) : from(prefix, pathIdentifier)
+        parentPath ? parentPath.clone().addToPathNodes(prefix, pathIdentifier, false) : from(prefix, pathIdentifier)
     }
 
     static Path from(String parentPath, String prefix, String pathIdentifier) {
@@ -146,13 +156,23 @@ class Path {
 
     static Path from(CreatorAware... domains) {
         new Path().tap {
-            pathNodes = domains.collect {new PathNode(it.pathPrefix, it.pathIdentifier)}
+            domains.eachWithIndex {CreatorAware domain, int i ->
+                pathNodes << new PathNode(domain.pathPrefix, domain.pathIdentifier, i == 0, false)
+            }
         }
     }
 
     static Path from(List<CreatorAware> domains) {
         new Path().tap {
-            pathNodes = domains.collect {new PathNode(it.pathPrefix, it.pathIdentifier)}
+            domains.eachWithIndex {CreatorAware domain, int i ->
+                pathNodes << new PathNode(domain.pathPrefix, domain.pathIdentifier, i == 0, false)
+            }
         }
+    }
+
+    static Path forAttributeOnPath(Path path, String attribute) {
+        Path attributePath = path.clone()
+        attributePath.last().attribute = attribute
+        attributePath
     }
 }
