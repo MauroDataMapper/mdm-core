@@ -166,8 +166,8 @@ abstract class DataBindTerminologyImportAndDefaultExporterServiceSpec<I extends 
         diff.diffs.find {it.fieldName == 'terms'}.modified.size() == 2
 
         when:
-        ObjectDiff t1 = diff.diffs.find {it.fieldName == 'terms'}.modified.find {(it as ObjectDiff).left.diffIdentifier == 'CTT00: Complex Test Term 00'}
-        ObjectDiff t2 = diff.diffs.find {it.fieldName == 'terms'}.modified.find {(it as ObjectDiff).left.diffIdentifier == 'CTT1: Complex Test Term 1'}
+        ObjectDiff t1 = diff.diffs.find {it.fieldName == 'terms'}.modified.find {(it as ObjectDiff).left.diffIdentifier == 'CTT00'}
+        ObjectDiff t2 = diff.diffs.find {it.fieldName == 'terms'}.modified.find {(it as ObjectDiff).left.diffIdentifier == 'CTT1'}
 
 
         then:

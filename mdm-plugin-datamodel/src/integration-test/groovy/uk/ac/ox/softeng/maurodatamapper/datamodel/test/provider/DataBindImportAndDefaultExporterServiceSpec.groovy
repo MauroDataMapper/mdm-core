@@ -243,11 +243,11 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
             log.error('{}', diff.toString())
         }
         // Rules are not exported/imported and therefore will exist as diffs
-        diff.numberOfDiffs == 5
+        diff.numberOfDiffs == 4
         diff.diffs.find {it.fieldName == 'rule'}.deleted.size() == 1
         diff.diffs.find {it.fieldName == 'dataTypes'}.modified.first().diffs.deleted.size() == 1
-        diff.diffs.find {it.fieldName == 'dataClasses'}.modified.first().diffs.deleted.size() == 1
-        diff.diffs.find {it.fieldName == 'dataElements'}.modified.first().diffs.deleted.size() == 1
+        diff.diffs.find {it.fieldName == 'dataClasses'}.modified[0].diffs.deleted.size() == 1 // DC rule missing
+        diff.diffs.find {it.fieldName == 'dataClasses'}.modified[1].diffs.deleted.size() == 1 // DE inside DC rule missing
     }
 
     void 'test export and import simple DataModel'() {
