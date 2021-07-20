@@ -121,8 +121,9 @@ class DataElementController extends CatalogueItemController<DataElement> {
 
     @Override
     protected List<DataElement> listAllReadableResources(Map params) {
-        params.sort = params.sort ?: ['idx': 'asc', 'label': 'asc']
+
         if (params.dataTypeId) {
+            params.sort = params.sort ?: ['idx': 'asc', 'label': 'asc']
             if (!dataTypeService.findByDataModelIdAndId(params.dataModelId, params.dataTypeId)) {
                 notFound(params.dataTypeId)
                 return null
@@ -131,6 +132,12 @@ class DataElementController extends CatalogueItemController<DataElement> {
         }
         if (params.all) removePaginationParameters()
 
+        if (!params.dataClassId) {
+            params.sort = params.sort ?: ['dataClass.idx': 'asc', 'depth': 'asc', 'idx': 'asc']
+            return dataElementService.findAllByDataModelId(params.dataModelId, params)
+        }
+
+        params.sort = params.sort ?: ['idx': 'asc', 'label': 'asc']
         if (!dataClassService.findByDataModelIdAndId(params.dataModelId, params.dataClassId)) {
             notFound(params.dataClassId)
             return null
