@@ -115,8 +115,9 @@ class BreadcrumbTree {
         }
         checkTree()
         // After checking the tree, if its changed (or we havent been saved before) then we will need to update all the children
-        if (!id || isDirty('treeString')) {
+        if (isDirty('treeString')) {
             children?.each {
+                it.buildTree()
                 it.beforeValidate()
             }
         }

@@ -78,7 +78,7 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
                     modelItemService = this
                     parentId = targetModelItem.id
                 } else {
-                    modelItemService = modelItemServices.find {it.handles(mergeFieldDiff.fieldName)}
+                    modelItemService = modelItemServices.find { it.handles(mergeFieldDiff.fieldName) }
                     parentId = null
                 }
 
@@ -128,14 +128,14 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
 
     def saveAll(Collection<K> modelItems, boolean batching = true) {
 
-        List<Classifier> classifiers = modelItems.collectMany {it.classifiers ?: []} as List<Classifier>
+        List<Classifier> classifiers = modelItems.collectMany { it.classifiers ?: [] } as List<Classifier>
         if (classifiers) {
             log.trace('Saving {} classifiers')
             classifierService.saveAll(classifiers)
         }
 
-        Collection<K> alreadySaved = modelItems.findAll {it.ident() && it.isDirty()}
-        Collection<K> notSaved = modelItems.findAll {!it.ident()}
+        Collection<K> alreadySaved = modelItems.findAll { it.ident() && it.isDirty() }
+        Collection<K> notSaved = modelItems.findAll { !it.ident() }
 
         if (alreadySaved) {
             log.debug('Straight saving {} already saved {}', alreadySaved.size(), getModelItemClass().simpleName)
@@ -148,7 +148,7 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
                 List batch = []
                 int count = 0
 
-                notSaved.each {mi ->
+                notSaved.each { mi ->
 
                     batch << mi
                     count++
@@ -161,9 +161,10 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
                 batch.clear()
             } else {
                 log.debug('Straight saving {} new {}', notSaved.size(), getModelItemClass().simpleName)
-                notSaved.each {dt ->
-                    save(flush: false, validate: false, dt)
-                    updateFacetsAfterInsertingCatalogueItem(dt)
+                notSaved.each { mi ->
+                    save(flush: false, validate: false, mi)
+                    updateFacetsAfterInsertingCatalogueItem(mi)
+                    checkBreadcrumbTreeAfterSavingCatalogueItem(mi)
                 }
             }
         }
@@ -172,10 +173,11 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
     void batchSave(List<K> modelItems) {
         long start = System.currentTimeMillis()
         log.debug('Performing batch save of {} {}', modelItems.size(), getModelItemClass().simpleName)
-
+        List<Boolean> inserts = modelItems.collect { !it.id }
         getModelItemClass().saveAll(modelItems)
-        modelItems.each {dt ->
-            updateFacetsAfterInsertingCatalogueItem(dt)
+        modelItems.eachWithIndex { mi, i ->
+            if (inserts[i]) updateFacetsAfterInsertingCatalogueItem(mi)
+            checkBreadcrumbTreeAfterSavingCatalogueItem(mi)
         }
 
         sessionFactory.currentSession.flush()
