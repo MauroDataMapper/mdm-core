@@ -93,6 +93,11 @@ abstract class ReferenceDataType<D> implements ModelItem<D, ReferenceDataModel>,
     ReferenceDataType() {
     }
 
+    @Override
+    String getPathPrefix() {
+        'rdt'
+    }
+
     @Field(index = Index.YES, bridge = @FieldBridge(impl = UUIDBridge))
     UUID getModelId() {
         referenceDataModel.id
@@ -130,11 +135,6 @@ abstract class ReferenceDataType<D> implements ModelItem<D, ReferenceDataModel>,
     @Override
     ReferenceDataModel getModel() {
         referenceDataModel
-    }
-
-    @Override
-    String getDiffIdentifier() {
-        this.label
     }
 
     @Override

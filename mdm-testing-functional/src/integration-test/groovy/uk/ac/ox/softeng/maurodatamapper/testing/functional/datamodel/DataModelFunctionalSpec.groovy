@@ -3009,7 +3009,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
   "leftId": "${json-unit.matches:id}",
   "rightId": "${json-unit.matches:id}",
   "label": "Complex Test DataModel",
-  "count": 21,
+  "count": 18,
   "diffs": [
     {
       "label": {
@@ -3063,13 +3063,13 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
           {
             "value": {
               "id": "${json-unit.matches:id}",
-              "label": "test annotation 2"
+              "label": "test annotation 1"
             }
           },
           {
             "value": {
               "id": "${json-unit.matches:id}",
-              "label": "test annotation 1"
+              "label": "test annotation 2"
             }
           }
         ]
@@ -3217,69 +3217,6 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
                   "label": "Simple Test DataModel",
                   "domainType": "DataModel",
                   "finalised": false
-                }
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "dataElements": {
-        "deleted": [
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "child",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test DataModel",
-                  "domainType": "DataModel",
-                  "finalised": false
-                },
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "parent",
-                  "domainType": "DataClass"
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "ele1",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test DataModel",
-                  "domainType": "DataModel",
-                  "finalised": false
-                },
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "content",
-                  "domainType": "DataClass"
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "element2",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test DataModel",
-                  "domainType": "DataModel",
-                  "finalised": false
-                },
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "content",
-                  "domainType": "DataClass"
                 }
               ]
             }

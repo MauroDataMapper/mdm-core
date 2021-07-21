@@ -1,0 +1,20 @@
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+
+inherits(template: '/folder/folder_full', model: [folder: versionedFolder, userSecurityPolicyManager: userSecurityPolicyManager])
+
+model {
+    VersionedFolder versionedFolder
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json {
+    branchName versionedFolder.branchName
+    documentationVersion versionedFolder.documentationVersion
+    finalised versionedFolder.finalised
+    if (versionedFolder.finalised) dateFinalised versionedFolder.dateFinalised
+    if (versionedFolder.modelVersion) modelVersion versionedFolder.modelVersion
+    if (versionedFolder.modelVersionTag) modelVersionTag versionedFolder.modelVersionTag
+
+    authority tmpl.'/authority/authority'(versionedFolder.authority)
+}

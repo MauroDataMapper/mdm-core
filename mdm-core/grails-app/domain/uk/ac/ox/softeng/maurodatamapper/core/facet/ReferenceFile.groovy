@@ -33,7 +33,7 @@ class ReferenceFile implements CatalogueFile, MultiFacetItemAware {
 
     static constraints = {
         CallableConstraints.call(CatalogueFileConstraints, delegate)
-        multiFacetAwareItemId nullable: true, validator: {val, obj ->
+        multiFacetAwareItemId nullable: true, validator: { val, obj ->
             if (val) return true
             if (!val && obj.multiFacetAwareItem && !obj.multiFacetAwareItem.ident()) return true
             ['default.null.message']
@@ -53,6 +53,10 @@ class ReferenceFile implements CatalogueFile, MultiFacetItemAware {
         ReferenceFile.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'rf'
+    }
 
     def beforeValidate() {
         fileSize = fileContents?.size()

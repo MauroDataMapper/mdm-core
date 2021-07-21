@@ -94,6 +94,15 @@ class Classifier implements Container {
         Classifier.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'cl'
+    }
+
+    @Override
+    String getPathIdentifier() {
+        label
+    }
 
     @Override
     Classifier getPathParent() {
@@ -103,7 +112,7 @@ class Classifier implements Container {
     @Override
     def beforeValidate() {
         buildPath()
-        childClassifiers.each {it.beforeValidate()}
+        childClassifiers.each { it.beforeValidate() }
     }
 
     @Override

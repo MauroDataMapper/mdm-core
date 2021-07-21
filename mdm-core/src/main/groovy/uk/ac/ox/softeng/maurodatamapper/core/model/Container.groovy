@@ -35,4 +35,9 @@ trait Container implements PathAware, InformationAware, SecurableResource, EditH
     abstract boolean hasChildren()
 
     abstract Boolean getDeleted()
+
+    //    @Override
+    //    String getPathIdentifier() {
+    //        label
+    //    }
 }

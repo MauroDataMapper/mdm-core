@@ -98,6 +98,21 @@ class AnnotationService implements MultiFacetItemAwareService<Annotation> {
         log.debug('stop')
     }
 
+    @Override
+    Annotation copy(Annotation facetToCopy, MultiFacetAware multiFacetAwareItemToCopyInto) {
+        Annotation copy = new Annotation(label: facetToCopy.label, description: facetToCopy.description, createdBy: facetToCopy.createdBy)
+        if (facetToCopy.childAnnotations) facetToCopy.childAnnotations.each {ca -> copy(ca, copy)}
+        multiFacetAwareItemToCopyInto.addToAnnotations(copy)
+        copy
+    }
+
+    Annotation copy(Annotation facetToCopy, Annotation annotationToCopyInto) {
+        Annotation copy = new Annotation(label: facetToCopy.label, description: facetToCopy.description, createdBy: facetToCopy.createdBy)
+        if (facetToCopy.childAnnotations) facetToCopy.childAnnotations.each {ca -> copy(ca, copy)}
+        annotationToCopyInto.addToChildAnnotations(copy)
+        copy
+    }
+
     List<Annotation> findAllWhereRootAnnotationOfMultiFacetAwareItemId(UUID multiFacetAwareItemId, Map paginate = [:]) {
         Annotation.whereRootAnnotationOfMultiFacetAwareItemId(multiFacetAwareItemId).list(paginate)
     }
@@ -113,5 +128,10 @@ class AnnotationService implements MultiFacetItemAwareService<Annotation> {
 
     Number countWhereRootAnnotationOfMultiFacetAwareItemId(UUID multiFacetAwareItemId) {
         Annotation.whereRootAnnotationOfMultiFacetAwareItemId(multiFacetAwareItemId).count()
+    }
+
+    @Override
+    Annotation findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        Annotation.byMultiFacetAwareItemId(parentId).eq('label', pathIdentifier).get()
     }
 }

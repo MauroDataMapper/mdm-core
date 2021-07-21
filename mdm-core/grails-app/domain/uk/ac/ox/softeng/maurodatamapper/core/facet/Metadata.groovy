@@ -17,19 +17,19 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class Metadata implements MultiFacetItemAware, CreatorAware, Diffable<Metadata> {
+class Metadata implements MultiFacetItemAware, Diffable<Metadata> {
 
     public final static Integer BATCH_SIZE = 5000
 
@@ -73,6 +73,10 @@ class Metadata implements MultiFacetItemAware, CreatorAware, Diffable<Metadata> 
         Metadata.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'md'
+    }
 
     @Override
     String toString() {
@@ -90,7 +94,7 @@ class Metadata implements MultiFacetItemAware, CreatorAware, Diffable<Metadata> 
 
     @Override
     ObjectDiff<Metadata> diff(Metadata obj) {
-        ObjectDiff.builder(Metadata)
+        DiffBuilder.objectDiff(Metadata)
             .leftHandSide(id.toString(), this)
             .rightHandSide(obj.id.toString(), obj)
             .appendString('namespace', this.namespace, obj.namespace)
@@ -99,7 +103,7 @@ class Metadata implements MultiFacetItemAware, CreatorAware, Diffable<Metadata> 
     }
 
     @Override
-    String getDiffIdentifier() {
+    String getPathIdentifier() {
         "${this.namespace}.${this.key}"
     }
 

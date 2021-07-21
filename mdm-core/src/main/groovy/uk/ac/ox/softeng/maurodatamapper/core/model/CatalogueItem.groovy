@@ -17,9 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
@@ -84,7 +84,7 @@ trait CatalogueItem<D extends Diffable> implements InformationAware, EditHistory
     }
 
     @Override
-    String getDiffIdentifier() {
+    String getPathIdentifier() {
         label
     }
 
@@ -95,8 +95,7 @@ trait CatalogueItem<D extends Diffable> implements InformationAware, EditHistory
     static <T extends CatalogueItem> ObjectDiff catalogueItemDiffBuilder(Class<T> diffClass, T lhs, T rhs) {
         String lhsId = lhs.id ?: "Left:Unsaved_${lhs.domainType}"
         String rhsId = rhs.id ?: "Right:Unsaved_${rhs.domainType}"
-        ObjectDiff
-            .builder(diffClass)
+        DiffBuilder.objectDiff(diffClass)
             .leftHandSide(lhsId, lhs)
             .rightHandSide(rhsId, rhs)
             .appendString('label', lhs.label, rhs.label)

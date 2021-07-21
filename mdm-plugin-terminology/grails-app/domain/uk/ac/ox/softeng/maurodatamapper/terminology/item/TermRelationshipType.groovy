@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.terminology.item
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
@@ -87,6 +87,11 @@ class TermRelationshipType implements ModelItem<TermRelationshipType, Terminolog
     @Override
     String getDomainType() {
         TermRelationshipType.simpleName
+    }
+
+    @Override
+    String getPathPrefix() {
+        'trt'
     }
 
     @Field(index = Index.YES, bridge = @FieldBridge(impl = UUIDBridge))

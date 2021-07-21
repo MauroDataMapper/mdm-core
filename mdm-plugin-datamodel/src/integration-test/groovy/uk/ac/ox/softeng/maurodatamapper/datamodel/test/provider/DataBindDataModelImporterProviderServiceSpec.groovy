@@ -38,7 +38,6 @@ import grails.gorm.transactions.Rollback
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Shared
-import spock.lang.Stepwise
 
 /**
  * @since 15/11/2017
@@ -46,7 +45,6 @@ import spock.lang.Stepwise
 @Rollback
 @Slf4j
 @SuppressWarnings("DuplicatedCode")
-@Stepwise
 abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDataModelImporterProviderService> extends BaseImportExportSpec {
 
     abstract K getImporterService()

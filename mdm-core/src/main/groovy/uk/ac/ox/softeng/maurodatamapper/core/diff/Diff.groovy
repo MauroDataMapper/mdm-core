@@ -17,10 +17,21 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.diff
 
-abstract class Diff<T> extends Mergeable {
+import groovy.transform.CompileStatic
 
-    T left
-    T right
+@CompileStatic
+abstract class Diff<T> {
+
+    T value
+
+    Class<T> targetClass
+
+    protected Diff(Class<T> targetClass) {
+        this.targetClass = targetClass
+
+    }
+
+    abstract Integer getNumberOfDiffs()
 
     String getDiffType() {
         getClass().simpleName
@@ -33,25 +44,12 @@ abstract class Diff<T> extends Mergeable {
 
         Diff<T> diff = (Diff<T>) o
 
-        if (left != diff.left) return false
-        if (right != diff.right) return false
+        if (value != diff.value) return false
 
         return true
-    }
-
-    Diff<T> leftHandSide(T lhs) {
-        this.left = lhs
-        this
-    }
-
-    Diff<T> rightHandSide(T rhs) {
-        this.right = rhs
-        this
     }
 
     boolean objectsAreIdentical() {
         !getNumberOfDiffs()
     }
-
-    abstract Integer getNumberOfDiffs()
 }

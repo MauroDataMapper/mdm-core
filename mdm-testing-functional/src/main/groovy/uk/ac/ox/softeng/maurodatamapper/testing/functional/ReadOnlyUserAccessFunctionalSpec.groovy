@@ -19,7 +19,6 @@ package uk.ac.ox.softeng.maurodatamapper.testing.functional
 
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
-import spock.lang.Stepwise
 
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.OK
@@ -32,7 +31,6 @@ import static io.micronaut.http.HttpStatus.OK
  *  | GET    | /api/${resourcePath}/${id} | Action: show   |
  * </pre>
  */
-@Stepwise
 @Slf4j
 abstract class ReadOnlyUserAccessFunctionalSpec extends FunctionalSpec {
 

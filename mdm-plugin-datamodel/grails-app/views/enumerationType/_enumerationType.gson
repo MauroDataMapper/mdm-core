@@ -1,0 +1,11 @@
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
+
+inherits template: '/dataType/dataType', model: [dataType: enumerationType]
+
+model {
+    EnumerationType enumerationType
+}
+
+json {
+
+}

@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
@@ -29,10 +28,8 @@ import uk.ac.ox.softeng.maurodatamapper.test.unit.service.CatalogueItemServiceSp
 
 import grails.testing.services.ServiceUnitTest
 import groovy.util.logging.Slf4j
-import spock.lang.Stepwise
 
 @Slf4j
-@Stepwise
 class ReferenceDataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUnitTest<ReferenceDataTypeService> {
 
     ReferenceDataModel referenceDataModel

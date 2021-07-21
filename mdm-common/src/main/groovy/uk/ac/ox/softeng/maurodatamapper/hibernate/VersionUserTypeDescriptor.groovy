@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.hibernate
 
-import uk.ac.ox.softeng.maurodatamapper.util.Version
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import org.hibernate.type.descriptor.WrapperOptions
 import org.hibernate.type.descriptor.java.AbstractTypeDescriptor

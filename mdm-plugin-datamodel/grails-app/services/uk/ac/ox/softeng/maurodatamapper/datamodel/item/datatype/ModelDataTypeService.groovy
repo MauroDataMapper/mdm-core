@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
@@ -35,6 +37,7 @@ import org.grails.datastore.mapping.model.PersistentEntity
 class ModelDataTypeService extends ModelItemService<ModelDataType> implements SummaryMetadataAwareService {
 
     SummaryMetadataService summaryMetadataService
+    DataTypeService dataTypeService
 
     @Override
     ModelDataType get(Serializable id) {
@@ -96,6 +99,11 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> implements Su
     @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         domainType == ModelDataType.simpleName
+    }
+
+    @Override
+    ModelDataType copy(Model copiedDataModel, ModelDataType original, CatalogueItem nonModelParent, UserSecurityPolicyManager userSecurityPolicyManager) {
+        dataTypeService.copy(copiedDataModel, original, nonModelParent, userSecurityPolicyManager) as ModelDataType
     }
 
     @Override

@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.test.provider
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
@@ -29,7 +29,6 @@ import grails.gorm.transactions.Rollback
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Shared
-import spock.lang.Stepwise
 import spock.lang.Unroll
 
 import java.nio.charset.Charset
@@ -41,7 +40,6 @@ import java.nio.file.Path
  */
 @Rollback
 @Slf4j
-@Stepwise
 abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDataModelImporterProviderService, E extends ExporterProviderService>
     extends BaseImportExportSpec {
 
@@ -245,11 +243,11 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
             log.error('{}', diff.toString())
         }
         // Rules are not exported/imported and therefore will exist as diffs
-        diff.numberOfDiffs == 5
+        diff.numberOfDiffs == 4
         diff.diffs.find {it.fieldName == 'rule'}.deleted.size() == 1
         diff.diffs.find {it.fieldName == 'dataTypes'}.modified.first().diffs.deleted.size() == 1
-        diff.diffs.find {it.fieldName == 'dataClasses'}.modified.first().diffs.deleted.size() == 1
-        diff.diffs.find {it.fieldName == 'dataElements'}.modified.first().diffs.deleted.size() == 1
+        diff.diffs.find {it.fieldName == 'dataClasses'}.modified[0].diffs.deleted.size() == 1 // DC rule missing
+        diff.diffs.find {it.fieldName == 'dataClasses'}.modified[1].diffs.deleted.size() == 1 // DE inside DC rule missing
     }
 
     void 'test export and import simple DataModel'() {

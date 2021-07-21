@@ -1,26 +1,26 @@
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
-import uk.ac.ox.softeng.maurodatamapper.core.model.Model
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+
+import grails.plugin.json.view.template.JsonViewTemplate
 
 import java.beans.Introspector
 
 model {
-    CatalogueItem catalogueItem
+    CreatorAware pathedResource
     UserSecurityPolicyManager userSecurityPolicyManager
 }
 
-//Path controller, service and view are in mdm-core and need to return details of classes which are
-//unknown because they are defined in plugin projects.
-//For example, when rendering an EnumerationType, it is required to display EnumerationValues,
-//but this cannot be easily done from within a CatalogueItem.
-//(Possibilities in this example would be g.render(catalogueItem, [deep: true])) which renders too much
-//information, or g.render(catalogueItem, [expand:['enumerationValues']]) which requires knowledge of the properties
-//to be rendered.
-//So instead here we define a template based on the domainType of the catalogueItem. It is up to plugins to ensure
-//that a suitable template is available.
-//Note: using a template called 'path' does not work, hence 'showPath'.
+def template = (JsonViewTemplate) templateEngine.resolveTemplate(pathedResource.class, locale, 'full')
 
-String template = "/${Introspector.decapitalize(catalogueItem.domainType)}/showPath"
-json g.render(template: template, model: [catalogueItem: catalogueItem,
-                                          userSecurityPolicyManager: userSecurityPolicyManager])
+// If we find a "full" template then use that otherwise use the standard grails template resolution whcih should find the "basic" template we've defined
+if (template) {
+    String modelName = Introspector.decapitalize(pathedResource.domainType)
+    Map<String, Object> modelMap = new HashMap<>()
+    modelMap.userSecurityPolicyManager = userSecurityPolicyManager
+    modelMap[modelName] = pathedResource
+
+    String templatePath = template.templatePath.find(/(.+?\/)_(.+?).gson/) {match, pp, tp -> "$pp$tp"}
+    json g.render(template: templatePath, model: modelMap)
+} else {
+    json g.render(pathedResource)
+}

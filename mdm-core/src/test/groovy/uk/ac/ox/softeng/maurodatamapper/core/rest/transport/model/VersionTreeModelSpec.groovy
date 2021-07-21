@@ -20,7 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
 import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec
-import uk.ac.ox.softeng.maurodatamapper.util.Version
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import groovy.util.logging.Slf4j
 

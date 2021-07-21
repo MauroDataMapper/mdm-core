@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
@@ -163,6 +163,11 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
         DataModel.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'dm'
+    }
+
     void setType(DataModelType type) {
         modelType = type.label
     }
@@ -189,7 +194,6 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
         modelDiffBuilder(DataModel, this, otherDataModel)
             .appendList(DataType, 'dataTypes', this.getDataTypes(), otherDataModel.getDataTypes())
             .appendList(DataClass, 'dataClasses', this.childDataClasses, otherDataModel.childDataClasses)
-            .appendList(DataElement, 'dataElements', this.getAllDataElements(), otherDataModel.getAllDataElements())
     }
 
     def beforeValidate() {

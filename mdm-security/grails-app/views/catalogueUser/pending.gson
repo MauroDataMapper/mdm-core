@@ -10,5 +10,5 @@ model {
 
 json {
     count catalogueUserList instanceof PagedResultList ? ((PagedResultList) catalogueUserList).getTotalCount() : catalogueUserList?.size() ?: 0
-    items tmpl.fullCatalogueUser(catalogueUserList ?: [], [userSecurityPolicyManager: userSecurityPolicyManager])
+    items tmpl.catalogueUser_full(catalogueUserList ?: [], [userSecurityPolicyManager: userSecurityPolicyManager])
 }

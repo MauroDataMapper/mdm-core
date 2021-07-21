@@ -1,0 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.CreationMergeDiff
+
+model {
+    CreationMergeDiff creationMergeDiff
+}
+
+json {
+    path creationMergeDiff.fullyQualifiedPath
+    isMergeConflict creationMergeDiff.isMergeConflict()
+    isSourceModificationAndTargetDeletion creationMergeDiff.isSourceModificationAndTargetDeletion()
+    type 'creation'
+}

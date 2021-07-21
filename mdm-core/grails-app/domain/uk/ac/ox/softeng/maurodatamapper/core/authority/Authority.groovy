@@ -55,6 +55,15 @@ class Authority implements InformationAware, CreatorAware, SecurableResource {
         Authority.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'auth'
+    }
+
+    @Override
+    String getPathIdentifier() {
+        "${label}@${url}"
+    }
 
     @Override
     String toString() {

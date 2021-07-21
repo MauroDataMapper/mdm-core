@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
@@ -91,6 +91,10 @@ class EnumerationValue implements ModelItem<EnumerationValue, DataModel> {
         EnumerationValue.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'ev'
+    }
 
     @Override
     GormEntity getPathParent() {
@@ -125,7 +129,7 @@ class EnumerationValue implements ModelItem<EnumerationValue, DataModel> {
     }
 
     @Override
-    String getDiffIdentifier() {
+    String getPathIdentifier() {
         this.key
     }
 

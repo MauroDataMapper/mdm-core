@@ -27,6 +27,7 @@ import io.micronaut.core.type.Argument
 import io.micronaut.http.HttpResponse
 
 import static io.micronaut.http.HttpStatus.CREATED
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 
 /**
@@ -288,7 +289,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         loginEditor()
         POST('versionedFolders', [label: 'Tree Testing Versioned Folder'], MAP_ARG, true)
         verifyResponse(CREATED, response)
-        def vfId = responseBody().id
+        String vfId = responseBody().id
         POST("versionedFolders/$vfId/folders", [label: 'Tree Testing Folder'], MAP_ARG, true)
         verifyResponse(CREATED, response)
 
@@ -319,6 +320,10 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
             'moveToVersionedFolder',
             'softDelete'
         ]
+
+        cleanup:
+        DELETE("versionedFolders/$vfId?permanent=true", MAP_ARG, true)
+        verifyResponse(NO_CONTENT, response)
     }
 
     String getReaderTree() {

@@ -25,7 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
-import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
+import uk.ac.ox.softeng.maurodatamapper.version.VersionChangeType
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -35,7 +35,6 @@ import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Ignore
-import spock.lang.Stepwise
 import spock.lang.Unroll
 
 import java.util.regex.Pattern
@@ -63,7 +62,6 @@ import static io.micronaut.http.HttpStatus.OK
  */
 @Integration
 @Slf4j
-@Stepwise
 class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec {
 
 

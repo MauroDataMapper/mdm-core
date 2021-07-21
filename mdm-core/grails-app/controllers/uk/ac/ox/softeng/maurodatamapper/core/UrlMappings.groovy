@@ -67,6 +67,7 @@ class UrlMappings {
             get '/properties'(controller: 'apiProperty', action: 'index') {
                 openAccess = true
             }
+            get '/path/prefixMappings'(controller: 'path', action: 'listAllPrefixMappings')
 
             group '/importer', {
                 get "/parameters/$ns?/$name?/$version?"(controller: 'importer', action: 'parameters')
@@ -102,7 +103,7 @@ class UrlMappings {
 
                 post '/search'(controller: 'versionedFolder', action: 'search')
                 get '/search'(controller: 'versionedFolder', action: 'search')
-                
+
                 get "/commonAncestor/$otherVersionedFolderId"(controller: 'VersionedFolder', action: 'commonAncestor')
                 get '/latestFinalisedModel'(controller: 'VersionedFolder', action: 'latestFinalisedModel')
                 get '/latestModelVersion'(controller: 'VersionedFolder', action: 'latestModelVersion')
@@ -166,11 +167,6 @@ class UrlMappings {
                 '/referenceFiles'(resources: 'referenceFile', excludes: DEFAULT_EXCLUDES)
 
                 /*
-                Get Catalogue Item by path where is ID of top Catalogue Item is provided
-                 */
-                get "/path/$path"(controller: 'path', action: 'show')
-
-                /*
                 Rules
                 */
                 '/rules'(resources: 'rule', excludes: DEFAULT_EXCLUDES) {
@@ -216,21 +212,30 @@ class UrlMappings {
                 }
             }
 
+
+            group "/$resourceDomainType/$resourceId", {
+                /*
+                Edits
+                */
+                get '/edits'(controller: 'edit', action: 'index')
+            }
+
+            group "/$securableResourceDomainType/$securableResourceId", {
+                /*
+                Get resource by path where securableResourceId is the parent resource containing the path
+                 */
+                get "/path/$path"(controller: 'path', action: 'show')
+            }
             /*
-            Edits
-             */
-            get "/$resourceDomainType/$resourceId/edits"(controller: 'edit', action: 'index')
+            Get by path where is ID of top resource is not provided
+            */
+            get "/$securableResourceDomainType/path/$path"(controller: 'path', action: 'show')
 
             /*
             Changelogs
              */
             get "/$resourceDomainType/$resourceId/changelogs"(controller: 'changelog', action: 'index')
             post "/$resourceDomainType/$resourceId/changelogs"(controller: 'changelog', action: 'save')
-
-            /*
-            Get Catalogue Item by path where is ID of top Catalogue Item is not provided
-            */
-            get "/$catalogueItemDomainType/path/$path"(controller: 'path', action: 'show')
 
             /*
             Tree

@@ -6,4 +6,4 @@ model {
     UserSecurityPolicyManager userSecurityPolicyManager
 }
 
-json tmpl.fullDataClass(dataClass: dataClass, userSecurityPolicyManager: userSecurityPolicyManager)
+json tmpl.dataClass_full(dataClass: dataClass, userSecurityPolicyManager: userSecurityPolicyManager)

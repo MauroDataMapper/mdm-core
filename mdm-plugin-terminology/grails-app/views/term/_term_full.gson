@@ -1,0 +1,18 @@
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
+
+inherits template: '/catalogueItem/catalogueItem_full', model: [catalogueItem               : term,
+                                                                userSecurityPolicyManager   : userSecurityPolicyManager,
+                                                                owningSecurableResourceId   : term.modelId,
+                                                                owningSecurableResourceClass: Terminology]
+model {
+    Term term
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json {
+    code term.getCode()
+    definition term.getDefinition()
+    if (term.url) url term.getUrl()
+}

@@ -24,14 +24,13 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstra
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata.ReferenceSummaryMetadataReport
 import uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.constraint.validator.ReferenceSummaryMetadataLabelValidator
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class ReferenceSummaryMetadata implements MultiFacetItemAware, InformationAware, CreatorAware {
+class ReferenceSummaryMetadata implements MultiFacetItemAware, InformationAware {
 
     public final static Integer BATCH_SIZE = 5000
 
@@ -62,6 +61,16 @@ class ReferenceSummaryMetadata implements MultiFacetItemAware, InformationAware,
     @Override
     String getDomainType() {
         ReferenceSummaryMetadata.simpleName
+    }
+
+    @Override
+    String getPathPrefix() {
+        'rsm'
+    }
+
+    @Override
+    String getPathIdentifier() {
+        label
     }
 
     String toString() {

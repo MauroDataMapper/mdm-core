@@ -1,0 +1,10 @@
+import uk.ac.ox.softeng.maurodatamapper.core.diff.unidirectional.DeletionDiff
+
+model {
+    DeletionDiff deletionDiff
+
+}
+
+json {
+    value tmpl.'/diffable/diffable'(deletionDiff.value)
+}

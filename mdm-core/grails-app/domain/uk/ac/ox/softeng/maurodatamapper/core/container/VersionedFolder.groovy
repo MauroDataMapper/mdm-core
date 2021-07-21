@@ -44,13 +44,13 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware {
         CallableConstraints.call(InformationAwareConstraints, delegate)
         CallableConstraints.call(VersionAwareConstraints, delegate)
 
-        label validator: {val, obj -> new VersionedFolderLabelValidator(obj).isValid(val)}
+        label validator: { val, obj -> new VersionedFolderLabelValidator(obj).isValid(val) }
         parentFolder nullable: true
-        childFolders validator: {val, obj ->
+        childFolders validator: { val, obj ->
             if (obj.ident()) {
                 return VersionedFolder.countByParentFolder(obj) ? ['Cannot have any VersionedFolders inside a VersionedFolder'] : true
             }
-            val.any {it.domainType == VersionedFolder.simpleName} ? ['Cannot have any VersionedFolders inside a VersionedFolder'] : true
+            val.any { it.domainType == VersionedFolder.simpleName } ? ['Cannot have any VersionedFolders inside a VersionedFolder'] : true
         }
     }
 
@@ -67,6 +67,16 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware {
     @Override
     String getDomainType() {
         VersionedFolder.simpleName
+    }
+
+    @Override
+    String getPathPrefix() {
+        'vf'
+    }
+
+    @Override
+    String getPathIdentifier() {
+        "${label}.${modelVersion ?: branchName}"
     }
 
     static DetachedCriteria<VersionedFolder> by() {
@@ -118,7 +128,7 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware {
         by()
             .isNotNull('path')
             .ne('path', '')
-            .findAll {f ->
+            .findAll { f ->
                 ids.any {
                     it in f.path.split('/')
                 }

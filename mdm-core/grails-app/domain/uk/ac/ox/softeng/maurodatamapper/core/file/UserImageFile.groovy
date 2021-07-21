@@ -50,6 +50,11 @@ class UserImageFile implements CatalogueFile {
         UserImageFile.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'uif'
+    }
+
     def beforeValidate() {
         if (!fileName) fileName = "${userId}-profile"
         fileSize = fileContents?.size()

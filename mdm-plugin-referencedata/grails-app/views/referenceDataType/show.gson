@@ -6,4 +6,4 @@ model {
     UserSecurityPolicyManager userSecurityPolicyManager
 }
 
-json tmpl.fullReferenceDataType(referenceDataType: referenceDataType, userSecurityPolicyManager: userSecurityPolicyManager)
+json tmpl.referenceDataType_full(referenceDataType: referenceDataType, userSecurityPolicyManager: userSecurityPolicyManager)

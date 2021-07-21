@@ -68,14 +68,14 @@ class FolderService extends ContainerService<Folder> {
 
     @Override
     List<Folder> getAll(Collection<UUID> containerIds) {
-        Folder.getAll(containerIds).findAll().collect {unwrapIfProxy(it)}
+        Folder.getAll(containerIds).findAll().collect { unwrapIfProxy(it) }
     }
 
     @Override
     List<Folder> findAllReadableContainersBySearchTerm(UserSecurityPolicyManager userSecurityPolicyManager, String searchTerm) {
         log.debug('Searching readable folders for search term in label')
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Folder)
-        Folder.luceneTreeLabelSearch(readableIds.collect {it.toString()}, searchTerm)
+        Folder.luceneTreeLabelSearch(readableIds.collect { it.toString() }, searchTerm)
     }
 
     @Override
@@ -89,7 +89,7 @@ class FolderService extends ContainerService<Folder> {
     }
 
     @Override
-    Folder findDomainByParentIdAndLabel(UUID parentId, String label) {
+    Folder findByParentIdAndLabel(UUID parentId, String label) {
         Folder.byParentFolderIdAndLabel(parentId, label.trim()).get()
     }
 
@@ -127,7 +127,7 @@ class FolderService extends ContainerService<Folder> {
 
     @Override
     List<Folder> list() {
-        Folder.list().collect {unwrapIfProxy(it)}
+        Folder.list().collect { unwrapIfProxy(it) }
     }
 
     Long count() {
@@ -148,15 +148,15 @@ class FolderService extends ContainerService<Folder> {
             return
         }
         if (permanent) {
-            folder.childFolders.each {delete(it, permanent, false)}
-            modelServices.each {it.deleteAllInContainer(folder)}
+            folder.childFolders.each { delete(it, permanent, false) }
+            modelServices.each { it.deleteAllInContainer(folder) }
             if (securityPolicyManagerService) {
                 securityPolicyManagerService.removeSecurityForSecurableResource(folder, null)
             }
             folder.trackChanges()
             folder.delete(flush: flush)
         } else {
-            folder.childFolders.each {delete(it)}
+            folder.childFolders.each { delete(it) }
             delete(folder)
         }
     }
@@ -218,7 +218,7 @@ class FolderService extends ContainerService<Folder> {
 
     @Deprecated
     Folder findFolder(Folder parentFolder, String label) {
-        findDomainByParentIdAndLabel(parentFolder.id, label)
+        findByParentIdAndLabel(parentFolder.id, label)
     }
 
     @Deprecated
@@ -252,9 +252,9 @@ class FolderService extends ContainerService<Folder> {
         copy.description = original.description
 
         metadataService.findAllByMultiFacetAwareItemId(original.id).each {copy.addToMetadata(it.namespace, it.key, it.value, copier.emailAddress)}
-        ruleService.findAllByMultiFacetAwareItemId(original.id).each {rule ->
+        ruleService.findAllByMultiFacetAwareItemId(original.id).each { rule ->
             Rule copiedRule = new Rule(name: rule.name, description: rule.description, createdBy: copier.emailAddress)
-            rule.ruleRepresentations.each {ruleRepresentation ->
+            rule.ruleRepresentations.each { ruleRepresentation ->
                 copiedRule.addToRuleRepresentations(language: ruleRepresentation.language,
                                                     representation: ruleRepresentation.representation,
                                                     createdBy: copier.emailAddress)
@@ -262,7 +262,7 @@ class FolderService extends ContainerService<Folder> {
             copy.addToRules(copiedRule)
         }
 
-        semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id).each {link ->
+        semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id).each { link ->
             copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
                                     targetMultiFacetAwareItemId: link.targetMultiFacetAwareItemId,
                                     targetMultiFacetAwareItemDomainType: link.targetMultiFacetAwareItemDomainType,
@@ -274,7 +274,7 @@ class FolderService extends ContainerService<Folder> {
 
     List<Model> findAllModelsInFolder(Folder folder) {
         if (!modelServices) return []
-        modelServices.collectMany {service ->
+        modelServices.collectMany { service ->
             service.findAllByFolderId(folder.id)
         } as List<Model>
     }

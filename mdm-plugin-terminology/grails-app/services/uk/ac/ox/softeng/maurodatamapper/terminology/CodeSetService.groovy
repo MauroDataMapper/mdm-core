@@ -28,21 +28,20 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
-import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchData
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipTypeService
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationshipService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.CodeSetJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
-import uk.ac.ox.softeng.maurodatamapper.util.Version
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
@@ -54,7 +53,6 @@ class CodeSetService extends ModelService<CodeSet> {
     TermRelationshipTypeService termRelationshipTypeService
     TermService termService
     TermRelationshipService termRelationshipService
-    PathService pathService
     CodeSetJsonImporterService codeSetJsonImporterService
 
     @Override
@@ -203,20 +201,20 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    CodeSet mergeObjectDiffIntoModel(MergeObjectDiffData modelMergeObjectDiff, CodeSet targetModel,
-                                     UserSecurityPolicyManager userSecurityPolicyManager) {
+    CodeSet mergeLegacyObjectPatchDataIntoModel(ObjectPatchData objectPatchData, CodeSet targetModel,
+                                                UserSecurityPolicyManager userSecurityPolicyManager) {
 
 
-        if (!modelMergeObjectDiff.hasDiffs()) return targetModel
+        if (!objectPatchData.hasPatches()) return targetModel
 
-        modelMergeObjectDiff.getValidDiffs().each { mergeFieldDiff ->
+        objectPatchData.getDiffsWithContent().each {mergeFieldDiff ->
 
             if (mergeFieldDiff.isFieldChange()) {
                 targetModel.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
             } else if (mergeFieldDiff.isMetadataChange()) {
-                mergeMetadataIntoCatalogueItem(mergeFieldDiff, targetModel, userSecurityPolicyManager)
+                mergeLegacyMetadataIntoCatalogueItem(mergeFieldDiff, targetModel, userSecurityPolicyManager)
             } else {
-                ModelItemService modelItemService = modelItemServices.find { it.handles(mergeFieldDiff.fieldName) }
+                ModelItemService modelItemService = modelItemServices.find {it.handles(mergeFieldDiff.fieldName)}
 
                 if (modelItemService) {
 
@@ -253,9 +251,10 @@ class CodeSetService extends ModelService<CodeSet> {
                             modelItemService.copy(targetModel, modelItem, userSecurityPolicyManager)
                         }
                         // for modifications, recursively call this method
-                        mergeFieldDiff.modified.each { mergeObjectDiffData ->
+                        mergeFieldDiff.modified.each {mergeObjectDiffData ->
                             ModelItem modelItem = modelItemService.get(mergeObjectDiffData.leftId) as ModelItem
-                            modelItemService.mergeObjectDiffIntoModelItem(mergeObjectDiffData, modelItem, targetModel, userSecurityPolicyManager)
+                            modelItemService.
+                                mergeLegacyObjectPatchDataIntoModelItem(mergeObjectDiffData, modelItem, targetModel, userSecurityPolicyManager)
                         }
                     }
                 } else {
@@ -447,14 +446,13 @@ class CodeSetService extends ModelService<CodeSet> {
         //Here we check that each path does retrieve a known term.
         if (bindingMap.termPaths) {
             bindingMap.termPaths.each {
-                String path = it.termPath
-                Map pathParams = [path: path, catalogueItemDomainType: Terminology.simpleName]
+                Path path = Path.from(it.termPath)
 
                 //pathService requires a UserSecurityPolicyManager.
                 //Assumption is that if we got this far then it is OK to read the Terms because either (i) we came via a controller in which case
                 //the user's ability to import a CodeSet has already been tested, or (ii) we are calling this method from a service test spec in which
                 //case it is OK to read.
-                Term term = pathService.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, pathParams)
+                Term term = pathService.findResourceByPathFromRootClass(Terminology, path) as Term
 
                 if (term) {
                     codeSet.addToTerms(term)

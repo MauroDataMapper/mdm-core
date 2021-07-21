@@ -1,13 +1,8 @@
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.MergeDiff
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 
 model {
-    ObjectDiff<ReferenceDataModel> left
-    ObjectDiff<ReferenceDataModel> right
+    MergeDiff<ReferenceDataModel> mergeDiff
 }
 
-json {
-    left tmpl.'/objectDiff/objectDiff'(left)
-    right tmpl.'/objectDiff/objectDiff'(right)
-}
-
+json tmpl.'/mergeDiff/mergeDiff'(mergeDiff)

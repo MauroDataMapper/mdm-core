@@ -60,6 +60,16 @@ class RuleService implements MultiFacetItemAwareService<Rule> {
     }
 
     @Override
+    Rule copy(Rule facetToCopy, MultiFacetAware multiFacetAwareItemToCopyInto) {
+        Rule copy = new Rule(name: facetToCopy.name, description: facetToCopy.description, createdBy: facetToCopy.createdBy)
+        facetToCopy.ruleRepresentations.each {rr ->
+            copy.addToRuleRepresentations(language: rr.language, representation: rr.representation, createdBy: rr.createdBy)
+        }
+        multiFacetAwareItemToCopyInto.addToRules(copy)
+        copy
+    }
+
+    @Override
     void saveMultiFacetAwareItem(Rule facet) {
         if (!facet) return
         MultiFacetAwareService service = findServiceForMultiFacetAwareDomainType(facet.multiFacetAwareItemDomainType)
@@ -142,7 +152,13 @@ class RuleService implements MultiFacetItemAwareService<Rule> {
                                                                  UUID multiFacetAwareItemId) {
         EditHistoryAware multiFacetAwareItem =
             findMultiFacetAwareItemByDomainTypeAndId(multiFacetAwareItemDomainType, multiFacetAwareItemId) as EditHistoryAware
-        multiFacetAwareItem.addToEditsTransactionally EditTitle.DELETE,deleter, "[$domain.editLabel] removed from component [${multiFacetAwareItem.editLabel}]"
+        multiFacetAwareItem.addToEditsTransactionally(EditTitle.DELETE, deleter, "[$domain.editLabel] removed from component " +
+                                                                                 "[${multiFacetAwareItem.editLabel}]")
         domain
+    }
+
+    @Override
+    Rule findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        Rule.byMultiFacetAwareItemId(parentId).eq('name', pathIdentifier).get()
     }
 }

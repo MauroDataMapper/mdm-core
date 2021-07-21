@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration
 
-
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
@@ -28,10 +27,8 @@ import uk.ac.ox.softeng.maurodatamapper.test.unit.service.CatalogueItemServiceSp
 
 import grails.testing.services.ServiceUnitTest
 import groovy.util.logging.Slf4j
-import spock.lang.Stepwise
 
 @Slf4j
-@Stepwise
 class ReferenceEnumerationValueServiceSpec extends CatalogueItemServiceSpec implements ServiceUnitTest<ReferenceEnumerationValueService> {
 
     ReferenceDataModel referenceDataModel

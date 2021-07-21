@@ -1,4 +1,4 @@
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ArrayDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ArrayDiff
 
 model {
     ArrayDiff arrayDiff
@@ -6,7 +6,7 @@ model {
 }
 
 json("${arrayDiff.fieldName}") {
-    if (arrayDiff.deleted) deleted tmpl.'/mergeWrapper/mergeWrapper'(arrayDiff.deleted)
-    if (arrayDiff.created) created tmpl.'/mergeWrapper/mergeWrapper'(arrayDiff.created)
-    if (arrayDiff.modified) modified tmpl.'/objectDiff/objectDiff'(arrayDiff.modified)
+    if (arrayDiff.deleted) deleted g.render(arrayDiff.deleted)
+    if (arrayDiff.created) created g.render(arrayDiff.created)
+    if (arrayDiff.modified) modified g.render(arrayDiff.modified)
 }

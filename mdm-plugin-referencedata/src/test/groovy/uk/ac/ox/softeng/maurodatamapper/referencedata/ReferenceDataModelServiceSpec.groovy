@@ -21,7 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
-import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
+import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
@@ -33,7 +33,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePri
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.test.unit.service.CatalogueItemServiceSpec
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
-import uk.ac.ox.softeng.maurodatamapper.util.Version
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.testing.services.ServiceUnitTest
 import groovy.util.logging.Slf4j
@@ -51,6 +51,7 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
         mockArtefact(ReferenceDataElementService)
         mockArtefact(ReferenceDataTypeService)
         mockArtefact(ReferenceSummaryMetadataService)
+        mockArtefact(PathService)
         mockDomains(ReferenceDataModel, ReferenceDataType, ReferencePrimitiveType,
                     ReferenceEnumerationType, ReferenceEnumerationValue, ReferenceDataElement)
 

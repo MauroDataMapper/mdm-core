@@ -42,10 +42,8 @@ import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec
 
 import grails.testing.services.ServiceUnitTest
 import groovy.util.logging.Slf4j
-import spock.lang.Stepwise
 
 @Slf4j
-@Stepwise
 class EnumerationTypeServiceSpec extends BaseUnitSpec implements ServiceUnitTest<EnumerationTypeService> {
 
     DataModel dataModel

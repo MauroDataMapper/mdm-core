@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationService
@@ -28,17 +27,14 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.RuleService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.legacy.LegacyFieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
-import uk.ac.ox.softeng.maurodatamapper.core.facet.rule.RuleRepresentation
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeFieldDiffData
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.core.GrailsApplication
-import grails.core.GrailsClass
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
 import org.hibernate.SessionFactory
@@ -62,18 +58,6 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
 
     Class<K> getMultiFacetAwareClass() {
         getCatalogueItemClass()
-    }
-
-    boolean handles(Class clazz) {
-        clazz == getCatalogueItemClass()
-    }
-
-    boolean handles(String domainType) {
-        GrailsClass grailsClass = Utils.lookupGrailsDomain(grailsApplication, domainType)
-        if (!grailsClass) {
-            throw new ApiBadRequestException('CISXX', "Unrecognised domain class resource [${domainType}]")
-        }
-        handles(grailsClass.clazz)
     }
 
     boolean handlesPathPrefix(String pathPrefix) {
@@ -142,13 +126,22 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
     }
 
     K copyCatalogueItemInformation(K original, K copy, User copier, UserSecurityPolicyManager userSecurityPolicyManager,
-                                   CopyInformation copyInformation = new CopyInformation()) {
-        copy = populateCopyData(original, copy, copier, copyInformation)
-        classifierService.findAllByCatalogueItemId(userSecurityPolicyManager, original.id).each { copy.addToClassifiers(it) }
-        metadataService.findAllByMultiFacetAwareItemId(original.id).each { copy.addToMetadata(it.namespace, it.key, it.value, copier.emailAddress) }
-        ruleService.findAllByMultiFacetAwareItemId(original.id).each { rule ->
+                                   CopyInformation copyInformation = null) {
+        copy.createdBy = copier.emailAddress
+        copy.description = original.description
+
+        // Allow copying with a new label
+        if (copyInformation && copyInformation.validate()) {
+            copy.label = copyInformation.copyLabel
+        } else {
+            copy.label = original.label
+        }
+
+        classifierService.findAllByCatalogueItemId(userSecurityPolicyManager, original.id).each {copy.addToClassifiers(it)}
+        metadataService.findAllByMultiFacetAwareItemId(original.id).each {copy.addToMetadata(it.namespace, it.key, it.value, copier.emailAddress)}
+        ruleService.findAllByMultiFacetAwareItemId(original.id).each {rule ->
             Rule copiedRule = new Rule(name: rule.name, description: rule.description, createdBy: copier.emailAddress)
-            rule.ruleRepresentations.each { ruleRepresentation ->
+            rule.ruleRepresentations.each {ruleRepresentation ->
                 copiedRule.addToRuleRepresentations(language: ruleRepresentation.language,
                                                     representation: ruleRepresentation.representation,
                                                     createdBy: copier.emailAddress)
@@ -190,38 +183,35 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
      */
 
     K findByParentAndLabel(CatalogueItem parentCatalogueItem, String label) {
+        findByParentIdAndLabel(parentCatalogueItem.id, label)
+    }
+
+    K findByParentIdAndLabel(UUID parentId, String label) {
         null
     }
 
-    void mergeMetadataIntoCatalogueItem(MergeFieldDiffData mergeFieldDiff, K targetCatalogueItem,
-                                        UserSecurityPolicyManager userSecurityPolicyManager) {
+    @Override
+    K findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        findByParentIdAndLabel(parentId, pathIdentifier)
+    }
+
+    void mergeLegacyMetadataIntoCatalogueItem(LegacyFieldPatchData fieldPatchData, K targetCatalogueItem,
+                                              UserSecurityPolicyManager userSecurityPolicyManager) {
         log.debug('Merging Metadata into Catalogue Item')
         // call metadataService version of below
-        mergeFieldDiff.deleted.each { mergeItemData ->
-            Metadata metadata = metadataService.get(mergeItemData.id)
+        fieldPatchData.deleted.each {deletedItemPatchData ->
+            Metadata metadata = metadataService.get(deletedItemPatchData.id)
             metadataService.delete(metadata)
         }
 
         // copy additions from source to target object
-        mergeFieldDiff.created.each { mergeItemData ->
-            Metadata metadata = metadataService.get(mergeItemData.id)
-            metadataService.copy(targetCatalogueItem, metadata, userSecurityPolicyManager)
+        fieldPatchData.created.each {createdItemPatchData ->
+            Metadata metadata = metadataService.get(createdItemPatchData.id)
+            metadataService.copy(metadata, targetCatalogueItem)
         }
         // for modifications, recursively call this method
-        mergeFieldDiff.modified.each { mergeObjectDiffData ->
-            metadataService.mergeMetadataIntoCatalogueItem(targetCatalogueItem, mergeObjectDiffData)
+        fieldPatchData.modified.each { modifiedObjectPatchData ->
+            metadataService.mergeLegacyMetadataIntoCatalogueItem(targetCatalogueItem, modifiedObjectPatchData)
         }
-    }
-
-    K populateCopyData(K original, K copy, User copier, CopyInformation copyInformation) {
-        copy.createdBy = copier.emailAddress
-        copy.description = original.description
-        if (copyInformation.validate()) {
-            copy.label = copyInformation.copyLabel
-        } else {
-            copy.label = original.label
-            log.debug('Creating Copy with original label as provided label is empty or Invalid')
-        }
-        return copy
     }
 }

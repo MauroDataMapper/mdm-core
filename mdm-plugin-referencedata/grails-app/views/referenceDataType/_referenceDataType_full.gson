@@ -1,0 +1,30 @@
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+
+inherits template: '/catalogueItem/catalogueItem_full', model: [catalogueItem               : referenceDataType,
+                                                                userSecurityPolicyManager   : userSecurityPolicyManager,
+                                                                owningSecurableResourceId   : referenceDataType.modelId,
+                                                                owningSecurableResourceClass: ReferenceDataModel]
+model {
+    ReferenceDataType referenceDataType
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json {
+
+    if (referenceDataType.instanceOf(ReferenceEnumerationType)) {
+        ReferenceEnumerationType et = referenceDataType as ReferenceEnumerationType
+        enumerationValues g.render(et.referenceEnumerationValues)
+    }
+    if (referenceDataType.instanceOf(ReferencePrimitiveType)) {
+        ReferencePrimitiveType pt = referenceDataType as ReferencePrimitiveType
+        if (pt.units) units pt.units
+    }
+    //    if (fullDataType.instanceOf(TerminologyType)) {
+    //        TerminologyType tt = fullDataType as TerminologyType
+    //        terminology g.render(tt.terminology)
+    //    }
+}

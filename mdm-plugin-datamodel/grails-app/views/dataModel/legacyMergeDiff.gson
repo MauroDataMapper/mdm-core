@@ -1,0 +1,8 @@
+import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.MergeDiff
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+
+model {
+    MergeDiff<DataModel> mergeDiff
+}
+
+json tmpl.'/mergeDiff/legacyMergeDiff'(mergeDiff)

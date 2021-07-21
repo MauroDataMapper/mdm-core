@@ -22,12 +22,11 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MetadataAware
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.facet.NamespaceKeys
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
 import uk.ac.ox.softeng.maurodatamapper.provider.MauroDataMapperService
-import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
@@ -66,8 +65,11 @@ class MetadataService implements MultiFacetItemAwareService<Metadata> {
         metadata.delete(flush: flush)
     }
 
-    void copy(MultiFacetAware target, Metadata item, UserSecurityPolicyManager userSecurityPolicyManager) {
-        target.addToMetadata(item.namespace, item.key, item.value, userSecurityPolicyManager.user.emailAddress)
+    @Override
+    Metadata copy(Metadata facetToCopy, MultiFacetAware multiFacetAwareItemToCopyInto) {
+        Metadata copy = new Metadata(namespace: facetToCopy.namespace, key: facetToCopy.key, value: facetToCopy.value, createdBy: facetToCopy.createdBy)
+        multiFacetAwareItemToCopyInto.addToMetadata(copy)
+        copy
     }
 
     @Override
@@ -234,19 +236,19 @@ class MetadataService implements MultiFacetItemAwareService<Metadata> {
 
     }
 
-    void mergeMetadataIntoCatalogueItem(CatalogueItem targetCatalogueItem, MergeObjectDiffData mergeObjectDiffData) {
+    void mergeLegacyMetadataIntoCatalogueItem(CatalogueItem targetCatalogueItem, ObjectPatchData objectPatchData) {
 
-        if (!mergeObjectDiffData.hasDiffs()) return
+        if (!objectPatchData.hasPatches()) return
 
-        Metadata targetMetadata = findByMultiFacetAwareItemIdAndId(targetCatalogueItem.id, mergeObjectDiffData.leftId)
+        Metadata targetMetadata = findByMultiFacetAwareItemIdAndId(targetCatalogueItem.id, objectPatchData.targetId)
         if (!targetMetadata) {
-            log.error('Attempted to merge non-existent metadata [{}] inside target catalogue item [{}]', mergeObjectDiffData.leftId,
+            log.error('Attempted to merge non-existent metadata [{}] inside target catalogue item [{}]', objectPatchData.targetId,
                       targetCatalogueItem.id)
         }
 
-        mergeObjectDiffData.getValidDiffs().each {mergeFieldDiffData ->
-            if (mergeFieldDiffData.value) {
-                targetMetadata.setProperty(mergeFieldDiffData.fieldName, mergeFieldDiffData.value)
+        objectPatchData.getDiffsWithContent().each {fieldPatchData ->
+            if (fieldPatchData.value) {
+                targetMetadata.setProperty(fieldPatchData.fieldName, fieldPatchData.value)
             } else {
                 log.error('Only field diff types can be handled inside MetadataService')
             }
@@ -264,5 +266,13 @@ class MetadataService implements MultiFacetItemAwareService<Metadata> {
         sessionFactory.currentSession.clear()
 
         log.trace('Batch save took {}', Utils.getTimeString(System.currentTimeMillis() - start))
+    }
+
+    @Override
+    Metadata findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        Metadata.byMultiFacetAwareItemId(parentId)
+            .eq('namespace', pathIdentifier.split(/\./)[0])
+            .eq('key', pathIdentifier.split(/\./)[1])
+            .get()
     }
 }

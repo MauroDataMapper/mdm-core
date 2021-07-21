@@ -6,4 +6,4 @@ model {
     UserSecurityPolicyManager userSecurityPolicyManager
 }
 
-json tmpl.fullGroupRole(groupRole: groupRole, userSecurityPolicyManager: userSecurityPolicyManager)
+json tmpl.groupRole_full(groupRole: groupRole, userSecurityPolicyManager: userSecurityPolicyManager)

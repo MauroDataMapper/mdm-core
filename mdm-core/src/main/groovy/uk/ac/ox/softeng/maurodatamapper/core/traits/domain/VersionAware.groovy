@@ -20,7 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.traits.domain
 
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
-import uk.ac.ox.softeng.maurodatamapper.util.Version
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.databinding.BindUsing
 import groovy.transform.CompileStatic

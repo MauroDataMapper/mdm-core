@@ -21,6 +21,8 @@ interface SecurableResourceService<K> {
 
     K get(Serializable id)
 
+    void delete(K domain)
+
     boolean handles(Class clazz)
 
     boolean handles(String domainType)

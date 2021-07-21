@@ -1,20 +1,12 @@
 #!/bin/zsh
 
-# This executes all the commands Jenkinsfile executes in the same order and format that Jenkins does
-# The hope is that we can repeat the tests locally and get the same instability
-echo ">> Info <<"
-./gradlew -v
-./gradlew jvmArgs sysProps jenkinsClean
-pushd mdm-core
-./gradlew -v
-popd
-echo ">> Compile <<"
-./gradlew --build-cache compile
-echo ">> License Check <<"
-./gradlew --build-cache license
-echo ">> Unit Tests <<"
+function unitTest(){
+  echo ">> Unit Tests <<"
 ./gradlew --build-cache test
-echo ">> Integration Tests <<"
+}
+
+function integrationTest(){
+  echo ">> Integration Tests <<"
 ./gradlew --build-cache -Dgradle.integrationTest=true \
   :mdm-core:integrationTest \
   :mdm-plugin-email-proxy:integrationTest \
@@ -24,7 +16,10 @@ echo ">> Integration Tests <<"
   :mdm-plugin-dataflow:integrationTest \
   :mdm-plugin-referencedata:integrationTest \
   :mdm-plugin-federation:integrationTest
-echo ">> Functional Tests <<"
+}
+
+function functionalTest(){
+  echo ">> Functional Tests <<"
 ./gradlew --build-cache -Dgradle.functionalTest=true \
   :mdm-core:integrationTest \
   :mdm-plugin-authentication-apikey:integrationTest \
@@ -36,15 +31,49 @@ echo ">> Functional Tests <<"
   :mdm-plugin-profile:integrationTest \
   :mdm-security:integrationTest \
   :mdm-plugin-federation:integrationTest
-echo ">> E2E Tests <<"
-./gradlew --build-cache -Dgradle.test.package=core :mdm-testing-functional:integrationTest
-./gradlew --build-cache -Dgradle.test.package=security :mdm-testing-functional:integrationTest
-./gradlew --build-cache -Dgradle.test.package=authentication :mdm-testing-functional:integrationTest
-./gradlew --build-cache -Dgradle.test.package=datamodel :mdm-testing-functional:integrationTest
-./gradlew --build-cache -Dgradle.test.package=terminology :mdm-testing-functional:integrationTest
-./gradlew --build-cache -Dgradle.test.package=dataflow :mdm-testing-functional:integrationTest
-./gradlew --build-cache -Dgradle.test.package=referencedata :mdm-testing-functional:integrationTest
-./gradlew --build-cache -Dgradle.test.package=federation :mdm-testing-functional:integrationTest
+
+}
+
+function e2eTest(){
+  echo ">> E2E Tests <<"
+  ./gradlew --build-cache -Dgradle.test.package=core :mdm-testing-functional:integrationTest
+  ./gradlew --build-cache -Dgradle.test.package=security :mdm-testing-functional:integrationTest
+  ./gradlew --build-cache -Dgradle.test.package=authentication :mdm-testing-functional:integrationTest
+  ./gradlew --build-cache -Dgradle.test.package=datamodel :mdm-testing-functional:integrationTest
+  ./gradlew --build-cache -Dgradle.test.package=terminology :mdm-testing-functional:integrationTest
+  ./gradlew --build-cache -Dgradle.test.package=dataflow :mdm-testing-functional:integrationTest
+  ./gradlew --build-cache -Dgradle.test.package=referencedata :mdm-testing-functional:integrationTest
+  ./gradlew --build-cache -Dgradle.test.package=federation :mdm-testing-functional:integrationTest
+}
+
+function initialReport(){
+  echo ">> Info <<"
+  ./gradlew -v
+  pushd mdm-core || exit
+  ./gradlew -v
+  popd || exit
+  echo ">> Compile <<"
+  ./gradlew --build-cache compile
+  echo ">> License Check <<"
+  ./gradlew --build-cache license
+}
+
+########################################################################################################
+# This executes all the commands Jenkinsfile executes in the same order and format that Jenkins does
+# The hope is that we can repeat the tests locally and get the same instability
+
+./gradlew jenkinsClean
+
+initialReport
+
+unitTest
+
+integrationTest
+
+functionalTest
+
+e2eTest
+
 echo ">> Root Test Report <<"
 ./gradlew --build-cache rootTestReport
 #./gradlew --build-cache jacocoTestReport

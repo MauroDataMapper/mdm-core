@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.facet
 
+
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
@@ -75,6 +76,16 @@ class SummaryMetadataService implements MultiFacetItemAwareService<SummaryMetada
     }
 
     @Override
+    SummaryMetadata copy(SummaryMetadata facetToCopy, MultiFacetAware multiFacetAwareItemToCopyInto) {
+        SummaryMetadata copy = new SummaryMetadata(summaryMetadataType: facetToCopy.summaryMetadataType, createdBy: facetToCopy.createdBy)
+        facetToCopy.summaryMetadataReports.each {smr ->
+            copy.addToSummaryMetadataReports(reportDate: smr.reportDate, reportValue: smr.reportValue)
+        }
+        (multiFacetAwareItemToCopyInto as SummaryMetadataAware).addToSummaryMetadata(copy)
+        copy
+    }
+
+    @Override
     SummaryMetadata findByMultiFacetAwareItemIdAndId(UUID multiFacetAwareItemId, Serializable id) {
         SummaryMetadata.byMultiFacetAwareItemIdAndId(multiFacetAwareItemId, id).get()
     }
@@ -87,5 +98,10 @@ class SummaryMetadataService implements MultiFacetItemAwareService<SummaryMetada
     @Override
     DetachedCriteria<SummaryMetadata> getBaseDeleteCriteria() {
         SummaryMetadata.by()
+    }
+
+    @Override
+    SummaryMetadata findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        SummaryMetadata.byMultiFacetAwareItemId(parentId).eq('label', pathIdentifier).get()
     }
 }

@@ -1,7 +1,7 @@
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
-inherits template: '/dataClass/fullDataClass', model: [dataClass: deepDataClass, userSecurityPolicyManager: userSecurityPolicyManager]
+inherits template: '/dataClass/dataClass_full', model: [dataClass: deepDataClass, userSecurityPolicyManager: userSecurityPolicyManager]
 model {
     DataClass deepDataClass
     UserSecurityPolicyManager userSecurityPolicyManager
@@ -9,7 +9,7 @@ model {
 
 json {
     dataClasses tmpl.deepDataClass(deepDataClass.dataClasses ?: [], [userSecurityPolicyManager: userSecurityPolicyManager])
-    dataElements tmpl.'/dataElement/fullDataElement'(deepDataClass.dataElements ?: [], [userSecurityPolicyManager: userSecurityPolicyManager])
+    dataElements tmpl.'/dataElement/dataElement_full'(deepDataClass.dataElements ?: [], [userSecurityPolicyManager: userSecurityPolicyManager])
 
     if (deepDataClass.parentDataClass) parentDataClass deepDataClass.parentDataClassId
 }

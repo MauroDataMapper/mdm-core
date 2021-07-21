@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.federation
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
-import uk.ac.ox.softeng.maurodatamapper.util.Version
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import java.time.OffsetDateTime
 

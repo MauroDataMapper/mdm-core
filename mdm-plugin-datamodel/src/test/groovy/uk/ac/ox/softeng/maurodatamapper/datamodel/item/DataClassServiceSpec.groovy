@@ -31,10 +31,8 @@ import uk.ac.ox.softeng.maurodatamapper.test.unit.service.CatalogueItemServiceSp
 
 import grails.testing.services.ServiceUnitTest
 import groovy.util.logging.Slf4j
-import spock.lang.Stepwise
 
 @Slf4j
-@Stepwise
 class DataClassServiceSpec extends CatalogueItemServiceSpec implements ServiceUnitTest<DataClassService> {
 
     DataModel dataModel

@@ -20,7 +20,6 @@ package uk.ac.ox.softeng.maurodatamapper.testing.functional
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
 import spock.lang.Ignore
-import spock.lang.Stepwise
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.OK
@@ -34,7 +33,6 @@ import static io.micronaut.http.HttpStatus.OK
  *
  * </pre>
  */
-@Stepwise
 @Slf4j
 @Ignore('No longer relevant')
 abstract class ModelImportFunctionalSpec extends FunctionalSpec {

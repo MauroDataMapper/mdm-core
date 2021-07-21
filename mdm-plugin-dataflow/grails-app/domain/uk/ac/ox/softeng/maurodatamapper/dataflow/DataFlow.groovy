@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.dataflow
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
@@ -91,6 +91,11 @@ class DataFlow implements ModelItem<DataFlow, DataModel> {
     }
 
     @Override
+    String getPathPrefix() {
+        'df'
+    }
+
+    @Override
     GormEntity getPathParent() {
         target
     }
@@ -119,11 +124,6 @@ class DataFlow implements ModelItem<DataFlow, DataModel> {
     @Override
     DataModel getModel() {
         target
-    }
-
-    @Override
-    String getDiffIdentifier() {
-        this.label
     }
 
     @Override

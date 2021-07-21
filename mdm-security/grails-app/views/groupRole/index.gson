@@ -10,5 +10,5 @@ model {
 
 json {
     count groupRoleList instanceof PagedResultList ? ((PagedResultList) groupRoleList).getTotalCount() : groupRoleList?.size() ?: 0
-    items tmpl.fullGroupRole(groupRoleList ?: [], [userSecurityPolicyManager: userSecurityPolicyManager])
+    items tmpl.groupRole_full(groupRoleList ?: [], [userSecurityPolicyManager: userSecurityPolicyManager])
 }

@@ -1,0 +1,19 @@
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+
+inherits template: '/catalogueItem/catalogueItem'
+model {
+    CatalogueItem catalogueItem
+    UserSecurityPolicyManager userSecurityPolicyManager
+    Class owningSecurableResourceClass
+    UUID owningSecurableResourceId
+}
+
+json {
+    availableActions userSecurityPolicyManager.userAvailableActions(catalogueItem.domainType,
+                                                                    catalogueItem.id,
+                                                                    owningSecurableResourceClass,
+                                                                    owningSecurableResourceId)
+    lastUpdated catalogueItem.lastUpdated
+    if (catalogueItem.classifiers) classifiers g.render(catalogueItem.classifiers)
+}

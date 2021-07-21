@@ -73,6 +73,16 @@ class UserGroup implements EditHistoryAware, SecurableResource, Principal {
     }
 
     @Override
+    String getPathPrefix() {
+        'ug'
+    }
+
+    @Override
+    String getPathIdentifier() {
+        name
+    }
+
+    @Override
     Boolean getReadableByEveryone() {
         false
     }

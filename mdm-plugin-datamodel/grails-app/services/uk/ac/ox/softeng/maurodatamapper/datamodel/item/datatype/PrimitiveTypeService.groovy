@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
@@ -38,6 +40,7 @@ class PrimitiveTypeService extends ModelItemService<PrimitiveType> implements Su
     public static final String DEFAULT_TEXT_TYPE_DESCRIPTION = 'Text Data Type'
 
     SummaryMetadataService summaryMetadataService
+    DataTypeService dataTypeService
 
     @Override
     PrimitiveType get(Serializable id) {
@@ -70,6 +73,11 @@ class PrimitiveTypeService extends ModelItemService<PrimitiveType> implements Su
 
     void delete(PrimitiveType primitiveType, boolean flush) {
         primitiveType.delete(flush: flush)
+    }
+
+    @Override
+    PrimitiveType copy(Model copiedDataModel, PrimitiveType original, CatalogueItem nonModelParent, UserSecurityPolicyManager userSecurityPolicyManager) {
+        dataTypeService.copy(copiedDataModel, original, nonModelParent, userSecurityPolicyManager) as PrimitiveType
     }
 
     @Override
