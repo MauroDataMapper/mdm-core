@@ -67,15 +67,22 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
     abstract void deleteAll(Collection<K> catalogueItems)
 
     K save(Map args, K catalogueItem) {
+        // If inserting then we will need to update all the facets with the CIs "id" after insert
+        // If updating then we dont need to do this as the ID has already been done
+        boolean inserting = !(catalogueItem as GormEntity).ident() ?: args.insert
         Map saveArgs = new HashMap(args)
         if (args.flush) {
             saveArgs.remove('flush')
             (catalogueItem as GormEntity).save(saveArgs)
-            updateFacetsAfterInsertingCatalogueItem(catalogueItem)
+            if (inserting) updateFacetsAfterInsertingCatalogueItem(catalogueItem)
+            // We do need to ensure the BT hasnt changed (e.g. a move of a MI inside an M)
+            checkBreadcrumbTreeAfterSavingCatalogueItem(catalogueItem)
             sessionFactory.currentSession.flush()
         } else {
             (catalogueItem as GormEntity).save(args)
-            updateFacetsAfterInsertingCatalogueItem(catalogueItem)
+            if (inserting) updateFacetsAfterInsertingCatalogueItem(catalogueItem)
+            // We do need to ensure the BT hasnt changed (e.g. a move of a MI inside an M)
+            checkBreadcrumbTreeAfterSavingCatalogueItem(catalogueItem)
         }
         catalogueItem
     }
@@ -149,7 +156,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
             copy.addToRules(copiedRule)
         }
 
-        semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id).each { link ->
+        semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id).each {link ->
             copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
                                     targetMultiFacetAwareItemId: link.targetMultiFacetAwareItemId,
                                     targetMultiFacetAwareItemDomainType: link.targetMultiFacetAwareItemDomainType,
@@ -163,12 +170,14 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         source.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdBy: catalogueUser.emailAddress, targetMultiFacetAwareItem: target)
     }
 
-    K updateFacetsAfterInsertingCatalogueItem(K catalogueItem) {
-        updateFacetsAfterInsertingMultiFacetAware(catalogueItem)
+    void checkBreadcrumbTreeAfterSavingCatalogueItem(K catalogueItem) {
         catalogueItem.breadcrumbTree?.trackChanges()
         catalogueItem.breadcrumbTree?.beforeValidate()
         catalogueItem.breadcrumbTree?.save(validate: false)
-        catalogueItem
+    }
+
+    K updateFacetsAfterInsertingCatalogueItem(K catalogueItem) {
+        updateFacetsAfterInsertingMultiFacetAware(catalogueItem)
     }
 
     K checkFacetsAfterImportingCatalogueItem(K catalogueItem) {
