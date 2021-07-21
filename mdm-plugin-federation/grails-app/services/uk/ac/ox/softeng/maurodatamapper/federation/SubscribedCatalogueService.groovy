@@ -51,8 +51,8 @@ class SubscribedCatalogueService implements XmlImportMapping {
         SubscribedCatalogue.get(id)
     }
 
-    List<SubscribedCatalogue> list(Map pagination) {
-        pagination ? SubscribedCatalogue.list(pagination) : SubscribedCatalogue.list()
+    List<SubscribedCatalogue> list(Map pagination = [:]) {
+        SubscribedCatalogue.by().list(pagination)
     }
 
     Long count() {
@@ -106,7 +106,7 @@ class SubscribedCatalogueService implements XmlImportMapping {
      * 4. Return the list of AvailableModel, in order that this can be rendered as json
      *
      * @param subscribedCatalogue The catalogue we want to query
-     * @return List<AvailableModel>             The list of available models returned by the catalogue
+     * @return List<AvailableModel>               The list of available models returned by the catalogue
      *
      */
     List<PublishedModel> listPublishedModels(SubscribedCatalogue subscribedCatalogue) {
@@ -117,7 +117,7 @@ class SubscribedCatalogueService implements XmlImportMapping {
 
         if (subscribedCatalogueModels.publishedModels.isEmpty()) return []
 
-        (subscribedCatalogueModels.publishedModels as List<Map<String, String>>).collect { pm ->
+        (subscribedCatalogueModels.publishedModels as List<Map<String, String>>).collect {pm ->
             new PublishedModel().tap {
                 modelId = Utils.toUuid(pm.id)
                 title = pm.title
