@@ -60,4 +60,11 @@ abstract class Profile implements Comparable<Profile> {
 
     abstract void fromSections(List<ProfileSection> profileSections)
 
+    Profile validate() {
+        sections.each {section ->
+            section.validate()
+        }
+        this
+    }
+
 }

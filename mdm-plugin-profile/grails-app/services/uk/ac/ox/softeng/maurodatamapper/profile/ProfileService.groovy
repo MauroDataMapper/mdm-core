@@ -29,7 +29,6 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileField
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
-import uk.ac.ox.softeng.maurodatamapper.profile.object.JsonProfile
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.DynamicJsonProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
@@ -37,9 +36,8 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 import grails.gorm.transactions.Transactional
+import org.hibernate.SessionFactory
 import org.springframework.beans.factory.annotation.Autowired
-
-import javax.servlet.http.HttpServletRequest
 
 @Transactional
 class ProfileService {
@@ -56,6 +54,7 @@ class ProfileService {
     DataModelService dataModelService
     MetadataService metadataService
     ProfileSpecificationProfileService profileSpecificationProfileService
+    SessionFactory sessionFactory
 
     Profile createProfile(ProfileProviderService profileProviderService, MultiFacetAware multiFacetAwareItem) {
         profileProviderService.createProfileFromEntity(multiFacetAwareItem)
@@ -76,49 +75,37 @@ class ProfileService {
         }.max()
     }
 
-    void storeProfile(ProfileProviderService profileProviderService, MultiFacetAware multiFacetAwareItem, HttpServletRequest request, User user) {
-
-        Profile profile = profileProviderService.getNewProfile()
-        if (profileProviderService.isJsonProfileService()) {
-            profile.sections.each {section ->
-                ProfileSection submittedSection = request.getJSON().sections.find {it.sectionName == section.sectionName}
-                if (submittedSection) {
-                    section.fields.each {field ->
-                        ProfileField submittedField = submittedSection.fields.find {it.fieldName == field.fieldName}
-                        field.currentValue = submittedField.currentValue ?: ""
-                    }
-                }
-            }
-        }
-        else if (!profileProviderService.isJsonProfileService()) {
-            profile.fromSections(request.getJSON().sections)
-        }
-
-        /*final DataBindingSource bindingSource = DataBindingUtils.createDataBindingSource(grailsApplication, profile.getClass(), request)
-         bindingSource.propertyNames.each { propertyName ->
-             profile.setField(propertyName, bindingSource[propertyName])
-         }
-      */
-        profileProviderService.storeProfileInEntity(multiFacetAwareItem, profile, user)
+    MultiFacetAware storeProfile(ProfileProviderService profileProviderService, MultiFacetAware multiFacetAwareItem, Profile profileToStore, User user) {
+        profileProviderService.storeProfileInEntity(multiFacetAwareItem, profileToStore, user)
+        MultiFacetAwareService service = multiFacetAwareServices.find {it.handles(multiFacetAwareItem.domainType)}
+        if (!service) throw new ApiBadRequestException('CIAS02', "Facet retrieval for catalogue item [${multiFacetAwareItem.domainType}] with no supporting service")
+        service.save(flush: true, validate: false, multiFacetAwareItem)
     }
 
-    def validateProfile(ProfileProviderService profileProviderService, HttpServletRequest request) {
-        Profile profile = profileProviderService.getNewProfile()
-        profile.sections.each {section ->
-            ProfileSection submittedSection = request.getJSON().sections.find {it.sectionName == section.sectionName}
+    Profile validateProfile(ProfileProviderService profileProviderService, Profile submittedProfile) {
+        Profile cleanProfile = profileProviderService.newProfile
+
+        cleanProfile.sections.each {section ->
+            ProfileSection submittedSection = submittedProfile.sections.find {it.sectionName == section.sectionName}
             if (submittedSection) {
                 section.fields.each {field ->
                     ProfileField submittedField = submittedSection.fields.find {it.fieldName == field.fieldName}
-                    field.currentValue = submittedField.currentValue ?: ""
+                    field.currentValue = submittedField.currentValue ?: ''
                 }
             }
         }
-        profile.sections.each {section ->
-            section.fields.each {field ->
-                field.validate()
-            }
+        cleanProfile.validate()
+    }
+
+    void deleteProfile(ProfileProviderService profileProviderService, MultiFacetAware multiFacetAwareItem, User currentUser) {
+
+        Set<Metadata> mds = profileProviderService.getAllProfileMetadataByMultiFacetAwareItemId(multiFacetAwareItem.id)
+
+        mds.each {md ->
+            metadataService.delete(md)
+            metadataService.addDeletedEditToMultiFacetAwareItem(currentUser, md, multiFacetAwareItem.domainType, multiFacetAwareItem.id)
         }
-        profile
+        sessionFactory.currentSession.flush()
     }
 
 
@@ -148,10 +135,6 @@ class ProfileService {
             profileProviderService.createProfileFromEntity(model)
         })
         new PaginatedResultList<>(profiles, pagination)
-    }
-
-    MultiFacetAware findMultiFacetAwareByDomainTypeAndId(String domainType, String multiFacetAwareItemIdString) {
-        findMultiFacetAwareItemByDomainTypeAndId(domainType, UUID.fromString(multiFacetAwareItemIdString))
     }
 
     MultiFacetAware findMultiFacetAwareItemByDomainTypeAndId(String domainType, UUID multiFacetAwareItemId) {

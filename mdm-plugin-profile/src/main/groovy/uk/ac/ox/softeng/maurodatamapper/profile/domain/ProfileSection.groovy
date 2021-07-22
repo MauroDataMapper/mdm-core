@@ -26,4 +26,9 @@ class ProfileSection implements Cloneable {
     String sectionDescription
     List<ProfileField> fields = []
 
+    void validate() {
+        fields.each {field ->
+            field.validate()
+        }
+    }
 }

@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile.provider
 
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MetadataAware
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
@@ -119,6 +120,10 @@ abstract class ProfileProviderService<P extends Profile, D extends MultiFacetAwa
 
     List<MetadataAware> findAllProfiledItems(String domainType = null) {
         metadataService.findAllMultiFacetAwareItemsByNamespace(metadataNamespace, domainType)
+    }
+
+    List<Metadata> getAllProfileMetadataByMultiFacetAwareItemId(UUID multiFacetAwareItemId) {
+        metadataService.findAllByMultiFacetAwareItemIdAndNamespace(multiFacetAwareItemId, this.getMetadataNamespace())
     }
 
     UUID getDefiningDataModel() {
