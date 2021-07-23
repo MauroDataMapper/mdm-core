@@ -107,8 +107,12 @@ class Path {
         pathNodes.isEmpty()
     }
 
-    void each(@DelegatesTo(List) @ClosureParams(value = SimpleType, options = 'uk.ac.ox.softeng.maurodatamapper.util.PathNode') Closure closure) {
+    void each(@DelegatesTo(List) @ClosureParams(value = SimpleType, options = 'uk.ac.ox.softeng.maurodatamapper.path.PathNode') Closure closure) {
         pathNodes.each closure
+    }
+
+    PathNode find(@DelegatesTo(List) @ClosureParams(value = SimpleType, options = 'uk.ac.ox.softeng.maurodatamapper.path.PathNode') Closure closure) {
+        pathNodes.find closure
     }
 
     Path getChildPath() {
@@ -138,6 +142,12 @@ class Path {
 
     static Path from(String path) {
         new Path(path)
+    }
+
+    static Path from(PathNode pathNode) {
+        new Path().tap {
+            pathNodes << pathNode
+        }
     }
 
     static Path from(String prefix, String pathIdentifier) {
