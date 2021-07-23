@@ -55,7 +55,7 @@ class VersionedFolderInterceptor extends TieredAccessSecurableResourceIntercepto
     boolean before() {
         securableResourceChecks()
 
-        if (actionName == 'commonAncestor') {
+        if (actionName in ['commonAncestor', 'diff', 'mergeDiff']) {
             if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(VersionedFolder, getId())) {
                 return notFound(VersionedFolder, getId())
             }
@@ -63,6 +63,18 @@ class VersionedFolderInterceptor extends TieredAccessSecurableResourceIntercepto
                 return notFound(VersionedFolder, params.otherVersionedFolderId)
             }
             return true
+        }
+        if (actionName == 'mergeInto') {
+            //TODO confirm all correct
+            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(getSecuredClass(), getId())) {
+                return notFound(getSecuredClass(), getId())
+            }
+            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(getSecuredClass(), params.otherVersionedFolderId)) {
+                return notFound(getSecuredClass(), params.otherVersionedFolderId)
+            }
+
+            return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(getSecuredClass(), params.otherVersionedFolderId, actionName) ?:
+                   forbiddenDueToPermissions(currentUserSecurityPolicyManager.userAvailableActions(getSecuredClass(), params.otherVersionedFolderId))
         }
 
         if (params.id || params.versionedFolderId) {

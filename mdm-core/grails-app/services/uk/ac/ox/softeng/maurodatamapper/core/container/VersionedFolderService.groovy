@@ -18,11 +18,22 @@
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ArrayDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.FieldDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.MergeDiff
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
@@ -31,13 +42,24 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwa
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
+import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.VersionLinkAwareService
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 import uk.ac.ox.softeng.maurodatamapper.version.VersionChangeType
@@ -52,6 +74,7 @@ import org.springframework.context.MessageSource
 
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import java.util.function.Predicate
 
 @Transactional
 @Slf4j
@@ -64,9 +87,19 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     VersionLinkService versionLinkService
     MessageSource messageSource
     AuthorityService authorityService
+    PathService pathService
+
+    @Autowired(required = false)
+    Set<DomainService> domainServices
+
+    @Autowired(required = false)
+    Set<MultiFacetItemAwareService> multiFacetItemAwareServices
 
     @Autowired(required = false)
     List<ModelService> modelServices
+
+    @Autowired(required = false)
+    Set<ModelItemService> modelItemServices
 
     @Autowired(required = false)
     SecurityPolicyManagerService securityPolicyManagerService
@@ -100,16 +133,21 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         folderService.getContainerPropertyNameInModel()
     }
 
+    Set<DomainService> getDomainServices() {
+        domainServices.add(this)
+        domainServices
+    }
+
     @Override
     List<Folder> getAll(Collection<UUID> containerIds) {
-        VersionedFolder.getAll(containerIds).findAll().collect { unwrapIfProxy(it) }
+        VersionedFolder.getAll(containerIds).findAll().collect {unwrapIfProxy(it)}
     }
 
     @Override
     List<VersionedFolder> findAllReadableContainersBySearchTerm(UserSecurityPolicyManager userSecurityPolicyManager, String searchTerm) {
         log.debug('Searching readable folders for search term in label')
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Folder)
-        VersionedFolder.luceneTreeLabelSearch(readableIds.collect { it.toString() }, searchTerm)
+        VersionedFolder.luceneTreeLabelSearch(readableIds.collect {it.toString()}, searchTerm)
     }
 
     @Override
@@ -194,16 +232,16 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         long start = System.currentTimeMillis()
 
         log.debug('Finalising models inside folder')
-        modelServices.each { service ->
+        modelServices.each {service ->
             Collection<Model> modelsInFolder = service.findAllByFolderId(folder.id)
-            modelsInFolder.each { model ->
+            modelsInFolder.each {model ->
                 service.finaliseModel(model as Model, user, folderVersion, null, folderVersionTag)
             }
         }
 
         List<Folder> folders = findAllByParentId(folder.id)
         log.debug('Finalising {} sub folders inside folder', folders.size())
-        folders.each { childFolder ->
+        folders.each {childFolder ->
             finaliseFolderContents(childFolder, user, folderVersion, folderVersionTag)
         }
 
@@ -295,7 +333,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     @Override
     List<VersionedFolder> list() {
-        VersionedFolder.list().collect { unwrapIfProxy(it) }
+        VersionedFolder.list().collect {unwrapIfProxy(it)}
     }
 
     Long count() {
@@ -515,9 +553,9 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         String labelSuffix = folderCopy.label == original.label ? '' : " (${folderCopy.label})"
 
         log.debug('Copying models from original folder into copied folder')
-        modelServices.each { service ->
+        modelServices.each {service ->
             List<Model> originalModels = service.findAllByContainerId(original.id) as List<Model>
-            List<Model> copiedModels = originalModels.collect { Model model ->
+            List<Model> copiedModels = originalModels.collect {Model model ->
 
                 service.copyModel(model, folderCopy, copier, copyPermissions,
                                   "${model.label}${labelSuffix}",
@@ -525,7 +563,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
                                   userSecurityPolicyManager)
             }
             // We can't save until after all copied as the save clears the sessions
-            copiedModels.each { copy ->
+            copiedModels.each {copy ->
                 log.debug('Validating and saving model copy')
                 service.validate(copy)
                 if (copy.hasErrors()) {
@@ -537,7 +575,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
         List<Folder> folders = findAllByParentId(original.id)
         log.debug('Copying {} sub folders inside folder', folders.size())
-        folders.each { childFolder ->
+        folders.each {childFolder ->
             Folder childCopy = new Folder(parentFolder: folderCopy, deleted: false)
             childCopy = folderService.copyBasicFolderInformation(childFolder, childCopy, copier)
             folderService.validate(childCopy)
@@ -616,7 +654,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
         List<VersionLink> versionLinks = versionLinkService.findAllByTargetModelId(instance.id)
 
-        versionLinks.each { link ->
+        versionLinks.each {link ->
             VersionedFolder linkedModel = get(link.multiFacetAwareItemId)
             versionTreeModelList.
                 addAll(buildModelVersionTree(linkedModel, link.linkType, rootVersionTreeModel, includeForks, userSecurityPolicyManager))
@@ -681,7 +719,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     }
 
     boolean doesDepthTreeContainVersionedFolder(Folder folder) {
-        folder.instanceOf(VersionedFolder) || folderService.findAllByParentId(folder.id).any { doesDepthTreeContainVersionedFolder(it) }
+        folder.instanceOf(VersionedFolder) || folderService.findAllByParentId(folder.id).any {doesDepthTreeContainVersionedFolder(it)}
     }
 
     boolean isVersionedFolderFamily(Folder folder) {
@@ -690,6 +728,235 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     boolean doesDepthTreeContainFinalisedModel(Folder folder) {
         List<Model> models = folderService.findAllModelsInFolder(folder)
-        models.any { it.finalised } || findAllByParentId(folder.id).any { doesDepthTreeContainFinalisedModel(it) }
+        models.any {it.finalised} || findAllByParentId(folder.id).any {doesDepthTreeContainFinalisedModel(it)}
+    }
+
+    ObjectDiff<VersionedFolder> getDiffForVersionedFolders(VersionedFolder thisVersionedFolder, VersionedFolder otherVersionedFolder) {
+        ObjectDiff<VersionedFolder> coreDiff = thisVersionedFolder.diff(otherVersionedFolder)
+        folderService.loadModelsIntoFolderObjectDiff(coreDiff, thisVersionedFolder, otherVersionedFolder)
+        coreDiff
+    }
+
+    MergeDiff<VersionedFolder> getMergeDiffForVersionedFolders(VersionedFolder sourceVersionedFolder, VersionedFolder targetVersionedFolder) {
+        VersionedFolder commonAncestor = findCommonAncestorBetweenModels(sourceVersionedFolder, targetVersionedFolder)
+
+        ObjectDiff<VersionedFolder> caDiffSource = commonAncestor.diff(sourceVersionedFolder)
+        ObjectDiff<VersionedFolder> caDiffTarget = commonAncestor.diff(targetVersionedFolder)
+
+        removeBranchNameDiff(caDiffSource)
+        removeBranchNameDiff(caDiffTarget)
+
+        DiffBuilder
+            .mergeDiff(VersionedFolder)
+            .forMergingDiffable(sourceVersionedFolder)
+            .intoDiffable(targetVersionedFolder)
+            .havingCommonAncestor(commonAncestor)
+            .withCommonAncestorDiffedAgainstSource(caDiffSource)
+            .withCommonAncestorDiffedAgainstTarget(caDiffTarget)
+            .generate()
+    }
+
+    void removeBranchNameDiff(ObjectDiff diff) {
+
+        Predicate branchNamePredicate = [test: {FieldDiff fieldDiff ->
+            fieldDiff.fieldName == 'branchName'
+        },] as Predicate
+
+        diff.diffs.removeIf(branchNamePredicate)
+
+        ArrayDiff modelsDiff = diff.diffs.find {it.fieldName == 'models'}
+        if (modelsDiff) {
+            modelsDiff.modified.each {md ->
+                md.diffs.removeIf(branchNamePredicate)
+            }
+        }
+
+        ArrayDiff folderDiff = diff.diffs.find {it.fieldName == 'folders'}
+        if (folderDiff) {
+            folderDiff.modified.each {fd ->
+                removeBranchNameDiff(fd)
+            }
+        }
+    }
+
+    VersionedFolder mergeObjectPatchDataIntoVersionedFolder(ObjectPatchData objectPatchData, VersionedFolder targetVersionedFolder, VersionedFolder sourceVersionedFolder,
+                                                            UserSecurityPolicyManager userSecurityPolicyManager) {
+
+
+        if (!objectPatchData.hasPatches()) {
+            log.debug('No patch data to merge into {}', targetVersionedFolder.id)
+            return targetVersionedFolder
+        }
+        log.debug('Merging patch data into {}', targetVersionedFolder.id)
+
+        objectPatchData.patches.each {fieldPatch ->
+            switch (fieldPatch.type) {
+                case 'creation':
+                    return processCreationPatchIntoVersionedFolder(fieldPatch, targetVersionedFolder, sourceVersionedFolder, userSecurityPolicyManager)
+                case 'deletion':
+                    return processDeletionPatchIntoVersionedFolder(fieldPatch, targetVersionedFolder)
+                case 'modification':
+                    return processModificationPatchIntoVersionedFolder(fieldPatch, targetVersionedFolder)
+                default:
+                    log.warn('Unknown field patch type [{}]', fieldPatch.type)
+            }
+        }
+        targetVersionedFolder
+    }
+
+
+    void processCreationPatchIntoVersionedFolder(FieldPatchData creationPatch, VersionedFolder targetVersionedFolder, VersionedFolder sourceVersionedFolder,
+                                                 UserSecurityPolicyManager userSecurityPolicyManager) {
+        CreatorAware domainToCopy = pathService.findResourceByPathFromRootResource(sourceVersionedFolder, creationPatch.path)
+        log.debug('Creating {} into {}', creationPatch.path, creationPatch.relativePathToRoot.parent)
+        // Potential creations are folders, models, modelItems or facets
+        if (Utils.parentClassIsAssignableFromChild(Folder, domainToCopy.class)) {
+            processCreationPatchOfFolder(domainToCopy as Folder, targetVersionedFolder, creationPatch.relativePathToRoot.parent, userSecurityPolicyManager)
+        }
+        if (Utils.parentClassIsAssignableFromChild(Model, domainToCopy.class)) {
+            processCreationPatchOfModel(domainToCopy as Model, targetVersionedFolder, creationPatch.relativePathToRoot.parent, userSecurityPolicyManager)
+        }
+        if (Utils.parentClassIsAssignableFromChild(ModelItem, domainToCopy.class)) {
+            processCreationPatchOfModelItem(domainToCopy as ModelItem, targetVersionedFolder, creationPatch.relativePathToRoot.parent, userSecurityPolicyManager)
+        }
+        if (Utils.parentClassIsAssignableFromChild(MultiFacetItemAware, domainToCopy.class)) {
+            processCreationPatchOfFacet(domainToCopy as MultiFacetItemAware, targetVersionedFolder, creationPatch.relativePathToRoot.parent)
+        }
+    }
+
+    void processDeletionPatchIntoVersionedFolder(FieldPatchData deletionPatch, VersionedFolder targetVersionedFolder) {
+        CreatorAware domain = pathService.findResourceByPathFromRootResource(targetVersionedFolder, deletionPatch.relativePathToRoot)
+        log.debug('Deleting [{}]', deletionPatch.relativePathToRoot)
+
+        // Potential deletions are folders, models, modelItems or facets
+        if (Utils.parentClassIsAssignableFromChild(Folder, domain.class)) {
+            processDeletionPatchOfFolder(domain as Folder)
+        }
+        if (Utils.parentClassIsAssignableFromChild(Model, domain.class)) {
+            processDeletionPatchOfModel(domain as Model)
+        }
+        if (Utils.parentClassIsAssignableFromChild(ModelItem, domain.class)) {
+            processDeletionPatchOfModelItem(domain as ModelItem)
+        }
+        if (Utils.parentClassIsAssignableFromChild(MultiFacetItemAware, domain.class)) {
+            processDeletionPatchOfFacet(domain as MultiFacetItemAware, targetVersionedFolder, deletionPatch.relativePathToRoot)
+        }
+    }
+
+    void processModificationPatchIntoVersionedFolder(FieldPatchData modificationPatch, VersionedFolder targetVersionedFolder) {
+        CreatorAware domain = pathService.findResourceByPathFromRootResource(targetVersionedFolder, modificationPatch.relativePathToRoot)
+        String fieldName = modificationPatch.fieldName
+        log.debug('Modifying [{}] in [{}]', fieldName, modificationPatch.relativePathToRoot)
+        domain."${fieldName}" = modificationPatch.sourceValue
+        DomainService domainService = getDomainServices().find {it.handles(domain.class)}
+        if (!domainService) throw new ApiInternalException('MSXX', "No domain service to handle modification of [${domain.domainType}]")
+
+        if (!domain.validate())
+            throw new ApiInvalidModelException('MS01', 'Modified domain is invalid', domain.errors, messageSource)
+        domainService.save(domain, flush: false, validate: false)
+    }
+
+    void processDeletionPatchOfFolder(Folder folder) {
+        log.debug('Deleting Folder from VersionedFolder')
+        folderService.delete(folder, true)
+    }
+
+    void processDeletionPatchOfModel(Model model) {
+        ModelService modelService = folderService.findModelServiceForModel(model)
+        log.debug('Deleting Model from VersionedFolder')
+        modelService.delete(model, true)
+    }
+
+    void processDeletionPatchOfModelItem(ModelItem modelItem) {
+        ModelItemService modelItemService = modelItemServices.find {it.handles(modelItem.class)}
+        if (!modelItemService) throw new ApiInternalException('MSXX', "No domain service to handle deletion of [${modelItem.domainType}]")
+        log.debug('Deleting ModelItem from VersionedFolder')
+        modelItemService.delete(modelItem)
+    }
+
+    MultiFacetAware processDeletionPatchOfFacet(MultiFacetItemAware multiFacetItemAware, VersionedFolder targetVersionedFolder, Path path) {
+        MultiFacetItemAwareService multiFacetItemAwareService = multiFacetItemAwareServices.find {it.handles(multiFacetItemAware.class)}
+        if (!multiFacetItemAwareService) throw new ApiInternalException('MSXX', "No domain service to handle deletion of [${multiFacetItemAware.domainType}]")
+        log.debug('Deleting Facet from path [{}]', path)
+        multiFacetItemAwareService.delete(multiFacetItemAware)
+
+        MultiFacetAware multiFacetAwareItem = pathService.findResourceByPathFromRootResource(targetVersionedFolder, path.getParent()) as MultiFacetAware
+        switch (multiFacetItemAware.domainType) {
+            case Metadata.simpleName:
+                multiFacetAwareItem.metadata.remove(multiFacetItemAware)
+                break
+            case Annotation.simpleName:
+                multiFacetAwareItem.annotations.remove(multiFacetItemAware)
+                break
+            case Rule.simpleName:
+                multiFacetAwareItem.rules.remove(multiFacetItemAware)
+                break
+            case SemanticLink.simpleName:
+                multiFacetAwareItem.semanticLinks.remove(multiFacetItemAware)
+                break
+            case ReferenceFile.simpleName:
+                multiFacetAwareItem.referenceFiles.remove(multiFacetItemAware)
+                break
+            case VersionLink.simpleName:
+                (multiFacetAwareItem as Model).versionLinks.remove(multiFacetItemAware)
+                break
+        }
+        multiFacetAwareItem
+    }
+
+    void processCreationPatchOfFolder(Folder folderToCopy, VersionedFolder targetVersionedFolder, Path relativeParentPathToCopyTo,
+                                      UserSecurityPolicyManager userSecurityPolicyManager) {
+        log.debug('Creating Folder into VersionedFolder at [{}]', relativeParentPathToCopyTo)
+        Folder parentFolder = pathService.findResourceByPathFromRootResource(targetVersionedFolder, relativeParentPathToCopyTo) as Folder
+        folderService.copyFolder(folderToCopy, parentFolder, userSecurityPolicyManager.user, true, targetVersionedFolder.branchName, false, userSecurityPolicyManager)
+    }
+
+    void processCreationPatchOfModel(Model modelToCopy, VersionedFolder targetVersionedFolder, Path relativeParentPathToCopyTo,
+                                     UserSecurityPolicyManager userSecurityPolicyManager) {
+        ModelService modelService = folderService.findModelServiceForModel(modelToCopy)
+        log.debug('Creating Model into VersionedFolder at [{}]', relativeParentPathToCopyTo)
+        Folder parentFolder = pathService.findResourceByPathFromRootResource(targetVersionedFolder, relativeParentPathToCopyTo) as Folder
+        modelService.copyModelAndValidateAndSave(modelToCopy, parentFolder, userSecurityPolicyManager.user, true, modelToCopy.label, modelToCopy.documentationVersion,
+                                                 targetVersionedFolder.branchName, false, userSecurityPolicyManager)
+    }
+
+    void processCreationPatchOfModelItem(ModelItem modelItemToCopy, VersionedFolder targetVersionedFolder, Path relativeParentPathToCopyTo,
+                                         UserSecurityPolicyManager userSecurityPolicyManager) {
+        ModelService modelService
+        Path modelItemToModelAbsolutePath
+        Path modelRelativeToTargetPath
+
+        relativeParentPathToCopyTo.each {node ->
+            if (!modelService) {
+                // Build up the path to the model
+                if (!modelRelativeToTargetPath) modelRelativeToTargetPath = Path.from(node)
+                else modelRelativeToTargetPath.addToPathNodes(node)
+
+                modelService = modelServices.find {s -> s.handlesPathPrefix(node.prefix)}
+            } else {
+                // Build up the path from the model to the modelitem
+                if (!modelItemToModelAbsolutePath) modelItemToModelAbsolutePath = Path.from(node)
+                else modelItemToModelAbsolutePath.addToPathNodes(node)
+            }
+        }
+        if (!modelService) throw new ApiInternalException('MSXX', "No model service to handle creation of model item [${modelItemToCopy.domainType}]")
+
+        Model targetModel = pathService.findResourceByPathFromRootResource(targetVersionedFolder, modelRelativeToTargetPath) as Model
+
+        modelService.processCreationPatchOfModelItem(modelItemToCopy, targetModel, modelItemToModelAbsolutePath.childPath, userSecurityPolicyManager)
+    }
+
+    void processCreationPatchOfFacet(MultiFacetItemAware multiFacetItemAwareToCopy, VersionedFolder targetVersionedFolder, Path parentPathToCopyTo) {
+        MultiFacetItemAwareService multiFacetItemAwareService = multiFacetItemAwareServices.find {it.handles(multiFacetItemAwareToCopy.class)}
+        if (!multiFacetItemAwareService) throw new ApiInternalException('MSXX', "No domain service to handle creation of [${multiFacetItemAwareToCopy.domainType}]")
+        log.debug('Creating Facet into VersionedFolder at [{}]', parentPathToCopyTo)
+
+        MultiFacetAware parentToCopyInto = pathService.findResourceByPathFromRootResource(targetVersionedFolder, parentPathToCopyTo) as MultiFacetAware
+        MultiFacetItemAware copy = multiFacetItemAwareService.copy(multiFacetItemAwareToCopy, parentToCopyInto)
+
+        if (!copy.validate())
+            throw new ApiInvalidModelException('MS01', 'Copied Facet is invalid', copy.errors, messageSource)
+
+        multiFacetItemAwareService.save(copy, flush: false, validate: false)
     }
 }

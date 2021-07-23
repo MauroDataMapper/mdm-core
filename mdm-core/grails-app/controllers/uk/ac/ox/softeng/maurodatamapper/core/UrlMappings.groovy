@@ -104,13 +104,17 @@ class UrlMappings {
                 post '/search'(controller: 'versionedFolder', action: 'search')
                 get '/search'(controller: 'versionedFolder', action: 'search')
 
-                get "/commonAncestor/$otherVersionedFolderId"(controller: 'VersionedFolder', action: 'commonAncestor')
-                get '/latestFinalisedModel'(controller: 'VersionedFolder', action: 'latestFinalisedModel')
-                get '/latestModelVersion'(controller: 'VersionedFolder', action: 'latestModelVersion')
-                get '/modelVersionTree'(controller: 'VersionedFolder', action: 'modelVersionTree')
-                get '/currentMainBranch'(controller: 'VersionedFolder', action: 'currentMainBranch')
-                get '/availableBranches'(controller: 'VersionedFolder', action: 'availableBranches')
-                get '/simpleModelVersionTree'(controller: 'VersionedFolder', action: 'simpleModelVersionTree')
+                get "/commonAncestor/$otherVersionedFolderId"(controller: 'versionedFolder', action: 'commonAncestor')
+                get '/latestFinalisedModel'(controller: 'versionedFolder', action: 'latestFinalisedModel')
+                get '/latestModelVersion'(controller: 'versionedFolder', action: 'latestModelVersion')
+                get '/modelVersionTree'(controller: 'versionedFolder', action: 'modelVersionTree')
+                get '/currentMainBranch'(controller: 'versionedFolder', action: 'currentMainBranch')
+                get '/availableBranches'(controller: 'versionedFolder', action: 'availableBranches')
+                get '/simpleModelVersionTree'(controller: 'versionedFolder', action: 'simpleModelVersionTree')
+
+                get "/mergeDiff/$otherVersionedFolderId"(controller: 'versionedFolder', action: 'mergeDiff')
+                put "/mergeInto/$otherVersionedFolderId"(controller: 'versionedFolder', action: 'mergeInto')
+                get "/diff/$otherVersionedFolderId"(controller: 'versionedFolder', action: 'diff')
             }
 
             '/classifiers'(resources: 'classifier', excludes: DEFAULT_EXCLUDES) {
