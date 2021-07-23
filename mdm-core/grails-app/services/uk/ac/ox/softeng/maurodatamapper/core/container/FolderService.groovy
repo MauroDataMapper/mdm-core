@@ -17,6 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ArrayDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -30,6 +37,7 @@ import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.MessageSource
 
 @Transactional
 @Slf4j
@@ -40,6 +48,8 @@ class FolderService extends ContainerService<Folder> {
 
     @Autowired(required = false)
     SecurityPolicyManagerService securityPolicyManagerService
+    EditService editService
+    MessageSource messageSource
 
     @Override
     boolean handles(Class clazz) {
@@ -68,14 +78,14 @@ class FolderService extends ContainerService<Folder> {
 
     @Override
     List<Folder> getAll(Collection<UUID> containerIds) {
-        Folder.getAll(containerIds).findAll().collect { unwrapIfProxy(it) }
+        Folder.getAll(containerIds).findAll().collect {unwrapIfProxy(it)}
     }
 
     @Override
     List<Folder> findAllReadableContainersBySearchTerm(UserSecurityPolicyManager userSecurityPolicyManager, String searchTerm) {
         log.debug('Searching readable folders for search term in label')
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Folder)
-        Folder.luceneTreeLabelSearch(readableIds.collect { it.toString() }, searchTerm)
+        Folder.luceneTreeLabelSearch(readableIds.collect {it.toString()}, searchTerm)
     }
 
     @Override
@@ -127,7 +137,7 @@ class FolderService extends ContainerService<Folder> {
 
     @Override
     List<Folder> list() {
-        Folder.list().collect { unwrapIfProxy(it) }
+        Folder.list().collect {unwrapIfProxy(it)}
     }
 
     Long count() {
@@ -148,15 +158,15 @@ class FolderService extends ContainerService<Folder> {
             return
         }
         if (permanent) {
-            folder.childFolders.each { delete(it, permanent, false) }
-            modelServices.each { it.deleteAllInContainer(folder) }
+            folder.childFolders.each {delete(it, permanent, false)}
+            modelServices.each {it.deleteAllInContainer(folder)}
             if (securityPolicyManagerService) {
                 securityPolicyManagerService.removeSecurityForSecurableResource(folder, null)
             }
             folder.trackChanges()
             folder.delete(flush: flush)
         } else {
-            folder.childFolders.each { delete(it) }
+            folder.childFolders.each {delete(it)}
             delete(folder)
         }
     }
@@ -252,9 +262,9 @@ class FolderService extends ContainerService<Folder> {
         copy.description = original.description
 
         metadataService.findAllByMultiFacetAwareItemId(original.id).each {copy.addToMetadata(it.namespace, it.key, it.value, copier.emailAddress)}
-        ruleService.findAllByMultiFacetAwareItemId(original.id).each { rule ->
+        ruleService.findAllByMultiFacetAwareItemId(original.id).each {rule ->
             Rule copiedRule = new Rule(name: rule.name, description: rule.description, createdBy: copier.emailAddress)
-            rule.ruleRepresentations.each { ruleRepresentation ->
+            rule.ruleRepresentations.each {ruleRepresentation ->
                 copiedRule.addToRuleRepresentations(language: ruleRepresentation.language,
                                                     representation: ruleRepresentation.representation,
                                                     createdBy: copier.emailAddress)
@@ -262,7 +272,7 @@ class FolderService extends ContainerService<Folder> {
             copy.addToRules(copiedRule)
         }
 
-        semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id).each { link ->
+        semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id).each {link ->
             copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
                                     targetMultiFacetAwareItemId: link.targetMultiFacetAwareItemId,
                                     targetMultiFacetAwareItemDomainType: link.targetMultiFacetAwareItemDomainType,
@@ -274,8 +284,91 @@ class FolderService extends ContainerService<Folder> {
 
     List<Model> findAllModelsInFolder(Folder folder) {
         if (!modelServices) return []
-        modelServices.collectMany { service ->
+        modelServices.collectMany {service ->
             service.findAllByFolderId(folder.id)
         } as List<Model>
+    }
+
+    def <T extends Folder> void loadModelsIntoFolderObjectDiff(ObjectDiff<T> diff, Folder leftHandSide, Folder rightHandSide) {
+        List<Model> thisModels = findAllModelsInFolder(leftHandSide)
+        List<Model> thatModels = findAllModelsInFolder(rightHandSide)
+        diff.appendList(Model, 'models', thisModels, thatModels)
+
+        // Recurse into child folder diffs
+        ArrayDiff<Folder> childFolderDiff = diff.diffs.find {it.fieldName == 'folders'}
+
+        if (childFolderDiff) {
+            // Created folders wont have any need for a model diff as all models will be new
+            // Deleted folders wont have any need for a model diff as all models will not exist
+            childFolderDiff.modified.each {childDiff ->
+                loadModelsIntoFolderObjectDiff(childDiff, childDiff.left, childDiff.right)
+            }
+        }
+    }
+
+    ModelService findModelServiceForModel(Model model) {
+        ModelService modelService = modelServices.find {it.handles(model.class)}
+        if (!modelService) throw new ApiInternalException('MSXX', "No model service to handle model [${model.domainType}]")
+        modelService
+    }
+
+    Folder copyFolder(Folder original, Folder folderToCopyInto, User copier, boolean copyPermissions, String modelBranchName, boolean throwErrors,
+                      UserSecurityPolicyManager userSecurityPolicyManager) {
+        Folder copiedFolder = new Folder(deleted: false, parentFolder: folderToCopyInto, createdBy: copier, description: original.description,
+                                         label: original.label)
+
+        metadataService.findAllByMultiFacetAwareItemId(original.id).each {copiedFolder.addToMetadata(it.namespace, it.key, it.value, copier.emailAddress)}
+        ruleService.findAllByMultiFacetAwareItemId(original.id).each {rule ->
+            Rule copiedRule = new Rule(name: rule.name, description: rule.description, createdBy: copier.emailAddress)
+            rule.ruleRepresentations.each {ruleRepresentation ->
+                copiedRule.addToRuleRepresentations(language: ruleRepresentation.language,
+                                                    representation: ruleRepresentation.representation,
+                                                    createdBy: copier.emailAddress)
+            }
+            copiedFolder.addToRules(copiedRule)
+        }
+
+        semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id).each {link ->
+            copiedFolder.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
+                                            targetMultiFacetAwareItemId: link.targetMultiFacetAwareItemId,
+                                            targetMultiFacetAwareItemDomainType: link.targetMultiFacetAwareItemDomainType,
+                                            unconfirmed: true)
+        }
+
+        if (copyPermissions) {
+            if (throwErrors) {
+                throw new ApiNotYetImplementedException('MSXX', 'Folder permission copying')
+            }
+            log.warn('Permission copying is not yet implemented')
+
+        }
+
+        if (copiedFolder.validate()) {
+            save(copiedFolder, validate: false)
+            editService.createAndSaveEdit(EditTitle.COPY, copiedFolder.id, copiedFolder.domainType,
+                                          "Folder ${original.label} created as a copy of ${original.id}",
+                                          copier
+            )
+            if (securityPolicyManagerService) {
+                userSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(copiedFolder, userSecurityPolicyManager.user,
+                                                                                                         copiedFolder.label)
+            }
+        } else throw new ApiInvalidModelException('FS01', 'Copied Folder is invalid', copiedFolder.errors, messageSource)
+
+
+        List<Model> models = findAllModelsInFolder(original)
+        models.each {modelToCopy ->
+            ModelService modelService = findModelServiceForModel(modelToCopy)
+            modelService.copyModelAndValidateAndSave(modelToCopy, copiedFolder, userSecurityPolicyManager.user, true, modelToCopy.label, modelToCopy.documentationVersion,
+                                                     modelBranchName, false, userSecurityPolicyManager)
+        }
+
+        List<Folder> childFolders = findAllByParentId(original.id, [:])
+        childFolders.each {childFolderToCopy ->
+            copiedFolder(childFolderToCopy, copiedFolder, copier, copyPermissions, childFolderToCopy.label, modelBranchName, throwErrors, userSecurityPolicyManager)
+
+        }
+
+        copiedFolder
     }
 }
