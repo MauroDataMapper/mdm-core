@@ -72,6 +72,7 @@ import org.springframework.context.MessageSource
 
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import java.util.function.Predicate
 
 @Slf4j
 abstract class ModelService<K extends Model> extends CatalogueItemService<K> implements SecurableResourceService<K>, VersionLinkAwareService<K> {
@@ -707,7 +708,14 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
         ObjectDiff<K> caDiffSource = commonAncestor.diff(sourceModel)
         ObjectDiff<K> caDiffTarget = commonAncestor.diff(targetModel)
-        //        ObjectDiff<K> sourceDiffTarget = sourceModel.diff(targetModel)
+
+        // Remove the branchname as  diff as we know its a diff and for merging we dont want it
+        Predicate branchNamePredicate = [test: {FieldDiff fieldDiff ->
+            fieldDiff.fieldName == 'branchName'
+        },] as Predicate
+
+        caDiffSource.diffs.removeIf(branchNamePredicate)
+        caDiffTarget.diffs.removeIf(branchNamePredicate)
 
         DiffBuilder
             .mergeDiff(sourceModel.class as Class<K>)
