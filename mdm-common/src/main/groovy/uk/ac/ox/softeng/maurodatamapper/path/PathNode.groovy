@@ -22,6 +22,8 @@ import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import groovy.util.logging.Slf4j
 
+import java.nio.charset.Charset
+
 /**
  * @since 28/08/2020
  */
@@ -65,7 +67,7 @@ class PathNode {
     }
 
     void parseIdentifier(String fullIdentifier, boolean isRoot, boolean isLast) {
-        String parsed = fullIdentifier
+        String parsed = URLDecoder.decode(fullIdentifier, Charset.defaultCharset())
         if (isLast) {
             parsed.find(/^(.+?)${ATTRIBUTE_PATH_IDENTIFIER_SEPARATOR}(.+?)$/) {full, subIdentifier, attr ->
                 attribute = attr
@@ -139,7 +141,7 @@ class PathNode {
 
     boolean matchesPrefix(String otherPrefix) {
         if (prefix != otherPrefix) {
-            log.warn("Resource prefix [{}] does not match the path node [{}]", otherPrefix, this)
+            log.trace("Resource prefix [{}] does not match the path node [{}]", otherPrefix, this)
             return false
         }
         true
@@ -160,7 +162,7 @@ class PathNode {
 
         identifierSplit = otherPathNode.identifier.split(/:/)
         if (identifier == identifierSplit[0]) return true
-        log.warn("Resource identifier [{}] does not match the path node [{}]", otherPathNode, this)
+        log.trace("Resource identifier [{}] does not match the path node [{}]", otherPathNode, this)
         false
     }
 

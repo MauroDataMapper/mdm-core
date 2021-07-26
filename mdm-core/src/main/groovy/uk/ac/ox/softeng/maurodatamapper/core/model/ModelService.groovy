@@ -478,6 +478,10 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     void processCreationPatchIntoModel(FieldPatchData creationPatch, K targetModel, K sourceModel, UserSecurityPolicyManager userSecurityPolicyManager) {
         CreatorAware domainToCopy = pathService.findResourceByPathFromRootResource(sourceModel, creationPatch.path)
+        if (!domainToCopy) {
+            log.warn('Could not process creation patch into model at path [{}] as no such path exists in the source', creationPatch.path)
+            return
+        }
         log.debug('Creating {} into {}', creationPatch.path, creationPatch.relativePathToRoot.parent)
         // Potential deletions are modelitems or facets from model or modelitem
         if (Utils.parentClassIsAssignableFromChild(ModelItem, domainToCopy.class)) {
@@ -490,6 +494,10 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     void processDeletionPatchIntoModel(FieldPatchData deletionPatch, K targetModel) {
         CreatorAware domain = pathService.findResourceByPathFromRootResource(targetModel, deletionPatch.relativePathToRoot)
+        if (!domain) {
+            log.warn('Could not process deletion patch into model at path [{}] as no such path exists in the target', deletionPatch.relativePathToRoot)
+            return
+        }
         log.debug('Deleting [{}]', deletionPatch.relativePathToRoot)
 
         // Potential deletions are modelitems or facets from model or modelitem
@@ -503,6 +511,10 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     void processModificationPatchIntoModel(FieldPatchData modificationPatch, K targetModel) {
         CreatorAware domain = pathService.findResourceByPathFromRootResource(targetModel, modificationPatch.relativePathToRoot)
+        if (!domain) {
+            log.warn('Could not process modifiation patch into model at path [{}] as no such path exists in the target', modificationPatch.relativePathToRoot)
+            return
+        }
         String fieldName = modificationPatch.fieldName
         log.debug('Modifying [{}] in [{}]', fieldName, modificationPatch.relativePathToRoot)
         domain."${fieldName}" = modificationPatch.sourceValue
