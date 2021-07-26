@@ -106,8 +106,8 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
                 return notFound(getSecuredClass(), params.otherModelId)
             }
 
-            return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(getSecuredClass(), getId(), actionName) ?:
-                   forbiddenDueToPermissions(currentUserSecurityPolicyManager.userAvailableActions(getSecuredClass(), getId()))
+            return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(getSecuredClass(), params.otherModelId, actionName) ?:
+                   forbiddenDueToPermissions(currentUserSecurityPolicyManager.userAvailableActions(getSecuredClass(), params.otherModelId))
         }
 
         if (actionName == 'exportModels') {
