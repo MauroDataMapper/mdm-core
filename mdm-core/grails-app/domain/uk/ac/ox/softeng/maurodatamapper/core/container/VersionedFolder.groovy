@@ -29,6 +29,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.hibernate.VersionUserType
+import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 
 import grails.gorm.DetachedCriteria
 import grails.plugins.hibernate.search.HibernateSearchApi
@@ -88,7 +89,7 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware, 
 
     @Override
     String getPathIdentifier() {
-        "${label}.${modelVersion ?: branchName}"
+        "${label}${PathNode.MODEL_PATH_IDENTIFIER_SEPARATOR}${modelVersion ?: branchName}"
     }
 
     static DetachedCriteria<VersionedFolder> by() {

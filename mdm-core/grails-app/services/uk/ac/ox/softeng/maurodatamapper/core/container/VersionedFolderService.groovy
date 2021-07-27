@@ -20,7 +20,6 @@ package uk.ac.ox.softeng.maurodatamapper.core.container
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ArrayDiff
@@ -34,7 +33,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
-import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
@@ -68,6 +66,7 @@ import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormValidateable
+import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
@@ -352,6 +351,11 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         folderService.delete(folder, permanent, flush)
     }
 
+    @Override
+    VersionedFolder save(Map args, VersionedFolder folder) {
+        folderService.save(args, folder) as VersionedFolder
+    }
+
     /**
      * Find all resources by the defined user security policy manager. If none provided then assume no security policy in place in which case
      * everything is public.
@@ -484,107 +488,31 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     VersionedFolder copyFolderAsNewBranchFolder(VersionedFolder original, User copier, boolean copyPermissions, String label, String branchName,
                                                 boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyFolder(original, copier, copyPermissions, label, Version.from('1'), branchName, throwErrors, userSecurityPolicyManager)
+        copyVersionedFolder(original, copier, copyPermissions, label, Version.from('1'), branchName, throwErrors, userSecurityPolicyManager)
     }
 
     VersionedFolder copyModelAsNewForkModel(VersionedFolder original, User copier, boolean copyPermissions, String label, boolean throwErrors,
                                             UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyFolder(original, copier, copyPermissions, label, Version.from('1'), original.branchName, throwErrors, userSecurityPolicyManager)
+        copyVersionedFolder(original, copier, copyPermissions, label, Version.from('1'), original.branchName, throwErrors, userSecurityPolicyManager)
     }
 
     VersionedFolder copyFolderAsNewDocumentationModel(VersionedFolder original, User copier, boolean copyPermissions, String label,
                                                       Version copyDocVersion, String branchName, boolean throwErrors,
                                                       UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyFolder(original, copier, copyPermissions, label, copyDocVersion, branchName, throwErrors, userSecurityPolicyManager)
+        copyVersionedFolder(original, copier, copyPermissions, label, copyDocVersion, branchName, throwErrors, userSecurityPolicyManager)
     }
 
-    VersionedFolder copyFolder(VersionedFolder original, User copier, boolean copyPermissions, String label, Version copyDocVersion,
-                               String branchName,
-                               boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
+    VersionedFolder copyVersionedFolder(VersionedFolder original, User copier, boolean copyPermissions, String label, Version copyDocVersion,
+                                        String branchName,
+                                        boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
         log.debug('Copying folder {}', original.id)
         Folder parentFolder = original.parentFolder ? proxyHandler.unwrapIfProxy(original.parentFolder) as Folder : null
         VersionedFolder folderCopy = new VersionedFolder(finalised: false, deleted: false,
                                                          documentationVersion: copyDocVersion,
                                                          parentFolder: parentFolder,
-                                                         branchName: branchName)
-        folderCopy = copyBasicFolderInformation(original, folderCopy, copier)
-        folderCopy.label = label
-
-        if (copyPermissions) {
-            if (throwErrors) {
-                throw new ApiNotYetImplementedException('VFSXX', 'VersionedFolder permission copying')
-            }
-            log.warn('Permission copying is not yet implemented')
-
-        }
-
-        setFolderRefinesFolder(folderCopy, original, copier)
-
-        log.debug('Validating and saving copy')
-        if (folderCopy.validate()) {
-            save(folderCopy, validate: false)
-            editService.createAndSaveEdit(EditTitle.COPY, folderCopy.id, folderCopy.domainType,
-                                          "VersionedFolder ${original.label} created as a copy of ${original.id}",
-                                          copier
-            )
-        } else throw new ApiInvalidModelException('VFS01', 'Copied VersionedFolder is invalid', folderCopy.errors, messageSource)
-
-        folderCopy.trackChanges()
-
-        copyFolderContents(original, copier, folderCopy, copyPermissions, copyDocVersion, branchName, throwErrors, userSecurityPolicyManager)
-
-        log.debug('Folder copy complete')
-        folderCopy
-    }
-
-    VersionedFolder copyBasicFolderInformation(VersionedFolder original, VersionedFolder copy, User copier) {
-        copy = folderService.copyBasicFolderInformation(original, copy, copier) as VersionedFolder
-        copy.authority = authorityService.defaultAuthority
-        copy
-    }
-
-    void copyFolderContents(Folder original, User copier, Folder folderCopy,
-                            boolean copyPermissions,
-                            Version copyDocVersion,
-                            String branchName,
-                            boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
-
-        // If changing label then we need to prefix all the new models so the names dont introduce label conflicts as this situation arises in forking
-        String labelSuffix = folderCopy.label == original.label ? '' : " (${folderCopy.label})"
-
-        log.debug('Copying models from original folder into copied folder')
-        modelServices.each {service ->
-            List<Model> originalModels = service.findAllByContainerId(original.id) as List<Model>
-            List<Model> copiedModels = originalModels.collect {Model model ->
-
-                service.copyModel(model, folderCopy, copier, copyPermissions,
-                                  "${model.label}${labelSuffix}",
-                                  copyDocVersion, branchName, throwErrors,
-                                  userSecurityPolicyManager)
-            }
-            // We can't save until after all copied as the save clears the sessions
-            copiedModels.each {copy ->
-                log.debug('Validating and saving model copy')
-                service.validate(copy)
-                if (copy.hasErrors()) {
-                    throw new ApiInvalidModelException('VFS02', 'Copied Model is invalid', copy.errors, messageSource)
-                }
-                service.saveModelWithContent(copy)
-            }
-        }
-
-        List<Folder> folders = findAllByParentId(original.id)
-        log.debug('Copying {} sub folders inside folder', folders.size())
-        folders.each {childFolder ->
-            Folder childCopy = new Folder(parentFolder: folderCopy, deleted: false)
-            childCopy = folderService.copyBasicFolderInformation(childFolder, childCopy, copier)
-            folderService.validate(childCopy)
-            if (childCopy.hasErrors()) {
-                throw new ApiInvalidModelException('VFS02', 'Copied Folder is invalid', childCopy.errors, messageSource)
-            }
-            folderService.save(flush: false, validate: false, childCopy)
-            copyFolderContents(childFolder, copier, childCopy, copyPermissions, copyDocVersion, branchName, throwErrors, userSecurityPolicyManager)
-        }
+                                                         branchName: branchName,
+                                                         authority: authorityService.defaultAuthority)
+        folderService.copyFolder(original, folderCopy, label, copier, copyPermissions, branchName, copyDocVersion, throwErrors, userSecurityPolicyManager) as VersionedFolder
     }
 
     void setFolderIsNewBranchModelVersionOfFolder(VersionedFolder newVersionedFolder, VersionedFolder oldVersionedFolder, User catalogueUser) {
@@ -611,9 +539,6 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         )
     }
 
-    void setFolderRefinesFolder(VersionedFolder source, VersionedFolder target, User catalogueUser) {
-        source.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdBy: catalogueUser.emailAddress, targetMultiFacetAwareItem: target)
-    }
 
     VersionedFolder findLatestFinalisedModelByLabel(String label) {
         VersionedFolder.byLabelAndBranchNameAndFinalisedAndLatestModelVersion(label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).get()
@@ -740,8 +665,8 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     MergeDiff<VersionedFolder> getMergeDiffForVersionedFolders(VersionedFolder sourceVersionedFolder, VersionedFolder targetVersionedFolder) {
         VersionedFolder commonAncestor = findCommonAncestorBetweenModels(sourceVersionedFolder, targetVersionedFolder)
 
-        ObjectDiff<VersionedFolder> caDiffSource = commonAncestor.diff(sourceVersionedFolder)
-        ObjectDiff<VersionedFolder> caDiffTarget = commonAncestor.diff(targetVersionedFolder)
+        ObjectDiff<VersionedFolder> caDiffSource = getDiffForVersionedFolders(commonAncestor, sourceVersionedFolder)
+        ObjectDiff<VersionedFolder> caDiffTarget = getDiffForVersionedFolders(commonAncestor, targetVersionedFolder)
 
         removeBranchNameDiff(caDiffSource)
         removeBranchNameDiff(caDiffTarget)
@@ -958,5 +883,10 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
             throw new ApiInvalidModelException('MS01', 'Copied Facet is invalid', copy.errors, messageSource)
 
         multiFacetItemAwareService.save(copy, flush: false, validate: false)
+    }
+
+    @Override
+    PersistentEntity getPersistentEntity() {
+        grailsApplication.mappingContext.getPersistentEntity(Folder.name)
     }
 }

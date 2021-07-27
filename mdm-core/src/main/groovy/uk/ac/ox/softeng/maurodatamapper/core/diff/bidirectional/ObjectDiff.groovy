@@ -19,6 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional
 
 import uk.ac.ox.softeng.maurodatamapper.core.api.exception.ApiDiffException
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
+import uk.ac.ox.softeng.maurodatamapper.path.Path
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.SimpleType
@@ -77,6 +79,10 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
 
     String getRightIdentifier() {
         right.diffIdentifier
+    }
+
+    boolean isVersionedDiff() {
+        Path.from(left.pathPrefix, left.pathIdentifier).first().modelIdentifier
     }
 
     ObjectDiff<O> leftHandSide(String leftId, O lhs) {
@@ -139,11 +145,23 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
         // Assume all rhs have been created new
         List<K> created = new ArrayList<>(rhs)
 
-        Map<String, K> lhsMap = lhs.collectEntries { [it.getDiffIdentifier(), it] }
-        Map<String, K> rhsMap = rhs.collectEntries { [it.getDiffIdentifier(), it] }
+        Map<String, K> lhsMap = lhs.collectEntries {[it.getDiffIdentifier(), it]}
+        Map<String, K> rhsMap = rhs.collectEntries {[it.getDiffIdentifier(), it]}
+        // This object diff is being performed on an object which has the concept of modelIdentifier, e.g branch name or version
+        // If this is the case we want to make sure we ignore any versioning on sub contents as child versioning is controlled by the parent
+        // This should only happen to models inside versioned folders, but we want to try and be more dynamic
+        if (isVersionedDiff()) {
+            Path childPath = Path.from((CreatorAware) lhs.first())
+            if (childPath.size() == 1 && childPath.first().modelIdentifier) {
+                // child collection has versioning
+                // recollect entries using the clean identifier rather than the full thing
+                lhsMap = lhs.collectEntries {[Path.from(it.pathPrefix, it.getDiffIdentifier()).first().identifier, it]}
+                rhsMap = rhs.collectEntries {[Path.from(it.pathPrefix, it.getDiffIdentifier()).first().identifier, it]}
+            }
+        }
 
         // Work through each lhs object and compare to rhs object
-        lhsMap.each { di, lObj ->
+        lhsMap.each {di, lObj ->
             K rObj = rhsMap[di]
             if (rObj) {
                 // If robj then it exists and has not been created
