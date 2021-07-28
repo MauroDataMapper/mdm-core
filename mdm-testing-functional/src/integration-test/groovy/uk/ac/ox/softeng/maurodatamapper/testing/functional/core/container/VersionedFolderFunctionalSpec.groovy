@@ -46,6 +46,7 @@ import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
+import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 /**
  * <pre>
@@ -1902,7 +1903,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         removeValidIdObject(mergeData.commonAncestor)
     }
 
-    void 'MD05 : test finding merge difference of two complex datamodels with the new style (as reader)'() {
+    void 'MD05 : test finding merge difference of two complex versioned folders (as reader)'() {
         given:
         TestMergeData mergeData = buildComplexVersionedFoldersForMerging()
 
@@ -1912,6 +1913,229 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         then:
         verifyJsonResponse OK, expectedMergeDiffJson
+
+        cleanup:
+        removeValidIdObject(mergeData.source)
+        removeValidIdObject(mergeData.target)
+        removeValidIdObject(mergeData.commonAncestor)
+    }
+
+    void 'MI01 : test merge into of two versioned folders (as not logged in)'() {
+        given:
+        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+
+        when:
+        GET("$mergeData.source/mergeInto/$mergeData.target")
+
+        then:
+        verifyResponse NOT_FOUND, response
+
+        cleanup:
+        removeValidIdObject(mergeData.source)
+        removeValidIdObject(mergeData.target)
+        removeValidIdObject(mergeData.commonAncestor)
+    }
+
+    void 'MI02 : test merge into of two versioned folders (as authenticated/logged in)'() {
+        given:
+        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+
+        when:
+        loginAuthenticated()
+        GET("$mergeData.source/mergeInto/$mergeData.target")
+
+        then:
+        verifyResponse NOT_FOUND, response
+
+        cleanup:
+        removeValidIdObject(mergeData.source)
+        removeValidIdObject(mergeData.target)
+        removeValidIdObject(mergeData.commonAncestor)
+    }
+
+    void 'MI03 : test merge into of two versioned folders (as reader)'() {
+        given:
+        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+
+        when:
+        loginReader()
+        PUT("$mergeData.source/mergeInto/$mergeData.target", [:])
+
+        then:
+        verifyForbidden(response)
+
+        cleanup:
+        removeValidIdObject(mergeData.source)
+        removeValidIdObject(mergeData.target)
+        removeValidIdObject(mergeData.commonAncestor)
+    }
+
+
+    void 'MI04 : test merging diff with no patch data'() {
+        given:
+        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+
+        when:
+        loginEditor()
+        PUT("$mergeData.source/mergeInto/$mergeData.target", [:])
+
+        then:
+        verifyResponse(UNPROCESSABLE_ENTITY, response)
+        responseBody().total == 1
+        responseBody().errors[0].message.contains('cannot be null')
+
+        cleanup:
+        removeValidIdObject(mergeData.source)
+        removeValidIdObject(mergeData.target)
+        removeValidIdObject(mergeData.commonAncestor)
+    }
+
+    void 'MI05 : test merging diff with URI id not matching body id'() {
+        given:
+        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+
+        when:
+        loginEditor()
+        PUT("$mergeData.source/mergeInto/$mergeData.target", [patch:
+                                                                  [
+                                                                      targetId: mergeData.target,
+                                                                      sourceId: UUID.randomUUID().toString(),
+                                                                      label   : "Functional Test Model",
+                                                                      count   : 0,
+                                                                      patches : []
+                                                                  ]
+        ])
+
+        then:
+        verifyResponse(UNPROCESSABLE_ENTITY, response)
+        responseBody().message == 'Source versioned folder id passed in request body does not match source versioned folder id in URI.'
+
+        when:
+        PUT("$mergeData.source/mergeInto/$mergeData.target", [patch:
+                                                                  [
+                                                                      targetId: UUID.randomUUID().toString(),
+                                                                      sourceId: mergeData.source,
+                                                                      label   : "Functional Test Model",
+                                                                      count   : 0,
+                                                                      patches : []
+                                                                  ]
+        ])
+
+        then:
+        verifyResponse(UNPROCESSABLE_ENTITY, response)
+        responseBody().message == 'Target versioned folder id passed in request body does not match target versioned folder id in URI.'
+
+        when:
+        PUT("$mergeData.source/mergeInto/$mergeData.target", [patch:
+                                                                  [
+                                                                      targetId: mergeData.target,
+                                                                      sourceId: mergeData.source,
+                                                                      label   : "Functional Test Model",
+                                                                      count   : 0,
+                                                                      patches : []
+                                                                  ]
+        ])
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().id == mergeData.target
+
+        cleanup:
+        removeValidIdObject(mergeData.source)
+        removeValidIdObject(mergeData.target)
+        removeValidIdObject(mergeData.commonAncestor)
+    }
+
+    void 'MI06 : test merge into of two versioned folders'() {
+        given:
+        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+
+        when:
+        loginEditor()
+        PUT("$mergeData.source/mergeInto/$mergeData.target", [
+            patch:
+                [
+                    targetId: mergeData.target,
+                    sourceId: mergeData.source,
+                    label   : "Functional Test Model",
+                    count   : 0,
+                    patches : []
+                ]
+        ])
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == mergeData.target
+
+        cleanup:
+        removeValidIdObject(mergeData.source)
+        removeValidIdObject(mergeData.target)
+        removeValidIdObject(mergeData.commonAncestor)
+    }
+
+    void 'MI07 : test merge into of two complex versioned folders'() {
+        given:
+        TestMergeData mergeData = buildComplexVersionedFoldersForMerging()
+
+        when:
+        loginReader()
+        GET("$mergeData.source/mergeDiff/$mergeData.target")
+
+        then:
+        verifyResponse(OK, response)
+
+        when:
+        def diffs = responseBody().diffs
+        loginEditor()
+        PUT("$mergeData.source/mergeInto/$mergeData.target", [
+            patch:
+                [
+                    targetId: mergeData.target,
+                    sourceId: mergeData.source,
+                    label   : "Functional Test Model",
+                    count   : 0,
+                    patches : diffs
+                ]
+        ])
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == mergeData.target
+        responseBody().description == 'source description on the versioned folder'
+
+        when:
+        GET("dataModels/$mergeData.targetMap.dataModelId", MAP_ARG, true)
+
+        then:
+        responseBody().description == 'DescriptionLeft'
+
+        when:
+        GET("dataModels/$mergeData.targetMap.dataModelId/dataClasses", MAP_ARG, true)
+
+        then:
+        responseBody().items.label as Set == ['existingClass', 'modifyAndModifyReturningDifference', 'modifyLeftOnly',
+                                              'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly',
+                                              'modifyRightOnly', 'addRightOnly', 'modifyAndModifyReturningNoDifference',
+                                              'addAndAddReturningNoDifference'] as Set
+        responseBody().items.find {dataClass -> dataClass.label == 'modifyAndDelete'}.description == 'Description'
+        responseBody().items.find {dataClass -> dataClass.label == 'addAndAddReturningDifference'}.description == 'DescriptionLeft'
+        responseBody().items.find {dataClass -> dataClass.label == 'modifyAndModifyReturningDifference'}.description == 'DescriptionLeft'
+        responseBody().items.find {dataClass -> dataClass.label == 'modifyLeftOnly'}.description == 'Description'
+
+        when:
+        GET("dataModels/$mergeData.targetMap.dataModelId/dataClasses/$mergeData.targetMap.existingClass/dataClasses", MAP_ARG, true)
+
+        then:
+        responseBody().items.label as Set == ['addRightToExistingClass', 'addLeftToExistingClass'] as Set
+
+        when:
+        GET("dataModels/$mergeData.targetMap.dataModelId/metadata", MAP_ARG, true)
+
+        then:
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyOnSource'}.value == 'source has modified this'
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyAndDelete'}.value == 'source has modified this also'
+        !responseBody().items.find {it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource'}
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'addToSourceOnly'}
 
         cleanup:
         removeValidIdObject(mergeData.source)

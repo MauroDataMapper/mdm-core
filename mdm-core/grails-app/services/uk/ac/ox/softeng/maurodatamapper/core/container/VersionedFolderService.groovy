@@ -733,6 +733,10 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     void processCreationPatchIntoVersionedFolder(FieldPatchData creationPatch, VersionedFolder targetVersionedFolder, VersionedFolder sourceVersionedFolder,
                                                  UserSecurityPolicyManager userSecurityPolicyManager) {
         CreatorAware domainToCopy = pathService.findResourceByPathFromRootResource(sourceVersionedFolder, creationPatch.path)
+        if (!domainToCopy) {
+            log.warn('Could not process creation patch into versioned folder at path [{}] as no such path exists in the source', creationPatch.path)
+            return
+        }
         log.debug('Creating {} into {}', creationPatch.path, creationPatch.relativePathToRoot.parent)
         // Potential creations are folders, models, modelItems or facets
         if (Utils.parentClassIsAssignableFromChild(Folder, domainToCopy.class)) {
@@ -742,7 +746,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
             processCreationPatchOfModel(domainToCopy as Model, targetVersionedFolder, creationPatch.relativePathToRoot.parent, userSecurityPolicyManager)
         }
         if (Utils.parentClassIsAssignableFromChild(ModelItem, domainToCopy.class)) {
-            processCreationPatchOfModelItem(domainToCopy as ModelItem, targetVersionedFolder, creationPatch.relativePathToRoot.parent, userSecurityPolicyManager)
+            processCreationPatchOfModelItem(domainToCopy as ModelItem, targetVersionedFolder, creationPatch.relativePathToRoot, userSecurityPolicyManager)
         }
         if (Utils.parentClassIsAssignableFromChild(MultiFacetItemAware, domainToCopy.class)) {
             processCreationPatchOfFacet(domainToCopy as MultiFacetItemAware, targetVersionedFolder, creationPatch.relativePathToRoot.parent)
@@ -750,7 +754,12 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     }
 
     void processDeletionPatchIntoVersionedFolder(FieldPatchData deletionPatch, VersionedFolder targetVersionedFolder) {
-        CreatorAware domain = pathService.findResourceByPathFromRootResource(targetVersionedFolder, deletionPatch.relativePathToRoot)
+        CreatorAware domain =
+            pathService.findResourceByPathFromRootResource(targetVersionedFolder, deletionPatch.relativePathToRoot, getModelIdentifier(targetVersionedFolder))
+        if (!domain) {
+            log.warn('Could not process deletion patch from versioned folder at path [{}] as no such path exists in the target', deletionPatch.relativePathToRoot)
+            return
+        }
         log.debug('Deleting [{}]', deletionPatch.relativePathToRoot)
 
         // Potential deletions are folders, models, modelItems or facets
@@ -769,9 +778,14 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     }
 
     void processModificationPatchIntoVersionedFolder(FieldPatchData modificationPatch, VersionedFolder targetVersionedFolder) {
-        CreatorAware domain = pathService.findResourceByPathFromRootResource(targetVersionedFolder, modificationPatch.relativePathToRoot)
+        CreatorAware domain =
+            pathService.findResourceByPathFromRootResource(targetVersionedFolder, modificationPatch.relativePathToRoot, getModelIdentifier(targetVersionedFolder))
+        if (!domain) {
+            log.warn('Could not process modification patch into model at path [{}] as no such path exists in the target', modificationPatch.relativePathToRoot)
+            return
+        }
         String fieldName = modificationPatch.fieldName
-        log.debug('Modifying [{}] in [{}]', fieldName, modificationPatch.relativePathToRoot)
+        log.debug('Modifying [{}] in [{}]', fieldName, modificationPatch.path)
         domain."${fieldName}" = modificationPatch.sourceValue
         DomainService domainService = getDomainServices().find {it.handles(domain.class)}
         if (!domainService) throw new ApiInternalException('MSXX', "No domain service to handle modification of [${domain.domainType}]")
@@ -805,7 +819,8 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         log.debug('Deleting Facet from path [{}]', path)
         multiFacetItemAwareService.delete(multiFacetItemAware)
 
-        MultiFacetAware multiFacetAwareItem = pathService.findResourceByPathFromRootResource(targetVersionedFolder, path.getParent()) as MultiFacetAware
+        MultiFacetAware multiFacetAwareItem =
+            pathService.findResourceByPathFromRootResource(targetVersionedFolder, path.getParent(), getModelIdentifier(targetVersionedFolder)) as MultiFacetAware
         switch (multiFacetItemAware.domainType) {
             case Metadata.simpleName:
                 multiFacetAwareItem.metadata.remove(multiFacetItemAware)
@@ -832,43 +847,53 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     void processCreationPatchOfFolder(Folder folderToCopy, VersionedFolder targetVersionedFolder, Path relativeParentPathToCopyTo,
                                       UserSecurityPolicyManager userSecurityPolicyManager) {
         log.debug('Creating Folder into VersionedFolder at [{}]', relativeParentPathToCopyTo)
-        Folder parentFolder = pathService.findResourceByPathFromRootResource(targetVersionedFolder, relativeParentPathToCopyTo) as Folder
-        folderService.copyFolder(folderToCopy, parentFolder, userSecurityPolicyManager.user, true, targetVersionedFolder.branchName, false, userSecurityPolicyManager)
+        Folder parentFolder =
+            pathService.findResourceByPathFromRootResource(targetVersionedFolder, relativeParentPathToCopyTo, getModelIdentifier(targetVersionedFolder)) as Folder
+        folderService.
+            copyFolder(folderToCopy, parentFolder, userSecurityPolicyManager.user, true, targetVersionedFolder.branchName,
+                       targetVersionedFolder.documentationVersion, false, userSecurityPolicyManager)
     }
 
     void processCreationPatchOfModel(Model modelToCopy, VersionedFolder targetVersionedFolder, Path relativeParentPathToCopyTo,
                                      UserSecurityPolicyManager userSecurityPolicyManager) {
         ModelService modelService = folderService.findModelServiceForModel(modelToCopy)
         log.debug('Creating Model into VersionedFolder at [{}]', relativeParentPathToCopyTo)
-        Folder parentFolder = pathService.findResourceByPathFromRootResource(targetVersionedFolder, relativeParentPathToCopyTo) as Folder
+        Folder parentFolder =
+            pathService.findResourceByPathFromRootResource(targetVersionedFolder, relativeParentPathToCopyTo, getModelIdentifier(targetVersionedFolder)) as Folder
         modelService.copyModelAndValidateAndSave(modelToCopy, parentFolder, userSecurityPolicyManager.user, true, modelToCopy.label, modelToCopy.documentationVersion,
                                                  targetVersionedFolder.branchName, false, userSecurityPolicyManager)
     }
 
-    void processCreationPatchOfModelItem(ModelItem modelItemToCopy, VersionedFolder targetVersionedFolder, Path relativeParentPathToCopyTo,
+    void processCreationPatchOfModelItem(ModelItem modelItemToCopy, VersionedFolder targetVersionedFolder, Path relativePathToCopyTo,
                                          UserSecurityPolicyManager userSecurityPolicyManager) {
         ModelService modelService
         Path modelItemToModelAbsolutePath
         Path modelRelativeToTargetPath
 
-        relativeParentPathToCopyTo.each {node ->
+        relativePathToCopyTo.each {node ->
             if (!modelService) {
                 // Build up the path to the model
                 if (!modelRelativeToTargetPath) modelRelativeToTargetPath = Path.from(node)
                 else modelRelativeToTargetPath.addToPathNodes(node)
 
                 modelService = modelServices.find {s -> s.handlesPathPrefix(node.prefix)}
-            } else {
+            }
+            // Dont use else as we want to make sure the model node is added to the absolute path therefore as soon as the modelservice is found we should add the node
+            if (modelService) {
                 // Build up the path from the model to the modelitem
-                if (!modelItemToModelAbsolutePath) modelItemToModelAbsolutePath = Path.from(node)
+                // Make sure we repoint the path to the target model so we can use the model service code to do the copy
+                if (!modelItemToModelAbsolutePath) modelItemToModelAbsolutePath = Path.from(node).tap {
+                    it.first().modelIdentifier = getModelIdentifier(targetVersionedFolder)
+                }
                 else modelItemToModelAbsolutePath.addToPathNodes(node)
             }
         }
         if (!modelService) throw new ApiInternalException('MSXX', "No model service to handle creation of model item [${modelItemToCopy.domainType}]")
 
-        Model targetModel = pathService.findResourceByPathFromRootResource(targetVersionedFolder, modelRelativeToTargetPath) as Model
+        Model targetModel =
+            pathService.findResourceByPathFromRootResource(targetVersionedFolder, modelRelativeToTargetPath, getModelIdentifier(targetVersionedFolder)) as Model
 
-        modelService.processCreationPatchOfModelItem(modelItemToCopy, targetModel, modelItemToModelAbsolutePath.childPath, userSecurityPolicyManager)
+        modelService.processCreationPatchOfModelItem(modelItemToCopy, targetModel, modelItemToModelAbsolutePath.parent, userSecurityPolicyManager)
     }
 
     void processCreationPatchOfFacet(MultiFacetItemAware multiFacetItemAwareToCopy, VersionedFolder targetVersionedFolder, Path parentPathToCopyTo) {
@@ -876,7 +901,8 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         if (!multiFacetItemAwareService) throw new ApiInternalException('MSXX', "No domain service to handle creation of [${multiFacetItemAwareToCopy.domainType}]")
         log.debug('Creating Facet into VersionedFolder at [{}]', parentPathToCopyTo)
 
-        MultiFacetAware parentToCopyInto = pathService.findResourceByPathFromRootResource(targetVersionedFolder, parentPathToCopyTo) as MultiFacetAware
+        MultiFacetAware parentToCopyInto =
+            pathService.findResourceByPathFromRootResource(targetVersionedFolder, parentPathToCopyTo, getModelIdentifier(targetVersionedFolder)) as MultiFacetAware
         MultiFacetItemAware copy = multiFacetItemAwareService.copy(multiFacetItemAwareToCopy, parentToCopyInto)
 
         if (!copy.validate())
@@ -888,5 +914,9 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     @Override
     PersistentEntity getPersistentEntity() {
         grailsApplication.mappingContext.getPersistentEntity(Folder.name)
+    }
+
+    static String getModelIdentifier(VersionedFolder versionedFolder) {
+        Path.from(versionedFolder).first().getModelIdentifier()
     }
 }
