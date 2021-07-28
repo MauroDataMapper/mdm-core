@@ -1628,6 +1628,41 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(mergeData.commonAncestor)
     }
 
+    void 'MD05 : test finding merge diff with new style diff with aliases gh-112'() {
+        given:
+        String id = createNewItem(validJson)
+
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String target = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'interestingBranch'])
+        verifyResponse CREATED, response
+        String source = responseBody().id
+        PUT(source, [aliases: ['not main branch', 'mergeInto']])
+        verifyResponse OK, response
+
+
+        when:
+        GET("$source/mergeDiff/$target?isLegacy=false", STRING_ARG)
+        log.warn('{}', jsonResponseBody())
+        GET("$source/mergeDiff/$target?isLegacy=false")
+
+        then:
+        verifyResponse OK, response
+        responseBody().targetId == target
+        responseBody().sourceId == source
+        responseBody().diffs.first().path == 'dm:Functional Test Model$interestingBranch@aliasesString'
+        responseBody().diffs.first().sourceValue == 'mergeInto|not main branch'
+        responseBody().diffs.first().type == 'modification'
+
+        cleanup:
+        cleanUpData(source)
+        cleanUpData(target)
+        cleanUpData(id)
+    }
+
     void 'MP01 : test merging diff with no patch data'() {
         given:
         String id = createNewItem(validJson)
@@ -2506,6 +2541,51 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         then:
         responseBody().items.find {it.namespace == 'test.com' && it.key == 'testProperty'}
+
+        cleanup:
+        cleanUpData(source)
+        cleanUpData(target)
+        cleanUpData(id)
+    }
+
+    void 'MP10 : test merge into with new style diff with aliases gh-112'() {
+        given:
+        String id = createNewItem(validJson)
+
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String target = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'interestingBranch'])
+        verifyResponse CREATED, response
+        String source = responseBody().id
+        PUT(source, [aliases: ['not main branch', 'mergeInto']])
+
+
+        when:
+        GET("$source/mergeDiff/$target?isLegacy=false")
+
+        then:
+        verifyResponse OK, response
+
+        when:
+        List<Map> patches = responseBody().diffs
+        PUT("$source/mergeInto/$target?isLegacy=false", [
+            patch: [
+                targetId: responseBody().targetId,
+                sourceId: responseBody().sourceId,
+                label   : responseBody().label,
+                count   : patches.size(),
+                patches : patches]
+        ])
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == target
+        responseBody().aliases.size() == 2
+        responseBody().aliases.any {it == 'mergeInto'}
+        responseBody().aliases.any {it == 'not main branch'}
 
         cleanup:
         cleanUpData(source)
