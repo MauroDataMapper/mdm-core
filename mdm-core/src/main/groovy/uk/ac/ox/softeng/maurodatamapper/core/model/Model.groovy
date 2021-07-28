@@ -71,6 +71,8 @@ trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableRes
         }
         if (that instanceof Model) {
             res == 0 ? this.documentationVersion <=> that.documentationVersion : res
+            res == 0 ? this.modelVersion <=> that.modelVersion : res
+            res == 0 ? this.branchName <=> that.branchName : res
         }
         res
     }
