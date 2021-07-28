@@ -165,15 +165,8 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
   "leftId": "${json-unit.matches:id}",
   "rightId": "${json-unit.matches:id}",
   "label": "Functional Test Model",
-  "count": 18,
+  "count": 17,
   "diffs": [
-    {
-      "branchName": {
-        "left": "main",
-        "right": "source",
-        "isMergeConflict": false
-      }
-    },
     {
       "description": {
         "left": "DescriptionRight",

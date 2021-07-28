@@ -170,15 +170,8 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
   "leftId": "${json-unit.matches:id}",
   "rightId": "${json-unit.matches:id}",
   "label": "Functional Test Model",
-  "count": 9,
+  "count": 8,
   "diffs": [
-    {
-      "branchName": {
-        "left": "main",
-        "right": "source",
-        "isMergeConflict": false
-      }
-    },
     {
       "description": {
         "left": "DescriptionRight",

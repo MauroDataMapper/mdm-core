@@ -67,6 +67,8 @@ import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormValidateable
 import org.grails.datastore.mapping.model.PersistentEntity
+import org.grails.orm.hibernate.cfg.JoinTable
+import org.grails.orm.hibernate.cfg.PropertyConfig
 import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
@@ -914,6 +916,19 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     @Override
     PersistentEntity getPersistentEntity() {
         grailsApplication.mappingContext.getPersistentEntity(Folder.name)
+    }
+
+    @Override
+    JoinTable getJoinTable(PersistentEntity persistentEntity, String facetProperty) {
+        if (facetProperty == 'versionLinks') {
+            PropertyConfig propertyConfig = grailsApplication
+                .mappingContext
+                .getPersistentEntity(VersionedFolder.name)
+                .getPropertyByName(facetProperty)
+                .mapping
+                .mappedForm as PropertyConfig
+            return propertyConfig.joinTable
+        } else super.getJoinTable(persistentEntity, facetProperty)
     }
 
     static String getModelIdentifier(VersionedFolder versionedFolder) {
