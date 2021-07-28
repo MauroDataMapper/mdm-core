@@ -39,6 +39,8 @@ class ResourceActions {
     public static final String MERGE_INTO_ACTION = 'mergeInto'
     public static final String READ_BY_EVERYONE_ACTION = 'readByEveryone'
     public static final String READ_BY_AUTHENTICATED_ACTION = 'readByAuthenticated'
+    public static final String POST_FINALISED_READABLE = 'postFinalisedReadable'
+    public static final String POST_FINALISED_EDITABLE = 'postFinalisedEditable'
 
     public static final List<String> READER_VERSIONING_ACTIONS = [CREATE_NEW_VERSIONS_ACTION,
                                                                   NEW_FORK_MODEL_ACTION]
@@ -90,4 +92,6 @@ class ResourceActions {
     public static final List<String> USER_ADMIN_ACTIONS = [SHOW_ACTION,
                                                            UPDATE_ACTION,
                                                            DISABLE_ACTION]
+
+
 }

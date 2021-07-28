@@ -72,6 +72,8 @@ import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.S
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.STANDARD_EDIT_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.UPDATE_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.USER_ADMIN_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.POST_FINALISED_EDITABLE
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.POST_FINALISED_READABLE
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.CONTAINER_ADMIN_CONTAINER_TREE_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.CONTAINER_ADMIN_FOLDER_TREE_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.CONTAINER_ADMIN_MODEL_TREE_ACTIONS
@@ -93,6 +95,8 @@ import static uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole.GROUP_ADM
 import static uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole.READER_ROLE_NAME
 import static uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole.REVIEWER_ROLE_NAME
 import static uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole.USER_ADMIN_ROLE_NAME
+
+
 
 /**
  * This class should be built using the GroupBasedSecurityPolicyManagerService which will have transactionality available.
@@ -633,6 +637,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         if (role.canFinalise()) updatedActions << FINALISE_ACTION
         if (role.isFinalised()) {
             updatedActions.removeAll(DISALLOWED_ONCE_FINALISED_ACTIONS)
+            updatedActions.addAll(POST_FINALISED_EDITABLE)
         }
         if (role.canVersion()) {
             updatedActions.addAll(EDITOR_VERSIONING_ACTIONS)
@@ -644,6 +649,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         List<String> updatedActions = new ArrayList<>(baseActions)
         if (role.isFinalised()) {
             updatedActions.removeAll(DISALLOWED_ONCE_FINALISED_ACTIONS)
+            updatedActions.addAll(POST_FINALISED_READABLE)
         }
         if (role.canVersion() && isAuthenticated()) {
             updatedActions.addAll(READER_VERSIONING_ACTIONS)
