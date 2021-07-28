@@ -39,9 +39,9 @@ class PathNode {
     String attribute
     String modelIdentifier
 
-    PathNode(String prefix, String identifier, boolean isRoot, boolean isLast) {
+    PathNode(String prefix, String identifier, boolean isLast) {
         this.prefix = prefix
-        parseIdentifier(identifier, isRoot, isLast)
+        parseIdentifier(identifier, isLast)
     }
 
     PathNode(String prefix, String identifier, String modelIdentifier, String attribute) {
@@ -59,14 +59,14 @@ class PathNode {
     te:my-code:my-definition (type prefix = te, identifier = my-code:my-definition)
      */
 
-    PathNode(String node, boolean isRoot, boolean isLast) {
+    PathNode(String node, boolean isLast) {
         node.find(/^(\w+):(.+)$/) {full, foundPrefix, fullIdentifier ->
             prefix = foundPrefix
-            parseIdentifier(fullIdentifier, isRoot, isLast)
+            parseIdentifier(fullIdentifier, isLast)
         }
     }
 
-    void parseIdentifier(String fullIdentifier, boolean isRoot, boolean isLast) {
+    void parseIdentifier(String fullIdentifier, boolean isLast) {
         String parsed = URLDecoder.decode(fullIdentifier, Charset.defaultCharset())
         if (isLast) {
             parsed.find(/^(.+?)${ATTRIBUTE_PATH_IDENTIFIER_SEPARATOR}(.+?)$/) {full, subIdentifier, attr ->
@@ -74,12 +74,11 @@ class PathNode {
                 parsed = subIdentifier
             }
         }
-        if (isRoot) {
-            parsed.find(/^(.+?)${ESCAPED_MODEL_PATH_IDENTIFIER_SEPARATOR}(.+?)$/) {full, subIdentifier, foundIdentifier ->
-                parsed = subIdentifier
-                modelIdentifier = foundIdentifier
-            }
+        parsed.find(/^(.+?)${ESCAPED_MODEL_PATH_IDENTIFIER_SEPARATOR}(.+?)$/) {full, subIdentifier, foundIdentifier ->
+            parsed = subIdentifier
+            modelIdentifier = foundIdentifier
         }
+
         identifier = parsed
     }
 
@@ -93,9 +92,9 @@ class PathNode {
         base
     }
 
-    String getFullIdentifier() {
+    String getFullIdentifier(String modelIdentifierOverride = null) {
         String base = identifier
-        if (modelIdentifier) base += "${MODEL_PATH_IDENTIFIER_SEPARATOR}${modelIdentifier}"
+        if (modelIdentifier) base += "${MODEL_PATH_IDENTIFIER_SEPARATOR}${modelIdentifierOverride ?: modelIdentifier}"
         base
     }
 
@@ -131,8 +130,8 @@ class PathNode {
         return result
     }
 
-    boolean matches(PathNode pathNode) {
-        matchesPrefix(pathNode.prefix) && matchesIdentifier(pathNode)
+    boolean matches(PathNode pathNode, String modelIdentifierOverride = null) {
+        matchesPrefix(pathNode.prefix) && matchesIdentifier(pathNode, modelIdentifierOverride)
     }
 
     boolean matches(CreatorAware creatorAware) {
@@ -147,9 +146,13 @@ class PathNode {
         true
     }
 
-    boolean matchesIdentifier(PathNode otherPathNode) {
+    boolean matchesIdentifier(PathNode otherPathNode, String modelIdentifierOverride = null) {
 
-        if (identifier == otherPathNode.identifier && modelIdentifier == otherPathNode.modelIdentifier) return true
+        if (modelIdentifierOverride) {
+            if (identifier == otherPathNode.identifier && modelIdentifier == modelIdentifierOverride) return true
+        } else {
+            if (identifier == otherPathNode.identifier && modelIdentifier == otherPathNode.modelIdentifier) return true
+        }
 
         // If model identifier present on either side then we need to do some verification
         if ((modelIdentifier || otherPathNode.modelIdentifier)) {

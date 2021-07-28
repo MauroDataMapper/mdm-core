@@ -54,7 +54,7 @@ class Path {
             int lastIndex = splits.size() - 1
 
             splits.eachWithIndex {String node, int i ->
-                pathNodes << new PathNode(node, i == 0, i == lastIndex)
+                pathNodes << new PathNode(node, i == lastIndex)
             }
         }
     }
@@ -81,7 +81,7 @@ class Path {
     }
 
     Path addToPathNodes(String prefix, String pathIdentifier, boolean isLast) {
-        addToPathNodes(new PathNode(prefix, pathIdentifier, pathNodes.isEmpty(), isLast))
+        addToPathNodes(new PathNode(prefix, pathIdentifier, isLast))
     }
 
     Path getParent() {
@@ -90,17 +90,17 @@ class Path {
         }
     }
 
-    boolean isAbsoluteTo(CreatorAware creatorAware) {
+    boolean isAbsoluteTo(CreatorAware creatorAware, String modelIdentifierOverride = null) {
         // If the first node in this path matches the supplied object then this path is absolute against the supplied object,
         // otherwise it may be relative or may not be inside this object
         Path rootPath = from(creatorAware)
-        isAbsoluteTo(rootPath)
+        isAbsoluteTo(rootPath, modelIdentifierOverride)
     }
 
-    boolean isAbsoluteTo(Path rootPath) {
+    boolean isAbsoluteTo(Path rootPath, String modelIdentifierOverride = null) {
         // If the first node in this path matches the supplied object then this path is absolute against the supplied object,
         // otherwise it may be relative or may not be inside this object
-        rootPath.first().matches(this.first())
+        rootPath.first().matches(this.first(), modelIdentifierOverride)
     }
 
     boolean isEmpty() {
@@ -152,7 +152,7 @@ class Path {
 
     static Path from(String prefix, String pathIdentifier) {
         new Path().tap {
-            pathNodes << new PathNode(prefix, pathIdentifier, true, true)
+            pathNodes << new PathNode(prefix, pathIdentifier, true)
         }
     }
 
@@ -167,7 +167,7 @@ class Path {
     static Path from(CreatorAware... domains) {
         new Path().tap {
             domains.eachWithIndex {CreatorAware domain, int i ->
-                pathNodes << new PathNode(domain.pathPrefix, domain.pathIdentifier, i == 0, false)
+                pathNodes << new PathNode(domain.pathPrefix, domain.pathIdentifier, false)
             }
         }
     }
@@ -175,7 +175,7 @@ class Path {
     static Path from(List<CreatorAware> domains) {
         new Path().tap {
             domains.eachWithIndex {CreatorAware domain, int i ->
-                pathNodes << new PathNode(domain.pathPrefix, domain.pathIdentifier, i == 0, false)
+                pathNodes << new PathNode(domain.pathPrefix, domain.pathIdentifier, false)
             }
         }
     }
