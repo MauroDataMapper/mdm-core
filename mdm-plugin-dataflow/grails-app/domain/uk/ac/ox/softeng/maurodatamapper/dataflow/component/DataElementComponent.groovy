@@ -137,7 +137,13 @@ class DataElementComponent implements ModelItem<DataElementComponent, DataModel>
 
     @Deprecated(forRemoval = true)
     static DetachedCriteria<DataElementComponent> byDataFlowId(UUID dataFlowId) {
-        by().eq('dataClassComponent.dataFlow.id', dataFlowId)
+        by().where {
+            dataClassComponent {
+                dataFlow {
+                    eq(id, dataFlowId)
+                }
+            }
+        }
     }
 
     @Deprecated(forRemoval = true)
