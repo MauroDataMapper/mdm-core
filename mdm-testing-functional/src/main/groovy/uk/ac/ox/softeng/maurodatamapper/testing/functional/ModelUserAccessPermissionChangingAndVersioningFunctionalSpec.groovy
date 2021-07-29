@@ -117,7 +117,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
             'show',
             'createNewVersions',
             'newForkModel',
-            'postFinalisedReadable'
+            'finalisedReadActions'
         ].sort()
     }
 
@@ -132,7 +132,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
             'newBranchModelVersion',
             'softDelete',
             'delete',
-            'postFinalisedReadable'
+            'finalisedEditActions'
 
         ].sort()
     }
@@ -1582,7 +1582,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         then:
         verifyResponse(OK, response)
         response.body().readableByEveryone == true
-        response.body().availableActions == ['postFinalisedReadable', 'show']
+        response.body().availableActions == ['finalisedReadActions', 'show']
 
         when: 'removing readable by everyone'
         loginEditor()

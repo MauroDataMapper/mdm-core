@@ -1803,7 +1803,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
             'newForkModel',
             'comment',
             'newModelVersion',
-            'postFinalisedEditable',
+            'finalisedEditActions',
             'newDocumentationVersion',
             'newBranchModelVersion',
             'softDelete',

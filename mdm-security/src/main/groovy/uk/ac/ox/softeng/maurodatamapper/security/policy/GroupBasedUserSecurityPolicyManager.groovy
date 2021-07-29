@@ -53,6 +53,8 @@ import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.D
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.DISALLOWED_ONCE_FINALISED_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.EDITOR_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.EDITOR_VERSIONING_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.FINALISED_EDIT_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.FINALISED_READ_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.FINALISE_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.FULL_DELETE_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.IMPORT_ACTION
@@ -72,8 +74,6 @@ import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.S
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.STANDARD_EDIT_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.UPDATE_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.USER_ADMIN_ACTIONS
-import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.POST_FINALISED_EDITABLE
-import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.POST_FINALISED_READABLE
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.CONTAINER_ADMIN_CONTAINER_TREE_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.CONTAINER_ADMIN_FOLDER_TREE_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.CONTAINER_ADMIN_MODEL_TREE_ACTIONS
@@ -637,7 +637,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         if (role.canFinalise()) updatedActions << FINALISE_ACTION
         if (role.isFinalised()) {
             updatedActions.removeAll(DISALLOWED_ONCE_FINALISED_ACTIONS)
-            updatedActions.addAll(POST_FINALISED_EDITABLE)
+            updatedActions << FINALISED_EDIT_ACTIONS
         }
         if (role.canVersion()) {
             updatedActions.addAll(EDITOR_VERSIONING_ACTIONS)
@@ -649,7 +649,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         List<String> updatedActions = new ArrayList<>(baseActions)
         if (role.isFinalised()) {
             updatedActions.removeAll(DISALLOWED_ONCE_FINALISED_ACTIONS)
-            updatedActions.addAll(POST_FINALISED_READABLE)
+            updatedActions << FINALISED_READ_ACTIONS
         }
         if (role.canVersion() && isAuthenticated()) {
             updatedActions.addAll(READER_VERSIONING_ACTIONS)
