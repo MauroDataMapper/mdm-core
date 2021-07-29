@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.FieldDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.MergeDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
@@ -72,6 +73,7 @@ import org.springframework.context.MessageSource
 
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import java.util.function.Predicate
 
 @Slf4j
 abstract class ModelService<K extends Model> extends CatalogueItemService<K> implements SecurableResourceService<K>, VersionLinkAwareService<K> {
@@ -476,18 +478,26 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     void processCreationPatchIntoModel(FieldPatchData creationPatch, K targetModel, K sourceModel, UserSecurityPolicyManager userSecurityPolicyManager) {
         CreatorAware domainToCopy = pathService.findResourceByPathFromRootResource(sourceModel, creationPatch.path)
+        if (!domainToCopy) {
+            log.warn('Could not process creation patch into model at path [{}] as no such path exists in the source', creationPatch.path)
+            return
+        }
         log.debug('Creating {} into {}', creationPatch.path, creationPatch.relativePathToRoot.parent)
         // Potential deletions are modelitems or facets from model or modelitem
         if (Utils.parentClassIsAssignableFromChild(ModelItem, domainToCopy.class)) {
             processCreationPatchOfModelItem(domainToCopy as ModelItem, targetModel, creationPatch.relativePathToRoot.parent, userSecurityPolicyManager)
         }
         if (Utils.parentClassIsAssignableFromChild(MultiFacetItemAware, domainToCopy.class)) {
-            processCreationPatchOfFacet(domainToCopy as MultiFacetItemAware, targetModel, creationPatch.relativePathToRoot.parent, userSecurityPolicyManager)
+            processCreationPatchOfFacet(domainToCopy as MultiFacetItemAware, targetModel, creationPatch.relativePathToRoot.parent)
         }
     }
 
     void processDeletionPatchIntoModel(FieldPatchData deletionPatch, K targetModel) {
         CreatorAware domain = pathService.findResourceByPathFromRootResource(targetModel, deletionPatch.relativePathToRoot)
+        if (!domain) {
+            log.warn('Could not process deletion patch into model at path [{}] as no such path exists in the target', deletionPatch.relativePathToRoot)
+            return
+        }
         log.debug('Deleting [{}]', deletionPatch.relativePathToRoot)
 
         // Potential deletions are modelitems or facets from model or modelitem
@@ -501,6 +511,10 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     void processModificationPatchIntoModel(FieldPatchData modificationPatch, K targetModel) {
         CreatorAware domain = pathService.findResourceByPathFromRootResource(targetModel, modificationPatch.relativePathToRoot)
+        if (!domain) {
+            log.warn('Could not process modifiation patch into model at path [{}] as no such path exists in the target', modificationPatch.relativePathToRoot)
+            return
+        }
         String fieldName = modificationPatch.fieldName
         log.debug('Modifying [{}] in [{}]', fieldName, modificationPatch.relativePathToRoot)
         domain."${fieldName}" = modificationPatch.sourceValue
@@ -563,10 +577,9 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         modelItemService.save(copy, flush: false, validate: false)
     }
 
-    void processCreationPatchOfFacet(MultiFacetItemAware multiFacetItemAwareToCopy, Model targetModel, Path parentPathToCopyTo,
-                                     UserSecurityPolicyManager userSecurityPolicyManager) {
+    void processCreationPatchOfFacet(MultiFacetItemAware multiFacetItemAwareToCopy, Model targetModel, Path parentPathToCopyTo) {
         MultiFacetItemAwareService multiFacetItemAwareService = multiFacetItemAwareServices.find {it.handles(multiFacetItemAwareToCopy.class)}
-        if (!multiFacetItemAwareService) throw new ApiInternalException('MSXX', "No domain service to handle deletion of [${multiFacetItemAwareToCopy.domainType}]")
+        if (!multiFacetItemAwareService) throw new ApiInternalException('MSXX', "No domain service to handle creation of [${multiFacetItemAwareToCopy.domainType}]")
         log.debug('Creating Facet into Model at [{}]', parentPathToCopyTo)
 
         CatalogueItem parentToCopyInto = pathService.findResourceByPathFromRootResource(targetModel, parentPathToCopyTo) as CatalogueItem
@@ -707,7 +720,14 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
         ObjectDiff<K> caDiffSource = commonAncestor.diff(sourceModel)
         ObjectDiff<K> caDiffTarget = commonAncestor.diff(targetModel)
-        //        ObjectDiff<K> sourceDiffTarget = sourceModel.diff(targetModel)
+
+        // Remove the branchname as  diff as we know its a diff and for merging we dont want it
+        Predicate branchNamePredicate = [test: {FieldDiff fieldDiff ->
+            fieldDiff.fieldName == 'branchName'
+        },] as Predicate
+
+        caDiffSource.diffs.removeIf(branchNamePredicate)
+        caDiffTarget.diffs.removeIf(branchNamePredicate)
 
         DiffBuilder
             .mergeDiff(sourceModel.class as Class<K>)
@@ -895,5 +915,28 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     void setModelIsFromModel(K source, K target, User user) {
         source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetMultiFacetAwareItem: target)
+    }
+
+    Model copyModelAndValidateAndSave(K original,
+                                      Folder folderToCopyInto,
+                                      User copier,
+                                      boolean copyPermissions,
+                                      String label,
+                                      Version copyDocVersion,
+                                      String branchName,
+                                      boolean throwErrors,
+                                      UserSecurityPolicyManager userSecurityPolicyManager) {
+        Model copiedModel = copyModel(original, folderToCopyInto, copier, true, original.label, original.documentationVersion,
+                                      branchName, false, userSecurityPolicyManager)
+
+        if ((copiedModel as GormValidateable).validate()) {
+            saveModelWithContent(copiedModel)
+            if (securityPolicyManagerService) {
+                userSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(copiedModel, userSecurityPolicyManager.user,
+                                                                                                         copiedModel.label)
+            }
+        } else throw new ApiInvalidModelException('DMSXX', 'Copied Model is invalid',
+                                                  (copiedModel as GormValidateable).errors, messageSource)
+        copiedModel
     }
 }

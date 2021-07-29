@@ -19,10 +19,12 @@ package uk.ac.ox.softeng.maurodatamapper.core.container
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.MergeIntoData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CreateNewVersionData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.FinaliseData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
@@ -36,6 +38,7 @@ import grails.gorm.transactions.Transactional
 import org.springframework.beans.factory.annotation.Autowired
 
 import static org.springframework.http.HttpStatus.NO_CONTENT
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 class VersionedFolderController extends EditLoggingController<VersionedFolder> {
     static responseFormats = ['json', 'xml']
@@ -313,6 +316,70 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
         respond versionTreeModelList.findAll {!it.newFork}
     }
 
+    def diff() {
+        VersionedFolder thisVersionedFolder = queryForResource params.versionedFolderId
+        VersionedFolder otherVersionedFolder = queryForResource params.otherVersionedFolderId
+
+        if (!thisVersionedFolder) return notFound(params.versionedFolderId)
+        if (!otherVersionedFolder) return notFound(params.otherVersionedFolderId)
+
+        ObjectDiff diff = versionedFolderService.getDiffForVersionedFolders(thisVersionedFolder, otherVersionedFolder)
+        respond diff
+    }
+
+    def mergeDiff() {
+
+        VersionedFolder source = queryForResource params.versionedFolderId
+        if (!source) return notFound(params.versionedFolderId)
+
+        VersionedFolder target = queryForResource params.otherVersionedFolderId
+        if (!target) return notFound(params.otherVersionedFolderId)
+
+        respond versionedFolderService.getMergeDiffForVersionedFolders(source, target)
+    }
+
+    @Transactional
+    def mergeInto(MergeIntoData mergeIntoData) {
+        if (!mergeIntoData.validate()) {
+            respond mergeIntoData.errors
+            return
+        }
+
+        if (mergeIntoData.patch.sourceId != params.versionedFolderId) {
+            return errorResponse(UNPROCESSABLE_ENTITY, 'Source versioned folder id passed in request body does not match source versioned folder id in URI.')
+        }
+        if (mergeIntoData.patch.targetId != params.otherVersionedFolderId) {
+            return errorResponse(UNPROCESSABLE_ENTITY, 'Target versioned folder id passed in request body does not match target versioned folder id in URI.')
+        }
+
+        VersionedFolder source = queryForResource params.versionedFolderId
+        if (!source) return notFound(params.versionedFolderId)
+
+        VersionedFolder target = queryForResource params.otherVersionedFolderId
+        if (!target) return notFound(params.otherVersionedFolderId)
+
+        VersionedFolder instance = versionedFolderService.mergeObjectPatchDataIntoVersionedFolder(mergeIntoData.patch, target, source, currentUserSecurityPolicyManager)
+
+        if (!validateResource(instance, 'merge')) return
+
+        if (mergeIntoData.deleteBranch) {
+            if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(source.class, source.id)) {
+                return forbiddenDueToPermissions(currentUserSecurityPolicyManager.userAvailableActions(source.class, source.id))
+            }
+            versionedFolderService.delete(source, true)
+            if (securityPolicyManagerService) {
+                currentUserSecurityPolicyManager = securityPolicyManagerService.retrieveUserSecurityPolicyManager(currentUser.emailAddress)
+            }
+        }
+
+        if (mergeIntoData.changeNotice) {
+            instance.addChangeNoticeEdit(currentUser, mergeIntoData.changeNotice)
+        }
+
+        updateResource(instance)
+
+        updateResponse(instance)
+    }
 
     @Override
     protected VersionedFolder queryForResource(Serializable id) {

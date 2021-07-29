@@ -68,7 +68,7 @@ class PathService {
         }.sort() as Map<String, String>
     }
 
-    CreatorAware findResourceByPathFromRootResource(CreatorAware rootResourceOfPath, Path path) {
+    CreatorAware findResourceByPathFromRootResource(CreatorAware rootResourceOfPath, Path path, String modelIdentifierOverride = null) {
         log.debug('Searching for path {} inside {}:{}', path, rootResourceOfPath.pathPrefix, rootResourceOfPath.pathIdentifier)
         if (path.isEmpty()) {
             // assume we're in an empty/relative root which means we want the root resource
@@ -76,7 +76,7 @@ class PathService {
         }
 
         // If the current path is absolute to the root then get the relative path so we can search into the root
-        Path pathToFind = path.isAbsoluteTo(rootResourceOfPath) ? path.childPath : path
+        Path pathToFind = path.isAbsoluteTo(rootResourceOfPath, modelIdentifierOverride) ? path.childPath : path
 
         // If no nodes in the pathToFind then return the model
         if (pathToFind.isEmpty()) return rootResourceOfPath
@@ -94,15 +94,15 @@ class PathService {
         }
 
         log.trace('Found service [{}] to handle prefix [{}]', domainService.class.simpleName, childNode.prefix)
-        def child = domainService.findByParentIdAndPathIdentifier(rootResourceOfPath.id, childNode.getFullIdentifier())
+        def child = domainService.findByParentIdAndPathIdentifier(rootResourceOfPath.id, childNode.getFullIdentifier(modelIdentifierOverride))
 
         if (!child) {
-            log.warn("Child [${childNode}] does not exist in path [${path}]")
+            log.warn("Child [{}] does not exist in root resource [{}]", childNode, Path.from(rootResourceOfPath))
             return null
         }
 
         // Recurse down the path for that child
-        findResourceByPathFromRootResource(child, pathToFind)
+        findResourceByPathFromRootResource(child, pathToFind, modelIdentifierOverride)
     }
 
     CreatorAware findResourceByPathFromRootClass(Class<? extends SecurableResource> rootClass, Path path) {

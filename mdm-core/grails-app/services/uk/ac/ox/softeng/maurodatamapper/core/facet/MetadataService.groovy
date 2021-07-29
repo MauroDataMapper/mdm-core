@@ -270,9 +270,16 @@ class MetadataService implements MultiFacetItemAwareService<Metadata> {
 
     @Override
     Metadata findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        String ns
+        String key
+        pathIdentifier.find(/^(.+)\.(.+)$/) {all, foundNs, foundKey ->
+            ns = foundNs
+            key = foundKey
+        }
+
         Metadata.byMultiFacetAwareItemId(parentId)
-            .eq('namespace', pathIdentifier.split(/\./)[0])
-            .eq('key', pathIdentifier.split(/\./)[1])
+            .eq('namespace', ns)
+            .eq('key', key)
             .get()
     }
 }

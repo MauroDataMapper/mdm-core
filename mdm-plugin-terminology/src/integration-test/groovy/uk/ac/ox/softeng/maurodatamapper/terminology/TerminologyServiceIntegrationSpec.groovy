@@ -360,12 +360,7 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         MergeDiff mergeDiff = terminologyService.getMergeDiffForModels(terminologyService.get(left.id), terminologyService.get(right.id))
 
         then:
-        mergeDiff.size() == 1
-        mergeDiff.first().fieldName == 'branchName'
-        mergeDiff.first().target == 'right'
-        mergeDiff.first().source == 'left'
-        mergeDiff.first().isMergeConflict()
-        mergeDiff.first().commonAncestor == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+        mergeDiff.size() == 0
     }
 }
 

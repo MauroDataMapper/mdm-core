@@ -24,7 +24,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
-import uk.ac.ox.softeng.maurodatamapper.core.facet.rule.RuleRepresentation
 import uk.ac.ox.softeng.maurodatamapper.core.model.container.CatalogueItemClassifierAware
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
@@ -100,6 +99,7 @@ trait CatalogueItem<D extends Diffable> implements InformationAware, EditHistory
             .rightHandSide(rhsId, rhs)
             .appendString('label', lhs.label, rhs.label)
             .appendString('description', lhs.description, rhs.description)
+            .appendString('aliasesString', lhs.aliasesString, rhs.aliasesString)
             .appendList(Metadata, 'metadata', lhs.metadata, rhs.metadata)
             .appendList(Annotation, 'annotations', lhs.annotations, rhs.annotations)
             .appendList(Rule, 'rule', lhs.rules, rhs.rules)

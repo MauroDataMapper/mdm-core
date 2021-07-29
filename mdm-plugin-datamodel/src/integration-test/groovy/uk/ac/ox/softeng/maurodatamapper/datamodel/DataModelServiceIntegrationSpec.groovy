@@ -957,19 +957,13 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         !mergeDiff.isEmpty()
-        mergeDiff.numberOfDiffs == 16
+        mergeDiff.numberOfDiffs == 15
 
-        when: 'branch name is a non-conflicting diff'
-        FieldMergeDiff<String> stringFieldDiff = mergeDiff.find {it.fieldName == 'branchName'}
-
-        then:
-        stringFieldDiff.source == 'test'
-        stringFieldDiff.target == VersionAwareConstraints.DEFAULT_BRANCH_NAME
-        stringFieldDiff.commonAncestor == VersionAwareConstraints.DEFAULT_BRANCH_NAME
-        !stringFieldDiff.isMergeConflict()
+        then: 'branch name is not a diff'
+        !mergeDiff.find {it.fieldName == 'branchName'}
 
         when: 'organisation is a non-conflicting change'
-        stringFieldDiff = mergeDiff.find {it.fieldName == 'organisation'}
+        FieldMergeDiff<String> stringFieldDiff = mergeDiff.find {it.fieldName == 'organisation'}
 
         then:
         stringFieldDiff.source == 'under test'
@@ -1161,7 +1155,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         !mergeDiff.isEmpty()
-        mergeDiff.numberOfDiffs == 16
+        mergeDiff.numberOfDiffs == 15
 
         when:
         DataClass targetExistingClass = dataClassService.findByParentAndLabel(rightMain, 'existingClass')

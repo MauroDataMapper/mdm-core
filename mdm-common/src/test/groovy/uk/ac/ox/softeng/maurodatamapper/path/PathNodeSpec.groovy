@@ -26,7 +26,7 @@ class PathNodeSpec extends Specification {
 
     void 'test path node creation'() {
         given:
-        PathNode pathNode = new PathNode('dm', 'test model', true, true)
+        PathNode pathNode = new PathNode('dm', 'test model', true)
 
         expect:
         pathNode.prefix == 'dm'
@@ -38,7 +38,7 @@ class PathNodeSpec extends Specification {
 
     void 'test path node creation with parsing'() {
         given:
-        PathNode pathNode = new PathNode('dm:test model', true, true)
+        PathNode pathNode = new PathNode('dm:test model', true)
 
         expect:
         pathNode.prefix == 'dm'
@@ -49,7 +49,7 @@ class PathNodeSpec extends Specification {
 
     void 'test path node creation with parsing with model'() {
         given:
-        PathNode pathNode = new PathNode('dm:test model$main', true, true)
+        PathNode pathNode = new PathNode('dm:test model$main', true)
 
         expect:
         pathNode.prefix == 'dm'
@@ -61,7 +61,7 @@ class PathNodeSpec extends Specification {
 
     void 'test path node creation with parsing with attribute'() {
         given:
-        PathNode pathNode = new PathNode('dm:test model@description', true, true)
+        PathNode pathNode = new PathNode('dm:test model@description', true)
 
         expect:
         pathNode.prefix == 'dm'
@@ -74,7 +74,7 @@ class PathNodeSpec extends Specification {
 
     void 'test path node creation with parsing with model and attribute'() {
         given:
-        PathNode pathNode = new PathNode('dm:test model$main@description', true, true)
+        PathNode pathNode = new PathNode('dm:test model$main@description', true)
 
         expect:
         pathNode.prefix == 'dm'
@@ -86,64 +86,64 @@ class PathNodeSpec extends Specification {
 
     void 'test path node matching on identifier and model identifier'() {
         when: 'same branch names'
-        PathNode pathNode1 = new PathNode('dm:test model$main', true, true)
-        PathNode pathNode2 = new PathNode('dm:test model$main', true, true)
+        PathNode pathNode1 = new PathNode('dm:test model$main', true)
+        PathNode pathNode2 = new PathNode('dm:test model$main', true)
 
         then: 'matches'
         pathNode1.matches(pathNode2)
         pathNode1 == pathNode2
 
         when: 'defaulting branch name means we dont care about it'
-        pathNode2 = new PathNode('dm:test model', true, true)
+        pathNode2 = new PathNode('dm:test model', true)
 
         then: 'matches but does not equal'
         pathNode1.matches(pathNode2)
         pathNode1 != pathNode2
 
         when: 'different branch names'
-        pathNode2 = new PathNode('dm:test model$test', true, true)
+        pathNode2 = new PathNode('dm:test model$test', true)
 
         then: 'no match'
         !pathNode1.matches(pathNode2)
         pathNode1 != pathNode2
 
         when: 'same branch name different identifier'
-        pathNode2 = new PathNode('dm:test model 2$main', true, true)
+        pathNode2 = new PathNode('dm:test model 2$main', true)
 
         then: 'no match'
         !pathNode1.matches(pathNode2)
         pathNode1 != pathNode2
 
         when: 'versionable model identifier vs branch name'
-        pathNode2 = new PathNode('dm:test model$1.0.0', true, true)
+        pathNode2 = new PathNode('dm:test model$1.0.0', true)
 
         then: 'no match'
         !pathNode1.matches(pathNode2)
         pathNode1 != pathNode2
 
         when: 'same versionable model identifier'
-        pathNode1 = new PathNode('dm:test model$1.0.0', true, true)
+        pathNode1 = new PathNode('dm:test model$1.0.0', true)
 
         then: 'match and equality'
         pathNode1.matches(pathNode2)
         pathNode1 == pathNode2
 
         when: 'same versionable model identifier'
-        pathNode1 = new PathNode('dm:test model$1.0', true, true)
+        pathNode1 = new PathNode('dm:test model$1.0', true)
 
         then: 'match and equality'
         pathNode1.matches(pathNode2)
         pathNode1 == pathNode2
 
         when: 'same versionable model identifier'
-        pathNode1 = new PathNode('dm:test model$1', true, true)
+        pathNode1 = new PathNode('dm:test model$1', true)
 
         then: 'match and equality'
         pathNode1.matches(pathNode2)
         pathNode1 == pathNode2
 
         when: 'different identifiers and different prefix'
-        pathNode2 = new PathNode('dc:test class', true, true)
+        pathNode2 = new PathNode('dc:test class', true)
 
         then: 'no match'
         !pathNode1.matches(pathNode2)
@@ -152,15 +152,15 @@ class PathNodeSpec extends Specification {
 
     void 'test path node matching with attributes'() {
         when: 'same branch names'
-        PathNode pathNode1 = new PathNode('dm:test model$main', true, true)
-        PathNode pathNode2 = new PathNode('dm:test model$main', true, true)
+        PathNode pathNode1 = new PathNode('dm:test model$main', true)
+        PathNode pathNode2 = new PathNode('dm:test model$main', true)
 
         then: 'matches'
         pathNode1.matches(pathNode2)
         pathNode1 == pathNode2
 
         when: 'attribute included'
-        pathNode2 = new PathNode('dm:test model$main@description', true, true)
+        pathNode2 = new PathNode('dm:test model$main@description', true)
 
         then: 'matches but does not equal'
         pathNode1.matches(pathNode2)

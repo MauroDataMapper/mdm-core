@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.test.functional.TestMergeData
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
@@ -35,7 +36,7 @@ import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import spock.lang.Shared
 
-import java.util.function.Predicate
+import java.nio.charset.Charset
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
 
@@ -157,7 +158,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
   "leftId": "${json-unit.matches:id}",
   "rightId": "${json-unit.matches:id}",
   "label": "Functional Test Model",
-  "count": 11,
+  "count": 14,
   "diffs": [
     {
       "description": {
@@ -168,15 +169,23 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
       }
     },
     {
-      "branchName": {
-        "left": "main",
-        "right": "source",
-        "isMergeConflict": false
-      }
-    },
-    {
       "dataClasses": {
         "deleted": [
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "deleteLeftOnly",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test Model",
+                  "domainType": "DataModel",
+                  "finalised": true
+                }
+              ]
+            },
+            "isMergeConflict": false
+          },
           {
             "value": {
               "id": "${json-unit.matches:id}",
@@ -203,21 +212,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                 }
               ]
             }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "deleteLeftOnly",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test Model",
-                  "domainType": "DataModel",
-                  "finalised": true
-                }
-              ]
-            },
-            "isMergeConflict": false
           }
         ],
         "created": [
@@ -268,7 +262,38 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
           {
             "leftId": "${json-unit.matches:id}",
             "rightId": "${json-unit.matches:id}",
-            "label": "addAndAddReturningDifference",
+            "label": "modifyLeftOnly",
+            "leftBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test Model",
+                "domainType": "DataModel",
+                "finalised": true
+              }
+            ],
+            "rightBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test Model",
+                "domainType": "DataModel",
+                "finalised": true
+              }
+            ],
+            "count": 1,
+            "diffs": [
+              {
+                "description": {
+                  "left": null,
+                  "right": "Description",
+                  "isMergeConflict": false
+                }
+              }
+            ]
+          },
+          {
+            "leftId": "${json-unit.matches:id}",
+            "rightId": "${json-unit.matches:id}",
+            "label": "modifyAndModifyReturningDifference",
             "leftBreadcrumbs": [
               {
                 "id": "${json-unit.matches:id}",
@@ -372,7 +397,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
           {
             "leftId": "${json-unit.matches:id}",
             "rightId": "${json-unit.matches:id}",
-            "label": "modifyAndModifyReturningDifference",
+            "label": "addAndAddReturningDifference",
             "leftBreadcrumbs": [
               {
                 "id": "${json-unit.matches:id}",
@@ -400,33 +425,61 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                 }
               }
             ]
+          }
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "deleted": [
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "namespace": "functional.test",
+              "key": "deleteFromSource",
+              "value": "some other original value"
+            },
+            "isMergeConflict": false
+          }
+        ],
+        "created": [
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "namespace": "functional.test",
+              "key": "addToSourceOnly",
+              "value": "adding to source only"
+            },
+            "isMergeConflict": false
           },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "namespace": "functional.test",
+              "key": "modifyAndDelete",
+              "value": "source has modified this also"
+            },
+            "isMergeConflict": true,
+            "commonAncestorValue": {
+              "id": "${json-unit.matches:id}",
+              "namespace": "functional.test",
+              "key": "modifyAndDelete",
+              "value": "some other original value 2"
+            }
+          }
+        ],
+        "modified": [
           {
             "leftId": "${json-unit.matches:id}",
             "rightId": "${json-unit.matches:id}",
-            "label": "modifyLeftOnly",
-            "leftBreadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Functional Test Model",
-                "domainType": "DataModel",
-                "finalised": true
-              }
-            ],
-            "rightBreadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Functional Test Model",
-                "domainType": "DataModel",
-                "finalised": true
-              }
-            ],
+            "namespace": "functional.test",
+            "key": "modifyOnSource",
             "count": 1,
             "diffs": [
               {
-                "description": {
-                  "left": null,
-                  "right": "Description",
+                "value": {
+                  "left": "some original value",
+                  "right": "source has modified this",
                   "isMergeConflict": false
                 }
               }
@@ -445,17 +498,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
   "targetId": "${json-unit.matches:id}",
   "path": "dm:Functional Test Model$source",
   "label": "Functional Test Model",
-  "count": 11,
+  "count": 14,
   "diffs": [
-    {
-      "fieldName": "branchName",
-      "path": "dm:Functional Test Model$source@branchName",
-      "sourceValue": "source",
-      "targetValue": "main",
-      "commonAncestorValue": "main",
-      "isMergeConflict": false,
-      "type": "modification"
-    },
     {
       "fieldName": "description",
       "path": "dm:Functional Test Model$source@description",
@@ -525,6 +569,33 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
       "sourceValue": "Description",
       "targetValue": null,
       "commonAncestorValue": null,
+      "isMergeConflict": false,
+      "type": "modification"
+    },
+    {
+      "path": "dm:Functional Test Model$source|md:functional.test.addToSourceOnly",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "dm:Functional Test Model$source|md:functional.test.modifyAndDelete",
+      "isMergeConflict": true,
+      "isSourceModificationAndTargetDeletion": true,
+      "type": "creation"
+    },
+    {
+      "path": "dm:Functional Test Model$source|md:functional.test.deleteFromSource",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "fieldName": "value",
+      "path": "dm:Functional Test Model$source|md:functional.test.modifyOnSource@value",
+      "sourceValue": "source has modified this",
+      "targetValue": "some original value",
+      "commonAncestorValue": "some original value",
       "isMergeConflict": false,
       "type": "modification"
     }
@@ -1484,7 +1555,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
     void 'MD02 : test finding merge difference of two complex datamodels'() {
         given:
-        Map<String, String> mergeData = buildComplexDataModelsForMerging()
+        TestMergeData mergeData = buildComplexDataModelsForMerging()
 
         when:
         GET("$mergeData.source/mergeDiff/$mergeData.target", STRING_ARG)
@@ -1496,7 +1567,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanup:
         cleanUpData(mergeData.source)
         cleanUpData(mergeData.target)
-        cleanUpData(mergeData.id)
+        cleanUpData(mergeData.commonAncestor)
     }
 
     void 'MD03 : test finding merge difference of two datamodels with the new style'() {
@@ -1543,7 +1614,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
     void 'MD04 : test finding merge difference of two complex datamodels with the new style'() {
         given:
-        Map<String, String> mergeData = buildComplexDataModelsForMerging()
+        TestMergeData mergeData = buildComplexDataModelsForMerging()
 
         when:
         GET("$mergeData.source/mergeDiff/$mergeData.target?isLegacy=false", STRING_ARG)
@@ -1554,7 +1625,42 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanup:
         cleanUpData(mergeData.source)
         cleanUpData(mergeData.target)
-        cleanUpData(mergeData.id)
+        cleanUpData(mergeData.commonAncestor)
+    }
+
+    void 'MD05 : test finding merge diff with new style diff with aliases gh-112'() {
+        given:
+        String id = createNewItem(validJson)
+
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String target = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'interestingBranch'])
+        verifyResponse CREATED, response
+        String source = responseBody().id
+        PUT(source, [aliases: ['not main branch', 'mergeInto']])
+        verifyResponse OK, response
+
+
+        when:
+        GET("$source/mergeDiff/$target?isLegacy=false", STRING_ARG)
+        log.warn('{}', jsonResponseBody())
+        GET("$source/mergeDiff/$target?isLegacy=false")
+
+        then:
+        verifyResponse OK, response
+        responseBody().targetId == target
+        responseBody().sourceId == source
+        responseBody().diffs.first().path == 'dm:Functional Test Model$interestingBranch@aliasesString'
+        responseBody().diffs.first().sourceValue == 'mergeInto|not main branch'
+        responseBody().diffs.first().type == 'modification'
+
+        cleanup:
+        cleanUpData(source)
+        cleanUpData(target)
+        cleanUpData(id)
     }
 
     void 'MP01 : test merging diff with no patch data'() {
@@ -1635,7 +1741,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
     void 'MP03 : test merging diff into draft model'() {
         given:
-        Map<String, String> mergeData = buildComplexDataModelsForMerging()
+        TestMergeData mergeData = buildComplexDataModelsForMerging()
 
         when:
         GET("$mergeData.source/mergeDiff/$mergeData.target", STRING_ARG)
@@ -1662,27 +1768,27 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
                         deleted  : [
                             [
-                                id   : mergeData.deleteAndModify,
+                                id   : mergeData.targetMap.deleteAndModify,
                                 label: "deleteAndModify"
                             ],
                             [
-                                id   : mergeData.deleteLeftOnly,
+                                id   : mergeData.targetMap.deleteLeftOnly,
                                 label: "deleteLeftOnly"
                             ]
                         ],
                         created  : [
                             [
-                                id   : mergeData.addLeftOnly,
+                                id   : mergeData.sourceMap.addLeftOnly,
                                 label: "addLeftOnly"
                             ],
                             [
-                                id   : mergeData.modifyAndDelete,
+                                id   : mergeData.sourceMap.modifyAndDelete,
                                 label: "modifyAndDelete"
                             ]
                         ],
                         modified : [
                             [
-                                leftId: mergeData.addAndAddReturningDifference,
+                                leftId: mergeData.targetMap.addAndAddReturningDifference,
                                 label : "addAndAddReturningDifference",
                                 diffs : [
                                     [
@@ -1692,7 +1798,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                                 ]
                             ],
                             [
-                                leftId: mergeData.existingClass,
+                                leftId: mergeData.targetMap.existingClass,
                                 label : "existingClass",
                                 diffs : [
                                     [
@@ -1700,13 +1806,13 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
                                         deleted  : [
                                             [
-                                                id   : mergeData.deleteLeftOnlyFromExistingClass,
+                                                id   : mergeData.targetMap.deleteLeftOnlyFromExistingClass,
                                                 label: "deleteLeftOnlyFromExistingClass"
                                             ]
                                         ],
                                         created  : [
                                             [
-                                                id   : mergeData.addLeftToExistingClass,
+                                                id   : mergeData.sourceMap.addLeftToExistingClass,
                                                 label: "addLeftToExistingClass"
                                             ]
                                         ]
@@ -1715,7 +1821,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                                 ]
                             ],
                             [
-                                leftId: mergeData.modifyAndModifyReturningDifference,
+                                leftId: mergeData.targetMap.modifyAndModifyReturningDifference,
                                 label : "modifyAndModifyReturningDifference",
                                 diffs : [
                                     [
@@ -1725,7 +1831,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                                 ]
                             ],
                             [
-                                leftId: mergeData.modifyLeftOnly,
+                                leftId: mergeData.targetMap.modifyLeftOnly,
                                 label : "modifyLeftOnly",
                                 diffs : [
                                     [
@@ -1761,7 +1867,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         responseBody().items.find {dataClass -> dataClass.label == 'modifyLeftOnly'}.description == 'modifiedDescriptionSourceOnly'
 
         when:
-        GET("$mergeData.target/dataClasses/$mergeData.existingClass/dataClasses")
+        GET("$mergeData.target/dataClasses/$mergeData.targetMap.existingClass/dataClasses")
 
         then:
         responseBody().items.label as Set == ['addRightToExistingClass', 'addLeftToExistingClass'] as Set
@@ -1780,7 +1886,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanup:
         cleanUpData(mergeData.source)
         cleanUpData(mergeData.target)
-        cleanUpData(mergeData.id)
+        cleanUpData(mergeData.commonAncestor)
     }
 
     void 'MP04 : test merging metadata diff into draft model'() {
@@ -1866,15 +1972,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
   "leftId": "${json-unit.matches:id}",
   "rightId": "${json-unit.matches:id}",
   "label": "Functional Test Model",
-  "count": 7,
+  "count": 6,
   "diffs": [
-    {
-      "branchName": {
-        "left": "main",
-        "right": "source",
-        "isMergeConflict": false
-      }
-    },
     {
       "description": {
         "left": "DescriptionRight",
@@ -2319,18 +2418,17 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
     void 'MP08 : test merging diff into draft model using new style'() {
         given:
-        Map<String, String> mergeData = buildComplexDataModelsForMerging()
+        TestMergeData mergeData = buildComplexDataModelsForMerging()
 
         when:
         GET("$mergeData.source/mergeDiff/$mergeData.target?isLegacy=false")
 
         then:
         verifyResponse OK, response
-        responseBody().diffs.size() == 11
+        responseBody().diffs.size() == 14
 
         when:
         List<Map> patches = responseBody().diffs
-        patches.removeIf([test: {Map map -> map.fieldName == 'branchName'}] as Predicate)
         PUT("$mergeData.source/mergeInto/$mergeData.target?isLegacy=false", [
             patch: [
                 targetId: responseBody().targetId,
@@ -2359,19 +2457,143 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         responseBody().items.find {dataClass -> dataClass.label == 'modifyLeftOnly'}.description == 'Description'
 
         when:
-        GET("$mergeData.target/dataClasses/$mergeData.existingClass/dataClasses")
+        GET("$mergeData.target/dataClasses/$mergeData.targetMap.existingClass/dataClasses")
 
         then:
         responseBody().items.label as Set == ['addRightToExistingClass', 'addLeftToExistingClass'] as Set
 
+        when:
+        GET("${mergeData.target}/metadata")
+
+        then:
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyOnSource'}.value == 'source has modified this'
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyAndDelete'}.value == 'source has modified this also'
+        !responseBody().items.find {it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource'}
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'addToSourceOnly'}
+
         cleanup:
         cleanUpData(mergeData.source)
         cleanUpData(mergeData.target)
-        cleanUpData(mergeData.id)
+        cleanUpData(mergeData.commonAncestor)
     }
 
+    void 'MP09 : test merging new style diff with metadata creation gh-111'() {
+        given:
+        String id = createNewItem(validJson)
+        POST("$id/rules", [name: 'Bootstrapped versioning V2Model Rule'])
+        verifyResponse(CREATED, response)
 
-    Map<String, String> buildComplexDataModelsForMerging() {
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String target = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'interestingBranch'])
+        verifyResponse CREATED, response
+        String source = responseBody().id
+
+        POST("$source/metadata", [namespace: 'test.com', key: 'testProperty', value: 'testValue'])
+        verifyResponse(CREATED, response)
+
+        String ruleId = getIdFromPath(source, 'dm:Functional Test Model$interestingBranch|ru:Bootstrapped versioning V2Model Rule')
+        POST("$source/rules/${ruleId}/representations", [
+            language      : 'sql',
+            representation: 'testing'
+        ])
+        verifyResponse(CREATED, response)
+
+        when:
+        PUT("$source/mergeInto/$target?isLegacy=false", [
+            changeNotice: "Metadata test",
+            deleteBranch: false,
+            patch       : [
+                sourceId: source,
+                targetId: target,
+                count   : 2,
+                patches : [
+                    [
+                        path                                 : 'dm:Functional Test Model$interestingBranch|md:test.com.testProperty',
+                        isMergeConflict                      : false,
+                        isSourceModificationAndTargetDeletion: false,
+                        type                                 : 'creation',
+                        branchSelected                       : 'source',
+                        branchNameSelected                   : 'interestingBranch'
+                    ],
+                    [
+
+                        path                                 : 'dm:Functional Test Model$interestingBranch|ru:Bootstrapped versioning V2Model Rule|rr:sql',
+                        isMergeConflict                      : false,
+                        isSourceModificationAndTargetDeletion: false,
+                        type                                 : 'creation',
+                        branchSelected                       : 'source',
+                        branchNameSelected                   : 'interestingBranch'
+                    ]
+                ]
+            ]
+        ])
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().id == target
+
+        when:
+        GET("${target}/metadata")
+
+        then:
+        responseBody().items.find {it.namespace == 'test.com' && it.key == 'testProperty'}
+
+        cleanup:
+        cleanUpData(source)
+        cleanUpData(target)
+        cleanUpData(id)
+    }
+
+    void 'MP10 : test merge into with new style diff with aliases gh-112'() {
+        given:
+        String id = createNewItem(validJson)
+
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String target = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'interestingBranch'])
+        verifyResponse CREATED, response
+        String source = responseBody().id
+        PUT(source, [aliases: ['not main branch', 'mergeInto']])
+
+
+        when:
+        GET("$source/mergeDiff/$target?isLegacy=false")
+
+        then:
+        verifyResponse OK, response
+
+        when:
+        List<Map> patches = responseBody().diffs
+        PUT("$source/mergeInto/$target?isLegacy=false", [
+            patch: [
+                targetId: responseBody().targetId,
+                sourceId: responseBody().sourceId,
+                label   : responseBody().label,
+                count   : patches.size(),
+                patches : patches]
+        ])
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == target
+        responseBody().aliases.size() == 2
+        responseBody().aliases.any {it == 'mergeInto'}
+        responseBody().aliases.any {it == 'not main branch'}
+
+        cleanup:
+        cleanUpData(source)
+        cleanUpData(target)
+        cleanUpData(id)
+    }
+
+    TestMergeData buildComplexDataModelsForMerging() {
 
         String id = createNewItem(validJson)
 
@@ -2401,6 +2623,15 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         POST("$id/dataClasses/$caExistingClass/dataClasses", [label: 'deleteRightOnlyFromExistingClass'])
         verifyResponse CREATED, response
 
+        POST("$id/metadata", [namespace: 'functional.test', key: 'nothingDifferent', value: 'this shouldnt change'])
+        verifyResponse CREATED, response
+        POST("$id/metadata", [namespace: 'functional.test', key: 'modifyOnSource', value: 'some original value'])
+        verifyResponse CREATED, response
+        POST("$id/metadata", [namespace: 'functional.test', key: 'deleteFromSource', value: 'some other original value'])
+        verifyResponse CREATED, response
+        POST("$id/metadata", [namespace: 'functional.test', key: 'modifyAndDelete', value: 'some other original value 2'])
+        verifyResponse CREATED, response
+
         PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
         PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
@@ -2410,116 +2641,105 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse CREATED, response
         String source = responseBody().id
 
-        GET("$source/path/dc%3AexistingClass")
-        verifyResponse OK, response
-        String sourceExistingClass = responseBody().id
-        GET("$source/path/dc%3AexistingClass%7Cdc%3AdeleteLeftOnlyFromExistingClass")
-        verifyResponse OK, response
-        String deleteLeftOnlyFromExistingClass = responseBody().id
-        GET("$source/path/dc%3AdeleteLeftOnly")
-        verifyResponse OK, response
-        String deleteLeftOnly = responseBody().id
-        GET("$source/path/dc%3AdeleteAndDelete")
-        verifyResponse OK, response
-        String deleteAndDelete = responseBody().id
-        GET("$source/path/dc%3AdeleteAndModify")
-        verifyResponse OK, response
-        String deleteAndModify = responseBody().id
+        // Get source ids
+        Map<String, String> sourceMap = [
+            existingClass                       : getIdFromPath(source, 'dc:existingClass'),
+            deleteLeftOnlyFromExistingClass     : getIdFromPath(source, 'dc:deleteLeftOnlyFromExistingClass'),
+            deleteLeftOnly                      : getIdFromPath(source, 'dc:deleteLeftOnly'),
+            deleteAndDelete                     : getIdFromPath(source, 'dc:deleteAndDelete'),
+            deleteAndModify                     : getIdFromPath(source, 'dc:deleteAndModify'),
+            modifyLeftOnly                      : getIdFromPath(source, 'dc:modifyLeftOnly'),
+            modifyAndDelete                     : getIdFromPath(source, 'dc:modifyAndDelete'),
+            modifyAndModifyReturningNoDifference: getIdFromPath(source, 'dc:modifyAndModifyReturningNoDifference'),
+            modifyAndModifyReturningDifference  : getIdFromPath(source, 'dc:modifyAndModifyReturningDifference'),
+            metadataModifyOnSource              : getIdFromPath(source, 'md:functional.test.modifyOnSource'),
+            metadataDeleteFromSource            : getIdFromPath(source, 'md:functional.test.deleteFromSource'),
+            metadataModifyAndDelete             : getIdFromPath(source, 'md:functional.test.modifyAndDelete'),
+        ]
 
-        GET("$source/path/dc%3AmodifyLeftOnly")
-        verifyResponse OK, response
-        String modifyLeftOnly = responseBody().id
-        GET("$source/path/dc%3AmodifyAndDelete")
-        verifyResponse OK, response
-        String modifyAndDelete = responseBody().id
-        GET("$source/path/dc%3AmodifyAndModifyReturningNoDifference")
-        verifyResponse OK, response
-        String modifyAndModifyReturningNoDifference = responseBody().id
-        GET("$source/path/dc%3AmodifyAndModifyReturningDifference")
-        verifyResponse OK, response
-        String modifyAndModifyReturningDifference = responseBody().id
-
-        DELETE("$source/dataClasses/$deleteAndDelete")
+        // Modify source
+        DELETE("$source/dataClasses/${sourceMap.deleteAndDelete}")
         verifyResponse NO_CONTENT, response
-        DELETE("$source/dataClasses/$sourceExistingClass/dataClasses/$deleteLeftOnlyFromExistingClass")
+        DELETE("$source/dataClasses/${sourceMap.existingClass}/dataClasses/${sourceMap.deleteLeftOnlyFromExistingClass}")
         verifyResponse NO_CONTENT, response
-        DELETE("$source/dataClasses/$deleteLeftOnly")
+        DELETE("$source/dataClasses/${sourceMap.deleteLeftOnly}")
         verifyResponse NO_CONTENT, response
-        DELETE("$source/dataClasses/$deleteAndModify")
+        DELETE("$source/dataClasses/${sourceMap.deleteAndModify}")
         verifyResponse NO_CONTENT, response
 
-        PUT("$source/dataClasses/$modifyLeftOnly", [description: 'Description'])
+        PUT("$source/dataClasses/${sourceMap.modifyLeftOnly}", [description: 'Description'])
         verifyResponse OK, response
-        PUT("$source/dataClasses/$modifyAndDelete", [description: 'Description'])
+        PUT("$source/dataClasses/${sourceMap.modifyAndDelete}", [description: 'Description'])
         verifyResponse OK, response
-        PUT("$source/dataClasses/$modifyAndModifyReturningNoDifference", [description: 'Description'])
+        PUT("$source/dataClasses/${sourceMap.modifyAndModifyReturningNoDifference}", [description: 'Description'])
         verifyResponse OK, response
-        PUT("$source/dataClasses/$modifyAndModifyReturningDifference", [description: 'DescriptionLeft'])
+        PUT("$source/dataClasses/${sourceMap.modifyAndModifyReturningDifference}", [description: 'DescriptionLeft'])
         verifyResponse OK, response
 
-        POST("$source/dataClasses/$sourceExistingClass/dataClasses", [label: 'addLeftToExistingClass'])
+        POST("$source/dataClasses/${sourceMap.existingClass}/dataClasses", [label: 'addLeftToExistingClass'])
         verifyResponse CREATED, response
-        String addLeftToExistingClass = responseBody().id
+        sourceMap.addLeftToExistingClass = responseBody().id
         POST("$source/dataClasses", [label: 'addLeftOnly'])
         verifyResponse CREATED, response
-        String addLeftOnly = responseBody().id
+        sourceMap.addLeftOnly = responseBody().id
         POST("$source/dataClasses", [label: 'addAndAddReturningNoDifference'])
         verifyResponse CREATED, response
         POST("$source/dataClasses", [label: 'addAndAddReturningDifference', description: 'DescriptionLeft'])
         verifyResponse CREATED, response
-        String addAndAddReturningDifference = responseBody().id
+        sourceMap.addAndAddReturningDifference = responseBody().id
 
         PUT("$source", [description: 'DescriptionLeft'])
         verifyResponse OK, response
 
-        GET("$target/path/dc%3AexistingClass")
+        POST("$source/metadata", [namespace: 'functional.test', key: 'addToSourceOnly', value: 'adding to source only'])
+        verifyResponse CREATED, response
+        PUT("$source/metadata/${sourceMap.metadataModifyOnSource}", [value: 'source has modified this'])
         verifyResponse OK, response
-        String targetExistingClass = responseBody().id
-        GET("$target/path/dc%3AexistingClass%7Cdc%3AdeleteRightOnlyFromExistingClass")
+        PUT("$source/metadata/${sourceMap.metadataModifyAndDelete}", [value: 'source has modified this also'])
         verifyResponse OK, response
-        String deleteRightOnlyFromExistingClass = responseBody().id
-        GET("$target/path/dc%3AdeleteRightOnly")
-        verifyResponse OK, response
-        String deleteRightOnly = responseBody().id
-        GET("$target/path/dc%3AdeleteAndDelete")
-        verifyResponse OK, response
-        deleteAndDelete = responseBody().id
-        GET("$target/path/dc%3AmodifyAndDelete")
-        verifyResponse OK, response
-        String targetModifyAndDelete = responseBody().id
-
-        GET("$target/path/dc%3AmodifyRightOnly")
-        verifyResponse OK, response
-        String modifyRightOnly = responseBody().id
-        GET("$target/path/dc%3AdeleteAndModify")
-        verifyResponse OK, response
-        deleteAndModify = responseBody().id
-        GET("$target/path/dc%3AmodifyAndModifyReturningNoDifference")
-        verifyResponse OK, response
-        modifyAndModifyReturningNoDifference = responseBody().id
-        GET("$target/path/dc%3AmodifyAndModifyReturningDifference")
-        verifyResponse OK, response
-        modifyAndModifyReturningDifference = responseBody().id
-
-        DELETE("$target/dataClasses/$targetExistingClass/dataClasses/$deleteRightOnlyFromExistingClass")
-        verifyResponse NO_CONTENT, response
-        DELETE("$target/dataClasses/$deleteRightOnly")
-        verifyResponse NO_CONTENT, response
-        DELETE("$target/dataClasses/$deleteAndDelete")
-        verifyResponse NO_CONTENT, response
-        DELETE("$target/dataClasses/$targetModifyAndDelete")
+        DELETE("$source/metadata/${sourceMap.metadataDeleteFromSource}")
         verifyResponse NO_CONTENT, response
 
-        PUT("$target/dataClasses/$modifyRightOnly", [description: 'Description'])
+        // Get target ids
+        // Get source ids
+        Map<String, String> targetMap = [
+            existingClass                       : getIdFromPath(target, 'dc:existingClass'),
+            deleteLeftOnlyFromExistingClass     : getIdFromPath(target, 'dc:deleteLeftOnlyFromExistingClass'),
+            deleteRightOnlyFromExistingClass    : getIdFromPath(target, 'dc:deleteRightOnlyFromExistingClass'),
+            deleteLeftOnly                      : getIdFromPath(target, 'dc:deleteLeftOnly'),
+            deleteRightOnly                     : getIdFromPath(target, 'dc:deleteRightOnly'),
+            deleteAndDelete                     : getIdFromPath(target, 'dc:deleteAndDelete'),
+            deleteAndModify                     : getIdFromPath(target, 'dc:deleteAndModify'),
+            modifyLeftOnly                      : getIdFromPath(target, 'dc:modifyLeftOnly'),
+            modifyRightOnly                     : getIdFromPath(target, 'dc:modifyRightOnly'),
+            modifyAndDelete                     : getIdFromPath(target, 'dc:modifyAndDelete'),
+            modifyAndModifyReturningNoDifference: getIdFromPath(target, 'dc:modifyAndModifyReturningNoDifference'),
+            modifyAndModifyReturningDifference  : getIdFromPath(target, 'dc:modifyAndModifyReturningDifference'),
+            metadataModifyOnSource              : getIdFromPath(target, 'md:functional.test.modifyOnSource'),
+            metadataDeleteFromSource            : getIdFromPath(target, 'md:functional.test.deleteFromSource'),
+            metadataModifyAndDelete             : getIdFromPath(target, 'md:functional.test.modifyAndDelete'),
+        ]
+
+        // Modify target
+        DELETE("$target/dataClasses/${targetMap.existingClass}/dataClasses/${targetMap.deleteRightOnlyFromExistingClass}")
+        verifyResponse NO_CONTENT, response
+        DELETE("$target/dataClasses/${targetMap.deleteRightOnly}")
+        verifyResponse NO_CONTENT, response
+        DELETE("$target/dataClasses/${targetMap.deleteAndDelete}")
+        verifyResponse NO_CONTENT, response
+        DELETE("$target/dataClasses/${targetMap.modifyAndDelete}")
+        verifyResponse NO_CONTENT, response
+
+        PUT("$target/dataClasses/${targetMap.modifyRightOnly}", [description: 'Description'])
         verifyResponse OK, response
-        PUT("$target/dataClasses/$deleteAndModify", [description: 'Description'])
+        PUT("$target/dataClasses/${targetMap.deleteAndModify}", [description: 'Description'])
         verifyResponse OK, response
-        PUT("$target/dataClasses/$modifyAndModifyReturningNoDifference", [description: 'Description'])
+        PUT("$target/dataClasses/${targetMap.modifyAndModifyReturningNoDifference}", [description: 'Description'])
         verifyResponse OK, response
-        PUT("$target/dataClasses/$modifyAndModifyReturningDifference", [description: 'DescriptionRight'])
+        PUT("$target/dataClasses/${targetMap.modifyAndModifyReturningDifference}", [description: 'DescriptionRight'])
         verifyResponse OK, response
 
-        POST("$target/dataClasses/$targetExistingClass/dataClasses", [label: 'addRightToExistingClass'])
+        POST("$target/dataClasses/${targetMap.existingClass}/dataClasses", [label: 'addRightToExistingClass'])
         verifyResponse CREATED, response
         POST("$target/dataClasses", [label: 'addRightOnly'])
         verifyResponse CREATED, response
@@ -2527,41 +2747,26 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse CREATED, response
         POST("$target/dataClasses", [label: 'addAndAddReturningDifference', description: 'DescriptionRight'])
         verifyResponse CREATED, response
-        addAndAddReturningDifference = responseBody().id
+        targetMap.addAndAddReturningDifference = responseBody().id
 
         PUT("$target", [description: 'DescriptionRight'])
         verifyResponse OK, response
+        DELETE("$target/metadata/${targetMap.metadataModifyAndDelete}")
+        verifyResponse NO_CONTENT, response
 
-        // for mergeInto json
-        GET("$target/path/dc%3AdeleteLeftOnly")
-        verifyResponse OK, response
-        deleteLeftOnly = responseBody().id
-        GET("$target/path/dc%3AmodifyLeftOnly")
-        verifyResponse OK, response
-        modifyLeftOnly = responseBody().id
-        GET("$target/path/dc%3AexistingClass%7Cdc%3AdeleteLeftOnlyFromExistingClass")
-        verifyResponse OK, response
-        deleteLeftOnlyFromExistingClass = responseBody().id
 
-        [id                                  : id,
-         source                              : source,
-         target                              : target,
-         // For legacy testing
-         existingClass                       : targetExistingClass,
-         deleteLeftOnlyFromExistingClass     : deleteLeftOnlyFromExistingClass,
-         deleteLeftOnly                      : deleteLeftOnly,
-         deleteAndDelete                     : deleteAndDelete,
-         deleteAndModify                     : deleteAndModify,
-         modifyLeftOnly                      : modifyLeftOnly,
-         modifyAndDelete                     : modifyAndDelete,
-         modifyAndModifyReturningNoDifference: modifyAndModifyReturningNoDifference,
-         modifyAndModifyReturningDifference  : modifyAndModifyReturningDifference,
-         deleteRightOnlyFromExistingClass    : deleteRightOnlyFromExistingClass,
-         deleteRightOnly                     : deleteRightOnly,
-         modifyRightOnly                     : modifyRightOnly,
-         addLeftOnly                         : addLeftOnly,
-         addAndAddReturningDifference        : addAndAddReturningDifference,
-         addLeftToExistingClass              : addLeftToExistingClass]
+        new TestMergeData(commonAncestor: id,
+                          source: source,
+                          target: target,
+                          sourceMap: sourceMap,
+                          targetMap: targetMap)
+    }
+
+    String getIdFromPath(String rootResourceId, String path) {
+        GET("$rootResourceId/path/${URLEncoder.encode(path, Charset.defaultCharset())}")
+        verifyResponse OK, response
+        assert responseBody().id
+        responseBody().id
     }
 
     void 'test changing folder from DataModel context'() {
