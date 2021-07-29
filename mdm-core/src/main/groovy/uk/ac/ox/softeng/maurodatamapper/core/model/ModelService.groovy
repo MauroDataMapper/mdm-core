@@ -843,7 +843,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
                 if (!latest.finalised) {
                     finaliseModel(latest, catalogueUser, Version.from('1'), null, null)
-                    save(latest, flush: false, validate: false)
+                    save(latest, flush: true, validate: false)
                 }
 
                 // Now we have a finalised model to work from
@@ -859,19 +859,42 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
             if (countByAuthorityAndLabel(model.authority, model.label)) {
                 // Branches need to be created from a finalised version
                 // But we can create a new branch even if existing branches
-                // So try for a finalised model, if none then get the latest main branch and finalise that so we have
-                // a finalised version
-                K latest = findLatestFinalisedModelByLabel(model.label)
 
-                if (!latest) {
-                    log.info('No finalised model to create branch from so finalising existing main branch')
-                    latest = findCurrentMainBranchByLabel(model.label)
-                    if (!latest || latest.id == model.id) {
-                        log.info('Marked as importAsNewBranchModelVersion but no existing Models with label [{}]', model.label)
-                        return
+
+                K latest
+
+                // If the branch name is not the default the default branch name then we need a finalised model to branch from
+                if (branchName && branchName != VersionAwareConstraints.DEFAULT_BRANCH_NAME) {
+                    latest = findLatestFinalisedModelByLabel(model.label)
+                    // If no finalised model exists then we finalise the existing default branch so we can branch from it
+                    if (!latest) {
+                        log.info('No finalised model to create branch from so finalising existing main branch')
+                        latest = findCurrentMainBranchByLabel(model.label)
+                        // If there is no default branch or finalised branch then the countBy found the current imported model so we dont need to do anything
+                        if (!latest) {
+                            log.info('Marked as importAsNewBranchModelVersion but no existing Models with label [{}]', model.label)
+                            return
+                        }
+                        finaliseModel(latest, catalogueUser, Version.from('1'), null, null)
+                        save(latest, flush: true, validate: false)
                     }
-                    finaliseModel(latest, catalogueUser, Version.from('1'), null, null)
-                    save(latest, flush: false, validate: false)
+                } else {
+                    // If the branch name is not provided, or is the default then we would be using the default,
+                    // which would cause a unique label failure if theres already an unfinalised model with that branch
+                    // therefore we should make sure we have a clean finalised model to work from
+                    latest = findCurrentMainBranchByLabel(model.label)
+                    if (latest && latest.id != model.id) {
+                        log.info('Main branch exists already so finalising to ensure no conflicts')
+                        finaliseModel(latest, catalogueUser, getNextModelVersion(latest, null, VersionChangeType.MAJOR), null, null)
+                        save(latest, flush: true, validate: false)
+                    } else {
+                        // No main branch exists so get the latest finalised model
+                        latest = findLatestFinalisedModelByLabel(model.label)
+                        if (!latest) {
+                            log.info('Marked as importAsNewBranchModelVersion but no existing Models with label [{}]', model.label)
+                            return
+                        }
+                    }
                 }
 
                 // Now we have a finalised model to work from
