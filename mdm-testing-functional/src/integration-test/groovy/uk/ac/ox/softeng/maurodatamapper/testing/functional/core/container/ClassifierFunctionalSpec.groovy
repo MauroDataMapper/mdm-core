@@ -17,20 +17,30 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.container
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
 
+import grails.gorm.transactions.Rollback
 import grails.gorm.transactions.Transactional
+import grails.plugin.json.builder.JsonOutput
 import grails.testing.mixin.integration.Integration
+import groovy.json.JsonBuilder
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 
 import java.util.regex.Pattern
 
+import static io.micronaut.http.HttpStatus.CREATED
+import static io.micronaut.http.HttpStatus.FORBIDDEN
+import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.OK
 
 /**
@@ -44,7 +54,16 @@ import static io.micronaut.http.HttpStatus.OK
  *  |  DELETE  | /api/classifiers/${classifierId}/readByAuthenticated  | Action: readByAuthenticated
  *  |  PUT     | /api/classifiers/${classifierId}/readByAuthenticated  | Action: readByAuthenticated
  *  |  DELETE  | /api/classifiers/${classifierId}/readByEveryone       | Action: readByEveryone
- *  |  PUT     | /api/classifiers/${classifierId}/readByEveryone       | Action: readByEveryone
+ *  |  PUT     | /api/classifiers/${classifierId}/readByEveryone       | Action: readByEveryone#
+ *
+ *
+ *  |   POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/classifiers | Action: save
+ *  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/classifiers  | Action: index
+ *  |  DELETE  | /api/${catalogueItemDomainType}/${catalogueItemId}/classifiers/${id}*  | Action: delete
+ *  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/classifiers/${id}*  | Action: show
+ *
+ *  |   POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/classifiers  | Action: save
+ *  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/classifiers  | Action: index
  * </pre>
  * @see uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierController
  */
@@ -68,20 +87,20 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
 
     Map getValidJson() {
         [
-                label: 'Functional Test Classifier 2',
+            label: 'Functional Test Classifier 2',
         ]
     }
 
     Map getInvalidJson() {
         [
-                label: 'Functional Test Classifier'
+            label: 'Functional Test Classifier'
         ]
     }
 
     @Override
     Map getValidUpdateJson() {
         [
-                description: 'Just something for testing'
+            description: 'Just something for testing'
         ]
     }
 
@@ -177,7 +196,7 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
   "availableActions": ["comment","delete","editDescription","save","show","softDelete","update"]
 }'''
     }
-    
+
     void "Test the catalogueItems action for classifier"() {
         when: "The catalogueItems action on a known classifier ID is requested unlogged in"
         GET("${getTestClassifierId()}/catalogueItems")
@@ -208,7 +227,7 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
         when: "A classifier is added to a terminology"
         loginAdmin()
         POST("terminologies/${getSimpleTerminologyId()}/classifiers", [
-                label: 'A test classifier for a terminology'
+            label: 'A test classifier for a terminology'
         ], MAP_ARG, true)
 
         then: "Resource is created"
@@ -231,6 +250,14 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
   ]
 }'''
 
+        when: "The classifier is requested from the terminology"
+        loginAdmin()
+        GET("terminologies/${getSimpleTerminologyId()}/classifiers/${newId}", MAP_ARG, true)
+
+        then: "Resource is shown"
+        verifyResponse(OK, response)
+        assert responseBody().id == newId
+
         when: "The classifier is deleted from the terminology"
         loginAdmin()
         DELETE("terminologies/${getSimpleTerminologyId()}/classifiers/${newId}", MAP_ARG, true)
@@ -251,4 +278,119 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
         cleanup:
         removeValidIdObject(newId)
     }
+
+    void "CA01 test the creation of a classifier as part of a terminology"() {
+        given: 'putting a catalog item id'
+        String terminologyId = getSimpleTerminologyId()
+
+        when: 'not authenticated'
+        POST("terminologies/$terminologyId/classifiers", [
+            label: 'A test classifier for a terminology'
+        ], MAP_ARG, true)
+
+        then:
+        verifyResponse(NOT_FOUND, response)
+
+        when: 'authenticated'
+        loginAuthenticated()
+        POST("terminologies/$terminologyId/classifiers", [
+            label: 'A test classifier for a terminology'
+        ], MAP_ARG, true)
+
+        then:
+        verifyResponse(NOT_FOUND, response)
+
+        when: 'reader'
+        loginReader()
+        POST("terminologies/$terminologyId/classifiers", [
+            label: 'A test classifier for a terminology'
+        ], MAP_ARG, true)
+
+        then:
+        verifyResponse(FORBIDDEN, response)
+    }
+
+    void "CA01A Test as an editor"() {
+        given: 'putting a catalog item id'
+        String terminologyId = getSimpleTerminologyId()
+
+        when: 'Editor'
+        loginEditor()
+        POST("terminologies/$terminologyId/classifiers", [
+            label: 'A test classifier for a terminology'
+        ], MAP_ARG, true)
+
+        then:
+        verifyResponse(CREATED, response)
+        String createdId = response.body().id
+
+        cleanup:
+        removeValidIdObject(createdId)
+
+    }
+
+
+    void "CA01B Test as an Admin"() {
+        given: 'putting a catalog item id'
+        String terminologyId = getSimpleTerminologyId()
+
+        when: "Admin"
+        loginAdmin()
+        POST("terminologies/$terminologyId/classifiers", [
+            label: 'A test classifier for a terminology'
+        ], MAP_ARG, true)
+
+        then:
+        verifyResponse(CREATED, response)
+        String createdId = response.body().id
+
+        cleanup:
+        removeValidIdObject(createdId)
+
+    }
+
+
+    void "CA02 Test the catalogueItems delete action for classifier"() {
+
+        given: 'putting a catalog item id'
+        String terminologyId = getSimpleTerminologyId()
+
+        when: 'making the call not logged in'
+        GET("terminologies/$terminologyId/classifiers", MAP_ARG, true)
+
+        then:
+        verifyResponse(FORBIDDEN, response)
+
+        when: 'making the call as authenticated'
+        loginAuthenticated()
+        GET("terminologies/$terminologyId/classifiers", MAP_ARG, true)
+
+        then:
+        verifyResponse(FORBIDDEN, response)
+
+        when: 'making the call as a reader'
+        loginReader()
+        GET("terminologies/$terminologyId/classifiers", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+
+        when: 'making the call as an editor'
+        loginEditor()
+        GET("terminologies/$terminologyId/classifiers", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+
+        when: 'making the call as as admin'
+        loginAdmin()
+        GET("terminologies/$terminologyId/classifiers", MAP_ARG, true)
+
+        then: 'response should be OK and include the classifier inside the terminology'
+        verifyResponse(OK, response)
+        assert responseBody().count == 1
+        assert responseBody().items.any { it.label == 'test classifier simple' }
+
+    }
 }
+
