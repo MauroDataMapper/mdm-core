@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.datamodel.hibernate.search
+package uk.ac.ox.softeng.maurodatamapper.core.search
 
 import uk.ac.ox.softeng.maurodatamapper.core.search.StandardSearch
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
@@ -23,7 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
 /**
  * @since 05/03/2020
  */
-class DataModelSearch {
+class ModelSearch {
 
     static search = {
         CallableSearch.call(StandardSearch, delegate)

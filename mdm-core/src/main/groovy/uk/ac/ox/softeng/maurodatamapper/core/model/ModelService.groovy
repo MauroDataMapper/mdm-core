@@ -835,6 +835,10 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         if (model.finalised) {
             model.dateFinalised = model.dateFinalised ?: OffsetDateTime.now()
             model.modelVersion = model.modelVersion ?: getNextModelVersion(model, null, VersionChangeType.MAJOR)
+        } else {
+            // Make sure that, if after all the checking, the model is not finalised we dont have any modelVersion or date set
+            model.dateFinalised = null
+            model.modelVersion = null
         }
     }
 
@@ -848,15 +852,23 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         if (importAsNewDocumentationVersion) {
 
             if (countByAuthorityAndLabel(model.authority, model.label)) {
-                List<K> existingModels = findAllByAuthorityAndLabel(model.authority, model.label)
-                existingModels.each {existing ->
-                    log.debug('Setting Model as new documentation version of [{}:{}]', existing.label, existing.documentationVersion)
-                    if (!existing.finalised) finaliseModel(existing, catalogueUser, null, null, null)
-                    setModelIsNewDocumentationVersionOfModel(model, existing, catalogueUser)
-                }
-                Version latestVersion = existingModels.max {it.documentationVersion}.documentationVersion
-                model.documentationVersion = Version.nextMajorVersion(latestVersion)
+                // Doc versions must be built off finalised versions, they cannot be built of a finalised version where a branch already exists
+                // So we just get the latest model and finalise if its not finalised
+                K latest = findLatestModelByLabel(model.label)
 
+                if (!latest || latest.id == model.id) {
+                    log.info('Marked as importAsNewDocumentationVersion but no existing Models with label [{}]', model.label)
+                    return
+                }
+
+                if (!latest.finalised) {
+                    finaliseModel(latest, catalogueUser, Version.from('1'), null, null)
+                    save(latest, flush: true, validate: false)
+                }
+
+                // Now we have a finalised model to work from
+                setModelIsNewDocumentationVersionOfModel(model, latest, catalogueUser)
+                model.documentationVersion = Version.nextMajorVersion(latest.documentationVersion)
             } else log.info('Marked as importAsNewDocumentationVersion but no existing Models with label [{}]', model.label)
         }
     }
@@ -865,26 +877,53 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         if (importAsNewBranchModelVersion) {
 
             if (countByAuthorityAndLabel(model.authority, model.label)) {
-                K latest = findLatestFinalisedModelByLabel(model.label)
+                // Branches need to be created from a finalised version
+                // But we can create a new branch even if existing branches
 
-                if (!latest) {
-                    log.info('No finalised model to create branch from so finalising existing main branch')
+
+                K latest
+
+                // If the branch name is not the default the default branch name then we need a finalised model to branch from
+                if (branchName && branchName != VersionAwareConstraints.DEFAULT_BRANCH_NAME) {
+                    latest = findLatestFinalisedModelByLabel(model.label)
+                    // If no finalised model exists then we finalise the existing default branch so we can branch from it
+                    if (!latest) {
+                        log.info('No finalised model to create branch from so finalising existing main branch')
+                        latest = findCurrentMainBranchByLabel(model.label)
+                        // If there is no default branch or finalised branch then the countBy found the current imported model so we dont need to do anything
+                        if (!latest) {
+                            log.info('Marked as importAsNewBranchModelVersion but no existing Models with label [{}]', model.label)
+                            return
+                        }
+                        finaliseModel(latest, catalogueUser, Version.from('1'), null, null)
+                        save(latest, flush: true, validate: false)
+                    }
+                } else {
+                    // If the branch name is not provided, or is the default then we would be using the default,
+                    // which would cause a unique label failure if theres already an unfinalised model with that branch
+                    // therefore we should make sure we have a clean finalised model to work from
                     latest = findCurrentMainBranchByLabel(model.label)
-                    finaliseModel(latest, catalogueUser, Version.from('1'), null, null)
-                    save(latest, flush: true, validate: false)
+                    if (latest && latest.id != model.id) {
+                        log.info('Main branch exists already so finalising to ensure no conflicts')
+                        finaliseModel(latest, catalogueUser, getNextModelVersion(latest, null, VersionChangeType.MAJOR), null, null)
+                        save(latest, flush: true, validate: false)
+                    } else {
+                        // No main branch exists so get the latest finalised model
+                        latest = findLatestFinalisedModelByLabel(model.label)
+                        if (!latest) {
+                            log.info('Marked as importAsNewBranchModelVersion but no existing Models with label [{}]', model.label)
+                            return
+                        }
+                    }
                 }
 
                 // Now we have a finalised model to work from
-                if (latest) {
-                    setModelIsNewBranchModelVersionOfModel(model, latest, catalogueUser)
-                    model.dateFinalised = null
-                    model.finalised = false
-                    model.modelVersion = null
-                    model.branchName = branchName ?: VersionAwareConstraints.DEFAULT_BRANCH_NAME
-                    model.documentationVersion = Version.from('1')
-                } else {
-                    throw new ApiBadRequestException('MSXX', 'Request to importAsNewBranchModelVersion but no finalised model or main branch available')
-                }
+                setModelIsNewBranchModelVersionOfModel(model, latest, catalogueUser)
+                model.dateFinalised = null
+                model.finalised = false
+                model.modelVersion = null
+                model.branchName = branchName ?: VersionAwareConstraints.DEFAULT_BRANCH_NAME
+                model.documentationVersion = Version.from('1')
             } else log.info('Marked as importAsNewBranchModelVersion but no existing Models with label [{}]', model.label)
         }
     }

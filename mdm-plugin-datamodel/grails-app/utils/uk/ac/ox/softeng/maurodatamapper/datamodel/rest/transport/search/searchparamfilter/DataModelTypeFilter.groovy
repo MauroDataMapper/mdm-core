@@ -30,10 +30,11 @@ class DataModelTypeFilter implements SearchParamFilter {
     }
 
     Closure getClosure(SearchParams searchParams) {
+        List<String> validModelTypes = searchParams.dataModelTypes.collect {dt -> DataModelType.findForLabel(dt).toString()}.findAll()
         Lucene.defineAdditionalLuceneQuery {
             should {
-                searchParams.dataModelTypes.each {dt ->
-                    keyword 'dataModelType', DataModelType.findForLabel(dt).toString()
+                validModelTypes.each {dt ->
+                    phrase 'modelType', dt
                 }
             }
         }

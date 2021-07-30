@@ -3253,10 +3253,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         ])
 
         then:
-        verifyResponse UNPROCESSABLE_ENTITY, response
-        responseBody().total == 1
-        responseBody().errors[0].message == 'Property [label] of class [class uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel] with value ' +
-        '[Functional Test Model] must be unique by branch name'
+        verifyResponse CREATED, response
 
         when:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/2.0', [
