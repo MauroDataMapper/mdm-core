@@ -824,6 +824,7 @@ class PathFunctionalSpec extends FunctionalSpec {
             "show",
             "createNewVersions",
             "newForkModel",
+            "finalisedReadActions",
             "comment"
           ],
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
