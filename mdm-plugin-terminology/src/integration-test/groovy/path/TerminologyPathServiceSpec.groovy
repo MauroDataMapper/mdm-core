@@ -556,6 +556,24 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         catalogueItem == null
     }
 
+    void 'TT : test getting term from codeset using FQ terminology path'() {
+        given:
+        setupData()
+        CatalogueItem catalogueItem
+        /*
+       CodeSet 1 Term 1 with terminology in path
+       this is probably how all terms should be pathed inside a CS as there may be the same codes shared between terminologies
+        */
+        when:
+        Path path = Path.from("te:${terminology1.pathIdentifier}|tm:${terminology1_term1.pathIdentifier}")
+        catalogueItem = pathService.findResourceByPathFromRootResource(codeSet1, path) as CatalogueItem
+
+        then:
+        catalogueItem.label == terminology1_term1.label
+        catalogueItem.domainType == "Term"
+        catalogueItem.id == terminology1_term1.id
+    }
+
     void "test get Terminology by path when there is a branch"() {
         given:
         setupData()

@@ -238,7 +238,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         // A specific identity of the model has been requested so make sure we limit to that
         if (split.size() == 2) {
             String identity = split[1]
-            DetachedCriteria criteria = parentId ? modelClass.byFolderId(parentId) : modelClass.by()
+            DetachedCriteria criteria = useParentIdForSearching(parentId) ? modelClass.byFolderId(parentId) : modelClass.by()
 
             criteria.eq('label', label)
 
@@ -256,6 +256,10 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
         // If no identity part then we can just get the latest model by the label
         findLatestModelByLabel(label)
+    }
+
+    boolean useParentIdForSearching(UUID parentId) {
+        true
     }
 
     K finaliseModel(K model, User user, Version requestedModelVersion, VersionChangeType versionChangeType,
@@ -502,7 +506,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
         // Potential deletions are modelitems or facets from model or modelitem
         if (Utils.parentClassIsAssignableFromChild(ModelItem, domain.class)) {
-            processDeletionPatchOfModelItem(domain as ModelItem)
+            processDeletionPatchOfModelItem(domain as ModelItem, targetModel)
         }
         if (Utils.parentClassIsAssignableFromChild(MultiFacetItemAware, domain.class)) {
             processDeletionPatchOfFacet(domain as MultiFacetItemAware, targetModel, deletionPatch.relativePathToRoot)
@@ -516,7 +520,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
             return
         }
         String fieldName = modificationPatch.fieldName
-        log.debug('Modifying [{}] in [{}]', fieldName, modificationPatch.relativePathToRoot)
+        log.debug('Modifying [{}] in [{}]', fieldName, modificationPatch)
         domain."${fieldName}" = modificationPatch.sourceValue
         DomainService domainService = getDomainServices().find {it.handles(domain.class)}
         if (!domainService) throw new ApiInternalException('MSXX', "No domain service to handle modification of [${domain.domainType}]")
@@ -526,7 +530,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         domainService.save(domain, flush: false, validate: false)
     }
 
-    void processDeletionPatchOfModelItem(ModelItem modelItem) {
+    void processDeletionPatchOfModelItem(ModelItem modelItem, Model targetModel) {
         ModelItemService modelItemService = modelItemServices.find {it.handles(modelItem.class)}
         if (!modelItemService) throw new ApiInternalException('MSXX', "No domain service to handle deletion of [${modelItem.domainType}]")
         log.debug('Deleting ModelItem from Model')

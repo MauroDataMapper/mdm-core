@@ -313,7 +313,6 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
                     .withSourceDiffedAgainstTarget(m)
                     .generate()
             })
-
     }
 
     static <A extends Diffable> ArrayMergeDiff<A> createBaseArrayMergeDiffPresentOnOneSide(Path fullyQualifiedObjectPath,
@@ -332,7 +331,7 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
     static <A extends Diffable> ArrayMergeDiff<A> createArrayMergeDiffPresentOnBothSides(Path fullyQualifiedObjectPath,
                                                                                          ArrayDiff<A> caSourceArrayDiff,
                                                                                          ArrayDiff<A> caTargetArrayDiff) {
-        log.debug('[{}] Processing array differences against common ancestor on both sides', caSourceArrayDiff.fieldName)
+        log.debug('[{}] Processing array differences against common ancestor on both sides inside [{}]', caSourceArrayDiff.fieldName, fullyQualifiedObjectPath)
         createBaseArrayMergeDiffPresentOnOneSide(fullyQualifiedObjectPath, caSourceArrayDiff)
             .withTarget(caTargetArrayDiff.right)
             .withCreatedMergeDiffs(createCreationMergeDiffsPresentOnBothSides(fullyQualifiedObjectPath, caSourceArrayDiff, caTargetArrayDiff))

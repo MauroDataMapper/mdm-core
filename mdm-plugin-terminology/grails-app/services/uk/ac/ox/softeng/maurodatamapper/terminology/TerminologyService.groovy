@@ -56,6 +56,7 @@ class TerminologyService extends ModelService<Terminology> {
     TermService termService
     TermRelationshipService termRelationshipService
     TerminologyJsonImporterService terminologyJsonImporterService
+    CodeSetService codeSetService
 
     @Override
     Terminology get(Serializable id) {
@@ -591,5 +592,14 @@ class TerminologyService extends ModelService<Terminology> {
     @Override
     ModelImporterProviderService<Terminology, ? extends ModelImporterProviderServiceParameters> getJsonModelImporterProviderService() {
         terminologyJsonImporterService
+    }
+
+    @Override
+    boolean useParentIdForSearching(UUID parentId) {
+        if (codeSetService.get(parentId)) {
+            log.debug('Accessing terminology from context of CodeSet will ignore parentId')
+            return false
+        }
+        true
     }
 }

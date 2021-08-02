@@ -28,4 +28,6 @@ class TestMergeData {
 
     Map<String, Object> sourceMap
     Map<String, Object> targetMap
+
+    Map<String, Object> otherMap
 }

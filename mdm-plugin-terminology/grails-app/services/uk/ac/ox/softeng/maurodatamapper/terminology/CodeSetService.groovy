@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
@@ -25,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
@@ -221,18 +223,18 @@ class CodeSetService extends ModelService<CodeSet> {
                     // Special handling for terms as CodeSets dont own terms
                     if (mergeFieldDiff.fieldName == 'terms') {
                         // apply deletions of children to target object
-                        mergeFieldDiff.deleted.each { mergeItemData ->
+                        mergeFieldDiff.deleted.each {mergeItemData ->
                             Term modelItem = modelItemService.get(mergeItemData.id) as Term
                             targetModel.removeFromTerms(modelItem)
                         }
 
                         // copy additions from source to target object
-                        mergeFieldDiff.created.each { mergeItemData ->
+                        mergeFieldDiff.created.each {mergeItemData ->
                             Term modelItem = modelItemService.get(mergeItemData.id) as Term
                             targetModel.addToTerms(modelItem)
                         }
                         // for modifications, recursively call this method
-                        mergeFieldDiff.modified.each { mergeObjectDiffData ->
+                        mergeFieldDiff.modified.each {mergeObjectDiffData ->
                             Term termToRemove = modelItemService.get(mergeObjectDiffData.leftId) as Term
                             Term termToAdd = modelItemService.get(mergeObjectDiffData.rightId) as Term
                             targetModel.removeFromTerms(termToRemove)
@@ -240,13 +242,13 @@ class CodeSetService extends ModelService<CodeSet> {
                         }
                     } else {
                         // apply deletions of children to target object
-                        mergeFieldDiff.deleted.each { mergeItemData ->
+                        mergeFieldDiff.deleted.each {mergeItemData ->
                             ModelItem modelItem = modelItemService.get(mergeItemData.id) as ModelItem
                             modelItemService.delete(modelItem)
                         }
 
                         // copy additions from source to target object
-                        mergeFieldDiff.created.each { mergeItemData ->
+                        mergeFieldDiff.created.each {mergeItemData ->
                             ModelItem modelItem = modelItemService.get(mergeItemData.id) as ModelItem
                             modelItemService.copy(targetModel, modelItem, userSecurityPolicyManager)
                         }
@@ -297,7 +299,7 @@ class CodeSetService extends ModelService<CodeSet> {
         copy.trackChanges()
 
         // Copy all the terms
-        original.terms?.each { term ->
+        original.terms?.each {term ->
             copy.addToTerms(term)
         }
 
@@ -338,7 +340,7 @@ class CodeSetService extends ModelService<CodeSet> {
 
     @Override
     List<CodeSet> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        CodeSet.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(CodeSet, it.id) }
+        CodeSet.byClassifierId(classifier.id).list().findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(CodeSet, it.id)}
     }
 
     @Override
@@ -479,4 +481,25 @@ class CodeSetService extends ModelService<CodeSet> {
         CodeSet.byMetadataNamespace(namespace).list(pagination)
     }
 
+    @Override
+    void processCreationPatchOfModelItem(ModelItem modelItem, Model targetModel, Path parentPathToCopyTo, UserSecurityPolicyManager userSecurityPolicyManager) {
+        if (!Utils.parentClassIsAssignableFromChild(Term, modelItem.class)) {
+            throw new ApiInternalException('CSXX', "Cannot create [${modelItem.domainType}] into a CodeSet")
+        }
+        log.debug('Creating Term into CodeSet [{}]', Path.from(targetModel))
+
+        (targetModel as CodeSet).addToTerms(modelItem as Term)
+        save(targetModel as CodeSet, flush: false, validate: false)
+    }
+
+    @Override
+    void processDeletionPatchOfModelItem(ModelItem modelItem, Model targetModel) {
+        if (!Utils.parentClassIsAssignableFromChild(Term, modelItem.class)) {
+            throw new ApiInternalException('CSXX', "Cannot delete [${modelItem.domainType}] from CodeSet")
+        }
+        log.debug('Removing Term from CodeSet [{}]', Path.from(targetModel))
+
+        (targetModel as CodeSet).removeFromTerms(modelItem as Term)
+        save(targetModel as CodeSet, flush: false, validate: false)
+    }
 }

@@ -164,6 +164,42 @@ class Path {
         from(from(parentPath), prefix, pathIdentifier)
     }
 
+    static Path from(Path parentPath, Path childPath) {
+        if (!parentPath) {
+            return childPath.clone()
+        }
+
+        // Allows us to add 2 paths together which may share the same some of the same nodes
+        Path cleanPath = parentPath.clone()
+
+        int firstSharedNode = cleanPath.pathNodes.findIndexOf {pn ->
+            pn == childPath.first()
+        }
+
+        if (firstSharedNode != -1) {
+            boolean searching = true
+            childPath.pathNodes.eachWithIndex {PathNode pn, int i ->
+                // Check if the current node matches the next node in the clean path
+                // If it matches then we're still searching for the first non-shared path node
+                // The first entry in this situation will be true as its the match we used to find the index
+                int nextIndex = i + firstSharedNode + 1
+                if (searching) {
+                    searching = nextIndex < cleanPath.size() ? cleanPath.pathNodes[i + firstSharedNode] == pn : false
+                } else {
+                    // Once the first non-shared node is found we start adding it to clean path
+                    cleanPath.addToPathNodes(pn)
+                }
+            }
+        } else {
+            // If no shared nodes then add them all at the end
+            childPath.each {
+                cleanPath.addToPathNodes(it)
+            }
+        }
+
+        cleanPath
+    }
+
     static Path from(CreatorAware... domains) {
         new Path().tap {
             domains.eachWithIndex {CreatorAware domain, int i ->
@@ -184,5 +220,9 @@ class Path {
         Path attributePath = path.clone()
         attributePath.last().attribute = attribute
         attributePath
+    }
+
+    static boolean isValidPath(String possiblePath) {
+        from(possiblePath).toString() == possiblePath
     }
 }

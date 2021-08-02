@@ -30,6 +30,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.search.ModelItemSearch
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.gorm.constraint.validator.TermCodeLabelValidator
@@ -129,6 +130,11 @@ class Term implements ModelItem<Term, Terminology> {
     @Override
     String getPathPrefix() {
         'tm'
+    }
+
+    @Override
+    String getDiffIdentifier() {
+        Path.from(terminology, this).toString()
     }
 
     @Field(index = Index.YES, bridge = @FieldBridge(impl = UUIDBridge))

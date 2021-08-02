@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.terminology
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ArrayDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
@@ -111,8 +112,11 @@ class CodeSet implements Model<CodeSet> {
     }
 
     ObjectDiff<CodeSet> diff(CodeSet otherCodeSet) {
-        modelDiffBuilder(CodeSet, this, otherCodeSet)
+        ObjectDiff<CodeSet> diff = modelDiffBuilder(CodeSet, this, otherCodeSet)
             .appendList(Term, 'terms', this.terms, otherCodeSet.terms)
+        // Remove any modifications to terms as these are only applicable from the terminology
+        (diff.find {it.fieldName == 'terms'} as ArrayDiff)?.modified?.clear()
+        diff
     }
 
     def beforeValidate() {
@@ -122,27 +126,6 @@ class CodeSet implements Model<CodeSet> {
     int countTermsByCode(String code) {
         terms.count {it.code == code}
     }
-
-    /*
-    Term findTermByCode(String code) {
-        terms.find {it.code == code}
-    }
-
-    List<Term> getCodeSortedTerms() {
-
-        terms.sort {a, b ->
-            Double ln1 = TreeItem.extractNumber(a.code)
-            Double ln2 = TreeItem.extractNumber(b.code)
-
-            String ls1 = a.code.replaceAll(/[\d.]/, '')
-            String ls2 = b.code.replaceAll(/[\d.]/, '')
-
-            def res = ls1 <=> ls2
-            if (res == 0) res = ln1 <=> ln2
-            res
-        }
-    }
-*/
 
     static DetachedCriteria<CodeSet> by() {
         new DetachedCriteria<CodeSet>(CodeSet)
