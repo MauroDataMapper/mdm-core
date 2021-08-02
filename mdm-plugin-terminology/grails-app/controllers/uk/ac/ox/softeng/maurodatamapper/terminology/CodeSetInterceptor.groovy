@@ -62,8 +62,19 @@ class CodeSetInterceptor extends ModelInterceptor {
         id ? notFound(getSecuredClass(), id) : true
     }
 
-
     boolean before() {
+
+        securableResourceChecks()
+
+        boolean canRead = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(CodeSet, getId())
+
+        if (actionName in ['alterTerms']) {
+            if (!currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(getSecuredClass(), getId(), 'update')) {
+                return forbiddenOrNotFound(canRead, getSecuredClass(), getId())
+            }
+            return true
+        }
+
         checkModelActionsAuthorised()
     }
 }
