@@ -787,7 +787,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
             return
         }
         String fieldName = modificationPatch.fieldName
-        log.debug('Modifying [{}] in [{}]', fieldName, modificationPatch.path)
+        log.debug('Modifying [{}] in [{}]', fieldName, modificationPatch.path.toString(getModelIdentifier(targetVersionedFolder)))
         domain."${fieldName}" = modificationPatch.sourceValue
         DomainService domainService = getDomainServices().find {it.handles(domain.class)}
         if (!domainService) throw new ApiInternalException('MSXX', "No domain service to handle modification of [${domain.domainType}]")

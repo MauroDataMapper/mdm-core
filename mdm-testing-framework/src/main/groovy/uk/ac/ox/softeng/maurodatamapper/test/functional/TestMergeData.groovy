@@ -26,6 +26,6 @@ class TestMergeData {
     String target
     String commonAncestor
 
-    Map<String, String> sourceMap
-    Map<String, String> targetMap
+    Map<String, Object> sourceMap
+    Map<String, Object> targetMap
 }

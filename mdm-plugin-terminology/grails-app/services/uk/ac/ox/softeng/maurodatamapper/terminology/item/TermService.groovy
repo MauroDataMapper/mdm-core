@@ -87,7 +87,11 @@ class TermService extends ModelItemService<Term> {
         termRelationshipService.deleteAll(termRelationships)
         term.sourceTermRelationships = []
         term.targetTermRelationships = []
-        terminology.trackChanges() // Discard any latent changes to the Terminology as we dont want them
+        if (flush) {
+            // Discard any latent changes to the Terminology as we dont want them in the flish
+            terminology.trackChanges()
+            terminology.discard()
+        }
         term.delete(flush: flush)
     }
 

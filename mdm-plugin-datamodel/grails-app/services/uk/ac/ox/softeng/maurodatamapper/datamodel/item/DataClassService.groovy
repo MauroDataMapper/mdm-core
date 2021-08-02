@@ -44,7 +44,9 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.grails.orm.hibernate.proxy.HibernateProxyHandler
+import org.hibernate.StaleStateException
 import org.springframework.context.MessageSource
+import org.springframework.orm.hibernate5.HibernateOptimisticLockingFailureException
 
 @Slf4j
 @Transactional
@@ -160,8 +162,17 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         List<DataElement> dataElements = dataElementService.findAllByDataClass(dataClass)
         dataElementService.deleteAll(dataElements)
         dataClass.dataElements = []
-        dataModel.trackChanges() // Discard any latent changes to the DataModel as we dont want them
-        dataClass.delete(flush: flush)
+        try {
+            if (flush) {
+                // Discard any latent changes to the DataModel as we dont want them
+                dataModel.trackChanges()
+                dataModel.discard()
+            }
+            dataClass.delete(flush: flush)
+        } catch (HibernateOptimisticLockingFailureException | StaleStateException exception) {
+            // updating the DM on a nested DC delete???
+            log.error("We had another exception thrown: {}", exception.message)
+        }
     }
 
     @Override
@@ -297,7 +308,6 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         removeReferenceTypes(dataClass)
         dataClass.breadcrumbTree.removeFromParent()
         dataClass.dataModel.removeFromDataClasses(dataClass)
-        dataClass.extendedDataClasses
         dataClass.dataClasses?.each {removeAssociations(it)}
     }
 

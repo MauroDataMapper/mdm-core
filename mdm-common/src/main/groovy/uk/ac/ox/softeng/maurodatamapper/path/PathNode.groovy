@@ -86,8 +86,8 @@ class PathNode {
         attribute
     }
 
-    String toString() {
-        String base = "${prefix}:${getFullIdentifier()}"
+    String toString(String modelIdentifierOverride = null) {
+        String base = "${prefix}:${getFullIdentifier(modelIdentifierOverride)}"
         if (attribute) base += "${ATTRIBUTE_PATH_IDENTIFIER_SEPARATOR}${attribute}"
         base
     }

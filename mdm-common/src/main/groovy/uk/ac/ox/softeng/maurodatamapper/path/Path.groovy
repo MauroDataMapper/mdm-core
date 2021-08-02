@@ -121,8 +121,8 @@ class Path {
         }
     }
 
-    String toString() {
-        pathNodes.join('|')
+    String toString(String modelIdentifierOverride = null) {
+        pathNodes.collect {it.toString(modelIdentifierOverride)}.join('|')
     }
 
     Path clone() {

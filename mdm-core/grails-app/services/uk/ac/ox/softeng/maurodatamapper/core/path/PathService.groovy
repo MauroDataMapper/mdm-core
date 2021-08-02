@@ -69,7 +69,7 @@ class PathService {
     }
 
     CreatorAware findResourceByPathFromRootResource(CreatorAware rootResourceOfPath, Path path, String modelIdentifierOverride = null) {
-        log.debug('Searching for path {} inside {}:{}', path, rootResourceOfPath.pathPrefix, rootResourceOfPath.pathIdentifier)
+        log.debug('Searching for path {} inside {}:{}', path.toString(modelIdentifierOverride), rootResourceOfPath.pathPrefix, rootResourceOfPath.pathIdentifier)
         if (path.isEmpty()) {
             // assume we're in an empty/relative root which means we want the root resource
             return rootResourceOfPath
