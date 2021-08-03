@@ -91,14 +91,14 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
         when:
         def dm1 = new DataModel(label: 'test model 1', folder: testFolder, authority: testAuthority, createdBy: UNIT_TEST)
         def dm2 = new DataModel(label: 'test model 2', folder: testFolder, authority: testAuthority, createdBy: UNIT_TEST)
-        Diff<DataModel> diff = dm1.diff(dm2)
+        Diff<DataModel> diff = dm1.diff(dm2, null)
 
         then:
         diff.getNumberOfDiffs() == 1
 
         when:
         dm2.label = 'test model 1'
-        diff = dm1.diff(dm2)
+        diff = dm1.diff(dm2, null)
 
         then:
         diff.objectsAreIdentical()
@@ -249,13 +249,13 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
         def dm1 = new DataModel(label: 'test model', folder: testFolder, authority: testAuthority)
         def dm2 = new DataModel(label: 'test model', folder: testFolder, authority: testAuthority)
         dm1.addToDataClasses(new DataClass(label: 'class 1'))
-        Diff<DataModel> diff = dm1.diff(dm2)
+        Diff<DataModel> diff = dm1.diff(dm2, null)
         then:
         diff.getNumberOfDiffs() == 1
 
         when:
         dm2.addToDataClasses(new DataClass(label: 'class 2'))
-        diff = dm1.diff(dm2)
+        diff = dm1.diff(dm2, null)
 
         then:
         diff.getNumberOfDiffs() == 2
@@ -284,13 +284,13 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
         }
 
 
-        Diff<DataModel> diff = dm1.diff(dm2)
+        Diff<DataModel> diff = dm1.diff(dm2, null)
         then:
         diff.getNumberOfDiffs() == 2
 
         when:
         dm2.label = "test model 2"
-        diff = dm1.diff(dm2)
+        diff = dm1.diff(dm2, null)
 
         then:
         diff.getNumberOfDiffs() == 3

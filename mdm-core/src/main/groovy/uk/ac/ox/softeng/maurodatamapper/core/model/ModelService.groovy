@@ -642,7 +642,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     }
 
     ObjectDiff<K> getDiffForModels(K thisModel, K otherModel) {
-        thisModel.diff(otherModel)
+        thisModel.diff(otherModel, 'none')
     }
 
     K findCommonAncestorBetweenModels(K leftModel, K rightModel) {
@@ -722,8 +722,8 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     MergeDiff<K> getMergeDiffForModels(K sourceModel, K targetModel) {
         K commonAncestor = findCommonAncestorBetweenModels(sourceModel, targetModel)
 
-        ObjectDiff<K> caDiffSource = commonAncestor.diff(sourceModel)
-        ObjectDiff<K> caDiffTarget = commonAncestor.diff(targetModel)
+        ObjectDiff<K> caDiffSource = commonAncestor.diff(sourceModel, 'none')
+        ObjectDiff<K> caDiffTarget = commonAncestor.diff(targetModel, 'none')
 
         // Remove the branchname as  diff as we know its a diff and for merging we dont want it
         Predicate branchNamePredicate = [test: {FieldDiff fieldDiff ->

@@ -554,7 +554,7 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
                 log.debug('[{}] ca/source created exists in ca/target created. This is a potential merge modification', caSourceCreationDiff.createdIdentifier)
 
                 // Get the diff of the 2 objects, we need to determine if theres actually a merge conflict
-                ObjectDiff<M> sourceTargetDiff = caSourceCreationDiff.created.diff(caTargetCreationDiff.created)
+                ObjectDiff<M> sourceTargetDiff = caSourceCreationDiff.created.diff(caTargetCreationDiff.created, 'none')
                 // If objects are identical then theres no merge difference so it can be ignored
                 if (sourceTargetDiff.objectsAreIdentical()) {
                     log.debug('Both sides created but the creations are identical')

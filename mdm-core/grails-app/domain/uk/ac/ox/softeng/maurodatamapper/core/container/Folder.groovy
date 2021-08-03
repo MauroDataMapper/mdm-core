@@ -103,7 +103,7 @@ class Folder implements Container, Diffable<Folder> {
     }
 
     @Override
-    ObjectDiff<Folder> diff(Folder that) {
+    ObjectDiff<Folder> diff(Folder that, String context) {
         folderDiffBuilder(Folder, this, that)
     }
 

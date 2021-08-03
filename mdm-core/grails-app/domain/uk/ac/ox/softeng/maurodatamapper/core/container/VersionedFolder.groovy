@@ -73,7 +73,7 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware, 
     }
 
     @Override
-    ObjectDiff<VersionedFolder> diff(VersionedFolder that) {
+    ObjectDiff<VersionedFolder> diff(VersionedFolder that, String context) {
         folderDiffBuilder(VersionedFolder, this, that)
             .appendBoolean('finalised', this.finalised, that.finalised)
             .appendString('documentationVersion', this.documentationVersion.toString(), that.documentationVersion.toString())

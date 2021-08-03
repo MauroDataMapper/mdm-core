@@ -93,7 +93,7 @@ class Metadata implements MultiFacetItemAware, Diffable<Metadata> {
     }
 
     @Override
-    ObjectDiff<Metadata> diff(Metadata obj) {
+    ObjectDiff<Metadata> diff(Metadata obj, String context) {
         DiffBuilder.objectDiff(Metadata)
             .leftHandSide(id.toString(), this)
             .rightHandSide(obj.id.toString(), obj)

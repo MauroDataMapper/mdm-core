@@ -96,7 +96,7 @@ class Rule implements MultiFacetItemAware, Diffable<Rule> {
     }
 
     @Override
-    ObjectDiff<Rule> diff(Rule obj) {
+    ObjectDiff<Rule> diff(Rule obj, String context) {
         DiffBuilder.objectDiff(Rule)
             .leftHandSide(id.toString(), this)
             .rightHandSide(obj.id.toString(), obj)

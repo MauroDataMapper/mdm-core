@@ -197,7 +197,7 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
         dataClass
     }
 
-    ObjectDiff<DataElement> diff(DataElement otherDataElement) {
+    ObjectDiff<DataElement> diff(DataElement otherDataElement, String context) {
         catalogueItemDiffBuilder(DataElement, this, otherDataElement)
             .appendString('dataType.label', this.dataType.label, otherDataElement.dataType.label)
             .appendNumber('minMultiplicity', this.minMultiplicity, otherDataElement.minMultiplicity)

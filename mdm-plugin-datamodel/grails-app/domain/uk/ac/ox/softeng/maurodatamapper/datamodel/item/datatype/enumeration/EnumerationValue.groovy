@@ -155,7 +155,7 @@ class EnumerationValue implements ModelItem<EnumerationValue, DataModel> {
         }
     }
 
-    ObjectDiff<EnumerationValue> diff(EnumerationValue otherEnumerationValue) {
+    ObjectDiff<EnumerationValue> diff(EnumerationValue otherEnumerationValue, String context) {
         catalogueItemDiffBuilder(EnumerationValue, this, otherEnumerationValue)
             .appendString('key', this.key, otherEnumerationValue.key)
             .appendString('value', this.value, otherEnumerationValue.value)

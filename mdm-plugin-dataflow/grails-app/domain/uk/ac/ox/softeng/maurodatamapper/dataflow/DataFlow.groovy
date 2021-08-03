@@ -131,7 +131,7 @@ class DataFlow implements ModelItem<DataFlow, DataModel> {
         dataClassComponents
     }
 
-    ObjectDiff<DataFlow> diff(DataFlow otherDataFlow) {
+    ObjectDiff<DataFlow> diff(DataFlow otherDataFlow, String context) {
         catalogueItemDiffBuilder(DataFlow, this, otherDataFlow)
     }
 

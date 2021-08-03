@@ -222,7 +222,7 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         dataModel
     }
 
-    ObjectDiff<DataClass> diff(DataClass otherDataClass) {
+    ObjectDiff<DataClass> diff(DataClass otherDataClass, String context) {
         catalogueItemDiffBuilder(DataClass, this, otherDataClass)
             .appendNumber('minMultiplicity', this.minMultiplicity, otherDataClass.minMultiplicity)
             .appendNumber('maxMultiplicity', this.maxMultiplicity, otherDataClass.maxMultiplicity)

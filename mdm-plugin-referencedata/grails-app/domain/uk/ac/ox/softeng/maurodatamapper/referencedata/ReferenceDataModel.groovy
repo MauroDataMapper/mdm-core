@@ -119,7 +119,7 @@ class ReferenceDataModel implements Model<ReferenceDataModel>, ReferenceSummaryM
         'rdm'
     }
 
-    ObjectDiff<ReferenceDataModel> diff(ReferenceDataModel otherDataModel) {
+    ObjectDiff<ReferenceDataModel> diff(ReferenceDataModel otherDataModel, String context) {
         modelDiffBuilder(ReferenceDataModel, this, otherDataModel)
             .appendList(ReferenceDataType, 'referenceDataTypes', this.referenceDataTypes, otherDataModel.referenceDataTypes)
             .appendList(ReferenceDataType, 'referenceDataElements', this.referenceDataElements, otherDataModel.referenceDataElements)
