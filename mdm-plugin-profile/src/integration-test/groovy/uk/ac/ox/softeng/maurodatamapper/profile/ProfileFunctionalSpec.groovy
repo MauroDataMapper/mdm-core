@@ -109,6 +109,17 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
     "domains":["DataModel"]
 }, 
 {
+    "name": "ProfileSpecificationDerivedFieldProfileService",
+    "version": "SNAPSHOT",
+    "displayName": "Profile Specification Profile (Derived)",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.profile",
+    "allowsExtraMetadataKeys": false,
+    "knownMetadataKeys": ["DerivedNamespace"],
+    "providerType": "Profile",
+    "metadataNamespace": "uk.ac.ox.softeng.maurodatamapper.profile.derived",
+    "domains": ["DataModel"]
+},
+{
     "name":"ProfileSpecificationFieldProfileService",
     "version":"${json-unit.matches:version}",
     "displayName":"Profile Specification Profile (Data Element)",
@@ -241,7 +252,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
 
         then:
         verifyResponse OK, localResponse
-        localResponse.body().size() == 1
+        localResponse.body().size() == 2
         localResponse.body().first().name == 'ProfileSpecificationProfileService'
         localResponse.body().first().displayName == 'Profile Specification Profile (Data Model)'
     }

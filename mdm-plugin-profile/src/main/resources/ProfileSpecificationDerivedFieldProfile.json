@@ -1,0 +1,18 @@
+[
+  {
+    "sectionName": "Profile Derived Specification",
+    "sectionDescription": "The details necessary for this Data Model to be used as the specification for a dynamic profile.",
+    "fields": [
+      {
+        "fieldName": "DerivedField",
+        "metadataPropertyName": "DerivedNamespace",
+        "description": "The namespace under which properties of this profile will be stored",
+        "minMultiplicity": 0,
+        "maxMultiplicity": 1,
+        "dataType": "String",
+        "derived": true,
+        "derivedFrom": "test"
+      }
+    ]
+  }
+]

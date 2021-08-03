@@ -35,10 +35,9 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
         jsonProfile.label = entity.label
 
         List<Metadata> metadataList = getAllProfileMetadataByMultiFacetAwareItemId(entity.id)
-
-        jsonProfile.sections.each {section ->
-            section.fields.each {field ->
-                Metadata matchingField = metadataList.find {it.key == field.metadataPropertyName}
+        jsonProfile.sections.each { section ->
+            section.fields.each { field ->
+                Metadata matchingField = metadataList.find { it.key == field.metadataPropertyName }
                 if (matchingField) {
                     field.currentValue = matchingField.value
                 } else {
@@ -57,30 +56,40 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
     @Override
     void storeProfileInEntity(MultiFacetAware entity, JsonProfile jsonProfile, String userEmailAddress) {
         JsonProfile emptyJsonProfile = getNewProfile()
-        emptyJsonProfile.sections.each {section ->
-            ProfileSection submittedSection = jsonProfile.sections.find {it.sectionName == section.sectionName}
+        emptyJsonProfile.sections.each { section ->
+            ProfileSection submittedSection = jsonProfile.sections.find { it.sectionName == section.sectionName }
             if (submittedSection) {
-                section.fields.each {field ->
-                    ProfileField submittedField = submittedSection.fields.find {it.fieldName == field.fieldName}
-
-                    if (submittedField) {
+                section.fields.each { field ->
+                    ProfileField submittedField = submittedSection.fields.find { it.fieldName == field.fieldName }
+                    if(submittedField){
+                    if (derivedUneditableCheck(submittedField)) {
                         String newValue = submittedField.currentValue ?: ''
                         String key = field.getMetadataKeyForSaving(submittedSection.sectionName)
                         storeFieldInEntity(entity, newValue, key, userEmailAddress)
-                    }
+                    }}
+
                 }
             }
         }
         entity.addToMetadata(metadataNamespace, '_profiled', 'Yes', userEmailAddress)
 
-        entity.findMetadataByNamespace(metadataNamespace).each {md ->
+        entity.findMetadataByNamespace(metadataNamespace).each { md ->
             metadataService.save(md)
         }
     }
 
+    Boolean derivedUneditableCheck(ProfileField submittedField) {
+        if (submittedField.derived) {
+            return false
+        }
+        if (submittedField.uneditable) {
+            return false
+        }
+        true
+    }
+
     void storeFieldInEntity(MultiFacetAware entity, String value, String key, String userEmailAddress) {
         if (!key) return
-
         if (value) {
             entity.addToMetadata(metadataNamespace, key, value, userEmailAddress)
         } else {
