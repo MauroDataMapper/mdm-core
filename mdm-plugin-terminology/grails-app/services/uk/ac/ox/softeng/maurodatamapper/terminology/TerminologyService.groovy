@@ -30,6 +30,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchData
+import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
@@ -596,5 +599,41 @@ class TerminologyService extends ModelService<Terminology> {
             return false
         }
         true
+    }
+
+    @Override
+    List<FieldPatchData> getSortedFieldPatchDataForMerging(ObjectPatchData objectPatchData) {
+        /*
+        We can process modifications in any order
+        We need to make sure we process creations and deletions of terms and term relationship types before the term relationships
+         */
+        objectPatchData.patches.sort {l, r ->
+            switch (l.type) {
+                case 'modification':
+                    if (r.type == 'modification') return 0
+                    else return -1
+                case 'creation': case 'deletion':
+                    if (r.type == 'modification') return 1
+                    PathNode leftLastNode = l.path.last()
+                    PathNode rightLastNode = r.path.last()
+
+                    if (leftLastNode.prefix == 'tm') {
+                        if (rightLastNode.prefix == 'tm') return 0
+                        if (rightLastNode.prefix in ['trt', 'tr']) return -1
+                        return -1
+                    } else if (leftLastNode.prefix == 'trt') {
+                        if (rightLastNode.prefix == 'tm') return 1
+                        if (rightLastNode.prefix == 'trt') return 0
+                        if (rightLastNode.prefix == 'tr') return -1
+                        return -1
+                    } else if (leftLastNode.prefix == 'tr') {
+                        if (rightLastNode.prefix in ['trt', 'tr']) return 1
+                        if (rightLastNode.prefix == 'tr') return 0
+                        return -1
+                    } else {
+                        return -1
+                    }
+            }
+        }
     }
 }

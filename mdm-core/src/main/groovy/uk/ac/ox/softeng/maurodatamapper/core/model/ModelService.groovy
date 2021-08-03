@@ -464,7 +464,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         log.debug('Merging patch data into {}', targetModel.id)
         if (isLegacy) return mergeLegacyObjectPatchDataIntoModel(objectPatchData, targetModel, userSecurityPolicyManager)
 
-        objectPatchData.patches.each {fieldPatch ->
+        getSortedFieldPatchDataForMerging(objectPatchData).each {fieldPatch ->
             switch (fieldPatch.type) {
                 case 'creation':
                     return processCreationPatchIntoModel(fieldPatch, targetModel, sourceModel, userSecurityPolicyManager)
@@ -479,6 +479,9 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         targetModel
     }
 
+    List<FieldPatchData> getSortedFieldPatchDataForMerging(ObjectPatchData objectPatchData) {
+        objectPatchData.patches
+    }
 
     void processCreationPatchIntoModel(FieldPatchData creationPatch, K targetModel, K sourceModel, UserSecurityPolicyManager userSecurityPolicyManager) {
         CreatorAware domainToCopy = pathService.findResourceByPathFromRootResource(sourceModel, creationPatch.path)
