@@ -1908,19 +1908,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
     }
 
     void 'CT01 : test getting the CodeSet(s) that a Term belongs to'() {
-        /*
-        test-app CodeSetFunctionalSpec.CT* -integration
-
-        WIP - the Terminology and CodeSet exist from the previous tests (IM05) that were run.
-        There are no terms that were associated with the Codeset.
-
-        I cannot understand how to make this association using the PUT REST call.
-        Also thought this would have been imported as part of the previous test.
-
-        If i try to declare terminology, term and codeset earlier checkAndSetupData(),
-        the declaration of checkAndSetupData() breaks earlier tests: R01
-         */
-
+        
         given:
         Map data = buildTestData()
         //getting variables that exist due to previous tests
@@ -1934,11 +1922,8 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         codeSetId
 
 
-//        /*
-//          /api/codeSets - default context Path
-//          by using "cleanEndpoint == true the context path becomes /api
-//        */
-//        // check what terminologies exist (from previous test)
+        // == tests to check what data has been stored in database ==
+        // check what terminologies exist (from previous test)
         when: 'check what terminologies exist'
         GET('terminologies', MAP_ARG, true)
 
@@ -1947,8 +1932,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         log.info("inspect get terminology: " + responseBody().toString())
 //        responseBody().count() == 1
 //        (responseBody().items as List).first().id == data.terminologyId
-//
-//
+
         // check what codesets exist (from previous test)
         when: 'check codesets'
         GET('/', MAP_ARG)
