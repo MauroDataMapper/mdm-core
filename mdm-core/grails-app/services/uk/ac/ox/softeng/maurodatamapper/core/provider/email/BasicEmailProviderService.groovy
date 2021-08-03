@@ -37,7 +37,7 @@ class BasicEmailProviderService extends EmailProviderService {
         allProps = properties
         simpleMailProps = new Properties()
         for (ConfigLoader.Property p : ConfigLoader.Property.values()) {
-            if (properties[p.key()]) {
+            if (properties[p.key()] && properties[p.key()] != "" ) {
                 simpleMailProps.setProperty(p.key(), properties[p.key()] as String)
             }
         }
@@ -67,6 +67,7 @@ class BasicEmailProviderService extends EmailProviderService {
         } catch (MailException e) {
             String failureReason = extractFullFailureReason(e)
             log.error('Email sending failed: {}', failureReason)
+            log.error('{}', simpleMailProps)
             return failureReason
         }
     }
