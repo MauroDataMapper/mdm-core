@@ -39,7 +39,7 @@ class CreationMergeDiff<C extends Diffable> extends TriDirectionalDiff<C> implem
     }
 
     String getCreatedIdentifier() {
-        created.diffIdentifier
+        value.getDiffIdentifier(fullyQualifiedObjectPath.toString())
     }
 
     Path getFullyQualifiedPath() {

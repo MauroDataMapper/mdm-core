@@ -42,7 +42,7 @@ class DeletionMergeDiff<D extends Diffable> extends TriDirectionalDiff<D> implem
     }
 
     String getDeletedIdentifier() {
-        value.diffIdentifier
+        value.getDiffIdentifier(fullyQualifiedObjectPath.toString())
     }
 
     boolean isSourceDeletionAndTargetModification() {

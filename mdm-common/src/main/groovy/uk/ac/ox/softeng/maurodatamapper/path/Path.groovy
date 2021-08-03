@@ -115,6 +115,10 @@ class Path {
         pathNodes.find closure
     }
 
+    boolean any(@DelegatesTo(List) @ClosureParams(value = SimpleType, options = 'uk.ac.ox.softeng.maurodatamapper.path.PathNode') Closure closure) {
+        pathNodes.any closure
+    }
+
     Path getChildPath() {
         clone().tap {
             pathNodes.removeAt(0)

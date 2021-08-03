@@ -114,7 +114,7 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
     }
 
     def <K extends Diffable> ObjectDiff<O> appendList(Class<K> diffableClass, String fieldName,
-                                                      Collection<K> lhs, Collection<K> rhs) throws ApiDiffException {
+                                                      Collection<K> lhs, Collection<K> rhs, String context = null) throws ApiDiffException {
 
         validateFieldNameNotNull(fieldName)
 
@@ -145,8 +145,8 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
         // Assume all rhs have been created new
         List<K> created = new ArrayList<>(rhs)
 
-        Map<String, K> lhsMap = lhs.collectEntries {[it.getDiffIdentifier(), it]}
-        Map<String, K> rhsMap = rhs.collectEntries {[it.getDiffIdentifier(), it]}
+        Map<String, K> lhsMap = lhs.collectEntries {[it.getDiffIdentifier(context), it]}
+        Map<String, K> rhsMap = rhs.collectEntries {[it.getDiffIdentifier(context), it]}
         // This object diff is being performed on an object which has the concept of modelIdentifier, e.g branch name or version
         // If this is the case we want to make sure we ignore any versioning on sub contents as child versioning is controlled by the parent
         // This should only happen to models inside versioned folders, but we want to try and be more dynamic
@@ -155,8 +155,8 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
             if (childPath.size() == 1 && childPath.first().modelIdentifier) {
                 // child collection has versioning
                 // recollect entries using the clean identifier rather than the full thing
-                lhsMap = lhs.collectEntries {[Path.from(it.pathPrefix, it.getDiffIdentifier()).first().identifier, it]}
-                rhsMap = rhs.collectEntries {[Path.from(it.pathPrefix, it.getDiffIdentifier()).first().identifier, it]}
+                lhsMap = lhs.collectEntries {[Path.from(it.pathPrefix, it.getDiffIdentifier(context)).first().identifier, it]}
+                rhsMap = rhs.collectEntries {[Path.from(it.pathPrefix, it.getDiffIdentifier(context)).first().identifier, it]}
             }
         }
 
@@ -166,7 +166,7 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
             if (rObj) {
                 // If robj then it exists and has not been created
                 created.remove(rObj)
-                ObjectDiff od = lObj.diff(rObj)
+                ObjectDiff od = lObj.diff(rObj, context)
                 // If not equal then objects have been modified
                 if (!od.objectsAreIdentical()) {
                     modified.add(od)
