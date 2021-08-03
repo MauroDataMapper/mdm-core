@@ -594,7 +594,7 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     boolean useParentIdForSearching(UUID parentId) {
-        if (codeSetService.get(parentId)) {
+        if (!parentId || codeSetService.get(parentId)) {
             log.debug('Accessing terminology from context of CodeSet will ignore parentId')
             return false
         }

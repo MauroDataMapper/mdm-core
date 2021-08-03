@@ -259,7 +259,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     }
 
     boolean useParentIdForSearching(UUID parentId) {
-        true
+        parentId
     }
 
     K finaliseModel(K model, User user, Version requestedModelVersion, VersionChangeType versionChangeType,
