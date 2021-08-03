@@ -133,8 +133,17 @@ class Term implements ModelItem<Term, Terminology> {
     }
 
     @Override
-    String getDiffIdentifier() {
-        Path.from(terminology, this).toString()
+    String getDiffIdentifier(String context) {
+        if (!context) return pathIdentifier
+        if (context == CodeSet.simpleName) return Path.from(terminology, this).toString()
+
+        if (Path.isValidPath(context)) {
+            Path path = Path.from(context)
+            if (path.any {it.matchesPrefix('cs')}) {
+                return Path.from(terminology, this).toString()
+            }
+        }
+        pathIdentifier
     }
 
     @Field(index = Index.YES, bridge = @FieldBridge(impl = UUIDBridge))
@@ -175,13 +184,19 @@ class Term implements ModelItem<Term, Terminology> {
         isParent
     }
 
-    ObjectDiff<Term> diff(Term otherTerm) {
-        catalogueItemDiffBuilder(Term, this, otherTerm)
-            .appendList(TermRelationship, 'sourceTermRelationships', this.sourceTermRelationships, otherTerm.sourceTermRelationships)
-            .appendList(TermRelationship, 'targetTermRelationships', this.targetTermRelationships, otherTerm.targetTermRelationships)
+    ObjectDiff<Term> diff(Term otherTerm, String context) {
+        ObjectDiff<Term> diff = catalogueItemDiffBuilder(Term, this, otherTerm)
             .appendString('code', this.code, otherTerm.code)
             .appendString('definition', this.definition, otherTerm.definition)
             .appendString('url', this.url, otherTerm.url)
+
+        // If inside term context then we want to diff the relationships but if from CS or T then we either dont care about modifications or we want the relationships diffd
+        // at the T level
+        if (!context || !(context in [Terminology.simpleName, CodeSet.simpleName, 'merge'])) {
+            diff.appendList(TermRelationship, 'sourceTermRelationships', this.sourceTermRelationships, otherTerm.sourceTermRelationships)
+                .appendList(TermRelationship, 'targetTermRelationships', this.targetTermRelationships, otherTerm.targetTermRelationships)
+        }
+        diff
     }
 
     @Override

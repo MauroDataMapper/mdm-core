@@ -111,9 +111,9 @@ class CodeSet implements Model<CodeSet> {
         "CodeSet:${label}"
     }
 
-    ObjectDiff<CodeSet> diff(CodeSet otherCodeSet) {
+    ObjectDiff<CodeSet> diff(CodeSet otherCodeSet, String context) {
         ObjectDiff<CodeSet> diff = modelDiffBuilder(CodeSet, this, otherCodeSet)
-            .appendList(Term, 'terms', this.terms, otherCodeSet.terms)
+            .appendList(Term, 'terms', this.terms, otherCodeSet.terms, CodeSet.simpleName)
         // Remove any modifications to terms as these are only applicable from the terminology
         (diff.find {it.fieldName == 'terms'} as ArrayDiff)?.modified?.clear()
         diff

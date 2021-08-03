@@ -116,10 +116,18 @@ class Terminology implements Model<Terminology> {
         "Terminology:${label}"
     }
 
-    ObjectDiff<Terminology> diff(Terminology otherTerminology) {
-        modelDiffBuilder(Terminology, this, otherTerminology)
-            .appendList(Term, 'terms', this.terms, otherTerminology.terms)
+    ObjectDiff<Terminology> diff(Terminology otherTerminology, String context) {
+
+        Set<TermRelationship> thisTermRelationships = (this.terms.collect {it.sourceTermRelationships ?: []}.flatten() +
+                                                       this.terms.collect {it.targetTermRelationships ?: []}.flatten()).toSet() as Set<TermRelationship>
+        Set<TermRelationship> otherTermRelationships = (otherTerminology.terms.collect {it.sourceTermRelationships ?: []}.flatten() +
+                                                        otherTerminology.terms.collect {it.targetTermRelationships ?: []}.flatten()).toSet() as Set<TermRelationship>
+
+        ObjectDiff<Terminology> diff = modelDiffBuilder(Terminology, this, otherTerminology)
+            .appendList(Term, 'terms', this.terms, otherTerminology.terms, Terminology.simpleName)
             .appendList(TermRelationshipType, 'termRelationshipTypes', this.termRelationshipTypes, otherTerminology.termRelationshipTypes)
+            .appendList(TermRelationship, 'termRelationships', thisTermRelationships, otherTermRelationships)
+        diff
     }
 
     def beforeValidate() {
