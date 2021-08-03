@@ -79,11 +79,6 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     }
 
     @Override
-    boolean handlesPathPrefix(String pathPrefix) {
-        pathPrefix == "dc"
-    }
-
-    @Override
     DataClass save(Map args, DataClass domain) {
         // If not previously saved then allow a deep save and/or datatype save
         if (!domain.ident()) {

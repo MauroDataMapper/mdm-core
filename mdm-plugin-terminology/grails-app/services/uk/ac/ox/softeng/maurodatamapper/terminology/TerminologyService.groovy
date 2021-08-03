@@ -79,11 +79,6 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    boolean handlesPathPrefix(String pathPrefix) {
-        pathPrefix == "te"
-    }
-
-    @Override
     String getUrlResourceName() {
         "terminologies"
     }

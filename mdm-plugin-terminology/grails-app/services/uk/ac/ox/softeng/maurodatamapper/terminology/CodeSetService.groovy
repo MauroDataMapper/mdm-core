@@ -78,11 +78,6 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    boolean handlesPathPrefix(String pathPrefix) {
-        pathPrefix == "cs"
-    }
-
-    @Override
     String getUrlResourceName() {
         "codeSets"
     }

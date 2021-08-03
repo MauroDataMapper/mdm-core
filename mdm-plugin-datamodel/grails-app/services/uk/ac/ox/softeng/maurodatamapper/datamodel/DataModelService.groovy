@@ -101,11 +101,6 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     }
 
     @Override
-    boolean handlesPathPrefix(String pathPrefix) {
-        pathPrefix == "dm"
-    }
-
-    @Override
     String getUrlResourceName() {
         "dataModels"
     }
