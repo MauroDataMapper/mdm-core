@@ -180,8 +180,8 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
     }
 
     @Override
-    String getDiffIdentifier() {
-        "${dataClass.getDiffIdentifier()}/${pathIdentifier}"
+    String getDiffIdentifier(String context) {
+        "${dataClass.getDiffIdentifier(context)}/${pathIdentifier}"
     }
 
     @Override
