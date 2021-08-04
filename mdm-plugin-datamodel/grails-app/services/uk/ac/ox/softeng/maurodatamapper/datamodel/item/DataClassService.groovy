@@ -158,12 +158,12 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         dataElementService.deleteAll(dataElements)
         dataClass.dataElements = []
         try {
-            if (flush) {
-                // Discard any latent changes to the DataModel as we dont want them
-                dataModel.trackChanges()
-                dataModel.discard()
-            }
-            dataClass.delete(flush: flush)
+            // Discard any latent changes to the DataModel as we dont want them
+            // But only if we're flushing otherwise we risk losing changes when this method is used from a DM context
+            if (flush) dataModel.trackChanges()
+            dataClass.delete(flush: false)
+            // Use a proper session flush to prevent the exceptions below?
+            if (flush) sessionFactory.currentSession.flush()
         } catch (HibernateOptimisticLockingFailureException | StaleStateException exception) {
             // updating the DM on a nested DC delete???
             log.error("We had another exception thrown: {}", exception.message)
