@@ -24,7 +24,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
-import uk.ac.ox.softeng.maurodatamapper.test.functional.TestMergeData
+import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.TerminologyPluginMergeBuilder
+import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.TestMergeData
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Transactional
@@ -34,8 +35,6 @@ import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import spock.lang.PendingFeature
 import spock.lang.Shared
-
-import java.nio.charset.Charset
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.CREATED
@@ -94,6 +93,9 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
     @Shared
     UUID movingFolderId
 
+    @Shared
+    TerminologyPluginMergeBuilder builder
+
     @OnceBefore
     @Transactional
     def checkAndSetupData() {
@@ -105,6 +107,8 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         assert folderId
         movingFolderId = new Folder(label: 'Functional Test Folder 2', createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true).id
         assert movingFolderId
+
+        builder = new TerminologyPluginMergeBuilder(this)
     }
 
     @Transactional
@@ -951,7 +955,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
     void 'MD01 : test merging diff into draft model legacy style'() {
         given:
-        TestMergeData testMergeData = buildComplexModelsForMerging()
+        TestMergeData testMergeData = builder.buildComplexCodeSetModelsForMerging(folderId.toString())
 
         when:
         GET("$testMergeData.source/mergeDiff/$testMergeData.target", STRING_ARG)
@@ -960,21 +964,12 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         verifyJsonResponse OK, expectedLegacyMergeDiffJson
 
         cleanup:
-        cleanUpData(testMergeData.source)
-        cleanUpData(testMergeData.target)
-        cleanUpData(testMergeData.commonAncestor)
-
-        DELETE("terminologies/$testMergeData.otherMap.caTerminology?permanent=true", MAP_ARG, true)
-        response.status() == NO_CONTENT
-        DELETE("terminologies/$testMergeData.otherMap.sourceTerminology?permanent=true", MAP_ARG, true)
-        response.status() == NO_CONTENT
-        DELETE("terminologies/$testMergeData.otherMap.targetTerminology?permanent=true", MAP_ARG, true)
-        response.status() == NO_CONTENT
+        builder.cleanupTestMergeData(testMergeData)
     }
 
     void 'MD02 : test merging diff into draft model new style'() {
         given:
-        TestMergeData testMergeData = buildComplexModelsForMerging()
+        TestMergeData testMergeData = builder.buildComplexCodeSetModelsForMerging(folderId.toString())
 
         when:
         GET("$testMergeData.source/mergeDiff/$testMergeData.target?isLegacy=false", STRING_ARG)
@@ -983,22 +978,13 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         verifyJsonResponse OK, expectedMergeDiffJson
 
         cleanup:
-        cleanUpData(testMergeData.source)
-        cleanUpData(testMergeData.target)
-        cleanUpData(testMergeData.commonAncestor)
-
-        DELETE("terminologies/$testMergeData.otherMap.caTerminology?permanent=true", MAP_ARG, true)
-        response.status() == NO_CONTENT
-        DELETE("terminologies/$testMergeData.otherMap.sourceTerminology?permanent=true", MAP_ARG, true)
-        response.status() == NO_CONTENT
-        DELETE("terminologies/$testMergeData.otherMap.targetTerminology?permanent=true", MAP_ARG, true)
-        response.status() == NO_CONTENT
+        builder.cleanupTestMergeData(testMergeData)
     }
 
     void 'MI01: test merging diff into model legacy style'() {
 
         given:
-        TestMergeData testMergeData = buildComplexModelsForMerging()
+        TestMergeData testMergeData = builder.buildComplexCodeSetModelsForMerging(folderId.toString())
 
         when:
         def requestBody = [
@@ -1063,24 +1049,13 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         }
 
         cleanup:
-        cleanUpData(testMergeData.source)
-        cleanUpData(testMergeData.target)
-        cleanUpData(testMergeData.commonAncestor)
-
-        DELETE("terminologies/$testMergeData.otherMap.caTerminology?permanent=true", MAP_ARG, true)
-        response.status() == NO_CONTENT
-        DELETE("terminologies/$testMergeData.otherMap.sourceTerminology?permanent=true", MAP_ARG, true)
-        response.status() == NO_CONTENT
-        DELETE("terminologies/$testMergeData.otherMap.targetTerminology?permanent=true", MAP_ARG, true)
-        response.status() == NO_CONTENT
-
-
+        builder.cleanupTestMergeData(testMergeData)
     }
 
 
     void 'MI02 : test merging into into draft model new style'() {
         given:
-        TestMergeData testMergeData = buildComplexModelsForMerging()
+        TestMergeData testMergeData = builder.buildComplexCodeSetModelsForMerging(folderId.toString())
 
         when:
         GET("$testMergeData.source/mergeDiff/$testMergeData.target?isLegacy=false")
@@ -1120,16 +1095,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         responseBody().items.find {it.namespace == 'functional.test' && it.key == 'addToSourceOnly'}
 
         cleanup:
-        cleanUpData(testMergeData.source)
-        cleanUpData(testMergeData.target)
-        cleanUpData(testMergeData.commonAncestor)
-
-        DELETE("terminologies/$testMergeData.otherMap.caTerminology?permanent=true", MAP_ARG, true)
-        response.status() == NO_CONTENT
-        DELETE("terminologies/$testMergeData.otherMap.sourceTerminology?permanent=true", MAP_ARG, true)
-        response.status() == NO_CONTENT
-        DELETE("terminologies/$testMergeData.otherMap.targetTerminology?permanent=true", MAP_ARG, true)
-        response.status() == NO_CONTENT
+        builder.cleanupTestMergeData(testMergeData)
     }
 
     void 'change  folder from CodeSet context'() {
@@ -1882,187 +1848,6 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
         cleanup:
         cleanUpData(id)
-    }
-
-    TestMergeData buildComplexModelsForMerging() {
-        String caTerminology = buildCommonAncestorTerminology()
-
-
-        PUT("terminologies/$caTerminology/finalise", [versionChangeType: 'Major'], MAP_ARG, true)
-        verifyResponse OK, response
-
-        String caCodeSetId = buildCommonAncestorCodeSet(caTerminology)
-        PUT("$caCodeSetId/finalise", [versionChangeType: 'Major'])
-        verifyResponse OK, response
-
-        PUT("$caCodeSetId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
-        verifyResponse CREATED, response
-        String target = responseBody().id
-        PUT("$caCodeSetId/newBranchModelVersion", [branchName: 'source'])
-        verifyResponse CREATED, response
-        String source = responseBody().id
-
-        Map<String, Object> sourceMap = [:]
-        Map<String, Object> targetMap = [:]
-
-        sourceMap.codeSet = modifySourceCodeSet(source)
-        targetMap.codeSet = modifyTargetCodeSet(target)
-
-        new TestMergeData(source: source,
-                          target: target,
-                          sourceMap: sourceMap,
-                          targetMap: targetMap,
-                          otherMap: [
-                              caTerminology: caTerminology,
-                          ])
-    }
-
-    String buildCommonAncestorTerminology() {
-        POST("folders/${folderId}/terminologies", [
-            label: 'Functional Test Terminology 1'
-        ], MAP_ARG, true)
-        verifyResponse(CREATED, response)
-        String baseTerminology = responseBody().id
-
-        POST("terminologies/$baseTerminology/terms", [code: 'DLO', definition: 'deleteLeftOnly'], MAP_ARG, true)
-        verifyResponse CREATED, response
-        POST("terminologies/$baseTerminology/terms", [code: 'MLO', definition: 'modifyLeftOnly'], MAP_ARG, true)
-        verifyResponse CREATED, response
-        POST("terminologies/$baseTerminology/terms", [code: 'DAM', definition: 'deleteAndModify'], MAP_ARG, true)
-        verifyResponse CREATED, response
-        POST("terminologies/$baseTerminology/terms", [code: 'MAD', definition: 'modifyAndDelete'], MAP_ARG, true)
-        verifyResponse CREATED, response
-        POST("terminologies/$baseTerminology/terms", [code: 'MAMRD', definition: 'modifyAndModifyReturningDifference'], MAP_ARG, true)
-        verifyResponse CREATED, response
-        POST("terminologies/$baseTerminology/metadata", [namespace: 'functional.test', key: 'nothingDifferent', value: 'this shouldnt change'],
-             MAP_ARG, true)
-        verifyResponse CREATED, response
-        POST("terminologies/$baseTerminology/metadata", [namespace: 'functional.test', key: 'modifyOnSource', value: 'some original value'], MAP_ARG,
-             true)
-        verifyResponse CREATED, response
-        POST("terminologies/$baseTerminology/metadata", [namespace: 'functional.test', key: 'deleteFromSource', value: 'some other original value'],
-             MAP_ARG, true)
-        verifyResponse CREATED, response
-        POST("terminologies/$baseTerminology/metadata", [namespace: 'functional.test', key: 'modifyAndDelete', value: 'some other original value 2'],
-             MAP_ARG, true)
-        verifyResponse CREATED, response
-
-
-        POST("terminologies/$baseTerminology/terms", [code: 'ALO', definition: 'addLeftOnly'], MAP_ARG, true)
-        verifyResponse CREATED, response
-        POST("terminologies/$baseTerminology/terms", [code: 'AAARD', definition: 'addAndAddReturningDifference'], MAP_ARG, true)
-        verifyResponse CREATED, response
-        baseTerminology
-    }
-
-    String buildCommonAncestorCodeSet(String terminologyId) {
-        POST("folders/$folderId/codeSets", [
-            label: 'Functional Test CodeSet 1'
-        ], MAP_ARG, true)
-        verifyResponse(CREATED, response)
-        String codeSetId = responseBody().id
-        Map caIds = [
-            terminologyId                     : terminologyId,
-            deleteLeftOnly                    : getIdFromPath(terminologyId, 'tm:DLO', 'terminologies'),
-            modifyLeftOnly                    : getIdFromPath(terminologyId, 'tm:MLO', 'terminologies'),
-            deleteAndModify                   : getIdFromPath(terminologyId, 'tm:DAM', 'terminologies'),
-            modifyAndDelete                   : getIdFromPath(terminologyId, 'tm:MAD', 'terminologies'),
-            modifyAndModifyReturningDifference: getIdFromPath(terminologyId, 'tm:MAMRD', 'terminologies'),
-        ]
-        PUT("codeSets/$codeSetId", [terms: [
-            [id: caIds.deleteLeftOnly],
-            [id: caIds.modifyLeftOnly],
-            [id: caIds.deleteAndModify],
-            [id: caIds.modifyAndDelete],
-            [id: caIds.modifyAndModifyReturningDifference]
-        ]], MAP_ARG, true)
-        verifyResponse OK, response
-        POST("codeSets/$codeSetId/metadata", [namespace: 'functional.test', key: 'nothingDifferent', value: 'this shouldnt change'], MAP_ARG,
-             true)
-        verifyResponse CREATED, response
-        POST("codeSets/$codeSetId/metadata", [namespace: 'functional.test', key: 'modifyOnSource', value: 'some original value'], MAP_ARG, true)
-        verifyResponse CREATED, response
-        POST("codeSets/$codeSetId/metadata", [namespace: 'functional.test', key: 'deleteFromSource', value: 'some other original value'],
-             MAP_ARG, true)
-        verifyResponse CREATED, response
-        POST("codeSets/$codeSetId/metadata", [namespace: 'functional.test', key: 'modifyAndDelete', value: 'some other original value 2'],
-             MAP_ARG, true)
-        verifyResponse CREATED, response
-        codeSetId
-    }
-
-    Map modifySourceCodeSet(String source) {
-        // Modify Source
-        Map sourceMap = [
-            codeSetId                         : source,
-            deleteLeftOnly                    : getIdFromPath(source, 'tm:DLO'),
-            modifyLeftOnly                    : getIdFromPath(source, 'tm:MLO'),
-            modifyAndDelete                   : getIdFromPath(source, 'tm:MAD'),
-            deleteAndModify                   : getIdFromPath(source, 'tm:DAM'),
-            modifyAndModifyReturningDifference: getIdFromPath(source, 'tm:MAMRD'),
-            addLeftOnly                       : getIdFromPath(source, 'te:Functional Test Terminology 1|tm:ALO'),
-            addAndAddReturningDifference      : getIdFromPath(source, 'te:Functional Test Terminology 1|tm:AAARD'),
-            metadataModifyOnSource            : getIdFromPath(source, 'md:functional.test.modifyOnSource'),
-            metadataDeleteFromSource          : getIdFromPath(source, 'md:functional.test.deleteFromSource'),
-            metadataModifyAndDelete           : getIdFromPath(source, 'md:functional.test.modifyAndDelete'),
-        ]
-
-        PUT("codeSets/$sourceMap.codeSetId", [description: 'DescriptionLeft'], MAP_ARG, true)
-        verifyResponse OK, response
-
-        PUT("codeSets/$sourceMap.codeSetId/terms/$sourceMap.addLeftOnly", [:], MAP_ARG, true)
-        verifyResponse OK, response
-        PUT("codeSets/$sourceMap.codeSetId/terms/$sourceMap.addAndAddReturningDifference", [:], MAP_ARG, true)
-        verifyResponse OK, response
-
-        DELETE("codeSets/$sourceMap.codeSetId/terms/$sourceMap.deleteLeftOnly", MAP_ARG, true)
-        verifyResponse OK, response
-        DELETE("codeSets/$sourceMap.codeSetId/terms/$sourceMap.deleteAndModify", MAP_ARG, true)
-        verifyResponse OK, response
-
-        POST("codeSets/$sourceMap.codeSetId/metadata",
-             [namespace: 'functional.test', key: 'addToSourceOnly', value: 'adding to source only'], MAP_ARG, true)
-        verifyResponse CREATED, response
-        PUT("codeSets/$sourceMap.codeSetId/metadata/$sourceMap.metadataModifyOnSource", [value: 'source has modified this'],
-            MAP_ARG, true)
-        verifyResponse OK, response
-        PUT("codeSets/$sourceMap.codeSetId/metadata/$sourceMap.metadataModifyAndDelete", [value: 'source has modified this also'],
-            MAP_ARG, true)
-        verifyResponse OK, response
-        DELETE("codeSets/$sourceMap.codeSetId/metadata/$sourceMap.metadataDeleteFromSource", MAP_ARG, true)
-        verifyResponse NO_CONTENT, response
-
-        sourceMap
-    }
-
-    Map modifyTargetCodeSet(String target) {
-        // Modify Target
-        Map targetMap = [
-            codeSetId                         : target,
-            modifyLeftOnly                    : getIdFromPath(target, 'tm:MLO'),
-            modifyAndDelete                   : getIdFromPath(target, 'tm:MAD'),
-            modifyAndModifyReturningDifference: getIdFromPath(target, 'tm:MAMRD'),
-            addAndAddReturningDifference      : getIdFromPath(target, 'te:Functional Test Terminology 1|tm:AAARD'),
-            metadataModifyOnSource            : getIdFromPath(target, 'md:functional.test.modifyOnSource'),
-            metadataDeleteFromSource          : getIdFromPath(target, 'md:functional.test.deleteFromSource'),
-            metadataModifyAndDelete           : getIdFromPath(target, 'md:functional.test.modifyAndDelete'),
-        ]
-        PUT("codeSets/$targetMap.codeSetId/terms/$targetMap.addAndAddReturningDifference", [:], MAP_ARG, true)
-        verifyResponse OK, response
-        DELETE("codeSets/$targetMap.codeSetId/terms/$targetMap.modifyAndDelete", MAP_ARG, true)
-        verifyResponse OK, response
-
-        DELETE("codeSets/$targetMap.codeSetId/metadata/$targetMap.metadataModifyAndDelete", MAP_ARG, true)
-        verifyResponse NO_CONTENT, response
-
-        targetMap
-    }
-
-    String getIdFromPath(String rootResourceId, String path, String resourceDomainType = 'codeSets') {
-        GET("$resourceDomainType/$rootResourceId/path/${URLEncoder.encode(path, Charset.defaultCharset())}", MAP_ARG, true)
-        verifyResponse OK, response
-        assert responseBody().id
-        responseBody().id
     }
 
     String getExpectedMergeDiffJson() {

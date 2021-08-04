@@ -25,7 +25,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
-import uk.ac.ox.softeng.maurodatamapper.test.functional.TestMergeData
+import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.DataModelPluginMergeBuilder
+import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.TestMergeData
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
@@ -35,8 +36,6 @@ import grails.testing.spock.OnceBefore
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import spock.lang.Shared
-
-import java.nio.charset.Charset
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
 
@@ -85,6 +84,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     @Shared
     UUID movingFolderId
 
+    @Shared
+    DataModelPluginMergeBuilder builder
+
     @OnceBefore
     @Transactional
     def checkAndSetupData() {
@@ -94,6 +96,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         assert folderId
         movingFolderId = new Folder(label: 'Functional Test Folder 2', createdBy: FUNCTIONAL_TEST).save(flush: true).id
         assert movingFolderId
+        builder = new DataModelPluginMergeBuilder(this)
     }
 
     @Transactional
@@ -150,456 +153,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     "url": "http://localhost",
     "label": "Test Authority"
   }
-}'''
-    }
-
-    String getExpectedLegacyMergeDiffJson() {
-        '''{
-  "leftId": "${json-unit.matches:id}",
-  "rightId": "${json-unit.matches:id}",
-  "label": "Functional Test Model",
-  "count": 14,
-  "diffs": [
-    {
-      "description": {
-        "left": "DescriptionRight",
-        "right": "DescriptionLeft",
-        "isMergeConflict": true,
-        "commonAncestorValue": null
-      }
-    },
-    {
-      "dataClasses": {
-        "deleted": [
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "deleteLeftOnly",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test Model",
-                  "domainType": "DataModel",
-                  "finalised": true
-                }
-              ]
-            },
-            "isMergeConflict": false
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "deleteAndModify",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test Model",
-                  "domainType": "DataModel",
-                  "finalised": true
-                }
-              ]
-            },
-            "isMergeConflict": true,
-            "commonAncestorValue": {
-              "id": "${json-unit.matches:id}",
-              "label": "deleteAndModify",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test Model",
-                  "domainType": "DataModel",
-                  "finalised": true
-                }
-              ]
-            }
-          }
-        ],
-        "created": [
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "addLeftOnly",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test Model",
-                  "domainType": "DataModel",
-                  "finalised": false
-                }
-              ]
-            },
-            "isMergeConflict": false
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "modifyAndDelete",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test Model",
-                  "domainType": "DataModel",
-                  "finalised": false
-                }
-              ]
-            },
-            "isMergeConflict": true,
-            "commonAncestorValue": {
-              "id": "${json-unit.matches:id}",
-              "label": "modifyAndDelete",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test Model",
-                  "domainType": "DataModel",
-                  "finalised": true
-                }
-              ]
-            }
-          }
-        ],
-        "modified": [
-          {
-            "leftId": "${json-unit.matches:id}",
-            "rightId": "${json-unit.matches:id}",
-            "label": "modifyLeftOnly",
-            "leftBreadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Functional Test Model",
-                "domainType": "DataModel",
-                "finalised": true
-              }
-            ],
-            "rightBreadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Functional Test Model",
-                "domainType": "DataModel",
-                "finalised": true
-              }
-            ],
-            "count": 1,
-            "diffs": [
-              {
-                "description": {
-                  "left": null,
-                  "right": "Description",
-                  "isMergeConflict": false
-                }
-              }
-            ]
-          },
-          {
-            "leftId": "${json-unit.matches:id}",
-            "rightId": "${json-unit.matches:id}",
-            "label": "modifyAndModifyReturningDifference",
-            "leftBreadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Functional Test Model",
-                "domainType": "DataModel",
-                "finalised": false
-              }
-            ],
-            "rightBreadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Functional Test Model",
-                "domainType": "DataModel",
-                "finalised": false
-              }
-            ],
-            "count": 1,
-            "diffs": [
-              {
-                "description": {
-                  "left": "DescriptionRight",
-                  "right": "DescriptionLeft",
-                  "isMergeConflict": true,
-                  "commonAncestorValue": null
-                }
-              }
-            ]
-          },
-          {
-            "leftId": "${json-unit.matches:id}",
-            "rightId": "${json-unit.matches:id}",
-            "label": "existingClass",
-            "leftBreadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Functional Test Model",
-                "domainType": "DataModel",
-                "finalised": false
-              }
-            ],
-            "rightBreadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Functional Test Model",
-                "domainType": "DataModel",
-                "finalised": false
-              }
-            ],
-            "count": 2,
-            "diffs": [
-              {
-                "dataClasses": {
-                  "deleted": [
-                    {
-                      "value": {
-                        "id": "${json-unit.matches:id}",
-                        "label": "deleteLeftOnlyFromExistingClass",
-                        "breadcrumbs": [
-                          {
-                            "id": "${json-unit.matches:id}",
-                            "label": "Functional Test Model",
-                            "domainType": "DataModel",
-                            "finalised": true
-                          },
-                          {
-                            "id": "${json-unit.matches:id}",
-                            "label": "existingClass",
-                            "domainType": "DataClass"
-                          }
-                        ]
-                      },
-                      "isMergeConflict": false
-                    }
-                  ],
-                  "created": [
-                    {
-                      "value": {
-                        "id": "${json-unit.matches:id}",
-                        "label": "addLeftToExistingClass",
-                        "breadcrumbs": [
-                          {
-                            "id": "${json-unit.matches:id}",
-                            "label": "Functional Test Model",
-                            "domainType": "DataModel",
-                            "finalised": false
-                          },
-                          {
-                            "id": "${json-unit.matches:id}",
-                            "label": "existingClass",
-                            "domainType": "DataClass"
-                          }
-                        ]
-                      },
-                      "isMergeConflict": false
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          {
-            "leftId": "${json-unit.matches:id}",
-            "rightId": "${json-unit.matches:id}",
-            "label": "addAndAddReturningDifference",
-            "leftBreadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Functional Test Model",
-                "domainType": "DataModel",
-                "finalised": false
-              }
-            ],
-            "rightBreadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Functional Test Model",
-                "domainType": "DataModel",
-                "finalised": false
-              }
-            ],
-            "count": 1,
-            "diffs": [
-              {
-                "description": {
-                  "left": "DescriptionRight",
-                  "right": "DescriptionLeft",
-                  "isMergeConflict": true,
-                  "commonAncestorValue": null
-                }
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "metadata": {
-        "deleted": [
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "namespace": "functional.test",
-              "key": "deleteFromSource",
-              "value": "some other original value"
-            },
-            "isMergeConflict": false
-          }
-        ],
-        "created": [
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "namespace": "functional.test",
-              "key": "addToSourceOnly",
-              "value": "adding to source only"
-            },
-            "isMergeConflict": false
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "namespace": "functional.test",
-              "key": "modifyAndDelete",
-              "value": "source has modified this also"
-            },
-            "isMergeConflict": true,
-            "commonAncestorValue": {
-              "id": "${json-unit.matches:id}",
-              "namespace": "functional.test",
-              "key": "modifyAndDelete",
-              "value": "some other original value 2"
-            }
-          }
-        ],
-        "modified": [
-          {
-            "leftId": "${json-unit.matches:id}",
-            "rightId": "${json-unit.matches:id}",
-            "namespace": "functional.test",
-            "key": "modifyOnSource",
-            "count": 1,
-            "diffs": [
-              {
-                "value": {
-                  "left": "some original value",
-                  "right": "source has modified this",
-                  "isMergeConflict": false
-                }
-              }
-            ]
-          }
-        ]
-      }
-    }
-  ]
-}'''
-    }
-
-    String getExpectedMergeDiffJson() {
-        '''{
-  "sourceId": "${json-unit.matches:id}",
-  "targetId": "${json-unit.matches:id}",
-  "path": "dm:Functional Test Model$source",
-  "label": "Functional Test Model",
-  "count": 14,
-  "diffs": [
-    {
-      "fieldName": "description",
-      "path": "dm:Functional Test Model$source@description",
-      "sourceValue": "DescriptionLeft",
-      "targetValue": "DescriptionRight",
-      "commonAncestorValue": null,
-      "isMergeConflict": true,
-      "type": "modification"
-    },
-    {
-      "path": "dm:Functional Test Model$source|dc:addLeftOnly",
-      "isMergeConflict": false,
-      "isSourceModificationAndTargetDeletion": false,
-      "type": "creation"
-    },
-    {
-      "path": "dm:Functional Test Model$source|dc:modifyAndDelete",
-      "isMergeConflict": true,
-      "isSourceModificationAndTargetDeletion": true,
-      "type": "creation"
-    },
-    {
-      "path": "dm:Functional Test Model$source|dc:deleteAndModify",
-      "isMergeConflict": true,
-      "isSourceDeletionAndTargetModification": true,
-      "type": "deletion"
-    },
-    {
-      "path": "dm:Functional Test Model$source|dc:deleteLeftOnly",
-      "isMergeConflict": false,
-      "isSourceDeletionAndTargetModification": false,
-      "type": "deletion"
-    },
-    {
-      "fieldName": "description",
-      "path": "dm:Functional Test Model$source|dc:addAndAddReturningDifference@description",
-      "sourceValue": "DescriptionLeft",
-      "targetValue": "DescriptionRight",
-      "commonAncestorValue": null,
-      "isMergeConflict": true,
-      "type": "modification"
-    },
-    {
-      "path": "dm:Functional Test Model$source|dc:existingClass|dc:addLeftToExistingClass",
-      "isMergeConflict": false,
-      "isSourceModificationAndTargetDeletion": false,
-      "type": "creation"
-    },
-    {
-      "path": "dm:Functional Test Model$source|dc:existingClass|dc:deleteLeftOnlyFromExistingClass",
-      "isMergeConflict": false,
-      "isSourceDeletionAndTargetModification": false,
-      "type": "deletion"
-    },
-    {
-      "fieldName": "description",
-      "path": "dm:Functional Test Model$source|dc:modifyAndModifyReturningDifference@description",
-      "sourceValue": "DescriptionLeft",
-      "targetValue": "DescriptionRight",
-      "commonAncestorValue": null,
-      "isMergeConflict": true,
-      "type": "modification"
-    },
-    {
-      "fieldName": "description",
-      "path": "dm:Functional Test Model$source|dc:modifyLeftOnly@description",
-      "sourceValue": "Description",
-      "targetValue": null,
-      "commonAncestorValue": null,
-      "isMergeConflict": false,
-      "type": "modification"
-    },
-    {
-      "path": "dm:Functional Test Model$source|md:functional.test.addToSourceOnly",
-      "isMergeConflict": false,
-      "isSourceModificationAndTargetDeletion": false,
-      "type": "creation"
-    },
-    {
-      "path": "dm:Functional Test Model$source|md:functional.test.modifyAndDelete",
-      "isMergeConflict": true,
-      "isSourceModificationAndTargetDeletion": true,
-      "type": "creation"
-    },
-    {
-      "path": "dm:Functional Test Model$source|md:functional.test.deleteFromSource",
-      "isMergeConflict": false,
-      "isSourceDeletionAndTargetModification": false,
-      "type": "deletion"
-    },
-    {
-      "fieldName": "value",
-      "path": "dm:Functional Test Model$source|md:functional.test.modifyOnSource@value",
-      "sourceValue": "source has modified this",
-      "targetValue": "some original value",
-      "commonAncestorValue": "some original value",
-      "isMergeConflict": false,
-      "type": "modification"
-    }
-  ]
 }'''
     }
 
@@ -1555,7 +1108,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
     void 'MD02 : test finding merge difference of two complex datamodels'() {
         given:
-        TestMergeData mergeData = buildComplexDataModelsForMerging()
+        TestMergeData mergeData = builder.buildComplexModelsForMerging(folderId.toString())
 
         when:
         GET("$mergeData.source/mergeDiff/$mergeData.target", STRING_ARG)
@@ -1614,7 +1167,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
     void 'MD04 : test finding merge difference of two complex datamodels with the new style'() {
         given:
-        TestMergeData mergeData = buildComplexDataModelsForMerging()
+        TestMergeData mergeData = builder.buildComplexModelsForMerging(folderId.toString())
 
         when:
         GET("$mergeData.source/mergeDiff/$mergeData.target?isLegacy=false", STRING_ARG)
@@ -1663,7 +1216,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
-    void 'MP01 : test merging diff with no patch data'() {
+    void 'MI01 : test merging diff with no patch data'() {
         given:
         String id = createNewItem(validJson)
 
@@ -1690,7 +1243,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
-    void 'MP02 : test merging diff with URI id not matching body id'() {
+    void 'MI02 : test merging diff with URI id not matching body id'() {
         given:
         String id = createNewItem(validJson)
 
@@ -1739,9 +1292,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
-    void 'MP03 : test merging diff into draft model'() {
+    void 'MI03 : test merging diff into draft model'() {
         given:
-        TestMergeData mergeData = buildComplexDataModelsForMerging()
+        TestMergeData mergeData = builder.buildComplexModelsForMerging(folderId.toString())
 
         when:
         GET("$mergeData.source/mergeDiff/$mergeData.target", STRING_ARG)
@@ -1889,7 +1442,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(mergeData.commonAncestor)
     }
 
-    void 'MP04 : test merging metadata diff into draft model'() {
+    void 'MI04 : test merging metadata diff into draft model'() {
         given:
         String id = createNewItem(validJson)
 
@@ -2193,7 +1746,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
      * back into main, and we check that the DataElement which was created on the source branch is correctly added to the
      * DataClass on the main branch.
      */
-    void 'MP05 : test merging diff in which a DataElement has been created on a DataClass - failing test for MC-9433'() {
+    void 'MI05 : test merging diff in which a DataElement has been created on a DataClass - failing test for MC-9433'() {
         given: 'A DataModel is created'
         String id = createNewItem(validJson)
 
@@ -2325,7 +1878,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
-    void 'MP06 : test merging diff with no patch data with new style'() {
+    void 'MI06 : test merging diff with no patch data with new style'() {
         given:
         String id = createNewItem(validJson)
 
@@ -2352,7 +1905,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
-    void 'MP07 : test merging diff with URI id not matching body id with new style'() {
+    void 'MI07 : test merging diff with URI id not matching body id with new style'() {
         given:
         String id = createNewItem(validJson)
 
@@ -2416,9 +1969,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
-    void 'MP08 : test merging diff into draft model using new style'() {
+    void 'MI08 : test merging diff into draft model using new style'() {
         given:
-        TestMergeData mergeData = buildComplexDataModelsForMerging()
+        TestMergeData mergeData = builder.buildComplexModelsForMerging(folderId.toString())
 
         when:
         GET("$mergeData.source/mergeDiff/$mergeData.target?isLegacy=false")
@@ -2477,7 +2030,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(mergeData.commonAncestor)
     }
 
-    void 'MP09 : test merging new style diff with metadata creation gh-111'() {
+    void 'MI09 : test merging new style diff with metadata creation gh-111'() {
         given:
         String id = createNewItem(validJson)
         POST("$id/rules", [name: 'Bootstrapped versioning V2Model Rule'])
@@ -2548,7 +2101,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
-    void 'MP10 : test merge into with new style diff with aliases gh-112'() {
+    void 'MI10 : test merge into with new style diff with aliases gh-112'() {
         given:
         String id = createNewItem(validJson)
 
@@ -2591,182 +2144,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(source)
         cleanUpData(target)
         cleanUpData(id)
-    }
-
-    TestMergeData buildComplexDataModelsForMerging() {
-
-        String id = createNewItem(validJson)
-
-        POST("$id/dataClasses", [label: 'deleteLeftOnly'])
-        verifyResponse CREATED, response
-        POST("$id/dataClasses", [label: 'deleteRightOnly'])
-        verifyResponse CREATED, response
-        POST("$id/dataClasses", [label: 'modifyLeftOnly'])
-        verifyResponse CREATED, response
-        POST("$id/dataClasses", [label: 'modifyRightOnly'])
-        verifyResponse CREATED, response
-        POST("$id/dataClasses", [label: 'deleteAndDelete'])
-        verifyResponse CREATED, response
-        POST("$id/dataClasses", [label: 'deleteAndModify'])
-        verifyResponse CREATED, response
-        POST("$id/dataClasses", [label: 'modifyAndDelete'])
-        verifyResponse CREATED, response
-        POST("$id/dataClasses", [label: 'modifyAndModifyReturningNoDifference'])
-        verifyResponse CREATED, response
-        POST("$id/dataClasses", [label: 'modifyAndModifyReturningDifference'])
-        verifyResponse CREATED, response
-        POST("$id/dataClasses", [label: 'existingClass'])
-        verifyResponse CREATED, response
-        String caExistingClass = responseBody().id
-        POST("$id/dataClasses/$caExistingClass/dataClasses", [label: 'deleteLeftOnlyFromExistingClass'])
-        verifyResponse CREATED, response
-        POST("$id/dataClasses/$caExistingClass/dataClasses", [label: 'deleteRightOnlyFromExistingClass'])
-        verifyResponse CREATED, response
-
-        POST("$id/metadata", [namespace: 'functional.test', key: 'nothingDifferent', value: 'this shouldnt change'])
-        verifyResponse CREATED, response
-        POST("$id/metadata", [namespace: 'functional.test', key: 'modifyOnSource', value: 'some original value'])
-        verifyResponse CREATED, response
-        POST("$id/metadata", [namespace: 'functional.test', key: 'deleteFromSource', value: 'some other original value'])
-        verifyResponse CREATED, response
-        POST("$id/metadata", [namespace: 'functional.test', key: 'modifyAndDelete', value: 'some other original value 2'])
-        verifyResponse CREATED, response
-
-        PUT("$id/finalise", [versionChangeType: 'Major'])
-        verifyResponse OK, response
-        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
-        verifyResponse CREATED, response
-        String target = responseBody().id
-        PUT("$id/newBranchModelVersion", [branchName: 'source'])
-        verifyResponse CREATED, response
-        String source = responseBody().id
-
-        // Get source ids
-        Map<String, String> sourceMap = [
-            existingClass                       : getIdFromPath(source, 'dc:existingClass'),
-            deleteLeftOnlyFromExistingClass     : getIdFromPath(source, 'dc:deleteLeftOnlyFromExistingClass'),
-            deleteLeftOnly                      : getIdFromPath(source, 'dc:deleteLeftOnly'),
-            deleteAndDelete                     : getIdFromPath(source, 'dc:deleteAndDelete'),
-            deleteAndModify                     : getIdFromPath(source, 'dc:deleteAndModify'),
-            modifyLeftOnly                      : getIdFromPath(source, 'dc:modifyLeftOnly'),
-            modifyAndDelete                     : getIdFromPath(source, 'dc:modifyAndDelete'),
-            modifyAndModifyReturningNoDifference: getIdFromPath(source, 'dc:modifyAndModifyReturningNoDifference'),
-            modifyAndModifyReturningDifference  : getIdFromPath(source, 'dc:modifyAndModifyReturningDifference'),
-            metadataModifyOnSource              : getIdFromPath(source, 'md:functional.test.modifyOnSource'),
-            metadataDeleteFromSource            : getIdFromPath(source, 'md:functional.test.deleteFromSource'),
-            metadataModifyAndDelete             : getIdFromPath(source, 'md:functional.test.modifyAndDelete'),
-        ]
-
-        // Modify source
-        DELETE("$source/dataClasses/${sourceMap.deleteAndDelete}")
-        verifyResponse NO_CONTENT, response
-        DELETE("$source/dataClasses/${sourceMap.existingClass}/dataClasses/${sourceMap.deleteLeftOnlyFromExistingClass}")
-        verifyResponse NO_CONTENT, response
-        DELETE("$source/dataClasses/${sourceMap.deleteLeftOnly}")
-        verifyResponse NO_CONTENT, response
-        DELETE("$source/dataClasses/${sourceMap.deleteAndModify}")
-        verifyResponse NO_CONTENT, response
-
-        PUT("$source/dataClasses/${sourceMap.modifyLeftOnly}", [description: 'Description'])
-        verifyResponse OK, response
-        PUT("$source/dataClasses/${sourceMap.modifyAndDelete}", [description: 'Description'])
-        verifyResponse OK, response
-        PUT("$source/dataClasses/${sourceMap.modifyAndModifyReturningNoDifference}", [description: 'Description'])
-        verifyResponse OK, response
-        PUT("$source/dataClasses/${sourceMap.modifyAndModifyReturningDifference}", [description: 'DescriptionLeft'])
-        verifyResponse OK, response
-
-        POST("$source/dataClasses/${sourceMap.existingClass}/dataClasses", [label: 'addLeftToExistingClass'])
-        verifyResponse CREATED, response
-        sourceMap.addLeftToExistingClass = responseBody().id
-        POST("$source/dataClasses", [label: 'addLeftOnly'])
-        verifyResponse CREATED, response
-        sourceMap.addLeftOnly = responseBody().id
-        POST("$source/dataClasses", [label: 'addAndAddReturningNoDifference'])
-        verifyResponse CREATED, response
-        POST("$source/dataClasses", [label: 'addAndAddReturningDifference', description: 'DescriptionLeft'])
-        verifyResponse CREATED, response
-        sourceMap.addAndAddReturningDifference = responseBody().id
-
-        PUT("$source", [description: 'DescriptionLeft'])
-        verifyResponse OK, response
-
-        POST("$source/metadata", [namespace: 'functional.test', key: 'addToSourceOnly', value: 'adding to source only'])
-        verifyResponse CREATED, response
-        PUT("$source/metadata/${sourceMap.metadataModifyOnSource}", [value: 'source has modified this'])
-        verifyResponse OK, response
-        PUT("$source/metadata/${sourceMap.metadataModifyAndDelete}", [value: 'source has modified this also'])
-        verifyResponse OK, response
-        DELETE("$source/metadata/${sourceMap.metadataDeleteFromSource}")
-        verifyResponse NO_CONTENT, response
-
-        // Get target ids
-        // Get source ids
-        Map<String, String> targetMap = [
-            existingClass                       : getIdFromPath(target, 'dc:existingClass'),
-            deleteLeftOnlyFromExistingClass     : getIdFromPath(target, 'dc:deleteLeftOnlyFromExistingClass'),
-            deleteRightOnlyFromExistingClass    : getIdFromPath(target, 'dc:deleteRightOnlyFromExistingClass'),
-            deleteLeftOnly                      : getIdFromPath(target, 'dc:deleteLeftOnly'),
-            deleteRightOnly                     : getIdFromPath(target, 'dc:deleteRightOnly'),
-            deleteAndDelete                     : getIdFromPath(target, 'dc:deleteAndDelete'),
-            deleteAndModify                     : getIdFromPath(target, 'dc:deleteAndModify'),
-            modifyLeftOnly                      : getIdFromPath(target, 'dc:modifyLeftOnly'),
-            modifyRightOnly                     : getIdFromPath(target, 'dc:modifyRightOnly'),
-            modifyAndDelete                     : getIdFromPath(target, 'dc:modifyAndDelete'),
-            modifyAndModifyReturningNoDifference: getIdFromPath(target, 'dc:modifyAndModifyReturningNoDifference'),
-            modifyAndModifyReturningDifference  : getIdFromPath(target, 'dc:modifyAndModifyReturningDifference'),
-            metadataModifyOnSource              : getIdFromPath(target, 'md:functional.test.modifyOnSource'),
-            metadataDeleteFromSource            : getIdFromPath(target, 'md:functional.test.deleteFromSource'),
-            metadataModifyAndDelete             : getIdFromPath(target, 'md:functional.test.modifyAndDelete'),
-        ]
-
-        // Modify target
-        DELETE("$target/dataClasses/${targetMap.existingClass}/dataClasses/${targetMap.deleteRightOnlyFromExistingClass}")
-        verifyResponse NO_CONTENT, response
-        DELETE("$target/dataClasses/${targetMap.deleteRightOnly}")
-        verifyResponse NO_CONTENT, response
-        DELETE("$target/dataClasses/${targetMap.deleteAndDelete}")
-        verifyResponse NO_CONTENT, response
-        DELETE("$target/dataClasses/${targetMap.modifyAndDelete}")
-        verifyResponse NO_CONTENT, response
-
-        PUT("$target/dataClasses/${targetMap.modifyRightOnly}", [description: 'Description'])
-        verifyResponse OK, response
-        PUT("$target/dataClasses/${targetMap.deleteAndModify}", [description: 'Description'])
-        verifyResponse OK, response
-        PUT("$target/dataClasses/${targetMap.modifyAndModifyReturningNoDifference}", [description: 'Description'])
-        verifyResponse OK, response
-        PUT("$target/dataClasses/${targetMap.modifyAndModifyReturningDifference}", [description: 'DescriptionRight'])
-        verifyResponse OK, response
-
-        POST("$target/dataClasses/${targetMap.existingClass}/dataClasses", [label: 'addRightToExistingClass'])
-        verifyResponse CREATED, response
-        POST("$target/dataClasses", [label: 'addRightOnly'])
-        verifyResponse CREATED, response
-        POST("$target/dataClasses", [label: 'addAndAddReturningNoDifference'])
-        verifyResponse CREATED, response
-        POST("$target/dataClasses", [label: 'addAndAddReturningDifference', description: 'DescriptionRight'])
-        verifyResponse CREATED, response
-        targetMap.addAndAddReturningDifference = responseBody().id
-
-        PUT("$target", [description: 'DescriptionRight'])
-        verifyResponse OK, response
-        DELETE("$target/metadata/${targetMap.metadataModifyAndDelete}")
-        verifyResponse NO_CONTENT, response
-
-
-        new TestMergeData(commonAncestor: id,
-                          source: source,
-                          target: target,
-                          sourceMap: sourceMap,
-                          targetMap: targetMap)
-    }
-
-    String getIdFromPath(String rootResourceId, String path) {
-        GET("$rootResourceId/path/${URLEncoder.encode(path, Charset.defaultCharset())}")
-        verifyResponse OK, response
-        assert responseBody().id
-        responseBody().id
     }
 
     void 'test changing folder from DataModel context'() {
@@ -5059,4 +4436,456 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                         }
                     }''', '''''']
     }
+
+    String getExpectedLegacyMergeDiffJson() {
+        '''{
+  "leftId": "${json-unit.matches:id}",
+  "rightId": "${json-unit.matches:id}",
+  "label": "Functional Test DataModel 1",
+  "count": 14,
+  "diffs": [
+    {
+      "description": {
+        "left": "DescriptionRight",
+        "right": "DescriptionLeft",
+        "isMergeConflict": true,
+        "commonAncestorValue": null
+      }
+    },
+    {
+      "dataClasses": {
+        "deleted": [
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "deleteLeftOnly",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test DataModel 1",
+                  "domainType": "DataModel",
+                  "finalised": true
+                }
+              ]
+            },
+            "isMergeConflict": false
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "deleteAndModify",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test DataModel 1",
+                  "domainType": "DataModel",
+                  "finalised": true
+                }
+              ]
+            },
+            "isMergeConflict": true,
+            "commonAncestorValue": {
+              "id": "${json-unit.matches:id}",
+              "label": "deleteAndModify",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test DataModel 1",
+                  "domainType": "DataModel",
+                  "finalised": true
+                }
+              ]
+            }
+          }
+        ],
+        "created": [
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "addLeftOnly",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test DataModel 1",
+                  "domainType": "DataModel",
+                  "finalised": false
+                }
+              ]
+            },
+            "isMergeConflict": false
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "modifyAndDelete",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test DataModel 1",
+                  "domainType": "DataModel",
+                  "finalised": false
+                }
+              ]
+            },
+            "isMergeConflict": true,
+            "commonAncestorValue": {
+              "id": "${json-unit.matches:id}",
+              "label": "modifyAndDelete",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test DataModel 1",
+                  "domainType": "DataModel",
+                  "finalised": true
+                }
+              ]
+            }
+          }
+        ],
+        "modified": [
+          {
+            "leftId": "${json-unit.matches:id}",
+            "rightId": "${json-unit.matches:id}",
+            "label": "modifyLeftOnly",
+            "leftBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test DataModel 1",
+                "domainType": "DataModel",
+                "finalised": true
+              }
+            ],
+            "rightBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test DataModel 1",
+                "domainType": "DataModel",
+                "finalised": true
+              }
+            ],
+            "count": 1,
+            "diffs": [
+              {
+                "description": {
+                  "left": null,
+                  "right": "Description",
+                  "isMergeConflict": false
+                }
+              }
+            ]
+          },
+          {
+            "leftId": "${json-unit.matches:id}",
+            "rightId": "${json-unit.matches:id}",
+            "label": "modifyAndModifyReturningDifference",
+            "leftBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test DataModel 1",
+                "domainType": "DataModel",
+                "finalised": false
+              }
+            ],
+            "rightBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test DataModel 1",
+                "domainType": "DataModel",
+                "finalised": false
+              }
+            ],
+            "count": 1,
+            "diffs": [
+              {
+                "description": {
+                  "left": "DescriptionRight",
+                  "right": "DescriptionLeft",
+                  "isMergeConflict": true,
+                  "commonAncestorValue": null
+                }
+              }
+            ]
+          },
+          {
+            "leftId": "${json-unit.matches:id}",
+            "rightId": "${json-unit.matches:id}",
+            "label": "existingClass",
+            "leftBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test DataModel 1",
+                "domainType": "DataModel",
+                "finalised": false
+              }
+            ],
+            "rightBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test DataModel 1",
+                "domainType": "DataModel",
+                "finalised": false
+              }
+            ],
+            "count": 2,
+            "diffs": [
+              {
+                "dataClasses": {
+                  "deleted": [
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "deleteLeftOnlyFromExistingClass",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test DataModel 1",
+                            "domainType": "DataModel",
+                            "finalised": true
+                          },
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "existingClass",
+                            "domainType": "DataClass"
+                          }
+                        ]
+                      },
+                      "isMergeConflict": false
+                    }
+                  ],
+                  "created": [
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "addLeftToExistingClass",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test DataModel 1",
+                            "domainType": "DataModel",
+                            "finalised": false
+                          },
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "existingClass",
+                            "domainType": "DataClass"
+                          }
+                        ]
+                      },
+                      "isMergeConflict": false
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "leftId": "${json-unit.matches:id}",
+            "rightId": "${json-unit.matches:id}",
+            "label": "addAndAddReturningDifference",
+            "leftBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test DataModel 1",
+                "domainType": "DataModel",
+                "finalised": false
+              }
+            ],
+            "rightBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test DataModel 1",
+                "domainType": "DataModel",
+                "finalised": false
+              }
+            ],
+            "count": 1,
+            "diffs": [
+              {
+                "description": {
+                  "left": "DescriptionRight",
+                  "right": "DescriptionLeft",
+                  "isMergeConflict": true,
+                  "commonAncestorValue": null
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "deleted": [
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "namespace": "functional.test",
+              "key": "deleteFromSource",
+              "value": "some other original value"
+            },
+            "isMergeConflict": false
+          }
+        ],
+        "created": [
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "namespace": "functional.test",
+              "key": "addToSourceOnly",
+              "value": "adding to source only"
+            },
+            "isMergeConflict": false
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "namespace": "functional.test",
+              "key": "modifyAndDelete",
+              "value": "source has modified this also"
+            },
+            "isMergeConflict": true,
+            "commonAncestorValue": {
+              "id": "${json-unit.matches:id}",
+              "namespace": "functional.test",
+              "key": "modifyAndDelete",
+              "value": "some other original value 2"
+            }
+          }
+        ],
+        "modified": [
+          {
+            "leftId": "${json-unit.matches:id}",
+            "rightId": "${json-unit.matches:id}",
+            "namespace": "functional.test",
+            "key": "modifyOnSource",
+            "count": 1,
+            "diffs": [
+              {
+                "value": {
+                  "left": "some original value",
+                  "right": "source has modified this",
+                  "isMergeConflict": false
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}'''
+    }
+
+
+    String getExpectedMergeDiffJson() {
+        '''{
+  "sourceId": "${json-unit.matches:id}",
+  "targetId": "${json-unit.matches:id}",
+  "path": "dm:Functional Test DataModel 1$source",
+  "label": "Functional Test DataModel 1",
+  "count": 14,
+  "diffs": [
+    {
+      "fieldName": "description",
+      "path": "dm:Functional Test DataModel 1$source@description",
+      "sourceValue": "DescriptionLeft",
+      "targetValue": "DescriptionRight",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|dc:addLeftOnly",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|dc:modifyAndDelete",
+      "isMergeConflict": true,
+      "isSourceModificationAndTargetDeletion": true,
+      "type": "creation"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|dc:deleteAndModify",
+      "isMergeConflict": true,
+      "isSourceDeletionAndTargetModification": true,
+      "type": "deletion"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|dc:deleteLeftOnly",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "fieldName": "description",
+      "path": "dm:Functional Test DataModel 1$source|dc:addAndAddReturningDifference@description",
+      "sourceValue": "DescriptionLeft",
+      "targetValue": "DescriptionRight",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|dc:existingClass|dc:addLeftToExistingClass",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|dc:existingClass|dc:deleteLeftOnlyFromExistingClass",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "fieldName": "description",
+      "path": "dm:Functional Test DataModel 1$source|dc:modifyAndModifyReturningDifference@description",
+      "sourceValue": "DescriptionLeft",
+      "targetValue": "DescriptionRight",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "fieldName": "description",
+      "path": "dm:Functional Test DataModel 1$source|dc:modifyLeftOnly@description",
+      "sourceValue": "Description",
+      "targetValue": null,
+      "commonAncestorValue": null,
+      "isMergeConflict": false,
+      "type": "modification"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|md:functional.test.addToSourceOnly",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|md:functional.test.modifyAndDelete",
+      "isMergeConflict": true,
+      "isSourceModificationAndTargetDeletion": true,
+      "type": "creation"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|md:functional.test.deleteFromSource",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "fieldName": "value",
+      "path": "dm:Functional Test DataModel 1$source|md:functional.test.modifyOnSource@value",
+      "sourceValue": "source has modified this",
+      "targetValue": "some original value",
+      "commonAncestorValue": "some original value",
+      "isMergeConflict": false,
+      "type": "modification"
+    }
+  ]
+}'''
+    }
+
 }
