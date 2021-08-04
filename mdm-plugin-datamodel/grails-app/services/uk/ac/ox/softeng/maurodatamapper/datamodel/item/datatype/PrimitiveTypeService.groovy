@@ -43,6 +43,12 @@ class PrimitiveTypeService extends ModelItemService<PrimitiveType> implements Su
     DataTypeService dataTypeService
 
     @Override
+    boolean handlesPathPrefix(String pathPrefix) {
+        // Have to override to ensure we type DataTypeService
+        false
+    }
+
+    @Override
     PrimitiveType get(Serializable id) {
         PrimitiveType.get(id)
     }

@@ -40,6 +40,12 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> implements Su
     DataTypeService dataTypeService
 
     @Override
+    boolean handlesPathPrefix(String pathPrefix) {
+        // Have to override to ensure we type DataTypeService
+        false
+    }
+
+    @Override
     ModelDataType get(Serializable id) {
         ModelDataType.get(id)
     }

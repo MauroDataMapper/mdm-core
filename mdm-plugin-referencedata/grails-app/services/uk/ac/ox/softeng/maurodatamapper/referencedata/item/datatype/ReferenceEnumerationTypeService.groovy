@@ -43,6 +43,12 @@ class ReferenceEnumerationTypeService extends ModelItemService<ReferenceEnumerat
         ReferenceEnumerationType.get(id)
     }
 
+    @Override
+    boolean handlesPathPrefix(String pathPrefix) {
+        // Have to override to ensure we type DataTypeService
+        false
+    }
+
     Long count() {
         ReferenceEnumerationType.count()
     }

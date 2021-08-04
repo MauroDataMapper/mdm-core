@@ -43,6 +43,12 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> implement
     DataTypeService dataTypeService
 
     @Override
+    boolean handlesPathPrefix(String pathPrefix) {
+        // Have to override to ensure we type DataTypeService
+        false
+    }
+
+    @Override
     EnumerationType get(Serializable id) {
         EnumerationType.get(id)
     }
