@@ -30,8 +30,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchData
 import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -68,7 +66,7 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     List<Terminology> getAll(Collection<UUID> ids) {
-        Terminology.getAll(ids).findAll().collect {unwrapIfProxy(it)}
+        Terminology.getAll(ids).findAll().collect { unwrapIfProxy(it) }
     }
 
     @Override
@@ -78,7 +76,7 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     List<Terminology> list() {
-        Terminology.list().collect {unwrapIfProxy(it)}
+        Terminology.list().collect { unwrapIfProxy(it) }
     }
 
     @Override
@@ -143,7 +141,7 @@ class TerminologyService extends ModelService<Terminology> {
     @Override
     Terminology saveModelWithContent(Terminology terminology) {
 
-        if (terminology.terms.any {it.id} || terminology.termRelationshipTypes.any {it.id}) {
+        if (terminology.terms.any { it.id } || terminology.termRelationshipTypes.any { it.id }) {
             throw new ApiInternalException('TMSXX', 'Cannot use saveModelWithContent method to save Terminology',
                                            new IllegalStateException('Terminology has previously saved content'))
         }
@@ -170,7 +168,7 @@ class TerminologyService extends ModelService<Terminology> {
         }
 
         if (terminology.breadcrumbTree.children) {
-            terminology.breadcrumbTree.children.each {it.skipValidation(true)}
+            terminology.breadcrumbTree.children.each { it.skipValidation(true) }
         }
 
         save(terminology)
@@ -195,14 +193,14 @@ class TerminologyService extends ModelService<Terminology> {
         sessionFactory.currentSession.clear()
         long start = System.currentTimeMillis()
         log.debug('Disabling validation on contents')
-        termRelationshipTypes.each {trt ->
+        termRelationshipTypes.each { trt ->
             trt.skipValidation(true)
         }
 
-        terms.each {t ->
+        terms.each { t ->
             t.skipValidation(true)
-            t.sourceTermRelationships.each {tr -> tr.skipValidation(true)}
-            t.targetTermRelationships.each {tr -> tr.skipValidation(true)}
+            t.sourceTermRelationships.each { tr -> tr.skipValidation(true) }
+            t.targetTermRelationships.each { tr -> tr.skipValidation(true) }
         }
 
         // During testing its very important that we dont disable constraints otherwise we may miss an invalid model,
@@ -362,20 +360,20 @@ class TerminologyService extends ModelService<Terminology> {
         copy.trackChanges()
 
         // Copy all the TermRelationshipType
-        original.termRelationshipTypes?.each {trt ->
+        original.termRelationshipTypes?.each { trt ->
             termRelationshipTypeService.copyTermRelationshipType(copy, trt, copier)
         }
 
         // Copy all the terms
-        original.terms?.each {term ->
+        original.terms?.each { term ->
             termService.copyTerm(copy, term, copier, userSecurityPolicyManager)
         }
 
         // Copy all the term relationships
         // We need all the terms to exist so we can create the links
         // Only copy source relationships as this will propgate the target relationships
-        original.terms?.each {term ->
-            term.sourceTermRelationships.each {relationship ->
+        original.terms?.each { term ->
+            term.sourceTermRelationships.each { relationship ->
                 termRelationshipService.copyTermRelationship(copy, relationship, copier)
             }
         }
@@ -398,14 +396,14 @@ class TerminologyService extends ModelService<Terminology> {
         // No parental or child relationships then ensure all depths are 1
         if (hasNoValidRelationships) {
             log.debug('No parent/child relationships so all terms are depth 1')
-            terminology.terms.each {it.depth = 1}
+            terminology.terms.each { it.depth = 1 }
             return terminology
         }
 
         log.debug('Updating all term depths')
         // Reset all track changes, as this whole process needs to be done AFTER insert into database
         // the only changes here should be depths
-        terminology.terms.each {it.trackChanges()}
+        terminology.terms.each { it.trackChanges() }
         terminology.terms.each {
             termService.updateDepth(it, inMemory)
         }
@@ -469,7 +467,7 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     List<Terminology> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        Terminology.byClassifierId(classifier.id).list().findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.id)}
+        Terminology.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.id) }
     }
 
     @Override
@@ -509,7 +507,7 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     List<UUID> findAllModelIdsWithTreeChildren(List<Terminology> models) {
-        models.findAll {isTreeStructureCapableTerminology(it)}.collect {it.id}
+        models.findAll { isTreeStructureCapableTerminology(it) }.collect { it.id }
     }
 
     @Override
@@ -575,12 +573,12 @@ class TerminologyService extends ModelService<Terminology> {
         }
 
         if (terminology.terms) {
-            terminology.terms.each {term ->
+            terminology.terms.each { term ->
                 term.createdBy = term.createdBy ?: terminology.createdBy
             }
         }
 
-        terminology.getAllTermRelationships().each {tr ->
+        terminology.getAllTermRelationships().each { tr ->
             tr.createdBy = tr.createdBy ?: terminology.createdBy
         }
 
@@ -602,38 +600,23 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    List<FieldPatchData> getSortedFieldPatchDataForMerging(ObjectPatchData objectPatchData) {
-        /*
-        We can process modifications in any order
-        We need to make sure we process creations and deletions of terms and term relationship types before the term relationships
-         */
-        objectPatchData.patches.sort {l, r ->
-            switch (l.type) {
-                case 'modification':
-                    if (r.type == 'modification') return 0
-                    else return -1
-                case 'creation': case 'deletion':
-                    if (r.type == 'modification') return 1
-                    PathNode leftLastNode = l.path.last()
-                    PathNode rightLastNode = r.path.last()
-
-                    if (leftLastNode.prefix == 'tm') {
-                        if (rightLastNode.prefix == 'tm') return 0
-                        if (rightLastNode.prefix in ['trt', 'tr']) return -1
-                        return -1
-                    } else if (leftLastNode.prefix == 'trt') {
-                        if (rightLastNode.prefix == 'tm') return 1
-                        if (rightLastNode.prefix == 'trt') return 0
-                        if (rightLastNode.prefix == 'tr') return -1
-                        return -1
-                    } else if (leftLastNode.prefix == 'tr') {
-                        if (rightLastNode.prefix in ['trt', 'tr']) return 1
-                        if (rightLastNode.prefix == 'tr') return 0
-                        return -1
-                    } else {
-                        return -1
-                    }
-            }
+    int getSortResultForFieldPatchLastPathNodes(PathNode leftLastNode, PathNode rightLastNode) {
+        if (leftLastNode.prefix == 'tm') {
+            if (rightLastNode.prefix == 'tm') return 0
+            if (rightLastNode.prefix in ['trt', 'tr']) return -1
+            return 0
         }
+        if (leftLastNode.prefix == 'trt') {
+            if (rightLastNode.prefix == 'tm') return 1
+            if (rightLastNode.prefix == 'trt') return 0
+            if (rightLastNode.prefix == 'tr') return -1
+            return 0
+        }
+        if (leftLastNode.prefix == 'tr') {
+            if (rightLastNode.prefix in ['trt', 'tr']) return 1
+            if (rightLastNode.prefix == 'tr') return 0
+            return 0
+        }
+        0
     }
 }
