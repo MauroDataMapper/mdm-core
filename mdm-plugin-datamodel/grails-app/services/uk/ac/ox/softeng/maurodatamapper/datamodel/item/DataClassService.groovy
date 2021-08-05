@@ -156,15 +156,10 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         dataElementService.deleteAll(dataElements)
         dataClass.dataElements = []
         try {
-            // Discard any latent changes to the DataModel as we dont want them
-            // But only if we're flushing otherwise we risk losing changes when this method is used from a DM context
-            if (flush) dataModel.trackChanges()
-            dataClass.delete(flush: false)
-            // Use a proper session flush to prevent the exceptions below?
-            if (flush) sessionFactory.currentSession.flush()
+            dataClass.delete(flush: flush)
         } catch (Exception exception) {
             // updating the DM on a nested DC delete???
-            log.error("We had another exception thrown: {}", exception.message)
+            throw new ApiInternalException('DCSXX', 'Failed to delete the DataClass', exception)
         }
     }
 
