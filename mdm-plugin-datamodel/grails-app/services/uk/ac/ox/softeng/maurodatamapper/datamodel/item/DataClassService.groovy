@@ -44,9 +44,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.grails.orm.hibernate.proxy.HibernateProxyHandler
-import org.hibernate.StaleStateException
 import org.springframework.context.MessageSource
-import org.springframework.orm.hibernate5.HibernateOptimisticLockingFailureException
 
 @Slf4j
 @Transactional
@@ -164,7 +162,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
             dataClass.delete(flush: false)
             // Use a proper session flush to prevent the exceptions below?
             if (flush) sessionFactory.currentSession.flush()
-        } catch (HibernateOptimisticLockingFailureException | StaleStateException exception) {
+        } catch (Exception exception) {
             // updating the DM on a nested DC delete???
             log.error("We had another exception thrown: {}", exception.message)
         }

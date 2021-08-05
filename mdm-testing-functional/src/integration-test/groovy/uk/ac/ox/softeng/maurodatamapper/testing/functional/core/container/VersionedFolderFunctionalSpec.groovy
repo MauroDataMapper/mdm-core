@@ -24,18 +24,20 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
-import uk.ac.ox.softeng.maurodatamapper.test.functional.TestMergeData
+import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.TestMergeData
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.merge.VersionedFolderMergeBuilder
 import uk.ac.ox.softeng.maurodatamapper.version.VersionChangeType
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
+import grails.testing.spock.OnceBefore
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
-import io.micronaut.http.HttpStatus
 import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Ignore
+import spock.lang.Shared
 import spock.lang.Unroll
 
 import java.nio.charset.Charset
@@ -67,9 +69,16 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 @Slf4j
 class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec {
 
+    @Shared
+    VersionedFolderMergeBuilder builder
 
     @Autowired(required = false)
     List<ModelService> modelServices
+
+    @OnceBefore
+    void createBuilder() {
+        builder = new VersionedFolderMergeBuilder(this)
+    }
 
     @Transactional
     String getTestFolderId() {
@@ -315,13 +324,13 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         DELETE("${id}?permanent=true")
 
         then: 'The response is correct'
-        response.status == HttpStatus.NO_CONTENT
+        response.status == NO_CONTENT
 
         when: 'Trying to get the folder'
         GET(id)
 
         then:
-        response.status() == HttpStatus.NOT_FOUND
+        response.status() == NOT_FOUND
 
         cleanup:
         cleanupUserGroups()
@@ -351,13 +360,13 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         DELETE("${id}?permanent=true")
 
         then: 'The response is correct'
-        response.status == HttpStatus.NO_CONTENT
+        response.status == NO_CONTENT
 
         when: 'Trying to get the folder'
         GET(id)
 
         then:
-        response.status() == HttpStatus.NOT_FOUND
+        response.status() == NOT_FOUND
 
         cleanup:
         cleanupUserGroups()
@@ -831,8 +840,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         then:
         verifyResponse(OK, response)
         responseBody().count == 2
-        responseBody().items.any {it.id == id}
-        responseBody().items.any {it.id == branchId}
+        responseBody().items.any { it.id == id }
+        responseBody().items.any { it.id == branchId }
 
         when: 'getting the models inside the finalised folder'
         GET("folders/$id/dataModels", MAP_ARG, true)
@@ -1090,11 +1099,10 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     void 'BMV07 : test creating a new branch model with DM, T and CS'() {
         given:
         String commonAncestorId = getValidId()
-        TestMergeVersionedFolderBuilder builder = new TestMergeVersionedFolderBuilder(this)
         loginEditor()
-        builder.buildCommonAncestorDataModel(commonAncestorId)
-        builder.buildCommonAncestorTerminology(commonAncestorId)
-        builder.buildCommonAncestorCodeSet(commonAncestorId)
+        builder.dataModelPluginMergeBuilder.buildCommonAncestorDataModel(commonAncestorId)
+        String caTerminology = builder.terminologyPluginMergeBuilder.buildCommonAncestorTerminology(commonAncestorId)
+        builder.terminologyPluginMergeBuilder.buildCommonAncestorCodeSet(commonAncestorId, caTerminology)
 
         // Finalise and branch
         PUT("$commonAncestorId/finalise", [versionChangeType: 'Major'])
@@ -1143,11 +1151,10 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     void 'BMV08 : test creating a new branch model with DM, T and CS with non default branch'() {
         given:
         String commonAncestorId = getValidId()
-        TestMergeVersionedFolderBuilder builder = new TestMergeVersionedFolderBuilder(this)
         loginEditor()
-        builder.buildCommonAncestorDataModel(commonAncestorId)
-        builder.buildCommonAncestorTerminology(commonAncestorId)
-        builder.buildCommonAncestorCodeSet(commonAncestorId)
+        builder.dataModelPluginMergeBuilder.buildCommonAncestorDataModel(commonAncestorId)
+        String caTerminology = builder.terminologyPluginMergeBuilder.buildCommonAncestorTerminology(commonAncestorId)
+        builder.terminologyPluginMergeBuilder.buildCommonAncestorCodeSet(commonAncestorId, caTerminology)
 
         // Finalise and branch
         PUT("$commonAncestorId/finalise", [versionChangeType: 'Major'])
@@ -1275,10 +1282,10 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         cleanup:
         loginReader()
         DELETE("$forkId?permanent=true")
-        verifyResponse HttpStatus.NO_CONTENT, response
+        verifyResponse NO_CONTENT, response
         loginEditor()
         DELETE("$id?permanent=true")
-        verifyResponse HttpStatus.NO_CONTENT, response
+        verifyResponse NO_CONTENT, response
         cleanUpRoles(forkId, id)
     }
 
@@ -1626,8 +1633,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         then:
         verifyResponse OK, response
         responseBody().count == 5
-        responseBody().items.each {it.id in expectedBrancheIds}
-        responseBody().items.each {it.label == validJson.label}
+        responseBody().items.each { it.id in expectedBrancheIds }
+        responseBody().items.each { it.label == validJson.label }
 
         when:
         GET("$data.v2/availableBranches")
@@ -1635,8 +1642,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         then:
         verifyResponse OK, response
         responseBody().count == 5
-        responseBody().items.each {it.id in expectedBrancheIds}
-        responseBody().items.each {it.label == validJson.label}
+        responseBody().items.each { it.id in expectedBrancheIds }
+        responseBody().items.each { it.label == validJson.label }
 
         when:
         GET("$data.v1/availableBranches")
@@ -1644,8 +1651,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         then:
         verifyResponse OK, response
         responseBody().count == 5
-        responseBody().items.each {it.id in expectedBrancheIds}
-        responseBody().items.each {it.label == validJson.label}
+        responseBody().items.each { it.id in expectedBrancheIds }
+        responseBody().items.each { it.label == validJson.label }
 
         when:
         GET("$data.main/availableBranches")
@@ -1653,8 +1660,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         then:
         verifyResponse OK, response
         responseBody().count == 5
-        responseBody().items.each {it.id in expectedBrancheIds}
-        responseBody().items.each {it.label == validJson.label}
+        responseBody().items.each { it.id in expectedBrancheIds }
+        responseBody().items.each { it.label == validJson.label }
 
         cleanup:
         cleanupModelVersionTree(data)
@@ -1832,10 +1839,10 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     }
 
 
-    void 'D01 : test diffing 2 versioned folders (as not logged in)'() {
+    void 'DI01 : test diffing 2 versioned folders (as not logged in)'() {
 
         given:
-        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+        TestMergeData mergeData = builder.buildSimpleVersionedFoldersForMerging()
 
         when: 'not logged in'
         GET("$mergeData.source/diff/$mergeData.target")
@@ -1844,14 +1851,12 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         verifyNotFound response, mergeData.source
 
         cleanup:
-        removeValidIdObject(mergeData.source)
-        removeValidIdObject(mergeData.target)
-        removeValidIdObject(mergeData.commonAncestor)
+        builder.cleanupTestMergeData(mergeData)
     }
 
-    void 'D02 : test diffing 2 versioned folders (as authenticated/no access)'() {
+    void 'DI02 : test diffing 2 versioned folders (as authenticated/no access)'() {
         given:
-        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+        TestMergeData mergeData = builder.buildSimpleVersionedFoldersForMerging()
 
         when:
         loginAuthenticated()
@@ -1861,14 +1866,12 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         verifyNotFound response, mergeData.source
 
         cleanup:
-        removeValidIdObject(mergeData.source)
-        removeValidIdObject(mergeData.target)
-        removeValidIdObject(mergeData.commonAncestor)
+        builder.cleanupTestMergeData(mergeData)
     }
 
-    void 'D03 : test diffing 2 versioned folders (as reader of LH model)'() {
+    void 'DI03 : test diffing 2 versioned folders (as reader of LH model)'() {
         given:
-        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging(true, false)
+        TestMergeData mergeData = builder.buildSimpleVersionedFoldersForMerging(true, false)
 
         when: 'able to read right model only'
         loginReader()
@@ -1878,14 +1881,12 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         verifyNotFound response, mergeData.target
 
         cleanup:
-        removeValidIdObject(mergeData.source)
-        removeValidIdObject(mergeData.target)
-        removeValidIdObject(mergeData.commonAncestor)
+        builder.cleanupTestMergeData(mergeData)
     }
 
-    void 'D04 : test diffing 2 versioned folders (as reader of RH model)'() {
+    void 'DI04 : test diffing 2 versioned folders (as reader of RH model)'() {
         given:
-        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging(false, true)
+        TestMergeData mergeData = builder.buildSimpleVersionedFoldersForMerging(false, true)
 
         when:
         loginReader()
@@ -1895,15 +1896,13 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         verifyNotFound response, mergeData.source
 
         cleanup:
-        removeValidIdObject(mergeData.source)
-        removeValidIdObject(mergeData.target)
-        removeValidIdObject(mergeData.commonAncestor)
+        builder.cleanupTestMergeData(mergeData)
     }
 
-    void 'D05 : test diffing 2 simple versioned folders (as reader of both models)'() {
+    void 'DI05 : test diffing 2 simple versioned folders (as reader of both models)'() {
 
         given:
-        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+        TestMergeData mergeData = builder.buildSimpleVersionedFoldersForMerging()
 
         when:
         loginReader()
@@ -1913,7 +1912,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         verifyJsonResponse OK, '''{
   "leftId": "${json-unit.matches:id}",
   "rightId": "${json-unit.matches:id}",
-  "label": "Functional Test VersionedFolder 3",
+  "label": "Functional Test VersionedFolder Simple",
   "count": 1,
   "diffs": [
     {
@@ -1927,15 +1926,13 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 '''
 
         cleanup:
-        removeValidIdObject(mergeData.source)
-        removeValidIdObject(mergeData.target)
-        removeValidIdObject(mergeData.commonAncestor)
+        builder.cleanupTestMergeData(mergeData)
     }
 
-    void 'D06 : test diffing 2 complex versioned folders (as reader of both models)'() {
+    void 'DI06 : test diffing 2 complex versioned folders (as reader of both models)'() {
 
         given:
-        TestMergeData mergeData = buildComplexVersionedFoldersForMerging()
+        TestMergeData mergeData = builder.buildComplexModelsForMerging()
 
         when:
         loginReader()
@@ -1945,15 +1942,13 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         verifyJsonResponse OK, getExpectedComplexDiffJson()
 
         cleanup:
-        removeValidIdObject(mergeData.source)
-        removeValidIdObject(mergeData.target)
-        removeValidIdObject(mergeData.commonAncestor)
+        builder.cleanupTestMergeData(mergeData)
     }
 
 
     void 'MD01 : test finding merge difference of two versioned folders (as not logged in)'() {
         given:
-        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+        TestMergeData mergeData = builder.buildSimpleVersionedFoldersForMerging()
 
         when:
         GET("$mergeData.source/mergeDiff/$mergeData.target")
@@ -1962,14 +1957,12 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         verifyResponse NOT_FOUND, response
 
         cleanup:
-        removeValidIdObject(mergeData.source)
-        removeValidIdObject(mergeData.target)
-        removeValidIdObject(mergeData.commonAncestor)
+        builder.cleanupTestMergeData(mergeData)
     }
 
     void 'MD02 : test finding merge difference of two versioned folders (as authenticated/logged in)'() {
         given:
-        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+        TestMergeData mergeData = builder.buildSimpleVersionedFoldersForMerging()
 
         when:
         loginAuthenticated()
@@ -1979,14 +1972,12 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         verifyResponse NOT_FOUND, response
 
         cleanup:
-        removeValidIdObject(mergeData.source)
-        removeValidIdObject(mergeData.target)
-        removeValidIdObject(mergeData.commonAncestor)
+        builder.cleanupTestMergeData(mergeData)
     }
 
     void 'MD03 : test finding merge difference of two versioned folders (as reader)'() {
         given:
-        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+        TestMergeData mergeData = builder.buildSimpleVersionedFoldersForMerging()
 
         when:
         loginReader()
@@ -1998,14 +1989,12 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         responseBody().sourceId == mergeData.source
 
         cleanup:
-        removeValidIdObject(mergeData.source)
-        removeValidIdObject(mergeData.target)
-        removeValidIdObject(mergeData.commonAncestor)
+        builder.cleanupTestMergeData(mergeData)
     }
 
     void 'MD04 : test finding merge difference of two versioned folders (as editor)'() {
         given:
-        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+        TestMergeData mergeData = builder.buildSimpleVersionedFoldersForMerging()
 
         when:
         loginEditor()
@@ -2017,14 +2006,12 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         responseBody().sourceId == mergeData.source
 
         cleanup:
-        removeValidIdObject(mergeData.source)
-        removeValidIdObject(mergeData.target)
-        removeValidIdObject(mergeData.commonAncestor)
+        builder.cleanupTestMergeData(mergeData)
     }
 
     void 'MD05 : test finding merge difference of two complex versioned folders (as reader)'() {
         given:
-        TestMergeData mergeData = buildComplexVersionedFoldersForMerging()
+        TestMergeData mergeData = builder.buildComplexModelsForMerging()
 
         when:
         loginReader()
@@ -2034,14 +2021,12 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         verifyJsonResponse OK, expectedMergeDiffJson
 
         cleanup:
-        removeValidIdObject(mergeData.source)
-        removeValidIdObject(mergeData.target)
-        removeValidIdObject(mergeData.commonAncestor)
+        builder.cleanupTestMergeData(mergeData)
     }
 
     void 'MI01 : test merge into of two versioned folders (as not logged in)'() {
         given:
-        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+        TestMergeData mergeData = builder.buildSimpleVersionedFoldersForMerging()
 
         when:
         GET("$mergeData.source/mergeInto/$mergeData.target")
@@ -2050,14 +2035,12 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         verifyResponse NOT_FOUND, response
 
         cleanup:
-        removeValidIdObject(mergeData.source)
-        removeValidIdObject(mergeData.target)
-        removeValidIdObject(mergeData.commonAncestor)
+        builder.cleanupTestMergeData(mergeData)
     }
 
     void 'MI02 : test merge into of two versioned folders (as authenticated/logged in)'() {
         given:
-        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+        TestMergeData mergeData = builder.buildSimpleVersionedFoldersForMerging()
 
         when:
         loginAuthenticated()
@@ -2067,14 +2050,12 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         verifyResponse NOT_FOUND, response
 
         cleanup:
-        removeValidIdObject(mergeData.source)
-        removeValidIdObject(mergeData.target)
-        removeValidIdObject(mergeData.commonAncestor)
+        builder.cleanupTestMergeData(mergeData)
     }
 
     void 'MI03 : test merge into of two versioned folders (as reader)'() {
         given:
-        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+        TestMergeData mergeData = builder.buildSimpleVersionedFoldersForMerging()
 
         when:
         loginReader()
@@ -2084,15 +2065,13 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         verifyForbidden(response)
 
         cleanup:
-        removeValidIdObject(mergeData.source)
-        removeValidIdObject(mergeData.target)
-        removeValidIdObject(mergeData.commonAncestor)
+        builder.cleanupTestMergeData(mergeData)
     }
 
 
     void 'MI04 : test merging diff with no patch data'() {
         given:
-        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+        TestMergeData mergeData = builder.buildSimpleVersionedFoldersForMerging()
 
         when:
         loginEditor()
@@ -2104,14 +2083,12 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         responseBody().errors[0].message.contains('cannot be null')
 
         cleanup:
-        removeValidIdObject(mergeData.source)
-        removeValidIdObject(mergeData.target)
-        removeValidIdObject(mergeData.commonAncestor)
+        builder.cleanupTestMergeData(mergeData)
     }
 
     void 'MI05 : test merging diff with URI id not matching body id'() {
         given:
-        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+        TestMergeData mergeData = builder.buildSimpleVersionedFoldersForMerging()
 
         when:
         loginEditor()
@@ -2160,14 +2137,12 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         responseBody().id == mergeData.target
 
         cleanup:
-        removeValidIdObject(mergeData.source)
-        removeValidIdObject(mergeData.target)
-        removeValidIdObject(mergeData.commonAncestor)
+        builder.cleanupTestMergeData(mergeData)
     }
 
     void 'MI06 : test merge into of two versioned folders'() {
         given:
-        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+        TestMergeData mergeData = builder.buildSimpleVersionedFoldersForMerging()
 
         when:
         loginEditor()
@@ -2187,14 +2162,12 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         responseBody().id == mergeData.target
 
         cleanup:
-        removeValidIdObject(mergeData.source)
-        removeValidIdObject(mergeData.target)
-        removeValidIdObject(mergeData.commonAncestor)
+        builder.cleanupTestMergeData(mergeData)
     }
 
     void 'MI07 : test merge into of two complex versioned folders'() {
         given:
-        TestMergeData mergeData = buildComplexVersionedFoldersForMerging()
+        TestMergeData mergeData = builder.buildComplexModelsForMerging()
 
         when:
         loginReader()
@@ -2237,10 +2210,10 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                                               'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly',
                                               'modifyRightOnly', 'addRightOnly', 'modifyAndModifyReturningNoDifference',
                                               'addAndAddReturningNoDifference'] as Set
-        responseBody().items.find {dataClass -> dataClass.label == 'modifyAndDelete'}.description == 'Description'
-        responseBody().items.find {dataClass -> dataClass.label == 'addAndAddReturningDifference'}.description == 'DescriptionLeft'
-        responseBody().items.find {dataClass -> dataClass.label == 'modifyAndModifyReturningDifference'}.description == 'DescriptionLeft'
-        responseBody().items.find {dataClass -> dataClass.label == 'modifyLeftOnly'}.description == 'Description'
+        responseBody().items.find { dataClass -> dataClass.label == 'modifyAndDelete' }.description == 'Description'
+        responseBody().items.find { dataClass -> dataClass.label == 'addAndAddReturningDifference' }.description == 'DescriptionLeft'
+        responseBody().items.find { dataClass -> dataClass.label == 'modifyAndModifyReturningDifference' }.description == 'DescriptionLeft'
+        responseBody().items.find { dataClass -> dataClass.label == 'modifyLeftOnly' }.description == 'Description'
 
         when:
         GET("dataModels/$targetDataModelMap.dataModelId/dataClasses/$targetDataModelMap.existingClass/dataClasses", MAP_ARG, true)
@@ -2252,10 +2225,10 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         GET("dataModels/$targetDataModelMap.dataModelId/metadata", MAP_ARG, true)
 
         then:
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyOnSource'}.value == 'source has modified this'
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyAndDelete'}.value == 'source has modified this also'
-        !responseBody().items.find {it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource'}
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'addToSourceOnly'}
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyOnSource' }.value == 'source has modified this'
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyAndDelete' }.value == 'source has modified this also'
+        !responseBody().items.find { it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource' }
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'addToSourceOnly' }
 
         when:
         Map targetTerminologyMap = mergeData.targetMap.terminology
@@ -2269,25 +2242,23 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         then:
         responseBody().items.code as Set == ['AAARD', 'ALO', 'ARO', 'MAD', 'MAMRD', 'MLO'] as Set
-        responseBody().items.find {term -> term.code == 'MAD'}.description == 'Description'
-        responseBody().items.find {term -> term.code == 'AAARD'}.description == 'DescriptionLeft'
-        responseBody().items.find {term -> term.code == 'MAMRD'}.description == 'DescriptionLeft'
-        responseBody().items.find {term -> term.code == 'MLO'}.description == 'Description'
+        responseBody().items.find { term -> term.code == 'MAD' }.description == 'Description'
+        responseBody().items.find { term -> term.code == 'AAARD' }.description == 'DescriptionLeft'
+        responseBody().items.find { term -> term.code == 'MAMRD' }.description == 'DescriptionLeft'
+        responseBody().items.find { term -> term.code == 'MLO' }.description == 'Description'
 
         when:
         GET("terminologies/$targetTerminologyMap.terminologyId/metadata", MAP_ARG, true)
 
         then:
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyOnSource'}.value == 'source has modified this'
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyAndDelete'}.value == 'source has modified this also'
-        !responseBody().items.find {it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource'}
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'addToSourceOnly'}
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyOnSource' }.value == 'source has modified this'
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyAndDelete' }.value == 'source has modified this also'
+        !responseBody().items.find { it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource' }
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'addToSourceOnly' }
 
 
         cleanup:
-        removeValidIdObject(mergeData.source)
-        removeValidIdObject(mergeData.target)
-        removeValidIdObject(mergeData.commonAncestor)
+        builder.cleanupTestMergeData(mergeData)
     }
 
     Map<String, String> buildModelVersionTree() {
@@ -2371,7 +2342,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
     void cleanupModelVersionTree(Map<String, String> data) {
         if (!data) return
-        data.each {k, v ->
+        data.each { k, v ->
             removeValidIdObjectUsingTransaction(v)
         }
         cleanUpRoles(data.values())
@@ -2429,7 +2400,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
     void cleanupIds(String... ids) {
         loginEditor()
-        ids.each {id ->
+        ids.each { id ->
             DELETE("$id?permanent=true")
             response.status() in [NO_CONTENT, NOT_FOUND]
         }
@@ -2719,105 +2690,12 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         responseBody().id
     }
 
-    TestMergeData buildSimpleVersionedFoldersForMerging(boolean readLhs = true, boolean readRhs = true) {
-        String id = getValidId()
-        loginEditor()
-        PUT("$id/finalise", [versionChangeType: 'Major'])
-        verifyResponse OK, response
-        PUT("$id/newBranchModelVersion", [:])
-        verifyResponse CREATED, response
-        String mainId = responseBody().id
-        if (readRhs) addReaderShare(mainId)
-        PUT("$id/newBranchModelVersion", [branchName: 'left'])
-        verifyResponse CREATED, response
-        String leftId = responseBody().id
-        if (readLhs) addReaderShare(leftId)
-        logout()
-        new TestMergeData(commonAncestor: id, source: leftId, target: mainId)
-    }
-
-    TestMergeData buildComplexVersionedFoldersForMerging() {
-        TestMergeVersionedFolderBuilder builder = new TestMergeVersionedFolderBuilder(this)
-        // Somethings up with the MD, when running properly the diff happily returns the changed MD, but under test it doesnt.
-        // The MD exists in the daabase and is returned if using the MD endpoint but when calling folder.metadata the collection is empty.
-        // When run-app all the tables are correctly populated and the collection is not empty
-
-        String commonAncestorId = getValidId()
-        //        POST("$commonAncestorId/metadata", [namespace: 'functional.test', key: 'nothingDifferent', value: 'this shouldnt change'])
-        //        verifyResponse CREATED, response
-        //        POST("$commonAncestorId/metadata", [namespace: 'functional.test', key: 'modifyOnSource', value: 'some original value'])
-        //        verifyResponse CREATED, response
-        //        POST("$commonAncestorId/metadata", [namespace: 'functional.test', key: 'deleteFromSource', value: 'some other original value'])
-        //        verifyResponse CREATED, response
-        //        POST("$commonAncestorId/metadata", [namespace: 'functional.test', key: 'modifyAndDelete', value: 'some other original value 2'])
-        //        verifyResponse CREATED, response3
-
-        loginEditor()
-
-        builder.buildCommonAncestorDataModel(commonAncestorId)
-        builder.buildCommonAncestorTerminology(commonAncestorId)
-        builder.buildCommonAncestorCodeSet(commonAncestorId)
-
-        // Finalise and branch
-        PUT("$commonAncestorId/finalise", [versionChangeType: 'Major'])
-        verifyResponse OK, response
-        PUT("$commonAncestorId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
-        verifyResponse CREATED, response
-        String target = responseBody().id
-        addReaderShare(target)
-        PUT("$commonAncestorId/newBranchModelVersion", [branchName: 'source'])
-        verifyResponse CREATED, response
-        String source = responseBody().id
-        addReaderShare(source)
-
-        Map<String, Object> sourceMap = [:]
-        Map<String, Object> targetMap = [:]
-
-        logout()
-        loginEditor()
-
-        sourceMap.dataModel = builder.modifySourceDataModel(source)
-        targetMap.dataModel = builder.modifyTargetDataModel(target)
-
-        sourceMap.terminology = builder.modifySourceTerminology(source)
-        targetMap.terminology = builder.modifyTargetTerminology(target)
-
-        //        sourceMap.codeSet = builder.modifySourceCodeSet(source)
-        //        targetMap.codeSet = builder.modifyTargetCodeSet(target)
-
-        PUT("$source", [description: 'source description on the versioned folder'])
-        verifyResponse OK, response
-        PUT("$target", [description: 'Target modified description'])
-        verifyResponse OK, response
-
-
-        //        POST("$source/metadata", [namespace: 'functional.test', key: 'addToSourceOnly', value: 'adding to source only'])
-        //        verifyResponse CREATED, response
-        //        PUT("$source/metadata/$sourceMap.metadataModifyOnSource", [value: 'source has modified this'])
-        //        verifyResponse OK, response
-        //        PUT("$source/metadata/$sourceMap.metadataModifyAndDelete", [value: 'source has modified this also'])
-        //        verifyResponse OK, response
-        //        DELETE("$source/metadata/$sourceMap.metadataDeleteFromSource")
-        //        verifyResponse NO_CONTENT, response
-        //        DELETE("$target/metadata/$targetMap.metadataModifyAndDelete")
-        //        verifyResponse NO_CONTENT, response
-        logout()
-
-
-        new TestMergeData(commonAncestor: commonAncestorId,
-                          source: source,
-                          target: target,
-                          sourceMap: sourceMap,
-                          targetMap: targetMap
-        )
-    }
-
     String getExpectedComplexDiffJson() {
         '''{
   "leftId": "${json-unit.matches:id}",
   "rightId": "${json-unit.matches:id}",
-  "label": "Functional Test VersionedFolder 3",
-  "count": 44,
+  "label": "Functional Test VersionedFolder Complex",
+  "count": 45,
   "diffs": [
     {
       "description": {
@@ -2838,7 +2716,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
             "leftId": "${json-unit.matches:id}",
             "rightId": "${json-unit.matches:id}",
             "label": "Functional Test Terminology 1",
-            "count": 14,
+            "count": 22,
             "diffs": [
               {
                 "description": {
@@ -2853,16 +2731,16 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                       "value": {
                         "id": "${json-unit.matches:id}",
                         "namespace": "functional.test",
-                        "key": "addToSourceOnly",
-                        "value": "adding to source only"
+                        "key": "modifyAndDelete",
+                        "value": "source has modified this also"
                       }
                     },
                     {
                       "value": {
                         "id": "${json-unit.matches:id}",
                         "namespace": "functional.test",
-                        "key": "modifyAndDelete",
-                        "value": "source has modified this also"
+                        "key": "addToSourceOnly",
+                        "value": "adding to source only"
                       }
                     }
                   ],
@@ -2907,6 +2785,20 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                     {
                       "value": {
                         "id": "${json-unit.matches:id}",
+                        "label": "SALO: secondAddLeftOnly",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test Terminology 1",
+                            "domainType": "Terminology",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
                         "label": "ALO: addLeftOnly",
                         "breadcrumbs": [
                           {
@@ -2937,6 +2829,20 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                     {
                       "value": {
                         "id": "${json-unit.matches:id}",
+                        "label": "DLO: deleteLeftOnly",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test Terminology 1",
+                            "domainType": "Terminology",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
                         "label": "DAM: deleteAndModify",
                         "breadcrumbs": [
                           {
@@ -2961,20 +2867,6 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                           }
                         ]
                       }
-                    },
-                    {
-                      "value": {
-                        "id": "${json-unit.matches:id}",
-                        "label": "DLO: deleteLeftOnly",
-                        "breadcrumbs": [
-                          {
-                            "id": "${json-unit.matches:id}",
-                            "label": "Functional Test Terminology 1",
-                            "domainType": "Terminology",
-                            "finalised": false
-                          }
-                        ]
-                      }
                     }
                   ],
                   "modified": [
@@ -2982,36 +2874,6 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                       "leftId": "${json-unit.matches:id}",
                       "rightId": "${json-unit.matches:id}",
                       "label": "MAMRD: modifyAndModifyReturningDifference",
-                      "leftBreadcrumbs": [
-                        {
-                          "id": "${json-unit.matches:id}",
-                          "label": "Functional Test Terminology 1",
-                          "domainType": "Terminology",
-                          "finalised": false
-                        }
-                      ],
-                      "rightBreadcrumbs": [
-                        {
-                          "id": "${json-unit.matches:id}",
-                          "label": "Functional Test Terminology 1",
-                          "domainType": "Terminology",
-                          "finalised": false
-                        }
-                      ],
-                      "count": 1,
-                      "diffs": [
-                        {
-                          "description": {
-                            "left": "DescriptionLeft",
-                            "right": "DescriptionRight"
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "leftId": "${json-unit.matches:id}",
-                      "rightId": "${json-unit.matches:id}",
-                      "label": "AAARD: addAndAddReturningDifference",
                       "leftBreadcrumbs": [
                         {
                           "id": "${json-unit.matches:id}",
@@ -3067,98 +2929,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                           }
                         }
                       ]
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          {
-            "leftId": "${json-unit.matches:id}",
-            "rightId": "${json-unit.matches:id}",
-            "label": "Functional Test CodeSet 1",
-            "count": 8,
-            "diffs": [
-              {
-                "description": {
-                  "left": "DescriptionLeft",
-                  "right": null
-                }
-              },
-              {
-                "metadata": {
-                  "deleted": [
-                    {
-                      "value": {
-                        "id": "${json-unit.matches:id}",
-                        "namespace": "functional.test",
-                        "key": "addToSourceOnly",
-                        "value": "adding to source only"
-                      }
                     },
-                    {
-                      "value": {
-                        "id": "${json-unit.matches:id}",
-                        "namespace": "functional.test",
-                        "key": "modifyAndDelete",
-                        "value": "source has modified this also"
-                      }
-                    }
-                  ],
-                  "created": [
-                    {
-                      "value": {
-                        "id": "${json-unit.matches:id}",
-                        "namespace": "functional.test",
-                        "key": "deleteFromSource",
-                        "value": "some other original value"
-                      }
-                    }
-                  ],
-                  "modified": [
-                    {
-                      "leftId": "${json-unit.matches:id}",
-                      "rightId": "${json-unit.matches:id}",
-                      "namespace": "functional.test",
-                      "key": "modifyOnSource",
-                      "count": 1,
-                      "diffs": [
-                        {
-                          "value": {
-                            "left": "source has modified this",
-                            "right": "some original value"
-                          }
-                        }
-                      ]
-                    }
-                  ]
-                }
-              },
-              {
-                "branchName": {
-                  "left": "source",
-                  "right": "main"
-                }
-              },
-              {
-                "terms": {
-                  "deleted": [
-                    {
-                      "value": {
-                        "id": "${json-unit.matches:id}",
-                        "label": "ALO: addLeftOnly",
-                        "breadcrumbs": [
-                          {
-                            "id": "${json-unit.matches:id}",
-                            "label": "Functional Test Terminology 1",
-                            "domainType": "Terminology",
-                            "finalised": false
-                          }
-                        ]
-                      }
-                    }
-                  ],
-                  "modified": [
                     {
                       "leftId": "${json-unit.matches:id}",
                       "rightId": "${json-unit.matches:id}",
@@ -3190,6 +2961,195 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                       ]
                     }
                   ]
+                }
+              },
+              {
+                "termRelationshipTypes": {
+                  "deleted": [
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "sameActionAs",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test Terminology 1",
+                            "domainType": "Terminology",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "created": [
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "oppositeActionTo",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test Terminology 1",
+                            "domainType": "Terminology",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "modified": [
+                    {
+                      "leftId": "${json-unit.matches:id}",
+                      "rightId": "${json-unit.matches:id}",
+                      "label": "inverseOf",
+                      "leftBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test Terminology 1",
+                          "domainType": "Terminology",
+                          "finalised": false
+                        }
+                      ],
+                      "rightBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test Terminology 1",
+                          "domainType": "Terminology",
+                          "finalised": false
+                        }
+                      ],
+                      "count": 1,
+                      "diffs": [
+                        {
+                          "description": {
+                            "left": "inverseOf(Modified)",
+                            "right": null
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "termRelationships": {
+                  "deleted": [
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "similarSourceAction",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test Terminology 1",
+                            "domainType": "Terminology",
+                            "finalised": false
+                          },
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "ALO: addLeftOnly",
+                            "domainType": "Term"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "sameSourceActionType",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test Terminology 1",
+                            "domainType": "Terminology",
+                            "finalised": false
+                          },
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "ALO: addLeftOnly",
+                            "domainType": "Term"
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "created": [
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "similarSourceAction",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test Terminology 1",
+                            "domainType": "Terminology",
+                            "finalised": false
+                          },
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "MLO: modifyLeftOnly",
+                            "domainType": "Term"
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "modified": [
+                    {
+                      "leftId": "${json-unit.matches:id}",
+                      "rightId": "${json-unit.matches:id}",
+                      "label": "sameSourceActionType",
+                      "leftBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test Terminology 1",
+                          "domainType": "Terminology",
+                          "finalised": false
+                        },
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "SMLO: secondModifyLeftOnly",
+                          "domainType": "Term"
+                        }
+                      ],
+                      "rightBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test Terminology 1",
+                          "domainType": "Terminology",
+                          "finalised": false
+                        },
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "SMLO: secondModifyLeftOnly",
+                          "domainType": "Term"
+                        }
+                      ],
+                      "count": 1,
+                      "diffs": [
+                        {
+                          "description": {
+                            "left": "NewDescription",
+                            "right": null
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "leftId": "${json-unit.matches:id}",
+            "rightId": "${json-unit.matches:id}",
+            "label": "Functional Test CodeSet 1",
+            "count": 1,
+            "diffs": [
+              {
+                "branchName": {
+                  "left": "source",
+                  "right": "main"
                 }
               }
             ]
@@ -3593,6 +3553,6 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     }
 
     String getExpectedMergeDiffJson() {
-        TestMergeVersionedFolderBuilder.getExpectedMergeDiffJson()
+        VersionedFolderMergeBuilder.getExpectedMergeDiffJson()
     }
 }
