@@ -149,13 +149,14 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         if (dataClass.parentDataClass) {
             DataClass parent = dataClass.parentDataClass
             parent.removeFromDataClasses(dataClass)
-            parent.trackChanges()
+            if (flush) parent.trackChanges()
         }
         removeAssociations(dataClass)
         List<DataElement> dataElements = dataElementService.findAllByDataClass(dataClass)
         dataElementService.deleteAll(dataElements)
         dataClass.dataElements = []
         try {
+            if (flush) dataModel.trackChanges()
             dataClass.delete(flush: flush)
         } catch (Exception exception) {
             // updating the DM on a nested DC delete???

@@ -2215,11 +2215,11 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         responseBody().items.find { dataClass -> dataClass.label == 'modifyAndModifyReturningDifference' }.description == 'DescriptionLeft'
         responseBody().items.find { dataClass -> dataClass.label == 'modifyLeftOnly' }.description == 'Description'
 
-        //        when: TODO issue around Child DC deltion not 100% of the time
-        //        GET("dataModels/$targetDataModelMap.dataModelId/dataClasses/$targetDataModelMap.existingClass/dataClasses", MAP_ARG, true)
-        //
-        //        then:
-        //        responseBody().items.label as Set == ['addRightToExistingClass', 'addLeftToExistingClass'] as Set
+        when:
+        GET("dataModels/$targetDataModelMap.dataModelId/dataClasses/$targetDataModelMap.existingClass/dataClasses", MAP_ARG, true)
+
+        then:
+        responseBody().items.label as Set == ['addRightToExistingClass', 'addLeftToExistingClass'] as Set
 
         when:
         GET("dataModels/$targetDataModelMap.dataModelId/metadata", MAP_ARG, true)
