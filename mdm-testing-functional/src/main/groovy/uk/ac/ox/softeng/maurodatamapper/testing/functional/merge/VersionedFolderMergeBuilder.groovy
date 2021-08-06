@@ -26,34 +26,7 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         terminologyPluginMergeBuilder = new TerminologyPluginMergeBuilder(functionalSpec)
     }
 
-    TestMergeData buildComplexModelsForMerging() {
-        buildComplexModelsForMerging(null)
-    }
-
-    TestMergeData buildSimpleVersionedFoldersForMerging(boolean readLhs = true, boolean readRhs = true) {
-        loginEditor()
-        POST("versionedFolders", [
-            label: 'Functional Test VersionedFolder Simple'
-        ])
-        verifyResponse(CREATED, response)
-        String id = responseBody().id
-
-        PUT("versionedFolders/$id/finalise", [versionChangeType: 'Major'])
-        verifyResponse OK, response
-        PUT("versionedFolders/$id/newBranchModelVersion", [:])
-        verifyResponse CREATED, response
-        String mainId = responseBody().id
-        if (readRhs) addReaderShare(mainId)
-        PUT("versionedFolders/$id/newBranchModelVersion", [branchName: 'left'])
-        verifyResponse CREATED, response
-        String leftId = responseBody().id
-        if (readLhs) addReaderShare(leftId)
-        logout()
-        new TestMergeData(commonAncestor: id, source: leftId, target: mainId)
-    }
-
-    @Override
-    TestMergeData buildComplexModelsForMerging(String folderId) {
+    Map buildComplextModelsForBranching() {
         // Somethings up with the MD, when running properly the diff happily returns the changed MD, but under test it doesnt.
         // The MD exists in the daabase and is returned if using the MD endpoint but when calling folder.metadata the collection is empty.
         // When run-app all the tables are correctly populated and the collection is not empty
@@ -79,11 +52,51 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         // Finalise and branch
         PUT("versionedFolders/$commonAncestorId/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
-        PUT("versionedFolders/$commonAncestorId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+
+        [
+            commonAncestorId: commonAncestorId,
+            dataModelCaId   : dataModelCa,
+            terminologyCaId : terminologyCa,
+            codeSetCaId     : codeSetCa
+        ]
+    }
+
+    TestMergeData buildSimpleVersionedFoldersForMerging(boolean readLhs = true, boolean readRhs = true) {
+        loginEditor()
+        POST("versionedFolders", [
+            label: 'Functional Test VersionedFolder Simple'
+        ])
+        verifyResponse(CREATED, response)
+        String id = responseBody().id
+
+        PUT("versionedFolders/$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("versionedFolders/$id/newBranchModelVersion", [:])
+        verifyResponse CREATED, response
+        String mainId = responseBody().id
+        if (readRhs) addReaderShare(mainId)
+        PUT("versionedFolders/$id/newBranchModelVersion", [branchName: 'left'])
+        verifyResponse CREATED, response
+        String leftId = responseBody().id
+        if (readLhs) addReaderShare(leftId)
+        logout()
+        new TestMergeData(commonAncestor: id, source: leftId, target: mainId)
+    }
+
+    TestMergeData buildComplexModelsForMerging() {
+        buildComplexModelsForMerging(null)
+    }
+
+    @Override
+    TestMergeData buildComplexModelsForMerging(String folderId) {
+        loginEditor()
+
+        Map data = buildComplextModelsForBranching()
+        PUT("versionedFolders/$data.commonAncestorId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String target = responseBody().id
         addReaderShare(target)
-        PUT("versionedFolders/$commonAncestorId/newBranchModelVersion", [branchName: 'source'])
+        PUT("versionedFolders/$data.commonAncestorId/newBranchModelVersion", [branchName: 'source'])
         verifyResponse CREATED, response
         String source = responseBody().id
         addReaderShare(source)
@@ -122,7 +135,7 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         logout()
 
 
-        new TestMergeData(commonAncestor: commonAncestorId,
+        new TestMergeData(commonAncestor: data.commonAncestorId,
                           source: source,
                           target: target,
                           sourceMap: sourceMap,

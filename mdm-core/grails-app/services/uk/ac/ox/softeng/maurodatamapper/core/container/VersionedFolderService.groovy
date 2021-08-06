@@ -140,6 +140,20 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         domainServices
     }
 
+    Path getFullContextPathForFolder(Folder folder) {
+        getFullContextPathForFolder(folder,
+                                    Utils.parentClassIsAssignableFromChild(VersionedFolder, folder.class))
+    }
+
+    Path getFullContextPathForFolder(Folder folder, boolean foundVersionedFolder) {
+        if (folder.parentFolder && !foundVersionedFolder) {
+            Path parentPath = getFullContextPathForFolder(folder.parentFolder,
+                                                          Utils.parentClassIsAssignableFromChild(VersionedFolder, folder.parentFolder.class))
+            return Path.from(parentPath, folder)
+        }
+        Path.from(folder)
+    }
+
     @Override
     List<Folder> getAll(Collection<UUID> containerIds) {
         VersionedFolder.getAll(containerIds).findAll().collect { unwrapIfProxy(it) }
@@ -899,9 +913,8 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         Folder parentFolder =
             pathService.findResourceByPathFromRootResource(targetVersionedFolder, relativeParentPathToCopyTo,
                                                            getModelIdentifier(targetVersionedFolder)) as Folder
-        folderService.
-            copyFolder(folderToCopy, parentFolder, userSecurityPolicyManager.user, true, targetVersionedFolder.branchName,
-                       targetVersionedFolder.documentationVersion, false, userSecurityPolicyManager)
+        folderService.copyFolder(folderToCopy, parentFolder, userSecurityPolicyManager.user, true, targetVersionedFolder.branchName,
+                                 targetVersionedFolder.documentationVersion, false, userSecurityPolicyManager)
     }
 
     void processCreationPatchOfModel(Model modelToCopy, VersionedFolder targetVersionedFolder, Path relativeParentPathToCopyTo,

@@ -27,8 +27,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
+import uk.ac.ox.softeng.maurodatamapper.core.model.CopyPassType
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -81,14 +83,14 @@ class FolderService extends ContainerService<Folder> {
 
     @Override
     List<Folder> getAll(Collection<UUID> containerIds) {
-        Folder.getAll(containerIds).findAll().collect {unwrapIfProxy(it)}
+        Folder.getAll(containerIds).findAll().collect { unwrapIfProxy(it) }
     }
 
     @Override
     List<Folder> findAllReadableContainersBySearchTerm(UserSecurityPolicyManager userSecurityPolicyManager, String searchTerm) {
         log.debug('Searching readable folders for search term in label')
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Folder)
-        Folder.luceneTreeLabelSearch(readableIds.collect {it.toString()}, searchTerm)
+        Folder.luceneTreeLabelSearch(readableIds.collect { it.toString() }, searchTerm)
     }
 
     @Override
@@ -140,7 +142,7 @@ class FolderService extends ContainerService<Folder> {
 
     @Override
     List<Folder> list() {
-        Folder.list().collect {unwrapIfProxy(it)}
+        Folder.list().collect { unwrapIfProxy(it) }
     }
 
     Long count() {
@@ -161,15 +163,15 @@ class FolderService extends ContainerService<Folder> {
             return
         }
         if (permanent) {
-            folder.childFolders.each {delete(it, permanent, false)}
-            modelServices.each {it.deleteAllInContainer(folder)}
+            folder.childFolders.each { delete(it, permanent, false) }
+            modelServices.each { it.deleteAllInContainer(folder) }
             if (securityPolicyManagerService) {
                 securityPolicyManagerService.removeSecurityForSecurableResource(folder, null)
             }
             folder.trackChanges()
             folder.delete(flush: flush)
         } else {
-            folder.childFolders.each {delete(it)}
+            folder.childFolders.each { delete(it) }
             delete(folder)
         }
     }
@@ -279,7 +281,7 @@ class FolderService extends ContainerService<Folder> {
 
     List<Model> findAllModelsInFolder(Folder folder) {
         if (!modelServices) return []
-        modelServices.collectMany {service ->
+        modelServices.collectMany { service ->
             service.findAllByFolderId(folder.id)
         } as List<Model>
     }
@@ -290,19 +292,19 @@ class FolderService extends ContainerService<Folder> {
         diff.appendList(Model, 'models', thisModels, thatModels)
 
         // Recurse into child folder diffs
-        ArrayDiff<Folder> childFolderDiff = diff.diffs.find {it.fieldName == 'folders'}
+        ArrayDiff<Folder> childFolderDiff = diff.diffs.find { it.fieldName == 'folders' }
 
         if (childFolderDiff) {
             // Created folders wont have any need for a model diff as all models will be new
             // Deleted folders wont have any need for a model diff as all models will not exist
-            childFolderDiff.modified.each {childDiff ->
+            childFolderDiff.modified.each { childDiff ->
                 loadModelsIntoFolderObjectDiff(childDiff, childDiff.left, childDiff.right)
             }
         }
     }
 
     ModelService findModelServiceForModel(Model model) {
-        ModelService modelService = modelServices.find {it.handles(model.class)}
+        ModelService modelService = modelServices.find { it.handles(model.class) }
         if (!modelService) throw new ApiInternalException('MSXX', "No model service to handle model [${model.domainType}]")
         modelService
     }
@@ -310,42 +312,58 @@ class FolderService extends ContainerService<Folder> {
     Folder copyFolder(Folder original, Folder folderToCopyInto, User copier, boolean copyPermissions, String modelBranchName,
                       Version modelCopyDocVersion, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
         log.debug('Copying folder {}', original.id)
-        Folder copiedFolder = new Folder(deleted: false, parentFolder: folderToCopyInto, createdBy: copier, description: original.description,
-                                         label: original.label)
-        copyFolder(original, copiedFolder, original.label, copier, copyPermissions, modelBranchName, modelCopyDocVersion, throwErrors, userSecurityPolicyManager)
+        Folder copiedFolder = new Folder(deleted: false, parentFolder: folderToCopyInto)
+        copyFolder(original, copiedFolder, original.label, copier, copyPermissions, modelBranchName, modelCopyDocVersion, throwErrors,
+                   userSecurityPolicyManager)
     }
 
     Folder copyFolder(Folder original, Folder copiedFolder, String label, User copier, boolean copyPermissions, String modelBranchName,
                       Version modelCopyDocVersion, boolean throwErrors,
                       UserSecurityPolicyManager userSecurityPolicyManager) {
-        copiedFolder = copyBasicFolderInformation(original, copiedFolder, label, copier)
+        log.debug('Copying folder {}', original.id)
+        copyFolderPass(CopyPassType.FIRST_PASS, original, copiedFolder, label, copier, copyPermissions, modelBranchName, modelCopyDocVersion,
+                       throwErrors, userSecurityPolicyManager)
+        copyFolderPass(CopyPassType.SECOND_PASS, original, copiedFolder, label, copier, copyPermissions, modelBranchName, modelCopyDocVersion,
+                       throwErrors, userSecurityPolicyManager)
+        copyFolderPass(CopyPassType.THIRD_PASS, original, copiedFolder, label, copier, copyPermissions, modelBranchName, modelCopyDocVersion,
+                       throwErrors, userSecurityPolicyManager)
+        get(copiedFolder.id)
+    }
 
-        if (copyPermissions) {
-            if (throwErrors) {
-                throw new ApiNotYetImplementedException('MSXX', 'Folder permission copying')
+    Folder copyFolderPass(CopyPassType copyPassType, Folder original, Folder copiedFolder,
+                          String label, User copier, boolean copyPermissions,
+                          String modelBranchName,
+                          Version modelCopyDocVersion, boolean throwErrors,
+                          UserSecurityPolicyManager userSecurityPolicyManager) {
+
+        if (copyPassType == CopyPassType.FIRST_PASS) {
+            copiedFolder = copyBasicFolderInformation(original, copiedFolder, label, copier)
+
+            if (copyPermissions) {
+                if (throwErrors) {
+                    throw new ApiNotYetImplementedException('MSXX', 'Folder permission copying')
+                }
+                log.warn('Permission copying is not yet implemented')
+
             }
-            log.warn('Permission copying is not yet implemented')
+            log.debug('Validating and saving copy')
+            setFolderRefinesFolder(copiedFolder, original, copier)
 
+            if (copiedFolder.validate()) {
+                save(copiedFolder, flush: true, validate: false)
+                editService.createAndSaveEdit(EditTitle.COPY, copiedFolder.id, copiedFolder.domainType,
+                                              "Folder ${original.label} created as a copy of ${original.id}",
+                                              copier
+                )
+                if (securityPolicyManagerService) {
+                    userSecurityPolicyManager =
+                        securityPolicyManagerService.addSecurityForSecurableResource(copiedFolder, userSecurityPolicyManager.user,
+                                                                                     copiedFolder.label)
+                }
+            } else throw new ApiInvalidModelException('FS01', 'Copied Folder is invalid', copiedFolder.errors, messageSource)
         }
-        log.debug('Validating and saving copy')
-        setFolderRefinesFolder(copiedFolder, original, copier)
-
-        if (copiedFolder.validate()) {
-            save(copiedFolder, flush: true, validate: false)
-            editService.createAndSaveEdit(EditTitle.COPY, copiedFolder.id, copiedFolder.domainType,
-                                          "Folder ${original.label} created as a copy of ${original.id}",
-                                          copier
-            )
-            if (securityPolicyManagerService) {
-                userSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(copiedFolder, userSecurityPolicyManager.user,
-                                                                                                         copiedFolder.label)
-            }
-        } else throw new ApiInvalidModelException('FS01', 'Copied Folder is invalid', copiedFolder.errors, messageSource)
-
-
-        //        folderCopy.trackChanges()
-
-        copyFolderContents(original, copiedFolder, copier, copyPermissions, modelCopyDocVersion, modelBranchName, throwErrors, userSecurityPolicyManager)
+        copyFolderContents(original, copiedFolder, copier, copyPassType, copyPermissions, modelCopyDocVersion, modelBranchName, throwErrors,
+                           userSecurityPolicyManager)
 
         log.debug('Folder copy complete')
         copiedFolder
@@ -356,10 +374,10 @@ class FolderService extends ContainerService<Folder> {
         copy.label = label
         copy.description = original.description
 
-        metadataService.findAllByMultiFacetAwareItemId(original.id).each {copy.addToMetadata(it.namespace, it.key, it.value, copier.emailAddress)}
-        ruleService.findAllByMultiFacetAwareItemId(original.id).each {rule ->
+        metadataService.findAllByMultiFacetAwareItemId(original.id).each { copy.addToMetadata(it.namespace, it.key, it.value, copier.emailAddress) }
+        ruleService.findAllByMultiFacetAwareItemId(original.id).each { rule ->
             Rule copiedRule = new Rule(name: rule.name, description: rule.description, createdBy: copier.emailAddress)
-            rule.ruleRepresentations.each {ruleRepresentation ->
+            rule.ruleRepresentations.each { ruleRepresentation ->
                 copiedRule.addToRuleRepresentations(language: ruleRepresentation.language,
                                                     representation: ruleRepresentation.representation,
                                                     createdBy: copier.emailAddress)
@@ -367,7 +385,7 @@ class FolderService extends ContainerService<Folder> {
             copy.addToRules(copiedRule)
         }
 
-        semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id).each {link ->
+        semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id).each { link ->
             copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
                                     targetMultiFacetAwareItemId: link.targetMultiFacetAwareItemId,
                                     targetMultiFacetAwareItemDomainType: link.targetMultiFacetAwareItemDomainType,
@@ -378,6 +396,7 @@ class FolderService extends ContainerService<Folder> {
     }
 
     void copyFolderContents(Folder original, Folder folderCopy, User copier,
+                            CopyPassType copyPassType,
                             boolean copyPermissions,
                             Version copyDocVersion,
                             String branchName,
@@ -386,36 +405,76 @@ class FolderService extends ContainerService<Folder> {
         // If changing label then we need to prefix all the new models so the names dont introduce label conflicts as this situation arises in forking
         String labelSuffix = folderCopy.label == original.label ? '' : " (${folderCopy.label})"
 
-        log.debug('Copying models from original folder into copied folder')
-        modelServices.each {service ->
-            List<Model> originalModels = service.findAllByContainerId(original.id) as List<Model>
-            List<Model> copiedModels = originalModels.collect {Model model ->
-
-                service.copyModel(model, folderCopy, copier, copyPermissions,
-                                  "${model.label}${labelSuffix}",
-                                  copyDocVersion, branchName, throwErrors,
-                                  userSecurityPolicyManager)
-            }
-            // We can't save until after all copied as the save clears the sessions
-            copiedModels.each {copy ->
-                log.debug('Validating and saving model copy')
-                service.validate(copy)
-                if (copy.hasErrors()) {
-                    throw new ApiInvalidModelException('VFS02', 'Copied Model is invalid', copy.errors, messageSource)
-                }
-                service.saveModelWithContent(copy)
-            }
-        }
+        log.debug('{} copying models from original folder into copied folder', copyPassType)
+        copyModelsInFolder(original, folderCopy, copier, copyPassType, labelSuffix, copyPermissions, copyDocVersion, branchName,
+                           throwErrors, userSecurityPolicyManager)
 
         List<Folder> folders = findAllByParentId(original.id)
-        log.debug('Copying {} sub folders inside folder', folders.size())
-        folders.each {childFolder ->
-            Folder childCopy = new Folder(parentFolder: folderCopy, deleted: false)
-            copyFolder(childFolder, childCopy, childFolder.label, copier, copyPermissions, branchName, copyDocVersion, throwErrors, userSecurityPolicyManager)
+        log.debug('{} copying {} sub folders inside folder', copyPassType, folders.size())
+        folders.each { childFolder ->
+            Folder childCopy = folderCopy.childFolders.find { it.label } ?: new Folder(parentFolder: folderCopy, deleted: false)
+            copyFolderPass(copyPassType, childFolder, childCopy, childFolder.label, copier, copyPermissions, branchName, copyDocVersion,
+                           throwErrors, userSecurityPolicyManager)
+        }
+    }
+
+    void copyModelsInFolder(Folder originalFolder, Folder copiedFolder, User copier,
+                            CopyPassType copyPassType,
+                            String labelSuffix,
+                            boolean copyPermissions,
+                            Version copyDocVersion,
+                            String branchName,
+                            boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
+        modelServices.each { service ->
+            List<Model> originalModels = service.findAllByContainerId(originalFolder.id) as List<Model>
+            List<Model> copiedModels = originalModels.collect { Model originalModel ->
+
+                switch (copyPassType) {
+                    case CopyPassType.FIRST_PASS:
+                        // First pass copy/create all the models
+                        // Any links across models will remain pointing to the original VF models
+                        return service.copyModel(originalModel, copiedFolder, copier, copyPermissions,
+                                                 "${originalModel.label}${labelSuffix}",
+                                                 copyDocVersion, branchName, throwErrors,
+                                                 userSecurityPolicyManager)
+                    case CopyPassType.SECOND_PASS:
+                        // Second pass work through all the models and update the links across models
+                        Model copiedModel = service.findByFolderIdAndLabel(copiedFolder.id, "${originalModel.label}${labelSuffix}")
+                        return service.updateCopiedCrossModelLinks(copiedModel, originalModel)
+                    case CopyPassType.THIRD_PASS:
+                        return service.findByFolderIdAndLabel(copiedFolder.id, "${originalModel.label}${labelSuffix}")
+                }
+                null
+            }
+
+            if (copyPassType == CopyPassType.FIRST_PASS) {
+                // We can't save until after all copied as the save clears the sessions
+                copiedModels.each { copy ->
+                    log.debug('Validating and saving model copy')
+                    service.validate(copy)
+                    if (copy.hasErrors()) {
+                        throw new ApiInvalidModelException('VFS02', 'Copied Model is invalid', copy.errors, messageSource)
+                    }
+                    service.saveModelWithContent(copy)
+                }
+            }
+            if (copyPassType == CopyPassType.THIRD_PASS) {
+                // At the moment just make sure the session is flushed in the third pass, this makes sure all objects are the same
+                sessionFactory.currentSession.flush()
+                sessionFactory.currentSession.clear()
+            }
         }
     }
 
     void setFolderRefinesFolder(Folder source, Folder target, User catalogueUser) {
         source.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdBy: catalogueUser.emailAddress, targetMultiFacetAwareItem: target)
+    }
+
+    Path getFullPathForFolder(Folder folder) {
+        if (folder.parentFolder) {
+            Path parentPath = getFullPathForFolder(folder.parentFolder)
+            return Path.from(parentPath, folder)
+        }
+        Path.from(folder)
     }
 }

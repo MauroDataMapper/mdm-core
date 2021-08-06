@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedExcept
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.FieldDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
@@ -76,7 +77,9 @@ import java.time.ZoneOffset
 import java.util.function.Predicate
 
 @Slf4j
-abstract class ModelService<K extends Model> extends CatalogueItemService<K> implements SecurableResourceService<K>, VersionLinkAwareService<K> {
+abstract class ModelService<K extends Model>
+    extends CatalogueItemService<K>
+    implements SecurableResourceService<K>, VersionLinkAwareService<K> {
 
     protected static HibernateProxyHandler proxyHandler = new HibernateProxyHandler()
 
@@ -91,6 +94,9 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     @Autowired(required = false)
     Set<MultiFacetItemAwareService> multiFacetItemAwareServices
+
+    @Autowired
+    VersionedFolderService versionedFolderService
 
     @Autowired
     VersionLinkService versionLinkService
@@ -260,6 +266,10 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     boolean useParentIdForSearching(UUID parentId) {
         parentId
+    }
+
+    K findByFolderIdAndLabel(UUID folderId, String label) {
+        modelClass.byFolderId(folderId).eq('label', label).get() as K
     }
 
     K finaliseModel(K model, User user, Version requestedModelVersion, VersionChangeType versionChangeType,
@@ -1007,8 +1017,8 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
                                       String branchName,
                                       boolean throwErrors,
                                       UserSecurityPolicyManager userSecurityPolicyManager) {
-        Model copiedModel = copyModel(original, folderToCopyInto, copier, true, original.label, original.documentationVersion,
-                                      branchName, false, userSecurityPolicyManager)
+        Model copiedModel = copyModel(original, folderToCopyInto, copier, copyPermissions, label, copyDocVersion,
+                                      branchName, throwErrors, userSecurityPolicyManager)
 
         if ((copiedModel as GormValidateable).validate()) {
             saveModelWithContent(copiedModel)
@@ -1019,5 +1029,27 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         } else throw new ApiInvalidModelException('DMSXX', 'Copied Model is invalid',
                                                   (copiedModel as GormValidateable).errors, messageSource)
         copiedModel
+    }
+
+    void updateCopiedCrossModelLinks(K copiedModel, K originalModel) {
+        log.debug('Updating cross model links for [{}]', Path.from(copiedModel))
+
+        // TODO
+        // Find all SLs which were copied
+        // These will all point to the same target as the original model,
+        // However this method is designed to repoint them to the branched model which exists inside the same VF as this copied model
+        // ie VF A has Models B & C, VF D is a branch of A with models E & F, if SLs exist from B to C then SLs now exist from E to C
+        // we need to update them to E to F.
+        // If a model G exists outside VF A or D with links from B to G then SLs exist from E to G, these remain as they are
+    }
+
+    Path getFullPathForModel(Model model) {
+        // Returns the path for the model in the correct context
+        // If part of a VF then the context is from the VF otherwise the context is just the model
+        if (versionedFolderService.isVersionedFolderFamily(model.folder)) {
+            Path contextPath = versionedFolderService.getFullContextPathForFolder(model.folder)
+            return Path.from(contextPath, model)
+        }
+        Path.from(model)
     }
 }

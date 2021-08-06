@@ -132,7 +132,7 @@ class Path {
     Path clone() {
         Path local = this
         new Path().tap {
-            pathNodes = local.pathNodes.collect {it.clone()}
+            pathNodes = local.pathNodes.collect { it.clone() }
         }
     }
 
@@ -142,6 +142,21 @@ class Path {
             if (!this[i].matches(otherPath[i])) return false
         }
         true
+    }
+
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+
+        Path path = (Path) o
+
+        if (pathNodes != path.pathNodes) return false
+
+        return true
+    }
+
+    int hashCode() {
+        return (pathNodes != null ? pathNodes.hashCode() : 0)
     }
 
     static Path from(String path) {
@@ -168,6 +183,10 @@ class Path {
         from(from(parentPath), prefix, pathIdentifier)
     }
 
+    static Path from(Path parentPath, CreatorAware domain) {
+        from(parentPath, domain.pathPrefix, domain.pathIdentifier)
+    }
+
     static Path from(Path parentPath, Path childPath) {
         if (!parentPath) {
             return childPath.clone()
@@ -176,7 +195,7 @@ class Path {
         // Allows us to add 2 paths together which may share the same some of the same nodes
         Path cleanPath = parentPath.clone()
 
-        int firstSharedNode = cleanPath.pathNodes.findIndexOf {pn ->
+        int firstSharedNode = cleanPath.pathNodes.findIndexOf { pn ->
             pn == childPath.first()
         }
 

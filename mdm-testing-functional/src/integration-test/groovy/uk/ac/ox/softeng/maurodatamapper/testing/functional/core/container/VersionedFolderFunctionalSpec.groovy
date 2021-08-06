@@ -1212,6 +1212,102 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         cleanupIds(branchId, mainBranchId, commonAncestorId)
     }
 
+    void 'BMV09 : test creating a new branch model version of the complext VersionedFolder (as editor)'() {
+        given:
+        Map data = builder.buildComplextModelsForBranching()
+        String id = data.commonAncestorId
+        GET("terminologies/$data.terminologyCaId/terms", MAP_ARG, true)
+        verifyResponse(OK, response)
+        responseBody().count == 6
+        List<String> finalisedTermIds = responseBody().items.collect { it.id }
+        GET("codeSets/$data.codeSetCaId/terms", MAP_ARG, true)
+        verifyResponse(OK, response)
+        responseBody().count == 5
+        List<String> finalisedCodeSetTermIds = responseBody().items.collect { it.id }
+
+        expect:
+        finalisedCodeSetTermIds.every { it in finalisedTermIds }
+
+        when: 'logged in as editor'
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+
+        then:
+        verifyResponse CREATED, response
+        responseBody().id != id
+        responseBody().label == 'Functional Test VersionedFolder Complex'
+        responseBody().documentationVersion == '1.0.0'
+        responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+        !responseBody().modelVersion
+        String branchId = responseBody().id
+
+        when: 'getting the models inside the finalised folder'
+        GET("folders/$id/dataModels", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+
+        when: 'getting the models inside the finalised folder'
+        GET("folders/$id/terminologies", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+
+        when: 'getting the models inside the finalised folder'
+        GET("folders/$id/codeSets", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+
+        when: 'getting the models inside the new branch folder'
+        GET("folders/$branchId/dataModels", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+
+        when: 'getting the models inside the new branch folder'
+        GET("folders/$branchId/terminologies", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+        String branchedTerminologyId = responseBody().items.first().id
+
+        when: 'getting the models inside the new branch folder'
+        GET("folders/$branchId/codeSets", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+        String branchedCodeSetId = responseBody().items.first().id
+
+        when: 'checking the terms used inside the branched codeset they point to the branched terminology'
+        GET("terminologies/$branchedTerminologyId/terms", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 6
+        List<String> branchedTermIds = responseBody().items.collect { it.id }
+        !branchedTermIds.any { it in finalisedTermIds }
+
+        when:
+        GET("codeSets/$branchedCodeSetId/terms", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 5
+        List<String> branchedCodeSetTermIds = responseBody().items.collect { it.id }
+        !branchedCodeSetTermIds.any { it in finalisedTermIds }
+        branchedCodeSetTermIds.every { it in branchedTermIds }
+
+        cleanup:
+        cleanupIds(id, branchId)
+    }
+
     void 'FMV01 : test creating a new fork model of an unfinalised VersionedFolder (as reader)'() {
         given:
         Map data = getValidIdWithContent()

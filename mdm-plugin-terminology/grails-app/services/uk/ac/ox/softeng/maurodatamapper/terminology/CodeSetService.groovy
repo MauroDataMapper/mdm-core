@@ -38,9 +38,7 @@ import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
-import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipTypeService
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
-import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationshipService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.CodeSetJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
@@ -52,9 +50,7 @@ import groovy.util.logging.Slf4j
 @Transactional
 class CodeSetService extends ModelService<CodeSet> {
 
-    TermRelationshipTypeService termRelationshipTypeService
     TermService termService
-    TermRelationshipService termRelationshipService
     CodeSetJsonImporterService codeSetJsonImporterService
 
     @Override
@@ -64,7 +60,7 @@ class CodeSetService extends ModelService<CodeSet> {
 
     @Override
     List<CodeSet> getAll(Collection<UUID> ids) {
-        CodeSet.getAll(ids).findAll().collect {unwrapIfProxy(it)}
+        CodeSet.getAll(ids).findAll().collect { unwrapIfProxy(it) }
     }
 
     @Override
@@ -74,7 +70,7 @@ class CodeSetService extends ModelService<CodeSet> {
 
     @Override
     List<CodeSet> list() {
-        CodeSet.list().collect {unwrapIfProxy(it)}
+        CodeSet.list().collect { unwrapIfProxy(it) }
     }
 
     @Override
@@ -136,11 +132,13 @@ class CodeSetService extends ModelService<CodeSet> {
 
     @Override
     CodeSet saveModelWithContent(CodeSet model) {
+        log.debug('Saving {}({}) without batching', model.label, model.ident())
         save(failOnError: true, validate: false, flush: true, model)
     }
 
     @Override
     CodeSet saveModelNewContentOnly(CodeSet model) {
+        log.debug('Saving {}({}) without batching', model.label, model.ident())
         save(failOnError: true, validate: false, flush: true, model)
     }
 
@@ -204,32 +202,32 @@ class CodeSetService extends ModelService<CodeSet> {
 
         if (!objectPatchData.hasPatches()) return targetModel
 
-        objectPatchData.getDiffsWithContent().each {mergeFieldDiff ->
+        objectPatchData.getDiffsWithContent().each { mergeFieldDiff ->
 
             if (mergeFieldDiff.isFieldChange()) {
                 targetModel.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
             } else if (mergeFieldDiff.isMetadataChange()) {
                 mergeLegacyMetadataIntoCatalogueItem(mergeFieldDiff, targetModel, userSecurityPolicyManager)
             } else {
-                ModelItemService modelItemService = modelItemServices.find {it.handles(mergeFieldDiff.fieldName)}
+                ModelItemService modelItemService = modelItemServices.find { it.handles(mergeFieldDiff.fieldName) }
 
                 if (modelItemService) {
 
                     // Special handling for terms as CodeSets dont own terms
                     if (mergeFieldDiff.fieldName == 'terms') {
                         // apply deletions of children to target object
-                        mergeFieldDiff.deleted.each {mergeItemData ->
+                        mergeFieldDiff.deleted.each { mergeItemData ->
                             Term modelItem = modelItemService.get(mergeItemData.id) as Term
                             targetModel.removeFromTerms(modelItem)
                         }
 
                         // copy additions from source to target object
-                        mergeFieldDiff.created.each {mergeItemData ->
+                        mergeFieldDiff.created.each { mergeItemData ->
                             Term modelItem = modelItemService.get(mergeItemData.id) as Term
                             targetModel.addToTerms(modelItem)
                         }
                         // for modifications, recursively call this method
-                        mergeFieldDiff.modified.each {mergeObjectDiffData ->
+                        mergeFieldDiff.modified.each { mergeObjectDiffData ->
                             Term termToRemove = modelItemService.get(mergeObjectDiffData.leftId) as Term
                             Term termToAdd = modelItemService.get(mergeObjectDiffData.rightId) as Term
                             targetModel.removeFromTerms(termToRemove)
@@ -237,18 +235,18 @@ class CodeSetService extends ModelService<CodeSet> {
                         }
                     } else {
                         // apply deletions of children to target object
-                        mergeFieldDiff.deleted.each {mergeItemData ->
+                        mergeFieldDiff.deleted.each { mergeItemData ->
                             ModelItem modelItem = modelItemService.get(mergeItemData.id) as ModelItem
                             modelItemService.delete(modelItem)
                         }
 
                         // copy additions from source to target object
-                        mergeFieldDiff.created.each {mergeItemData ->
+                        mergeFieldDiff.created.each { mergeItemData ->
                             ModelItem modelItem = modelItemService.get(mergeItemData.id) as ModelItem
                             modelItemService.copy(targetModel, modelItem, userSecurityPolicyManager)
                         }
                         // for modifications, recursively call this method
-                        mergeFieldDiff.modified.each {mergeObjectDiffData ->
+                        mergeFieldDiff.modified.each { mergeObjectDiffData ->
                             ModelItem modelItem = modelItemService.get(mergeObjectDiffData.leftId) as ModelItem
                             modelItemService.
                                 mergeLegacyObjectPatchDataIntoModelItem(mergeObjectDiffData, modelItem, targetModel, userSecurityPolicyManager)
@@ -294,7 +292,7 @@ class CodeSetService extends ModelService<CodeSet> {
         copy.trackChanges()
 
         // Copy all the terms
-        original.terms?.each {term ->
+        original.terms?.each { term ->
             copy.addToTerms(term)
         }
 
@@ -335,7 +333,7 @@ class CodeSetService extends ModelService<CodeSet> {
 
     @Override
     List<CodeSet> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        CodeSet.byClassifierId(classifier.id).list().findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(CodeSet, it.id)}
+        CodeSet.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(CodeSet, it.id) }
     }
 
     @Override
@@ -477,7 +475,8 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    void processCreationPatchOfModelItem(ModelItem modelItem, Model targetModel, Path parentPathToCopyTo, UserSecurityPolicyManager userSecurityPolicyManager) {
+    void processCreationPatchOfModelItem(ModelItem modelItem, Model targetModel, Path parentPathToCopyTo,
+                                         UserSecurityPolicyManager userSecurityPolicyManager) {
         if (!Utils.parentClassIsAssignableFromChild(Term, modelItem.class)) {
             throw new ApiInternalException('CSXX', "Cannot create [${modelItem.domainType}] into a CodeSet")
         }
@@ -496,5 +495,37 @@ class CodeSetService extends ModelService<CodeSet> {
 
         (targetModel as CodeSet).removeFromTerms(modelItem as Term)
         save(targetModel as CodeSet, flush: false, validate: false)
+    }
+
+    @Override
+    void updateCopiedCrossModelLinks(CodeSet copiedModel, CodeSet originalModel) {
+        super.updateCopiedCrossModelLinks(copiedModel, originalModel)
+        // Find all Terms which were added to this codeSet
+        // These will all point to the same terminology terms as the original model,
+        // However this method is designed to repoint them to the branched model which exists inside the same VF as this copied model
+        // ie VF-A has CS-B & T-C, VF-D is a branch of A with CS-E & T-F, CS-E points all its terms to those inside T-C,
+        // we need to update them to use the terms inside T-F
+        // If a T-G exists outside VF-A or D which CS-B/CS-E uses then the terms remain as-is
+        List<Term> terms = new ArrayList<>(copiedModel.terms)
+        Path copiedCodeSetPath = getFullPathForModel(copiedModel)
+        Path originalCodeSetPath = getFullPathForModel(originalModel)
+        terms.each { term ->
+
+            Terminology terminology = term.terminology
+            Path fullContextTerminologyPath = getFullPathForModel(terminology)
+            Path termPath = Path.from(terminology, term)
+            if (originalCodeSetPath.parent == fullContextTerminologyPath.parent) {
+                log.debug('Original codeset is inside the same context path as terminology for term [{}]', termPath)
+                Term branchedTerm = pathService.findResourceByPathFromRootResource(copiedModel, termPath,
+                                                                                   copiedCodeSetPath.last().modelIdentifier) as Term
+                if (branchedTerm) {
+                    copiedModel.removeFromTerms(term)
+                    copiedModel.addToTerms(branchedTerm)
+                } else {
+                    log.error('Branched term not found')
+                }
+            }
+        }
+        save(copiedModel, flush: false, validate: false)
     }
 }
