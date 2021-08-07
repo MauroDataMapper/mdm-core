@@ -17,8 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -60,15 +61,19 @@ class ReferenceDataValue implements CreatorAware, Diffable<ReferenceDataValue> {
     }
 
     @Override
-    String getDiffIdentifier() {
-        this.id
+    String getPathPrefix() {
+        'rdv'
+    }
+
+    @Override
+    String getPathIdentifier() {
+        rowNumber
     }
 
     ObjectDiff<ReferenceDataValue> diff(ReferenceDataValue otherValue) {
         String lhsId = this.id ?: "Left:Unsaved_${this.domainType}"
         String rhsId = otherValue.id ?: "Right:Unsaved_${otherValue.domainType}"
-        ObjectDiff
-            .builder(ReferenceDataValue)
+        DiffBuilder.objectDiff(ReferenceDataValue)
             .leftHandSide(lhsId, this)
             .rightHandSide(rhsId, otherValue)
             .appendNumber('rowNumber', this.rowNumber, otherValue.rowNumber)

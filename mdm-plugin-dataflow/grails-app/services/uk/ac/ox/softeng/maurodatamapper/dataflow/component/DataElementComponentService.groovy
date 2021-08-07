@@ -25,9 +25,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlow
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
@@ -241,12 +241,9 @@ TODO data flow copying
         def rawSourceDataElements = dataElementComponent.sourceDataElements
         Set<DataElement> resolvedSourceDataElements = []
 
-        rawSourceDataElements.each { sde ->
-            String path = "dm:${dataFlow.source.label}|dc:${sde.dataClass.label}|de:${sde.label}"
-            DataElement sourceDataElement = pathService.findCatalogueItemByPath(
-                    PublicAccessSecurityPolicyManager.instance,
-                    [path: path, catalogueItemDomainType: DataModel.simpleName]
-            )
+        rawSourceDataElements.each {sde ->
+            Path path = Path.from(dataFlow.source, sde.dataClass, sde)
+            DataElement sourceDataElement = pathService.findResourceByPathFromRootClass(DataModel, path) as DataElement
 
             if (sourceDataElement) {
                 resolvedSourceDataElements.add(sourceDataElement)
@@ -260,12 +257,9 @@ TODO data flow copying
         def rawTargetDataElements = dataElementComponent.targetDataElements
         Set<DataElement> resolvedTargetDataElements = []
 
-        rawTargetDataElements.each { tde ->
-            String path = "dm:${dataFlow.target.label}|dc:${tde.dataClass.label}|de:${tde.label}"
-            DataElement targetDataElement = pathService.findCatalogueItemByPath(
-                    PublicAccessSecurityPolicyManager.instance,
-                    [path: path, catalogueItemDomainType: DataModel.simpleName]
-            )
+        rawTargetDataElements.each {tde ->
+            Path path = Path.from(dataFlow.target, tde.dataClass, tde)
+            DataElement targetDataElement = pathService.findResourceByPathFromRootClass(DataModel, path) as DataElement
 
             if (targetDataElement) {
                 resolvedTargetDataElements.add(targetDataElement)

@@ -12,6 +12,6 @@ json {
     }
     finalised terminologyFileImporterProviderServiceParameters.finalised
     modelName terminologyFileImporterProviderServiceParameters.modelName
-    folderId terminologyFileImporterProviderServiceParameters.folderId.toString()
+    folderId terminologyFileImporterProviderServiceParameters.folderId
     importAsNewDocumentationVersion terminologyFileImporterProviderServiceParameters.importAsNewDocumentationVersion
 }

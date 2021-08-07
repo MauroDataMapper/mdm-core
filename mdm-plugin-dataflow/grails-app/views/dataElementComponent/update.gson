@@ -7,4 +7,4 @@ model {
 
 }
 
-json tmpl.fullDataElementComponent(dataElementComponent: dataElementComponent, userSecurityPolicyManager: userSecurityPolicyManager)
+json tmpl.dataElementComponent_full(dataElementComponent: dataElementComponent, userSecurityPolicyManager: userSecurityPolicyManager)

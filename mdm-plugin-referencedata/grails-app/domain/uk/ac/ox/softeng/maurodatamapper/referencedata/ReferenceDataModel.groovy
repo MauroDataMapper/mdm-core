@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
@@ -30,7 +30,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
-import uk.ac.ox.softeng.maurodatamapper.core.search.StandardSearch
+import uk.ac.ox.softeng.maurodatamapper.core.search.ModelSearch
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.ParentOwnedLabelCollectionValidator
 import uk.ac.ox.softeng.maurodatamapper.hibernate.VersionUserType
@@ -40,7 +40,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMeta
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataValue
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
-import uk.ac.ox.softeng.maurodatamapper.util.Version
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
@@ -95,7 +95,7 @@ class ReferenceDataModel implements Model<ReferenceDataModel>, ReferenceSummaryM
     ]
 
     static search = {
-        CallableSearch.call(StandardSearch, delegate)
+        CallableSearch.call(ModelSearch, delegate)
     }
 
     ReferenceDataModel() {
@@ -114,6 +114,11 @@ class ReferenceDataModel implements Model<ReferenceDataModel>, ReferenceSummaryM
         ReferenceDataModel.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'rdm'
+    }
+
     ObjectDiff<ReferenceDataModel> diff(ReferenceDataModel otherDataModel) {
         modelDiffBuilder(ReferenceDataModel, this, otherDataModel)
             .appendList(ReferenceDataType, 'referenceDataTypes', this.referenceDataTypes, otherDataModel.referenceDataTypes)
@@ -122,7 +127,7 @@ class ReferenceDataModel implements Model<ReferenceDataModel>, ReferenceSummaryM
 
     def beforeValidate() {
         beforeValidateCatalogueItem()
-        this.referenceDataTypes?.each { it.beforeValidate() }
+        this.referenceDataTypes?.each {it.beforeValidate()}
         this.referenceDataElements?.each { it.beforeValidate() }
     }
 
@@ -144,7 +149,7 @@ class ReferenceDataModel implements Model<ReferenceDataModel>, ReferenceSummaryM
 
     int countReferenceDataElementsByLabel(String label) {
         this.referenceDataElements?.count { it.label == label } ?: 0
-    }    
+    }
 
     @Override
     String getEditLabel() {

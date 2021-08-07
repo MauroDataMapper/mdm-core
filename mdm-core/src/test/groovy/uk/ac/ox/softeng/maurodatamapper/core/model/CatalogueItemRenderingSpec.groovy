@@ -124,9 +124,9 @@ class CatalogueItemRenderingSpec extends BaseUnitSpec implements JsonViewTest, J
 
     void 'test rendering model full catalogue item'() {
         when:
-        def json = render(template: "/catalogueItem/fullCatalogueItem", model: [catalogueItem            : basicModel,
-                                                                                userSecurityPolicyManager:
-                                                                                    PublicAccessSecurityPolicyManager.instance])
+        def json = render(template: "/catalogueItem/catalogueItem_full", model: [catalogueItem            : basicModel,
+                                                                                 userSecurityPolicyManager:
+                                                                                     PublicAccessSecurityPolicyManager.instance])
 
         then:
         verifyJson('''{
@@ -141,9 +141,9 @@ class CatalogueItemRenderingSpec extends BaseUnitSpec implements JsonViewTest, J
 
     void 'test rendering of model item full catalogue item'() {
         when:
-        def json = render(template: "/catalogueItem/fullCatalogueItem", model: [catalogueItem            : basicModelItem,
-                                                                                userSecurityPolicyManager:
-                                                                                    PublicAccessSecurityPolicyManager.instance])
+        def json = render(template: "/catalogueItem/catalogueItem_full", model: [catalogueItem            : basicModelItem,
+                                                                                 userSecurityPolicyManager:
+                                                                                     PublicAccessSecurityPolicyManager.instance])
 
         then:
         verifyJson('''{

@@ -17,25 +17,26 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.rule.RuleRepresentation
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class Rule implements MultiFacetItemAware, CreatorAware, Diffable<Rule> {
+class Rule implements MultiFacetItemAware, Diffable<Rule> {
 
     UUID id
 
     String name
     String description
+    Set ruleRepresentations
 
     static hasMany = [
         ruleRepresentations: RuleRepresentation
@@ -74,6 +75,15 @@ class Rule implements MultiFacetItemAware, CreatorAware, Diffable<Rule> {
         Rule.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'ru'
+    }
+
+    @Override
+    String getPathIdentifier() {
+        name
+    }
 
     @Override
     String toString() {
@@ -87,16 +97,12 @@ class Rule implements MultiFacetItemAware, CreatorAware, Diffable<Rule> {
 
     @Override
     ObjectDiff<Rule> diff(Rule obj) {
-        ObjectDiff.builder(Rule)
+        DiffBuilder.objectDiff(Rule)
             .leftHandSide(id.toString(), this)
             .rightHandSide(obj.id.toString(), obj)
             .appendString('name', this.name, obj.name)
             .appendString('description', this.description, obj.description)
-    }
-
-    @Override
-    String getDiffIdentifier() {
-        "${this.name}.${this.description}"
+            .appendList(RuleRepresentation, 'ruleRepresentations', this.ruleRepresentations, obj.ruleRepresentations)
     }
 
     static DetachedCriteria<Rule> by() {
@@ -128,5 +134,5 @@ class Rule implements MultiFacetItemAware, CreatorAware, Diffable<Rule> {
 
     static DetachedCriteria<Rule> byName(String name) {
         new DetachedCriteria<Rule>(Rule).eq('name', name)
-    }    
+    }
 }

@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
@@ -165,6 +165,10 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         DataClass.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'dc'
+    }
 
     @Field(index = Index.YES, bridge = @FieldBridge(impl = UUIDBridge))
     UUID getModelId() {
@@ -229,8 +233,8 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
 
     @Override
     String getDiffIdentifier() {
-        if (!parentDataClass) return this.label
-        parentDataClass.getDiffIdentifier() + "/" + this.label
+        if (!parentDataClass) return this.pathIdentifier
+        "${parentDataClass.getDiffIdentifier()}/${this.pathIdentifier}"
     }
 
     CatalogueItem getParent() {
@@ -292,6 +296,10 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
 
     static DetachedCriteria<DataClass> byDataModelIdAndParentDataClassId(UUID dataModelId, UUID dataClassId) {
         byDataModelId(dataModelId).eq('parentDataClass.id', dataClassId)
+    }
+
+    static DetachedCriteria<DataClass> byParentDataClassId(UUID dataClassId) {
+        new DetachedCriteria<DataClass>(DataClass).eq('parentDataClass.id', dataClassId)
     }
 
     static DetachedCriteria<DataClass> byDataModelIdAndParentDataClassIdIncludingImported(UUID dataModelId, UUID dataClassId) {

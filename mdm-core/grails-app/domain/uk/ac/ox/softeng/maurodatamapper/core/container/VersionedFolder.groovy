@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.InformationAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
@@ -27,11 +29,12 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.hibernate.VersionUserType
+import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 
 import grails.gorm.DetachedCriteria
 import grails.plugins.hibernate.search.HibernateSearchApi
 
-class VersionedFolder extends Folder implements VersionAware, VersionLinkAware {
+class VersionedFolder extends Folder implements VersionAware, VersionLinkAware, Diffable<VersionedFolder> {
 
     Authority authority
 
@@ -44,13 +47,13 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware {
         CallableConstraints.call(InformationAwareConstraints, delegate)
         CallableConstraints.call(VersionAwareConstraints, delegate)
 
-        label validator: {val, obj -> new VersionedFolderLabelValidator(obj).isValid(val)}
+        label validator: { val, obj -> new VersionedFolderLabelValidator(obj).isValid(val) }
         parentFolder nullable: true
-        childFolders validator: {val, obj ->
+        childFolders validator: { val, obj ->
             if (obj.ident()) {
                 return VersionedFolder.countByParentFolder(obj) ? ['Cannot have any VersionedFolders inside a VersionedFolder'] : true
             }
-            val.any {it.domainType == VersionedFolder.simpleName} ? ['Cannot have any VersionedFolders inside a VersionedFolder'] : true
+            val.any { it.domainType == VersionedFolder.simpleName } ? ['Cannot have any VersionedFolders inside a VersionedFolder'] : true
         }
     }
 
@@ -67,6 +70,26 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware {
     @Override
     String getDomainType() {
         VersionedFolder.simpleName
+    }
+
+    @Override
+    ObjectDiff<VersionedFolder> diff(VersionedFolder that) {
+        folderDiffBuilder(VersionedFolder, this, that)
+            .appendBoolean('finalised', this.finalised, that.finalised)
+            .appendString('documentationVersion', this.documentationVersion.toString(), that.documentationVersion.toString())
+            .appendString('modelVersion', this.modelVersion.toString(), that.modelVersion.toString())
+            .appendString('branchName', this.branchName, that.branchName)
+            .appendOffsetDateTime('dateFinalised', this.dateFinalised, that.dateFinalised)
+    }
+
+    @Override
+    String getPathPrefix() {
+        'vf'
+    }
+
+    @Override
+    String getPathIdentifier() {
+        "${label}${PathNode.MODEL_PATH_IDENTIFIER_SEPARATOR}${modelVersion ?: branchName}"
     }
 
     static DetachedCriteria<VersionedFolder> by() {
@@ -118,7 +141,7 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware {
         by()
             .isNotNull('path')
             .ne('path', '')
-            .findAll {f ->
+            .findAll { f ->
                 ids.any {
                     it in f.path.split('/')
                 }

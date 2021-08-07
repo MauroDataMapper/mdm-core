@@ -35,7 +35,6 @@ import spock.lang.Shared
 @Rollback
 @Slf4j
 @SuppressWarnings("DuplicatedCode")
-//@Stepwise
 abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBindTerminologyImporterProviderService> extends BaseImportExportTerminologySpec {
 
     abstract K getImporterService()

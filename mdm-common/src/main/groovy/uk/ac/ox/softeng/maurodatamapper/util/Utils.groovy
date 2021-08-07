@@ -85,7 +85,8 @@ class Utils {
     }
 
     static boolean parentClassIsAssignableFromChild(Class<? extends Object> parentClass, Class<? extends Object> childClass) {
-        childClass.classLoader.loadClass(parentClass.name).isAssignableFrom(childClass)
+        // Try the standard way of checking and if that fails just check the classLoader which may be different due to reloading
+        parentClass.isAssignableFrom(childClass) ?: childClass.classLoader.loadClass(parentClass.name).isAssignableFrom(childClass)
     }
 
     static void toUuid(Map<String, Object> map, String key) {

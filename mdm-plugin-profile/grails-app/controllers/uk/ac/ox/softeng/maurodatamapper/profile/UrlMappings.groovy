@@ -38,9 +38,9 @@ class UrlMappings {
 
                     // Provide multiple ways to obtain profile of a multiFacetAware
                     get "/${multiFacetAwareItemDomainType}/${multiFacetAwareItemId}"(controller: 'profile', action: 'show')
-
                     post "/$multiFacetAwareItemDomainType/$multiFacetAwareItemId"(controller: 'profile', action: 'save')
                     post "/$multiFacetAwareItemDomainType/$multiFacetAwareItemId/validate"(controller: 'profile', action: 'validate')
+                    delete "/$multiFacetAwareItemDomainType/$multiFacetAwareItemId"(controller: 'profile', action: 'delete')
                 }
             }
 

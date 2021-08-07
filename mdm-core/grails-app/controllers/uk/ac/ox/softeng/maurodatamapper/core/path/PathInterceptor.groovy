@@ -18,13 +18,21 @@
 package uk.ac.ox.softeng.maurodatamapper.core.path
 
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmInterceptor
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 
 class PathInterceptor implements MdmInterceptor {
 
     boolean before() {
-        // Allow anyone to retrieve by path as returned item will be constrained by what they can read
-        actionName == 'show'
+        if (actionName == 'listAllPrefixMappings') return true
+
+        mapDomainTypeToClass('securableResource', true)
+        params.path = Path.from(params.path)
+
+        if (params.containsKey('securableResourceId')) {
+            return currentUserSecurityPolicyManager.userCanReadSecuredResourceId(params.securableResourceClass, params.securableResourceId) ?:
+                   notFound(params.securableResourceClass, params.securableResourceId)
+        }
+
+        true
     }
-
-
 }

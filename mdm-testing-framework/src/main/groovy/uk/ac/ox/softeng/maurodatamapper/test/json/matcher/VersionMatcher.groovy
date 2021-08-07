@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.test.json.matcher
 
-import uk.ac.ox.softeng.maurodatamapper.util.Version
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import org.hamcrest.BaseMatcher
 import org.hamcrest.Description

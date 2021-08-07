@@ -1,0 +1,21 @@
+import uk.ac.ox.softeng.maurodatamapper.dataflow.component.DataClassComponent
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+
+inherits template: '/catalogueItem/catalogueItem_full', model: [catalogueItem               : dataClassComponent,
+                                                                userSecurityPolicyManager   : userSecurityPolicyManager,
+                                                                owningSecurableResourceId   : dataClassComponent.model.id,
+                                                                owningSecurableResourceClass: DataModel]
+model {
+    DataClassComponent dataClassComponent
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json {
+    definition dataClassComponent.definition
+
+    dataFlow dataClassComponent.dataFlow.id
+
+    sourceDataClasses g.render(dataClassComponent.sourceDataClasses)
+    targetDataClasses g.render(dataClassComponent.targetDataClasses)
+}

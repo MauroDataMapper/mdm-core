@@ -20,7 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.traits.domain
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.model.container.ClassifierAware
-import uk.ac.ox.softeng.maurodatamapper.util.Version
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import org.grails.datastore.gorm.GormEntityApi
 import org.grails.datastore.gorm.GormValidateable

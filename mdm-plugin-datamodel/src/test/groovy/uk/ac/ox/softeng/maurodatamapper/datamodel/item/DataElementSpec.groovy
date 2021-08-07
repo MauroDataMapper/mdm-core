@@ -17,7 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
@@ -143,5 +144,57 @@ class DataElementSpec extends ModelItemSpec<DataElement> implements DomainUnitTe
         checkAndSave(child)
         checkAndSave(dataClass)
         checkAndSave(other)
+    }
+
+    void 'DER01: test diffing DE rules with identical rules'() {
+        DataElement a = new DataElement(label: 'Functional Data Element', dataType: dataType).addToRules(name: 'rule 1')
+            .addToRules(new Rule(name: 'rule 2').addToRuleRepresentations(language: 'd', representation: 'a+b'))
+        DataElement b = new DataElement(label: 'Functional Data Element', dataType: dataType).addToRules(name: 'rule 1')
+            .addToRules(new Rule(name: 'rule 2').addToRuleRepresentations(language: 'd', representation: 'a+b'))
+
+        when:
+        ObjectDiff diff = a.diff(b)
+
+        then:
+        diff.objectsAreIdentical()
+    }
+
+    void 'DER02: test diffing DE rules with different rule names'() {
+        DataElement a = new DataElement(label: 'Functional Data Element', dataType: dataType).addToRules(name: 'rule 1')
+            .addToRules(new Rule(name: 'rule 2').addToRuleRepresentations(language: 'd', representation: 'a+b'))
+        DataElement b = new DataElement(label: 'Functional Data Element', dataType: dataType).addToRules(name: 'rule 1')
+            .addToRules(new Rule(name: 'rule 3').addToRuleRepresentations(language: 'd', representation: 'a+b'))
+
+        when:
+        ObjectDiff diff = a.diff(b)
+
+        then:
+        diff.numberOfDiffs == 2
+    }
+
+    void 'DER03: test diffing DE rules with different languages rules'() {
+        DataElement a = new DataElement(label: 'Functional Data Element', dataType: dataType).addToRules(name: 'rule 1')
+            .addToRules(new Rule(name: 'rule 2').addToRuleRepresentations(language: 'd', representation: 'a+b'))
+        DataElement b = new DataElement(label: 'Functional Data Element', dataType: dataType).addToRules(name: 'rule 1')
+            .addToRules(new Rule(name: 'rule 2').addToRuleRepresentations(language: 'e', representation: 'a+b'))
+
+        when:
+        ObjectDiff diff = a.diff(b)
+
+        then:
+        diff.numberOfDiffs == 2
+    }
+
+    void 'DER04: test diffing DE rules with different rules representations'() {
+        DataElement a = new DataElement(label: 'Functional Data Element', dataType: dataType).addToRules(name: 'rule 1')
+            .addToRules(new Rule(name: 'rule 2').addToRuleRepresentations(language: 'd', representation: 'a+b'))
+        DataElement b = new DataElement(label: 'Functional Data Element', dataType: dataType).addToRules(name: 'rule 1')
+            .addToRules(new Rule(name: 'rule 2').addToRuleRepresentations(language: 'd', representation: 'a+e'))
+
+        when:
+        ObjectDiff diff = a.diff(b)
+
+        then:
+        diff.objectsAreIdentical()
     }
 }

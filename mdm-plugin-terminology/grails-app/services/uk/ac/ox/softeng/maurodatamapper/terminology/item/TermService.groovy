@@ -211,7 +211,7 @@ class TermService extends ModelItemService<Term> {
         Term.byTerminologyIdAndNotChild(terminologyId).list(pagination)
     }
 
-    Term copy(Model copiedModel, Term original, UserSecurityPolicyManager userSecurityPolicyManager) {
+    Term copy(Model copiedModel, Term original, CatalogueItem nonModelParent, UserSecurityPolicyManager userSecurityPolicyManager) {
         Term copy = copyTerm(original, userSecurityPolicyManager.user, userSecurityPolicyManager)
         if (copiedModel.instanceOf(Terminology)) {
             (copiedModel as Terminology).addToTerms(copy)
@@ -453,8 +453,24 @@ class TermService extends ModelItemService<Term> {
      */
 
     @Override
-    Term findByParentAndLabel(CatalogueItem parentCatalogueItem, String label) {
-        findTerm(parentCatalogueItem, label)
+    Term findByParentIdAndLabel(UUID parentId, String label) {
+        Term term = Term.byCodeSetId(parentId).eq('label', label).get()
+        if (!term) {
+            term = Term.byTerminologyId(parentId).eq('label', label).get()
+        }
+        term
+    }
+
+    @Override
+    Term findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        // Older code used the full term label which is not great but we should be able to handle this here
+        String legacyHandlingPathIdentifier = pathIdentifier.split(':')[0]
+
+        Term term = Term.byCodeSetId(parentId).eq('code', legacyHandlingPathIdentifier).get()
+        if (!term) {
+            term = Term.byTerminologyId(parentId).eq('code', legacyHandlingPathIdentifier).get()
+        }
+        term
     }
 
     @Override

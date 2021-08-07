@@ -22,8 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
-import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
-import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
+import uk.ac.ox.softeng.maurodatamapper.version.VersionChangeType
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -118,6 +117,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
             'show',
             'createNewVersions',
             'newForkModel',
+            'finalisedReadActions'
         ].sort()
     }
 
@@ -131,7 +131,9 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
             'newDocumentationVersion',
             'newBranchModelVersion',
             'softDelete',
-            'delete'
+            'delete',
+            'finalisedEditActions'
+
         ].sort()
     }
 
@@ -1580,7 +1582,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         then:
         verifyResponse(OK, response)
         response.body().readableByEveryone == true
-        response.body().availableActions == ['show']
+        response.body().availableActions == ['finalisedReadActions', 'show']
 
         when: 'removing readable by everyone'
         loginEditor()

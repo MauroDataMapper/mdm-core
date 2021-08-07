@@ -65,6 +65,16 @@ class ApiProperty implements CreatorAware {
         ApiProperty.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'api'
+    }
+
+    @Override
+    String getPathIdentifier() {
+        "${category}.${key}"
+    }
+
     def beforeValidate() {
         if (!lastUpdatedBy) lastUpdatedBy = createdBy
     }

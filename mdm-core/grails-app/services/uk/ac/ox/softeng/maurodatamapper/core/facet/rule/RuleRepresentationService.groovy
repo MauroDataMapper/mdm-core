@@ -18,13 +18,14 @@
 package uk.ac.ox.softeng.maurodatamapper.core.facet.rule
 
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 
 @Slf4j
 @Transactional
-class RuleRepresentationService {
+class RuleRepresentationService implements DomainService<RuleRepresentation> {
 
     RuleRepresentation get(Serializable id) {
         RuleRepresentation.get(id)
@@ -61,5 +62,10 @@ class RuleRepresentationService {
 
     RuleRepresentation save(RuleRepresentation ruleRepresentation) {
         save(flush: true, validate: true, ruleRepresentation)
+    }
+
+    @Override
+    RuleRepresentation findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        RuleRepresentation.byRuleId(parentId).eq('language', pathIdentifier).get()
     }
 }

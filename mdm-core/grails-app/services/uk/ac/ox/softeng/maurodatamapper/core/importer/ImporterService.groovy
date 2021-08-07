@@ -117,7 +117,9 @@ class ImporterService implements DataBinder {
         Errors errors = new ValidationErrors(paramsObj, clazz.getName())
         for (Field field : fields) {
             ImportParameterConfig config = field.getAnnotation(ImportParameterConfig)
-            if (config && !config.optional()) {
+            if (config) {
+                // Dont validate optional or hidden parameters
+                if (config.optional() || config.hidden()) continue
                 Object o = PropertyUtils.getProperty(paramsObj, field.getName())
                 if (!o?.toString()) {
                     errors.rejectValue(field.name, 'default.null.message',

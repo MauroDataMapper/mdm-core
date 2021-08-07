@@ -68,7 +68,7 @@ class SecurableResourceGroupRole implements EditHistoryAware {
 
     @Override
     String getEditLabel() {
-        "SecuredResourceGroupRole:${userGroup.editLabel}:${securableResourceDomainType}:${securableResourceId}"
+        "SecuredResourceGroupRole:${userGroup?.editLabel}:${securableResourceDomainType}:${securableResourceId}"
     }
 
     @Override

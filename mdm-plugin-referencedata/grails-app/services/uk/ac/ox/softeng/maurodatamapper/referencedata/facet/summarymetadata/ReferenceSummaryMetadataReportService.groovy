@@ -21,15 +21,18 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 
+import java.time.OffsetDateTime
+
 @Slf4j
 @Transactional
-class ReferenceSummaryMetadataReportService {
+class ReferenceSummaryMetadataReportService implements DomainService<ReferenceSummaryMetadataReport> {
 
     @Autowired(required = false)
     List<CatalogueItemService> catalogueItemServices
@@ -49,6 +52,12 @@ class ReferenceSummaryMetadataReportService {
     void delete(ReferenceSummaryMetadataReport summaryMetadataReport) {
         if (!summaryMetadataReport) return
         summaryMetadataReport.delete()
+    }
+
+    @Override
+    ReferenceSummaryMetadataReport findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        OffsetDateTime reportDate = OffsetDateTime.parse(pathIdentifier, ReferenceSummaryMetadataReport.PATH_FORMATTER)
+        ReferenceSummaryMetadataReport.byReferenceSummaryMetadataId(parentId).eq('reportDate', reportDate).get()
     }
 
     ReferenceSummaryMetadataReport findByReferenceSummaryMetadataIdAndId(UUID referenceSummaryMetadataId, Serializable id) {

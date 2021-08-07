@@ -12,7 +12,7 @@ json {
     }
     finalised dataModelFileImporterProviderServiceParameters.finalised
     modelName dataModelFileImporterProviderServiceParameters.modelName
-    folderId dataModelFileImporterProviderServiceParameters.folderId.toString()
+    folderId dataModelFileImporterProviderServiceParameters.folderId
     importAsNewDocumentationVersion dataModelFileImporterProviderServiceParameters.importAsNewDocumentationVersion
     importAsNewBanchModelVersion dataModelFileImporterProviderServiceParameters.importAsNewBranchModelVersion
 }

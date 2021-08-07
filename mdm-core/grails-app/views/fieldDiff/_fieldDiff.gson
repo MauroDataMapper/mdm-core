@@ -1,4 +1,4 @@
-import uk.ac.ox.softeng.maurodatamapper.core.diff.FieldDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.FieldDiff
 
 model {
     FieldDiff fieldDiff
@@ -7,10 +7,4 @@ model {
 json("${fieldDiff.fieldName}") {
     left fieldDiff.getLeft()
     right fieldDiff.getRight()
-
-    if (fieldDiff.isMergeConflict != null) {
-        isMergeConflict fieldDiff.isMergeConflict
-        if (fieldDiff.isMergeConflict) commonAncestorValue fieldDiff.commonAncestorValue
-    }
-
 }

@@ -18,35 +18,53 @@
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.FieldDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.MergeDiff
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.VersionLinkAwareService
+import uk.ac.ox.softeng.maurodatamapper.path.Path
+import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
-import uk.ac.ox.softeng.maurodatamapper.util.Version
-import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
+import uk.ac.ox.softeng.maurodatamapper.version.Version
+import uk.ac.ox.softeng.maurodatamapper.version.VersionChangeType
 
+import grails.gorm.DetachedCriteria
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormValidateable
 import org.grails.orm.hibernate.proxy.HibernateProxyHandler
@@ -55,6 +73,7 @@ import org.springframework.context.MessageSource
 
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import java.util.function.Predicate
 
 @Slf4j
 abstract class ModelService<K extends Model> extends CatalogueItemService<K> implements SecurableResourceService<K>, VersionLinkAwareService<K> {
@@ -67,6 +86,12 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     @Autowired(required = false)
     Set<ModelItemService> modelItemServices
 
+    @Autowired(required = false)
+    Set<DomainService> domainServices
+
+    @Autowired(required = false)
+    Set<MultiFacetItemAwareService> multiFacetItemAwareServices
+
     @Autowired
     VersionLinkService versionLinkService
 
@@ -75,6 +100,9 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     @Autowired
     EditService editService
+
+    @Autowired
+    PathService pathService
 
     @Autowired
     MessageSource messageSource
@@ -152,6 +180,11 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         throw new ApiNotYetImplementedException('MSXX', 'deleteModelAndContent')
     }
 
+    Set<DomainService> getDomainServices() {
+        domainServices.add(this)
+        domainServices
+    }
+
     K shallowValidate(K model) {
         log.debug('Shallow validating model')
         long st = System.currentTimeMillis()
@@ -195,6 +228,34 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         }
         if (!constrainedIds) return []
         findAllReadableModels(constrainedIds, includeDeleted)
+    }
+
+    @Override
+    K findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        String[] split = pathIdentifier.split(PathNode.ESCAPED_MODEL_PATH_IDENTIFIER_SEPARATOR)
+        String label = split[0]
+
+        // A specific identity of the model has been requested so make sure we limit to that
+        if (split.size() == 2) {
+            String identity = split[1]
+            DetachedCriteria criteria = parentId ? modelClass.byFolderId(parentId) : modelClass.by()
+
+            criteria.eq('label', label)
+
+            // Try the search by modelVersion or branchName and no modelVersion
+            // This will return the requested model or the latest non-finalised main branch
+            if (Version.isVersionable(identity)) {
+                criteria.eq('modelVersion', Version.from(identity))
+            } else {
+                // Need to make sure that if the main branch is requested we return the one without a modelVersion
+                criteria.eq('branchName', identity)
+                    .isNull('modelVersion')
+            }
+            return criteria.get() as K
+        }
+
+        // If no identity part then we can just get the latest model by the label
+        findLatestModelByLabel(label)
     }
 
     K finaliseModel(K model, User user, Version requestedModelVersion, VersionChangeType versionChangeType,
@@ -383,27 +444,169 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
      * from ObjectDiff.mergeDiff(), customised by the user.
      * @param sourceModel Source model
      * @param targetModel Target model
-     * @param modelMergeObjectDiff Differences to merge, based on return from ObjectDiff.mergeDiff(), customised by user
+     * @param objectPatchData Differences to merge, based on return from ObjectDiff.mergeDiff(), customised by user
      * @param userSecurityPolicyManager To get user details and permissions when copying "added" items
      * @param domainService Service which handles catalogueItems of the leftModel and rightModel type.
      * @return The model resulting from the merging of changes.
      */
-    K mergeObjectDiffIntoModel(MergeObjectDiffData modelMergeObjectDiff, K targetModel,
-                               UserSecurityPolicyManager userSecurityPolicyManager) {
-        //TODO validation on saving merges
-        if (!modelMergeObjectDiff.hasDiffs()) return targetModel
-        log.debug('Merging {} diffs into model {}', modelMergeObjectDiff.getValidDiffs().size(), targetModel.label)
-        modelMergeObjectDiff.getValidDiffs().each {mergeFieldDiff ->
+    K mergeObjectPatchDataIntoModel(ObjectPatchData objectPatchData, K targetModel, K sourceModel, boolean isLegacy,
+                                    UserSecurityPolicyManager userSecurityPolicyManager) {
+
+
+        if (!objectPatchData.hasPatches()) {
+            log.debug('No patch data to merge into {}', targetModel.id)
+            return targetModel
+        }
+        log.debug('Merging patch data into {}', targetModel.id)
+        if (isLegacy) return mergeLegacyObjectPatchDataIntoModel(objectPatchData, targetModel, userSecurityPolicyManager)
+
+        objectPatchData.patches.each {fieldPatch ->
+            switch (fieldPatch.type) {
+                case 'creation':
+                    return processCreationPatchIntoModel(fieldPatch, targetModel, sourceModel, userSecurityPolicyManager)
+                case 'deletion':
+                    return processDeletionPatchIntoModel(fieldPatch, targetModel)
+                case 'modification':
+                    return processModificationPatchIntoModel(fieldPatch, targetModel)
+                default:
+                    log.warn('Unknown field patch type [{}]', fieldPatch.type)
+            }
+        }
+        targetModel
+    }
+
+
+    void processCreationPatchIntoModel(FieldPatchData creationPatch, K targetModel, K sourceModel, UserSecurityPolicyManager userSecurityPolicyManager) {
+        CreatorAware domainToCopy = pathService.findResourceByPathFromRootResource(sourceModel, creationPatch.path)
+        if (!domainToCopy) {
+            log.warn('Could not process creation patch into model at path [{}] as no such path exists in the source', creationPatch.path)
+            return
+        }
+        log.debug('Creating {} into {}', creationPatch.path, creationPatch.relativePathToRoot.parent)
+        // Potential deletions are modelitems or facets from model or modelitem
+        if (Utils.parentClassIsAssignableFromChild(ModelItem, domainToCopy.class)) {
+            processCreationPatchOfModelItem(domainToCopy as ModelItem, targetModel, creationPatch.relativePathToRoot.parent, userSecurityPolicyManager)
+        }
+        if (Utils.parentClassIsAssignableFromChild(MultiFacetItemAware, domainToCopy.class)) {
+            processCreationPatchOfFacet(domainToCopy as MultiFacetItemAware, targetModel, creationPatch.relativePathToRoot.parent)
+        }
+    }
+
+    void processDeletionPatchIntoModel(FieldPatchData deletionPatch, K targetModel) {
+        CreatorAware domain = pathService.findResourceByPathFromRootResource(targetModel, deletionPatch.relativePathToRoot)
+        if (!domain) {
+            log.warn('Could not process deletion patch into model at path [{}] as no such path exists in the target', deletionPatch.relativePathToRoot)
+            return
+        }
+        log.debug('Deleting [{}]', deletionPatch.relativePathToRoot)
+
+        // Potential deletions are modelitems or facets from model or modelitem
+        if (Utils.parentClassIsAssignableFromChild(ModelItem, domain.class)) {
+            processDeletionPatchOfModelItem(domain as ModelItem)
+        }
+        if (Utils.parentClassIsAssignableFromChild(MultiFacetItemAware, domain.class)) {
+            processDeletionPatchOfFacet(domain as MultiFacetItemAware, targetModel, deletionPatch.relativePathToRoot)
+        }
+    }
+
+    void processModificationPatchIntoModel(FieldPatchData modificationPatch, K targetModel) {
+        CreatorAware domain = pathService.findResourceByPathFromRootResource(targetModel, modificationPatch.relativePathToRoot)
+        if (!domain) {
+            log.warn('Could not process modifiation patch into model at path [{}] as no such path exists in the target', modificationPatch.relativePathToRoot)
+            return
+        }
+        String fieldName = modificationPatch.fieldName
+        log.debug('Modifying [{}] in [{}]', fieldName, modificationPatch.relativePathToRoot)
+        domain."${fieldName}" = modificationPatch.sourceValue
+        DomainService domainService = getDomainServices().find {it.handles(domain.class)}
+        if (!domainService) throw new ApiInternalException('MSXX', "No domain service to handle modification of [${domain.domainType}]")
+
+        if (!domain.validate())
+            throw new ApiInvalidModelException('MS01', 'Modified domain is invalid', domain.errors, messageSource)
+        domainService.save(domain, flush: false, validate: false)
+    }
+
+    void processDeletionPatchOfModelItem(ModelItem modelItem) {
+        ModelItemService modelItemService = modelItemServices.find {it.handles(modelItem.class)}
+        if (!modelItemService) throw new ApiInternalException('MSXX', "No domain service to handle deletion of [${modelItem.domainType}]")
+        log.debug('Deleting ModelItem from Model')
+        modelItemService.delete(modelItem)
+    }
+
+    CatalogueItem processDeletionPatchOfFacet(MultiFacetItemAware multiFacetItemAware, Model targetModel, Path path) {
+        MultiFacetItemAwareService multiFacetItemAwareService = multiFacetItemAwareServices.find {it.handles(multiFacetItemAware.class)}
+        if (!multiFacetItemAwareService) throw new ApiInternalException('MSXX', "No domain service to handle deletion of [${multiFacetItemAware.domainType}]")
+        log.debug('Deleting Facet from path [{}]', path)
+        multiFacetItemAwareService.delete(multiFacetItemAware)
+
+        CatalogueItem catalogueItem = pathService.findResourceByPathFromRootResource(targetModel, path.getParent()) as CatalogueItem
+        switch (multiFacetItemAware.domainType) {
+            case Metadata.simpleName:
+                catalogueItem.metadata.remove(multiFacetItemAware)
+                break
+            case Annotation.simpleName:
+                catalogueItem.annotations.remove(multiFacetItemAware)
+                break
+            case Rule.simpleName:
+                catalogueItem.rules.remove(multiFacetItemAware)
+                break
+            case SemanticLink.simpleName:
+                catalogueItem.semanticLinks.remove(multiFacetItemAware)
+                break
+            case ReferenceFile.simpleName:
+                catalogueItem.referenceFiles.remove(multiFacetItemAware)
+                break
+            case VersionLink.simpleName:
+                (catalogueItem as Model).versionLinks.remove(multiFacetItemAware)
+                break
+        }
+        catalogueItem
+    }
+
+    void processCreationPatchOfModelItem(ModelItem modelItemToCopy, Model targetModel, Path parentPathToCopyTo, UserSecurityPolicyManager userSecurityPolicyManager) {
+        ModelItemService modelItemService = modelItemServices.find {it.handles(modelItemToCopy.class)}
+        if (!modelItemService) throw new ApiInternalException('MSXX', "No domain service to handle creation of [${modelItemToCopy.domainType}]")
+        log.debug('Creating ModelItem into Model at [{}]', parentPathToCopyTo)
+        CatalogueItem parentToCopyInto = pathService.findResourceByPathFromRootResource(targetModel, parentPathToCopyTo) as CatalogueItem
+        if (Utils.parentClassIsAssignableFromChild(Model, parentToCopyInto.class)) parentToCopyInto = null
+        ModelItem copy = modelItemService.copy(targetModel, modelItemToCopy, parentToCopyInto, userSecurityPolicyManager)
+
+        if (!copy.validate())
+            throw new ApiInvalidModelException('MS01', 'Copied ModelItem is invalid', copy.errors, messageSource)
+
+        modelItemService.save(copy, flush: false, validate: false)
+    }
+
+    void processCreationPatchOfFacet(MultiFacetItemAware multiFacetItemAwareToCopy, Model targetModel, Path parentPathToCopyTo) {
+        MultiFacetItemAwareService multiFacetItemAwareService = multiFacetItemAwareServices.find {it.handles(multiFacetItemAwareToCopy.class)}
+        if (!multiFacetItemAwareService) throw new ApiInternalException('MSXX', "No domain service to handle creation of [${multiFacetItemAwareToCopy.domainType}]")
+        log.debug('Creating Facet into Model at [{}]', parentPathToCopyTo)
+
+        CatalogueItem parentToCopyInto = pathService.findResourceByPathFromRootResource(targetModel, parentPathToCopyTo) as CatalogueItem
+        MultiFacetItemAware copy = multiFacetItemAwareService.copy(multiFacetItemAwareToCopy, parentToCopyInto)
+
+        if (!copy.validate())
+            throw new ApiInvalidModelException('MS01', 'Copied Facet is invalid', copy.errors, messageSource)
+
+        multiFacetItemAwareService.save(copy, flush: false, validate: false)
+    }
+
+    @SuppressWarnings('GrDeprecatedAPIUsage')
+    @Deprecated
+    K mergeLegacyObjectPatchDataIntoModel(ObjectPatchData objectPatchData, K targetModel, UserSecurityPolicyManager userSecurityPolicyManager) {
+
+        log.debug('Merging legacy {} diffs into model {}', objectPatchData.getDiffsWithContent().size(), targetModel.label)
+        objectPatchData.getDiffsWithContent().each {mergeFieldDiff ->
             log.debug('{}', mergeFieldDiff.summary)
 
             if (mergeFieldDiff.isFieldChange()) {
                 targetModel.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
             } else if (mergeFieldDiff.isMetadataChange()) {
-                mergeMetadataIntoCatalogueItem(mergeFieldDiff, targetModel, userSecurityPolicyManager)
+                mergeLegacyMetadataIntoCatalogueItem(mergeFieldDiff, targetModel, userSecurityPolicyManager)
             } else {
                 ModelItemService modelItemService = modelItemServices.find {it.handles(mergeFieldDiff.fieldName)}
                 if (modelItemService) {
-                    modelItemService.processMergeFieldDiff(mergeFieldDiff, targetModel, userSecurityPolicyManager)
+                    modelItemService.processLegacyFieldPatchData(mergeFieldDiff, targetModel, userSecurityPolicyManager)
                 } else {
                     log.error('Unknown ModelItem field to merge [{}]', mergeFieldDiff.fieldName)
                 }
@@ -441,8 +644,9 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     K findCommonAncestorBetweenModels(K leftModel, K rightModel) {
 
         if (leftModel.label != rightModel.label) {
-            throw new ApiBadRequestException('MS03', "Model [${leftModel.id}] does not share its label with [${leftModel.id}] therefore they cannot have a " +
-                                                     "common ancestor")
+            throw new ApiBadRequestException('MS03',
+                                             "Model [${leftModel.id}] does not share its label with [${leftModel.id}] therefore they cannot have a " +
+                                             "common ancestor")
         }
 
         K finalisedLeftParent = getFinalisedParent(leftModel)
@@ -511,14 +715,28 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         findLatestFinalisedModelByLabel(label)?.modelVersion ?: Version.from('0.0.0')
     }
 
-    ObjectDiff<K> getMergeDiffForModels(K leftModel, K rightModel) {
-        K commonAncestor = findCommonAncestorBetweenModels(leftModel, rightModel)
+    MergeDiff<K> getMergeDiffForModels(K sourceModel, K targetModel) {
+        K commonAncestor = findCommonAncestorBetweenModels(sourceModel, targetModel)
 
-        ObjectDiff<K> left = commonAncestor.diff(leftModel)
-        ObjectDiff<K> right = commonAncestor.diff(rightModel)
-        ObjectDiff<K> top = rightModel.diff(leftModel)
+        ObjectDiff<K> caDiffSource = commonAncestor.diff(sourceModel)
+        ObjectDiff<K> caDiffTarget = commonAncestor.diff(targetModel)
 
-        top.mergeDiff(left, right)
+        // Remove the branchname as  diff as we know its a diff and for merging we dont want it
+        Predicate branchNamePredicate = [test: {FieldDiff fieldDiff ->
+            fieldDiff.fieldName == 'branchName'
+        },] as Predicate
+
+        caDiffSource.diffs.removeIf(branchNamePredicate)
+        caDiffTarget.diffs.removeIf(branchNamePredicate)
+
+        DiffBuilder
+            .mergeDiff(sourceModel.class as Class<K>)
+            .forMergingDiffable(sourceModel)
+            .intoDiffable(targetModel)
+            .havingCommonAncestor(commonAncestor)
+            .withCommonAncestorDiffedAgainstSource(caDiffSource)
+            .withCommonAncestorDiffedAgainstTarget(caDiffTarget)
+            .generate()
     }
 
     @Override
@@ -617,6 +835,10 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         if (model.finalised) {
             model.dateFinalised = model.dateFinalised ?: OffsetDateTime.now()
             model.modelVersion = model.modelVersion ?: getNextModelVersion(model, null, VersionChangeType.MAJOR)
+        } else {
+            // Make sure that, if after all the checking, the model is not finalised we dont have any modelVersion or date set
+            model.dateFinalised = null
+            model.modelVersion = null
         }
     }
 
@@ -630,15 +852,23 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         if (importAsNewDocumentationVersion) {
 
             if (countByAuthorityAndLabel(model.authority, model.label)) {
-                List<K> existingModels = findAllByAuthorityAndLabel(model.authority, model.label)
-                existingModels.each {existing ->
-                    log.debug('Setting Model as new documentation version of [{}:{}]', existing.label, existing.documentationVersion)
-                    if (!existing.finalised) finaliseModel(existing, catalogueUser, null, null, null)
-                    setModelIsNewDocumentationVersionOfModel(model, existing, catalogueUser)
-                }
-                Version latestVersion = existingModels.max {it.documentationVersion}.documentationVersion
-                model.documentationVersion = Version.nextMajorVersion(latestVersion)
+                // Doc versions must be built off finalised versions, they cannot be built of a finalised version where a branch already exists
+                // So we just get the latest model and finalise if its not finalised
+                K latest = findLatestModelByLabel(model.label)
 
+                if (!latest || latest.id == model.id) {
+                    log.info('Marked as importAsNewDocumentationVersion but no existing Models with label [{}]', model.label)
+                    return
+                }
+
+                if (!latest.finalised) {
+                    finaliseModel(latest, catalogueUser, Version.from('1'), null, null)
+                    save(latest, flush: true, validate: false)
+                }
+
+                // Now we have a finalised model to work from
+                setModelIsNewDocumentationVersionOfModel(model, latest, catalogueUser)
+                model.documentationVersion = Version.nextMajorVersion(latest.documentationVersion)
             } else log.info('Marked as importAsNewDocumentationVersion but no existing Models with label [{}]', model.label)
         }
     }
@@ -647,26 +877,53 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         if (importAsNewBranchModelVersion) {
 
             if (countByAuthorityAndLabel(model.authority, model.label)) {
-                K latest = findLatestFinalisedModelByLabel(model.label)
+                // Branches need to be created from a finalised version
+                // But we can create a new branch even if existing branches
 
-                if (!latest) {
-                    log.info('No finalised model to create branch from so finalising existing main branch')
+
+                K latest
+
+                // If the branch name is not the default the default branch name then we need a finalised model to branch from
+                if (branchName && branchName != VersionAwareConstraints.DEFAULT_BRANCH_NAME) {
+                    latest = findLatestFinalisedModelByLabel(model.label)
+                    // If no finalised model exists then we finalise the existing default branch so we can branch from it
+                    if (!latest) {
+                        log.info('No finalised model to create branch from so finalising existing main branch')
+                        latest = findCurrentMainBranchByLabel(model.label)
+                        // If there is no default branch or finalised branch then the countBy found the current imported model so we dont need to do anything
+                        if (!latest) {
+                            log.info('Marked as importAsNewBranchModelVersion but no existing Models with label [{}]', model.label)
+                            return
+                        }
+                        finaliseModel(latest, catalogueUser, Version.from('1'), null, null)
+                        save(latest, flush: true, validate: false)
+                    }
+                } else {
+                    // If the branch name is not provided, or is the default then we would be using the default,
+                    // which would cause a unique label failure if theres already an unfinalised model with that branch
+                    // therefore we should make sure we have a clean finalised model to work from
                     latest = findCurrentMainBranchByLabel(model.label)
-                    finaliseModel(latest, catalogueUser, Version.from('1'), null, null)
-                    save(latest, flush: true, validate: false)
+                    if (latest && latest.id != model.id) {
+                        log.info('Main branch exists already so finalising to ensure no conflicts')
+                        finaliseModel(latest, catalogueUser, getNextModelVersion(latest, null, VersionChangeType.MAJOR), null, null)
+                        save(latest, flush: true, validate: false)
+                    } else {
+                        // No main branch exists so get the latest finalised model
+                        latest = findLatestFinalisedModelByLabel(model.label)
+                        if (!latest) {
+                            log.info('Marked as importAsNewBranchModelVersion but no existing Models with label [{}]', model.label)
+                            return
+                        }
+                    }
                 }
 
                 // Now we have a finalised model to work from
-                if (latest) {
-                    setModelIsNewBranchModelVersionOfModel(model, latest, catalogueUser)
-                    model.dateFinalised = null
-                    model.finalised = false
-                    model.modelVersion = null
-                    model.branchName = branchName ?: VersionAwareConstraints.DEFAULT_BRANCH_NAME
-                    model.documentationVersion = Version.from('1')
-                } else {
-                    throw new ApiBadRequestException('MSXX', 'Request to importAsNewBranchModelVersion but no finalised model or main branch available')
-                }
+                setModelIsNewBranchModelVersionOfModel(model, latest, catalogueUser)
+                model.dateFinalised = null
+                model.finalised = false
+                model.modelVersion = null
+                model.branchName = branchName ?: VersionAwareConstraints.DEFAULT_BRANCH_NAME
+                model.documentationVersion = Version.from('1')
             } else log.info('Marked as importAsNewBranchModelVersion but no existing Models with label [{}]', model.label)
         }
     }
@@ -697,5 +954,28 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     void setModelIsFromModel(K source, K target, User user) {
         source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetMultiFacetAwareItem: target)
+    }
+
+    Model copyModelAndValidateAndSave(K original,
+                                      Folder folderToCopyInto,
+                                      User copier,
+                                      boolean copyPermissions,
+                                      String label,
+                                      Version copyDocVersion,
+                                      String branchName,
+                                      boolean throwErrors,
+                                      UserSecurityPolicyManager userSecurityPolicyManager) {
+        Model copiedModel = copyModel(original, folderToCopyInto, copier, true, original.label, original.documentationVersion,
+                                      branchName, false, userSecurityPolicyManager)
+
+        if ((copiedModel as GormValidateable).validate()) {
+            saveModelWithContent(copiedModel)
+            if (securityPolicyManagerService) {
+                userSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(copiedModel, userSecurityPolicyManager.user,
+                                                                                                         copiedModel.label)
+            }
+        } else throw new ApiInvalidModelException('DMSXX', 'Copied Model is invalid',
+                                                  (copiedModel as GormValidateable).errors, messageSource)
+        copiedModel
     }
 }

@@ -4,4 +4,4 @@ model {
     SubscribedCatalogue subscribedCatalogue
 }
 
-json tmpl.fullSubscribedCatalogue(subscribedCatalogue)
+json tmpl.subscribedCatalogue_full(subscribedCatalogue)

@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
@@ -30,13 +30,13 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
+import uk.ac.ox.softeng.maurodatamapper.core.search.ModelSearch
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.IndexedSiblingAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.databinding.DataTypeCollectionBindingHelper
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.constraint.validator.DataModelDataClassCollectionValidator
 import uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.constraint.validator.ImportLabelValidator
-import uk.ac.ox.softeng.maurodatamapper.datamodel.hibernate.search.DataModelSearch
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
@@ -139,7 +139,7 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
     ]
 
     static search = {
-        CallableSearch.call(DataModelSearch, delegate)
+        CallableSearch.call(ModelSearch, delegate)
     }
 
     /**
@@ -161,6 +161,11 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
     @Override
     String getDomainType() {
         DataModel.simpleName
+    }
+
+    @Override
+    String getPathPrefix() {
+        'dm'
     }
 
     void setType(DataModelType type) {
@@ -189,7 +194,6 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
         modelDiffBuilder(DataModel, this, otherDataModel)
             .appendList(DataType, 'dataTypes', this.getDataTypes(), otherDataModel.getDataTypes())
             .appendList(DataClass, 'dataClasses', this.childDataClasses, otherDataModel.childDataClasses)
-            .appendList(DataElement, 'dataElements', this.getAllDataElements(), otherDataModel.getAllDataElements())
     }
 
     def beforeValidate() {

@@ -20,9 +20,10 @@ package uk.ac.ox.softeng.maurodatamapper.core.model
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.VersionLinkAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
+import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 
 import grails.gorm.DetachedCriteria
@@ -57,6 +58,11 @@ trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableRes
     }
 
     @Override
+    String getPathIdentifier() {
+        "${label}${PathNode.MODEL_PATH_IDENTIFIER_SEPARATOR}${modelVersion ?: branchName}"
+    }
+
+    @Override
     int compareTo(D that) {
         int res = 0
         if (that instanceof CatalogueItem) {
@@ -65,6 +71,8 @@ trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableRes
         }
         if (that instanceof Model) {
             res == 0 ? this.documentationVersion <=> that.documentationVersion : res
+            res == 0 ? this.modelVersion <=> that.modelVersion : res
+            res == 0 ? this.branchName <=> that.branchName : res
         }
         res
     }
@@ -136,7 +144,7 @@ trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableRes
     static <T extends Model> DetachedCriteria<T> byLabelAndBranchNameAndFinalisedAndLatestModelVersion(String label, String branchName) {
         byLabelAndFinalisedAndLatestModelVersion(label)
         .eq('branchName', branchName)
-    }    
+    }
 
     static <T extends Model> DetachedCriteria<T> byLabelAndNotFinalised(String label) {
         byLabel(label)
@@ -151,5 +159,5 @@ trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableRes
     static <T extends Model> DetachedCriteria<T> byLabelAndBranchNameAndNotFinalised(String label, String branchName) {
         byLabelAndNotFinalised(label)
         .eq('branchName', branchName)
-    }       
+    }
 }

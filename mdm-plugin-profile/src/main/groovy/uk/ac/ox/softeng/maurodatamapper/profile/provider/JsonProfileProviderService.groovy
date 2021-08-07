@@ -34,7 +34,7 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
         jsonProfile.profiledItemDomainType = entity.domainType
         jsonProfile.profiledItemLabel = entity.label
 
-        List<Metadata> metadataList = metadataService.findAllByMultiFacetAwareItemIdAndNamespace(entity.id, this.getMetadataNamespace())
+        List<Metadata> metadataList = getAllProfileMetadataByMultiFacetAwareItemId(entity.id)
 
         jsonProfile.sections.each {section ->
             section.fields.each {field ->
@@ -63,25 +63,32 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
                 section.fields.each {field ->
                     ProfileField submittedField = submittedSection.fields.find {it.fieldName == field.fieldName}
 
-                    String newValue = submittedField.currentValue ?: ""
-                    String key = field.getMetadataKeyForSaving(submittedSection.sectionName)
-                    storeFieldInEntity(entity, newValue, key, userEmailAddress)
+                    if (submittedField) {
+                        String newValue = submittedField.currentValue ?: ''
+                        String key = field.getMetadataKeyForSaving(submittedSection.sectionName)
+                        storeFieldInEntity(entity, newValue, key, userEmailAddress)
+                    }
                 }
             }
         }
         entity.addToMetadata(metadataNamespace, '_profiled', 'Yes', userEmailAddress)
-        Metadata.saveAll(entity.metadata)
+
+        entity.findMetadataByNamespace(metadataNamespace).each {md ->
+            metadataService.save(md)
+        }
     }
 
     void storeFieldInEntity(MultiFacetAware entity, String value, String key, String userEmailAddress) {
+        if (!key) return
 
-        if (value && value != "" && key ) {
+        if (value) {
             entity.addToMetadata(metadataNamespace, key, value, userEmailAddress)
         } else {
             Metadata md = entity.metadata.find {
                 it.namespace == metadataNamespace && it.key == key
             }
             if (md) {
+                entity.metadata.remove(md)
                 metadataService.delete(md)
             }
         }
@@ -102,7 +109,4 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
     JsonProfile getNewProfile() {
         createNewEmptyJsonProfile()
     }
-
-
-
 }

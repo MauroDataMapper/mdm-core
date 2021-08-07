@@ -45,6 +45,16 @@ trait CreatorAware {
 
     abstract String getDomainType()
 
+    // Allow domains to not be "pathed". Also provides compatability
+    String getPathPrefix() {
+        null
+    }
+
+    // Allow domains to not be "pathed". Also provides compatability
+    String getPathIdentifier() {
+        null
+    }
+
     @Deprecated(forRemoval = true)
     void setCreatedByUser(User user) {
         this.createdBy = user?.emailAddress

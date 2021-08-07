@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.VersionLinkAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
@@ -70,6 +71,16 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
         versionLink.delete(flush: flush)
     }
 
+    @Override
+    VersionLink copy(VersionLink facetToCopy, MultiFacetAware multiFacetAwareItemToCopyInto) {
+        VersionLink copy = new VersionLink(linkType: facetToCopy.linkType,
+                                           targetModelDomainType: facetToCopy.targetModelDomainType,
+                                           targetModelId: facetToCopy.targetModelId,
+                                           createdBy: facetToCopy.createdBy)
+        (multiFacetAwareItemToCopyInto as Model).addToVersionLinks(copy)
+        copy
+    }
+
     void deleteBySourceModelAndTargetModelAndLinkType(Model sourceModel, Model targetModel,
                                                       VersionLinkType linkType) {
         VersionLink sl = findBySourceModelAndTargetModelAndLinkType(sourceModel, targetModel, linkType)
@@ -81,6 +92,15 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
         if (!versionLink) return
         VersionLinkAwareService service = findServiceForVersionLinkAwareDomainType(versionLink.modelDomainType)
         service.save(versionLink.model)
+    }
+
+    @Override
+    VersionLink findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        String[] split = pathIdentifier
+        VersionLink.byModelId(parentId)
+            .eq('linkType', SemanticLinkType.findForLabel(split[0]))
+            .eq('targetModelId', Utils.toUuid(split[1]))
+            .get()
     }
 
     @Override

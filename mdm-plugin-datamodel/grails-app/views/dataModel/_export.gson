@@ -12,11 +12,11 @@ json {
     if (export.author) author export.author
     if (export.organisation) organisation export.organisation
 
-    documentationVersion export.documentationVersion.toString()
+    documentationVersion export.documentationVersion
 
     finalised export.finalised
     if (export.finalised) dateFinalised OffsetDateTimeConverter.toString(export.dateFinalised)
-    if (export.modelVersion) modelVersion export.modelVersion.toString()
+    if (export.modelVersion) modelVersion export.modelVersion
     authority tmpl.'/authority/authority'(export.authority)
     if (export.dataTypes) dataTypes tmpl.'/dataType/export'(export.dataTypes.sort())
     if (export.childDataClasses) childDataClasses tmpl.'/dataClass/export'(export.childDataClasses)

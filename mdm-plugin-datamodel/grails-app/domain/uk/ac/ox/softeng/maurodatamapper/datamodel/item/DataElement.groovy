@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
@@ -126,6 +126,10 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
         DataElement.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'de'
+    }
 
     @Field(index = Index.YES, bridge = @FieldBridge(impl = UUIDBridge))
     UUID getModelId() {
@@ -177,7 +181,7 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
 
     @Override
     String getDiffIdentifier() {
-        "${dataClass.getDiffIdentifier()}/${label}"
+        "${dataClass.getDiffIdentifier()}/${pathIdentifier}"
     }
 
     @Override

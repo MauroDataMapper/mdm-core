@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
+import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -33,8 +34,10 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
@@ -55,6 +58,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     DataClassService dataClassService
     DataTypeService dataTypeService
     SummaryMetadataService summaryMetadataService
+    PathService pathService
 
     @Override
     DataElement get(Serializable id) {
@@ -154,10 +158,10 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     DataElement checkFacetsAfterImportingCatalogueItem(DataElement catalogueItem) {
         super.checkFacetsAfterImportingCatalogueItem(catalogueItem)
         if (catalogueItem.summaryMetadata) {
-            catalogueItem.summaryMetadata.each { sm ->
+            catalogueItem.summaryMetadata.each {sm ->
                 sm.multiFacetAwareItemId = catalogueItem.id
                 sm.createdBy = sm.createdBy ?: catalogueItem.createdBy
-                sm.summaryMetadataReports.each { smr ->
+                sm.summaryMetadataReports.each {smr ->
                     smr.createdBy = catalogueItem.createdBy
                 }
             }
@@ -322,14 +326,37 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
         dataElement
     }
 
-    //Put the dataClass lookup in this method for use when merging
-    DataElement copy(Model copiedDataModel, DataElement original, UserSecurityPolicyManager userSecurityPolicyManager) {
-        DataElement copy = copyDataElement(copiedDataModel as DataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
-        DataClass dataClass = copiedDataModel.getDataClasses()?.find {it.label == original.dataClass.label}
-        if (dataClass) {
-            dataClass.addToDataElements(copy)
+    Path buildDataElementPath(DataElement dataElement) {
+        DataClass parent = dataElement.dataClass
+        List<DataClass> parents = []
+
+        while (parent) {
+            parents << parent
+            parent = parent.parentDataClass
         }
 
+        List<CreatorAware> pathObjects = []
+        pathObjects << dataElement.model
+        pathObjects.addAll(parents.reverse())
+        pathObjects << dataElement
+        Path.from(pathObjects)
+    }
+
+    @Deprecated
+    @Override
+    DataElement copy(Model copiedModelInto, DataElement original, UserSecurityPolicyManager userSecurityPolicyManager) {
+        // The old code just searched for a label that matched which could result in the wrong DC being used, the path is better and more reliable
+        Path originalPath = buildDataElementPath(original)
+        DataClass parentToCopyInto = pathService.findResourceByPathFromRootResource(copiedModelInto, originalPath.childPath.parent)
+        copy(copiedModelInto, original, parentToCopyInto, userSecurityPolicyManager)
+    }
+
+    @Override
+    DataElement copy(Model copiedDataModel, DataElement original, CatalogueItem parentDataClass, UserSecurityPolicyManager userSecurityPolicyManager) {
+        DataElement copy = copyDataElement(copiedDataModel as DataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
+        if (parentDataClass) {
+            (parentDataClass as DataClass).addToDataElements(copy)
+        }
         copy
     }
 
@@ -358,7 +385,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
                                              DataElement copy,
                                              User copier,
                                              UserSecurityPolicyManager userSecurityPolicyManager,
-                                             boolean copySummaryMetadata,CopyInformation copyInformation) {
+                                             boolean copySummaryMetadata, CopyInformation copyInformation) {
         copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
         if (copySummaryMetadata) {
             summaryMetadataService.findAllByMultiFacetAwareItemId(original.id).each {
@@ -480,8 +507,8 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
      * @param label The label of the DataElement being sought
      */
     @Override
-    DataElement findByParentAndLabel(CatalogueItem parentCatalogueItem, String label) {
-        findDataElement(parentCatalogueItem, label)
+    DataElement findByParentIdAndLabel(UUID parentId, String label) {
+        findByDataClassIdAndLabel(parentId, label)
     }
 
     @Override

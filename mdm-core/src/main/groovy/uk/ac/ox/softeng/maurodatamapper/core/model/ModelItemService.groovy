@@ -19,9 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.core.model
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeFieldDiffData
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.legacy.LegacyFieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -47,30 +46,31 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
         throw new ApiNotYetImplementedException('MIS01', "deleteAllByModelId for ${getModelItemClass().simpleName}")
     }
 
+    @Deprecated
     K copy(Model copiedModelInto, K original, UserSecurityPolicyManager userSecurityPolicyManager) {
-        throw new ApiNotYetImplementedException('MIS02', "copy [for ModelItem ${getModelItemClass().simpleName}]")
+        copy(copiedModelInto, original, null, userSecurityPolicyManager)
     }
 
-    K copy(Model copiedModelInto, K original, UserSecurityPolicyManager userSecurityPolicyManager, UUID parentId) {
+    @Deprecated
+    K copy(Model copiedModelInto, K original, UUID nonModelParentId, UserSecurityPolicyManager userSecurityPolicyManager) {
         throw new ApiNotYetImplementedException('MIS03', "copy [for ModelItem ${getModelItemClass().simpleName}] (with parent id)")
     }
 
-    K copy(Model copiedModelInto, K original, UserSecurityPolicyManager userSecurityPolicyManager, UUID parentId, CopyInformation copyInformation) {
-        throw new ApiNotYetImplementedException('MIS03', "copy [for ModelItem ${getModelItemClass().simpleName}] (with parent id), and relabel")
+    K copy(Model copiedModelInto, K original, CatalogueItem nonModelParent, UserSecurityPolicyManager userSecurityPolicyManager) {
+        throw new ApiNotYetImplementedException('MIS03', "copy [for ModelItem ${getModelItemClass().simpleName}]")
     }
 
-    Model mergeObjectDiffIntoModelItem(MergeObjectDiffData mergeObjectDiff, K targetModelItem, Model targetModel,
-                                       UserSecurityPolicyManager userSecurityPolicyManager) {
-        //TODO validation on saving merges
-        if (!mergeObjectDiff.hasDiffs()) return targetModel
-        log.debug('Merging {} diffs into modelItem [{}]', mergeObjectDiff.getValidDiffs().size(), targetModelItem.label)
-        mergeObjectDiff.getValidDiffs().each {mergeFieldDiff ->
+    Model mergeLegacyObjectPatchDataIntoModelItem(ObjectPatchData objectPatchData, K targetModelItem, Model targetModel,
+                                                  UserSecurityPolicyManager userSecurityPolicyManager) {
+        if (!objectPatchData.hasPatches()) return targetModel
+        log.debug('Merging {} diffs into modelItem [{}]', objectPatchData.getDiffsWithContent().size(), targetModelItem.label)
+        objectPatchData.getDiffsWithContent().each {mergeFieldDiff ->
             log.debug('{}', mergeFieldDiff.summary)
 
             if (mergeFieldDiff.isFieldChange()) {
                 targetModelItem.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
             } else if (mergeFieldDiff.isMetadataChange()) {
-                mergeMetadataIntoCatalogueItem(mergeFieldDiff, targetModelItem, userSecurityPolicyManager)
+                mergeLegacyMetadataIntoCatalogueItem(mergeFieldDiff, targetModelItem, userSecurityPolicyManager)
             } else {
                 ModelItemService modelItemService
                 UUID parentId
@@ -78,12 +78,12 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
                     modelItemService = this
                     parentId = targetModelItem.id
                 } else {
-                    modelItemService = modelItemServices.find {it.handles(mergeFieldDiff.fieldName)}
+                    modelItemService = modelItemServices.find { it.handles(mergeFieldDiff.fieldName) }
                     parentId = null
                 }
 
                 if (modelItemService) {
-                    modelItemService.processMergeFieldDiff(mergeFieldDiff, targetModel, userSecurityPolicyManager, parentId)
+                    modelItemService.processLegacyFieldPatchData(mergeFieldDiff, targetModel, userSecurityPolicyManager, parentId)
 
                 } else {
                     log.error('Unknown ModelItem field to merge [{}]', mergeFieldDiff.fieldName)
@@ -95,20 +95,20 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
         targetModel
     }
 
-    void processMergeFieldDiff(MergeFieldDiffData mergeFieldDiff, Model targetModel, UserSecurityPolicyManager userSecurityPolicyManager,
-                               UUID parentId = null) {
+    void processLegacyFieldPatchData(LegacyFieldPatchData fieldPatchData, Model targetModel, UserSecurityPolicyManager userSecurityPolicyManager,
+                                     UUID parentId = null) {
         // apply deletions of children to target object
-        mergeFieldDiff.deleted.each {mergeItemData ->
-            ModelItem modelItem = get(mergeItemData.id) as ModelItem
+        fieldPatchData.deleted.each {deletedItemPatchData ->
+            ModelItem modelItem = get(deletedItemPatchData.id) as ModelItem
             delete(modelItem)
         }
 
         // copy additions from source to target object
-        mergeFieldDiff.created.each {mergeItemData ->
-            ModelItem modelItem = get(mergeItemData.id) as ModelItem
+        fieldPatchData.created.each {createdItemPatchData ->
+            ModelItem modelItem = get(createdItemPatchData.id) as ModelItem
             ModelItem copyModelItem
             if (parentId) {
-                copyModelItem = copy(targetModel, modelItem, userSecurityPolicyManager, parentId)
+                copyModelItem = copy(targetModel, modelItem, parentId, userSecurityPolicyManager)
             } else {
                 copyModelItem = copy(targetModel, modelItem, userSecurityPolicyManager)
             }
@@ -116,9 +116,9 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
         }
 
         // for modifications, recursively call this method
-        mergeFieldDiff.modified.each {mergeObjectDiffData ->
-            ModelItem modelItem = get(mergeObjectDiffData.leftId) as ModelItem
-            mergeObjectDiffIntoModelItem(mergeObjectDiffData, modelItem, targetModel, userSecurityPolicyManager)
+        fieldPatchData.modified.each {modifiedObjectPatchData ->
+            ModelItem modelItem = get(modifiedObjectPatchData.targetId) as ModelItem
+            mergeLegacyObjectPatchDataIntoModelItem(modifiedObjectPatchData, modelItem, targetModel, userSecurityPolicyManager)
         }
     }
 
@@ -128,14 +128,14 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
 
     def saveAll(Collection<K> modelItems, boolean batching = true) {
 
-        List<Classifier> classifiers = modelItems.collectMany {it.classifiers ?: []} as List<Classifier>
+        List<Classifier> classifiers = modelItems.collectMany { it.classifiers ?: [] } as List<Classifier>
         if (classifiers) {
             log.trace('Saving {} classifiers')
             classifierService.saveAll(classifiers)
         }
 
-        Collection<K> alreadySaved = modelItems.findAll {it.ident() && it.isDirty()}
-        Collection<K> notSaved = modelItems.findAll {!it.ident()}
+        Collection<K> alreadySaved = modelItems.findAll { it.ident() && it.isDirty() }
+        Collection<K> notSaved = modelItems.findAll { !it.ident() }
 
         if (alreadySaved) {
             log.debug('Straight saving {} already saved {}', alreadySaved.size(), getModelItemClass().simpleName)
@@ -148,7 +148,7 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
                 List batch = []
                 int count = 0
 
-                notSaved.each {mi ->
+                notSaved.each { mi ->
 
                     batch << mi
                     count++
@@ -161,9 +161,10 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
                 batch.clear()
             } else {
                 log.debug('Straight saving {} new {}', notSaved.size(), getModelItemClass().simpleName)
-                notSaved.each {dt ->
-                    save(flush: false, validate: false, dt)
-                    updateFacetsAfterInsertingCatalogueItem(dt)
+                notSaved.each { mi ->
+                    save(flush: false, validate: false, mi)
+                    updateFacetsAfterInsertingCatalogueItem(mi)
+                    checkBreadcrumbTreeAfterSavingCatalogueItem(mi)
                 }
             }
         }
@@ -172,10 +173,11 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
     void batchSave(List<K> modelItems) {
         long start = System.currentTimeMillis()
         log.debug('Performing batch save of {} {}', modelItems.size(), getModelItemClass().simpleName)
-
+        List<Boolean> inserts = modelItems.collect { !it.id }
         getModelItemClass().saveAll(modelItems)
-        modelItems.each {dt ->
-            updateFacetsAfterInsertingCatalogueItem(dt)
+        modelItems.eachWithIndex { mi, i ->
+            if (inserts[i]) updateFacetsAfterInsertingCatalogueItem(mi)
+            checkBreadcrumbTreeAfterSavingCatalogueItem(mi)
         }
 
         sessionFactory.currentSession.flush()

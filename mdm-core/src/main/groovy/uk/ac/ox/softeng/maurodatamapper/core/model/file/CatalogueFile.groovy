@@ -28,7 +28,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 @GrailsCompileStatic
-trait CatalogueFile implements EditHistoryAware {
+trait CatalogueFile extends EditHistoryAware {
 
     @BindUsing({
         obj, source ->
@@ -80,6 +80,11 @@ trait CatalogueFile implements EditHistoryAware {
     @Override
     String getEditLabel() {
         "${getClass().simpleName}:${fileName}"
+    }
+
+    @Override
+    String getPathIdentifier() {
+        fileName
     }
 
     static <T extends CatalogueFile> DetachedCriteria<T> withBaseFilter(DetachedCriteria<T> criteria, Map filters) {

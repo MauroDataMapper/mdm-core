@@ -53,7 +53,7 @@ trait PathAware {
         if (ge) {
             if (ge.instanceOf(PathAware)) {
                 // Ensure proxies are unwrapped
-                PathAware parent = (ge instanceof EntityProxy ? ((EntityProxy) ge).getTarget() : ge) as PathAware
+                PathAware parent =proxyHandler.unwrapIfProxy(ge) as PathAware
                 depth = parent.depth + 1
                 path = "${parent.getPath()}/${parent.getId() ?: UNSET}"
             } else {

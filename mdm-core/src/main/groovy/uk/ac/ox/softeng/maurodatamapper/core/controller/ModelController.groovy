@@ -23,7 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.exporter.ExporterService
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.importer.ImporterService
@@ -34,9 +34,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderS
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.MergeIntoData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CreateNewVersionData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.FinaliseData
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeIntoData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -264,13 +264,15 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
     def mergeDiff() {
 
-        T left = queryForResource params[alternateParamsIdKey]
-        if (!left) return notFound(params[alternateParamsIdKey])
+        T source = queryForResource params[alternateParamsIdKey]
+        if (!source) return notFound(params[alternateParamsIdKey])
 
-        T right = queryForResource params.otherModelId
-        if (!right) return notFound(params.otherModelId)
+        T target = queryForResource params.otherModelId
+        if (!target) return notFound(params.otherModelId)
 
-        respond modelService.getMergeDiffForModels(left, right)
+        // default to legacy until UI is updated
+        String view = params.boolean('isLegacy', true) ? 'legacyMergeDiff' : 'mergeDiff'
+        respond modelService.getMergeDiffForModels(source, target), view: view
     }
 
     @Transactional
@@ -280,10 +282,10 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             return
         }
 
-        if (mergeIntoData.patch.rightId != params[alternateParamsIdKey]) {
+        if (mergeIntoData.patch.sourceId != params[alternateParamsIdKey]) {
             return errorResponse(UNPROCESSABLE_ENTITY, 'Source model id passed in request body does not match source model id in URI.')
         }
-        if (mergeIntoData.patch.leftId != params.otherModelId) {
+        if (mergeIntoData.patch.targetId != params.otherModelId) {
             return errorResponse(UNPROCESSABLE_ENTITY, 'Target model id passed in request body does not match target model id in URI.')
         }
 
@@ -293,7 +295,8 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         T targetModel = queryForResource params.otherModelId
         if (!targetModel) return notFound(params.otherModelId)
 
-        T instance = modelService.mergeObjectDiffIntoModel(mergeIntoData.patch, targetModel, currentUserSecurityPolicyManager) as T
+        T instance = modelService.mergeObjectPatchDataIntoModel(mergeIntoData.patch, targetModel, sourceModel,
+                                                                params.boolean('isLegacy', true), currentUserSecurityPolicyManager) as T
 
         if (!validateResource(instance, 'merge')) return
 

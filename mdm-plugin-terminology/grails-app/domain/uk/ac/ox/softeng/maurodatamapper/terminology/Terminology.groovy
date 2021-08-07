@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.terminology
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
@@ -29,7 +29,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
-import uk.ac.ox.softeng.maurodatamapper.core.search.StandardSearch
+import uk.ac.ox.softeng.maurodatamapper.core.search.ModelSearch
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.hibernate.VersionUserType
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
@@ -87,7 +87,7 @@ class Terminology implements Model<Terminology> {
     ]
 
     static search = {
-        CallableSearch.call(StandardSearch, delegate)
+        CallableSearch.call(ModelSearch, delegate)
     }
 
     Terminology() {
@@ -104,6 +104,11 @@ class Terminology implements Model<Terminology> {
     @Override
     String getDomainType() {
         Terminology.simpleName
+    }
+
+    @Override
+    String getPathPrefix() {
+        'te'
     }
 
     @Override

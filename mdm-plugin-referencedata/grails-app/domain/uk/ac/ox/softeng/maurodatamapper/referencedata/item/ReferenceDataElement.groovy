@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
@@ -110,6 +110,10 @@ class ReferenceDataElement implements ModelItem<ReferenceDataElement, ReferenceD
         ReferenceDataElement.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'rde'
+    }
 
     @Field(index = Index.YES, bridge = @FieldBridge(impl = UUIDBridge))
     UUID getModelId() {
@@ -157,7 +161,7 @@ class ReferenceDataElement implements ModelItem<ReferenceDataElement, ReferenceD
 
     @Override
     String getDiffIdentifier() {
-        "${referenceDataModel.getDiffIdentifier()}/${label}"
+        "${referenceDataModel.getDiffIdentifier()}/${pathIdentifier}"
     }
 
     @Override

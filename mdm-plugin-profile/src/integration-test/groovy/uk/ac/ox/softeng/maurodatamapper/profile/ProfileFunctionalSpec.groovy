@@ -34,9 +34,8 @@ import io.micronaut.http.HttpStatus
 import spock.lang.Shared
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
-import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getDEVELOPMENT
-import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getFUNCTIONAL_TEST
 
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 
 @Slf4j
@@ -51,6 +50,8 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
 
     @Shared
     UUID simpleDataModelId
+
+    ProfileSpecificationProfileService profileSpecificationProfileService
 
     @OnceBefore
     @Transactional
@@ -334,5 +335,301 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
     }
 ]}
 '''
+    }
+
+    void 'N01 : test validating profile on DataModel'() {
+        given:
+        Map namespaceFieldMap = [
+            currentValue        : '',
+            metadataPropertyName: 'metadataNamespace',
+            dataType            : 'string',
+            fieldName           : 'Metadata namespace',
+            validationErrors    : [],
+            regularExpression   : null,
+            allowedValues       : null,
+            description         : 'The namespace under which properties of this profile will be stored',
+            minMultiplicity     : 1,
+            maxMultiplicity     : 1
+        ]
+        Map domainsFieldMap = [
+            currentValue        : '',
+            metadataPropertyName: 'domainsApplicable',
+            dataType            : 'string',
+            fieldName           : 'Applicable for domains',
+            validationErrors    : [],
+            regularExpression   : null,
+            allowedValues       : null,
+            description         : "Determines which types of catalogue item can be profiled using this profile.  For example, 'DataModel'.  " +
+                                  "Separate multiple domains with a semi-colon (';').  Leave blank to allow this profile to be applicable to any catalogue item.",
+            minMultiplicity     : 0,
+            maxMultiplicity     : 1
+        ]
+        Map profileMap = [
+            sections  : [
+                [
+                    sectionDescription: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
+                    fields            : [
+                        namespaceFieldMap,
+                        domainsFieldMap
+                    ],
+                    sectionName       : 'Profile Specification'
+                ]
+            ],
+            id        : simpleDataModelId.toString(),
+            label     : 'Simple Test DataModel',
+            domainType: 'DataModel',
+            namespace : profileSpecificationProfileService.namespace,
+            name      : profileSpecificationProfileService.name
+
+        ]
+
+        when:
+        POST("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${simpleDataModelId}/validate", profileMap)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().sections.first().fields.find {it.fieldName == namespaceFieldMap.fieldName}.validationErrors == ['This field is mandatory']
+        responseBody().sections.first().fields.find {it.fieldName == domainsFieldMap.fieldName}.validationErrors.isEmpty()
+
+        when:
+        namespaceFieldMap.currentValue = 'functional.test.profile'
+        domainsFieldMap.currentValue = 'DataModel'
+
+        POST("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${simpleDataModelId}/validate", profileMap)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().sections.first().fields.find {it.fieldName == namespaceFieldMap.fieldName}.validationErrors.isEmpty()
+        responseBody().sections.first().fields.find {it.fieldName == domainsFieldMap.fieldName}.validationErrors.isEmpty()
+    }
+
+    void 'N02 : test saving profile'() {
+        given:
+        Map namespaceFieldMap = [
+            currentValue        : 'functional.test.profile',
+            metadataPropertyName: 'metadataNamespace',
+            dataType            : 'string',
+            fieldName           : 'Metadata namespace',
+            validationErrors    : [],
+            regularExpression   : null,
+            allowedValues       : null,
+            description         : 'The namespace under which properties of this profile will be stored',
+            minMultiplicity     : 1,
+            maxMultiplicity     : 1
+        ]
+        Map domainsFieldMap = [
+            currentValue        : 'DataModel',
+            metadataPropertyName: 'domainsApplicable',
+            dataType            : 'string',
+            fieldName           : 'Applicable for domains',
+            validationErrors    : [],
+            regularExpression   : null,
+            allowedValues       : null,
+            description         : "Determines which types of catalogue item can be profiled using this profile.  For example, 'DataModel'.  " +
+                                  "Separate multiple domains with a semi-colon (';').  Leave blank to allow this profile to be applicable to any catalogue item.",
+            minMultiplicity     : 0,
+            maxMultiplicity     : 1
+        ]
+        Map profileMap = [
+            sections  : [
+                [
+                    sectionDescription: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
+                    fields            : [
+                        namespaceFieldMap,
+                        domainsFieldMap
+                    ],
+                    sectionName       : 'Profile Specification'
+                ]
+            ],
+            id        : simpleDataModelId.toString(),
+            label     : 'Simple Test DataModel',
+            domainType: 'DataModel',
+            namespace : profileSpecificationProfileService.namespace,
+            name      : profileSpecificationProfileService.name
+
+        ]
+
+        when:
+        POST("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${simpleDataModelId}", profileMap)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().sections.first().fields.find {it.fieldName == namespaceFieldMap.fieldName}.currentValue == namespaceFieldMap.currentValue
+        responseBody().sections.first().fields.find {it.fieldName == domainsFieldMap.fieldName}.currentValue == domainsFieldMap.currentValue
+
+        when:
+        HttpResponse<List<Map>> localResponse = GET("dataModels/${simpleDataModelId}/profiles/used", Argument.listOf(Map))
+
+        then:
+        verifyResponse(OK, localResponse)
+        localResponse.body().size() == 1
+        localResponse.body().first().name == profileSpecificationProfileService.name
+        localResponse.body().first().namespace == profileSpecificationProfileService.namespace
+    }
+
+    void 'N03 : test editing profile'() {
+        given:
+        Map namespaceFieldMap = [
+            currentValue        : 'functional.test.profile',
+            metadataPropertyName: 'metadataNamespace',
+            dataType            : 'string',
+            fieldName           : 'Metadata namespace',
+            validationErrors    : [],
+            regularExpression   : null,
+            allowedValues       : null,
+            description         : 'The namespace under which properties of this profile will be stored',
+            minMultiplicity     : 1,
+            maxMultiplicity     : 1
+        ]
+        Map domainsFieldMap = [
+            currentValue        : 'DataModel',
+            metadataPropertyName: 'domainsApplicable',
+            dataType            : 'string',
+            fieldName           : 'Applicable for domains',
+            validationErrors    : [],
+            regularExpression   : null,
+            allowedValues       : null,
+            description         : "Determines which types of catalogue item can be profiled using this profile.  For example, 'DataModel'.  " +
+                                  "Separate multiple domains with a semi-colon (';').  Leave blank to allow this profile to be applicable to any catalogue item.",
+            minMultiplicity     : 0,
+            maxMultiplicity     : 1
+        ]
+        Map profileMap = [
+            sections  : [
+                [
+                    sectionDescription: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
+                    fields            : [
+                        namespaceFieldMap,
+                        domainsFieldMap
+                    ],
+                    sectionName       : 'Profile Specification'
+                ]
+            ],
+            id        : simpleDataModelId.toString(),
+            label     : 'Simple Test DataModel',
+            domainType: 'DataModel',
+            namespace : profileSpecificationProfileService.namespace,
+            name      : profileSpecificationProfileService.name
+
+        ]
+        POST("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${simpleDataModelId}", profileMap)
+        verifyResponse(OK, response)
+
+
+        when:
+        namespaceFieldMap.currentValue = 'functional.test.profile.adjusted'
+        profileMap = [
+            sections  : [
+                [
+                    sectionDescription: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
+                    fields            : [
+                        namespaceFieldMap,
+                    ],
+                    sectionName       : 'Profile Specification'
+                ]
+            ],
+            id        : simpleDataModelId.toString(),
+            label     : 'Simple Test DataModel',
+            domainType: 'DataModel',
+            namespace : profileSpecificationProfileService.namespace,
+            name      : profileSpecificationProfileService.name
+
+        ]
+        POST("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${simpleDataModelId}", profileMap)
+        verifyResponse(OK, response)
+
+        then:
+        responseBody().sections.first().fields.find {it.fieldName == namespaceFieldMap.fieldName}.currentValue == 'functional.test.profile.adjusted'
+        responseBody().sections.first().fields.find {it.fieldName == domainsFieldMap.fieldName}.currentValue == domainsFieldMap.currentValue
+
+        when:
+        domainsFieldMap.currentValue = ''
+        profileMap = [
+            sections  : [
+                [
+                    sectionDescription: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
+                    fields            : [
+                        domainsFieldMap,
+                    ],
+                    sectionName       : 'Profile Specification'
+                ]
+            ],
+            id        : simpleDataModelId.toString(),
+            label     : 'Simple Test DataModel',
+            domainType: 'DataModel',
+            namespace : profileSpecificationProfileService.namespace,
+            name      : profileSpecificationProfileService.name
+
+        ]
+        POST("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${simpleDataModelId}", profileMap)
+        verifyResponse(OK, response)
+
+        then:
+        responseBody().sections.first().fields.find {it.fieldName == namespaceFieldMap.fieldName}.currentValue == 'functional.test.profile.adjusted'
+        responseBody().sections.first().fields.find {it.fieldName == domainsFieldMap.fieldName}.currentValue == ''
+
+    }
+
+    void 'N04 : test deleting profile'() {
+        given:
+        Map namespaceFieldMap = [
+            currentValue        : 'functional.test.profile',
+            metadataPropertyName: 'metadataNamespace',
+            dataType            : 'string',
+            fieldName           : 'Metadata namespace',
+            validationErrors    : [],
+            regularExpression   : null,
+            allowedValues       : null,
+            description         : 'The namespace under which properties of this profile will be stored',
+            minMultiplicity     : 1,
+            maxMultiplicity     : 1
+        ]
+        Map domainsFieldMap = [
+            currentValue        : 'DataModel',
+            metadataPropertyName: 'domainsApplicable',
+            dataType            : 'string',
+            fieldName           : 'Applicable for domains',
+            validationErrors    : [],
+            regularExpression   : null,
+            allowedValues       : null,
+            description         : "Determines which types of catalogue item can be profiled using this profile.  For example, 'DataModel'.  " +
+                                  "Separate multiple domains with a semi-colon (';').  Leave blank to allow this profile to be applicable to any catalogue item.",
+            minMultiplicity     : 0,
+            maxMultiplicity     : 1
+        ]
+        Map profileMap = [
+            sections  : [
+                [
+                    sectionDescription: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
+                    fields            : [
+                        namespaceFieldMap,
+                        domainsFieldMap
+                    ],
+                    sectionName       : 'Profile Specification'
+                ]
+            ],
+            id        : simpleDataModelId.toString(),
+            label     : 'Simple Test DataModel',
+            domainType: 'DataModel',
+            namespace : profileSpecificationProfileService.namespace,
+            name      : profileSpecificationProfileService.name
+
+        ]
+        POST("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${simpleDataModelId}", profileMap)
+        verifyResponse(OK, response)
+
+
+        when:
+        DELETE("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${simpleDataModelId}")
+
+        then:
+        verifyResponse(NO_CONTENT, response)
+
+        when:
+        HttpResponse<List<Map>> localResponse = GET("dataModels/${simpleDataModelId}/profiles/used", Argument.listOf(Map))
+
+        then:
+        verifyResponse(OK, localResponse)
+        localResponse.body().isEmpty()
     }
 }

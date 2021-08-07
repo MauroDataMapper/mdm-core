@@ -17,9 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile.domain
 
-import grails.rest.Resource
-
-@Resource(readOnly = false, formats = ['json', 'xml'])
 class ProfileField {
 
     String fieldName

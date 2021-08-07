@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.terminology
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
@@ -28,7 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
-import uk.ac.ox.softeng.maurodatamapper.core.search.StandardSearch
+import uk.ac.ox.softeng.maurodatamapper.core.search.ModelSearch
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.ParentOwnedLabelCollectionValidator
 import uk.ac.ox.softeng.maurodatamapper.hibernate.VersionUserType
@@ -84,7 +84,7 @@ class CodeSet implements Model<CodeSet> {
     ]
 
     static search = {
-        CallableSearch.call(StandardSearch, delegate)
+        CallableSearch.call(ModelSearch, delegate)
     }
 
     CodeSet() {
@@ -98,6 +98,11 @@ class CodeSet implements Model<CodeSet> {
     @Override
     String getDomainType() {
         CodeSet.simpleName
+    }
+
+    @Override
+    String getPathPrefix() {
+        'cs'
     }
 
     @Override

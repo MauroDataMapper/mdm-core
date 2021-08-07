@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.provider
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.ReferenceDataJsonExporterService
@@ -195,7 +195,8 @@ class JsonReferenceDataImporterExporterServiceSpec extends BaseReferenceDataMode
         ObjectDiff diff = referenceDataModelService.getDiffForModels(referenceDataModelService.get(exampleReferenceDataModelId), imported)
 
         then:
-        diff.objectsAreIdentical()
+        diff.numberOfDiffs == 1
+        diff.diffs.find {it.fieldName == 'rule'}.deleted.size() == 1
     }
 
 void 'RDM03: test empty data import'() {

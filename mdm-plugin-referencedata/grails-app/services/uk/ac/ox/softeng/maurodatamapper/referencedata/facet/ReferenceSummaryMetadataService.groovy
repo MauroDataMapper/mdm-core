@@ -89,4 +89,19 @@ class ReferenceSummaryMetadataService implements MultiFacetItemAwareService<Refe
     DetachedCriteria<ReferenceSummaryMetadata> getBaseDeleteCriteria() {
         ReferenceSummaryMetadata.by()
     }
+
+    @Override
+    ReferenceSummaryMetadata findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        ReferenceSummaryMetadata.byMultiFacetAwareItemId(parentId).eq('label', pathIdentifier).get()
+    }
+
+    @Override
+    ReferenceSummaryMetadata copy(ReferenceSummaryMetadata facetToCopy, MultiFacetAware multiFacetAwareItemToCopyInto) {
+        ReferenceSummaryMetadata copy = new ReferenceSummaryMetadata(summaryMetadataType: facetToCopy.summaryMetadataType, createdBy: facetToCopy.createdBy)
+        facetToCopy.summaryMetadataReports.each {smr ->
+            copy.addToSummaryMetadataReports(reportDate: smr.reportDate, reportValue: smr.reportValue)
+        }
+        (multiFacetAwareItemToCopyInto as ReferenceSummaryMetadataAware).addToReferenceSummaryMetadata(copy)
+        copy
+    }
 }

@@ -19,7 +19,7 @@
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
@@ -229,7 +229,7 @@ abstract class BaseImporterExporterSpec extends BaseReferenceDataModelIntegratio
 
         then:
         ann.description == 'test annotation 1 description'
-        ann.label == 'test annotation 1 label'          
+        ann.label == 'test annotation 1 label'
 
         when:
         String exported = exportModel(rdm.id)
@@ -266,7 +266,7 @@ abstract class BaseImporterExporterSpec extends BaseReferenceDataModelIntegratio
         !rdm.referenceDataTypes
         !rdm.referenceDataElements
         !rdm.referenceDataValues
-         
+
 
         when:
         String exported = exportModel(rdm.id)
@@ -303,7 +303,7 @@ abstract class BaseImporterExporterSpec extends BaseReferenceDataModelIntegratio
         !rdm.referenceDataTypes
         !rdm.referenceDataElements
         !rdm.referenceDataValues
-         
+
 
         when:
         String exported = exportModel(rdm.id)
@@ -335,23 +335,23 @@ abstract class BaseImporterExporterSpec extends BaseReferenceDataModelIntegratio
         rdm.authority.url == 'http://localhost'
         !rdm.aliases
         !rdm.annotations
-        
+
         //Metadata
         rdm.metadata.size() == 3
 
         //Classifiers
         rdm.classifiers.size() == 1
         rdm.classifiers[0].label == "An imported classifier"
-        
+
         //Reference Data Types
         rdm.referenceDataTypes.size() == 2
-        
+
         //Reference Data Elements
         rdm.referenceDataElements.size() == 2
 
         //Reference Data Values (100 rows of 2 columns)
         rdm.referenceDataValues.size() == 200
-         
+
 
         when:
         String exported = exportModel(rdm.id)

@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.terminology.item
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
@@ -119,6 +119,16 @@ class Term implements ModelItem<Term, Terminology> {
     @Override
     String getDomainType() {
         Term.simpleName
+    }
+
+    @Override
+    String getPathIdentifier() {
+        code
+    }
+
+    @Override
+    String getPathPrefix() {
+        'tm'
     }
 
     @Field(index = Index.YES, bridge = @FieldBridge(impl = UUIDBridge))

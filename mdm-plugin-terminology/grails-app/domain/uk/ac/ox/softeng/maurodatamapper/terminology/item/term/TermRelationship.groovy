@@ -17,9 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.item.term
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
@@ -73,6 +72,11 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
         TermRelationship.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'tr'
+    }
+
     def beforeValidate() {
         label = relationshipType?.label
         beforeValidateModelItem()
@@ -116,9 +120,9 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
     }
 
     @Override
-    String getDiffIdentifier() {
+    String getPathIdentifier() {
         if (!label) label = relationshipType?.label
-        "$sourceTerm.label-$label-$targetTerm.label"
+        "$sourceTerm.label:$label:$targetTerm.label"
     }
 
     ObjectDiff<TermRelationship> diff(TermRelationship obj) {
@@ -174,6 +178,20 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
     static DetachedCriteria<TermRelationship> withFilter(DetachedCriteria<TermRelationship> criteria, Map filters) {
         if (filters.relationshipType) criteria = criteria.ilike('relationshipType.label', "%${filters.relationshipType}%")
         criteria
+    }
+
+    static DetachedCriteria<TermRelationship> byPathIdentifierFields(String sourceTermCode, String relationshipTypeLabel, String targetTermCode) {
+        where {
+            sourceTerm {
+                eq 'code', sourceTermCode
+            }
+            targetTerm {
+                eq 'code', targetTermCode
+            }
+            relationshipType {
+                eq 'label', relationshipTypeLabel
+            }
+        }
     }
 
     static DetachedCriteria<TermRelationship> byTermIdIsParent(UUID termId) {

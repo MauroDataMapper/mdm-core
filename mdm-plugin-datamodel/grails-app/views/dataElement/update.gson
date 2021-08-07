@@ -6,4 +6,4 @@ model {
     UserSecurityPolicyManager userSecurityPolicyManager
 }
 
-json tmpl.fullDataElement(dataElement: dataElement, userSecurityPolicyManager: userSecurityPolicyManager)
+json tmpl.dataElement_full(dataElement: dataElement, userSecurityPolicyManager: userSecurityPolicyManager)

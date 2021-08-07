@@ -17,12 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.model.container.CatalogueItemClassifierAware
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
@@ -82,7 +83,7 @@ trait CatalogueItem<D extends Diffable> implements InformationAware, EditHistory
     }
 
     @Override
-    String getDiffIdentifier() {
+    String getPathIdentifier() {
         label
     }
 
@@ -93,14 +94,15 @@ trait CatalogueItem<D extends Diffable> implements InformationAware, EditHistory
     static <T extends CatalogueItem> ObjectDiff catalogueItemDiffBuilder(Class<T> diffClass, T lhs, T rhs) {
         String lhsId = lhs.id ?: "Left:Unsaved_${lhs.domainType}"
         String rhsId = rhs.id ?: "Right:Unsaved_${rhs.domainType}"
-        ObjectDiff
-            .builder(diffClass)
+        DiffBuilder.objectDiff(diffClass)
             .leftHandSide(lhsId, lhs)
             .rightHandSide(rhsId, rhs)
             .appendString('label', lhs.label, rhs.label)
             .appendString('description', lhs.description, rhs.description)
+            .appendString('aliasesString', lhs.aliasesString, rhs.aliasesString)
             .appendList(Metadata, 'metadata', lhs.metadata, rhs.metadata)
             .appendList(Annotation, 'annotations', lhs.annotations, rhs.annotations)
+            .appendList(Rule, 'rule', lhs.rules, rhs.rules)
     }
 
     static <T extends CatalogueItem> DetachedCriteria<T> withCatalogueItemFilter(DetachedCriteria<T> criteria, Map filters) {

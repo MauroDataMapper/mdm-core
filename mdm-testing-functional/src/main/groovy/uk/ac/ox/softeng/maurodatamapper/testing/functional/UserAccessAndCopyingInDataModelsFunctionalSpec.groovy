@@ -29,7 +29,6 @@ import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
-import spock.lang.Stepwise
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -47,7 +46,6 @@ import static io.micronaut.http.HttpStatus.OK
  * </pre>
  * @see uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkController* @since 18/05/2018
  */
-@Stepwise
 @Slf4j
 abstract class UserAccessAndCopyingInDataModelsFunctionalSpec extends UserAccessFunctionalSpec {
 

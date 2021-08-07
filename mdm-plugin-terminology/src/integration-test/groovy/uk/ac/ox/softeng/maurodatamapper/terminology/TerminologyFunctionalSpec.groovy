@@ -24,7 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
-import uk.ac.ox.softeng.maurodatamapper.util.Version
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -165,7 +165,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
   "leftId": "${json-unit.matches:id}",
   "rightId": "${json-unit.matches:id}",
   "label": "Functional Test Model",
-  "count": 18,
+  "count": 17,
   "diffs": [
     {
       "description": {
@@ -176,10 +176,74 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
       }
     },
     {
-      "branchName": {
-        "left": "main",
-        "right": "source",
-        "isMergeConflict": false
+      "termRelationshipTypes": {
+        "deleted": [
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "oppositeActionTo",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test Model",
+                  "domainType": "Terminology",
+                  "finalised": true
+                }
+              ]
+            },
+            "isMergeConflict": false
+          }
+        ],
+        "created": [
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "sameActionAs",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test Model",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            },
+            "isMergeConflict": false
+          }
+        ],
+        "modified": [
+          {
+            "leftId": "${json-unit.matches:id}",
+            "rightId": "${json-unit.matches:id}",
+            "label": "inverseOf",
+            "leftBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test Model",
+                "domainType": "Terminology",
+                "finalised": true
+              }
+            ],
+            "rightBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test Model",
+                "domainType": "Terminology",
+                "finalised": true
+              }
+            ],
+            "count": 1,
+            "diffs": [
+              {
+                "description": {
+                  "left": null,
+                  "right": "inverseOf(Modified)",
+                  "isMergeConflict": false
+                }
+              }
+            ]
+          }
+        ]
       }
     },
     {
@@ -194,7 +258,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                   "id": "${json-unit.matches:id}",
                   "label": "Functional Test Model",
                   "domainType": "Terminology",
-                  "finalised": false
+                  "finalised": true
                 }
               ]
             },
@@ -221,7 +285,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                   "id": "${json-unit.matches:id}",
                   "label": "Functional Test Model",
                   "domainType": "Terminology",
-                  "finalised": false
+                  "finalised": true
                 }
               ]
             },
@@ -229,6 +293,21 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
           }
         ],
         "created": [
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "SALO: secondAddLeftOnly",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test Model",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            },
+            "isMergeConflict": false
+          },
           {
             "value": {
               "id": "${json-unit.matches:id}",
@@ -270,151 +349,9 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                 }
               ]
             }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "SALO: secondAddLeftOnly",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test Model",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            },
-            "isMergeConflict": false
           }
         ],
         "modified": [
-          {
-            "leftId": "${json-unit.matches:id}",
-            "rightId": "${json-unit.matches:id}",
-            "label": "AAARD: addAndAddReturningDifference",
-            "leftBreadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Functional Test Model",
-                "domainType": "Terminology",
-                "finalised": false
-              }
-            ],
-            "rightBreadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Functional Test Model",
-                "domainType": "Terminology",
-                "finalised": false
-              }
-            ],
-            "count": 2,
-            "diffs": [
-              {
-                "description": {
-                  "left": "DescriptionRight",
-                  "right": "DescriptionLeft",
-                  "isMergeConflict": true,
-                  "commonAncestorValue": null
-                }
-              },
-              {
-                "targetTermRelationships": {
-                  "created": [
-                    {
-                      "value": {
-                        "id": "${json-unit.matches:id}",
-                        "label": "similarSourceAction",
-                        "breadcrumbs": [
-                          {
-                            "id": "${json-unit.matches:id}",
-                            "label": "Functional Test Model",
-                            "domainType": "Terminology",
-                            "finalised": false
-                          },
-                          {
-                            "id": "${json-unit.matches:id}",
-                            "label": "ALO: addLeftOnly",
-                            "domainType": "Term"
-                          }
-                        ]
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          {
-            "leftId": "${json-unit.matches:id}",
-            "rightId": "${json-unit.matches:id}",
-            "label": "SMLO: secondModifyLeftOnly",
-            "leftBreadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Functional Test Model",
-                "domainType": "Terminology",
-                "finalised": false
-              }
-            ],
-            "rightBreadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Functional Test Model",
-                "domainType": "Terminology",
-                "finalised": false
-              }
-            ],
-            "count": 1,
-            "diffs": [
-              {
-                "sourceTermRelationships": {
-                  "modified": [
-                    {
-                      "leftId": "${json-unit.matches:id}",
-                      "rightId": "${json-unit.matches:id}",
-                      "label": "sameSourceActionType",
-                      "leftBreadcrumbs": [
-                        {
-                          "id": "${json-unit.matches:id}",
-                          "label": "Functional Test Model",
-                          "domainType": "Terminology",
-                          "finalised": false
-                        },
-                        {
-                          "id": "${json-unit.matches:id}",
-                          "label": "SMLO: secondModifyLeftOnly",
-                          "domainType": "Term"
-                        }
-                      ],
-                      "rightBreadcrumbs": [
-                        {
-                          "id": "${json-unit.matches:id}",
-                          "label": "Functional Test Model",
-                          "domainType": "Terminology",
-                          "finalised": false
-                        },
-                        {
-                          "id": "${json-unit.matches:id}",
-                          "label": "SMLO: secondModifyLeftOnly",
-                          "domainType": "Term"
-                        }
-                      ],
-                      "count": 1,
-                      "diffs": [
-                        {
-                          "description": {
-                            "left": null,
-                            "right": "NewDescription"
-                          }
-                        }
-                      ]
-                    }
-                  ]
-                }
-              }
-            ]
-          },
           {
             "leftId": "${json-unit.matches:id}",
             "rightId": "${json-unit.matches:id}",
@@ -424,7 +361,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                 "id": "${json-unit.matches:id}",
                 "label": "Functional Test Model",
                 "domainType": "Terminology",
-                "finalised": false
+                "finalised": true
               }
             ],
             "rightBreadcrumbs": [
@@ -432,7 +369,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                 "id": "${json-unit.matches:id}",
                 "label": "Functional Test Model",
                 "domainType": "Terminology",
-                "finalised": false
+                "finalised": true
               }
             ],
             "count": 3,
@@ -456,7 +393,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                             "id": "${json-unit.matches:id}",
                             "label": "Functional Test Model",
                             "domainType": "Terminology",
-                            "finalised": false
+                            "finalised": true
                           },
                           {
                             "id": "${json-unit.matches:id}",
@@ -464,7 +401,8 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                             "domainType": "Term"
                           }
                         ]
-                      }
+                      },
+                      "isMergeConflict": false
                     }
                   ]
                 }
@@ -481,7 +419,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                           "id": "${json-unit.matches:id}",
                           "label": "Functional Test Model",
                           "domainType": "Terminology",
-                          "finalised": false
+                          "finalised": true
                         },
                         {
                           "id": "${json-unit.matches:id}",
@@ -494,7 +432,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                           "id": "${json-unit.matches:id}",
                           "label": "Functional Test Model",
                           "domainType": "Terminology",
-                          "finalised": false
+                          "finalised": true
                         },
                         {
                           "id": "${json-unit.matches:id}",
@@ -507,7 +445,79 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                         {
                           "description": {
                             "left": null,
-                            "right": "NewDescription"
+                            "right": "NewDescription",
+                            "isMergeConflict": false
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "leftId": "${json-unit.matches:id}",
+            "rightId": "${json-unit.matches:id}",
+            "label": "SMLO: secondModifyLeftOnly",
+            "leftBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test Model",
+                "domainType": "Terminology",
+                "finalised": true
+              }
+            ],
+            "rightBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test Model",
+                "domainType": "Terminology",
+                "finalised": true
+              }
+            ],
+            "count": 1,
+            "diffs": [
+              {
+                "sourceTermRelationships": {
+                  "modified": [
+                    {
+                      "leftId": "${json-unit.matches:id}",
+                      "rightId": "${json-unit.matches:id}",
+                      "label": "sameSourceActionType",
+                      "leftBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test Model",
+                          "domainType": "Terminology",
+                          "finalised": true
+                        },
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "SMLO: secondModifyLeftOnly",
+                          "domainType": "Term"
+                        }
+                      ],
+                      "rightBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test Model",
+                          "domainType": "Terminology",
+                          "finalised": true
+                        },
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "SMLO: secondModifyLeftOnly",
+                          "domainType": "Term"
+                        }
+                      ],
+                      "count": 1,
+                      "diffs": [
+                        {
+                          "description": {
+                            "left": null,
+                            "right": "NewDescription",
+                            "isMergeConflict": false
                           }
                         }
                       ]
@@ -559,7 +569,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                             "id": "${json-unit.matches:id}",
                             "label": "Functional Test Model",
                             "domainType": "Terminology",
-                            "finalised": false
+                            "finalised": true
                           },
                           {
                             "id": "${json-unit.matches:id}",
@@ -574,51 +584,11 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                 }
               }
             ]
-          }
-        ]
-      }
-    },
-    {
-      "termRelationshipTypes": {
-        "deleted": [
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "oppositeActionTo",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test Model",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            },
-            "isMergeConflict": false
-          }
-        ],
-        "created": [
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "sameActionAs",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test Model",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            },
-            "isMergeConflict": false
-          }
-        ],
-        "modified": [
+          },
           {
             "leftId": "${json-unit.matches:id}",
             "rightId": "${json-unit.matches:id}",
-            "label": "inverseOf",
+            "label": "AAARD: addAndAddReturningDifference",
             "leftBreadcrumbs": [
               {
                 "id": "${json-unit.matches:id}",
@@ -635,13 +605,40 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                 "finalised": false
               }
             ],
-            "count": 1,
+            "count": 2,
             "diffs": [
               {
                 "description": {
-                  "left": null,
-                  "right": "inverseOf(Modified)",
-                  "isMergeConflict": false
+                  "left": "DescriptionRight",
+                  "right": "DescriptionLeft",
+                  "isMergeConflict": true,
+                  "commonAncestorValue": null
+                }
+              },
+              {
+                "targetTermRelationships": {
+                  "deleted": [
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "similarSourceAction",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test Model",
+                            "domainType": "Terminology",
+                            "finalised": false
+                          },
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "ALO: addLeftOnly",
+                            "domainType": "Term"
+                          }
+                        ]
+                      },
+                      "isMergeConflict": false
+                    }
+                  ]
                 }
               }
             ]
@@ -1311,7 +1308,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         cleanUpData(id)
     }
 
-    void 'VB08 : test finding merge difference of two Model<T> (as editor)'() {
+    void 'MD01 : test finding merge difference of two Model<T> (as editor)'() {
         given:
         String id = createNewItem(validJson)
         PUT("$id/finalise", [versionChangeType: "Major"])
@@ -1357,7 +1354,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         cleanUpData(id)
     }
 
-    void 'VB09a : test merging diff with no patch data'() {
+    void 'MP01 : test merging diff with no patch data'() {
         given:
         String id = createNewItem(validJson)
 
@@ -1384,7 +1381,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         cleanUpData(id)
     }
 
-    void 'VB09b : test merging diff with URI id not matching body id'() {
+    void 'MP02: test merging diff with URI id not matching body id'() {
         given:
         String id = createNewItem(validJson)
 
@@ -1433,7 +1430,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         cleanUpData(id)
     }
 
-    void 'VB09c : test merging diff into draft model'() {
+    void 'MP04 : test merging diff into draft model'() {
         given:
         String id = createNewItem(validJson)
 
@@ -1502,23 +1499,23 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
 
         when:
         //to delete
-        GET("$source/path/te%3A%7Ctm%3ADLO:%20deleteLeftOnly")
+        GET("$source/path/tm%3ADLO:%20deleteLeftOnly")
         verifyResponse OK, response
         String deleteLeftOnly = responseBody().id
-        GET("$source/path/te%3A%7Ctm%3ADAM:%20deleteAndModify")
+        GET("$source/path/tm%3ADAM:%20deleteAndModify")
         verifyResponse OK, response
         deleteAndModify = responseBody().id
         //to modify
-        GET("$source/path/te%3A%7Ctm%3AMLO:%20modifyLeftOnly")
+        GET("$source/path/tm%3AMLO:%20modifyLeftOnly")
         verifyResponse OK, response
         modifyLeftOnly = responseBody().id
-        GET("$source/path/te%3A%7Ctm%3ASMLO:%20secondModifyLeftOnly")
+        GET("$source/path/tm%3ASMLO:%20secondModifyLeftOnly")
         verifyResponse OK, response
         secondModifyLeftOnly = responseBody().id
-        GET("$source/path/te%3A%7Ctm%3AMAD:%20modifyAndDelete")
+        GET("$source/path/tm%3AMAD:%20modifyAndDelete")
         verifyResponse OK, response
         String sourceModifyAndDelete = responseBody().id
-        GET("$source/path/te%3A%7Ctm%3AMAMRD:%20modifyAndModifyReturningDifference")
+        GET("$source/path/tm%3AMAMRD:%20modifyAndModifyReturningDifference")
         verifyResponse OK, response
         modifyAndModifyReturningDifference = responseBody().id
 
@@ -1612,14 +1609,14 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
 
         when:
         // for mergeInto json
-        GET("$target/path/te%3A%7Ctm%3AMAD:%20modifyAndDelete")
+        GET("$target/path/tm%3AMAD:%20modifyAndDelete")
         verifyResponse OK, response
         String targetModifyAndDelete = responseBody().id
 
-        GET("$target/path/te%3A%7Ctm%3ADAM:%20deleteAndModify")
+        GET("$target/path/tm%3ADAM:%20deleteAndModify")
         verifyResponse OK, response
         deleteAndModify = responseBody().id
-        GET("$target/path/te%3A%7Ctm%3AMAMRD:%20modifyAndModifyReturningDifference")
+        GET("$target/path/tm%3AMAMRD:%20modifyAndModifyReturningDifference")
         verifyResponse OK, response
         modifyAndModifyReturningDifference = responseBody().id
 
@@ -1643,13 +1640,13 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
 
         when:
         // for mergeInto json
-        GET("$target/path/te%3A%7Ctm%3ADLO:%20deleteLeftOnly")
+        GET("$target/path/tm%3ADLO:%20deleteLeftOnly")
         verifyResponse OK, response
         deleteLeftOnly = responseBody().id
-        GET("$target/path/te%3A%7Ctm%3AMLO:%20modifyLeftOnly")
+        GET("$target/path/tm%3AMLO:%20modifyLeftOnly")
         verifyResponse OK, response
         modifyLeftOnly = responseBody().id
-        GET("$target/path/te%3A%7Ctm%3ASMLO:%20secondModifyLeftOnly")
+        GET("$target/path/tm%3ASMLO:%20secondModifyLeftOnly")
         verifyResponse OK, response
         secondModifyLeftOnly = responseBody().id
 

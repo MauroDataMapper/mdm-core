@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.security.test
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
@@ -98,6 +98,11 @@ class BasicModel implements Model<BasicModel>, GormEntity<BasicModel> {
 
     ObjectDiff<BasicModel> diff(BasicModel obj) {
         modelDiffBuilder(BasicModel, this, obj)
+    }
+
+    @Override
+    String getPathPrefix() {
+        'bm'
     }
 
     static BasicModel findByIdJoinClassifiers(UUID id) {

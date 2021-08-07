@@ -35,6 +35,8 @@ import groovy.util.logging.Slf4j
 import org.hibernate.SessionFactory
 import org.springframework.beans.factory.annotation.Autowired
 
+import static org.springframework.http.HttpStatus.NO_CONTENT
+
 @Slf4j
 class ProfileController implements ResourcelessMdmController {
     static responseFormats = ['json', 'xml']
@@ -82,13 +84,9 @@ class ProfileController implements ResourcelessMdmController {
             return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
         Set<ProfileProviderService> usedProfiles = profileService.getUsedProfileServices(multiFacetAware)
-        Set<String> profileNamespaces = usedProfiles.collect{it.metadataNamespace}
-        respond metadataService.findAllByMultiFacetAwareItemIdAndNotNamespaces(multiFacetAware.id, profileNamespaces.asList(),params),
+        Set<String> profileNamespaces = usedProfiles.collect {it.metadataNamespace}
+        respond metadataService.findAllByMultiFacetAwareItemIdAndNotNamespaces(multiFacetAware.id, profileNamespaces.asList(), params),
                 view: "/metadata/index"
-
-//        respond(view: "/metadata/index",
-//                model: [metadataList: metadataService.findAllByMultiFacetAwareItemIdAndNotNamespaces(multiFacetAware.id, profileNamespaces.asList(),
-//                                                                                                     params)])
     }
 
     @Transactional
@@ -105,14 +103,11 @@ class ProfileController implements ResourcelessMdmController {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
 
-        Set<Metadata> mds =
-            multiFacetAware.metadata
-            .findAll{ it.namespace == profileProviderService.metadataNamespace }
+        profileService.deleteProfile(profileProviderService, multiFacetAware, currentUser)
 
-        mds.each {md ->
-                //multiFacetAware.metadata.remove(md)
-                metadataService.delete(md, true)
-                metadataService.addDeletedEditToMultiFacetAwareItem(currentUser, md, params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)}
+        request.withFormat {
+            '*' {render status: NO_CONTENT} // NO CONTENT STATUS CODE
+        }
     }
 
     def show() {
@@ -149,31 +144,32 @@ class ProfileController implements ResourcelessMdmController {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
 
-        profileService.storeProfile(profileProviderService, multiFacetAware, request, currentUser)
+        Profile instance = profileProviderService.getNewProfile()
+        bindData(instance, request)
 
-        // Flush the profile before we create as the create method retrieves whatever is stored in the database
-        sessionFactory.currentSession.flush()
+        MultiFacetAware profiled = profileService.storeProfile(profileProviderService, multiFacetAware, instance, currentUser)
 
         // Create the profile as the stored profile may only be segments of the profile and we now want to get everything
-        respond profileService.createProfile(profileProviderService, multiFacetAware)
+        respond profileService.createProfile(profileProviderService, profiled)
     }
 
     def validate() {
-        log.debug("validating profile...")
-        MultiFacetAware multiFacetAware =
-            profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
+        log.debug("Validating profile")
+        MultiFacetAware multiFacetAware = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
 
         if (!multiFacetAware) {
             return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
 
-        ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName,
-                params.profileVersion)
+        ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName, params.profileVersion)
         if (!profileProviderService) {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
 
-        respond profileService.validateProfile(profileProviderService, request)
+        Profile submittedInstance = profileProviderService.getNewProfile()
+        bindData(submittedInstance, request)
+
+        respond profileService.validateProfile(profileProviderService, submittedInstance)
     }
 
 
@@ -184,13 +180,13 @@ class ProfileController implements ResourcelessMdmController {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
         PaginatedResultList<Profile> profiles =
-                profileService.getModelsWithProfile(profileProviderService, currentUserSecurityPolicyManager, params.multiFacetAwareItemDomainType, params)
+            profileService.getModelsWithProfile(profileProviderService, currentUserSecurityPolicyManager, params.multiFacetAwareItemDomainType, params)
         respond profileList: profiles
     }
 
     def listValuesInProfile() {
         ProfileProviderService profileProviderService =
-                profileService.findProfileProviderService(params.profileNamespace, params.profileName, params.profileVersion)
+            profileService.findProfileProviderService(params.profileNamespace, params.profileName, params.profileVersion)
         if (!profileProviderService) {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
@@ -198,26 +194,27 @@ class ProfileController implements ResourcelessMdmController {
         List<MetadataAware> profiledItems = profileProviderService.findAllProfiledItems(params.multiFacetAwareItemDomainType)
         List<MetadataAware> filteredProfiledItems = []
         profiledItems.each {profiledItem ->
-            if(profiledItem instanceof Model
-                    && currentUserSecurityPolicyManager.userCanReadSecuredResourceId(profiledItem.getClass(), profiledItem.id)) {
-                    filteredProfiledItems.add(profiledItem)
+            if (profiledItem instanceof Model
+                && currentUserSecurityPolicyManager.userCanReadSecuredResourceId(profiledItem.getClass(), profiledItem.id)) {
+                filteredProfiledItems.add(profiledItem)
             } else if (profiledItem instanceof ModelItem) {
 
                 Model model = proxyHandler.unwrapIfProxy(profiledItem.getModel())
-                if(currentUserSecurityPolicyManager.userCanReadResourceId(profiledItem.getClass(), profiledItem.id, model.getClass(), model.id)) {
-                        filteredProfiledItems.add(profiledItem)
-                    }
+                if (currentUserSecurityPolicyManager.userCanReadResourceId(profiledItem.getClass(), profiledItem.id, model.getClass(), model.id)) {
+                    filteredProfiledItems.add(profiledItem)
+                }
             }
 
         }
         Map<String, Collection<String>> allValuesMap = [:]
-        profileProviderService.getKnownMetadataKeys().findAll{key -> (!params.filter || params.filter.contains(key))}.each { key ->
+        profileProviderService.getKnownMetadataKeys().findAll {key -> (!params.filter || params.filter.contains(key))}.each {key ->
             Set<String> allValues = new HashSet<String>();
-            filteredProfiledItems.each { profiledItem ->
+            filteredProfiledItems.each {profiledItem ->
                 Metadata md = profiledItem.metadata.find {
                     it.namespace == profileProviderService.metadataNamespace &&
-                            it.key == key }
-                if(md) {
+                    it.key == key
+                }
+                if (md) {
                     allValues.add(md.value)
                 }
             }
@@ -244,10 +241,10 @@ class ProfileController implements ResourcelessMdmController {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
 
-/*        if (!(profileProviderService instanceof DataModelProfileProviderService)) {
-            throw new ApiNotYetImplementedException('PCXX', 'Non-DataModel Based searching in profiles')
-        }
-*/
+        /*        if (!(profileProviderService instanceof DataModelProfileProviderService)) {
+                    throw new ApiNotYetImplementedException('PCXX', 'Non-DataModel Based searching in profiles')
+                }
+        */
         searchParams.searchTerm = searchParams.searchTerm ?: params.search
         searchParams.offset = 0
         searchParams.max = null

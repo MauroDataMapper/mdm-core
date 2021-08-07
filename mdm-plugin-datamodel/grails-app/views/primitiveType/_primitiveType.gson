@@ -1,0 +1,11 @@
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
+
+inherits template: '/dataType/dataType', model: [dataType: primitiveType]
+
+model {
+    PrimitiveType primitiveType
+}
+
+json {
+
+}

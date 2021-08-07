@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.provider
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.ReferenceDataXmlExporterService
@@ -197,7 +197,10 @@ class XmlReferenceDataImporterExporterServiceSpec extends BaseReferenceDataModel
         ObjectDiff diff = referenceDataModelService.getDiffForModels(referenceDataModelService.get(exampleReferenceDataModelId), imported)
 
         then:
-        diff.objectsAreIdentical()
+        diff.numberOfDiffs == 3
+        diff.diffs.find { it.fieldName == 'rule' }.deleted.size() == 1
+        diff.diffs.find { it.fieldName == 'referenceDataTypes' }.modified.first().diffs.first().deleted.size() == 1
+        diff.diffs.find { it.fieldName == 'referenceDataElements' }.modified.first().diffs.first().deleted.size() == 1
     }
 
     void 'RDM03: test empty data import'() {

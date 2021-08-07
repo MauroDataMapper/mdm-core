@@ -17,6 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
@@ -36,7 +39,7 @@ import grails.plugins.hibernate.search.HibernateSearchApi
 import grails.rest.Resource
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class Folder implements Container {
+class Folder implements Container, Diffable<Folder> {
 
     public static final String MISCELLANEOUS_FOLDER_LABEL = 'Miscellaneous'
     public static final String DEFAULT_FOLDER_LABEL = 'New Folder'
@@ -99,6 +102,35 @@ class Folder implements Container {
         Folder.simpleName
     }
 
+    @Override
+    ObjectDiff<Folder> diff(Folder that) {
+        folderDiffBuilder(Folder, this, that)
+    }
+
+    static <T extends Folder> ObjectDiff<T> folderDiffBuilder(Class<T> diffClass, T lhs, T rhs) {
+        String lhsId = lhs.id ?: "Left:Unsaved_${lhs.domainType}"
+        String rhsId = rhs.id ?: "Right:Unsaved_${rhs.domainType}"
+        DiffBuilder.objectDiff(diffClass)
+            .leftHandSide(lhsId, lhs)
+            .rightHandSide(rhsId, rhs)
+            .appendString('label', lhs.label, rhs.label)
+            .appendString('description', lhs.description, rhs.description)
+            .appendList(Metadata, 'metadata', lhs.metadata, rhs.metadata)
+            .appendList(Annotation, 'annotations', lhs.annotations, rhs.annotations)
+            .appendList(Rule, 'rule', lhs.rules, rhs.rules)
+            .appendBoolean('deleted', lhs.deleted, rhs.deleted)
+            .appendList(Folder, 'folders', lhs.childFolders, rhs.childFolders)
+    }
+
+    @Override
+    String getPathPrefix() {
+        'fo'
+    }
+
+    @Override
+    String getPathIdentifier() {
+        label
+    }
 
     boolean hasChildFolders() {
         Folder.countByParentFolder(this)

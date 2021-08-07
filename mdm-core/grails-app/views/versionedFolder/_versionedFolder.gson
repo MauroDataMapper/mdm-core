@@ -8,7 +8,7 @@ model {
 
 json {
     branchName versionedFolder.branchName
-    documentationVersion versionedFolder.documentationVersion.toString()
-    if (versionedFolder.modelVersion) modelVersion versionedFolder.modelVersion.toString()
+    documentationVersion versionedFolder.documentationVersion
+    if (versionedFolder.modelVersion) modelVersion versionedFolder.modelVersion
     if (versionedFolder.modelVersionTag) modelVersionTag versionedFolder.modelVersionTag
 }

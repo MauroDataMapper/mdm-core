@@ -24,8 +24,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
+import uk.ac.ox.softeng.maurodatamapper.test.functional.TestMergeData
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
-import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
+import uk.ac.ox.softeng.maurodatamapper.version.VersionChangeType
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -35,9 +36,9 @@ import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Ignore
-import spock.lang.Stepwise
 import spock.lang.Unroll
 
+import java.nio.charset.Charset
 import java.util.regex.Pattern
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
@@ -45,6 +46,7 @@ import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
+import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 /**
  * <pre>
@@ -63,7 +65,6 @@ import static io.micronaut.http.HttpStatus.OK
  */
 @Integration
 @Slf4j
-@Stepwise
 class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec {
 
 
@@ -1711,6 +1712,437 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         cleanupModelVersionTree(data)
     }
 
+
+    void 'D01 : test diffing 2 versioned folders (as not logged in)'() {
+
+        given:
+        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+
+        when: 'not logged in'
+        GET("$mergeData.source/diff/$mergeData.target")
+
+        then:
+        verifyNotFound response, mergeData.source
+
+        cleanup:
+        removeValidIdObject(mergeData.source)
+        removeValidIdObject(mergeData.target)
+        removeValidIdObject(mergeData.commonAncestor)
+    }
+
+    void 'D02 : test diffing 2 versioned folders (as authenticated/no access)'() {
+        given:
+        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+
+        when:
+        loginAuthenticated()
+        GET("$mergeData.source/diff/$mergeData.target")
+
+        then:
+        verifyNotFound response, mergeData.source
+
+        cleanup:
+        removeValidIdObject(mergeData.source)
+        removeValidIdObject(mergeData.target)
+        removeValidIdObject(mergeData.commonAncestor)
+    }
+
+    void 'D03 : test diffing 2 versioned folders (as reader of LH model)'() {
+        given:
+        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging(true, false)
+
+        when: 'able to read right model only'
+        loginReader()
+        GET("$mergeData.source/diff/$mergeData.target")
+
+        then:
+        verifyNotFound response, mergeData.target
+
+        cleanup:
+        removeValidIdObject(mergeData.source)
+        removeValidIdObject(mergeData.target)
+        removeValidIdObject(mergeData.commonAncestor)
+    }
+
+    void 'D04 : test diffing 2 versioned folders (as reader of RH model)'() {
+        given:
+        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging(false, true)
+
+        when:
+        loginReader()
+        GET("$mergeData.source/diff/$mergeData.target")
+
+        then:
+        verifyNotFound response, mergeData.source
+
+        cleanup:
+        removeValidIdObject(mergeData.source)
+        removeValidIdObject(mergeData.target)
+        removeValidIdObject(mergeData.commonAncestor)
+    }
+
+    void 'D05 : test diffing 2 simple versioned folders (as reader of both models)'() {
+
+        given:
+        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+
+        when:
+        loginReader()
+        GET("$mergeData.source/diff/$mergeData.target", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "leftId": "${json-unit.matches:id}",
+  "rightId": "${json-unit.matches:id}",
+  "label": "Functional Test VersionedFolder 3",
+  "count": 1,
+  "diffs": [
+    {
+      "branchName": {
+        "left": "left",
+        "right": "main"
+      }
+    }
+  ]
+}
+'''
+
+        cleanup:
+        removeValidIdObject(mergeData.source)
+        removeValidIdObject(mergeData.target)
+        removeValidIdObject(mergeData.commonAncestor)
+    }
+
+    void 'D06 : test diffing 2 complex versioned folders (as reader of both models)'() {
+
+        given:
+        TestMergeData mergeData = buildComplexVersionedFoldersForMerging()
+
+        when:
+        loginReader()
+        GET("$mergeData.source/diff/$mergeData.target", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, getExpectedComplexDiffJson()
+
+        cleanup:
+        removeValidIdObject(mergeData.source)
+        removeValidIdObject(mergeData.target)
+        removeValidIdObject(mergeData.commonAncestor)
+    }
+
+
+    void 'MD01 : test finding merge difference of two versioned folders (as not logged in)'() {
+        given:
+        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+
+        when:
+        GET("$mergeData.source/mergeDiff/$mergeData.target")
+
+        then:
+        verifyResponse NOT_FOUND, response
+
+        cleanup:
+        removeValidIdObject(mergeData.source)
+        removeValidIdObject(mergeData.target)
+        removeValidIdObject(mergeData.commonAncestor)
+    }
+
+    void 'MD02 : test finding merge difference of two versioned folders (as authenticated/logged in)'() {
+        given:
+        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+
+        when:
+        loginAuthenticated()
+        GET("$mergeData.source/mergeDiff/$mergeData.target")
+
+        then:
+        verifyResponse NOT_FOUND, response
+
+        cleanup:
+        removeValidIdObject(mergeData.source)
+        removeValidIdObject(mergeData.target)
+        removeValidIdObject(mergeData.commonAncestor)
+    }
+
+    void 'MD03 : test finding merge difference of two versioned folders (as reader)'() {
+        given:
+        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+
+        when:
+        loginReader()
+        GET("$mergeData.source/mergeDiff/$mergeData.target")
+
+        then:
+        verifyResponse OK, response
+        responseBody().targetId == mergeData.target
+        responseBody().sourceId == mergeData.source
+
+        cleanup:
+        removeValidIdObject(mergeData.source)
+        removeValidIdObject(mergeData.target)
+        removeValidIdObject(mergeData.commonAncestor)
+    }
+
+    void 'MD04 : test finding merge difference of two versioned folders (as editor)'() {
+        given:
+        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+
+        when:
+        loginEditor()
+        GET("$mergeData.source/mergeDiff/$mergeData.target")
+
+        then:
+        verifyResponse OK, response
+        responseBody().targetId == mergeData.target
+        responseBody().sourceId == mergeData.source
+
+        cleanup:
+        removeValidIdObject(mergeData.source)
+        removeValidIdObject(mergeData.target)
+        removeValidIdObject(mergeData.commonAncestor)
+    }
+
+    void 'MD05 : test finding merge difference of two complex versioned folders (as reader)'() {
+        given:
+        TestMergeData mergeData = buildComplexVersionedFoldersForMerging()
+
+        when:
+        loginReader()
+        GET("$mergeData.source/mergeDiff/$mergeData.target", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, expectedMergeDiffJson
+
+        cleanup:
+        removeValidIdObject(mergeData.source)
+        removeValidIdObject(mergeData.target)
+        removeValidIdObject(mergeData.commonAncestor)
+    }
+
+    void 'MI01 : test merge into of two versioned folders (as not logged in)'() {
+        given:
+        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+
+        when:
+        GET("$mergeData.source/mergeInto/$mergeData.target")
+
+        then:
+        verifyResponse NOT_FOUND, response
+
+        cleanup:
+        removeValidIdObject(mergeData.source)
+        removeValidIdObject(mergeData.target)
+        removeValidIdObject(mergeData.commonAncestor)
+    }
+
+    void 'MI02 : test merge into of two versioned folders (as authenticated/logged in)'() {
+        given:
+        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+
+        when:
+        loginAuthenticated()
+        GET("$mergeData.source/mergeInto/$mergeData.target")
+
+        then:
+        verifyResponse NOT_FOUND, response
+
+        cleanup:
+        removeValidIdObject(mergeData.source)
+        removeValidIdObject(mergeData.target)
+        removeValidIdObject(mergeData.commonAncestor)
+    }
+
+    void 'MI03 : test merge into of two versioned folders (as reader)'() {
+        given:
+        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+
+        when:
+        loginReader()
+        PUT("$mergeData.source/mergeInto/$mergeData.target", [:])
+
+        then:
+        verifyForbidden(response)
+
+        cleanup:
+        removeValidIdObject(mergeData.source)
+        removeValidIdObject(mergeData.target)
+        removeValidIdObject(mergeData.commonAncestor)
+    }
+
+
+    void 'MI04 : test merging diff with no patch data'() {
+        given:
+        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+
+        when:
+        loginEditor()
+        PUT("$mergeData.source/mergeInto/$mergeData.target", [:])
+
+        then:
+        verifyResponse(UNPROCESSABLE_ENTITY, response)
+        responseBody().total == 1
+        responseBody().errors[0].message.contains('cannot be null')
+
+        cleanup:
+        removeValidIdObject(mergeData.source)
+        removeValidIdObject(mergeData.target)
+        removeValidIdObject(mergeData.commonAncestor)
+    }
+
+    void 'MI05 : test merging diff with URI id not matching body id'() {
+        given:
+        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+
+        when:
+        loginEditor()
+        PUT("$mergeData.source/mergeInto/$mergeData.target", [patch:
+                                                                  [
+                                                                      targetId: mergeData.target,
+                                                                      sourceId: UUID.randomUUID().toString(),
+                                                                      label   : "Functional Test Model",
+                                                                      count   : 0,
+                                                                      patches : []
+                                                                  ]
+        ])
+
+        then:
+        verifyResponse(UNPROCESSABLE_ENTITY, response)
+        responseBody().message == 'Source versioned folder id passed in request body does not match source versioned folder id in URI.'
+
+        when:
+        PUT("$mergeData.source/mergeInto/$mergeData.target", [patch:
+                                                                  [
+                                                                      targetId: UUID.randomUUID().toString(),
+                                                                      sourceId: mergeData.source,
+                                                                      label   : "Functional Test Model",
+                                                                      count   : 0,
+                                                                      patches : []
+                                                                  ]
+        ])
+
+        then:
+        verifyResponse(UNPROCESSABLE_ENTITY, response)
+        responseBody().message == 'Target versioned folder id passed in request body does not match target versioned folder id in URI.'
+
+        when:
+        PUT("$mergeData.source/mergeInto/$mergeData.target", [patch:
+                                                                  [
+                                                                      targetId: mergeData.target,
+                                                                      sourceId: mergeData.source,
+                                                                      label   : "Functional Test Model",
+                                                                      count   : 0,
+                                                                      patches : []
+                                                                  ]
+        ])
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().id == mergeData.target
+
+        cleanup:
+        removeValidIdObject(mergeData.source)
+        removeValidIdObject(mergeData.target)
+        removeValidIdObject(mergeData.commonAncestor)
+    }
+
+    void 'MI06 : test merge into of two versioned folders'() {
+        given:
+        TestMergeData mergeData = buildSimpleVersionedFoldersForMerging()
+
+        when:
+        loginEditor()
+        PUT("$mergeData.source/mergeInto/$mergeData.target", [
+            patch:
+                [
+                    targetId: mergeData.target,
+                    sourceId: mergeData.source,
+                    label   : "Functional Test Model",
+                    count   : 0,
+                    patches : []
+                ]
+        ])
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == mergeData.target
+
+        cleanup:
+        removeValidIdObject(mergeData.source)
+        removeValidIdObject(mergeData.target)
+        removeValidIdObject(mergeData.commonAncestor)
+    }
+
+    void 'MI07 : test merge into of two complex versioned folders'() {
+        given:
+        TestMergeData mergeData = buildComplexVersionedFoldersForMerging()
+
+        when:
+        loginReader()
+        GET("$mergeData.source/mergeDiff/$mergeData.target")
+
+        then:
+        verifyResponse(OK, response)
+
+        when:
+        def diffs = responseBody().diffs
+        loginEditor()
+        PUT("$mergeData.source/mergeInto/$mergeData.target", [
+            patch:
+                [
+                    targetId: mergeData.target,
+                    sourceId: mergeData.source,
+                    label   : "Functional Test Model",
+                    count   : 0,
+                    patches : diffs
+                ]
+        ])
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == mergeData.target
+        responseBody().description == 'source description on the versioned folder'
+
+        when:
+        GET("dataModels/$mergeData.targetMap.dataModelId", MAP_ARG, true)
+
+        then:
+        responseBody().description == 'DescriptionLeft'
+
+        when:
+        GET("dataModels/$mergeData.targetMap.dataModelId/dataClasses", MAP_ARG, true)
+
+        then:
+        responseBody().items.label as Set == ['existingClass', 'modifyAndModifyReturningDifference', 'modifyLeftOnly',
+                                              'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly',
+                                              'modifyRightOnly', 'addRightOnly', 'modifyAndModifyReturningNoDifference',
+                                              'addAndAddReturningNoDifference'] as Set
+        responseBody().items.find {dataClass -> dataClass.label == 'modifyAndDelete'}.description == 'Description'
+        responseBody().items.find {dataClass -> dataClass.label == 'addAndAddReturningDifference'}.description == 'DescriptionLeft'
+        responseBody().items.find {dataClass -> dataClass.label == 'modifyAndModifyReturningDifference'}.description == 'DescriptionLeft'
+        responseBody().items.find {dataClass -> dataClass.label == 'modifyLeftOnly'}.description == 'Description'
+
+        when:
+        GET("dataModels/$mergeData.targetMap.dataModelId/dataClasses/$mergeData.targetMap.existingClass/dataClasses", MAP_ARG, true)
+
+        then:
+        responseBody().items.label as Set == ['addRightToExistingClass', 'addLeftToExistingClass'] as Set
+
+        when:
+        GET("dataModels/$mergeData.targetMap.dataModelId/metadata", MAP_ARG, true)
+
+        then:
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyOnSource'}.value == 'source has modified this'
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyAndDelete'}.value == 'source has modified this also'
+        !responseBody().items.find {it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource'}
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'addToSourceOnly'}
+
+        cleanup:
+        removeValidIdObject(mergeData.source)
+        removeValidIdObject(mergeData.target)
+        removeValidIdObject(mergeData.commonAncestor)
+    }
+
     Map<String, String> buildModelVersionTree() {
         /*
                                                    /- anotherFork
@@ -1805,6 +2237,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
             'newForkModel',
             'comment',
             'newModelVersion',
+            'finalisedEditActions',
             'newDocumentationVersion',
             'newBranchModelVersion',
             'softDelete',
@@ -2130,5 +2563,778 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
    "displayName": "interestingBranch (V5.0.0)"
   }
 ]"""
+    }
+
+    String getIdFromPath(String rootResourceId, String path) {
+        GET("$rootResourceId/path/${URLEncoder.encode(path, Charset.defaultCharset())}")
+        verifyResponse OK, response
+        assert responseBody().id
+        responseBody().id
+    }
+
+    TestMergeData buildSimpleVersionedFoldersForMerging(boolean readLhs = true, boolean readRhs = true) {
+        String id = getValidId()
+        loginEditor()
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [:])
+        verifyResponse CREATED, response
+        String mainId = responseBody().id
+        if (readRhs) addReaderShare(mainId)
+        PUT("$id/newBranchModelVersion", [branchName: 'left'])
+        verifyResponse CREATED, response
+        String leftId = responseBody().id
+        if (readLhs) addReaderShare(leftId)
+        logout()
+        new TestMergeData(commonAncestor: id, source: leftId, target: mainId)
+    }
+
+    TestMergeData buildComplexVersionedFoldersForMerging() {
+
+        // Somethings up with the MD, when running properly the diff happily returns the changed MD, but under test it doesnt.
+        // The MD exists in the daabase and is returned if using the MD endpoint but when calling folder.metadata the collection is empty.
+        // When run-app all the tables are correctly populated and the collection is not empty
+
+        String commonAncestorId = getValidId()
+        loginEditor()
+        POST("folders/$commonAncestorId/dataModels", [
+            label: 'Functional Test DataModel 1'
+        ], MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String dataModel1Id = responseBody().id
+
+        POST("dataModels/$dataModel1Id/dataClasses", [label: 'deleteLeftOnly'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        POST("dataModels/$dataModel1Id/dataClasses", [label: 'deleteRightOnly'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        POST("dataModels/$dataModel1Id/dataClasses", [label: 'modifyLeftOnly'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        POST("dataModels/$dataModel1Id/dataClasses", [label: 'modifyRightOnly'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        POST("dataModels/$dataModel1Id/dataClasses", [label: 'deleteAndDelete'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        POST("dataModels/$dataModel1Id/dataClasses", [label: 'deleteAndModify'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        POST("dataModels/$dataModel1Id/dataClasses", [label: 'modifyAndDelete'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        POST("dataModels/$dataModel1Id/dataClasses", [label: 'modifyAndModifyReturningNoDifference'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        POST("dataModels/$dataModel1Id/dataClasses", [label: 'modifyAndModifyReturningDifference'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        POST("dataModels/$dataModel1Id/dataClasses", [label: 'existingClass'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String caExistingClass = responseBody().id
+        POST("dataModels/$dataModel1Id/dataClasses/$caExistingClass/dataClasses", [label: 'deleteLeftOnlyFromExistingClass'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        POST("dataModels/$dataModel1Id/dataClasses/$caExistingClass/dataClasses", [label: 'deleteRightOnlyFromExistingClass'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        POST("dataModels/$dataModel1Id/metadata", [namespace: 'functional.test', key: 'nothingDifferent', value: 'this shouldnt change'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        POST("dataModels/$dataModel1Id/metadata", [namespace: 'functional.test', key: 'modifyOnSource', value: 'some original value'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        POST("dataModels/$dataModel1Id/metadata", [namespace: 'functional.test', key: 'deleteFromSource', value: 'some other original value'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        POST("dataModels/$dataModel1Id/metadata", [namespace: 'functional.test', key: 'modifyAndDelete', value: 'some other original value 2'], MAP_ARG, true)
+
+
+        //        POST("$commonAncestorId/metadata", [namespace: 'functional.test', key: 'nothingDifferent', value: 'this shouldnt change'])
+        //        verifyResponse CREATED, response
+        //        POST("$commonAncestorId/metadata", [namespace: 'functional.test', key: 'modifyOnSource', value: 'some original value'])
+        //        verifyResponse CREATED, response
+        //        POST("$commonAncestorId/metadata", [namespace: 'functional.test', key: 'deleteFromSource', value: 'some other original value'])
+        //        verifyResponse CREATED, response
+        //        POST("$commonAncestorId/metadata", [namespace: 'functional.test', key: 'modifyAndDelete', value: 'some other original value 2'])
+        verifyResponse CREATED, response
+
+        PUT("$commonAncestorId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$commonAncestorId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String target = responseBody().id
+        addReaderShare(target)
+        PUT("$commonAncestorId/newBranchModelVersion", [branchName: 'source'])
+        verifyResponse CREATED, response
+        String source = responseBody().id
+        addReaderShare(source)
+
+        // Modify Source
+        Map sourceMap = [
+            dataModelId                         : getIdFromPath(source, 'dm:Functional Test DataModel 1$source'),
+            existingClass                       : getIdFromPath(source, 'dm:Functional Test DataModel 1$source|dc:existingClass'),
+            deleteLeftOnlyFromExistingClass     : getIdFromPath(source, 'dm:Functional Test DataModel 1$source|dc:existingClass|dc:deleteLeftOnlyFromExistingClass'),
+            deleteLeftOnly                      : getIdFromPath(source, 'dm:Functional Test DataModel 1$source|dc:deleteLeftOnly'),
+            modifyLeftOnly                      : getIdFromPath(source, 'dm:Functional Test DataModel 1$source|dc:modifyLeftOnly'),
+            deleteAndDelete                     : getIdFromPath(source, 'dm:Functional Test DataModel 1$source|dc:deleteAndDelete'),
+            deleteAndModify                     : getIdFromPath(source, 'dm:Functional Test DataModel 1$source|dc:deleteAndModify'),
+            modifyAndDelete                     : getIdFromPath(source, 'dm:Functional Test DataModel 1$source|dc:modifyAndDelete'),
+            modifyAndModifyReturningNoDifference: getIdFromPath(source, 'dm:Functional Test DataModel 1$source|dc:modifyAndModifyReturningNoDifference'),
+            modifyAndModifyReturningDifference  : getIdFromPath(source, 'dm:Functional Test DataModel 1$source|dc:modifyAndModifyReturningDifference'),
+            dataModelMetadataModifyOnSource     : getIdFromPath(source, 'dm:Functional Test DataModel 1$source|md:functional.test.modifyOnSource'),
+            dataModelMetadataDeleteFromSource   : getIdFromPath(source, 'dm:Functional Test DataModel 1$source|md:functional.test.deleteFromSource'),
+            dataModelMetadataModifyAndDelete    : getIdFromPath(source, 'dm:Functional Test DataModel 1$source|md:functional.test.modifyAndDelete'),
+            //            metadataModifyOnSource              : getIdFromPath(source, 'md:functional.test.modifyOnSource'),
+            //            metadataDeleteFromSource            : getIdFromPath(source, 'md:functional.test.deleteFromSource'),
+            //            metadataModifyAndDelete             : getIdFromPath(source, 'md:functional.test.modifyAndDelete'),
+        ]
+
+        DELETE("dataModels/$sourceMap.dataModelId/dataClasses/$sourceMap.deleteAndDelete", MAP_ARG, true)
+        verifyResponse NO_CONTENT, response
+        DELETE("dataModels/$sourceMap.dataModelId/dataClasses/$sourceMap.existingClass/dataClasses/$sourceMap.deleteLeftOnlyFromExistingClass", MAP_ARG, true)
+        verifyResponse NO_CONTENT, response
+        DELETE("dataModels/$sourceMap.dataModelId/dataClasses/$sourceMap.deleteLeftOnly", MAP_ARG, true)
+        verifyResponse NO_CONTENT, response
+        DELETE("dataModels/$sourceMap.dataModelId/dataClasses/$sourceMap.deleteAndModify", MAP_ARG, true)
+        verifyResponse NO_CONTENT, response
+
+        PUT("dataModels/$sourceMap.dataModelId/dataClasses/$sourceMap.modifyLeftOnly", [description: 'Description'], MAP_ARG, true)
+        verifyResponse OK, response
+        PUT("dataModels/$sourceMap.dataModelId/dataClasses/$sourceMap.modifyAndDelete", [description: 'Description'], MAP_ARG, true)
+        verifyResponse OK, response
+        PUT("dataModels/$sourceMap.dataModelId/dataClasses/$sourceMap.modifyAndModifyReturningNoDifference", [description: 'Description'], MAP_ARG, true)
+        verifyResponse OK, response
+        PUT("dataModels/$sourceMap.dataModelId/dataClasses/$sourceMap.modifyAndModifyReturningDifference", [description: 'DescriptionLeft'], MAP_ARG, true)
+        verifyResponse OK, response
+
+        POST("dataModels/$sourceMap.dataModelId/dataClasses/$sourceMap.existingClass/dataClasses", [label: 'addLeftToExistingClass'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        sourceMap.addLeftToExistingClass = responseBody().id
+        POST("dataModels/$sourceMap.dataModelId/dataClasses", [label: 'addLeftOnly'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        sourceMap.addLeftOnly = responseBody().id
+        POST("dataModels/$sourceMap.dataModelId/dataClasses", [label: 'addAndAddReturningNoDifference'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        POST("dataModels/$sourceMap.dataModelId/dataClasses", [label: 'addAndAddReturningDifference', description: 'DescriptionLeft'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        sourceMap.addAndAddReturningDifference = responseBody().id
+
+        PUT("dataModels/$sourceMap.dataModelId", [description: 'DescriptionLeft'], MAP_ARG, true)
+        verifyResponse OK, response
+
+        PUT("$source", [description: 'source description on the versioned folder'])
+        verifyResponse OK, response
+
+        POST("dataModels/$sourceMap.dataModelId/metadata", [namespace: 'functional.test', key: 'addToSourceOnly', value: 'adding to source only'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        PUT("dataModels/$sourceMap.dataModelId/metadata/$sourceMap.dataModelMetadataModifyOnSource", [value: 'source has modified this'], MAP_ARG, true)
+        verifyResponse OK, response
+        PUT("dataModels/$sourceMap.dataModelId/metadata/$sourceMap.dataModelMetadataModifyAndDelete", [value: 'source has modified this also'], MAP_ARG, true)
+        verifyResponse OK, response
+        DELETE("dataModels/$sourceMap.dataModelId/metadata/$sourceMap.dataModelMetadataDeleteFromSource", MAP_ARG, true)
+        verifyResponse NO_CONTENT, response
+
+        //        POST("$source/metadata", [namespace: 'functional.test', key: 'addToSourceOnly', value: 'adding to source only'])
+        //        verifyResponse CREATED, response
+        //        PUT("$source/metadata/$sourceMap.metadataModifyOnSource", [value: 'source has modified this'])
+        //        verifyResponse OK, response
+        //        PUT("$source/metadata/$sourceMap.metadataModifyAndDelete", [value: 'source has modified this also'])
+        //        verifyResponse OK, response
+        //        DELETE("$source/metadata/$sourceMap.metadataDeleteFromSource")
+        //        verifyResponse NO_CONTENT, response
+
+
+        // Modify Target
+        Map targetMap = [
+            dataModelId                         : getIdFromPath(target, 'dm:Functional Test DataModel 1$main'),
+            existingClass                       : getIdFromPath(target, 'dm:Functional Test DataModel 1$main|dc:existingClass'),
+            deleteRightOnly                     : getIdFromPath(target, 'dm:Functional Test DataModel 1$main|dc:deleteRightOnly'),
+            modifyRightOnly                     : getIdFromPath(target, 'dm:Functional Test DataModel 1$main|dc:modifyRightOnly'),
+            deleteRightOnlyFromExistingClass    : getIdFromPath(target, 'dm:Functional Test DataModel 1$main|dc:existingClass|dc:deleteRightOnlyFromExistingClass'),
+            deleteAndDelete                     : getIdFromPath(target, 'dm:Functional Test DataModel 1$main|dc:deleteAndDelete'),
+            deleteAndModify                     : getIdFromPath(target, 'dm:Functional Test DataModel 1$main|dc:deleteAndModify'),
+            modifyAndDelete                     : getIdFromPath(target, 'dm:Functional Test DataModel 1$main|dc:modifyAndDelete'),
+            modifyAndModifyReturningNoDifference: getIdFromPath(target, 'dm:Functional Test DataModel 1$main|dc:modifyAndModifyReturningNoDifference'),
+            modifyAndModifyReturningDifference  : getIdFromPath(target, 'dm:Functional Test DataModel 1$main|dc:modifyAndModifyReturningDifference'),
+            deleteLeftOnly                      : getIdFromPath(target, 'dm:Functional Test DataModel 1$main|dc:deleteLeftOnly'),
+            modifyLeftOnly                      : getIdFromPath(target, 'dm:Functional Test DataModel 1$main|dc:modifyLeftOnly'),
+            deleteLeftOnlyFromExistingClass     : getIdFromPath(target, 'dm:Functional Test DataModel 1$main|dc:deleteLeftOnlyFromExistingClass'),
+            dataModelMetadataModifyAndDelete    : getIdFromPath(target, 'dm:Functional Test DataModel 1$main|md:functional.test.modifyAndDelete'),
+            //            metadataModifyAndDelete             : getIdFromPath(target, 'md:functional.test.modifyAndDelete'),
+        ]
+
+        DELETE("dataModels/$targetMap.dataModelId/dataClasses/$targetMap.existingClass/dataClasses/$targetMap.deleteRightOnlyFromExistingClass", MAP_ARG, true)
+        verifyResponse NO_CONTENT, response
+        DELETE("dataModels/$targetMap.dataModelId/dataClasses/$targetMap.deleteRightOnly", MAP_ARG, true)
+        verifyResponse NO_CONTENT, response
+        DELETE("dataModels/$targetMap.dataModelId/dataClasses/$targetMap.deleteAndDelete", MAP_ARG, true)
+        verifyResponse NO_CONTENT, response
+        DELETE("dataModels/$targetMap.dataModelId/dataClasses/$targetMap.modifyAndDelete", MAP_ARG, true)
+        verifyResponse NO_CONTENT, response
+
+        PUT("dataModels/$targetMap.dataModelId/dataClasses/$targetMap.modifyRightOnly", [description: 'Description'], MAP_ARG, true)
+        verifyResponse OK, response
+        PUT("dataModels/$targetMap.dataModelId/dataClasses/$targetMap.deleteAndModify", [description: 'Description'], MAP_ARG, true)
+        verifyResponse OK, response
+        PUT("dataModels/$targetMap.dataModelId/dataClasses/$targetMap.modifyAndModifyReturningNoDifference", [description: 'Description'], MAP_ARG, true)
+        verifyResponse OK, response
+        PUT("dataModels/$targetMap.dataModelId/dataClasses/$targetMap.modifyAndModifyReturningDifference", [description: 'DescriptionRight'], MAP_ARG, true)
+        verifyResponse OK, response
+
+        POST("dataModels/$targetMap.dataModelId/dataClasses/$targetMap.existingClass/dataClasses", [label: 'addRightToExistingClass'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        POST("dataModels/$targetMap.dataModelId/dataClasses", [label: 'addRightOnly'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        POST("dataModels/$targetMap.dataModelId/dataClasses", [label: 'addAndAddReturningNoDifference'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        POST("dataModels/$targetMap.dataModelId/dataClasses", [label: 'addAndAddReturningDifference', description: 'DescriptionRight'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        targetMap.addAndAddReturningDifference = responseBody().id
+
+        PUT("dataModels/$targetMap.dataModelId", [description: 'DescriptionRight'], MAP_ARG, true)
+        verifyResponse OK, response
+        PUT("$target", [description: 'Target modified description'])
+        verifyResponse OK, response
+        DELETE("dataModels/$targetMap.dataModelId/metadata/$targetMap.dataModelMetadataModifyAndDelete", MAP_ARG, true)
+        verifyResponse NO_CONTENT, response
+        //        DELETE("$target/metadata/$targetMap.metadataModifyAndDelete")
+        //        verifyResponse NO_CONTENT, response
+        logout()
+
+
+        new TestMergeData(commonAncestor: commonAncestorId,
+                          source: source,
+                          target: target,
+                          sourceMap: sourceMap,
+                          targetMap: targetMap
+        )
+    }
+
+    String getExpectedComplexDiffJson() {
+        '''{
+  "leftId": "${json-unit.matches:id}",
+  "rightId": "${json-unit.matches:id}",
+  "label": "Functional Test VersionedFolder 3",
+  "count": 22,
+  "diffs": [
+    {
+      "description": {
+        "left": "source description on the versioned folder",
+        "right": "Target modified description"
+      }
+    },
+    {
+      "branchName": {
+        "left": "source",
+        "right": "main"
+      }
+    },
+    {
+      "models": {
+        "modified": [
+          {
+            "leftId": "${json-unit.matches:id}",
+            "rightId": "${json-unit.matches:id}",
+            "label": "Functional Test DataModel 1",
+            "count": 20,
+            "diffs": [
+              {
+                "description": {
+                  "left": "DescriptionLeft",
+                  "right": "DescriptionRight"
+                }
+              },
+              {
+                "metadata": {
+                  "deleted": [
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "namespace": "functional.test",
+                        "key": "addToSourceOnly",
+                        "value": "adding to source only"
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "namespace": "functional.test",
+                        "key": "modifyAndDelete",
+                        "value": "source has modified this also"
+                      }
+                    }
+                  ],
+                  "created": [
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "namespace": "functional.test",
+                        "key": "deleteFromSource",
+                        "value": "some other original value"
+                      }
+                    }
+                  ],
+                  "modified": [
+                    {
+                      "leftId": "${json-unit.matches:id}",
+                      "rightId": "${json-unit.matches:id}",
+                      "namespace": "functional.test",
+                      "key": "modifyOnSource",
+                      "count": 1,
+                      "diffs": [
+                        {
+                          "value": {
+                            "left": "source has modified this",
+                            "right": "some original value"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "branchName": {
+                  "left": "source",
+                  "right": "main"
+                }
+              },
+              {
+                "dataClasses": {
+                  "deleted": [
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "deleteRightOnly",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test DataModel 1",
+                            "domainType": "DataModel",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "modifyAndDelete",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test DataModel 1",
+                            "domainType": "DataModel",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "addLeftOnly",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test DataModel 1",
+                            "domainType": "DataModel",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "created": [
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "deleteLeftOnly",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test DataModel 1",
+                            "domainType": "DataModel",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "deleteAndModify",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test DataModel 1",
+                            "domainType": "DataModel",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "addRightOnly",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test DataModel 1",
+                            "domainType": "DataModel",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "modified": [
+                    {
+                      "leftId": "${json-unit.matches:id}",
+                      "rightId": "${json-unit.matches:id}",
+                      "label": "modifyLeftOnly",
+                      "leftBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "rightBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "count": 1,
+                      "diffs": [
+                        {
+                          "description": {
+                            "left": "Description",
+                            "right": null
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "leftId": "${json-unit.matches:id}",
+                      "rightId": "${json-unit.matches:id}",
+                      "label": "modifyRightOnly",
+                      "leftBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "rightBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "count": 1,
+                      "diffs": [
+                        {
+                          "description": {
+                            "left": null,
+                            "right": "Description"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "leftId": "${json-unit.matches:id}",
+                      "rightId": "${json-unit.matches:id}",
+                      "label": "modifyAndModifyReturningDifference",
+                      "leftBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "rightBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "count": 1,
+                      "diffs": [
+                        {
+                          "description": {
+                            "left": "DescriptionLeft",
+                            "right": "DescriptionRight"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "leftId": "${json-unit.matches:id}",
+                      "rightId": "${json-unit.matches:id}",
+                      "label": "addAndAddReturningDifference",
+                      "leftBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "rightBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "count": 1,
+                      "diffs": [
+                        {
+                          "description": {
+                            "left": "DescriptionLeft",
+                            "right": "DescriptionRight"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "leftId": "${json-unit.matches:id}",
+                      "rightId": "${json-unit.matches:id}",
+                      "label": "existingClass",
+                      "leftBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "rightBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "count": 4,
+                      "diffs": [
+                        {
+                          "dataClasses": {
+                            "deleted": [
+                              {
+                                "value": {
+                                  "id": "${json-unit.matches:id}",
+                                  "label": "addLeftToExistingClass",
+                                  "breadcrumbs": [
+                                    {
+                                      "id": "${json-unit.matches:id}",
+                                      "label": "Functional Test DataModel 1",
+                                      "domainType": "DataModel",
+                                      "finalised": false
+                                    },
+                                    {
+                                      "id": "${json-unit.matches:id}",
+                                      "label": "existingClass",
+                                      "domainType": "DataClass"
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "value": {
+                                  "id": "${json-unit.matches:id}",
+                                  "label": "deleteRightOnlyFromExistingClass",
+                                  "breadcrumbs": [
+                                    {
+                                      "id": "${json-unit.matches:id}",
+                                      "label": "Functional Test DataModel 1",
+                                      "domainType": "DataModel",
+                                      "finalised": false
+                                    },
+                                    {
+                                      "id": "${json-unit.matches:id}",
+                                      "label": "existingClass",
+                                      "domainType": "DataClass"
+                                    }
+                                  ]
+                                }
+                              }
+                            ],
+                            "created": [
+                              {
+                                "value": {
+                                  "id": "${json-unit.matches:id}",
+                                  "label": "deleteLeftOnlyFromExistingClass",
+                                  "breadcrumbs": [
+                                    {
+                                      "id": "${json-unit.matches:id}",
+                                      "label": "Functional Test DataModel 1",
+                                      "domainType": "DataModel",
+                                      "finalised": false
+                                    },
+                                    {
+                                      "id": "${json-unit.matches:id}",
+                                      "label": "existingClass",
+                                      "domainType": "DataClass"
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "value": {
+                                  "id": "${json-unit.matches:id}",
+                                  "label": "addRightToExistingClass",
+                                  "breadcrumbs": [
+                                    {
+                                      "id": "${json-unit.matches:id}",
+                                      "label": "Functional Test DataModel 1",
+                                      "domainType": "DataModel",
+                                      "finalised": false
+                                    },
+                                    {
+                                      "id": "${json-unit.matches:id}",
+                                      "label": "existingClass",
+                                      "domainType": "DataClass"
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}'''
+    }
+
+    String getExpectedMergeDiffJson() {
+        '''{
+  "sourceId": "${json-unit.matches:id}",
+  "targetId": "${json-unit.matches:id}",
+  "path": "vf:Functional Test VersionedFolder 3$source",
+  "label": "Functional Test VersionedFolder 3",
+  "count": 15,
+  "diffs": [
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder 3$source@description",
+      "sourceValue": "source description on the versioned folder",
+      "targetValue": "Target modified description",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder 3$source|dm:Functional Test DataModel 1$source@description",
+      "sourceValue": "DescriptionLeft",
+      "targetValue": "DescriptionRight",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder 3$source|dm:Functional Test DataModel 1$source|dc:addLeftOnly",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder 3$source|dm:Functional Test DataModel 1$source|dc:modifyAndDelete",
+      "isMergeConflict": true,
+      "isSourceModificationAndTargetDeletion": true,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder 3$source|dm:Functional Test DataModel 1$source|dc:deleteAndModify",
+      "isMergeConflict": true,
+      "isSourceDeletionAndTargetModification": true,
+      "type": "deletion"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder 3$source|dm:Functional Test DataModel 1$source|dc:deleteLeftOnly",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder 3$source|dm:Functional Test DataModel 1$source|dc:addAndAddReturningDifference@description",
+      "sourceValue": "DescriptionLeft",
+      "targetValue": "DescriptionRight",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder 3$source|dm:Functional Test DataModel 1$source|dc:existingClass|dc:addLeftToExistingClass",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder 3$source|dm:Functional Test DataModel 1$source|dc:existingClass|dc:deleteLeftOnlyFromExistingClass",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder 3$source|dm:Functional Test DataModel 1$source|dc:modifyAndModifyReturningDifference@description",
+      "sourceValue": "DescriptionLeft",
+      "targetValue": "DescriptionRight",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder 3$source|dm:Functional Test DataModel 1$source|dc:modifyLeftOnly@description",
+      "sourceValue": "Description",
+      "targetValue": null,
+      "commonAncestorValue": null,
+      "isMergeConflict": false,
+      "type": "modification"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder 3$source|dm:Functional Test DataModel 1$source|md:functional.test.addToSourceOnly",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder 3$source|dm:Functional Test DataModel 1$source|md:functional.test.modifyAndDelete",
+      "isMergeConflict": true,
+      "isSourceModificationAndTargetDeletion": true,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder 3$source|dm:Functional Test DataModel 1$source|md:functional.test.deleteFromSource",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "fieldName": "value",
+      "path": "vf:Functional Test VersionedFolder 3$source|dm:Functional Test DataModel 1$source|md:functional.test.modifyOnSource@value",
+      "sourceValue": "source has modified this",
+      "targetValue": "some original value",
+      "commonAncestorValue": "some original value",
+      "isMergeConflict": false,
+      "type": "modification"
+    }
+  ]
+}'''
     }
 }

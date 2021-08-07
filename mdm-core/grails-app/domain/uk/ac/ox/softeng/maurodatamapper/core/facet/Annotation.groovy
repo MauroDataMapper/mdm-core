@@ -17,22 +17,22 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.InformationAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.PathAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class Annotation implements MultiFacetItemAware, PathAware, InformationAware, CreatorAware, Diffable<Annotation> {
+class Annotation implements MultiFacetItemAware, PathAware, InformationAware, Diffable<Annotation> {
 
     UUID id
     Annotation parentAnnotation
@@ -77,13 +77,23 @@ class Annotation implements MultiFacetItemAware, PathAware, InformationAware, Cr
     }
 
     @Override
+    String getPathPrefix() {
+        'ann'
+    }
+
+    @Override
+    String getPathIdentifier() {
+        label
+    }
+
+    @Override
     Annotation getPathParent() {
         parentAnnotation
     }
 
     def beforeValidate() {
         buildPath()
-        childAnnotations.eachWithIndex {ann, i ->
+        childAnnotations.eachWithIndex { ann, i ->
             if (!ann.label) ann.label = "$label [$i]"
             if (multiFacetAwareItem) {
                 ann.setMultiFacetAwareItem(this.multiFacetAwareItem)
@@ -112,17 +122,12 @@ class Annotation implements MultiFacetItemAware, PathAware, InformationAware, Cr
 
     @Override
     ObjectDiff<Annotation> diff(Annotation otherAnnotation) {
-        ObjectDiff.builder(Annotation)
+        DiffBuilder.objectDiff(Annotation)
             .leftHandSide(this.id.toString(), this)
             .rightHandSide(otherAnnotation.id.toString(), otherAnnotation)
             .appendString('description', this.description, otherAnnotation.description)
             .appendList(Annotation, 'childAnnotations', this.childAnnotations, otherAnnotation.childAnnotations)
 
-    }
-
-    @Override
-    String getDiffIdentifier() {
-        this.label
     }
 
     static DetachedCriteria<Annotation> by() {

@@ -17,10 +17,21 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.traits.service
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import grails.core.GrailsApplication
+import grails.core.GrailsClass
 import org.grails.orm.hibernate.proxy.HibernateProxyHandler
+import org.springframework.beans.factory.annotation.Autowired
 
-trait DomainService<K> {
+import java.lang.reflect.ParameterizedType
+
+trait DomainService<K extends CreatorAware> {
+
+    @Autowired
+    GrailsApplication grailsApplication
 
     final static HibernateProxyHandler HIBERNATE_PROXY_HANDLER = new HibernateProxyHandler()
 
@@ -44,4 +55,31 @@ trait DomainService<K> {
     K unwrapIfProxy(def ge) {
         HIBERNATE_PROXY_HANDLER.unwrapIfProxy(ge) as K
     }
+
+    Class<K> getDomainClass() {
+        ParameterizedType parameterizedType = this.getClass().getGenericInterfaces().find {it instanceof ParameterizedType}
+        if (!parameterizedType) {
+            parameterizedType = this.getClass().getGenericSuperclass()
+        }
+        (Class<K>) parameterizedType.getActualTypeArguments()[0]
+    }
+
+    boolean handles(Class clazz) {
+        clazz == getDomainClass()
+    }
+
+    boolean handles(String domainType) {
+        GrailsClass grailsClass = Utils.lookupGrailsDomain(grailsApplication, domainType)
+        if (!grailsClass) {
+            throw new ApiBadRequestException('CISXX', "Unrecognised domain class resource [${domainType}]")
+        }
+        handles(grailsClass.clazz)
+    }
+
+    boolean handlesPathPrefix(String pathPrefix) {
+        (getDomainClass().getDeclaredConstructor().newInstance() as CreatorAware).pathPrefix == pathPrefix
+    }
+
+    abstract K findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier)
+
 }

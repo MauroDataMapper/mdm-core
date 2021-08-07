@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.security.test
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
@@ -76,6 +76,10 @@ class BasicModelItem implements ModelItem<BasicModelItem, BasicModel>, GormEntit
         BasicModelItem.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'bmi'
+    }
 
     @Override
     String getEditLabel() {

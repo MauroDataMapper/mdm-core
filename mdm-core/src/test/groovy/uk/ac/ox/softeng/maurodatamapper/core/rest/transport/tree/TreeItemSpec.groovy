@@ -27,14 +27,11 @@ import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModelItem
 import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec
 
-import spock.lang.Stepwise
-
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
 
 /**
  * @since 30/10/2017
  */
-@Stepwise
 class TreeItemSpec extends BaseUnitSpec {
     BasicModel basicModel
     Folder misc

@@ -12,5 +12,5 @@ json {
     count catalogueUserList instanceof PagedResultList ? ((PagedResultList) catalogueUserList).getTotalCount() : catalogueUserList?.size() ?: 0
     if (params.boolean('groupsContent', false)) {
         items tmpl.catalogueUser(catalogueUserList ?: [])
-    } else items tmpl.fullCatalogueUser(catalogueUserList ?: [], [userSecurityPolicyManager: userSecurityPolicyManager])
+    } else items tmpl.catalogueUser_full(catalogueUserList ?: [], [userSecurityPolicyManager: userSecurityPolicyManager])
 }

@@ -108,6 +108,11 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
     DataType() {
     }
 
+    @Override
+    String getPathPrefix() {
+        'dt'
+    }
+
     @Field(index = Index.YES, bridge = @FieldBridge(impl = UUIDBridge))
     UUID getModelId() {
         dataModel.id
@@ -147,11 +152,6 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
     @Override
     DataModel getModel() {
         dataModel
-    }
-
-    @Override
-    String getDiffIdentifier() {
-        this.label
     }
 
     @Override

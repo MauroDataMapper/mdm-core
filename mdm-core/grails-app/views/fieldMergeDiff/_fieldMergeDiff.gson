@@ -1,0 +1,15 @@
+import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.FieldMergeDiff
+
+model {
+    FieldMergeDiff fieldMergeDiff
+}
+
+json {
+    fieldName fieldMergeDiff.fieldName
+    path fieldMergeDiff.fullyQualifiedPath
+    sourceValue fieldMergeDiff.getSource()
+    targetValue fieldMergeDiff.getTarget()
+    commonAncestorValue fieldMergeDiff.commonAncestor
+    isMergeConflict fieldMergeDiff.mergeConflict
+    type 'modification'
+}

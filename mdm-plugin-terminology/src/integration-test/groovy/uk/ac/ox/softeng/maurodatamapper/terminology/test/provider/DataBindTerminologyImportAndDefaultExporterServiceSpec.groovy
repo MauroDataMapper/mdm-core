@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.terminology.test.provider
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.TerminologyService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.TerminologyExporterProviderService
@@ -29,7 +29,6 @@ import grails.gorm.transactions.Rollback
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Shared
-import spock.lang.Stepwise
 import spock.lang.Unroll
 
 import java.nio.charset.Charset
@@ -39,7 +38,6 @@ import java.nio.charset.Charset
  */
 @Rollback
 @Slf4j
-@Stepwise
 abstract class DataBindTerminologyImportAndDefaultExporterServiceSpec<I extends DataBindTerminologyImporterProviderService, E extends TerminologyExporterProviderService>
     extends BaseImportExportTerminologySpec {
 
@@ -160,7 +158,27 @@ abstract class DataBindTerminologyImportAndDefaultExporterServiceSpec<I extends 
         if (!diff.objectsAreIdentical()) {
             log.error('{}', diff.toString())
         }
-        diff.objectsAreIdentical()
+        // Rules are not exported/imported and therefore will exist as diffs
+        diff.numberOfDiffs == 5
+        diff.diffs.find {it.fieldName == 'rule'}.deleted.size() == 1
+        diff.diffs.find {it.fieldName == 'termRelationshipTypes'}.modified.first().diffs.deleted.size() == 1
+
+        diff.diffs.find {it.fieldName == 'terms'}.modified.size() == 2
+
+        when:
+        ObjectDiff t1 = diff.diffs.find {it.fieldName == 'terms'}.modified.find {(it as ObjectDiff).left.diffIdentifier == 'CTT00'}
+        ObjectDiff t2 = diff.diffs.find {it.fieldName == 'terms'}.modified.find {(it as ObjectDiff).left.diffIdentifier == 'CTT1'}
+
+
+        then:
+        t1.diffs.size() == 1
+        t1.diffs.first().modified.size() == 1
+        t1.diffs.first().modified.first().diffs.deleted.size()
+
+        and:
+        t2.diffs.size() == 2
+        t2.diffs.find {it.fieldName == 'rule'}.deleted.size() == 1
+        t2.diffs.find {it.fieldName == 'sourceTermRelationships'}.modified.first().diffs.deleted.size() == 1
     }
 
     void 'E04 : test export and import simple Terminology'() {

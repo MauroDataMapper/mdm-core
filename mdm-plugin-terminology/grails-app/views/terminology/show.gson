@@ -6,5 +6,5 @@ model {
     UserSecurityPolicyManager userSecurityPolicyManager
 }
 
-json tmpl.fullTerminology(terminology: terminology, userSecurityPolicyManager: userSecurityPolicyManager)
+json tmpl.terminology_full(terminology: terminology, userSecurityPolicyManager: userSecurityPolicyManager)
 

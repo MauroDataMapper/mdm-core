@@ -20,11 +20,11 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.controller.CatalogueItemController
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.SearchService
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
 
 import grails.gorm.transactions.Transactional
@@ -270,7 +270,9 @@ class DataClassController extends CatalogueItemController<DataClass> {
 
     @Override
     protected void serviceInsertResource(DataClass resource) {
-        dataClassService.save([flush: true, validate: false, deepSave: actionName == 'copyDataClass', saveDataTypes: actionName == 'copyDataClass'],
+        dataClassService.save([flush        : true, validate: false, insert: actionName == 'copyDataClass',
+                               deepSave     : actionName == 'copyDataClass',
+                               saveDataTypes: actionName == 'copyDataClass'],
                               resource)
     }
 

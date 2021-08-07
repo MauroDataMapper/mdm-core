@@ -25,7 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.DataLoadable
 import uk.ac.ox.softeng.maurodatamapper.provider.MauroDataMapperService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
-import uk.ac.ox.softeng.maurodatamapper.util.Version
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import groovy.util.logging.Slf4j
 import org.hibernate.SessionFactory

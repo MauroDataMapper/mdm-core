@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.dataflow.test.provider
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlow
 import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlowService
@@ -28,20 +28,15 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import grails.gorm.transactions.Rollback
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
-import spock.lang.Stepwise
 import spock.lang.Unroll
 
-import com.google.common.base.CaseFormat
 import java.nio.charset.Charset
-import java.nio.file.Files
-import java.nio.file.Path
 
 /**
  * @since 11/01/2021
  */
 @Rollback
 @Slf4j
-@Stepwise
 abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDataFlowImporterProviderService, E extends ExporterProviderService>
     extends BaseImportExportSpec {
 
@@ -138,14 +133,14 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
 
         then:
         //The bootstrapped DataFlow intentionally uses non-unique labels for DataElementComponent and DataClassComponent
-        //Consequently the order in which output varies from test to test. The XML validator which compares actual to expected 
+        //Consequently the order in which output varies from test to test. The XML validator which compares actual to expected
         //XML cannot deal with this, so we avoid making this comparison for XML.
         if (getImportType() == "json") {
             validateExportedModel('bootstrappedDataFlow', exported)
         } else {
             true
         }
-        
+
 
         when:
         DataFlow imported = dataFlowImporterService.importDataFlow(admin, exported.bytes)

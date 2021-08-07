@@ -6,7 +6,7 @@ import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 
 model {
     Diffable diffable
-
+    Boolean renderBreadcrumbs = true
 }
 
 json {
@@ -24,7 +24,7 @@ json {
         value(((Metadata) diffable).getValue())
     }
 
-    if (diffable instanceof ModelItem) {
+    if (renderBreadcrumbs && diffable instanceof ModelItem) {
         breadcrumbs g.render(((ModelItem) diffable).getBreadcrumbs())
     }
 }

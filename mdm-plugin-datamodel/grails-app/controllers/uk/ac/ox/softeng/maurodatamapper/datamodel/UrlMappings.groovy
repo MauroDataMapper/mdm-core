@@ -108,6 +108,8 @@ class UrlMappings {
 
                 get '/allDataClasses'(controller: 'dataClass', action: 'all')
 
+                get '/dataElements'(controller: 'dataElement', action: 'index')
+
                 /**
                  * DataTypes
                  */

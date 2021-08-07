@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.terminology.item
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -93,7 +94,7 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
     }
 
     @Override
-    TermRelationshipType copy(Model copiedTerminology, TermRelationshipType original, UserSecurityPolicyManager userSecurityPolicyManager) {
+    TermRelationshipType copy(Model copiedTerminology, TermRelationshipType original, CatalogueItem nonModelParent, UserSecurityPolicyManager userSecurityPolicyManager) {
         copyTermRelationshipType(copiedTerminology as Terminology, original, userSecurityPolicyManager.user)
     }
 
@@ -186,5 +187,10 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
     @Override
     List<TermRelationshipType> findAllByMetadataNamespace(String namespace, Map pagination) {
         TermRelationshipType.byMetadataNamespace(namespace).list(pagination)
+    }
+
+    @Override
+    TermRelationshipType findByParentIdAndLabel(UUID parentId, String label) {
+        TermRelationshipType.byTerminologyId(parentId).eq('label', label).get()
     }
 }
