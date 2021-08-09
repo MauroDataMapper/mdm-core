@@ -1,7 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ContainerTreeItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.TreeItem
 
 model {
     Iterable<TreeItem> treeItemList
+    ContainerTreeItem containerTreeItem
 }
-json tmpl.treeItem(treeItemList ?: [])
-
+if(containerTreeItem){
+    json tmpl.treeItem(containerTreeItem)
+}else {
+    json tmpl.treeItem(treeItemList ?: [])
+}
