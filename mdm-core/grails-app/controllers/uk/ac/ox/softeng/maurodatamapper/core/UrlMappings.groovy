@@ -247,6 +247,7 @@ class UrlMappings {
                     get '/'(controller: 'treeItem', action: 'index')
                     get "/${containerId}"(controller: 'treeItem', action: 'show')
                     get "/${catalogueItemDomainType}/$catalogueItemId"(controller: 'treeItem', action: 'show')
+                    get "/${catalogueItemDomainType}/$catalogueItemId/ancestors"(controller: 'treeItem', action: 'ancestors')
                     get "/search/$searchTerm"(controller: 'treeItem', action: 'search')
                 }
                 "/full/$modelDomainType/$modelId"(controller: 'treeItem', action: 'fullModelTree')

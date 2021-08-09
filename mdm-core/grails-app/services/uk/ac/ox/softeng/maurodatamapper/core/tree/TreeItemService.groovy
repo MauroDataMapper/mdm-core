@@ -250,6 +250,50 @@ class TreeItemService {
         tree.sort()
     }
 
+    def <K extends Container> ContainerTreeItem buildCatalogueItemTreeWithAncestors(Class<K> containerClass, CatalogueItem catalogueItem,
+                                                                                    UserSecurityPolicyManager userSecurityPolicyManager) {
+        TreeItem treeItem = recursiveAncestorModelItemTreeItemBuilder(catalogueItem, userSecurityPolicyManager)
+
+        List<ModelTreeItem> ModelItemList = new ArrayList()
+        ModelItemList.add(treeItem as ModelTreeItem)
+
+        List<ContainerTreeItem> cti = buildContainerTreeForModelTreeItems(containerClass, userSecurityPolicyManager, ModelItemList, true)
+        cti.first()
+    }
+
+
+    /**
+     * Given a catalogue Item the method works its way up the tree to a non ModelItem (which should be a DataModel)
+     * and builds a tree from the items along the way
+     * It returns a generic TreeItem for recursion purposes but it is always a ModelTreeItem at the top end when it breaks out
+     * @param catalogueItem
+     * @return TreeItem
+     */
+    TreeItem recursiveAncestorModelItemTreeItemBuilder(CatalogueItem catalogueItem,
+                                                       UserSecurityPolicyManager userSecurityPolicyManager) {
+
+        if (catalogueItem instanceof ModelItem) {
+            ModelItem mi = catalogueItem as ModelItem
+            List<String> actions = userSecurityPolicyManager ?
+                                   userSecurityPolicyManager.userAvailableTreeActions(mi.domainType, mi.id, mi.model.domainType, mi.model.id) :
+                                   []
+            List<ModelItemTreeItem> current = new ArrayList<>()
+            current.add(new ModelItemTreeItem(mi, mi.hasChildren(), actions))
+            if (catalogueItem.getPathParent()) {
+                TreeItem parent = recursiveAncestorModelItemTreeItemBuilder(catalogueItem.getPathParent() as CatalogueItem,
+                                                                            userSecurityPolicyManager)
+                parent.addAllToChildren(current)
+                parent.renderChildren = true
+                return parent
+            }
+        }
+        Model model = catalogueItem as Model
+        List<String> actions = userSecurityPolicyManager ?
+                               userSecurityPolicyManager.userAvailableTreeActions(model.domainType, model.id, model.domainType, model.id) :
+                               []
+        new ModelTreeItem(model, model.folder.id, true, false, actions)
+    }
+
     ModelTreeItem buildFullModelTree(Model model) {
         log.info("Building full model tree for ${model.class.simpleName}")
         long start = System.currentTimeMillis()
