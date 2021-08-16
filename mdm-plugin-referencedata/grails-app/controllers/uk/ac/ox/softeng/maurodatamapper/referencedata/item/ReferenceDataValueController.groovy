@@ -90,7 +90,6 @@ class ReferenceDataValueController extends EditLoggingController<ReferenceDataVa
 
             respond referenceDataRows, [model: [numberOfRows: rowNumbers.size(), referenceDataRows:
                 referenceDataRows, userSecurityPolicyManager: currentUserSecurityPolicyManager], view: 'searchAsRows']
-
         } else {
             //Make a list of referenceDataValues which have a value matching the search term
             List referenceDataValues =
@@ -151,7 +150,7 @@ class ReferenceDataValueController extends EditLoggingController<ReferenceDataVa
      */
     private List rowify(List<ReferenceDataValue> referenceDataValues) {
         //Sort the list by rowNumber ascending
-        referenceDataValues.sort { it.getProperty(params.sortBy) }
+        referenceDataValues.sort {it.getProperty(params.sortBy)}
 
         //Make a list of row numbers
         List rowNumbers = []
@@ -164,7 +163,7 @@ class ReferenceDataValueController extends EditLoggingController<ReferenceDataVa
         //Make a List containing rows
         List referenceDataRows = []
         //Make a row for each row number
-        rowNumbers.eachWithIndex { rowNumber, i ->
+        rowNumbers.eachWithIndex {rowNumber, i ->
             List referenceDataRow = []
             referenceDataValues.each {
                 if (it.rowNumber == rowNumber) {

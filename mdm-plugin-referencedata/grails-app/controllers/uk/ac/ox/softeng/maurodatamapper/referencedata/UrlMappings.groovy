@@ -125,7 +125,6 @@ class UrlMappings {
                     '/summaryMetadataReports'(resources: 'referenceSummaryMetadataReport', excludes: DEFAULT_EXCLUDES)
                 }
             }
-
         }
     }
 }

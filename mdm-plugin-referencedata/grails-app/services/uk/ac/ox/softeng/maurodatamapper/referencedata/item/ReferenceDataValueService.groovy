@@ -53,7 +53,7 @@ class ReferenceDataValueService implements DomainService<ReferenceDataValue> {
 
     //@Override
     void deleteAll(Collection<ReferenceDataValue> referenceDataValues) {
-        referenceDataValues.each { delete(it) }
+        referenceDataValues.each {delete(it)}
     }
 
     void delete(UUID id) {
@@ -69,8 +69,8 @@ class ReferenceDataValueService implements DomainService<ReferenceDataValue> {
     }
 
     def saveAll(Collection<ReferenceDataValue> referenceDataValues) {
-        Collection<ReferenceDataValue> alreadySaved = referenceDataValues.findAll { it.ident() && it.isDirty() }
-        Collection<ReferenceDataValue> notSaved = referenceDataValues.findAll { !it.ident() }
+        Collection<ReferenceDataValue> alreadySaved = referenceDataValues.findAll {it.ident() && it.isDirty()}
+        Collection<ReferenceDataValue> notSaved = referenceDataValues.findAll {!it.ident()}
 
         if (alreadySaved) {
             log.debug('Straight saving {} already saved ReferenceDataValues', alreadySaved.size())
@@ -82,14 +82,13 @@ class ReferenceDataValueService implements DomainService<ReferenceDataValue> {
             List batch = []
             int count = 0
 
-            notSaved.each { rdv ->
+            notSaved.each {rdv ->
                 batch += rdv
                 count++
                 if (count % ReferenceDataValue.BATCH_SIZE == 0) {
                     batchSave(batch)
                     batch.clear()
                 }
-
             }
             batchSave(batch)
             batch.clear()
@@ -142,7 +141,7 @@ class ReferenceDataValueService implements DomainService<ReferenceDataValue> {
 
         //Get the reference data element for this value by getting the matching reference data element for the model
         referenceDataValue.referenceDataElement =
-            referenceDataModel.referenceDataElements.find { it.label == referenceDataValue.referenceDataElement.label }
+            referenceDataModel.referenceDataElements.find {it.label == referenceDataValue.referenceDataElement.label}
     }
 
     List<ReferenceDataValue> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
