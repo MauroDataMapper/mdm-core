@@ -171,7 +171,7 @@ class ProfileController implements ResourcelessMdmController {
         Profile validatedInstance = profileService.validateProfile(profileProviderService, submittedInstance)
 
         if (validatedInstance.hasErrors()) {
-            respond validatedInstance.errors, view: 'show' // STATUS CODE 422
+            respond validatedInstance.errors
             return
         }
 

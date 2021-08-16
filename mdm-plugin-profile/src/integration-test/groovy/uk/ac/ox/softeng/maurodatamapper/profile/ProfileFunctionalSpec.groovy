@@ -371,7 +371,9 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         then:
         verifyResponse(UNPROCESSABLE_ENTITY, response)
         responseBody().total == 1
-        responseBody().errors.first().message == 'Value cannot be null for [Metadata namespace]'
+        responseBody().errors.first().message == 'Value cannot be null'
+        responseBody().errors.first().fieldName == 'Metadata namespace'
+        responseBody().errors.first().metadataPropertyName == 'metadataNamespace'
 
         when:
         namespaceFieldMap.currentValue = 'functional.test.profile'
@@ -428,6 +430,12 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         localResponse.body().size() == 1
         localResponse.body().first().name == profileSpecificationProfileService.name
         localResponse.body().first().namespace == profileSpecificationProfileService.namespace
+
+        when:
+        GET("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${simpleDataModelId}", STRING_ARG)
+
+        then:
+        verifyJsonResponse(OK, getExpectedSavedProfile())
     }
 
     void 'N03 : test editing profile'() {
@@ -560,5 +568,44 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         then:
         verifyResponse(OK, localResponse)
         localResponse.body().isEmpty()
+    }
+
+    String getExpectedSavedProfile() {
+        '''{
+  "sections": [
+    {
+      "name": "Profile Specification",
+      "description": "The details necessary for this Data Model to be used as the specification for a dynamic profile.",
+      "fields": [
+        {
+          "fieldName": "Metadata namespace",
+          "metadataPropertyName": "metadataNamespace",
+          "description": "The namespace under which properties of this profile will be stored",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 1,
+          "allowedValues": null,
+          "regularExpression": null,
+          "dataType": "string",
+          "currentValue": "functional.test.profile"
+        },
+        {
+          "fieldName": "Applicable for domains",
+          "metadataPropertyName": "domainsApplicable",
+          "description": "Determines which types of catalogue item can be profiled using this profile.  For example, 'DataModel'.  ''' +
+        '''Separate multiple domains with a semi-colon (';').  Leave blank to allow this profile to be applicable to any catalogue item.",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "allowedValues": null,
+          "regularExpression": null,
+          "dataType": "string",
+          "currentValue": "DataModel"
+        }
+      ]
+    }
+  ],
+  "id": "${json-unit.matches:id}",
+  "label": "Simple Test DataModel",
+  "domainType": "DataModel"
+}'''
     }
 }

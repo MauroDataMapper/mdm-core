@@ -29,7 +29,7 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
 
     @Override
     JsonProfile createProfileFromEntity(MultiFacetAware entity) {
-        JsonProfile jsonProfile = EmptyJsonProfileFactory.instance.getEmptyProfile(this)
+        JsonProfile jsonProfile = getNewProfile()
         jsonProfile.id = entity.id
         jsonProfile.domainType = entity.domainType
         jsonProfile.label = entity.label
