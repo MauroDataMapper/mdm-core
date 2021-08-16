@@ -87,11 +87,9 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
         checkAndSave(folder)
 
-        DataModel dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: FUNCTIONAL_TEST,
-                                            folder: folder, authority: testAuthority).save(flush: true)
+        DataModel dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: FUNCTIONAL_TEST, folder: folder, authority: testAuthority).save(flush: true)
         dataModelId = dataModel.id
-        otherDataModelId = new DataModel(label: 'Functional Test DataModel 2', createdBy: FUNCTIONAL_TEST,
-                                         folder: folder, authority: testAuthority).save(flush: true).id
+        otherDataModelId = new DataModel(label: 'Functional Test DataModel 2', createdBy: FUNCTIONAL_TEST, folder: folder, authority: testAuthority).save(flush: true).id
 
         PrimitiveType string = new PrimitiveType(createdBy: FUNCTIONAL_TEST, label: 'string')
         dataModel.addToDataTypes(string).save(flush: true)
@@ -106,64 +104,47 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         dataModel.addToClassifiers(classifier).save(flush: true)
 
 
-        /**
-         * Set up another folder with data models, classes and imports which looks like this:
-         *
-         * Folder: Functional Test Import Test Folder
-         *     - Data Model: Functional Test Importing DataModel
-         *         - Data Class: Functional Test Importing Parent DataClass (directly owned)
-         *             - Data Class: Functional Test Imported Child DataClass (imported)
-         *         - Data Class: Functional Test Imported Parent DataClass (imported)
-         *     - Data Model: Functional Test Imported DataModel
-         *         - Data Class: Functional Test Imported Parent DataClass (directly owned)
-         *             - Data Class: Functional Test Imported Child DataClass (directly owned)
-         */
+        // Set up another folder with data models, classes and imports (see structure below)
+
         importTestFolder = new Folder(label: 'Functional Test Import Test Folder', createdBy: FUNCTIONAL_TEST)
         checkAndSave(importTestFolder)
 
-        DataModel importingDataModel = new DataModel(label: 'Functional Test Importing DataModel', createdBy: FUNCTIONAL_TEST,
-                                                     folder: importTestFolder, authority: testAuthority).save(flush: true)
+        DataModel importingDataModel = new DataModel(label: 'Functional Test Importing DataModel', createdBy: FUNCTIONAL_TEST, folder: importTestFolder,
+                                                     authority: testAuthority).save(flush: true)
         importingDataModelId = importingDataModel.id
 
-        DataClass importingParentDataClass = new DataClass(label: 'Functional Test Importing Parent DataClass',
-                                                           createdBy: FUNCTIONAL_TEST,
-                                                           dataModel: importingDataModel)
+        DataClass importingParentDataClass = new DataClass(label: 'Functional Test Importing Parent DataClass', createdBy: FUNCTIONAL_TEST, dataModel: importingDataModel)
             .save(flush: true)
-
         importingParentDataClassId = importingParentDataClass.id
+
+        DataModel importedDataModel = new DataModel(label: 'Functional Test Imported DataModel', createdBy: FUNCTIONAL_TEST, folder: importTestFolder,
+                                                    authority: testAuthority).save(flush: true)
+        importedDataModelId = importedDataModel.id
+
+        DataClass importedParentDataClass = new DataClass(label: 'Functional Test Imported Parent DataClass', createdBy: FUNCTIONAL_TEST, dataModel: importedDataModel)
+        importedParentDataClassId = importedParentDataClass.id
+
+        DataClass importedChildDataClass = new DataClass(label: 'Functional Test Imported Child DataClass', createdBy: FUNCTIONAL_TEST)
+
+        // Folder: Functional Test Import Test Folder
+        //      Data Model: Functional Test Importing DataModel
+        //          Data Class: Functional Test Importing Parent DataClass (directly owned)
+        //              Data Class: Functional Test Imported Child DataClass (imported)
+        //          Data Class: Functional Test Imported Parent DataClass (imported)
+        //      Data Model: Functional Test Imported DataModel
+        //          Data Class: Functional Test Imported Parent DataClass (directly owned)
+        //              Data Class: Functional Test Imported Child DataClass (directly owned)
 
         importingDataModel
             .addToDataClasses(importingParentDataClass)
-
-        DataModel importedDataModel = new DataModel(label: 'Functional Test Imported DataModel', createdBy: FUNCTIONAL_TEST,
-                                                    folder: importTestFolder, authority: testAuthority).save(flush: true)
-        importedDataModelId = importedDataModel.id
-
-        DataClass importedParentDataClass = new DataClass(label: 'Functional Test Imported Parent DataClass',
-                                                          createdBy: FUNCTIONAL_TEST,
-                                                          dataModel: importedDataModel)
-
-        importedParentDataClassId = importedParentDataClass.id
-
-        DataClass importedChildDataClass = new DataClass(label: 'Functional Test Imported Child DataClass',
-                                                         createdBy: FUNCTIONAL_TEST)
-
-        importedParentDataClass
-            .addToDataClasses(importedChildDataClass)
+            .addToImportedDataClasses(importedParentDataClass)
+        importingParentDataClass.addToImportedDataClasses(importedChildDataClass)
 
         importedDataModel
-            .addToDataClasses(importedChildDataClass)
             .addToDataClasses(importedParentDataClass)
-
+            .addToDataClasses(importedChildDataClass)
+        importedParentDataClass.addToDataClasses(importedChildDataClass)
         checkAndSave(importedDataModel)
-
-        //        importingDataModel.
-        //        addToModelImports('DataClass', importedParentDataClass.id, FUNCTIONAL_TEST)
-        //
-        //        checkAndSave(importingDataModel)
-        //
-        //        importingParentDataClass
-        //        .addToModelImports('DataClass', importedChildDataClass.id, FUNCTIONAL_TEST)
 
         checkAndSave(importingDataModel)
 
