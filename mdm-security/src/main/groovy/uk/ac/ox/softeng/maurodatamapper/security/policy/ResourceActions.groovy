@@ -41,6 +41,8 @@ class ResourceActions {
     public static final String READ_BY_AUTHENTICATED_ACTION = 'readByAuthenticated'
     public static final String FINALISED_EDIT_ACTIONS = 'finalisedEditActions'
     public static final String FINALISED_READ_ACTIONS = 'finalisedReadActions'
+    public static final String SAVE_IGNORE_FINALISE = 'saveIgnoreFinalise'
+    public static final String UPDATE_IGNORE_FINALISE = 'updateIgnoreFinalise'
 
     public static final List<String> READER_VERSIONING_ACTIONS = [CREATE_NEW_VERSIONS_ACTION,
                                                                   NEW_FORK_MODEL_ACTION]

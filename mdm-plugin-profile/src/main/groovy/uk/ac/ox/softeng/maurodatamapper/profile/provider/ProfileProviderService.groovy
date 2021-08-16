@@ -61,6 +61,10 @@ abstract class ProfileProviderService<P extends Profile, D extends MultiFacetAwa
         false
     }
 
+    Boolean canBeEditedAfterFinalisation() {
+        false
+    }
+
     P getNewProfile() {
         getProfileClass().getDeclaredConstructor().newInstance()
     }

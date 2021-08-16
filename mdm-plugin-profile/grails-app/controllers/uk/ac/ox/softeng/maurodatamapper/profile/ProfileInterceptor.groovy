@@ -19,9 +19,12 @@ package uk.ac.ox.softeng.maurodatamapper.profile
 
 import uk.ac.ox.softeng.maurodatamapper.core.interceptor.FacetInterceptor
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
+import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 
 class ProfileInterceptor extends FacetInterceptor {
+
+    ProfileService profileService
 
     @Override
     Class getFacetClass() {
@@ -29,10 +32,8 @@ class ProfileInterceptor extends FacetInterceptor {
     }
 
     boolean before() {
-
         // Public or secured at controller as using listAll
         if (actionName in ['profileProviders', 'dynamicProfileProviders', 'search', 'listModelsInProfile', 'listValuesInProfile']) return true
-
         facetResourceChecks()
         checkActionAllowedOnFacet()
     }
@@ -40,9 +41,6 @@ class ProfileInterceptor extends FacetInterceptor {
 
     boolean checkActionAuthorisationOnUnsecuredResource(Class resourceClass, UUID id,
                                                         Class<? extends SecurableResource> owningSecureResourceClass, UUID owningSecureResourceId) {
-
-        // Public or secured at controller as using listAll
-        if (actionName in ['profileProviders', 'dynamicProfileProviders', 'search', 'listModelsInProfile', 'listValuesInProfile']) return true
 
 
         boolean canRead = currentUserSecurityPolicyManager.userCanReadResourceId(resourceClass, id, owningSecureResourceClass, owningSecureResourceId)
@@ -52,7 +50,22 @@ class ProfileInterceptor extends FacetInterceptor {
             return canRead ?: notFound(id ? resourceClass : owningSecureResourceClass, (id ?: owningSecureResourceId).toString())
         }
 
-        // Standard actions - save, update, show, delete
+        ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName, params.profileVersion)
+
+        if (profileProviderService && profileProviderService.canBeEditedAfterFinalisation()) {
+            // Special handling for profiles which allow post finalisation updates
+            // In this situation then we check if the user can perform the action ignoring the finalisation state of the owning resource
+            if (isUpdate()) {
+                return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(owningSecureResourceClass, owningSecureResourceId, 'updateIgnoreFinalise') ?:
+                       forbiddenOrNotFound(canRead, id ? resourceClass : owningSecureResourceClass, id ?: owningSecureResourceId)
+            }
+            if (isSave()) {
+                return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(owningSecureResourceClass, owningSecureResourceId, 'saveIgnoreFinalise') ?:
+                       forbiddenOrNotFound(canRead, id ? resourceClass : owningSecureResourceClass, id ?: owningSecureResourceId)
+            }
+        }
+
+        // Otherwise just fall through to the default handling
         super.checkActionAuthorisationOnUnsecuredResource(resourceClass, id, owningSecureResourceClass, owningSecureResourceId)
     }
 }

@@ -69,10 +69,12 @@ import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.R
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.READ_ONLY_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.REVIEWER_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.SAVE_ACTION
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.SAVE_IGNORE_FINALISE
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.SOFT_DELETE_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.STANDARD_CREATE_AND_EDIT_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.STANDARD_EDIT_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.UPDATE_ACTION
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.UPDATE_IGNORE_FINALISE
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.USER_ADMIN_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.CONTAINER_ADMIN_CONTAINER_TREE_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.CONTAINER_ADMIN_FOLDER_TREE_ACTIONS
@@ -95,8 +97,6 @@ import static uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole.GROUP_ADM
 import static uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole.READER_ROLE_NAME
 import static uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole.REVIEWER_ROLE_NAME
 import static uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole.USER_ADMIN_ROLE_NAME
-
-
 
 /**
  * This class should be built using the GroupBasedSecurityPolicyManagerService which will have transactionality available.
@@ -356,6 +356,14 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
                     // An author can update a model description, but once a model is finalised the model can NOT be updated
                     VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, AUTHOR_ROLE_NAME)
                     return role ? !role.isFinalised() : false
+                case SAVE_IGNORE_FINALISE:
+                    // Special case scenarios where actions are possibly on finalised object which we want to allow
+                    // In this situation we dont care if the item is finalised or not as long as they have the right role
+                    return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
+                case UPDATE_IGNORE_FINALISE:
+                    // Special case scenarios where actions are possibly on finalised object which we want to allow
+                    // In this situation we dont care if the item is finalised or not as long as they have the right role
+                    return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, AUTHOR_ROLE_NAME)
                 default:
                     log.warn('Attempt to access secured class {} id {} to {}', securableResourceClass.simpleName, id, action)
                     return false
@@ -386,7 +394,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         if (Utils.parentClassIsAssignableFromChild(Container, securableResourceClass)) {
             // If no id then its a top level container and therefore anyone who's logged in can create
             if (!id) return isAuthenticated()
-            if (action in [SAVE_ACTION, SOFT_DELETE_ACTION]) {
+            if (action in [SAVE_ACTION, SOFT_DELETE_ACTION, SAVE_IGNORE_FINALISE]) {
                 // Editors can save new folders and models and SOFT DELETE
                 return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
             }
