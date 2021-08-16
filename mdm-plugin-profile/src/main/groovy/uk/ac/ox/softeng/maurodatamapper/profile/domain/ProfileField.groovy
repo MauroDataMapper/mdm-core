@@ -33,6 +33,10 @@ class ProfileField implements Validateable {
 
     String currentValue
 
+    Boolean derived
+    Boolean uneditable
+    String derivedFrom
+
     static constraints = {
         fieldName blank: false
         metadataPropertyName nullable: true, blank: false
@@ -50,28 +54,22 @@ class ProfileField implements Validateable {
         }
     }
 
-    Boolean derived
-    Boolean uneditable
-    String derivedFrom
-
     // Empty constructor used for deserialization from Json
     ProfileField() {
         this.derived = false
         this.uneditable = false
-        this.derivedFrom = ""
     }
 
     void setDataType(ProfileFieldDataType type) {
         dataType = type
     }
 
-    void setDerived(Boolean bool) {
-        this.derived = bool
-        if (bool) { this.uneditable = true }
-    }
-
     void setDataType(String type) {
         dataType = ProfileFieldDataType.findForLabel(type)
+    }
+
+    boolean getUneditable() {
+        derived || uneditable
     }
 
     String getMetadataKeyForSaving(String sectionName) {

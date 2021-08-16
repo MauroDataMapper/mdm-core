@@ -35,13 +35,19 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
         jsonProfile.label = entity.label
 
         List<Metadata> metadataList = getAllProfileMetadataByMultiFacetAwareItemId(entity.id)
-        jsonProfile.sections.each { section ->
-            section.fields.each { field ->
-                Metadata matchingField = metadataList.find { it.key == field.metadataPropertyName }
-                if (matchingField) {
+        jsonProfile.sections.each {section ->
+            section.fields.each {field ->
+                Metadata matchingField = metadataList.find {it.key == field.metadataPropertyName}
+                // If field is derived then get the location its derived from
+                if (field.derived) {
+                    try {
+                        field.currentValue = entity."${field.derivedFrom}"
+                    } catch (Exception ignored) {
+                        // Currently gracefully handle a derived field which cant be found
+                        log.warn('Could not set derived field from {} for {}', field.derivedFrom, entity.label)
+                    }
+                } else if (matchingField) {
                     field.currentValue = matchingField.value
-                } else {
-                    field.currentValue = ""
                 }
                 field.validate()
             }
@@ -56,36 +62,28 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
     @Override
     void storeProfileInEntity(MultiFacetAware entity, JsonProfile jsonProfile, String userEmailAddress) {
         JsonProfile emptyJsonProfile = getNewProfile()
-        emptyJsonProfile.sections.each { section ->
-            ProfileSection submittedSection = jsonProfile.sections.find { it.sectionName == section.sectionName }
+        emptyJsonProfile.sections.each {section ->
+            ProfileSection submittedSection = jsonProfile.sections.find {it.sectionName == section.sectionName}
             if (submittedSection) {
-                section.fields.each { field ->
-                    ProfileField submittedField = submittedSection.fields.find { it.fieldName == field.fieldName }
-                    if(submittedField){
-                    if (derivedUneditableCheck(submittedField)) {
-                        String newValue = submittedField.currentValue ?: ''
-                        String key = field.getMetadataKeyForSaving(submittedSection.sectionName)
-                        storeFieldInEntity(entity, newValue, key, userEmailAddress)
-                    }}
+                section.fields.each {field ->
+                    ProfileField submittedField = submittedSection.fields.find {it.fieldName == field.fieldName}
+                    if (submittedField) {
+                        // Dont allow derived or uneditable fields to be set
+                        if (!field.derived && !field.uneditable) {
+                            String newValue = submittedField.currentValue ?: ''
+                            String key = field.getMetadataKeyForSaving(submittedSection.sectionName)
+                            storeFieldInEntity(entity, newValue, key, userEmailAddress)
+                        }
+                    }
 
                 }
             }
         }
         entity.addToMetadata(metadataNamespace, '_profiled', 'Yes', userEmailAddress)
 
-        entity.findMetadataByNamespace(metadataNamespace).each { md ->
+        entity.findMetadataByNamespace(metadataNamespace).each {md ->
             metadataService.save(md)
         }
-    }
-
-    Boolean derivedUneditableCheck(ProfileField submittedField) {
-        if (submittedField.derived) {
-            return false
-        }
-        if (submittedField.uneditable) {
-            return false
-        }
-        true
     }
 
     void storeFieldInEntity(MultiFacetAware entity, String value, String key, String userEmailAddress) {
