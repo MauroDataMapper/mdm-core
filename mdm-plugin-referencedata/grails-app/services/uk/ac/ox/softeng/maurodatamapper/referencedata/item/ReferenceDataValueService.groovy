@@ -62,7 +62,7 @@ class ReferenceDataValueService implements DomainService<ReferenceDataValue> {
 
     void delete(ReferenceDataValue referenceDataValue, boolean flush = false) {
         if (!referenceDataValue) return
-        referenceDataValue.breadcrumbTree.removeFromParent()
+        // referenceDataValue.breadcrumbTree.removeFromParent() // breadcrumbTree no longer a property of ReferenceDataValue
         referenceDataValue.referenceDataElement = null
         referenceDataValue.referenceDataModel?.removeFromReferenceDataValues(referenceDataValue)
         referenceDataValue.delete(flush: flush)
