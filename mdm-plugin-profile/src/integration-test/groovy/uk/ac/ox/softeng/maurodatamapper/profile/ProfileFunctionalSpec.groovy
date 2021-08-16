@@ -37,6 +37,7 @@ import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddre
 
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
+import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 @Slf4j
 @Integration
@@ -340,29 +341,10 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
     void 'N01 : test validating profile on DataModel'() {
         given:
         Map namespaceFieldMap = [
-            currentValue        : '',
-            metadataPropertyName: 'metadataNamespace',
-            dataType            : 'string',
             fieldName           : 'Metadata namespace',
-            validationErrors    : [],
-            regularExpression   : null,
-            allowedValues       : null,
-            description         : 'The namespace under which properties of this profile will be stored',
-            minMultiplicity     : 1,
-            maxMultiplicity     : 1
         ]
         Map domainsFieldMap = [
-            currentValue        : '',
-            metadataPropertyName: 'domainsApplicable',
-            dataType            : 'string',
             fieldName           : 'Applicable for domains',
-            validationErrors    : [],
-            regularExpression   : null,
-            allowedValues       : null,
-            description         : "Determines which types of catalogue item can be profiled using this profile.  For example, 'DataModel'.  " +
-                                  "Separate multiple domains with a semi-colon (';').  Leave blank to allow this profile to be applicable to any catalogue item.",
-            minMultiplicity     : 0,
-            maxMultiplicity     : 1
         ]
         Map profileMap = [
             sections  : [
@@ -387,9 +369,9 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         POST("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${simpleDataModelId}/validate", profileMap)
 
         then:
-        verifyResponse(OK, response)
-        responseBody().sections.first().fields.find {it.fieldName == namespaceFieldMap.fieldName}.validationErrors == ['This field is mandatory']
-        responseBody().sections.first().fields.find {it.fieldName == domainsFieldMap.fieldName}.validationErrors.isEmpty()
+        verifyResponse(UNPROCESSABLE_ENTITY, response)
+        responseBody().total == 1
+        responseBody().errors.first().message == 'Value cannot be null for [Metadata namespace]'
 
         when:
         namespaceFieldMap.currentValue = 'functional.test.profile'
@@ -399,36 +381,17 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
 
         then:
         verifyResponse(OK, response)
-        responseBody().sections.first().fields.find {it.fieldName == namespaceFieldMap.fieldName}.validationErrors.isEmpty()
-        responseBody().sections.first().fields.find {it.fieldName == domainsFieldMap.fieldName}.validationErrors.isEmpty()
     }
 
     void 'N02 : test saving profile'() {
         given:
         Map namespaceFieldMap = [
             currentValue        : 'functional.test.profile',
-            metadataPropertyName: 'metadataNamespace',
-            dataType            : 'string',
             fieldName           : 'Metadata namespace',
-            validationErrors    : [],
-            regularExpression   : null,
-            allowedValues       : null,
-            description         : 'The namespace under which properties of this profile will be stored',
-            minMultiplicity     : 1,
-            maxMultiplicity     : 1
         ]
         Map domainsFieldMap = [
             currentValue        : 'DataModel',
-            metadataPropertyName: 'domainsApplicable',
-            dataType            : 'string',
             fieldName           : 'Applicable for domains',
-            validationErrors    : [],
-            regularExpression   : null,
-            allowedValues       : null,
-            description         : "Determines which types of catalogue item can be profiled using this profile.  For example, 'DataModel'.  " +
-                                  "Separate multiple domains with a semi-colon (';').  Leave blank to allow this profile to be applicable to any catalogue item.",
-            minMultiplicity     : 0,
-            maxMultiplicity     : 1
         ]
         Map profileMap = [
             sections  : [
@@ -471,28 +434,11 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         given:
         Map namespaceFieldMap = [
             currentValue        : 'functional.test.profile',
-            metadataPropertyName: 'metadataNamespace',
-            dataType            : 'string',
             fieldName           : 'Metadata namespace',
-            validationErrors    : [],
-            regularExpression   : null,
-            allowedValues       : null,
-            description         : 'The namespace under which properties of this profile will be stored',
-            minMultiplicity     : 1,
-            maxMultiplicity     : 1
         ]
         Map domainsFieldMap = [
             currentValue        : 'DataModel',
-            metadataPropertyName: 'domainsApplicable',
-            dataType            : 'string',
             fieldName           : 'Applicable for domains',
-            validationErrors    : [],
-            regularExpression   : null,
-            allowedValues       : null,
-            description         : "Determines which types of catalogue item can be profiled using this profile.  For example, 'DataModel'.  " +
-                                  "Separate multiple domains with a semi-colon (';').  Leave blank to allow this profile to be applicable to any catalogue item.",
-            minMultiplicity     : 0,
-            maxMultiplicity     : 1
         ]
         Map profileMap = [
             sections  : [
@@ -574,28 +520,11 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         given:
         Map namespaceFieldMap = [
             currentValue        : 'functional.test.profile',
-            metadataPropertyName: 'metadataNamespace',
-            dataType            : 'string',
             fieldName           : 'Metadata namespace',
-            validationErrors    : [],
-            regularExpression   : null,
-            allowedValues       : null,
-            description         : 'The namespace under which properties of this profile will be stored',
-            minMultiplicity     : 1,
-            maxMultiplicity     : 1
         ]
         Map domainsFieldMap = [
             currentValue        : 'DataModel',
-            metadataPropertyName: 'domainsApplicable',
-            dataType            : 'string',
             fieldName           : 'Applicable for domains',
-            validationErrors    : [],
-            regularExpression   : null,
-            allowedValues       : null,
-            description         : "Determines which types of catalogue item can be profiled using this profile.  For example, 'DataModel'.  " +
-                                  "Separate multiple domains with a semi-colon (';').  Leave blank to allow this profile to be applicable to any catalogue item.",
-            minMultiplicity     : 0,
-            maxMultiplicity     : 1
         ]
         Map profileMap = [
             sections  : [

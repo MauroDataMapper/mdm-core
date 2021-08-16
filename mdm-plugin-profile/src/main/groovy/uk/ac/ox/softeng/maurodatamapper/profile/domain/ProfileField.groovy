@@ -17,7 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile.domain
 
-class ProfileField {
+import grails.validation.Validateable
+
+class ProfileField implements Validateable {
 
     String fieldName
     String metadataPropertyName
@@ -27,11 +29,25 @@ class ProfileField {
     List<String> allowedValues
     String regularExpression
 
-    List<String> validationErrors = []
-
     ProfileFieldDataType dataType
 
-    String currentValue = ""
+    String currentValue
+
+    static constraints = {
+        fieldName blank: false
+        metadataPropertyName nullable: true, blank: false
+        description nullable: true, blank: false
+        regularExpression nullable: true, blank: false
+        currentValue nullable: true, validator: {val, obj ->
+            if (!val && (obj.minMultiplicity > 0)) return ['null.message', obj.fieldName]
+            if (val) {
+                if (obj.allowedValues && !(val in obj.allowedValues)) return ['not.inlist.message', obj.allowedValues, obj.fieldName]
+                if (obj.regularExpression && !val.matches(obj.regularExpression)) return ['doesnt.match.message', obj.regularExpression, obj.fieldName]
+                String typeError = obj.dataType.validateString(val)
+                if (typeError) return ['typeMismatch', typeError, obj.fieldName]
+            }
+        }
+    }
 
     void setDataType(ProfileFieldDataType type) {
         dataType = type
@@ -41,34 +57,7 @@ class ProfileField {
         dataType = ProfileFieldDataType.findForLabel(type)
     }
 
-    void validate() {
-        List<String> errors = []
-        if(minMultiplicity > 0 && (!currentValue || currentValue == "")) {
-            errors.add("This field is mandatory")
-        }
-        if(currentValue && currentValue == "") {
-            if(allowedValues && !allowedValues.contains(currentValue)) {
-                errors.add("This field does not take of the pre-specified values")
-            }
-            if(regularExpression && regularExpression != "") {
-                if(!currentValue.matches(regularExpression)) {
-                    errors.add("This field does not match the specified regular expression")
-                }
-            }
-            String typeError = dataType.validateString(currentValue)
-            if(typeError && typeError != "") {
-                errors.add(typeError)
-            }
-        }
-
-        validationErrors = errors
-    }
-
     String getMetadataKeyForSaving(String sectionName) {
-        if(metadataPropertyName && metadataPropertyName != "") {
-            return metadataPropertyName
-        }
-        return "${sectionName}/${fieldName}"
+        metadataPropertyName ? metadataPropertyName : "${sectionName}/${fieldName}"
     }
-
 }

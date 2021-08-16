@@ -125,7 +125,6 @@ class ProfileController implements ResourcelessMdmController {
         }
 
         respond profileService.createProfile(profileProviderService, multiFacetAware)
-
     }
 
     @Transactional
@@ -169,7 +168,14 @@ class ProfileController implements ResourcelessMdmController {
         Profile submittedInstance = profileProviderService.getNewProfile()
         bindData(submittedInstance, request)
 
-        respond profileService.validateProfile(profileProviderService, submittedInstance)
+        Profile validatedInstance = profileService.validateProfile(profileProviderService, submittedInstance)
+
+        if (validatedInstance.hasErrors()) {
+            respond validatedInstance.errors, view: 'show' // STATUS CODE 422
+            return
+        }
+
+        respond validatedInstance
     }
 
 

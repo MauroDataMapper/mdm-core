@@ -19,10 +19,11 @@ package uk.ac.ox.softeng.maurodatamapper.profile.object
 
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
 
+import grails.validation.Validateable
 import groovy.transform.CompileStatic
 
 @CompileStatic
-abstract class Profile implements Comparable<Profile> {
+abstract class Profile implements Comparable<Profile>, Validateable {
 
     abstract def getField(String fieldName)
 
@@ -32,7 +33,7 @@ abstract class Profile implements Comparable<Profile> {
 
     boolean simpleFilter(Map params) {
         boolean result = true
-        getKnownFields().each { profileFieldName ->
+        getKnownFields().each {profileFieldName ->
             if (!params[profileFieldName]) {
                 // no filter on this field... we don't care
             } else if (params[profileFieldName] instanceof String) {
@@ -45,7 +46,7 @@ abstract class Profile implements Comparable<Profile> {
                 // We've got a set of filters
                 List<String> filters = new ArrayList<>((List<String>) params[profileFieldName])
                 boolean found = false
-                filters.each { filter ->
+                filters.each {filter ->
                     if (getField(profileFieldName) == filter) {
                         found = true
                     }
@@ -58,13 +59,17 @@ abstract class Profile implements Comparable<Profile> {
 
     abstract List<ProfileSection> getSections()
 
-    abstract void fromSections(List<ProfileSection> profileSections)
-
-    Profile validate() {
-        sections.each {section ->
-            section.validate()
+    @Override
+    boolean validate() {
+        validate null, null, null
+        sections.eachWithIndex {sec, i ->
+            sec.validate()
+            if (sec.hasErrors()) {
+                sec.errors.fieldErrors.each {err ->
+                    this.errors.rejectValue("sections[$i].${err.field}", err.code, err.arguments, err.defaultMessage)
+                }
+            }
         }
-        this
+        !hasErrors()
     }
-
 }
