@@ -863,9 +863,9 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         List<String> descriptions = [];
         sls.collect {
             def item = get(it.targetMultiFacetAwareItemId)
-            descriptions.push(item.description)
+            item.description == null ? descriptions.push('') : descriptions.push(item.description)
         }
 
-        descriptions.toUnique().toString()
+        descriptions.join('\n')
     }
 }

@@ -3,8 +3,9 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 model {
     DataModel dataModel
+    String expandedDescription
     UserSecurityPolicyManager userSecurityPolicyManager
 }
 
-json tmpl.dataModel_full(dataModel: dataModel, userSecurityPolicyManager: userSecurityPolicyManager)
+json tmpl.dataModel_full(dataModel: dataModel, expandedDescription:expandedDescription, userSecurityPolicyManager: userSecurityPolicyManager)
 

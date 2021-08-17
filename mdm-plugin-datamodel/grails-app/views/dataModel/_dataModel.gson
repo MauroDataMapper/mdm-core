@@ -4,6 +4,7 @@ inherits template: '/catalogueItem/catalogueItem', model: [catalogueItem: dataMo
 
 model {
     DataModel dataModel
+    String expandedDescription
 }
 
 json {
