@@ -24,6 +24,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -852,5 +855,17 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             return 0
         }
         0
+    }
+
+    String getExpandedDescription(UUID catalogueItemId)
+    {
+       List<SemanticLink> sls = semanticLinkService.findAllBySourceMultiFacetAwareItemIdAndLinkType(catalogueItemId, SemanticLinkType.REFINES)
+        List<String> descriptions = [];
+        sls.collect {
+            def item = get(it.targetMultiFacetAwareItemId)
+            descriptions.push(item.description)
+        }
+
+        descriptions.toUnique().toString()
     }
 }

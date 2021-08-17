@@ -82,6 +82,17 @@ class DataModelController extends ModelController<DataModel> {
     }
 
     @Override
+    def show() {
+        def resource = queryForResource(params.id)
+        String ed = params.boolean('includeED', false) ? dataModelService.getExpandedDescription(params.id) : null
+        resource ? respond(resource, [model: [
+            userSecurityPolicyManager: currentUserSecurityPolicyManager,
+            expandedDescription      : ed
+        ], view                            : 'show']) : notFound(params.id)
+    }
+
+
+    @Override
     protected ModelService<DataModel> getModelService() {
         dataModelService
     }

@@ -41,7 +41,7 @@ class SemanticLink implements MultiFacetItemAware {
 
     static constraints = {
         CallableConstraints.call(CreatorAwareConstraints, delegate)
-        multiFacetAwareItemId nullable: true, validator: {val, obj ->
+        multiFacetAwareItemId nullable: true, validator: { val, obj ->
             if (!val && !obj.multiFacetAwareItem) return ['default.null.message']
             if (val == obj.targetMultiFacetAwareItemId && obj.multiFacetAwareItemDomainType == obj.targetMultiFacetAwareItemDomainType) {
                 return ['invalid.same.property.message', 'targetMultiFacetAwareItem']
@@ -114,6 +114,13 @@ class SemanticLink implements MultiFacetItemAware {
             eq 'multiFacetAwareItemId', Utils.toUuid(multiFacetAwareItemId)
             eq 'targetMultiFacetAwareItemId', Utils.toUuid(multiFacetAwareItemId)
         }
+    }
+
+    static DetachedCriteria<SemanticLink> bySourceMultiFacetAwareItemIdAndSemanticLinkType(Serializable multiFacetAwareItemId,
+                                                                                           SemanticLinkType semanticLinkType) {
+        by().eq('multiFacetAwareItemId', Utils.toUuid(multiFacetAwareItemId))
+            .eq('linkType',  semanticLinkType)
+
     }
 
     static DetachedCriteria<SemanticLink> byAnyMultiFacetAwareItemIdInList(List<UUID> multiFacetAwareItemIds) {

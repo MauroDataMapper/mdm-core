@@ -1,0 +1,489 @@
+<?xml version="1.0" encoding="UTF-8"?><xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns="https://metadatacatalogue.com/xsd/test/complex/1.0" elementFormDefault="qualified"
+    targetNamespace="https://metadatacatalogue.com/xsd/test/complex/1.0">
+
+    <xs:annotation>
+
+        <xs:documentation>
+               
+      <p>
+        Name: XSD Test: Complex model
+        <br/>
+        Author: Test Author
+        <br/>
+        Organisation: Test Org
+        <br/>
+        Description: Test description
+        <br/>
+        Last Updated:
+        <br/>
+                 
+      </p>
+            
+    </xs:documentation>
+
+    </xs:annotation>
+
+    <xs:element name="topElement" type="topElementType-1971918338">
+
+        <xs:annotation>
+
+            <xs:documentation>The top element complex type</xs:documentation>
+
+        </xs:annotation>
+
+    </xs:element>
+
+    <xs:complexType name="allType-2069658878">
+
+        <xs:annotation>
+
+            <xs:documentation>An all complex type</xs:documentation>
+
+        </xs:annotation>
+
+        <xs:all>
+
+            <xs:element maxOccurs="1" minOccurs="1" name="elementJDecimal"
+                type="anotherNumberWithRestrictions-757787526"/>
+
+            <xs:element maxOccurs="1" minOccurs="1" name="elementJNumber"
+                type="numberWithRestrictions-672002206"/>
+
+        </xs:all>
+
+    </xs:complexType>
+
+    <xs:complexType name="choiceBType-1904097754">
+
+        <xs:annotation>
+
+            <xs:documentation>A choice complex type</xs:documentation>
+
+        </xs:annotation>
+
+        <xs:sequence>
+
+
+
+
+
+
+
+            <xs:choice>
+
+                <xs:element maxOccurs="1" minOccurs="1" name="elementE" type="xs:date">
+
+                    <xs:annotation>
+
+                        <xs:documentation>The choice for date</xs:documentation>
+
+                    </xs:annotation>
+
+                </xs:element>
+
+                <xs:element maxOccurs="1" minOccurs="1" name="elementF" type="xs:dateTime">
+
+                    <xs:annotation>
+
+                        <xs:documentation>The choice for datetime</xs:documentation>
+
+                    </xs:annotation>
+
+                </xs:element>
+
+            </xs:choice>
+
+            <xs:sequence>
+
+                <xs:element maxOccurs="1" minOccurs="0" name="mappingId" type="guid-1095657266"/>
+
+            </xs:sequence>
+
+        </xs:sequence>
+
+    </xs:complexType>
+
+    <xs:complexType name="complexMType-1941974098">
+
+        <xs:annotation>
+
+            <xs:documentation>A complex element which extends another</xs:documentation>
+
+        </xs:annotation>
+
+        <xs:sequence>
+
+
+
+
+
+
+
+
+
+            <xs:choice>
+
+                <xs:element maxOccurs="1" minOccurs="1" name="elementE" type="xs:date">
+
+                    <xs:annotation>
+
+                        <xs:documentation>The choice for date</xs:documentation>
+
+                    </xs:annotation>
+
+                </xs:element>
+
+                <xs:element maxOccurs="1" minOccurs="1" name="elementF" type="xs:dateTime">
+
+                    <xs:annotation>
+
+                        <xs:documentation>The choice for datetime</xs:documentation>
+
+                    </xs:annotation>
+
+                </xs:element>
+
+            </xs:choice>
+
+            <xs:sequence>
+
+                <xs:element maxOccurs="1" minOccurs="1" name="elementN"
+                    type="mandatoryString-225550159"/>
+
+                <xs:element maxOccurs="1" minOccurs="0" name="mappingId" type="guid-1095657266"/>
+
+            </xs:sequence>
+
+        </xs:sequence>
+
+    </xs:complexType>
+
+    <xs:complexType name="complexTypeQType-1655217838">
+
+        <xs:sequence>
+
+            <xs:sequence>
+
+                <xs:element maxOccurs="1" minOccurs="1" name="elementR"
+                    type="choiceBType-1904097754"/>
+
+                <xs:element maxOccurs="1" minOccurs="0" name="elementS"
+                    type="mandatoryString-225550159"/>
+
+                <xs:element maxOccurs="1" minOccurs="0" name="elementY"
+                    type="choiceBType-1904097754"/>
+
+            </xs:sequence>
+
+            <xs:choice>
+
+                <xs:element maxOccurs="1" minOccurs="1" name="elementT" type="xs:decimal"/>
+
+                <xs:element maxOccurs="1" minOccurs="1" name="elementU"
+                    type="numberWithRestrictions-672002206"/>
+
+            </xs:choice>
+
+            <xs:choice>
+
+                <xs:element maxOccurs="unbounded" minOccurs="1" name="elementW"
+                    type="stringWithRestrictions-840894602"/>
+
+                <xs:element maxOccurs="unbounded" minOccurs="1" name="elementX"
+                    type="patternedString-913533034"/>
+
+            </xs:choice>
+
+        </xs:sequence>
+
+    </xs:complexType>
+
+    <xs:complexType name="elementPType-1990301226">
+
+        <xs:sequence>
+
+            <xs:element default="Hello" maxOccurs="1" minOccurs="1" name="elementA" type="xs:string">
+
+                <xs:annotation>
+
+                    <xs:documentation>This is a simple string which is fixed to 'Hello'</xs:documentation>
+
+                </xs:annotation>
+
+            </xs:element>
+
+            <xs:element default="Y" maxOccurs="1" minOccurs="1" name="elementB"
+                type="enumeratedString-247901027">
+
+                <xs:annotation>
+
+                    <xs:documentation>This is an enumerated string</xs:documentation>
+
+                </xs:annotation>
+
+            </xs:element>
+
+            <xs:element maxOccurs="1" minOccurs="0" name="elementC" type="elementC-238728743">
+
+                <xs:annotation>
+
+                    <xs:documentation>This is an optional local enumerated string</xs:documentation>
+
+                </xs:annotation>
+
+            </xs:element>
+
+            <xs:element maxOccurs="unbounded" minOccurs="1" name="elementD"
+                type="choiceBType-1904097754">
+
+                <xs:annotation>
+
+                    <xs:documentation>This is a list of a new complex type which provides a choice of date or datetime</xs:documentation>
+
+                </xs:annotation>
+
+            </xs:element>
+
+            <xs:element maxOccurs="1" minOccurs="1" name="elementG" type="mandatoryString-225550159">
+
+                <xs:annotation>
+
+                    <xs:documentation>This is a string entry where there must be contents in the element</xs:documentation>
+
+                </xs:annotation>
+
+            </xs:element>
+
+        </xs:sequence>
+
+    </xs:complexType>
+
+    <xs:complexType name="topElementType-1971918338">
+
+        <xs:annotation>
+
+            <xs:documentation>The top element complex type</xs:documentation>
+
+        </xs:annotation>
+
+        <xs:sequence>
+
+            <xs:element maxOccurs="1" minOccurs="1" name="elementK" type="allType-2069658878">
+
+                <xs:annotation>
+
+                    <xs:documentation>An element with an all complex element</xs:documentation>
+
+                </xs:annotation>
+
+            </xs:element>
+
+            <xs:element maxOccurs="1" minOccurs="1" name="elementO" type="complexMType-1941974098"/>
+
+            <xs:element maxOccurs="1" minOccurs="1" name="elementP" type="elementPType-1990301226">
+
+                <xs:annotation>
+
+                    <xs:documentation>Element with a local complex type</xs:documentation>
+
+                </xs:annotation>
+
+            </xs:element>
+
+            <xs:element maxOccurs="1" minOccurs="1" name="elementV"
+                type="complexTypeQType-1655217838"/>
+
+            <xs:element maxOccurs="1" minOccurs="1" name="elementI"
+                type="stringWithRestrictions-840894602">
+
+                <xs:annotation>
+
+                    <xs:documentation>remaining restrictions applied to a string</xs:documentation>
+
+                </xs:annotation>
+
+            </xs:element>
+
+            <xs:element maxOccurs="1" minOccurs="1" name="elementH" type="patternedString-913533034">
+
+
+
+                <xs:annotation>
+
+                    <xs:documentation>regex string</xs:documentation>
+
+                </xs:annotation>
+
+            </xs:element>
+
+        </xs:sequence>
+
+    </xs:complexType>
+
+    <xs:simpleType name="anotherNumberWithRestrictions-757787526">
+
+        <xs:restriction base="xs:decimal">
+
+            <xs:totalDigits value="2"/>
+
+            <xs:fractionDigits value="2"/>
+
+            <xs:minInclusive value="0"/>
+
+            <xs:maxExclusive value="100"/>
+
+        </xs:restriction>
+
+    </xs:simpleType>
+
+    <xs:simpleType name="elementC-238728743">
+
+        <xs:restriction base="xs:string">
+
+            <xs:enumeration value="1">
+
+                <xs:annotation>
+
+                    <xs:documentation>Possible</xs:documentation>
+
+                </xs:annotation>
+
+            </xs:enumeration>
+
+            <xs:enumeration value="2">
+
+                <xs:annotation>
+
+                    <xs:documentation>Not Possible</xs:documentation>
+
+                </xs:annotation>
+
+            </xs:enumeration>
+
+            <xs:enumeration value="3">
+
+                <xs:annotation>
+
+                    <xs:documentation>Probable</xs:documentation>
+
+                </xs:annotation>
+
+            </xs:enumeration>
+
+        </xs:restriction>
+
+    </xs:simpleType>
+
+    <xs:simpleType name="enumeratedString-247901027">
+
+        <xs:annotation>
+
+            <xs:documentation>An enumeration</xs:documentation>
+
+        </xs:annotation>
+
+        <xs:restriction base="xs:string">
+
+            <xs:enumeration value="Y">
+
+                <xs:annotation>
+
+                    <xs:documentation>Yes</xs:documentation>
+
+                </xs:annotation>
+
+            </xs:enumeration>
+
+            <xs:enumeration value="N">
+
+                <xs:annotation>
+
+                    <xs:documentation>No</xs:documentation>
+
+                </xs:annotation>
+
+            </xs:enumeration>
+
+            <xs:enumeration value="U">
+
+                <xs:annotation>
+
+                    <xs:documentation>Unknown</xs:documentation>
+
+                </xs:annotation>
+
+            </xs:enumeration>
+
+        </xs:restriction>
+
+    </xs:simpleType>
+
+    <xs:simpleType name="guid-1095657266">
+
+        <xs:restriction base="xs:string">
+
+            <xs:pattern
+                value="([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})|(\{[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\})"/>
+
+        </xs:restriction>
+
+    </xs:simpleType>
+
+    <xs:simpleType name="mandatoryString-225550159">
+
+        <xs:annotation>
+
+            <xs:documentation>A mandatory string type</xs:documentation>
+
+        </xs:annotation>
+
+        <xs:restriction base="xs:string">
+
+            <xs:minLength value="1"/>
+
+        </xs:restriction>
+
+    </xs:simpleType>
+
+    <xs:simpleType name="numberWithRestrictions-672002206">
+
+        <xs:restriction base="xs:integer">
+
+            <xs:minInclusive value="1"/>
+
+            <xs:maxExclusive value="100"/>
+
+            <xs:totalDigits value="3"/>
+
+        </xs:restriction>
+
+    </xs:simpleType>
+
+    <xs:simpleType name="patternedString-913533034">
+
+        <xs:restriction base="xs:string">
+
+            <xs:pattern value="\w+\.\w+"/>
+
+            <xs:minLength value="3"/>
+
+            <xs:maxLength value="20"/>
+
+        </xs:restriction>
+
+    </xs:simpleType>
+
+    <xs:simpleType name="stringWithRestrictions-840894602">
+
+        <xs:restriction base="xs:string">
+
+            <xs:length value="15"/>
+
+            <xs:whiteSpace value="replace"/>
+
+        </xs:restriction>
+
+    </xs:simpleType>
+
+</xs:schema>

@@ -6,6 +6,7 @@ inherits template: '/catalogueItem/catalogueItem_full', model: [catalogueItem   
 
 model {
     DataModel dataModel
+    String expandedDescription
     UserSecurityPolicyManager userSecurityPolicyManager
 }
 
@@ -24,6 +25,7 @@ json {
     if (dataModel.organisation) organisation dataModel.organisation
     if (dataModel.modelVersion) modelVersion dataModel.modelVersion
     if (dataModel.modelVersionTag) modelVersionTag dataModel.modelVersionTag
+    if (expandedDescription) expandedDescription expandedDescription
 
     authority tmpl.'/authority/authority'(dataModel.authority)
 }

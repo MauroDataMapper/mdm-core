@@ -82,7 +82,7 @@ class SemanticLinkService implements MultiFacetItemAwareService<SemanticLink> {
 
     void deleteAll(List<SemanticLink> semanticLinks, boolean cleanFromOwner = true) {
         if (cleanFromOwner) {
-            semanticLinks.each {delete(it)}
+            semanticLinks.each { delete(it) }
         } else {
             SemanticLink.deleteAll(semanticLinks)
         }
@@ -121,10 +121,10 @@ class SemanticLinkService implements MultiFacetItemAwareService<SemanticLink> {
         Map<String, Set<UUID>> itemIdsMap = [:]
 
         log.debug('Collecting all catalogue items for {} semantic links', semanticLinks.size())
-        semanticLinks.each {sl ->
+        semanticLinks.each { sl ->
 
             itemIdsMap.compute(sl.multiFacetAwareItemDomainType, [
-                apply: {String s, Set<UUID> uuids ->
+                apply: { String s, Set<UUID> uuids ->
                     uuids = uuids ?: new HashSet<>() as Set<UUID>
                     uuids.add(sl.multiFacetAwareItemId)
                     uuids
@@ -132,7 +132,7 @@ class SemanticLinkService implements MultiFacetItemAwareService<SemanticLink> {
             ] as BiFunction)
 
             itemIdsMap.compute(sl.targetMultiFacetAwareItemDomainType, [
-                apply: {String s, Set<UUID> uuids ->
+                apply: { String s, Set<UUID> uuids ->
                     uuids = uuids ?: new HashSet<>() as Set<UUID>
                     uuids.add(sl.targetMultiFacetAwareItemId)
                     uuids
@@ -142,14 +142,14 @@ class SemanticLinkService implements MultiFacetItemAwareService<SemanticLink> {
 
         log.debug('Loading required catalogue items from database')
         Map<Pair<String, UUID>, MultiFacetAware> itemMap = [:]
-        itemIdsMap.each {domain, ids ->
+        itemIdsMap.each { domain, ids ->
             MultiFacetAwareService service = findServiceForMultiFacetAwareDomainType(domain)
             List<MultiFacetAware> items = service.getAll(ids)
-            itemMap.putAll(items.collectEntries {i -> [new Pair<String, UUID>(domain, i.id), i]})
+            itemMap.putAll(items.collectEntries { i -> [new Pair<String, UUID>(domain, i.id), i] })
         }
 
         log.debug('Loading {} retrieved catalogue items into semantic links', itemMap.size())
-        semanticLinks.each {sl ->
+        semanticLinks.each { sl ->
             sl.multiFacetAwareItem = itemMap[new Pair(sl.multiFacetAwareItemDomainType, sl.multiFacetAwareItemId)]
             sl.targetMultiFacetAwareItem = itemMap[new Pair(sl.targetMultiFacetAwareItemDomainType, sl.targetMultiFacetAwareItemId)]
         }
@@ -220,6 +220,10 @@ class SemanticLinkService implements MultiFacetItemAwareService<SemanticLink> {
 
     List<SemanticLink> findAllBySourceOrTargetMultiFacetAwareItemId(Serializable multiFacetAwareItemId, Map paginate = [:]) {
         SemanticLink.withFilter(SemanticLink.byAnyMultiFacetAwareItemId(multiFacetAwareItemId), paginate).list(paginate)
+    }
+
+    List<SemanticLink> findAllBySourceMultiFacetAwareItemIdAndLinkType(UUID multiFacetAwareItemId, SemanticLinkType type, Map paginate = [:]) {
+        SemanticLink.withFilter(SemanticLink.bySourceMultiFacetAwareItemIdAndSemanticLinkType(multiFacetAwareItemId, type), paginate).list(paginate)
     }
 
     @Deprecated(forRemoval = true)
