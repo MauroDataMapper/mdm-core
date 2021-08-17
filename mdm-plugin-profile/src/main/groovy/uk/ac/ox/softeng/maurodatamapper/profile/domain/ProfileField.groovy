@@ -42,8 +42,9 @@ class ProfileField implements Validateable {
         metadataPropertyName nullable: true, blank: false
         description nullable: true, blank: false
         regularExpression nullable: true, blank: false
+        derivedFrom nullable: true, blank: false
         currentValue nullable: true, validator: {val, obj ->
-            if (!val && (obj.minMultiplicity > 0)) return ['null.message', obj.fieldName, obj.metadataPropertyName]
+            if (!val && !obj.derived && !obj.uneditable && obj.minMultiplicity > 0) return ['null.message', obj.fieldName, obj.metadataPropertyName]
             if (val) {
                 if (obj.allowedValues && !(val in obj.allowedValues)) return ['not.inlist.message', obj.allowedValues, obj.fieldName, obj.metadataPropertyName]
                 if (obj.regularExpression && !val.matches(obj.regularExpression)) return ['doesnt.match.message', obj.regularExpression, obj.fieldName,

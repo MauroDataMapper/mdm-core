@@ -22,7 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.profile.provider.JsonProfileProviderServ
 import grails.gorm.transactions.Transactional
 
 @Transactional
-class ProfileSpecificationDerivedFieldProfileService extends JsonProfileProviderService{
+class DerivedFieldProfileService extends JsonProfileProviderService {
 
     @Override
     String getMetadataNamespace() {
@@ -31,12 +31,12 @@ class ProfileSpecificationDerivedFieldProfileService extends JsonProfileProvider
 
     @Override
     String getDisplayName() {
-        'Profile Specification Profile (Derived)'
+        'Derived Field Profile'
     }
 
     @Override
     String getJsonResourceFile() {
-        return 'ProfileSpecificationDerivedFieldProfile.json'
+        return 'DerivedFieldProfile.json'
     }
 
     @Override

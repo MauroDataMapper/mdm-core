@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.testing.functional.profile
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.profile.DerivedFieldProfileService
 import uk.ac.ox.softeng.maurodatamapper.profile.PostFinalisedEditableProfileService
 import uk.ac.ox.softeng.maurodatamapper.profile.ProfileSpecificationProfileService
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
@@ -40,6 +41,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
 
     ProfileSpecificationProfileService profileSpecificationProfileService
     PostFinalisedEditableProfileService postFinalisedEditableProfileService
+    DerivedFieldProfileService derivedFieldProfileService
 
     @Transactional
     String getTestFolderId() {
@@ -129,6 +131,24 @@ class ProfileFunctionalSpec extends FunctionalSpec {
     "metadataNamespace": "uk.ac.ox.softeng.maurodatamapper.profile.dataelement",
     "domains": [
       "DataElement"
+    ]
+  },
+   {
+    "name": "DerivedFieldProfileService",
+    "version": "${json-unit.matches:version}",
+    "displayName": "Derived Field Profile",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.profile",
+    "allowsExtraMetadataKeys": false,
+    "knownMetadataKeys": [
+      "derivedField",
+      "uneditableField",
+      "uneditableFieldOptional",
+      "plainField"
+    ],
+    "providerType": "Profile",
+    "metadataNamespace": "uk.ac.ox.softeng.maurodatamapper.profile.derived",
+    "domains": [
+      "DataModel"
     ]
   }
 ]'''
@@ -663,6 +683,71 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         cleanupDataModelId(id)
     }
 
+    void 'N09 : test saving and getting profile with derived fields (as editor)'() {
+        given:
+        String id = getDataModelId()
+        Map profileMap = [
+            sections  : [
+                [
+                    fields     : [
+                        [
+                            currentValue: 'functional.test.profile',
+                            fieldName   : 'Plain Field',
+                        ],
+                        [
+                            currentValue: 'functional.test.profile',
+                            fieldName   : 'Uneditable Field Optional',
+                        ],
+                    ],
+                    sectionName: 'Profile Derived Specification'
+                ]
+            ],
+            id        : id.toString(),
+            label     : 'Simple Test DataModel',
+            domainType: 'DataModel',
+            namespace : derivedFieldProfileService.namespace,
+            name      : derivedFieldProfileService.name
+
+        ]
+
+        when:
+        loginReader()
+        POST("profiles/${derivedFieldProfileService.namespace}/${derivedFieldProfileService.name}/dataModels/${id}/validate", profileMap)
+
+        then:
+        verifyResponse(OK, response)
+
+        when:
+        loginEditor()
+        POST("profiles/${derivedFieldProfileService.namespace}/${derivedFieldProfileService.name}/dataModels/${id}", profileMap)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().sections.first().fields.find {it.fieldName == 'Plain Field'}.currentValue == 'functional.test.profile'
+        responseBody().sections.first().fields.find {it.fieldName == 'Derived Field'}.currentValue == 'profile functional model'
+        responseBody().sections.first().fields.find {it.fieldName == 'Derived Field'}.uneditable
+        !responseBody().sections.first().fields.find {it.fieldName == 'Uneditable Field'}.currentValue
+        !responseBody().sections.first().fields.find {it.fieldName == 'Uneditable Field Optional'}.currentValue
+
+        when:
+        HttpResponse<List<Map>> localResponse = GET("dataModels/${id}/profiles/used", Argument.listOf(Map))
+
+        then:
+        verifyResponse(OK, localResponse)
+        localResponse.body().size() == 1
+        localResponse.body().first().name == derivedFieldProfileService.name
+        localResponse.body().first().namespace == derivedFieldProfileService.namespace
+
+        when:
+        GET("profiles/${derivedFieldProfileService.namespace}/${derivedFieldProfileService.name}/dataModels/${id}", STRING_ARG)
+
+        then:
+        verifyJsonResponse(OK, getExpectedDerivedSavedProfile())
+
+        cleanup:
+        cleanupDataModelId(id)
+    }
+
     String getExpectedSavedProfile() {
         '''{
   "sections": [
@@ -679,19 +764,97 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "allowedValues": null,
           "regularExpression": null,
           "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
           "currentValue": "functional.test.profile"
         },
         {
           "fieldName": "Applicable for domains",
           "metadataPropertyName": "domainsApplicable",
-          "description": "Determines which types of catalogue item can be profiled using this profile.  For example, 'DataModel'.  ''' +
-        '''Separate multiple domains with a semi-colon (';').  Leave blank to allow this profile to be applicable to any catalogue item.",
+          "description": "Determines which types of catalogue item can be profiled using this profile.  For example, 'DataModel'.  Separate multiple domains with a 
+          semi-colon (';').  Leave blank to allow this profile to be applicable to any catalogue item.",
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
           "allowedValues": null,
           "regularExpression": null,
           "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
           "currentValue": "DataModel"
+        }
+      ]
+    }
+  ],
+  "id": "${json-unit.matches:id}",
+  "label": "profile functional model",
+  "domainType": "DataModel"
+}'''
+    }
+
+    String getExpectedDerivedSavedProfile() {
+        '''{
+  "sections": [
+    {
+      "name": "Profile Derived Specification",
+      "description": "The details necessary for this Data Model to be used as the specification for a dynamic profile.",
+      "fields": [
+        {
+          "fieldName": "Derived Field",
+          "metadataPropertyName": "derivedField",
+          "description": "A field which is derived",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 1,
+          "allowedValues": null,
+          "regularExpression": null,
+          "dataType": "string",
+          "derived": true,
+          "derivedFrom": "label",
+          "uneditable": true,
+          "currentValue": "profile functional model"
+        },
+        {
+          "fieldName": "Uneditable Field",
+          "metadataPropertyName": "uneditableField",
+          "description": "A field which is uneditable and listed as mandatory",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 1,
+          "allowedValues": null,
+          "regularExpression": null,
+          "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": true,
+          "currentValue": ""
+        },
+        {
+          "fieldName": "Uneditable Field Optional",
+          "metadataPropertyName": "uneditableFieldOptional",
+          "description": "A field which is uneditable and listed as optional",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "allowedValues": null,
+          "regularExpression": null,
+          "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": true,
+          "currentValue": ""
+        },
+        {
+          "fieldName": "Plain Field",
+          "metadataPropertyName": "plainField",
+          "description": "A field which is normal",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 1,
+          "allowedValues": null,
+          "regularExpression": null,
+          "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
+          "currentValue": "functional.test.profile"
         }
       ]
     }

@@ -152,7 +152,9 @@ abstract class ProfileProviderService<P extends Profile, D extends MultiFacetAwa
             if (submittedSection) {
                 section.fields.each {field ->
                     ProfileField submittedField = submittedSection.fields.find {it.fieldName == field.fieldName}
-                    field.currentValue = submittedField.currentValue ?: ''
+                    if (submittedField) {
+                        field.currentValue = submittedField.currentValue ?: ''
+                    }
                 }
             }
         }

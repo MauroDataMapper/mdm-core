@@ -13,5 +13,8 @@ json {
     allowedValues profileField.allowedValues
     regularExpression profileField.regularExpression
     dataType profileField.dataType.label
-    currentValue profileField.currentValue
+    derived profileField.derived
+    derivedFrom profileField.derivedFrom
+    uneditable profileField.uneditable
+    currentValue profileField.currentValue ?: ''
 }

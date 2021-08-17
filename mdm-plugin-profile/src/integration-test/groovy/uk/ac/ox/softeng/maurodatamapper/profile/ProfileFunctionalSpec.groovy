@@ -109,17 +109,6 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
     "domains":["DataModel"]
 }, 
 {
-    "name": "ProfileSpecificationDerivedFieldProfileService",
-    "version": "SNAPSHOT",
-    "displayName": "Profile Specification Profile (Derived)",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.profile",
-    "allowsExtraMetadataKeys": false,
-    "knownMetadataKeys": ["DerivedNamespace"],
-    "providerType": "Profile",
-    "metadataNamespace": "uk.ac.ox.softeng.maurodatamapper.profile.derived",
-    "domains": ["DataModel"]
-},
-{
     "name":"ProfileSpecificationFieldProfileService",
     "version":"${json-unit.matches:version}",
     "displayName":"Profile Specification Profile (Data Element)",
@@ -597,18 +586,24 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
           "allowedValues": null,
           "regularExpression": null,
           "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
           "currentValue": "functional.test.profile"
         },
         {
           "fieldName": "Applicable for domains",
           "metadataPropertyName": "domainsApplicable",
-          "description": "Determines which types of catalogue item can be profiled using this profile.  For example, 'DataModel'.  ''' +
-        '''Separate multiple domains with a semi-colon (';').  Leave blank to allow this profile to be applicable to any catalogue item.",
+          "description": "Determines which types of catalogue item can be profiled using this profile.  For example, 'DataModel'.  Separate multiple domains with a 
+          semi-colon (';').  Leave blank to allow this profile to be applicable to any catalogue item.",
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
           "allowedValues": null,
           "regularExpression": null,
           "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
           "currentValue": "DataModel"
         }
       ]
