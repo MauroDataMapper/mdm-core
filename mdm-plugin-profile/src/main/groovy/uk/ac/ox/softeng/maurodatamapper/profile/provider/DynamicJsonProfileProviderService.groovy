@@ -49,9 +49,9 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
     @Override
     JsonProfile createProfileFromEntity(MultiFacetAware entity) {
         JsonProfile jsonProfile = new JsonProfile(getSections())
-        jsonProfile.profiledItemId = entity.id
-        jsonProfile.profiledItemDomainType = entity.domainType
-        jsonProfile.profiledItemLabel = entity.label
+        jsonProfile.id = entity.id
+        jsonProfile.domainType = entity.domainType
+        jsonProfile.label = entity.label
         List<Metadata> metadataList = metadataService.findAllByMultiFacetAwareItemIdAndNamespace(entity.id, this.getMetadataNamespace())
 
         jsonProfile.sections.each {section ->

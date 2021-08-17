@@ -59,7 +59,7 @@ class ProfileController implements ResourcelessMdmController {
         respond profileProviderServices: profileService.getAllDynamicProfileProviderServices()
     }
 
-    def profiles() {
+    def usedProfiles() {
         MultiFacetAware multiFacetAware = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params
             .multiFacetAwareItemId)
         if (!multiFacetAware) {
@@ -77,7 +77,7 @@ class ProfileController implements ResourcelessMdmController {
         respond profileProviderServices: profileService.getUnusedProfileServices(multiFacetAware)
     }
 
-    def otherMetadata() {
+    def nonProfileMetadata() {
         MultiFacetAware multiFacetAware =
             profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
         if (!multiFacetAware) {
@@ -125,7 +125,6 @@ class ProfileController implements ResourcelessMdmController {
         }
 
         respond profileService.createProfile(profileProviderService, multiFacetAware)
-
     }
 
     @Transactional
@@ -169,7 +168,14 @@ class ProfileController implements ResourcelessMdmController {
         Profile submittedInstance = profileProviderService.getNewProfile()
         bindData(submittedInstance, request)
 
-        respond profileService.validateProfile(profileProviderService, submittedInstance)
+        Profile validatedInstance = profileService.validateProfile(profileProviderService, submittedInstance)
+
+        if (validatedInstance.hasErrors()) {
+            respond validatedInstance.errors
+            return
+        }
+
+        respond validatedInstance
     }
 
 

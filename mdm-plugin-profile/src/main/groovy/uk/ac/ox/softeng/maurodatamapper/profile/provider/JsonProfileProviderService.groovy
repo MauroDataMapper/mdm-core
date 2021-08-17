@@ -29,10 +29,10 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
 
     @Override
     JsonProfile createProfileFromEntity(MultiFacetAware entity) {
-        JsonProfile jsonProfile = EmptyJsonProfileFactory.instance.getEmptyProfile(this)
-        jsonProfile.profiledItemId = entity.id
-        jsonProfile.profiledItemDomainType = entity.domainType
-        jsonProfile.profiledItemLabel = entity.label
+        JsonProfile jsonProfile = getNewProfile()
+        jsonProfile.id = entity.id
+        jsonProfile.domainType = entity.domainType
+        jsonProfile.label = entity.label
 
         List<Metadata> metadataList = getAllProfileMetadataByMultiFacetAwareItemId(entity.id)
 
@@ -50,13 +50,13 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
         jsonProfile
     }
 
-    JsonProfile createNewEmptyJsonProfile() {
+    JsonProfile getNewProfile() {
         EmptyJsonProfileFactory.instance.getEmptyProfile(this)
     }
 
     @Override
     void storeProfileInEntity(MultiFacetAware entity, JsonProfile jsonProfile, String userEmailAddress) {
-        JsonProfile emptyJsonProfile = createNewEmptyJsonProfile()
+        JsonProfile emptyJsonProfile = getNewProfile()
         emptyJsonProfile.sections.each {section ->
             ProfileSection submittedSection = jsonProfile.sections.find {it.sectionName == section.sectionName}
             if (submittedSection) {
@@ -97,7 +97,7 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
 
     @Override
     Set<String> getKnownMetadataKeys() {
-        EmptyJsonProfileFactory.instance.getEmptyProfile(this).getKnownFields()
+        getNewProfile().getKnownFields()
     }
 
     @Override
@@ -106,7 +106,11 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
     }
 
     @Override
-    JsonProfile getNewProfile() {
-        createNewEmptyJsonProfile()
+    JsonProfile createCleanProfileFromProfile(JsonProfile submittedProfile) {
+        JsonProfile cleanProfile = super.createCleanProfileFromProfile(submittedProfile) as JsonProfile
+        cleanProfile.domainType = submittedProfile.domainType
+        cleanProfile.id = submittedProfile.id
+        cleanProfile.label = submittedProfile.label
+        cleanProfile
     }
 }

@@ -5,9 +5,9 @@ model {
 }
 
 json {
-    sections jsonProfile.sections
-    id jsonProfile.profiledItemId
-    label jsonProfile.profiledItemLabel
-    domainType jsonProfile.profiledItemDomainType
+    sections tmpl.'/profileSection/profileSection'(jsonProfile.sections)
+    id jsonProfile.id
+    label jsonProfile.label
+    domainType jsonProfile.domainType
 
 }
