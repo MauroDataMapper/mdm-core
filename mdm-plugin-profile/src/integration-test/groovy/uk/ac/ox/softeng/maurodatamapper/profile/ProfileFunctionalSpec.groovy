@@ -241,7 +241,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
 
         then:
         verifyResponse OK, localResponse
-        localResponse.body().size() == 2
+        localResponse.body().size() == 1
         localResponse.body().first().name == 'ProfileSpecificationProfileService'
         localResponse.body().first().displayName == 'Profile Specification Profile (Data Model)'
     }
@@ -594,8 +594,8 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         {
           "fieldName": "Applicable for domains",
           "metadataPropertyName": "domainsApplicable",
-          "description": "Determines which types of catalogue item can be profiled using this profile.  For example, 'DataModel'.  Separate multiple domains with a 
-          semi-colon (';').  Leave blank to allow this profile to be applicable to any catalogue item.",
+          "description": "Determines which types of catalogue item can be profiled using this profile.  For example, 'DataModel'.  ''' +
+        '''Separate multiple domains with a semi-colon (';').  Leave blank to allow this profile to be applicable to any catalogue item.",
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
           "allowedValues": null,
