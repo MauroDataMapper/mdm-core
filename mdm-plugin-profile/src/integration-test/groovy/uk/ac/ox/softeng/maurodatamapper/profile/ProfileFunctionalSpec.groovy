@@ -99,7 +99,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         verifyJsonResponse OK, '''
 [{
     "name":"ProfileSpecificationProfileService",
-    "version":"SNAPSHOT",
+    "version":"${json-unit.matches:version}",
     "displayName":"Profile Specification Profile (Data Model)",
     "namespace":"uk.ac.ox.softeng.maurodatamapper.profile",
     "allowsExtraMetadataKeys":false,
@@ -110,7 +110,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
 }, 
 {
     "name":"ProfileSpecificationFieldProfileService",
-    "version":"SNAPSHOT",
+    "version":"${json-unit.matches:version}",
     "displayName":"Profile Specification Profile (Data Element)",
     "namespace":"uk.ac.ox.softeng.maurodatamapper.profile",
     "allowsExtraMetadataKeys":false,
