@@ -59,7 +59,7 @@ class ProfileController implements ResourcelessMdmController {
         respond profileProviderServices: profileService.getAllDynamicProfileProviderServices()
     }
 
-    def profiles() {
+    def usedProfiles() {
         MultiFacetAware multiFacetAware = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params
             .multiFacetAwareItemId)
         if (!multiFacetAware) {
@@ -77,7 +77,7 @@ class ProfileController implements ResourcelessMdmController {
         respond profileProviderServices: profileService.getUnusedProfileServices(multiFacetAware)
     }
 
-    def otherMetadata() {
+    def nonProfileMetadata() {
         MultiFacetAware multiFacetAware =
             profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
         if (!multiFacetAware) {

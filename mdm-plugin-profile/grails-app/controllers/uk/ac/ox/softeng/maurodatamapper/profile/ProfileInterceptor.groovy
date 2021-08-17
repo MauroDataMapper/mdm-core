@@ -46,7 +46,7 @@ class ProfileInterceptor extends FacetInterceptor {
         boolean canRead = currentUserSecurityPolicyManager.userCanReadResourceId(resourceClass, id, owningSecureResourceClass, owningSecureResourceId)
 
         // Read only actions
-        if (actionName in ['validate', 'profiles', 'unusedProfiles', 'otherMetadata']) {
+        if (actionName in ['validate', 'usedProfiles', 'unusedProfiles', 'nonProfileMetadata']) {
             return canRead ?: notFound(id ? resourceClass : owningSecureResourceClass, (id ?: owningSecureResourceId).toString())
         }
 
