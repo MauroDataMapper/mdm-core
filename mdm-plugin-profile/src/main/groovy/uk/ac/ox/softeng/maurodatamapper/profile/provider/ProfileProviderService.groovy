@@ -21,6 +21,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MetadataAware
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
+import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileField
+import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.provider.MauroDataMapperService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -44,6 +46,7 @@ abstract class ProfileProviderService<P extends Profile, D extends MultiFacetAwa
     abstract String getMetadataNamespace()
 
     boolean isJsonProfileService() { return true }
+
     boolean disabled = false
 
     @Override
@@ -58,6 +61,10 @@ abstract class ProfileProviderService<P extends Profile, D extends MultiFacetAwa
 
     @Override
     Boolean allowsExtraMetadataKeys() {
+        false
+    }
+
+    Boolean canBeEditedAfterFinalisation() {
         false
     }
 
@@ -136,6 +143,22 @@ abstract class ProfileProviderService<P extends Profile, D extends MultiFacetAwa
 
     String getDefiningDataModelDescription() {
         return null
+    }
+
+    P createCleanProfileFromProfile(P submittedProfile) {
+        P cleanProfile = getNewProfile()
+        cleanProfile.sections.each {section ->
+            ProfileSection submittedSection = submittedProfile.sections.find {it.sectionName == section.sectionName}
+            if (submittedSection) {
+                section.fields.each {field ->
+                    ProfileField submittedField = submittedSection.fields.find {it.fieldName == field.fieldName}
+                    if (submittedField) {
+                        field.currentValue = submittedField.currentValue ?: ''
+                    }
+                }
+            }
+        }
+        cleanProfile
     }
 
 }

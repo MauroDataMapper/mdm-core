@@ -29,36 +29,36 @@ import java.nio.charset.StandardCharsets
 @Singleton
 class EmptyJsonProfileFactory {
 
+    private static final Map<String, String> loadedProfileJsonStructures = [:]
 
-    private Map<String, String> loadedProfileJsons = [:]
-
-    private JsonSlurper jsonSlurper = new JsonSlurper()
-
+    private static final JsonSlurper jsonSlurper = new JsonSlurper()
 
     JsonProfile getEmptyProfile(JsonProfileProviderService jsonProfileProviderService) {
+        String jsonStructure = getOrLoadProfileStructure(jsonProfileProviderService)
 
-        String jsonStructure
-        if(loadedProfileJsons[jsonProfileProviderService.metadataNamespace]) {
-            jsonStructure = loadedProfileJsons[jsonProfileProviderService.metadataNamespace]
-        } else {
-            String resourceFile = jsonProfileProviderService.getJsonResourceFile()
-            InputStream inputStream = jsonProfileProviderService.class.classLoader.getResourceAsStream(resourceFile)
-            jsonStructure = IOUtils.toString(inputStream, StandardCharsets.UTF_8 as String)
-            loadedProfileJsons[jsonProfileProviderService.metadataNamespace] = jsonStructure
-
-        }
         def sectionList = jsonSlurper.parseText(jsonStructure)
-        List<ProfileSection> profileSections = []
-        sectionList.each { Map sectionMap ->
+        List<ProfileSection> profileSections = sectionList.collect {Map sectionMap ->
             List<Map> fields = (List<Map>) sectionMap.fields
             sectionMap.fields = []
             ProfileSection profileSection = new ProfileSection(sectionMap)
-            fields.each { Map field ->
-                ProfileField profileField = new ProfileField(field)
-                profileSection.fields.add(profileField)
+            profileSection.fields = fields.collect {Map field ->
+                new ProfileField(field)
             }
-            profileSections.add((ProfileSection) profileSection)
+            profileSection
         }
-        return new JsonProfile(profileSections)
+        new JsonProfile(profileSections)
+    }
+
+    private String getOrLoadProfileStructure(JsonProfileProviderService jsonProfileProviderService) {
+        if (!loadedProfileJsonStructures[jsonProfileProviderService.metadataNamespace]) {
+            loadedProfileJsonStructures[jsonProfileProviderService.metadataNamespace] = loadNewProfileStructure(jsonProfileProviderService)
+        }
+        loadedProfileJsonStructures[jsonProfileProviderService.metadataNamespace]
+    }
+
+    private String loadNewProfileStructure(JsonProfileProviderService jsonProfileProviderService) {
+        String resourceFile = jsonProfileProviderService.getJsonResourceFile()
+        InputStream inputStream = jsonProfileProviderService.class.classLoader.getResourceAsStream(resourceFile)
+        IOUtils.toString(inputStream, StandardCharsets.UTF_8 as String)
     }
 }

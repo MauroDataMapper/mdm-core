@@ -27,8 +27,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareServi
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
-import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileField
-import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.DynamicJsonProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
@@ -83,18 +81,9 @@ class ProfileService {
     }
 
     Profile validateProfile(ProfileProviderService profileProviderService, Profile submittedProfile) {
-        Profile cleanProfile = profileProviderService.newProfile
-
-        cleanProfile.sections.each {section ->
-            ProfileSection submittedSection = submittedProfile.sections.find {it.sectionName == section.sectionName}
-            if (submittedSection) {
-                section.fields.each {field ->
-                    ProfileField submittedField = submittedSection.fields.find {it.fieldName == field.fieldName}
-                    field.currentValue = submittedField.currentValue ?: ''
-                }
-            }
-        }
+        Profile cleanProfile = profileProviderService.createCleanProfileFromProfile(submittedProfile)
         cleanProfile.validate()
+        cleanProfile
     }
 
     void deleteProfile(ProfileProviderService profileProviderService, MultiFacetAware multiFacetAwareItem, User currentUser) {
