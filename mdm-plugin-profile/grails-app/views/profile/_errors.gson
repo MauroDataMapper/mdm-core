@@ -5,7 +5,6 @@ import org.springframework.validation.ObjectError
 model {
     Errors errors
 }
-log.warn("${binding.variables}")
 response.status UNPROCESSABLE_ENTITY
 locale = Locale.UK
 
@@ -18,7 +17,6 @@ json {
         message messageSource.getMessage(error, locale)
         if (error instanceof FieldError) {
             FieldError fe = (FieldError) error
-            log.warn("${fe.field}")
             if (fe.field.endsWith('currentValue')) {
                 fieldName fe.arguments[-2]
                 metadataPropertyName fe.arguments.last()

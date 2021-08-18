@@ -284,7 +284,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
 
     void 'test getting other properties on a datamodel'() {
         given:
-            String id = getComplexDataModelId()
+        String id = getComplexDataModelId()
 
         when:
         GET("dataModels/${id}/profiles/otherMetadata", STRING_ARG)
@@ -341,20 +341,20 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
     void 'N01 : test validating profile on DataModel'() {
         given:
         Map namespaceFieldMap = [
-            fieldName           : 'Metadata namespace',
+            metadataPropertyName: "metadataNamespace",
         ]
         Map domainsFieldMap = [
-            fieldName           : 'Applicable for domains',
+            metadataPropertyName: "domainsApplicable",
         ]
         Map profileMap = [
             sections  : [
                 [
-                    sectionDescription: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
-                    fields            : [
+                    description: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
+                    fields     : [
                         namespaceFieldMap,
                         domainsFieldMap
                     ],
-                    sectionName       : 'Profile Specification'
+                    name       : 'Profile Specification'
                 ]
             ],
             id        : simpleDataModelId.toString(),
@@ -389,21 +389,21 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         given:
         Map namespaceFieldMap = [
             currentValue        : 'functional.test.profile',
-            fieldName           : 'Metadata namespace',
+            metadataPropertyName: "metadataNamespace"
         ]
         Map domainsFieldMap = [
             currentValue        : 'DataModel',
-            fieldName           : 'Applicable for domains',
+            metadataPropertyName: "domainsApplicable",
         ]
         Map profileMap = [
             sections  : [
                 [
-                    sectionDescription: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
-                    fields            : [
+                    description: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
+                    fields     : [
                         namespaceFieldMap,
                         domainsFieldMap
                     ],
-                    sectionName       : 'Profile Specification'
+                    name       : 'Profile Specification'
                 ]
             ],
             id        : simpleDataModelId.toString(),
@@ -419,8 +419,8 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
 
         then:
         verifyResponse(OK, response)
-        responseBody().sections.first().fields.find {it.fieldName == namespaceFieldMap.fieldName}.currentValue == namespaceFieldMap.currentValue
-        responseBody().sections.first().fields.find {it.fieldName == domainsFieldMap.fieldName}.currentValue == domainsFieldMap.currentValue
+        responseBody().sections.first().fields.find {it.metadataPropertyName == namespaceFieldMap.metadataPropertyName}.currentValue == namespaceFieldMap.currentValue
+        responseBody().sections.first().fields.find {it.metadataPropertyName == domainsFieldMap.metadataPropertyName}.currentValue == domainsFieldMap.currentValue
 
         when:
         HttpResponse<List<Map>> localResponse = GET("dataModels/${simpleDataModelId}/profiles/used", Argument.listOf(Map))
@@ -442,21 +442,21 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         given:
         Map namespaceFieldMap = [
             currentValue        : 'functional.test.profile',
-            fieldName           : 'Metadata namespace',
+            metadataPropertyName: "metadataNamespace"
         ]
         Map domainsFieldMap = [
             currentValue        : 'DataModel',
-            fieldName           : 'Applicable for domains',
+            metadataPropertyName: "domainsApplicable",
         ]
         Map profileMap = [
             sections  : [
                 [
-                    sectionDescription: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
-                    fields            : [
+                    description: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
+                    fields     : [
                         namespaceFieldMap,
                         domainsFieldMap
                     ],
-                    sectionName       : 'Profile Specification'
+                    name       : 'Profile Specification'
                 ]
             ],
             id        : simpleDataModelId.toString(),
@@ -475,11 +475,11 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         profileMap = [
             sections  : [
                 [
-                    sectionDescription: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
-                    fields            : [
+                    description: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
+                    fields     : [
                         namespaceFieldMap,
                     ],
-                    sectionName       : 'Profile Specification'
+                    name       : 'Profile Specification'
                 ]
             ],
             id        : simpleDataModelId.toString(),
@@ -493,19 +493,19 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         verifyResponse(OK, response)
 
         then:
-        responseBody().sections.first().fields.find {it.fieldName == namespaceFieldMap.fieldName}.currentValue == 'functional.test.profile.adjusted'
-        responseBody().sections.first().fields.find {it.fieldName == domainsFieldMap.fieldName}.currentValue == domainsFieldMap.currentValue
+        responseBody().sections.first().fields.find {it.metadataPropertyName == namespaceFieldMap.metadataPropertyName}.currentValue == 'functional.test.profile.adjusted'
+        responseBody().sections.first().fields.find {it.metadataPropertyName == domainsFieldMap.metadataPropertyName}.currentValue == domainsFieldMap.currentValue
 
         when:
         domainsFieldMap.currentValue = ''
         profileMap = [
             sections  : [
                 [
-                    sectionDescription: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
-                    fields            : [
+                    description: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
+                    fields     : [
                         domainsFieldMap,
                     ],
-                    sectionName       : 'Profile Specification'
+                    name       : 'Profile Specification'
                 ]
             ],
             id        : simpleDataModelId.toString(),
@@ -519,8 +519,8 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         verifyResponse(OK, response)
 
         then:
-        responseBody().sections.first().fields.find {it.fieldName == namespaceFieldMap.fieldName}.currentValue == 'functional.test.profile.adjusted'
-        responseBody().sections.first().fields.find {it.fieldName == domainsFieldMap.fieldName}.currentValue == ''
+        responseBody().sections.first().fields.find {it.metadataPropertyName == namespaceFieldMap.metadataPropertyName}.currentValue == 'functional.test.profile.adjusted'
+        responseBody().sections.first().fields.find {it.metadataPropertyName == domainsFieldMap.metadataPropertyName}.currentValue == ''
 
     }
 
@@ -528,21 +528,21 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         given:
         Map namespaceFieldMap = [
             currentValue        : 'functional.test.profile',
-            fieldName           : 'Metadata namespace',
+            metadataPropertyName: "metadataNamespace"
         ]
         Map domainsFieldMap = [
             currentValue        : 'DataModel',
-            fieldName           : 'Applicable for domains',
+            metadataPropertyName: "domainsApplicable",
         ]
         Map profileMap = [
             sections  : [
                 [
-                    sectionDescription: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
-                    fields            : [
+                    description: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
+                    fields     : [
                         namespaceFieldMap,
                         domainsFieldMap
                     ],
-                    sectionName       : 'Profile Specification'
+                    name       : 'Profile Specification'
                 ]
             ],
             id        : simpleDataModelId.toString(),

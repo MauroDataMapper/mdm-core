@@ -73,7 +73,7 @@ class ProfileField implements Validateable {
         derived || uneditable
     }
 
-    String getMetadataKeyForSaving(String sectionName) {
-        metadataPropertyName ? metadataPropertyName : "${sectionName}/${fieldName}"
+    String getUniqueKey(String sectionName) {
+        metadataPropertyName ?: "${sectionName}/${fieldName}"
     }
 }

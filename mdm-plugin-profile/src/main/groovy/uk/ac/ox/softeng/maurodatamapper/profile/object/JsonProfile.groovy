@@ -54,7 +54,7 @@ class JsonProfile extends MapBasedProfile {
                     fields.add(field.metadataPropertyName)
                 } else {
                     log.info("No metadataPropertyName set for field: " + field.fieldName)
-                    fields.add("${section.sectionName}/${field.fieldName}")
+                    fields.add("${section.name}/${field.fieldName}")
                 }
             }
         }

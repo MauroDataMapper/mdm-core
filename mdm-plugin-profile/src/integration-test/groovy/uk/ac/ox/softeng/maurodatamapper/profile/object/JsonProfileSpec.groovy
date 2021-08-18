@@ -48,7 +48,7 @@ class JsonProfileSpec extends BaseIntegrationSpec {
 
         when:
         Profile profile = new JsonProfile(id: UUID.randomUUID(), domainType: 'BasicModel', label: 'Test', sections: [
-            new ProfileSection(sectionName: 'section 1')
+            new ProfileSection(name: 'section 1')
         ])
 
         then:
@@ -61,7 +61,7 @@ class JsonProfileSpec extends BaseIntegrationSpec {
 
         when:
         Profile profile = new JsonProfile(id: UUID.randomUUID(), domainType: 'BasicModel', label: 'Test', sections: [
-            new ProfileSection(sectionName: 'section 1', fields: [
+            new ProfileSection(name: 'section 1', fields: [
                 new ProfileField(fieldName: 'field1', metadataPropertyName: 'field1', minMultiplicity: 0, maxMultiplicity: 1, dataType: ProfileFieldDataType.STRING),
                 new ProfileField(fieldName: 'field2', metadataPropertyName: 'field2', minMultiplicity: 1, maxMultiplicity: 1, dataType: ProfileFieldDataType.STRING),
             ])
@@ -78,7 +78,7 @@ class JsonProfileSpec extends BaseIntegrationSpec {
 
         when:
         Profile profile = new JsonProfile(id: UUID.randomUUID(), domainType: 'BasicModel', label: 'Test', sections: [
-            new ProfileSection(sectionName: 'section 1', fields: [
+            new ProfileSection(name: 'section 1', fields: [
                 new ProfileField(fieldName: 'field1', metadataPropertyName: 'field1', minMultiplicity: 0, maxMultiplicity: 1, dataType: ProfileFieldDataType.STRING,
                                  allowedValues: ['a', 'b']),
                 new ProfileField(fieldName: 'field2', metadataPropertyName: 'field2', minMultiplicity: 1, maxMultiplicity: 1, dataType: ProfileFieldDataType.STRING,
@@ -104,7 +104,7 @@ class JsonProfileSpec extends BaseIntegrationSpec {
 
         when:
         Profile profile = new JsonProfile(id: UUID.randomUUID(), domainType: 'BasicModel', label: 'Test', sections: [
-            new ProfileSection(sectionName: 'section 1', fields: [
+            new ProfileSection(name: 'section 1', fields: [
                 new ProfileField(fieldName: 'field1', metadataPropertyName: 'field1', minMultiplicity: 0, maxMultiplicity: 1, dataType: ProfileFieldDataType.INT,
                                  regularExpression: '\\d{2}'),
                 new ProfileField(fieldName: 'field2', metadataPropertyName: 'field2', minMultiplicity: 1, maxMultiplicity: 1, dataType: ProfileFieldDataType.INT,
@@ -130,7 +130,7 @@ class JsonProfileSpec extends BaseIntegrationSpec {
 
         when:
         Profile profile = new JsonProfile(id: UUID.randomUUID(), domainType: 'BasicModel', label: 'Test', sections: [
-            new ProfileSection(sectionName: 'section 1', fields: [
+            new ProfileSection(name: 'section 1', fields: [
                 new ProfileField(fieldName: 'field1', metadataPropertyName: 'field1', minMultiplicity: 1, maxMultiplicity: 1, dataType: ProfileFieldDataType.INT,
                                  currentValue: 'c'),
                 new ProfileField(fieldName: 'field2', metadataPropertyName: 'field2', minMultiplicity: 1, maxMultiplicity: 1, dataType: ProfileFieldDataType.STRING,

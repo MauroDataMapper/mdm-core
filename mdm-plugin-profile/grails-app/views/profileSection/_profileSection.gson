@@ -5,7 +5,7 @@ model {
 }
 
 json {
-    name profileSection.sectionName
-    description profileSection.sectionDescription
+    name profileSection.name
+    description profileSection.description
     fields tmpl.'/profileField/profileField'(profileSection.fields)
 }

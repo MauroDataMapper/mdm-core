@@ -22,13 +22,13 @@ import grails.validation.Validateable
 
 class ProfileSection implements Cloneable, Validateable {
 
-    String sectionName
-    String sectionDescription
+    String name
+    String description
     List<ProfileField> fields = []
 
     static constraints = {
-        sectionName blank: false
-        sectionDescription nullable: true, blank: false
+        name blank: false
+        description nullable: true, blank: false
         fields minSize: 1
     }
 
@@ -44,5 +44,15 @@ class ProfileSection implements Cloneable, Validateable {
             }
         }
         !hasErrors()
+    }
+
+    @Deprecated
+    void setSectionName(String name) {
+        this.name = name
+    }
+
+    @Deprecated
+    void setSectionDescription(String description) {
+        this.description = description
     }
 }

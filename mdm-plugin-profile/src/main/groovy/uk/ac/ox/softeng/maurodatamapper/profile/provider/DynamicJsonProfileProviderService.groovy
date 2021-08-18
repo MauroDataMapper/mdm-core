@@ -56,9 +56,7 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
 
         jsonProfile.sections.each {section ->
             section.fields.each {field ->
-                Metadata matchingField = metadataList.find {
-                    it.key == field.metadataPropertyName || it.key == "${section.sectionName}/${field.fieldName}"
-                }
+                Metadata matchingField = metadataList.find {it.key == field.getUniqueKey(section.name)}
                 if (field.derived) {
                     try {
                         field.currentValue = entity."${field.derivedFrom}"
@@ -82,12 +80,7 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
         Set<String> knownProperties = []
         getSections().each {section ->
             section.fields.each {field ->
-                if (field.metadataPropertyName) {
-                    knownProperties.add(field.metadataPropertyName)
-
-                } else {
-                    knownProperties.add("${section.sectionName}/${field.fieldName}")
-                }
+                knownProperties.add(field.getUniqueKey(section.name))
             }
         }
         return knownProperties
@@ -167,8 +160,8 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
         DataModel dm = getProfileDataModel()
         dm.dataClasses.sort {it.order}.collect() {dataClass ->
             new ProfileSection(
-                sectionName: dataClass.label,
-                sectionDescription: dataClass.description,
+                name: dataClass.label,
+                description: dataClass.description,
                 fields: dataClass.dataElements.sort {it.order}.collect {dataElement ->
                     new ProfileField(
                         fieldName: dataElement.label,

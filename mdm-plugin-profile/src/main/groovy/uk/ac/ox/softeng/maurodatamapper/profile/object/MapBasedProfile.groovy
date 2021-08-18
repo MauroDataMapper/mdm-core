@@ -73,7 +73,7 @@ abstract class MapBasedProfile extends Profile {
     // Expect this to be overridden
     @Override
     List<ProfileSection> getSections() {
-        ProfileSection profileSection = new ProfileSection(sectionName: this.class.name, sectionDescription: '')
+        ProfileSection profileSection = new ProfileSection(name: this.class.name, description: '')
         contents.sort {it.key }.each {
             ProfileField profileField = new ProfileField(fieldName: it.key, currentValue: it.value.toString(), metadataPropertyName: it.key)
             profileSection.fields.add(profileField)
