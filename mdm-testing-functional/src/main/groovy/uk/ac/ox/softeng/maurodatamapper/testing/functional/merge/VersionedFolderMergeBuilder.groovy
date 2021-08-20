@@ -26,7 +26,7 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         terminologyPluginMergeBuilder = new TerminologyPluginMergeBuilder(functionalSpec)
     }
 
-    Map buildComplextModelsForBranching() {
+    Map buildComplexModelsForBranching() {
         // Somethings up with the MD, when running properly the diff happily returns the changed MD, but under test it doesnt.
         // The MD exists in the daabase and is returned if using the MD endpoint but when calling folder.metadata the collection is empty.
         // When run-app all the tables are correctly populated and the collection is not empty
@@ -91,7 +91,7 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
     TestMergeData buildComplexModelsForMerging(String folderId) {
         loginEditor()
 
-        Map data = buildComplextModelsForBranching()
+        Map data = buildComplexModelsForBranching()
         PUT("versionedFolders/$data.commonAncestorId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String target = responseBody().id
@@ -113,8 +113,8 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         sourceMap.terminology = terminologyPluginMergeBuilder.modifySourceTerminology(source)
         targetMap.terminology = terminologyPluginMergeBuilder.modifyTargetTerminology(target)
 
-        //        sourceMap.codeSet = builder.modifySourceCodeSet(source)
-        //        targetMap.codeSet = builder.modifyTargetCodeSet(target)
+        sourceMap.codeSet = terminologyPluginMergeBuilder.modifySourceCodeSet(source, '$source', true)
+        targetMap.codeSet = terminologyPluginMergeBuilder.modifyTargetCodeSet(target, '$main', true)
 
         PUT("versionedFolders/$source", [description: 'source description on the versioned folder'])
         verifyResponse OK, response
@@ -173,7 +173,7 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
   "targetId": "${json-unit.matches:id}",
   "path": "vf:Functional Test VersionedFolder Complex$source",
   "label": "Functional Test VersionedFolder Complex",
-  "count": 35,
+  "count": 44,
   "diffs": [
     {
       "fieldName": "description",
@@ -183,6 +183,48 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
       "commonAncestorValue": null,
       "isMergeConflict": true,
       "type": "modification"
+    },
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder Complex$source|cs:Functional Test CodeSet 1$source@description",
+      "sourceValue": "DescriptionLeft",
+      "targetValue": null,
+      "commonAncestorValue": null,
+      "isMergeConflict": false,
+      "type": "modification"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder Complex$source|cs:Functional Test CodeSet 1$source|md:functional.test.addToSourceOnly",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder Complex$source|cs:Functional Test CodeSet 1$source|md:functional.test.modifyAndDelete",
+      "isMergeConflict": true,
+      "isSourceModificationAndTargetDeletion": true,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder Complex$source|cs:Functional Test CodeSet 1$source|md:functional.test.deleteFromSource",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "fieldName": "value",
+      "path": "vf:Functional Test VersionedFolder Complex$source|cs:Functional Test CodeSet 1$source|md:functional.test.modifyOnSource@value",
+      "sourceValue": "source has modified this",
+      "targetValue": "some original value",
+      "commonAncestorValue": "some original value",
+      "isMergeConflict": false,
+      "type": "modification"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder Complex$source|cs:Functional Test CodeSet 1$source|te:Functional Test Terminology 1$source|tm:ALO",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
     },
     {
       "fieldName": "description",
@@ -233,16 +275,14 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
       "type": "creation"
     },
     {
-      "path": "vf:Functional Test VersionedFolder Complex$source|dm:Functional Test DataModel 
-      1$source|dc:existingClass|dc:deleteLeftOnlyFromExistingClass",
+      "path": "vf:Functional Test VersionedFolder Complex$source|dm:Functional Test DataModel 1$source|dc:existingClass|dc:deleteLeftOnlyFromExistingClass",
       "isMergeConflict": false,
       "isSourceDeletionAndTargetModification": false,
       "type": "deletion"
     },
     {
       "fieldName": "description",
-      "path": "vf:Functional Test VersionedFolder Complex$source|dm:Functional Test DataModel 
-      1$source|dc:modifyAndModifyReturningDifference@description",
+      "path": "vf:Functional Test VersionedFolder Complex$source|dm:Functional Test DataModel 1$source|dc:modifyAndModifyReturningDifference@description",
       "sourceValue": "DescriptionLeft",
       "targetValue": "DescriptionRight",
       "commonAncestorValue": null,
@@ -362,8 +402,7 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
     },
     {
       "fieldName": "description",
-      "path": "vf:Functional Test VersionedFolder Complex$source|te:Functional Test Terminology 1$source|tr:SMLO.sameSourceActionType
-      .MLO@description",
+      "path": "vf:Functional Test VersionedFolder Complex$source|te:Functional Test Terminology 1$source|tr:SMLO.sameSourceActionType.MLO@description",
       "sourceValue": "NewDescription",
       "targetValue": null,
       "commonAncestorValue": null,

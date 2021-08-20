@@ -1214,7 +1214,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
     void 'BMV09 : test creating a new branch model version of the complext VersionedFolder (as editor)'() {
         given:
-        Map data = builder.buildComplextModelsForBranching()
+        Map data = builder.buildComplexModelsForBranching()
         String id = data.commonAncestorId
         GET("terminologies/$data.terminologyCaId/terms", MAP_ARG, true)
         verifyResponse(OK, response)

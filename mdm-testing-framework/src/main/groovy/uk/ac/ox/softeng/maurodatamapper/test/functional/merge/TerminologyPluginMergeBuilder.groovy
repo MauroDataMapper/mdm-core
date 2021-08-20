@@ -327,20 +327,20 @@ class TerminologyPluginMergeBuilder extends BaseTestMergeBuilder {
         codeSetId
     }
 
-    Map modifySourceCodeSet(String source) {
+    Map modifySourceCodeSet(String source, String terminologyBranch = '$1.0.0', boolean terminologyAlreadyModified = false) {
         // Modify Source
         Map sourceMap = [
-            codeSetId                         : source,
-            deleteLeftOnly                    : getIdFromPath(source, 'tm:DLO'),
-            modifyLeftOnly                    : getIdFromPath(source, 'tm:MLO'),
-            modifyAndDelete                   : getIdFromPath(source, 'tm:MAD'),
-            deleteAndModify                   : getIdFromPath(source, 'tm:DAM'),
-            modifyAndModifyReturningDifference: getIdFromPath(source, 'tm:MAMRD'),
-            addLeftOnly                       : getIdFromPath(source, 'te:Functional Test Terminology 1|tm:ALO'),
-            addAndAddReturningDifference      : getIdFromPath(source, 'te:Functional Test Terminology 1|tm:AAARD'),
-            metadataModifyOnSource            : getIdFromPath(source, 'md:functional.test.modifyOnSource'),
-            metadataDeleteFromSource          : getIdFromPath(source, 'md:functional.test.deleteFromSource'),
-            metadataModifyAndDelete           : getIdFromPath(source, 'md:functional.test.modifyAndDelete'),
+            codeSetId                         : getIdFromPath(source, 'cs:Functional Test CodeSet 1$source'),
+            deleteLeftOnly                    : getIdFromPath(source, 'cs:Functional Test CodeSet 1$source|tm:DLO', !terminologyAlreadyModified),
+            modifyLeftOnly                    : getIdFromPath(source, 'cs:Functional Test CodeSet 1$source|tm:MLO'),
+            modifyAndDelete                   : getIdFromPath(source, 'cs:Functional Test CodeSet 1$source|tm:MAD'),
+            deleteAndModify                   : getIdFromPath(source, 'cs:Functional Test CodeSet 1$source|tm:DAM', !terminologyAlreadyModified),
+            modifyAndModifyReturningDifference: getIdFromPath(source, 'cs:Functional Test CodeSet 1$source|tm:MAMRD'),
+            addLeftOnly                       : getIdFromPath(source, "te:Functional Test Terminology 1${terminologyBranch}|tm:ALO"),
+            addAndAddReturningDifference      : getIdFromPath(source, "te:Functional Test Terminology 1${terminologyBranch}|tm:AAARD"),
+            metadataModifyOnSource            : getIdFromPath(source, 'cs:Functional Test CodeSet 1$source|md:functional.test.modifyOnSource'),
+            metadataDeleteFromSource          : getIdFromPath(source, 'cs:Functional Test CodeSet 1$source|md:functional.test.deleteFromSource'),
+            metadataModifyAndDelete           : getIdFromPath(source, 'cs:Functional Test CodeSet 1$source|md:functional.test.modifyAndDelete'),
         ]
 
         PUT("codeSets/$sourceMap.codeSetId", [description: 'DescriptionLeft'])
@@ -351,10 +351,12 @@ class TerminologyPluginMergeBuilder extends BaseTestMergeBuilder {
         PUT("codeSets/$sourceMap.codeSetId/terms/$sourceMap.addAndAddReturningDifference", [:])
         verifyResponse OK, response
 
-        DELETE("codeSets/$sourceMap.codeSetId/terms/$sourceMap.deleteLeftOnly")
-        verifyResponse OK, response
-        DELETE("codeSets/$sourceMap.codeSetId/terms/$sourceMap.deleteAndModify")
-        verifyResponse OK, response
+        if (!terminologyAlreadyModified) {
+            DELETE("codeSets/$sourceMap.codeSetId/terms/$sourceMap.deleteLeftOnly")
+            verifyResponse OK, response
+            DELETE("codeSets/$sourceMap.codeSetId/terms/$sourceMap.deleteAndModify")
+            verifyResponse OK, response
+        }
 
         POST("codeSets/$sourceMap.codeSetId/metadata",
              [namespace: 'functional.test', key: 'addToSourceOnly', value: 'adding to source only'])
@@ -369,22 +371,25 @@ class TerminologyPluginMergeBuilder extends BaseTestMergeBuilder {
         sourceMap
     }
 
-    Map modifyTargetCodeSet(String target) {
+    Map modifyTargetCodeSet(String target, String terminologyBranch = '$1.0.0', boolean terminologyAlreadyModified = false) {
         // Modify Target
         Map targetMap = [
-            codeSetId                         : target,
-            modifyLeftOnly                    : getIdFromPath(target, 'tm:MLO'),
-            modifyAndDelete                   : getIdFromPath(target, 'tm:MAD'),
-            modifyAndModifyReturningDifference: getIdFromPath(target, 'tm:MAMRD'),
-            addAndAddReturningDifference      : getIdFromPath(target, 'te:Functional Test Terminology 1|tm:AAARD'),
-            metadataModifyOnSource            : getIdFromPath(target, 'md:functional.test.modifyOnSource'),
-            metadataDeleteFromSource          : getIdFromPath(target, 'md:functional.test.deleteFromSource'),
-            metadataModifyAndDelete           : getIdFromPath(target, 'md:functional.test.modifyAndDelete'),
+            codeSetId                         : getIdFromPath(target, 'cs:Functional Test CodeSet 1$main'),
+            modifyLeftOnly                    : getIdFromPath(target, 'cs:Functional Test CodeSet 1$main|tm:MLO'),
+            modifyAndDelete                   : getIdFromPath(target, 'cs:Functional Test CodeSet 1$main|tm:MAD', !terminologyAlreadyModified),
+            modifyAndModifyReturningDifference: getIdFromPath(target, 'cs:Functional Test CodeSet 1$main|tm:MAMRD'),
+            addAndAddReturningDifference      : getIdFromPath(target, "te:Functional Test Terminology 1${terminologyBranch}|tm:AAARD"),
+            metadataModifyOnSource            : getIdFromPath(target, 'cs:Functional Test CodeSet 1$main|md:functional.test.modifyOnSource'),
+            metadataDeleteFromSource          : getIdFromPath(target, 'cs:Functional Test CodeSet 1$main|md:functional.test.deleteFromSource'),
+            metadataModifyAndDelete           : getIdFromPath(target, 'cs:Functional Test CodeSet 1$main|md:functional.test.modifyAndDelete'),
         ]
         PUT("codeSets/$targetMap.codeSetId/terms/$targetMap.addAndAddReturningDifference", [:])
         verifyResponse OK, response
-        DELETE("codeSets/$targetMap.codeSetId/terms/$targetMap.modifyAndDelete")
-        verifyResponse OK, response
+
+        if (!terminologyAlreadyModified) {
+            DELETE("codeSets/$targetMap.codeSetId/terms/$targetMap.modifyAndDelete")
+            verifyResponse OK, response
+        }
 
         DELETE("codeSets/$targetMap.codeSetId/metadata/$targetMap.metadataModifyAndDelete")
         verifyResponse NO_CONTENT, response

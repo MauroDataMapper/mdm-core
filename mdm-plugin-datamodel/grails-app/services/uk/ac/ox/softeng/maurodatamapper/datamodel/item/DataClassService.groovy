@@ -156,7 +156,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         dataElementService.deleteAll(dataElements)
         dataClass.dataElements = []
         try {
-            if (flush) dataModel.trackChanges()
+            dataModel.save(validate: false, flush: false)
             dataClass.delete(flush: flush)
         } catch (Exception exception) {
             // updating the DM on a nested DC delete???

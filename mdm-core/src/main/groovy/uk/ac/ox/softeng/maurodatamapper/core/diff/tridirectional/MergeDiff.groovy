@@ -31,6 +31,8 @@ import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.SimpleType
 import groovy.util.logging.Slf4j
 
+import java.util.function.Predicate
+
 import static uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder.arrayMergeDiff
 import static uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder.creationMergeDiff
 import static uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder.deletionMergeDiff
@@ -64,6 +66,8 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
     private ObjectDiff<M> commonAncestorDiffSource
     private ObjectDiff<M> commonAncestorDiffTarget
     private ObjectDiff<M> sourceDiffTarget
+
+    List<TriDirectionalDiff> flattenedDiffs
 
     MergeDiff(Class<M> targetClass) {
         super(targetClass)
@@ -118,13 +122,8 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
     }
 
     List<TriDirectionalDiff> getFlattenedDiffs() {
-        diffs.sort().collectMany { diff ->
-            if (diff.diffType == FieldMergeDiff.simpleName) return [diff]
-            if (diff.diffType == ArrayMergeDiff.simpleName) {
-                return (diff as ArrayMergeDiff).getFlattenedDiffs()
-            }
-            []
-        } as List<TriDirectionalDiff>
+        if (!flattenedDiffs) flatten()
+        flattenedDiffs
     }
 
     @Override
@@ -173,6 +172,23 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
 
     MergeDiff<M> asMergeConflict() {
         super.asMergeConflict() as MergeDiff<M>
+    }
+
+    MergeDiff<M> flatten() {
+        flattenedDiffs = diffs.sort().collectMany {diff ->
+            if (diff.diffType == FieldMergeDiff.simpleName) return [diff]
+            if (diff.diffType == ArrayMergeDiff.simpleName) {
+                return (diff as ArrayMergeDiff).getFlattenedDiffs()
+            }
+            []
+        } as List<TriDirectionalDiff>
+        this
+    }
+
+    MergeDiff<M> clean(@DelegatesTo(Predicate) @ClosureParams(value = SimpleType,
+        options = 'uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.TriDirectionalDiff') Closure removeIfTest) {
+        flattenedDiffs.removeIf([test: removeIfTest,] as Predicate)
+        this
     }
 
     FieldMergeDiff find(@DelegatesTo(List) @ClosureParams(value = SimpleType,

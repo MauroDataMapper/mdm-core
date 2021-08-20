@@ -9,6 +9,7 @@ import java.nio.charset.Charset
 
 import static uk.ac.ox.softeng.maurodatamapper.test.http.RestClientInterface.MAP_ARG
 
+import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 
@@ -53,11 +54,16 @@ abstract class BaseTestMergeBuilder {
         functionalSpec.responseBody()
     }
 
-    String getIdFromPath(String rootResourceId, String path) {
+    String getIdFromPath(String rootResourceId, String path, boolean mustExist = true) {
         functionalSpec.GET("$rootResourceId/path/${URLEncoder.encode(path, Charset.defaultCharset())}")
-        verifyResponse OK, response
-        assert responseBody().id
-        responseBody().id
+        if (mustExist) {
+            verifyResponse OK, response
+            assert responseBody().id
+            return responseBody().id
+        }
+        verifyResponse NOT_FOUND, response
+        null
+
     }
 
     void cleanupTestMergeData(TestMergeData mergeData) {

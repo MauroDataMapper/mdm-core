@@ -697,6 +697,13 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
             .withCommonAncestorDiffedAgainstSource(caDiffSource)
             .withCommonAncestorDiffedAgainstTarget(caDiffTarget)
             .generate()
+            .flatten()
+            .clean {
+                Path diffPath = it.fullyQualifiedPath
+                PathNode lastNode = diffPath.last()
+                // Strip out term property nodes defined inside codeset paths
+                lastNode.isPropertyNode() && lastNode.prefix == 'tm' && diffPath.any {it.prefix == 'cs'}
+            }
     }
 
     void removeBranchNameDiff(ObjectDiff diff) {

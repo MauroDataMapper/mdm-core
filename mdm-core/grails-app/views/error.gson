@@ -95,6 +95,10 @@ static String cleanExceptionMessage(Throwable throwable) {
 
 static HttpStatus getExceptionStatus(Throwable exception) {
     if (!exception) return null
-    if (exception instanceof ApiException) return HttpStatus.resolve(exception.status.code)
-    return getExceptionStatus(exception.cause)
+    try {
+        if (exception instanceof ApiException) return HttpStatus.resolve(exception.status.code)
+        return getExceptionStatus(exception.cause)
+    } catch (NullPointerException ignored) {
+        return null
+    }
 }
