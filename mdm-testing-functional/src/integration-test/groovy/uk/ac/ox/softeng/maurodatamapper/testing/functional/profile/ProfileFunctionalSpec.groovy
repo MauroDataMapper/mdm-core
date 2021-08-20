@@ -97,7 +97,8 @@ class ProfileFunctionalSpec extends FunctionalSpec {
     "metadataNamespace": "uk.ac.ox.softeng.maurodatamapper.profile.editable",
     "domains": [
       "DataModel"
-    ]
+    ],
+    "editableAfterFinalisation": true
   },
   {
     "name": "ProfileSpecificationProfileService",
@@ -107,13 +108,15 @@ class ProfileFunctionalSpec extends FunctionalSpec {
     "allowsExtraMetadataKeys": false,
     "knownMetadataKeys": [
       "metadataNamespace",
-      "domainsApplicable"
+      "domainsApplicable",
+      "editableAfterFinalisation"
     ],
     "providerType": "Profile",
     "metadataNamespace": "uk.ac.ox.softeng.maurodatamapper.profile",
     "domains": [
       "DataModel"
-    ]
+    ],
+    "editableAfterFinalisation": false
   },
   {
     "name": "ProfileSpecificationFieldProfileService",
@@ -131,7 +134,8 @@ class ProfileFunctionalSpec extends FunctionalSpec {
     "metadataNamespace": "uk.ac.ox.softeng.maurodatamapper.profile.dataelement",
     "domains": [
       "DataElement"
-    ]
+    ],
+    "editableAfterFinalisation": false
   },
    {
     "name": "DerivedFieldProfileService",
@@ -149,7 +153,8 @@ class ProfileFunctionalSpec extends FunctionalSpec {
     "metadataNamespace": "uk.ac.ox.softeng.maurodatamapper.profile.derived",
     "domains": [
       "DataModel"
-    ]
+    ],
+    "editableAfterFinalisation": false
   }
 ]'''
     }
@@ -772,8 +777,8 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         {
           "fieldName": "Applicable for domains",
           "metadataPropertyName": "domainsApplicable",
-          "description": "Determines which types of catalogue item can be profiled using this profile.  For example, 'DataModel'.  ''' +
-        '''Separate multiple domains with a semi-colon (';').  Leave blank to allow this profile to be applicable to any catalogue item.",
+          "description": "Determines which types of catalogue item can be profiled using this profile.  ''' +
+        '''For example, 'DataModel'.  Separate multiple domains with a semi-colon (';').  Leave blank to allow this profile to be applicable to any catalogue item.",
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
           "allowedValues": null,
@@ -783,6 +788,20 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "derivedFrom": null,
           "uneditable": false,
           "currentValue": "DataModel"
+        },
+        {
+          "fieldName": "Can be edited after finalisation",
+          "metadataPropertyName": "editableAfterFinalisation",
+          "description": "Defines if the profile can be edited after the model has been finalised. This defaults to false.",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "allowedValues": null,
+          "regularExpression": null,
+          "dataType": "boolean",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
+          "currentValue": ""
         }
       ]
     }

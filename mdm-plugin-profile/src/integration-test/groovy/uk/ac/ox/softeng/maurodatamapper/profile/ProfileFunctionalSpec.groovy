@@ -103,10 +103,11 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
     "displayName":"Profile Specification Profile (Data Model)",
     "namespace":"uk.ac.ox.softeng.maurodatamapper.profile",
     "allowsExtraMetadataKeys":false,
-    "knownMetadataKeys": ["metadataNamespace","domainsApplicable"],
+    "knownMetadataKeys": ["metadataNamespace","domainsApplicable","editableAfterFinalisation"],
     "providerType":"Profile",
     "metadataNamespace":"uk.ac.ox.softeng.maurodatamapper.profile",
-    "domains":["DataModel"]
+    "domains":["DataModel"],
+    "editableAfterFinalisation": false
 }, 
 {
     "name":"ProfileSpecificationFieldProfileService",
@@ -117,7 +118,8 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
     "knownMetadataKeys":["metadataPropertyName","defaultValue","regularExpression","editedAfterFinalisation"],
     "providerType":"Profile",
     "metadataNamespace":"uk.ac.ox.softeng.maurodatamapper.profile.dataelement",
-    "domains":["DataElement"]
+    "domains":["DataElement"],
+    "editableAfterFinalisation": false
 }]'''
     }
 
@@ -605,6 +607,20 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
           "derivedFrom": null,
           "uneditable": false,
           "currentValue": "DataModel"
+        },
+        {
+          "fieldName": "Can be edited after finalisation",
+          "metadataPropertyName": "editableAfterFinalisation",
+          "description": "Defines if the profile can be edited after the model has been finalised. This defaults to false.",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "allowedValues": null,
+          "regularExpression": null,
+          "dataType": "boolean",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
+          "currentValue": ""
         }
       ]
     }

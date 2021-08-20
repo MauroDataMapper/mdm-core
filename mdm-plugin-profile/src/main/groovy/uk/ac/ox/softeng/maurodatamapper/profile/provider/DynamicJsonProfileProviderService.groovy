@@ -136,6 +136,15 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
         }
     }
 
+    @Override
+    Boolean canBeEditedAfterFinalisation() {
+        Metadata md = getProfileDataModel().metadata.find {md ->
+            md.namespace == "uk.ac.ox.softeng.maurodatamapper.profile" &&
+            md.key == "editableAfterFinalisation"
+        }
+        md ? md.value.toBoolean() : false
+    }
+
     DataModel getProfileDataModel() {
         DataModel.findById(dataModelId)
     }
