@@ -1128,7 +1128,8 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         verifyResponse OK, response
         responseBody().items.label as Set == ['AAARD: addAndAddReturningDifference', 'ALO: addLeftOnly', 'SALO: secondAddLeftOnly',
                                               'MAD: modifyAndDelete', 'MAMRD: modifyAndModifyReturningDifference', 'MLO: modifyLeftOnly',
-                                              'SMLO: secondModifyLeftOnly', 'ARO: addRightOnly'] as Set
+                                              'SMLO: secondModifyLeftOnly', 'ARO: addRightOnly',
+                                              'ALOCS: addLeftOnlyCodeSet', 'DLOCS: deleteLeftOnlyCodeSet'] as Set
         responseBody().items.find {term -> term.label == 'MAD: modifyAndDelete'}.description == 'Description'
         responseBody().items.find {term -> term.label == 'AAARD: addAndAddReturningDifference'}.description == 'addedDescriptionSource'
         responseBody().items.find {term -> term.label == 'MAMRD: modifyAndModifyReturningDifference'}.description == modifiedDescriptionSource
@@ -1236,7 +1237,8 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         verifyResponse OK, response
         responseBody().items.label as Set == ['AAARD: addAndAddReturningDifference', 'ALO: addLeftOnly', 'SALO: secondAddLeftOnly',
                                               'MAD: modifyAndDelete', 'MAMRD: modifyAndModifyReturningDifference', 'MLO: modifyLeftOnly',
-                                              'SMLO: secondModifyLeftOnly', 'ARO: addRightOnly'] as Set
+                                              'SMLO: secondModifyLeftOnly', 'ARO: addRightOnly',
+                                              'ALOCS: addLeftOnlyCodeSet', 'DLOCS: deleteLeftOnlyCodeSet'] as Set
         responseBody().items.find {term -> term.label == 'MAD: modifyAndDelete'}.description == 'Description'
         responseBody().items.find {term -> term.label == 'AAARD: addAndAddReturningDifference'}.description == 'DescriptionLeft'
         responseBody().items.find {term -> term.label == 'MAMRD: modifyAndModifyReturningDifference'}.description == 'DescriptionLeft'

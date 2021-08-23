@@ -90,7 +90,14 @@ class TerminologyPluginMergeBuilder extends BaseTestMergeBuilder {
         verifyResponse(CREATED, response)
         String baseTerminology = responseBody().id
 
+        // The 2 xxCS terms are for demonstrating changes to the CS when no changes at the Terminology or Term level
+        // They are Terms which exist in all branches of the Terminology but are added or removed to the CS
+
         POST("terminologies/$baseTerminology/terms", [code: 'DLO', definition: 'deleteLeftOnly'])
+        verifyResponse CREATED, response
+        POST("terminologies/$baseTerminology/terms", [code: 'DLOCS', definition: 'deleteLeftOnlyCodeSet'])
+        verifyResponse CREATED, response
+        POST("terminologies/$baseTerminology/terms", [code: 'ALOCS', definition: 'addLeftOnlyCodeSet'])
         verifyResponse CREATED, response
         POST("terminologies/$baseTerminology/terms", [code: 'MLO', definition: 'modifyLeftOnly'])
         verifyResponse CREATED, response
@@ -104,6 +111,7 @@ class TerminologyPluginMergeBuilder extends BaseTestMergeBuilder {
         POST("terminologies/$baseTerminology/terms", [code: 'MAD', definition: 'modifyAndDelete'])
         verifyResponse CREATED, response
         String modifyAndDelete = responseBody().id
+
         POST("terminologies/$baseTerminology/terms", [code: 'MAMRD', definition: 'modifyAndModifyReturningDifference'])
         verifyResponse CREATED, response
         String modifyAndModifyReturningDifference = responseBody().id
@@ -303,6 +311,7 @@ class TerminologyPluginMergeBuilder extends BaseTestMergeBuilder {
         Map caIds = [
             terminologyId                     : terminologyId,
             deleteLeftOnly                    : getIdFromPath(terminologyId, 'tm:DLO', 'terminologies'),
+            deleteLeftOnlyCodeSet             : getIdFromPath(terminologyId, 'tm:DLOCS', 'terminologies'),
             modifyLeftOnly                    : getIdFromPath(terminologyId, 'tm:MLO', 'terminologies'),
             deleteAndModify                   : getIdFromPath(terminologyId, 'tm:DAM', 'terminologies'),
             modifyAndDelete                   : getIdFromPath(terminologyId, 'tm:MAD', 'terminologies'),
@@ -310,10 +319,11 @@ class TerminologyPluginMergeBuilder extends BaseTestMergeBuilder {
         ]
         PUT("codeSets/$codeSetId", [terms: [
             [id: caIds.deleteLeftOnly],
+            [id: caIds.deleteLeftOnlyCodeSet],
             [id: caIds.modifyLeftOnly],
             [id: caIds.deleteAndModify],
             [id: caIds.modifyAndDelete],
-            [id: caIds.modifyAndModifyReturningDifference]
+            [id: caIds.modifyAndModifyReturningDifference],
         ]])
         verifyResponse OK, response
         POST("codeSets/$codeSetId/metadata", [namespace: 'functional.test', key: 'nothingDifferent', value: 'this shouldnt change'])
@@ -332,11 +342,13 @@ class TerminologyPluginMergeBuilder extends BaseTestMergeBuilder {
         Map sourceMap = [
             codeSetId                         : getIdFromPath(source, 'cs:Functional Test CodeSet 1$source'),
             deleteLeftOnly                    : getIdFromPath(source, 'cs:Functional Test CodeSet 1$source|tm:DLO', !terminologyAlreadyModified),
+            deleteLeftOnlyCodeSet             : getIdFromPath(source, 'cs:Functional Test CodeSet 1$source|tm:DLOCS'),
             modifyLeftOnly                    : getIdFromPath(source, 'cs:Functional Test CodeSet 1$source|tm:MLO'),
             modifyAndDelete                   : getIdFromPath(source, 'cs:Functional Test CodeSet 1$source|tm:MAD'),
             deleteAndModify                   : getIdFromPath(source, 'cs:Functional Test CodeSet 1$source|tm:DAM', !terminologyAlreadyModified),
             modifyAndModifyReturningDifference: getIdFromPath(source, 'cs:Functional Test CodeSet 1$source|tm:MAMRD'),
             addLeftOnly                       : getIdFromPath(source, "te:Functional Test Terminology 1${terminologyBranch}|tm:ALO"),
+            addLeftOnlyCodeSet                : getIdFromPath(source, "te:Functional Test Terminology 1${terminologyBranch}|tm:ALOCS"),
             addAndAddReturningDifference      : getIdFromPath(source, "te:Functional Test Terminology 1${terminologyBranch}|tm:AAARD"),
             metadataModifyOnSource            : getIdFromPath(source, 'cs:Functional Test CodeSet 1$source|md:functional.test.modifyOnSource'),
             metadataDeleteFromSource          : getIdFromPath(source, 'cs:Functional Test CodeSet 1$source|md:functional.test.deleteFromSource'),
@@ -350,6 +362,8 @@ class TerminologyPluginMergeBuilder extends BaseTestMergeBuilder {
         verifyResponse OK, response
         PUT("codeSets/$sourceMap.codeSetId/terms/$sourceMap.addAndAddReturningDifference", [:])
         verifyResponse OK, response
+        PUT("codeSets/$sourceMap.codeSetId/terms/$sourceMap.addLeftOnlyCodeSet", [:])
+        verifyResponse OK, response
 
         if (!terminologyAlreadyModified) {
             DELETE("codeSets/$sourceMap.codeSetId/terms/$sourceMap.deleteLeftOnly")
@@ -357,6 +371,8 @@ class TerminologyPluginMergeBuilder extends BaseTestMergeBuilder {
             DELETE("codeSets/$sourceMap.codeSetId/terms/$sourceMap.deleteAndModify")
             verifyResponse OK, response
         }
+        DELETE("codeSets/$sourceMap.codeSetId/terms/$sourceMap.deleteLeftOnlyCodeSet")
+        verifyResponse OK, response
 
         POST("codeSets/$sourceMap.codeSetId/metadata",
              [namespace: 'functional.test', key: 'addToSourceOnly', value: 'adding to source only'])

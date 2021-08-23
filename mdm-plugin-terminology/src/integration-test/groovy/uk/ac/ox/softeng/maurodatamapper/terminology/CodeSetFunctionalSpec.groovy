@@ -1007,11 +1007,17 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
                             ],
                             [
                                 id: testMergeData.sourceMap.codeSet.deleteLeftOnly,
+                            ],
+                            [
+                                id: testMergeData.sourceMap.codeSet.deleteLeftOnlyCodeSet,
                             ]
                         ],
                         created  : [
                             [
                                 id: testMergeData.sourceMap.codeSet.addLeftOnly,
+                            ],
+                            [
+                                id: testMergeData.sourceMap.codeSet.addLeftOnlyCodeSet,
                             ],
                             [
                                 id: testMergeData.sourceMap.codeSet.modifyAndDelete,
@@ -1035,7 +1041,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
         then:
         responseBody().items.label as Set == ['AAARD: addAndAddReturningDifference', 'ALO: addLeftOnly', 'MAD: modifyAndDelete',
-                                              'MAMRD: modifyAndModifyReturningDifference', 'MLO: modifyLeftOnly'] as Set
+                                              'MAMRD: modifyAndModifyReturningDifference', 'MLO: modifyLeftOnly', 'ALOCS: addLeftOnlyCodeSet'] as Set
 
         when: 'List edits for the Target CodeSet'
         GET("$testMergeData.target/edits", MAP_ARG)
@@ -1083,7 +1089,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         GET("$testMergeData.target/terms")
 
         then:
-        responseBody().items.code as Set == ['AAARD', 'ALO', 'MAMRD', 'MLO'] as Set
+        responseBody().items.code as Set == ['AAARD', 'ALO', 'MAMRD', 'MLO', 'ALOCS'] as Set
 
         when:
         GET("${testMergeData.target}/metadata")
@@ -1856,7 +1862,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
   "targetId": "${json-unit.matches:id}",
   "path": "cs:Functional Test CodeSet 1$source",
   "label": "Functional Test CodeSet 1",
-  "count": 8,
+  "count": 10,
   "diffs": [
     {
       "fieldName": "description",
@@ -1901,6 +1907,12 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
       "type": "creation"
     },
     {
+      "path": "cs:Functional Test CodeSet 1$source|te:Functional Test Terminology 1$1.0.0|tm:ALOCS",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
       "path": "cs:Functional Test CodeSet 1$source|te:Functional Test Terminology 1$1.0.0|tm:DAM",
       "isMergeConflict": false,
       "isSourceDeletionAndTargetModification": false,
@@ -1908,6 +1920,12 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
     },
     {
       "path": "cs:Functional Test CodeSet 1$source|te:Functional Test Terminology 1$1.0.0|tm:DLO",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "path": "cs:Functional Test CodeSet 1$source|te:Functional Test Terminology 1$1.0.0|tm:DLOCS",
       "isMergeConflict": false,
       "isSourceDeletionAndTargetModification": false,
       "type": "deletion"
@@ -1921,7 +1939,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
   "leftId": "${json-unit.matches:id}",
   "rightId": "${json-unit.matches:id}",
   "label": "Functional Test CodeSet 1",
-  "count": 8,
+  "count": 10,
   "diffs": [
     {
       "description": {
@@ -1995,7 +2013,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
           {
             "value": {
               "id": "${json-unit.matches:id}",
-              "label": "DAM: deleteAndModify",
+              "label": "DLOCS: deleteLeftOnlyCodeSet",
               "breadcrumbs": [
                 {
                   "id": "${json-unit.matches:id}",
@@ -2011,6 +2029,21 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
             "value": {
               "id": "${json-unit.matches:id}",
               "label": "DLO: deleteLeftOnly",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test Terminology 1",
+                  "domainType": "Terminology",
+                  "finalised": true
+                }
+              ]
+            },
+            "isMergeConflict": false
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "DAM: deleteAndModify",
               "breadcrumbs": [
                 {
                   "id": "${json-unit.matches:id}",
@@ -2038,12 +2071,28 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
               ]
             },
             "isMergeConflict": false
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "ALOCS: addLeftOnlyCodeSet",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test Terminology 1",
+                  "domainType": "Terminology",
+                  "finalised": true
+                }
+              ]
+            },
+            "isMergeConflict": false
           }
         ]
       }
     }
   ]
-}'''
+}
+'''
     }
 
 }
