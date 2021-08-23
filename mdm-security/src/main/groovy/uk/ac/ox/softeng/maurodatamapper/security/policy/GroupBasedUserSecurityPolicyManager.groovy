@@ -387,6 +387,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
                 case MERGE_INTO_ACTION:
                     // If the model is finalised then these actions are NOT allowed
                     VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
+                    return role ? !role.isFinalised() : false
             }
         }
 

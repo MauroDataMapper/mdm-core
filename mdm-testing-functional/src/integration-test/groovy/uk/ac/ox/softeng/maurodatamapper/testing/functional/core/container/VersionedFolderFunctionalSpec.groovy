@@ -1220,7 +1220,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         GET("terminologies/$data.terminologyCaId/terms", MAP_ARG, true)
         verifyResponse(OK, response)
         responseBody().count == 6
-        List<String> finalisedTermIds = responseBody().items.collect { it.id }
+        List<String> finalisedTermIds = responseBody().items.collect {it.id}
         GET("codeSets/$data.codeSetCaId/terms", MAP_ARG, true)
         verifyResponse(OK, response)
         responseBody().count == 5
@@ -2425,10 +2425,47 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         GET("codeSets/$targetCodeSetMap.codeSetId/metadata", MAP_ARG, true)
 
         then:
-        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyOnSource' }.value == 'source has modified this'
-        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyAndDelete' }.value == 'source has modified this also'
-        !responseBody().items.find { it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource' }
-        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'addToSourceOnly' }
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyOnSource'}.value == 'source has modified this'
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyAndDelete'}.value == 'source has modified this also'
+        !responseBody().items.find {it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource'}
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'addToSourceOnly'}
+
+        cleanup:
+        builder.cleanupTestMergeData(mergeData)
+    }
+
+    void 'MP01 : test model permissions'() {
+        given:
+        TestMergeData mergeData = builder.buildComplexModelsForMerging()
+
+        when:
+        loginEditor()
+        GET("dataModels/${mergeData.sourceMap.dataModel.dataModelId}", MAP_ARG, true)
+
+        then: 'no option to merge into'
+        responseBody().availableActions.sort() == [
+            'show',
+            'comment',
+            'softDelete',
+            'delete',
+            'save',
+            'update',
+            'editDescription'
+        ].sort()
+
+        when:
+        GET("dataModels/${mergeData.targetMap.dataModel.dataModelId}", MAP_ARG, true)
+
+        then: 'no option to merge into or finalise'
+        responseBody().availableActions.sort() == [
+            'show',
+            'comment',
+            'softDelete',
+            'delete',
+            'save',
+            'update',
+            'editDescription'
+        ].sort()
 
         cleanup:
         builder.cleanupTestMergeData(mergeData)
