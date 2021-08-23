@@ -717,6 +717,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
                 Path diffPath = it.fullyQualifiedPath
                 PathNode lastNode = diffPath.last()
                 // Strip out term property nodes defined inside codeset paths
+                // TODO come up with an agnostic way of doing this
                 lastNode.isPropertyNode() && lastNode.prefix == 'tm' && diffPath.any {it.prefix == 'cs'}
             }
     }
@@ -806,7 +807,9 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     void processCreationPatchIntoVersionedFolder(FieldPatchData creationPatch, VersionedFolder targetVersionedFolder,
                                                  VersionedFolder sourceVersionedFolder,
                                                  UserSecurityPolicyManager userSecurityPolicyManager) {
-        CreatorAware domainToCopy = pathService.findResourceByPathFromRootResource(sourceVersionedFolder, creationPatch.path)
+        CreatorAware domainInTarget = pathService.findResourceByPathFromRootResource(targetVersionedFolder, creationPatch.relativePathToRoot,
+                                                                                     getModelIdentifier(targetVersionedFolder))
+        CreatorAware domainToCopy = domainInTarget ?: pathService.findResourceByPathFromRootResource(sourceVersionedFolder, creationPatch.path)
         if (!domainToCopy) {
             log.warn('Could not process creation patch into versioned folder at path [{}] as no such path exists in the source', creationPatch.path)
             return
@@ -956,9 +959,9 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
             findModelInformationForModelItemMergePatch(targetVersionedFolder, relativePathToCopyTo, modelItemToCopy.domainType)
         (modelInformation.modelService as ModelService).processCreationPatchOfModelItem(modelItemToCopy,
                                                                                         modelInformation.targetModel as Model,
-                                                                                        (modelInformation.modelItemToModelAbsolutePath as Path)
-                                                                                            .parent,
-                                                                                        userSecurityPolicyManager)
+                                                                                        (modelInformation.modelItemToModelAbsolutePath as Path).parent,
+                                                                                        userSecurityPolicyManager,
+                                                                                        true)
     }
 
     void processCreationPatchOfFacet(MultiFacetItemAware multiFacetItemAwareToCopy, VersionedFolder targetVersionedFolder, Path parentPathToCopyTo) {

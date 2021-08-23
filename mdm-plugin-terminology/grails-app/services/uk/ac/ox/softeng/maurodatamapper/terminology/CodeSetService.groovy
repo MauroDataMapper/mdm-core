@@ -476,14 +476,14 @@ class CodeSetService extends ModelService<CodeSet> {
 
     @Override
     void processCreationPatchOfModelItem(ModelItem modelItem, Model targetModel, Path parentPathToCopyTo,
-                                         UserSecurityPolicyManager userSecurityPolicyManager) {
+                                         UserSecurityPolicyManager userSecurityPolicyManager, boolean flush = false) {
         if (!Utils.parentClassIsAssignableFromChild(Term, modelItem.class)) {
             throw new ApiInternalException('CSXX', "Cannot create [${modelItem.domainType}] into a CodeSet")
         }
         log.debug('Creating Term [{}] into CodeSet [{}]', modelItem.getDiffIdentifier(CodeSet.simpleName), Path.from(targetModel))
 
         (targetModel as CodeSet).addToTerms(modelItem as Term)
-        save(targetModel as CodeSet, flush: false, validate: false)
+        save(targetModel as CodeSet, flush: flush, validate: false)
     }
 
     @Override

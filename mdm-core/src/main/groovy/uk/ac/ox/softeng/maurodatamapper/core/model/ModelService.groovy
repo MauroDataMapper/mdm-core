@@ -609,8 +609,8 @@ abstract class ModelService<K extends Model>
     }
 
     void processCreationPatchOfModelItem(ModelItem modelItemToCopy, Model targetModel, Path parentPathToCopyTo,
-                                         UserSecurityPolicyManager userSecurityPolicyManager) {
-        ModelItemService modelItemService = modelItemServices.find { it.handles(modelItemToCopy.class) }
+                                         UserSecurityPolicyManager userSecurityPolicyManager, boolean flush = false) {
+        ModelItemService modelItemService = modelItemServices.find {it.handles(modelItemToCopy.class)}
         if (!modelItemService) throw new ApiInternalException('MSXX', "No domain service to handle creation of [${modelItemToCopy.domainType}]")
         log.debug('Creating ModelItem into Model at [{}]', parentPathToCopyTo)
         CatalogueItem parentToCopyInto = pathService.findResourceByPathFromRootResource(targetModel, parentPathToCopyTo) as CatalogueItem
@@ -620,7 +620,7 @@ abstract class ModelService<K extends Model>
         if (!copy.validate())
             throw new ApiInvalidModelException('MS01', 'Copied ModelItem is invalid', copy.errors, messageSource)
 
-        modelItemService.save(copy, flush: false, validate: false)
+        modelItemService.save(copy, flush: flush, validate: false)
     }
 
     void processCreationPatchOfFacet(MultiFacetItemAware multiFacetItemAwareToCopy, Model targetModel, Path parentPathToCopyTo) {
