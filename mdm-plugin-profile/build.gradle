@@ -3,7 +3,7 @@ buildscript {
         mavenLocal()
         maven {url "https://jenkins.cs.ox.ac.uk/artifactory/plugins-snapshot"}
         maven {url "https://jenkins.cs.ox.ac.uk/artifactory/plugins-release"}
-        jcenter()
+        mavenCentral()
 
     }
     dependencies {
