@@ -286,19 +286,19 @@ class FolderService extends ContainerService<Folder> {
         } as List<Model>
     }
 
-    def <T extends Folder> void loadModelsIntoFolderObjectDiff(ObjectDiff<T> diff, Folder leftHandSide, Folder rightHandSide) {
+    def <T extends Folder> void loadModelsIntoFolderObjectDiff(ObjectDiff<T> diff, Folder leftHandSide, Folder rightHandSide, String context) {
         List<Model> thisModels = findAllModelsInFolder(leftHandSide)
         List<Model> thatModels = findAllModelsInFolder(rightHandSide)
-        diff.appendList(Model, 'models', thisModels, thatModels)
+        diff.appendList(Model, 'models', thisModels, thatModels, context)
 
         // Recurse into child folder diffs
-        ArrayDiff<Folder> childFolderDiff = diff.diffs.find { it.fieldName == 'folders' }
+        ArrayDiff<Folder> childFolderDiff = diff.diffs.find {it.fieldName == 'folders'}
 
         if (childFolderDiff) {
             // Created folders wont have any need for a model diff as all models will be new
             // Deleted folders wont have any need for a model diff as all models will not exist
             childFolderDiff.modified.each { childDiff ->
-                loadModelsIntoFolderObjectDiff(childDiff, childDiff.left, childDiff.right)
+                loadModelsIntoFolderObjectDiff(childDiff, childDiff.left, childDiff.right, context)
             }
         }
     }

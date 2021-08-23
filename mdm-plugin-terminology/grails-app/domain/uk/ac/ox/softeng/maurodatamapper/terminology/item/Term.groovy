@@ -135,7 +135,18 @@ class Term implements ModelItem<Term, Terminology> {
     @Override
     String getDiffIdentifier(String context) {
         if (!context) return pathIdentifier
-        if (context == CodeSet.simpleName) return Path.from(terminology, this).toString()
+        if (context.startsWith(CodeSet.simpleName)) {
+            Path parentPath = Path.from(terminology)
+            if (context.contains('|')) {
+                // Should be CodeSet|modelIdentifier|modelIdentifier
+                String[] contexts = context.split(/\|/)
+                // If the T modelIdentifier is in the list of contexts then remove it
+                if (parentPath.last().modelIdentifier in contexts.drop(1)) {
+                    parentPath.last().modelIdentifier = null
+                }
+            }
+            return Path.from(parentPath, this).toString()
+        }
 
         if (Path.isValidPath(context)) {
             Path path = Path.from(context)

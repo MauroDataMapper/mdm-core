@@ -112,8 +112,9 @@ class CodeSet implements Model<CodeSet> {
     }
 
     ObjectDiff<CodeSet> diff(CodeSet otherCodeSet, String context) {
+        String termContext = context ? "${CodeSet.simpleName}|${context}" : CodeSet.simpleName
         ObjectDiff<CodeSet> diff = modelDiffBuilder(CodeSet, this, otherCodeSet)
-            .appendList(Term, 'terms', this.terms, otherCodeSet.terms, CodeSet.simpleName)
+            .appendList(Term, 'terms', this.terms, otherCodeSet.terms, termContext)
         // Remove any modifications to terms as these are only applicable from the terminology
         (diff.find {it.fieldName == 'terms'} as ArrayDiff)?.modified?.clear()
         diff

@@ -674,17 +674,32 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         models.any {it.finalised} || findAllByParentId(folder.id).any {doesDepthTreeContainFinalisedModel(it)}
     }
 
-    ObjectDiff<VersionedFolder> getDiffForVersionedFolders(VersionedFolder thisVersionedFolder, VersionedFolder otherVersionedFolder) {
+    ObjectDiff<VersionedFolder> getDiffForVersionedFolders(VersionedFolder thisVersionedFolder, VersionedFolder otherVersionedFolder, String contentContext = 'none') {
         ObjectDiff<VersionedFolder> coreDiff = thisVersionedFolder.diff(otherVersionedFolder, 'none')
-        folderService.loadModelsIntoFolderObjectDiff(coreDiff, thisVersionedFolder, otherVersionedFolder)
+        folderService.loadModelsIntoFolderObjectDiff(coreDiff, thisVersionedFolder, otherVersionedFolder, contentContext)
         coreDiff
     }
 
     MergeDiff<VersionedFolder> getMergeDiffForVersionedFolders(VersionedFolder sourceVersionedFolder, VersionedFolder targetVersionedFolder) {
         VersionedFolder commonAncestor = findCommonAncestorBetweenModels(sourceVersionedFolder, targetVersionedFolder)
 
-        ObjectDiff<VersionedFolder> caDiffSource = getDiffForVersionedFolders(commonAncestor, sourceVersionedFolder)
-        ObjectDiff<VersionedFolder> caDiffTarget = getDiffForVersionedFolders(commonAncestor, targetVersionedFolder)
+        String caModelIdentifier = commonAncestor.modelVersion ?: commonAncestor.branchName
+        String sourceModelIdentifier = sourceVersionedFolder.modelVersion ?: sourceVersionedFolder.branchName
+        String targetModelIdentifier = targetVersionedFolder.modelVersion ?: targetVersionedFolder.branchName
+
+        /*
+        Context is needed to allow CodeSet term comparisons
+        We need to ensure that created/deleted terms are correctly identified, when performing the diffs between the below we end up with a list of all the terms from CA
+        being marked as deleted and all the terms from the source/target as being created. This is due to the diffIdentifier for a Term being set from the terminology
+        path. This is therefore technically correct, however its not useful for us as it incorrectly marks the terms. What we need is to identify the terms which
+        have actually been created and actually been deleted, ignoring the modelIdentifier of the terminology.
+        This ignoring can be done by passing in the possible modelIdentifiers to the Terms and then removing them.
+        However we may have CS which looks at a terminology outside of the the VF which adds or removes Terms from another version of the same Terminology model.
+        This context solution will handle that issue as only finalised Terminologies can be used for CS outside of a VF which means a comparsion of 1.0.0|source of a VF
+        which uses a 1.0.0|2.0.0 external T the terms will still be correctly identified.
+         */
+        ObjectDiff<VersionedFolder> caDiffSource = getDiffForVersionedFolders(commonAncestor, sourceVersionedFolder, "${caModelIdentifier}|${sourceModelIdentifier}")
+        ObjectDiff<VersionedFolder> caDiffTarget = getDiffForVersionedFolders(commonAncestor, targetVersionedFolder, "${caModelIdentifier}|${targetModelIdentifier}")
 
         removeBranchNameDiff(caDiffSource)
         removeBranchNameDiff(caDiffTarget)
