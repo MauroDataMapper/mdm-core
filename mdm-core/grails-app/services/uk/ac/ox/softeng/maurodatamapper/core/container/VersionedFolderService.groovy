@@ -156,14 +156,14 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     @Override
     List<Folder> getAll(Collection<UUID> containerIds) {
-        VersionedFolder.getAll(containerIds).findAll().collect { unwrapIfProxy(it) }
+        VersionedFolder.getAll(containerIds).findAll().collect {unwrapIfProxy(it)}
     }
 
     @Override
     List<VersionedFolder> findAllReadableContainersBySearchTerm(UserSecurityPolicyManager userSecurityPolicyManager, String searchTerm) {
         log.debug('Searching readable folders for search term in label')
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Folder)
-        VersionedFolder.luceneTreeLabelSearch(readableIds.collect { it.toString() }, searchTerm)
+        VersionedFolder.luceneTreeLabelSearch(readableIds.collect {it.toString()}, searchTerm)
     }
 
     @Override
@@ -248,16 +248,16 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         long start = System.currentTimeMillis()
 
         log.debug('Finalising models inside folder')
-        modelServices.each { service ->
+        modelServices.each {service ->
             Collection<Model> modelsInFolder = service.findAllByFolderId(folder.id)
-            modelsInFolder.each { model ->
+            modelsInFolder.each {model ->
                 service.finaliseModel(model as Model, user, folderVersion, null, folderVersionTag)
             }
         }
 
         List<Folder> folders = findAllByParentId(folder.id)
         log.debug('Finalising {} sub folders inside folder', folders.size())
-        folders.each { childFolder ->
+        folders.each {childFolder ->
             finaliseFolderContents(childFolder, user, folderVersion, folderVersionTag)
         }
 
@@ -349,7 +349,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     @Override
     List<VersionedFolder> list() {
-        VersionedFolder.list().collect { unwrapIfProxy(it) }
+        VersionedFolder.list().collect {unwrapIfProxy(it)}
     }
 
     Long count() {
@@ -597,7 +597,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
         List<VersionLink> versionLinks = versionLinkService.findAllByTargetModelId(instance.id)
 
-        versionLinks.each { link ->
+        versionLinks.each {link ->
             VersionedFolder linkedModel = get(link.multiFacetAwareItemId)
             versionTreeModelList.
                 addAll(buildModelVersionTree(linkedModel, link.linkType, rootVersionTreeModel, includeForks, userSecurityPolicyManager))
@@ -662,7 +662,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     }
 
     boolean doesDepthTreeContainVersionedFolder(Folder folder) {
-        folder.instanceOf(VersionedFolder) || folderService.findAllByParentId(folder.id).any { doesDepthTreeContainVersionedFolder(it) }
+        folder.instanceOf(VersionedFolder) || folderService.findAllByParentId(folder.id).any {doesDepthTreeContainVersionedFolder(it)}
     }
 
     boolean isVersionedFolderFamily(Folder folder) {
@@ -671,7 +671,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     boolean doesDepthTreeContainFinalisedModel(Folder folder) {
         List<Model> models = folderService.findAllModelsInFolder(folder)
-        models.any { it.finalised } || findAllByParentId(folder.id).any { doesDepthTreeContainFinalisedModel(it) }
+        models.any {it.finalised} || findAllByParentId(folder.id).any {doesDepthTreeContainFinalisedModel(it)}
     }
 
     ObjectDiff<VersionedFolder> getDiffForVersionedFolders(VersionedFolder thisVersionedFolder, VersionedFolder otherVersionedFolder) {
@@ -708,22 +708,22 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     void removeBranchNameDiff(ObjectDiff diff) {
 
-        Predicate branchNamePredicate = [test: { FieldDiff fieldDiff ->
+        Predicate branchNamePredicate = [test: {FieldDiff fieldDiff ->
             fieldDiff.fieldName == 'branchName'
         },] as Predicate
 
         diff.diffs.removeIf(branchNamePredicate)
 
-        ArrayDiff modelsDiff = diff.diffs.find { it.fieldName == 'models' }
+        ArrayDiff modelsDiff = diff.diffs.find {it.fieldName == 'models'}
         if (modelsDiff) {
-            modelsDiff.modified.each { md ->
+            modelsDiff.modified.each {md ->
                 md.diffs.removeIf(branchNamePredicate)
             }
         }
 
-        ArrayDiff folderDiff = diff.diffs.find { it.fieldName == 'folders' }
+        ArrayDiff folderDiff = diff.diffs.find {it.fieldName == 'folders'}
         if (folderDiff) {
-            folderDiff.modified.each { fd ->
+            folderDiff.modified.each {fd ->
                 removeBranchNameDiff(fd)
             }
         }
@@ -740,7 +740,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         }
         log.debug('Merging patch data into {}', targetVersionedFolder.id)
 
-        getSortedFieldPatchDataForMerging(objectPatchData).each { fieldPatch ->
+        getSortedFieldPatchDataForMerging(objectPatchData).each {fieldPatch ->
             switch (fieldPatch.type) {
                 case 'creation':
                     return processCreationPatchIntoVersionedFolder(fieldPatch, targetVersionedFolder, sourceVersionedFolder,
@@ -761,9 +761,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
           We can process modifications in any order
           Process creations before deletions, that way any deletions will automatically take care of any links to potentially created objects
            */
-        objectPatchData.patches.sort { l, r ->
-            PathNode leftLastNode = l.path.last()
-            PathNode rightLastNode = r.path.last()
+        objectPatchData.patches.sort {l, r ->
             switch (l.type) {
                 case 'modification':
                     if (r.type == 'modification') return 0
@@ -771,20 +769,20 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
                 case 'creation':
                     if (r.type == 'modification') return 1
                     if (r.type == 'deletion') return -1
-                    return getSortResultForFieldPatchLastPathNodes(leftLastNode, rightLastNode)
+                    return getSortResultForFieldPatchPath(l.path, r.path)
                 case 'deletion':
                     if (r.type == 'modification') return 1
                     if (r.type == 'creation') return 1
-                    return getSortResultForFieldPatchLastPathNodes(leftLastNode, rightLastNode)
+                    return getSortResultForFieldPatchPath(l.path, r.path)
             }
         }
     }
 
-    int getSortResultForFieldPatchLastPathNodes(PathNode leftLastNode, PathNode rightLastNode) {
+    int getSortResultForFieldPatchPath(Path leftPath, Path rightPath) {
         // Allow each service to try sorting the patches
         // As a non-match or "care" will return 0 we can keep going or return 0
         for (ModelService service : modelServices) {
-            int result = service.getSortResultForFieldPatchLastPathNodes(leftLastNode, rightLastNode)
+            int result = service.getSortResultForFieldPatchPath(leftPath, rightPath)
             if (result) return result
         }
         0
@@ -855,7 +853,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         String fieldName = modificationPatch.fieldName
         log.debug('Modifying [{}] in [{}]', fieldName, modificationPatch.path.toString(getModelIdentifier(targetVersionedFolder)))
         domain."${fieldName}" = modificationPatch.sourceValue
-        DomainService domainService = getDomainServices().find { it.handles(domain.class) }
+        DomainService domainService = getDomainServices().find {it.handles(domain.class)}
         if (!domainService) throw new ApiInternalException('MSXX', "No domain service to handle modification of [${domain.domainType}]")
 
         if (!domain.validate())
@@ -882,7 +880,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     }
 
     MultiFacetAware processDeletionPatchOfFacet(MultiFacetItemAware multiFacetItemAware, VersionedFolder targetVersionedFolder, Path path) {
-        MultiFacetItemAwareService multiFacetItemAwareService = multiFacetItemAwareServices.find { it.handles(multiFacetItemAware.class) }
+        MultiFacetItemAwareService multiFacetItemAwareService = multiFacetItemAwareServices.find {it.handles(multiFacetItemAware.class)}
         if (!multiFacetItemAwareService) throw new ApiInternalException('MSXX',
                                                                         "No domain service to handle deletion of [${multiFacetItemAware.domainType}]")
         log.debug('Deleting Facet from path [{}]', path)
@@ -949,7 +947,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     }
 
     void processCreationPatchOfFacet(MultiFacetItemAware multiFacetItemAwareToCopy, VersionedFolder targetVersionedFolder, Path parentPathToCopyTo) {
-        MultiFacetItemAwareService multiFacetItemAwareService = multiFacetItemAwareServices.find { it.handles(multiFacetItemAwareToCopy.class) }
+        MultiFacetItemAwareService multiFacetItemAwareService = multiFacetItemAwareServices.find {it.handles(multiFacetItemAwareToCopy.class)}
         if (!multiFacetItemAwareService) {
             throw new ApiInternalException('MSXX',
                                            "No domain service to handle creation of [${multiFacetItemAwareToCopy.domainType}]")
@@ -991,13 +989,13 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         Path modelItemToModelAbsolutePath
         Path modelRelativeToTargetPath
 
-        relativePathToMergeTo.each { node ->
+        relativePathToMergeTo.each {node ->
             if (!modelService) {
                 // Build up the path to the model
                 if (!modelRelativeToTargetPath) modelRelativeToTargetPath = Path.from(node)
                 else modelRelativeToTargetPath.addToPathNodes(node)
 
-                modelService = modelServices.find { s -> s.handlesPathPrefix(node.prefix) }
+                modelService = modelServices.find {s -> s.handlesPathPrefix(node.prefix)}
             }
             // Dont use else as we want to make sure the model node is added to the absolute path therefore as soon as the modelservice is found we
             // should add the node

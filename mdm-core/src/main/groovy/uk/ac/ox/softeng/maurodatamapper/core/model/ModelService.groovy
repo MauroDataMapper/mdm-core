@@ -495,8 +495,6 @@ abstract class ModelService<K extends Model>
           Process creations before deletions, that way any deletions will automatically take care of any links to potentially created objects
            */
         objectPatchData.patches.sort { l, r ->
-            PathNode leftLastNode = l.path.last()
-            PathNode rightLastNode = r.path.last()
             switch (l.type) {
                 case 'modification':
                     if (r.type == 'modification') return 0
@@ -504,16 +502,16 @@ abstract class ModelService<K extends Model>
                 case 'creation':
                     if (r.type == 'modification') return 1
                     if (r.type == 'deletion') return -1
-                    return getSortResultForFieldPatchLastPathNodes(leftLastNode, rightLastNode)
+                    return getSortResultForFieldPatchPath(l.path, r.path)
                 case 'deletion':
                     if (r.type == 'modification') return 1
                     if (r.type == 'creation') return 1
-                    return getSortResultForFieldPatchLastPathNodes(leftLastNode, rightLastNode)
+                    return getSortResultForFieldPatchPath(l.path, r.path)
             }
         }
     }
 
-    int getSortResultForFieldPatchLastPathNodes(PathNode leftLastNode, PathNode rightLastNode) {
+    int getSortResultForFieldPatchPath(Path leftPath, Path rightPath) {
         // If overridding this method any nodes you dont care about should return a result of 0
         0
     }

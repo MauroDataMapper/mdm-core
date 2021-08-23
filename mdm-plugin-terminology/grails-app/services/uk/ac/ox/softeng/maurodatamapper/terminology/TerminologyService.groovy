@@ -30,6 +30,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -600,7 +601,14 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    int getSortResultForFieldPatchLastPathNodes(PathNode leftLastNode, PathNode rightLastNode) {
+    int getSortResultForFieldPatchPath(Path leftPath, Path rightPath) {
+        if (leftPath.any {it.prefix == 'cs'}) {
+            if (rightPath.any {it.prefix == 'cs'}) return 0
+            return 1
+        }
+        if (rightPath.any {it.prefix == 'cs'}) return -1
+        PathNode leftLastNode = leftPath.last()
+        PathNode rightLastNode = rightPath.last()
         if (leftLastNode.prefix == 'tm') {
             if (rightLastNode.prefix == 'tm') return 0
             if (rightLastNode.prefix in ['trt', 'tr']) return -1
