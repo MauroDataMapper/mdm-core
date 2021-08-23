@@ -1099,15 +1099,9 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
     void 'BMV07 : test creating a new branch model with DM, T and CS'() {
         given:
-        String commonAncestorId = getValidId()
+        Map data = builder.buildComplexModelsForBranching()
         loginEditor()
-        builder.dataModelPluginMergeBuilder.buildCommonAncestorDataModel(commonAncestorId)
-        String caTerminology = builder.terminologyPluginMergeBuilder.buildCommonAncestorTerminology(commonAncestorId)
-        builder.terminologyPluginMergeBuilder.buildCommonAncestorCodeSet(commonAncestorId, caTerminology)
-
-        // Finalise and branch
-        PUT("$commonAncestorId/finalise", [versionChangeType: 'Major'])
-        verifyResponse OK, response
+        String commonAncestorId = data.commonAncestorId
 
         when:
         PUT("$commonAncestorId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
@@ -1151,15 +1145,9 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
     void 'BMV08 : test creating a new branch model with DM, T and CS with non default branch'() {
         given:
-        String commonAncestorId = getValidId()
+        Map data = builder.buildComplexModelsForBranching()
         loginEditor()
-        builder.dataModelPluginMergeBuilder.buildCommonAncestorDataModel(commonAncestorId)
-        String caTerminology = builder.terminologyPluginMergeBuilder.buildCommonAncestorTerminology(commonAncestorId)
-        builder.terminologyPluginMergeBuilder.buildCommonAncestorCodeSet(commonAncestorId, caTerminology)
-
-        // Finalise and branch
-        PUT("$commonAncestorId/finalise", [versionChangeType: 'Major'])
-        verifyResponse OK, response
+        String commonAncestorId = data.commonAncestorId
 
         when:
         PUT("$commonAncestorId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
@@ -1216,6 +1204,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     void 'BMV09 : test creating a new branch model version of the complex VersionedFolder (as editor)'() {
         given:
         Map data = builder.buildComplexModelsForBranching()
+        loginEditor()
         String id = data.commonAncestorId
         GET("terminologies/$data.terminologyCaId/terms", MAP_ARG, true)
         verifyResponse(OK, response)
@@ -1291,7 +1280,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         then:
         verifyResponse(OK, response)
-        responseBody().count == 9
+        responseBody().count == 8
         List<String> branchedTermIds = responseBody().items.collect { it.id }
         !branchedTermIds.any { it in finalisedTermIds }
 
@@ -1300,10 +1289,10 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         then:
         verifyResponse(OK, response)
-        responseBody().count == 8
-        List<String> branchedCodeSetTermIds = responseBody().items.collect { it.id }
-        !branchedCodeSetTermIds.any { it in finalisedTermIds }
-        branchedCodeSetTermIds.every { it in branchedTermIds }
+        responseBody().count == 6
+        List<String> branchedCodeSetTermIds = responseBody().items.collect {it.id}
+        !branchedCodeSetTermIds.any {it in finalisedTermIds}
+        branchedCodeSetTermIds.every {it in branchedTermIds}
 
         cleanup:
         cleanupIds(id, branchId)
