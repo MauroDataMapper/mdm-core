@@ -81,7 +81,7 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
 
     @Override
     Integer getNumberOfDiffs() {
-        diffs?.sum {it.getNumberOfDiffs()} as Integer ?: 0
+        flattenedDiffs ? flattenedDiffs.size() : diffs?.sum {it.getNumberOfDiffs()} as Integer ?: 0
     }
 
     String getSourceIdentifier() {
@@ -441,11 +441,13 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
                 return null
             }
             if (diff.createdIdentifier in caTargetDiff.deleted*.deletedIdentifier) {
+                log.warn('[{}] ca/source created and ca/target deleted', diff.createdIdentifier)
                 //  Impossible as it didnt exist in CA therefore target can't have deleted it
                 return null
             }
             if (diff.createdIdentifier in caTargetDiff.modified*.getRightIdentifier()) {
                 //  Impossible as it didnt exist in CA therefore target can't have modified it
+                log.warn('[{}] ca/source created and ca/target modified', diff.createdIdentifier)
                 return null
             }
             // Only added on source side : no conflict
@@ -482,6 +484,7 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
         caSourceDeletedDiffs.collect {diff ->
             if (diff.deletedIdentifier in caTargetDiff.created*.createdIdentifier) {
                 //  Impossible as you can't delete something which never existed
+                log.warn('[{}] ca/source deleted and ca/target created', diff.deletedIdentifier)
                 return null
             }
             if (diff.deletedIdentifier in caTargetDiff.deleted*.deletedIdentifier) {

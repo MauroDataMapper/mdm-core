@@ -173,7 +173,7 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
   "targetId": "${json-unit.matches:id}",
   "path": "vf:Functional Test VersionedFolder Complex$source",
   "label": "Functional Test VersionedFolder Complex",
-  "count": 44,
+  "count": 45,
   "diffs": [
     {
       "fieldName": "description",
@@ -225,6 +225,30 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
       "isMergeConflict": false,
       "isSourceModificationAndTargetDeletion": false,
       "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder Complex$source|cs:Functional Test CodeSet 1$source|te:Functional Test Terminology 1$source|tm:ALOCS",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder Complex$source|cs:Functional Test CodeSet 1$source|te:Functional Test Terminology 1$1.0.0|tm:DAM",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder Complex$source|cs:Functional Test CodeSet 1$source|te:Functional Test Terminology 1$1.0.0|tm:DLO",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder Complex$source|cs:Functional Test CodeSet 1$source|te:Functional Test Terminology 1$1.0.0|tm:DLOCS",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
     },
     {
       "fieldName": "description",

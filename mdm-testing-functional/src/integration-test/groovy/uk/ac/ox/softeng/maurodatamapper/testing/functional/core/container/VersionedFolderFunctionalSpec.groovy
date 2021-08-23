@@ -35,6 +35,7 @@ import grails.testing.spock.OnceBefore
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
+import org.junit.Assert
 import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Ignore
 import spock.lang.Shared
@@ -1212,7 +1213,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         cleanupIds(branchId, mainBranchId, commonAncestorId)
     }
 
-    void 'BMV09 : test creating a new branch model version of the complext VersionedFolder (as editor)'() {
+    void 'BMV09 : test creating a new branch model version of the complex VersionedFolder (as editor)'() {
         given:
         Map data = builder.buildComplexModelsForBranching()
         String id = data.commonAncestorId
@@ -1290,7 +1291,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         then:
         verifyResponse(OK, response)
-        responseBody().count == 6
+        responseBody().count == 9
         List<String> branchedTermIds = responseBody().items.collect { it.id }
         !branchedTermIds.any { it in finalisedTermIds }
 
@@ -1299,7 +1300,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         then:
         verifyResponse(OK, response)
-        responseBody().count == 5
+        responseBody().count == 8
         List<String> branchedCodeSetTermIds = responseBody().items.collect { it.id }
         !branchedCodeSetTermIds.any { it in finalisedTermIds }
         branchedCodeSetTermIds.every { it in branchedTermIds }
@@ -2337,7 +2338,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         GET("terminologies/$targetTerminologyMap.terminologyId/terms", MAP_ARG, true)
 
         then:
-        responseBody().items.code as Set == ['AAARD', 'ALO', 'ARO', 'MAD', 'MAMRD', 'MLO', 'SALO', 'SMLO'] as Set
+        responseBody().items.code as Set == ['AAARD', 'ALO', 'ALOCS', 'ARO', 'MAD', 'MAMRD', 'MLO', 'SALO', 'SMLO', 'DLOCS'] as Set
         responseBody().items.find { term -> term.code == 'MAD' }.description == 'Description'
         responseBody().items.find { term -> term.code == 'AAARD' }.description == 'DescriptionLeft'
         responseBody().items.find { term -> term.code == 'MAMRD' }.description == 'DescriptionLeft'
@@ -2402,11 +2403,32 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         GET("terminologies/$targetTerminologyMap.terminologyId/metadata", MAP_ARG, true)
 
         then:
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyOnSource'}.value == 'source has modified this'
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyAndDelete'}.value == 'source has modified this also'
+        !responseBody().items.find {it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource'}
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'addToSourceOnly'}
+
+        when:
+        Map targetCodeSetMap = mergeData.targetMap.codeSet
+        GET("codeSets/$targetCodeSetMap.codeSetId/terms", MAP_ARG, true)
+
+        then:
+        verifyResponse OK, response
+        // MAD cannot be added back into the CS as part of the merge
+        responseBody().items.code as Set == ['AAARD', 'ALO' /*, 'MAD'*/, 'MAMRD', 'MLO', 'ALOCS'] as Set
+        responseBody().items.each {t ->
+            Assert.assertEquals("${t.code} has correct terminology", targetTerminologyMap.terminologyId, t.model)
+        }
+
+
+        when:
+        GET("codeSets/$targetCodeSetMap.codeSetId/metadata", MAP_ARG, true)
+
+        then:
         responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyOnSource' }.value == 'source has modified this'
         responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyAndDelete' }.value == 'source has modified this also'
         !responseBody().items.find { it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource' }
         responseBody().items.find { it.namespace == 'functional.test' && it.key == 'addToSourceOnly' }
-
 
         cleanup:
         builder.cleanupTestMergeData(mergeData)
@@ -2846,7 +2868,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
   "leftId": "${json-unit.matches:id}",
   "rightId": "${json-unit.matches:id}",
   "label": "Functional Test VersionedFolder Complex",
-  "count": 45,
+  "count": 62,
   "diffs": [
     {
       "description": {
@@ -2936,20 +2958,6 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                     {
                       "value": {
                         "id": "${json-unit.matches:id}",
-                        "label": "SALO: secondAddLeftOnly",
-                        "breadcrumbs": [
-                          {
-                            "id": "${json-unit.matches:id}",
-                            "label": "Functional Test Terminology 1",
-                            "domainType": "Terminology",
-                            "finalised": false
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      "value": {
-                        "id": "${json-unit.matches:id}",
                         "label": "ALO: addLeftOnly",
                         "breadcrumbs": [
                           {
@@ -2974,13 +2982,11 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                           }
                         ]
                       }
-                    }
-                  ],
-                  "created": [
+                    },
                     {
                       "value": {
                         "id": "${json-unit.matches:id}",
-                        "label": "DLO: deleteLeftOnly",
+                        "label": "SALO: secondAddLeftOnly",
                         "breadcrumbs": [
                           {
                             "id": "${json-unit.matches:id}",
@@ -2990,7 +2996,9 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                           }
                         ]
                       }
-                    },
+                    }
+                  ],
+                  "created": [
                     {
                       "value": {
                         "id": "${json-unit.matches:id}",
@@ -3018,9 +3026,53 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                           }
                         ]
                       }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "DLO: deleteLeftOnly",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test Terminology 1",
+                            "domainType": "Terminology",
+                            "finalised": false
+                          }
+                        ]
+                      }
                     }
                   ],
                   "modified": [
+                    {
+                      "leftId": "${json-unit.matches:id}",
+                      "rightId": "${json-unit.matches:id}",
+                      "label": "AAARD: addAndAddReturningDifference",
+                      "leftBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test Terminology 1",
+                          "domainType": "Terminology",
+                          "finalised": false
+                        }
+                      ],
+                      "rightBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test Terminology 1",
+                          "domainType": "Terminology",
+                          "finalised": false
+                        }
+                      ],
+                      "count": 1,
+                      "diffs": [
+                        {
+                          "description": {
+                            "left": "DescriptionLeft",
+                            "right": "DescriptionRight"
+                          }
+                        }
+                      ]
+                    },
                     {
                       "leftId": "${json-unit.matches:id}",
                       "rightId": "${json-unit.matches:id}",
@@ -3077,36 +3129,6 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                           "description": {
                             "left": "Description",
                             "right": null
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "leftId": "${json-unit.matches:id}",
-                      "rightId": "${json-unit.matches:id}",
-                      "label": "AAARD: addAndAddReturningDifference",
-                      "leftBreadcrumbs": [
-                        {
-                          "id": "${json-unit.matches:id}",
-                          "label": "Functional Test Terminology 1",
-                          "domainType": "Terminology",
-                          "finalised": false
-                        }
-                      ],
-                      "rightBreadcrumbs": [
-                        {
-                          "id": "${json-unit.matches:id}",
-                          "label": "Functional Test Terminology 1",
-                          "domainType": "Terminology",
-                          "finalised": false
-                        }
-                      ],
-                      "count": 1,
-                      "diffs": [
-                        {
-                          "description": {
-                            "left": "DescriptionLeft",
-                            "right": "DescriptionRight"
                           }
                         }
                       ]
@@ -3295,12 +3317,243 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
             "leftId": "${json-unit.matches:id}",
             "rightId": "${json-unit.matches:id}",
             "label": "Functional Test CodeSet 1",
-            "count": 1,
+            "count": 18,
             "diffs": [
+              {
+                "description": {
+                  "left": "DescriptionLeft",
+                  "right": null
+                }
+              },
+              {
+                "metadata": {
+                  "deleted": [
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "namespace": "functional.test",
+                        "key": "modifyAndDelete",
+                        "value": "source has modified this also"
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "namespace": "functional.test",
+                        "key": "addToSourceOnly",
+                        "value": "adding to source only"
+                      }
+                    }
+                  ],
+                  "created": [
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "namespace": "functional.test",
+                        "key": "deleteFromSource",
+                        "value": "some other original value"
+                      }
+                    }
+                  ],
+                  "modified": [
+                    {
+                      "leftId": "${json-unit.matches:id}",
+                      "rightId": "${json-unit.matches:id}",
+                      "namespace": "functional.test",
+                      "key": "modifyOnSource",
+                      "count": 1,
+                      "diffs": [
+                        {
+                          "value": {
+                            "left": "source has modified this",
+                            "right": "some original value"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
               {
                 "branchName": {
                   "left": "source",
                   "right": "main"
+                }
+              },
+              {
+                "terms": {
+                  "deleted": [
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "ALO: addLeftOnly",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test Terminology 1",
+                            "domainType": "Terminology",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "AAARD: addAndAddReturningDifference",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test Terminology 1",
+                            "domainType": "Terminology",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "MAMRD: modifyAndModifyReturningDifference",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test Terminology 1",
+                            "domainType": "Terminology",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "MAD: modifyAndDelete",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test Terminology 1",
+                            "domainType": "Terminology",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "MLO: modifyLeftOnly",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test Terminology 1",
+                            "domainType": "Terminology",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "ALOCS: addLeftOnlyCodeSet",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test Terminology 1",
+                            "domainType": "Terminology",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "created": [
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "MLO: modifyLeftOnly",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test Terminology 1",
+                            "domainType": "Terminology",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "DLOCS: deleteLeftOnlyCodeSet",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test Terminology 1",
+                            "domainType": "Terminology",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "DAM: deleteAndModify",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test Terminology 1",
+                            "domainType": "Terminology",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "MAMRD: modifyAndModifyReturningDifference",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test Terminology 1",
+                            "domainType": "Terminology",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "AAARD: addAndAddReturningDifference",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test Terminology 1",
+                            "domainType": "Terminology",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "DLO: deleteLeftOnly",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test Terminology 1",
+                            "domainType": "Terminology",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    }
+                  ]
                 }
               }
             ]
@@ -3324,16 +3577,16 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                       "value": {
                         "id": "${json-unit.matches:id}",
                         "namespace": "functional.test",
-                        "key": "modifyAndDelete",
-                        "value": "source has modified this also"
+                        "key": "addToSourceOnly",
+                        "value": "adding to source only"
                       }
                     },
                     {
                       "value": {
                         "id": "${json-unit.matches:id}",
                         "namespace": "functional.test",
-                        "key": "addToSourceOnly",
-                        "value": "adding to source only"
+                        "key": "modifyAndDelete",
+                        "value": "source has modified this also"
                       }
                     }
                   ],
@@ -3651,7 +3904,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                               {
                                 "value": {
                                   "id": "${json-unit.matches:id}",
-                                  "label": "addRightToExistingClass",
+                                  "label": "deleteLeftOnlyFromExistingClass",
                                   "breadcrumbs": [
                                     {
                                       "id": "${json-unit.matches:id}",
@@ -3670,7 +3923,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                               {
                                 "value": {
                                   "id": "${json-unit.matches:id}",
-                                  "label": "deleteLeftOnlyFromExistingClass",
+                                  "label": "addRightToExistingClass",
                                   "breadcrumbs": [
                                     {
                                       "id": "${json-unit.matches:id}",
