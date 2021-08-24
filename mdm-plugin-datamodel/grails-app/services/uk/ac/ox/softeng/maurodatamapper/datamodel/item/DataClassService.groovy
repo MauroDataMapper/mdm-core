@@ -719,13 +719,20 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     }
 
     @Override
-    boolean hasTreeTypeModelItems(DataClass dataClass, boolean fullTreeRender) {
-        dataClass.dataClasses || (dataClass.dataElements && fullTreeRender)
+    boolean isModelItemAnImportedDataClass(ModelItem modelItem, DataClass owningDataClass) {
+        if (!(modelItem instanceof DataClass)) return false
+        owningDataClass.id && ((DataClass) modelItem).parentDataClass?.id != owningDataClass.id
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(DataClass dataClass, boolean fullTreeRender = false) {
-        (DataClass.byDataModelIdAndParentDataClassId(dataClass.dataModel.id, dataClass.id).list() +
+    boolean hasTreeTypeModelItems(DataClass dataClass, boolean fullTreeRender, boolean includeImportedDataClasses = false) {
+        dataClass.dataClasses || (includeImportedDataClasses ? dataClass.importedDataClasses : false) || (dataClass.dataElements && fullTreeRender)
+    }
+
+    @Override
+    List<ModelItem> findAllTreeTypeModelItemsIn(DataClass dataClass, boolean fullTreeRender = false, boolean includeImportedDataClasses = false) {
+        ((includeImportedDataClasses ? DataClass.byDataModelIdAndParentDataClassIdIncludingImported(dataClass.dataModel.id, dataClass.id).list()
+                                     : DataClass.byDataModelIdAndParentDataClassId(dataClass.dataModel.id, dataClass.id).list()) +
          (fullTreeRender ? DataElement.byDataClassId(dataClass.id).list() : []) as List<ModelItem>)
     }
 

@@ -93,6 +93,10 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
      */
     abstract List<K> getAll(Collection<UUID> ids)
 
+    boolean isModelItemAnImportedDataClass(ModelItem modelItem, K owningCatalogueItem) {
+        false
+    }
+
     boolean hasTreeTypeModelItems(K catalogueItem, boolean fullTreeRender) {
         false
     }
@@ -101,12 +105,20 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         hasTreeTypeModelItems(catalogueItem, false)
     }
 
+    boolean hasTreeTypeModelItems(K catalogueItem, boolean fullTreeRender, boolean includeImportedDataClasses) {
+        hasTreeTypeModelItems(catalogueItem, fullTreeRender)
+    }
+
     List<ModelItem> findAllTreeTypeModelItemsIn(K catalogueItem, boolean fullTreeRender) {
         []
     }
 
     List<ModelItem> findAllTreeTypeModelItemsIn(K catalogueItem) {
         findAllTreeTypeModelItemsIn(catalogueItem, false)
+    }
+
+    List<ModelItem> findAllTreeTypeModelItemsIn(K catalogueItem, boolean fullTreeRender, boolean includeImportedDataClasses) {
+        findAllTreeTypeModelItemsIn(catalogueItem, fullTreeRender)
     }
 
     abstract K findByIdJoinClassifiers(UUID id)

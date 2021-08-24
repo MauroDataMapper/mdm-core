@@ -216,7 +216,8 @@ class TreeItemService {
         buildCatalogueItemTree(catalogueItem, false, userSecurityPolicyManager)
     }
 
-    List<ModelItemTreeItem> buildCatalogueItemTree(CatalogueItem catalogueItem, boolean fullTreeRender, UserSecurityPolicyManager userSecurityPolicyManager) {
+    List<ModelItemTreeItem> buildCatalogueItemTree(CatalogueItem catalogueItem, boolean fullTreeRender, UserSecurityPolicyManager userSecurityPolicyManager,
+                                                   boolean includeImportedDataClasses = false) {
         log.debug("Building tree for ${catalogueItem.class.simpleName}")
         long start = System.currentTimeMillis()
 
@@ -224,12 +225,12 @@ class TreeItemService {
 
         if (!service) throw new ApiBadRequestException('TIS01', 'Tree requested for catalogue item with no supporting service')
 
-        if (!service.hasTreeTypeModelItems(catalogueItem, fullTreeRender)) {
+        if (!service.hasTreeTypeModelItems(catalogueItem, fullTreeRender, includeImportedDataClasses)) {
             log.debug('Catalogue Item has no model items')
             return []
         }
 
-        List<ModelItem> content = service.findAllTreeTypeModelItemsIn(catalogueItem, fullTreeRender)
+        List<ModelItem> content = service.findAllTreeTypeModelItemsIn(catalogueItem, fullTreeRender, includeImportedDataClasses)
         log.debug('Catalogue item has {} model items', content.size())
         List<ModelItemTreeItem> tree = content.collect {mi ->
             List<String> actions = userSecurityPolicyManager ?
@@ -241,7 +242,7 @@ class TreeItemService {
                 ModelItemTreeItem modelItemTreeItem = new ModelItemTreeItem(mi, !children.isEmpty(), actions)
                     .withRenderChildren() as ModelItemTreeItem
                 modelItemTreeItem.addAllToChildren(children) as ModelItemTreeItem
-            } else new ModelItemTreeItem(mi, mi.hasChildren(), actions)
+            } else new ModelItemTreeItem(mi, mi.hasChildren(), actions, service.isModelItemAnImportedDataClass(mi, catalogueItem))
         }
 
         log.debug("Tree build took ${Utils.timeTaken(start)}")
