@@ -24,36 +24,37 @@ import groovy.util.logging.Slf4j
 @Slf4j
 class JsonProfile extends MapBasedProfile {
 
-    List<ProfileSection> sections = []
-    UUID profiledItemId
-    String profiledItemDomainType
-    String profiledItemLabel
+    List<ProfileSection> sections
+    String domainType
+    String label
 
     // Empty constructor used for deserialization from Json
-    JsonProfile() { }
+    JsonProfile() {
+        super()
+        sections = []
+    }
 
     JsonProfile(List<ProfileSection> sections) {
+        super()
         this.sections = sections
     }
 
-    JsonProfile(List<ProfileSection> sections, UUID profiledItemId, String profiledItemDomainType, String profiledItemLabel) {
-        this(sections)
-        this.profiledItemId = profiledItemId
-        this.profiledItemDomainType = profiledItemDomainType
-        this.profiledItemLabel = profiledItemLabel
+    static constraints = {
+        label blank: false
+        domainType blank: false
+        sections minSize: 1
     }
-
 
     @Override
     Set<String> getKnownFields() {
         List<String> fields = []
         sections.each {section ->
             section.fields.each {field ->
-                if(field.metadataPropertyName) {
+                if (field.metadataPropertyName) {
                     fields.add(field.metadataPropertyName)
                 } else {
                     log.info("No metadataPropertyName set for field: " + field.fieldName)
-                    fields.add("${section.sectionName}/${field.fieldName}")
+                    fields.add("${section.name}/${field.fieldName}")
                 }
             }
         }
@@ -64,7 +65,4 @@ class JsonProfile extends MapBasedProfile {
     int compareTo(Profile o) {
         return 0
     }
-
-
-
 }

@@ -1,0 +1,44 @@
+[
+  {
+    "sectionName": "Profile Derived Specification",
+    "sectionDescription": "The details necessary for this Data Model to be used as the specification for a dynamic profile.",
+    "fields": [
+      {
+        "fieldName": "Derived Field",
+        "metadataPropertyName": "derivedField",
+        "description": "A field which is derived",
+        "minMultiplicity": 1,
+        "maxMultiplicity": 1,
+        "dataType": "String",
+        "derived": true,
+        "derivedFrom": "label"
+      },
+      {
+        "fieldName": "Uneditable Field",
+        "metadataPropertyName": "uneditableField",
+        "description": "A field which is uneditable and listed as mandatory",
+        "minMultiplicity": 1,
+        "maxMultiplicity": 1,
+        "dataType": "String",
+        "uneditable": true
+      },
+      {
+        "fieldName": "Uneditable Field Optional",
+        "metadataPropertyName": "uneditableFieldOptional",
+        "description": "A field which is uneditable and listed as optional",
+        "minMultiplicity": 0,
+        "maxMultiplicity": 1,
+        "dataType": "String",
+        "uneditable": true
+      },
+      {
+        "fieldName": "Plain Field",
+        "metadataPropertyName": "plainField",
+        "description": "A field which is normal",
+        "minMultiplicity": 1,
+        "maxMultiplicity": 1,
+        "dataType": "String"
+      }
+    ]
+  }
+]

@@ -17,18 +17,42 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile.domain
 
-import grails.rest.Resource
 
-@Resource(readOnly = false, formats = ['json', 'xml'])
-class ProfileSection implements Cloneable {
+import grails.validation.Validateable
 
-    String sectionName
-    String sectionDescription
+class ProfileSection implements Cloneable, Validateable {
+
+    String name
+    String description
     List<ProfileField> fields = []
 
-    void validate() {
-        fields.each {field ->
+    static constraints = {
+        name blank: false
+        description nullable: true, blank: false
+        fields minSize: 1
+    }
+
+    @Override
+    boolean validate() {
+        validate null, null, null
+        fields.eachWithIndex {field, i ->
             field.validate()
+            if (field.hasErrors()) {
+                field.errors.fieldErrors.each {err ->
+                    this.errors.rejectValue("fields[$i].${err.field}", err.code, err.arguments, err.defaultMessage)
+                }
+            }
         }
+        !hasErrors()
+    }
+
+    @Deprecated
+    void setSectionName(String name) {
+        this.name = name
+    }
+
+    @Deprecated
+    void setSectionDescription(String description) {
+        this.description = description
     }
 }

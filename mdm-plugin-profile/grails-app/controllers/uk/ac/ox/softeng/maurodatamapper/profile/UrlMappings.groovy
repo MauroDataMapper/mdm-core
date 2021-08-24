@@ -46,9 +46,10 @@ class UrlMappings {
 
             // Provide multiple ways to obtain profile of a multiFacetAware
             group "/${multiFacetAwareItemDomainType}/${multiFacetAwareItemId}", {
-                get '/profiles/used'(controller: 'profile', action: 'profiles')
+                get '/profiles/used'(controller: 'profile', action: 'usedProfiles')
                 get '/profiles/unused'(controller: 'profile', action: 'unusedProfiles')
-                get '/profiles/otherMetadata'(controller: 'profile', action: 'otherMetadata')
+                get '/profiles/otherMetadata'(controller: 'profile', action: 'nonProfileMetadata')
+                get '/profiles/nonProfileMetadata'(controller: 'profile', action: 'nonProfileMetadata')
                 get "/profile/$profileNamespace/$profileName/$profileVersion?"(controller: 'profile', action: 'show')
                 delete "/profile/$profileNamespace/$profileName/$profileVersion?"(controller: 'profile', action: 'delete')
                 post "/profile/$profileNamespace/$profileName/$profileVersion?"(controller: 'profile', action: 'save')

@@ -29,20 +29,25 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
 
     @Override
     JsonProfile createProfileFromEntity(MultiFacetAware entity) {
-        JsonProfile jsonProfile = EmptyJsonProfileFactory.instance.getEmptyProfile(this)
-        jsonProfile.profiledItemId = entity.id
-        jsonProfile.profiledItemDomainType = entity.domainType
-        jsonProfile.profiledItemLabel = entity.label
+        JsonProfile jsonProfile = getNewProfile()
+        jsonProfile.id = entity.id
+        jsonProfile.domainType = entity.domainType
+        jsonProfile.label = entity.label
 
         List<Metadata> metadataList = getAllProfileMetadataByMultiFacetAwareItemId(entity.id)
-
         jsonProfile.sections.each {section ->
             section.fields.each {field ->
                 Metadata matchingField = metadataList.find {it.key == field.metadataPropertyName}
-                if (matchingField) {
+                // If field is derived then get the location its derived from
+                if (field.derived) {
+                    try {
+                        field.currentValue = entity."${field.derivedFrom}"
+                    } catch (Exception ignored) {
+                        // Currently gracefully handle a derived field which cant be found
+                        log.warn('Could not set derived field from {} for {}', field.derivedFrom, entity.label)
+                    }
+                } else if (matchingField) {
                     field.currentValue = matchingField.value
-                } else {
-                    field.currentValue = ""
                 }
                 field.validate()
             }
@@ -50,24 +55,27 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
         jsonProfile
     }
 
-    JsonProfile createNewEmptyJsonProfile() {
+    JsonProfile getNewProfile() {
         EmptyJsonProfileFactory.instance.getEmptyProfile(this)
     }
 
     @Override
     void storeProfileInEntity(MultiFacetAware entity, JsonProfile jsonProfile, String userEmailAddress) {
-        JsonProfile emptyJsonProfile = createNewEmptyJsonProfile()
+        JsonProfile emptyJsonProfile = getNewProfile()
         emptyJsonProfile.sections.each {section ->
-            ProfileSection submittedSection = jsonProfile.sections.find {it.sectionName == section.sectionName}
+            ProfileSection submittedSection = jsonProfile.sections.find {it.name == section.name}
             if (submittedSection) {
                 section.fields.each {field ->
-                    ProfileField submittedField = submittedSection.fields.find {it.fieldName == field.fieldName}
-
+                    ProfileField submittedField = submittedSection.fields.find {it.getUniqueKey(section.name) == field.getUniqueKey(section.name)}
                     if (submittedField) {
-                        String newValue = submittedField.currentValue ?: ''
-                        String key = field.getMetadataKeyForSaving(submittedSection.sectionName)
-                        storeFieldInEntity(entity, newValue, key, userEmailAddress)
+                        // Dont allow derived or uneditable fields to be set
+                        if (!field.derived && !field.uneditable) {
+                            String newValue = submittedField.currentValue ?: ''
+                            String key = field.getUniqueKey(submittedSection.name)
+                            storeFieldInEntity(entity, newValue, key, userEmailAddress)
+                        }
                     }
+
                 }
             }
         }
@@ -80,7 +88,6 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
 
     void storeFieldInEntity(MultiFacetAware entity, String value, String key, String userEmailAddress) {
         if (!key) return
-
         if (value) {
             entity.addToMetadata(metadataNamespace, key, value, userEmailAddress)
         } else {
@@ -97,7 +104,7 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
 
     @Override
     Set<String> getKnownMetadataKeys() {
-        EmptyJsonProfileFactory.instance.getEmptyProfile(this).getKnownFields()
+        getNewProfile().getKnownFields()
     }
 
     @Override
@@ -106,7 +113,11 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
     }
 
     @Override
-    JsonProfile getNewProfile() {
-        createNewEmptyJsonProfile()
+    JsonProfile createCleanProfileFromProfile(JsonProfile submittedProfile) {
+        JsonProfile cleanProfile = super.createCleanProfileFromProfile(submittedProfile) as JsonProfile
+        cleanProfile.domainType = submittedProfile.domainType
+        cleanProfile.id = submittedProfile.id
+        cleanProfile.label = submittedProfile.label
+        cleanProfile
     }
 }

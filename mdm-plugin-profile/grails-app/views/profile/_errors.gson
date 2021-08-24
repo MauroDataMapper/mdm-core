@@ -1,13 +1,10 @@
 import org.springframework.validation.Errors
+import org.springframework.validation.FieldError
 import org.springframework.validation.ObjectError
 
-/**
- * Renders validation errors according to vnd.error: https://github.com/blongden/vnd.error
- */
 model {
     Errors errors
 }
-
 response.status UNPROCESSABLE_ENTITY
 locale = Locale.UK
 
@@ -18,5 +15,12 @@ json {
     total errorCount
     errors(allErrors) {ObjectError error ->
         message messageSource.getMessage(error, locale)
+        if (error instanceof FieldError) {
+            FieldError fe = (FieldError) error
+            if (fe.field.endsWith('currentValue')) {
+                fieldName fe.arguments[-2]
+                metadataPropertyName fe.arguments.last()
+            }
+        }
     }
 }

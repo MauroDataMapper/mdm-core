@@ -37,6 +37,7 @@ import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddre
 
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
+import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 @Slf4j
 @Integration
@@ -98,25 +99,27 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         verifyJsonResponse OK, '''
 [{
     "name":"ProfileSpecificationProfileService",
-    "version":"SNAPSHOT",
+    "version":"${json-unit.matches:version}",
     "displayName":"Profile Specification Profile (Data Model)",
     "namespace":"uk.ac.ox.softeng.maurodatamapper.profile",
     "allowsExtraMetadataKeys":false,
-    "knownMetadataKeys": ["metadataNamespace","domainsApplicable"],
+    "knownMetadataKeys": ["metadataNamespace","domainsApplicable","editableAfterFinalisation"],
     "providerType":"Profile",
     "metadataNamespace":"uk.ac.ox.softeng.maurodatamapper.profile",
-    "domains":["DataModel"]
+    "domains":["DataModel"],
+    "editableAfterFinalisation": false
 }, 
 {
     "name":"ProfileSpecificationFieldProfileService",
-    "version":"SNAPSHOT",
+    "version":"${json-unit.matches:version}",
     "displayName":"Profile Specification Profile (Data Element)",
     "namespace":"uk.ac.ox.softeng.maurodatamapper.profile",
     "allowsExtraMetadataKeys":false,
     "knownMetadataKeys":["metadataPropertyName","defaultValue","regularExpression","editedAfterFinalisation"],
     "providerType":"Profile",
     "metadataNamespace":"uk.ac.ox.softeng.maurodatamapper.profile.dataelement",
-    "domains":["DataElement"]
+    "domains":["DataElement"],
+    "editableAfterFinalisation": false
 }]'''
     }
 
@@ -283,7 +286,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
 
     void 'test getting other properties on a datamodel'() {
         given:
-            String id = getComplexDataModelId()
+        String id = getComplexDataModelId()
 
         when:
         GET("dataModels/${id}/profiles/otherMetadata", STRING_ARG)
@@ -340,39 +343,20 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
     void 'N01 : test validating profile on DataModel'() {
         given:
         Map namespaceFieldMap = [
-            currentValue        : '',
-            metadataPropertyName: 'metadataNamespace',
-            dataType            : 'string',
-            fieldName           : 'Metadata namespace',
-            validationErrors    : [],
-            regularExpression   : null,
-            allowedValues       : null,
-            description         : 'The namespace under which properties of this profile will be stored',
-            minMultiplicity     : 1,
-            maxMultiplicity     : 1
+            metadataPropertyName: "metadataNamespace",
         ]
         Map domainsFieldMap = [
-            currentValue        : '',
-            metadataPropertyName: 'domainsApplicable',
-            dataType            : 'string',
-            fieldName           : 'Applicable for domains',
-            validationErrors    : [],
-            regularExpression   : null,
-            allowedValues       : null,
-            description         : "Determines which types of catalogue item can be profiled using this profile.  For example, 'DataModel'.  " +
-                                  "Separate multiple domains with a semi-colon (';').  Leave blank to allow this profile to be applicable to any catalogue item.",
-            minMultiplicity     : 0,
-            maxMultiplicity     : 1
+            metadataPropertyName: "domainsApplicable",
         ]
         Map profileMap = [
             sections  : [
                 [
-                    sectionDescription: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
-                    fields            : [
+                    description: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
+                    fields     : [
                         namespaceFieldMap,
                         domainsFieldMap
                     ],
-                    sectionName       : 'Profile Specification'
+                    name       : 'Profile Specification'
                 ]
             ],
             id        : simpleDataModelId.toString(),
@@ -387,9 +371,11 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         POST("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${simpleDataModelId}/validate", profileMap)
 
         then:
-        verifyResponse(OK, response)
-        responseBody().sections.first().fields.find {it.fieldName == namespaceFieldMap.fieldName}.validationErrors == ['This field is mandatory']
-        responseBody().sections.first().fields.find {it.fieldName == domainsFieldMap.fieldName}.validationErrors.isEmpty()
+        verifyResponse(UNPROCESSABLE_ENTITY, response)
+        responseBody().total == 1
+        responseBody().errors.first().message == 'Value cannot be null'
+        responseBody().errors.first().fieldName == 'Metadata namespace'
+        responseBody().errors.first().metadataPropertyName == 'metadataNamespace'
 
         when:
         namespaceFieldMap.currentValue = 'functional.test.profile'
@@ -399,46 +385,27 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
 
         then:
         verifyResponse(OK, response)
-        responseBody().sections.first().fields.find {it.fieldName == namespaceFieldMap.fieldName}.validationErrors.isEmpty()
-        responseBody().sections.first().fields.find {it.fieldName == domainsFieldMap.fieldName}.validationErrors.isEmpty()
     }
 
     void 'N02 : test saving profile'() {
         given:
         Map namespaceFieldMap = [
             currentValue        : 'functional.test.profile',
-            metadataPropertyName: 'metadataNamespace',
-            dataType            : 'string',
-            fieldName           : 'Metadata namespace',
-            validationErrors    : [],
-            regularExpression   : null,
-            allowedValues       : null,
-            description         : 'The namespace under which properties of this profile will be stored',
-            minMultiplicity     : 1,
-            maxMultiplicity     : 1
+            metadataPropertyName: "metadataNamespace"
         ]
         Map domainsFieldMap = [
             currentValue        : 'DataModel',
-            metadataPropertyName: 'domainsApplicable',
-            dataType            : 'string',
-            fieldName           : 'Applicable for domains',
-            validationErrors    : [],
-            regularExpression   : null,
-            allowedValues       : null,
-            description         : "Determines which types of catalogue item can be profiled using this profile.  For example, 'DataModel'.  " +
-                                  "Separate multiple domains with a semi-colon (';').  Leave blank to allow this profile to be applicable to any catalogue item.",
-            minMultiplicity     : 0,
-            maxMultiplicity     : 1
+            metadataPropertyName: "domainsApplicable",
         ]
         Map profileMap = [
             sections  : [
                 [
-                    sectionDescription: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
-                    fields            : [
+                    description: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
+                    fields     : [
                         namespaceFieldMap,
                         domainsFieldMap
                     ],
-                    sectionName       : 'Profile Specification'
+                    name       : 'Profile Specification'
                 ]
             ],
             id        : simpleDataModelId.toString(),
@@ -454,8 +421,8 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
 
         then:
         verifyResponse(OK, response)
-        responseBody().sections.first().fields.find {it.fieldName == namespaceFieldMap.fieldName}.currentValue == namespaceFieldMap.currentValue
-        responseBody().sections.first().fields.find {it.fieldName == domainsFieldMap.fieldName}.currentValue == domainsFieldMap.currentValue
+        responseBody().sections.first().fields.find {it.metadataPropertyName == namespaceFieldMap.metadataPropertyName}.currentValue == namespaceFieldMap.currentValue
+        responseBody().sections.first().fields.find {it.metadataPropertyName == domainsFieldMap.metadataPropertyName}.currentValue == domainsFieldMap.currentValue
 
         when:
         HttpResponse<List<Map>> localResponse = GET("dataModels/${simpleDataModelId}/profiles/used", Argument.listOf(Map))
@@ -465,44 +432,33 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         localResponse.body().size() == 1
         localResponse.body().first().name == profileSpecificationProfileService.name
         localResponse.body().first().namespace == profileSpecificationProfileService.namespace
+
+        when:
+        GET("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${simpleDataModelId}", STRING_ARG)
+
+        then:
+        verifyJsonResponse(OK, getExpectedSavedProfile())
     }
 
     void 'N03 : test editing profile'() {
         given:
         Map namespaceFieldMap = [
             currentValue        : 'functional.test.profile',
-            metadataPropertyName: 'metadataNamespace',
-            dataType            : 'string',
-            fieldName           : 'Metadata namespace',
-            validationErrors    : [],
-            regularExpression   : null,
-            allowedValues       : null,
-            description         : 'The namespace under which properties of this profile will be stored',
-            minMultiplicity     : 1,
-            maxMultiplicity     : 1
+            metadataPropertyName: "metadataNamespace"
         ]
         Map domainsFieldMap = [
             currentValue        : 'DataModel',
-            metadataPropertyName: 'domainsApplicable',
-            dataType            : 'string',
-            fieldName           : 'Applicable for domains',
-            validationErrors    : [],
-            regularExpression   : null,
-            allowedValues       : null,
-            description         : "Determines which types of catalogue item can be profiled using this profile.  For example, 'DataModel'.  " +
-                                  "Separate multiple domains with a semi-colon (';').  Leave blank to allow this profile to be applicable to any catalogue item.",
-            minMultiplicity     : 0,
-            maxMultiplicity     : 1
+            metadataPropertyName: "domainsApplicable",
         ]
         Map profileMap = [
             sections  : [
                 [
-                    sectionDescription: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
-                    fields            : [
+                    description: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
+                    fields     : [
                         namespaceFieldMap,
                         domainsFieldMap
                     ],
-                    sectionName       : 'Profile Specification'
+                    name       : 'Profile Specification'
                 ]
             ],
             id        : simpleDataModelId.toString(),
@@ -521,11 +477,11 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         profileMap = [
             sections  : [
                 [
-                    sectionDescription: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
-                    fields            : [
+                    description: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
+                    fields     : [
                         namespaceFieldMap,
                     ],
-                    sectionName       : 'Profile Specification'
+                    name       : 'Profile Specification'
                 ]
             ],
             id        : simpleDataModelId.toString(),
@@ -539,19 +495,19 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         verifyResponse(OK, response)
 
         then:
-        responseBody().sections.first().fields.find {it.fieldName == namespaceFieldMap.fieldName}.currentValue == 'functional.test.profile.adjusted'
-        responseBody().sections.first().fields.find {it.fieldName == domainsFieldMap.fieldName}.currentValue == domainsFieldMap.currentValue
+        responseBody().sections.first().fields.find {it.metadataPropertyName == namespaceFieldMap.metadataPropertyName}.currentValue == 'functional.test.profile.adjusted'
+        responseBody().sections.first().fields.find {it.metadataPropertyName == domainsFieldMap.metadataPropertyName}.currentValue == domainsFieldMap.currentValue
 
         when:
         domainsFieldMap.currentValue = ''
         profileMap = [
             sections  : [
                 [
-                    sectionDescription: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
-                    fields            : [
+                    description: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
+                    fields     : [
                         domainsFieldMap,
                     ],
-                    sectionName       : 'Profile Specification'
+                    name       : 'Profile Specification'
                 ]
             ],
             id        : simpleDataModelId.toString(),
@@ -565,8 +521,8 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         verifyResponse(OK, response)
 
         then:
-        responseBody().sections.first().fields.find {it.fieldName == namespaceFieldMap.fieldName}.currentValue == 'functional.test.profile.adjusted'
-        responseBody().sections.first().fields.find {it.fieldName == domainsFieldMap.fieldName}.currentValue == ''
+        responseBody().sections.first().fields.find {it.metadataPropertyName == namespaceFieldMap.metadataPropertyName}.currentValue == 'functional.test.profile.adjusted'
+        responseBody().sections.first().fields.find {it.metadataPropertyName == domainsFieldMap.metadataPropertyName}.currentValue == ''
 
     }
 
@@ -574,38 +530,21 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         given:
         Map namespaceFieldMap = [
             currentValue        : 'functional.test.profile',
-            metadataPropertyName: 'metadataNamespace',
-            dataType            : 'string',
-            fieldName           : 'Metadata namespace',
-            validationErrors    : [],
-            regularExpression   : null,
-            allowedValues       : null,
-            description         : 'The namespace under which properties of this profile will be stored',
-            minMultiplicity     : 1,
-            maxMultiplicity     : 1
+            metadataPropertyName: "metadataNamespace"
         ]
         Map domainsFieldMap = [
             currentValue        : 'DataModel',
-            metadataPropertyName: 'domainsApplicable',
-            dataType            : 'string',
-            fieldName           : 'Applicable for domains',
-            validationErrors    : [],
-            regularExpression   : null,
-            allowedValues       : null,
-            description         : "Determines which types of catalogue item can be profiled using this profile.  For example, 'DataModel'.  " +
-                                  "Separate multiple domains with a semi-colon (';').  Leave blank to allow this profile to be applicable to any catalogue item.",
-            minMultiplicity     : 0,
-            maxMultiplicity     : 1
+            metadataPropertyName: "domainsApplicable",
         ]
         Map profileMap = [
             sections  : [
                 [
-                    sectionDescription: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
-                    fields            : [
+                    description: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
+                    fields     : [
                         namespaceFieldMap,
                         domainsFieldMap
                     ],
-                    sectionName       : 'Profile Specification'
+                    name       : 'Profile Specification'
                 ]
             ],
             id        : simpleDataModelId.toString(),
@@ -631,5 +570,64 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         then:
         verifyResponse(OK, localResponse)
         localResponse.body().isEmpty()
+    }
+
+    String getExpectedSavedProfile() {
+        '''{
+  "sections": [
+    {
+      "name": "Profile Specification",
+      "description": "The details necessary for this Data Model to be used as the specification for a dynamic profile.",
+      "fields": [
+        {
+          "fieldName": "Metadata namespace",
+          "metadataPropertyName": "metadataNamespace",
+          "description": "The namespace under which properties of this profile will be stored",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 1,
+          "allowedValues": null,
+          "regularExpression": null,
+          "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
+          "currentValue": "functional.test.profile"
+        },
+        {
+          "fieldName": "Applicable for domains",
+          "metadataPropertyName": "domainsApplicable",
+          "description": "Determines which types of catalogue item can be profiled using this profile.  For example, 'DataModel'.  ''' +
+        '''Separate multiple domains with a semi-colon (';').  Leave blank to allow this profile to be applicable to any catalogue item.",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "allowedValues": null,
+          "regularExpression": null,
+          "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
+          "currentValue": "DataModel"
+        },
+        {
+          "fieldName": "Can be edited after finalisation",
+          "metadataPropertyName": "editableAfterFinalisation",
+          "description": "Defines if the profile can be edited after the model has been finalised. This defaults to false.",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "allowedValues": null,
+          "regularExpression": null,
+          "dataType": "boolean",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
+          "currentValue": ""
+        }
+      ]
+    }
+  ],
+  "id": "${json-unit.matches:id}",
+  "label": "Simple Test DataModel",
+  "domainType": "DataModel"
+}'''
     }
 }

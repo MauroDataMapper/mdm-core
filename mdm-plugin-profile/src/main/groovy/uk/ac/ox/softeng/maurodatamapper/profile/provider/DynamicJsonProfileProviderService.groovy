@@ -49,17 +49,22 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
     @Override
     JsonProfile createProfileFromEntity(MultiFacetAware entity) {
         JsonProfile jsonProfile = new JsonProfile(getSections())
-        jsonProfile.profiledItemId = entity.id
-        jsonProfile.profiledItemDomainType = entity.domainType
-        jsonProfile.profiledItemLabel = entity.label
+        jsonProfile.id = entity.id
+        jsonProfile.domainType = entity.domainType
+        jsonProfile.label = entity.label
         List<Metadata> metadataList = metadataService.findAllByMultiFacetAwareItemIdAndNamespace(entity.id, this.getMetadataNamespace())
 
         jsonProfile.sections.each {section ->
             section.fields.each {field ->
-                Metadata matchingField = metadataList.find {
-                    it.key == field.metadataPropertyName || it.key == "${section.sectionName}/${field.fieldName}"
-                }
-                if (matchingField) {
+                Metadata matchingField = metadataList.find {it.key == field.getUniqueKey(section.name)}
+                if (field.derived) {
+                    try {
+                        field.currentValue = entity."${field.derivedFrom}"
+                    } catch (Exception ignored) {
+                        // Currently gracefully handle a derived field which cant be found
+                        log.warn('Could not set dervied field from {} for {}', field.derivedFrom, entity.label)
+                    }
+                } else if (matchingField) {
                     field.currentValue = matchingField.value
                 } else {
                     field.currentValue = ""
@@ -75,21 +80,11 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
         Set<String> knownProperties = []
         getSections().each {section ->
             section.fields.each {field ->
-                if (field.metadataPropertyName) {
-                    knownProperties.add(field.metadataPropertyName)
-
-                } else {
-                    knownProperties.add("${section.sectionName}/${field.fieldName}")
-                }
+                knownProperties.add(field.getUniqueKey(section.name))
             }
         }
         return knownProperties
     }
-
-    JsonProfile createNewEmptyJsonProfile() {
-        new JsonProfile(getSections())
-    }
-
 
     @Override
     String getJsonResourceFile() {
@@ -141,6 +136,15 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
         }
     }
 
+    @Override
+    Boolean canBeEditedAfterFinalisation() {
+        Metadata md = getProfileDataModel().metadata.find {md ->
+            md.namespace == "uk.ac.ox.softeng.maurodatamapper.profile" &&
+            md.key == "editableAfterFinalisation"
+        }
+        md ? md.value.toBoolean() : false
+    }
+
     DataModel getProfileDataModel() {
         DataModel.findById(dataModelId)
     }
@@ -165,8 +169,8 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
         DataModel dm = getProfileDataModel()
         dm.dataClasses.sort {it.order}.collect() {dataClass ->
             new ProfileSection(
-                sectionName: dataClass.label,
-                sectionDescription: dataClass.description,
+                name: dataClass.label,
+                description: dataClass.description,
                 fields: dataClass.dataElements.sort {it.order}.collect {dataElement ->
                     new ProfileField(
                         fieldName: dataElement.label,
@@ -191,161 +195,3 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
         }
     }
 }
-
-/*
-
-
-        ProfileProviderService<JsonProfile, CatalogueItem>() {
-
-            MetadataService localMetadataService = grailsApplication.mainContext.getBean('metadataService')
-
-
-            @Override
-            void storeProfileInEntity(CatalogueItem entity, JsonProfile profile, String userEmailAddress) {
-                JsonProfile emptyJsonProfile = new JsonProfile(getSections())
-
-                emptyJsonProfile.sections.each {section ->
-                    ProfileSection submittedSection = profile.sections.find{it.sectionName == section.sectionName }
-                    if(submittedSection) {
-                        section.fields.each {field ->
-                            ProfileField submittedField = submittedSection.fields.find {it.fieldName == field.fieldName }
-                            if(submittedField) {
-                                if(submittedField.currentValue  && submittedField.metadataPropertyName) {
-                                    entity.addToMetadata(metadataNamespace, field.metadataPropertyName, submittedField.currentValue,
-                                            userEmailAddress)
-                                } else if(!field.metadataPropertyName) {
-                                    log.error("No metadataPropertyName set for field: " + field.fieldName)
-                                } else if(!submittedField.currentValue) {
-                                    Metadata md = entity.metadata.find{
-                                        it.namespace == metadataNamespace && it.key == field.metadataPropertyName
-                                    }
-                                    if(md) {
-                                        entity.metadata.remove(md)
-                                        localMetadataService.delete(md)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                //entity.addToMetadata(metadataNamespace, '_profiled', 'Yes', userEmailAddress)
-                Metadata.saveAll(entity.metadata)
-            }
-
-            @Override
-            JsonProfile createProfileFromEntity(CatalogueItem entity) {
-                JsonProfile jsonProfile = new JsonProfile(getSections())
-                jsonProfile.catalogueItemId = entity.id
-                jsonProfile.catalogueItemDomainType = entity.domainType
-                jsonProfile.catalogueItemLabel = entity.label
-                List<Metadata> metadataList = localMetadataService.findAllByMultiFacetAwareItemIdAndNamespace(entity.id, this.getMetadataNamespace())
-
-                metadataList.each {}
-                jsonProfile.sections.each {section ->
-                    section.fields.each { field ->
-                        Metadata matchingField = metadataList.find {it.key == field.metadataPropertyName }
-                        if(matchingField) {
-                            field.currentValue = matchingField.value
-                        } else {
-                            field.currentValue = ""
-                        }
-                        field.validate()
-                    }
-                }
-                jsonProfile
-            }
-
-            @Override
-            String getMetadataNamespace() {
-                if(!getProfileDataModel()) {
-                    return null
-                }
-                Metadata md = getProfileDataModel().metadata.find {md ->
-                    md.namespace == "uk.ac.ox.softeng.maurodatamapper.profile" &&
-                        md.key == "metadataNamespace"}
-                if(md) {
-                    return md.value
-                } else {
-                    log.error("Invalid namespace!!")
-                    return "invalid.namespace"
-                }
-            }
-
-            @Override
-            String getDisplayName() {
-                return dataModelLabel
-            }
-
-            @Override
-            String getName() {
-                return URLEncoder.encode(dataModelLabel, StandardCharsets.UTF_8);
-            }
-
-            @Override
-            String getVersion() {
-                return dataModelVersion
-            }
-
-            @Override
-            List<String> profileApplicableForDomains() {
-                Metadata md = getProfileDataModel().metadata.find {md ->
-                    md.namespace == "uk.ac.ox.softeng.maurodatamapper.profile" &&
-                            md.key == "domainsApplicable"}
-                if(md) {
-                    return md.value.tokenize(";")
-                } else {
-                    return []
-                }
-            }
-
-            DataModel getProfileDataModel() {
-                DataModel.findById(dataModelId)
-            }
-
-            @Override
-            UUID getDefiningDataModel() {
-                return dataModelId
-            }
-
-            @Override
-            String getDefiningDataModelLabel() {
-                return dataModelLabel
-            }
-
-            @Override
-            String getDefiningDataModelDescription() {
-                return dataModelDescription
-            }
-
-
-            List<ProfileSection> getSections() {
-                DataModel dm = getProfileDataModel()
-                dm.dataClasses.sort { it.order }.collect() { dataClass ->
-                    new ProfileSection(
-                            sectionName: dataClass.label,
-                            sectionDescription: dataClass.description,
-                            fields: dataClass.dataElements.sort { it.order }.collect { dataElement ->
-                                new ProfileField(
-                                        fieldName: dataElement.label,
-                                        description: dataElement.description,
-                                        metadataPropertyName: dataElement.metadata.find {
-                                            it.namespace == "uk.ac.ox.softeng.maurodatamapper.profile.dataelement" &&
-                                                    it.key == "metadataPropertyName"
-                                        }?.value,
-                                        maxMultiplicity: dataElement.maxMultiplicity,
-                                        minMultiplicity: dataElement.minMultiplicity,
-                                        dataType: (dataElement.dataType instanceof EnumerationType) ? 'enumeration' : dataElement.dataType.label,
-                                        regularExpression: dataElement.metadata.find {
-                                            it.namespace == "uk.ac.ox.softeng.maurodatamapper.profile.dataelement" &&
-                                                    it.key == "regularExpression"
-                                        }?.value,
-                                        allowedValues: (dataElement.dataType instanceof EnumerationType) ?
-                                                ((EnumerationType) dataElement.dataType).enumerationValues.collect { it.key } : [],
-                                        currentValue: ""
-                                )
-                            }
-                    )
-                }
-            }
-        }
- */

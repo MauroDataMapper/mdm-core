@@ -5,5 +5,16 @@ model {
 }
 
 json {
-    name profileField.fieldName
+    fieldName profileField.fieldName
+    metadataPropertyName profileField.metadataPropertyName
+    description profileField.description
+    maxMultiplicity profileField.maxMultiplicity
+    minMultiplicity profileField.minMultiplicity
+    allowedValues profileField.allowedValues
+    regularExpression profileField.regularExpression
+    dataType profileField.dataType.label
+    derived profileField.derived
+    derivedFrom profileField.derivedFrom
+    uneditable profileField.uneditable
+    currentValue profileField.currentValue ?: ''
 }

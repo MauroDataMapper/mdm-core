@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.profile.object
 
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileField
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import groovy.transform.CompileStatic
 import groovy.transform.stc.ClosureParams
@@ -29,7 +30,7 @@ import groovy.util.logging.Slf4j
 @CompileStatic
 abstract class MapBasedProfile extends Profile {
 
-    private Map<String, Object> contents = [:]
+    private Map<String, Object> contents
 
     MapBasedProfile() {
         contents = new HashMap<>()
@@ -40,12 +41,12 @@ abstract class MapBasedProfile extends Profile {
         contents[fieldName]
     }
 
-    String getId() {
-        contents.id
+    UUID getId() {
+        contents.id as UUID
     }
 
     void setId(String id) {
-        contents.id = id
+        contents.id = Utils.toUuid(id)
     }
 
     Map<String, Object> each(@ClosureParams(value = FromString, options = ['Map<String,Object>', 'String,Object']) Closure closure) {
@@ -72,26 +73,11 @@ abstract class MapBasedProfile extends Profile {
     // Expect this to be overridden
     @Override
     List<ProfileSection> getSections() {
-        ProfileSection profileSection = new ProfileSection(sectionName: this.class.name, sectionDescription: "")
+        ProfileSection profileSection = new ProfileSection(name: this.class.name, description: '')
         contents.sort {it.key }.each {
             ProfileField profileField = new ProfileField(fieldName: it.key, currentValue: it.value.toString(), metadataPropertyName: it.key)
             profileSection.fields.add(profileField)
         }
         return [profileSection]
     }
-
-    @Override
-    void fromSections(List<ProfileSection> profileSections) {
-        profileSections.each {profileSection ->
-            profileSection.fields.each {field ->
-                String fieldName = knownFields.find { it == field.metadataPropertyName}
-                if(fieldName) {
-                    setField(fieldName, field.currentValue)
-                } else {
-                    log.error("Cannot match field: " + field.fieldName)
-                }
-            }
-        }
-    }
-
 }
