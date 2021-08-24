@@ -75,7 +75,7 @@ class Folder implements Container, Diffable<Folder> {
     }
 
     static mapping = {
-        parentFolder index: 'folder_parent_folder_idx'
+        parentFolder index: 'folder_parent_folder_idx', cascadeValidate: 'none'
         childFolders cascade: 'all-delete-orphan'
     }
 

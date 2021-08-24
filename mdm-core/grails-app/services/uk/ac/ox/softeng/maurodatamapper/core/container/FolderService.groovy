@@ -83,14 +83,14 @@ class FolderService extends ContainerService<Folder> {
 
     @Override
     List<Folder> getAll(Collection<UUID> containerIds) {
-        Folder.getAll(containerIds).findAll().collect { unwrapIfProxy(it) }
+        Folder.getAll(containerIds).findAll().collect {unwrapIfProxy(it)}
     }
 
     @Override
     List<Folder> findAllReadableContainersBySearchTerm(UserSecurityPolicyManager userSecurityPolicyManager, String searchTerm) {
         log.debug('Searching readable folders for search term in label')
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Folder)
-        Folder.luceneTreeLabelSearch(readableIds.collect { it.toString() }, searchTerm)
+        Folder.luceneTreeLabelSearch(readableIds.collect {it.toString()}, searchTerm)
     }
 
     @Override
@@ -142,7 +142,7 @@ class FolderService extends ContainerService<Folder> {
 
     @Override
     List<Folder> list() {
-        Folder.list().collect { unwrapIfProxy(it) }
+        Folder.list().collect {unwrapIfProxy(it)}
     }
 
     Long count() {
@@ -163,15 +163,15 @@ class FolderService extends ContainerService<Folder> {
             return
         }
         if (permanent) {
-            folder.childFolders.each { delete(it, permanent, false) }
-            modelServices.each { it.deleteAllInContainer(folder) }
+            folder.childFolders.each {delete(it, permanent, false)}
+            modelServices.each {it.deleteAllInContainer(folder)}
             if (securityPolicyManagerService) {
                 securityPolicyManagerService.removeSecurityForSecurableResource(folder, null)
             }
             folder.trackChanges()
             folder.delete(flush: flush)
         } else {
-            folder.childFolders.each { delete(it) }
+            folder.childFolders.each {delete(it)}
             delete(folder)
         }
     }
@@ -281,7 +281,7 @@ class FolderService extends ContainerService<Folder> {
 
     List<Model> findAllModelsInFolder(Folder folder) {
         if (!modelServices) return []
-        modelServices.collectMany { service ->
+        modelServices.collectMany {service ->
             service.findAllByFolderId(folder.id)
         } as List<Model>
     }
@@ -297,21 +297,20 @@ class FolderService extends ContainerService<Folder> {
         if (childFolderDiff) {
             // Created folders wont have any need for a model diff as all models will be new
             // Deleted folders wont have any need for a model diff as all models will not exist
-            childFolderDiff.modified.each { childDiff ->
+            childFolderDiff.modified.each {childDiff ->
                 loadModelsIntoFolderObjectDiff(childDiff, childDiff.left, childDiff.right, context)
             }
         }
     }
 
     ModelService findModelServiceForModel(Model model) {
-        ModelService modelService = modelServices.find { it.handles(model.class) }
+        ModelService modelService = modelServices.find {it.handles(model.class)}
         if (!modelService) throw new ApiInternalException('MSXX', "No model service to handle model [${model.domainType}]")
         modelService
     }
 
     Folder copyFolder(Folder original, Folder folderToCopyInto, User copier, boolean copyPermissions, String modelBranchName,
                       Version modelCopyDocVersion, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
-        log.debug('Copying folder {}', original.id)
         Folder copiedFolder = new Folder(deleted: false, parentFolder: folderToCopyInto)
         copyFolder(original, copiedFolder, original.label, copier, copyPermissions, modelBranchName, modelCopyDocVersion, throwErrors,
                    userSecurityPolicyManager)
@@ -320,7 +319,7 @@ class FolderService extends ContainerService<Folder> {
     Folder copyFolder(Folder original, Folder copiedFolder, String label, User copier, boolean copyPermissions, String modelBranchName,
                       Version modelCopyDocVersion, boolean throwErrors,
                       UserSecurityPolicyManager userSecurityPolicyManager) {
-        log.debug('Copying folder {}', original.id)
+        log.debug('Copying folder {}[{}]', original.id, original.label)
         copyFolderPass(CopyPassType.FIRST_PASS, original, copiedFolder, label, copier, copyPermissions, modelBranchName, modelCopyDocVersion,
                        throwErrors, userSecurityPolicyManager)
         copyFolderPass(CopyPassType.SECOND_PASS, original, copiedFolder, label, copier, copyPermissions, modelBranchName, modelCopyDocVersion,
@@ -335,7 +334,7 @@ class FolderService extends ContainerService<Folder> {
                           String modelBranchName,
                           Version modelCopyDocVersion, boolean throwErrors,
                           UserSecurityPolicyManager userSecurityPolicyManager) {
-
+        log.debug('{} performing copy folder pass for {}[{}]', copyPassType, original.id, original.label)
         if (copyPassType == CopyPassType.FIRST_PASS) {
             copiedFolder = copyBasicFolderInformation(original, copiedFolder, label, copier)
 
@@ -374,10 +373,10 @@ class FolderService extends ContainerService<Folder> {
         copy.label = label
         copy.description = original.description
 
-        metadataService.findAllByMultiFacetAwareItemId(original.id).each { copy.addToMetadata(it.namespace, it.key, it.value, copier.emailAddress) }
-        ruleService.findAllByMultiFacetAwareItemId(original.id).each { rule ->
+        metadataService.findAllByMultiFacetAwareItemId(original.id).each {copy.addToMetadata(it.namespace, it.key, it.value, copier.emailAddress)}
+        ruleService.findAllByMultiFacetAwareItemId(original.id).each {rule ->
             Rule copiedRule = new Rule(name: rule.name, description: rule.description, createdBy: copier.emailAddress)
-            rule.ruleRepresentations.each { ruleRepresentation ->
+            rule.ruleRepresentations.each {ruleRepresentation ->
                 copiedRule.addToRuleRepresentations(language: ruleRepresentation.language,
                                                     representation: ruleRepresentation.representation,
                                                     createdBy: copier.emailAddress)
@@ -385,7 +384,7 @@ class FolderService extends ContainerService<Folder> {
             copy.addToRules(copiedRule)
         }
 
-        semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id).each { link ->
+        semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id).each {link ->
             copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
                                     targetMultiFacetAwareItemId: link.targetMultiFacetAwareItemId,
                                     targetMultiFacetAwareItemDomainType: link.targetMultiFacetAwareItemDomainType,
@@ -411,8 +410,17 @@ class FolderService extends ContainerService<Folder> {
 
         List<Folder> folders = findAllByParentId(original.id)
         log.debug('{} copying {} sub folders inside folder', copyPassType, folders.size())
-        folders.each { childFolder ->
-            Folder childCopy = folderCopy.childFolders.find { it.label } ?: new Folder(parentFolder: folderCopy, deleted: false)
+        folders.each {childFolder ->
+            Folder childCopy
+            if (copyPassType == CopyPassType.FIRST_PASS) {
+                childCopy = new Folder(parentFolder: folderCopy, deleted: false)
+                folderCopy.addToChildFolders(childCopy)
+            } else {
+                childCopy = folderCopy.childFolders.find {it.label == childFolder.label}
+                if (!childCopy) {
+                    throw new ApiInternalException('FSXX', "${childCopy.label} does not exist inside ${folderCopy.label}")
+                }
+            }
             copyFolderPass(copyPassType, childFolder, childCopy, childFolder.label, copier, copyPermissions, branchName, copyDocVersion,
                            throwErrors, userSecurityPolicyManager)
         }
@@ -425,9 +433,9 @@ class FolderService extends ContainerService<Folder> {
                             Version copyDocVersion,
                             String branchName,
                             boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
-        modelServices.each { service ->
+        modelServices.each {service ->
             List<Model> originalModels = service.findAllByContainerId(originalFolder.id) as List<Model>
-            List<Model> copiedModels = originalModels.collect { Model originalModel ->
+            List<Model> copiedModels = originalModels.collect {Model originalModel ->
 
                 switch (copyPassType) {
                     case CopyPassType.FIRST_PASS:
@@ -440,6 +448,9 @@ class FolderService extends ContainerService<Folder> {
                     case CopyPassType.SECOND_PASS:
                         // Second pass work through all the models and update the links across models
                         Model copiedModel = service.findByFolderIdAndLabel(copiedFolder.id, "${originalModel.label}${labelSuffix}")
+                        if (!copiedModel) {
+                            throw new ApiInternalException('FSXX', "${originalModel.label}${labelSuffix} does not exist inside ${copiedFolder.label}")
+                        }
                         return service.updateCopiedCrossModelLinks(copiedModel, originalModel)
                     case CopyPassType.THIRD_PASS:
                         return service.findByFolderIdAndLabel(copiedFolder.id, "${originalModel.label}${labelSuffix}")
@@ -449,7 +460,7 @@ class FolderService extends ContainerService<Folder> {
 
             if (copyPassType == CopyPassType.FIRST_PASS) {
                 // We can't save until after all copied as the save clears the sessions
-                copiedModels.each { copy ->
+                copiedModels.each {copy ->
                     log.debug('Validating and saving model copy')
                     service.validate(copy)
                     if (copy.hasErrors()) {

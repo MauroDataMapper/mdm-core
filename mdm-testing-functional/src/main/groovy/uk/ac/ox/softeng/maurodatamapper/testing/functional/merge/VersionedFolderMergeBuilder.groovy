@@ -49,7 +49,7 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         String terminologyCa = terminologyPluginMergeBuilder.buildCommonAncestorTerminology(commonAncestorId)
         String codeSetCa = terminologyPluginMergeBuilder.buildCommonAncestorCodeSet(commonAncestorId, terminologyCa)
 
-        // Finalise and branch
+        // Finalise
         PUT("versionedFolders/$commonAncestorId/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
 
@@ -58,6 +58,49 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
             dataModelCaId   : dataModelCa,
             terminologyCaId : terminologyCa,
             codeSetCaId     : codeSetCa
+        ]
+    }
+
+    Map buildSubFolderModelsForBranching() {
+        loginEditor()
+        POST("versionedFolders", [
+            label: 'Functional Test VersionedFolder With Sub Folders'
+        ])
+        verifyResponse(CREATED, response)
+        String commonAncestorId = responseBody().id
+
+        POST("folders/${commonAncestorId}/folders", [
+            label: 'Sub Folder in VersionedFolder'
+        ])
+        verifyResponse(CREATED, response)
+        String subFolderId = responseBody().id
+        POST("folders/${subFolderId}/folders", [
+            label: 'Sub-Sub Folder in VersionedFolder'
+        ])
+        verifyResponse(CREATED, response)
+        String subSubFolderId = responseBody().id
+        POST("folders/${commonAncestorId}/folders", [
+            label: 'Sub Folder 2 in VersionedFolder'
+        ])
+        verifyResponse(CREATED, response)
+        String subFolder2Id = responseBody().id
+        String dataModelCaId = dataModelPluginMergeBuilder.buildCommonAncestorDataModel(commonAncestorId)
+        String terminologyCa = terminologyPluginMergeBuilder.buildCommonAncestorTerminology(subFolderId)
+        terminologyPluginMergeBuilder.buildCommonAncestorCodeSet(subSubFolderId, terminologyCa)
+        String dataModel2Id = dataModelPluginMergeBuilder.buildCommonAncestorDataModel(subFolder2Id, '2')
+        String dataModel3Id = dataModelPluginMergeBuilder.buildCommonAncestorDataModel(subSubFolderId, '3')
+
+        // Finalise
+        PUT("versionedFolders/$commonAncestorId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        [
+            commonAncestorId: commonAncestorId,
+            dataModelCaId   : dataModelCaId,
+            //            terminologyCaId : terminologyCa,
+            //            codeSetCaId     : codeSetCa,
+            dataModel2Id    : dataModel2Id,
+            dataModel3Id    : dataModel3Id,
         ]
     }
 

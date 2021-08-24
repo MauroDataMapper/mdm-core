@@ -39,9 +39,9 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         )
     }
 
-    String buildCommonAncestorDataModel(String folderId) {
+    String buildCommonAncestorDataModel(String folderId, String suffix = 1) {
         POST("folders/$folderId/dataModels", [
-            label: 'Functional Test DataModel 1'
+            label: "Functional Test DataModel ${suffix}".toString()
         ])
         verifyResponse(CREATED, response)
         String dataModel1Id = responseBody().id

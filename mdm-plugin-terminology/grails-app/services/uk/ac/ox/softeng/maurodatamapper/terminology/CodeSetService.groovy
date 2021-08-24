@@ -35,6 +35,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProv
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchData
 import uk.ac.ox.softeng.maurodatamapper.path.Path
+import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
@@ -509,12 +510,14 @@ class CodeSetService extends ModelService<CodeSet> {
         List<Term> terms = new ArrayList<>(copiedModel.terms)
         Path copiedCodeSetPath = getFullPathForModel(copiedModel)
         Path originalCodeSetPath = getFullPathForModel(originalModel)
-        terms.each { term ->
+        terms.each {term ->
 
             Terminology terminology = term.terminology
             Path fullContextTerminologyPath = getFullPathForModel(terminology)
             Path termPath = Path.from(terminology, term)
-            if (originalCodeSetPath.parent == fullContextTerminologyPath.parent) {
+            // Need to check if the CS is inside the same VF as the terminology
+            PathNode terminologyVersionedFolderPathNode = fullContextTerminologyPath.find {it.prefix == 'vf'}
+            if (terminologyVersionedFolderPathNode && originalCodeSetPath.any {it == terminologyVersionedFolderPathNode}) {
                 log.debug('Original codeset is inside the same context path as terminology for term [{}]', termPath)
                 Term branchedTerm = pathService.findResourceByPathFromRootResource(copiedModel, termPath,
                                                                                    copiedCodeSetPath.last().modelIdentifier) as Term

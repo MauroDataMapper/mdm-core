@@ -244,7 +244,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
 
     void finaliseFolderContents(Folder folder, User user, Version folderVersion, String folderVersionTag) {
-        log.debug('Recusing into folder and finalising it and its contents')
+        log.debug('Recursing into folder and finalising it and its contents')
         long start = System.currentTimeMillis()
 
         log.debug('Finalising models inside folder')
@@ -255,7 +255,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
             }
         }
 
-        List<Folder> folders = findAllByParentId(folder.id)
+        List<Folder> folders = folderService.findAllByParentId(folder.id)
         log.debug('Finalising {} sub folders inside folder', folders.size())
         folders.each {childFolder ->
             finaliseFolderContents(childFolder, user, folderVersion, folderVersionTag)
