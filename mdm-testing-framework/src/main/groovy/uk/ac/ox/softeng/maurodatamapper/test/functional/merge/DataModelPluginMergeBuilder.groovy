@@ -83,25 +83,25 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         dataModel1Id
     }
 
-    Map modifySourceDataModel(String source) {
+    Map modifySourceDataModel(String source, String suffix = '1', String pathing = '') {
         // Modify Source
         Map sourceMap = [
-            dataModelId                         : getIdFromPath(source, 'dm:Functional Test DataModel 1$source'),
-            existingClass                       : getIdFromPath(source, 'dm:Functional Test DataModel 1$source|dc:existingClass'),
+            dataModelId                         : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source"),
+            existingClass                       : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dc:existingClass"),
             deleteLeftOnlyFromExistingClass     :
-                getIdFromPath(source, 'dm:Functional Test DataModel 1$source|dc:existingClass|dc:deleteLeftOnlyFromExistingClass'),
-            deleteLeftOnly                      : getIdFromPath(source, 'dm:Functional Test DataModel 1$source|dc:deleteLeftOnly'),
-            modifyLeftOnly                      : getIdFromPath(source, 'dm:Functional Test DataModel 1$source|dc:modifyLeftOnly'),
-            deleteAndDelete                     : getIdFromPath(source, 'dm:Functional Test DataModel 1$source|dc:deleteAndDelete'),
-            deleteAndModify                     : getIdFromPath(source, 'dm:Functional Test DataModel 1$source|dc:deleteAndModify'),
-            modifyAndDelete                     : getIdFromPath(source, 'dm:Functional Test DataModel 1$source|dc:modifyAndDelete'),
+                getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dc:existingClass|dc:deleteLeftOnlyFromExistingClass"),
+            deleteLeftOnly                      : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dc:deleteLeftOnly"),
+            modifyLeftOnly                      : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dc:modifyLeftOnly"),
+            deleteAndDelete                     : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dc:deleteAndDelete"),
+            deleteAndModify                     : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dc:deleteAndModify"),
+            modifyAndDelete                     : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dc:modifyAndDelete"),
             modifyAndModifyReturningNoDifference:
-                getIdFromPath(source, 'dm:Functional Test DataModel 1$source|dc:modifyAndModifyReturningNoDifference'),
+                getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dc:modifyAndModifyReturningNoDifference"),
             modifyAndModifyReturningDifference  :
-                getIdFromPath(source, 'dm:Functional Test DataModel 1$source|dc:modifyAndModifyReturningDifference'),
-            metadataModifyOnSource              : getIdFromPath(source, 'dm:Functional Test DataModel 1$source|md:functional.test.modifyOnSource'),
-            metadataDeleteFromSource            : getIdFromPath(source, 'dm:Functional Test DataModel 1$source|md:functional.test.deleteFromSource'),
-            metadataModifyAndDelete             : getIdFromPath(source, 'dm:Functional Test DataModel 1$source|md:functional.test.modifyAndDelete'),
+                getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dc:modifyAndModifyReturningDifference"),
+            metadataModifyOnSource              : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|md:functional.test.modifyOnSource"),
+            metadataDeleteFromSource            : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|md:functional.test.deleteFromSource"),
+            metadataModifyAndDelete             : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|md:functional.test.modifyAndDelete"),
         ]
 
         DELETE("dataModels/$sourceMap.dataModelId/dataClasses/$sourceMap.deleteAndDelete")
@@ -149,25 +149,25 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         sourceMap
     }
 
-    Map modifyTargetDataModel(String target) {
+    Map modifyTargetDataModel(String target, String suffix = '1', String pathing = '') {
         // Modify Target
         Map targetMap = [
-            dataModelId                         : getIdFromPath(target, 'dm:Functional Test DataModel 1$main'),
-            existingClass                       : getIdFromPath(target, 'dm:Functional Test DataModel 1$main|dc:existingClass'),
-            deleteRightOnly                     : getIdFromPath(target, 'dm:Functional Test DataModel 1$main|dc:deleteRightOnly'),
-            modifyRightOnly                     : getIdFromPath(target, 'dm:Functional Test DataModel 1$main|dc:modifyRightOnly'),
+            dataModelId                         : getIdFromPath(target, "${pathing}dm:Functional Test DataModel ${suffix}\$main"),
+            existingClass                       : getIdFromPath(target, "${pathing}dm:Functional Test DataModel ${suffix}\$main|dc:existingClass"),
+            deleteRightOnly                     : getIdFromPath(target, "${pathing}dm:Functional Test DataModel ${suffix}\$main|dc:deleteRightOnly"),
+            modifyRightOnly                     : getIdFromPath(target, "${pathing}dm:Functional Test DataModel ${suffix}\$main|dc:modifyRightOnly"),
             deleteRightOnlyFromExistingClass    :
-                getIdFromPath(target, 'dm:Functional Test DataModel 1$main|dc:existingClass|dc:deleteRightOnlyFromExistingClass'),
-            deleteAndDelete                     : getIdFromPath(target, 'dm:Functional Test DataModel 1$main|dc:deleteAndDelete'),
-            deleteAndModify                     : getIdFromPath(target, 'dm:Functional Test DataModel 1$main|dc:deleteAndModify'),
-            modifyAndDelete                     : getIdFromPath(target, 'dm:Functional Test DataModel 1$main|dc:modifyAndDelete'),
+                getIdFromPath(target, "${pathing}dm:Functional Test DataModel ${suffix}\$main|dc:existingClass|dc:deleteRightOnlyFromExistingClass"),
+            deleteAndDelete                     : getIdFromPath(target, "${pathing}dm:Functional Test DataModel ${suffix}\$main|dc:deleteAndDelete"),
+            deleteAndModify                     : getIdFromPath(target, "${pathing}dm:Functional Test DataModel ${suffix}\$main|dc:deleteAndModify"),
+            modifyAndDelete                     : getIdFromPath(target, "${pathing}dm:Functional Test DataModel ${suffix}\$main|dc:modifyAndDelete"),
             modifyAndModifyReturningNoDifference:
-                getIdFromPath(target, 'dm:Functional Test DataModel 1$main|dc:modifyAndModifyReturningNoDifference'),
-            modifyAndModifyReturningDifference  : getIdFromPath(target, 'dm:Functional Test DataModel 1$main|dc:modifyAndModifyReturningDifference'),
-            deleteLeftOnly                      : getIdFromPath(target, 'dm:Functional Test DataModel 1$main|dc:deleteLeftOnly'),
-            modifyLeftOnly                      : getIdFromPath(target, 'dm:Functional Test DataModel 1$main|dc:modifyLeftOnly'),
-            deleteLeftOnlyFromExistingClass     : getIdFromPath(target, 'dm:Functional Test DataModel 1$main|dc:deleteLeftOnlyFromExistingClass'),
-            metadataModifyAndDelete             : getIdFromPath(target, 'dm:Functional Test DataModel 1$main|md:functional.test.modifyAndDelete'),
+                getIdFromPath(target, "${pathing}dm:Functional Test DataModel ${suffix}\$main|dc:modifyAndModifyReturningNoDifference"),
+            modifyAndModifyReturningDifference  : getIdFromPath(target, "${pathing}dm:Functional Test DataModel ${suffix}\$main|dc:modifyAndModifyReturningDifference"),
+            deleteLeftOnly                      : getIdFromPath(target, "${pathing}dm:Functional Test DataModel ${suffix}\$main|dc:deleteLeftOnly"),
+            modifyLeftOnly                      : getIdFromPath(target, "${pathing}dm:Functional Test DataModel ${suffix}\$main|dc:modifyLeftOnly"),
+            deleteLeftOnlyFromExistingClass     : getIdFromPath(target, "${pathing}dm:Functional Test DataModel ${suffix}\$main|dc:deleteLeftOnlyFromExistingClass"),
+            metadataModifyAndDelete             : getIdFromPath(target, "${pathing}dm:Functional Test DataModel ${suffix}\$main|md:functional.test.modifyAndDelete"),
         ]
 
         DELETE("dataModels/$targetMap.dataModelId/dataClasses/$targetMap.existingClass/dataClasses/$targetMap.deleteRightOnlyFromExistingClass")

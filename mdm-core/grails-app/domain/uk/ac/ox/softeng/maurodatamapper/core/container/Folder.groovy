@@ -54,12 +54,12 @@ class Folder implements Container, Diffable<Folder> {
     Folder parentFolder
 
     static hasMany = [
-        childFolders: Folder,
-        metadata        : Metadata,
-        annotations     : Annotation,
-        semanticLinks   : SemanticLink,
-        referenceFiles  : ReferenceFile,
-        rules           : Rule
+        childFolders  : Folder,
+        metadata      : Metadata,
+        annotations   : Annotation,
+        semanticLinks : SemanticLink,
+        referenceFiles: ReferenceFile,
+        rules         : Rule
     ]
 
     static belongsTo = [Folder]
@@ -67,7 +67,7 @@ class Folder implements Container, Diffable<Folder> {
     static constraints = {
         CallableConstraints.call(CreatorAwareConstraints, delegate)
         CallableConstraints.call(InformationAwareConstraints, delegate)
-        label validator: { val, obj -> new FolderLabelValidator(obj).isValid(val) }
+        label validator: {val, obj -> new FolderLabelValidator(obj).isValid(val)}
         parentFolder nullable: true
         metadata validator: {val, obj ->
             if (val) new UniqueValuesValidator('namespace:key').isValid(val.groupBy {"${it.namespace}:${it.key}"})
@@ -119,7 +119,8 @@ class Folder implements Container, Diffable<Folder> {
             .appendList(Annotation, 'annotations', lhs.annotations, rhs.annotations)
             .appendList(Rule, 'rule', lhs.rules, rhs.rules)
             .appendBoolean('deleted', lhs.deleted, rhs.deleted)
-            .appendList(Folder, 'folders', lhs.childFolders, rhs.childFolders)
+        // Add no matter what so we can iterate through to add models
+            .appendList(Folder, 'folders', lhs.childFolders, rhs.childFolders, null, true)
     }
 
     @Override
@@ -144,7 +145,7 @@ class Folder implements Container, Diffable<Folder> {
     @Override
     def beforeValidate() {
         buildPath()
-        childFolders.each { it.beforeValidate() }
+        childFolders.each {it.beforeValidate()}
     }
 
     @Override
@@ -204,7 +205,7 @@ class Folder implements Container, Diffable<Folder> {
         by()
             .isNotNull('path')
             .ne('path', '')
-            .findAll { f ->
+            .findAll {f ->
                 ids.any {
                     it in f.path.split('/')
                 }

@@ -86,7 +86,7 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         String subFolder2Id = responseBody().id
         String dataModelCaId = dataModelPluginMergeBuilder.buildCommonAncestorDataModel(commonAncestorId)
         String terminologyCa = terminologyPluginMergeBuilder.buildCommonAncestorTerminology(subFolderId)
-        terminologyPluginMergeBuilder.buildCommonAncestorCodeSet(subSubFolderId, terminologyCa)
+        String codeSetCa = terminologyPluginMergeBuilder.buildCommonAncestorCodeSet(subSubFolderId, terminologyCa)
         String dataModel2Id = dataModelPluginMergeBuilder.buildCommonAncestorDataModel(subFolder2Id, '2')
         String dataModel3Id = dataModelPluginMergeBuilder.buildCommonAncestorDataModel(subSubFolderId, '3')
 
@@ -97,8 +97,8 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         [
             commonAncestorId: commonAncestorId,
             dataModelCaId   : dataModelCaId,
-            //            terminologyCaId : terminologyCa,
-            //            codeSetCaId     : codeSetCa,
+            terminologyCaId : terminologyCa,
+            codeSetCaId     : codeSetCa,
             dataModel2Id    : dataModel2Id,
             dataModel3Id    : dataModel3Id,
         ]
@@ -124,6 +124,75 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         if (readLhs) addReaderShare(leftId)
         logout()
         new TestMergeData(commonAncestor: id, source: leftId, target: mainId)
+    }
+
+    TestMergeData buildSubFolderModelsForMerging() {
+        loginEditor()
+
+        Map data = buildSubFolderModelsForBranching()
+        PUT("versionedFolders/$data.commonAncestorId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String target = responseBody().id
+        addReaderShare(target)
+        PUT("versionedFolders/$data.commonAncestorId/newBranchModelVersion", [branchName: 'source'])
+        verifyResponse CREATED, response
+        String source = responseBody().id
+        addReaderShare(source)
+
+        Map<String, Object> sourceMap = [:]
+        Map<String, Object> targetMap = [:]
+
+        logout()
+        loginEditor()
+
+        sourceMap.dataModel1 = dataModelPluginMergeBuilder.modifySourceDataModel(source)
+        targetMap.dataModel1 = dataModelPluginMergeBuilder.modifyTargetDataModel(target)
+
+        sourceMap.dataModel2 = dataModelPluginMergeBuilder.modifySourceDataModel(source, '2', 'fo:Sub Folder 2 in VersionedFolder|')
+        targetMap.dataModel2 = dataModelPluginMergeBuilder.modifyTargetDataModel(target, '2', 'fo:Sub Folder 2 in VersionedFolder|')
+
+        sourceMap.dataModel3 = dataModelPluginMergeBuilder.modifySourceDataModel(source, '3', 'fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|')
+        targetMap.dataModel3 = dataModelPluginMergeBuilder.modifyTargetDataModel(target, '3', 'fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|')
+
+        sourceMap.terminology = terminologyPluginMergeBuilder.modifySourceTerminology(source, 'fo:Sub Folder in VersionedFolder|')
+        targetMap.terminology = terminologyPluginMergeBuilder.modifyTargetTerminology(target, 'fo:Sub Folder in VersionedFolder|')
+
+        sourceMap.codeSet = terminologyPluginMergeBuilder.modifySourceCodeSet(source, '$source', true,
+                                                                              'fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|',
+                                                                              'fo:Sub Folder in VersionedFolder|')
+        targetMap.codeSet = terminologyPluginMergeBuilder.modifyTargetCodeSet(target, '$main', true,
+                                                                              'fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|',
+                                                                              'fo:Sub Folder in VersionedFolder|')
+        sourceMap.subFolderId = getIdFromPath(source, 'fo:Sub Folder in VersionedFolder')
+        sourceMap.subFolder2Id = getIdFromPath(source, 'fo:Sub Folder 2 in VersionedFolder')
+        sourceMap.subSubFolderId = getIdFromPath(source, 'fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder')
+
+        targetMap.subFolderId = getIdFromPath(target, 'fo:Sub Folder in VersionedFolder')
+        targetMap.subFolder2Id = getIdFromPath(target, 'fo:Sub Folder 2 in VersionedFolder')
+        targetMap.subSubFolderId = getIdFromPath(target, 'fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder')
+
+        PUT("folders/${sourceMap.subFolderId}", [description: 'source description'])
+        //        PUT("folders/${sourceMap.subSubFolderId}", [description: 'source sub sub description'])
+
+
+        PUT("folders/${targetMap.subFolderId}", [description: 'target description'])
+        //        PUT("folders/${targetMap.subSubFolderId}", [description: 'target sub sub description'])
+
+        PUT("versionedFolders/$source", [description: 'source description on the versioned folder'])
+        verifyResponse OK, response
+        PUT("versionedFolders/$target", [description: 'Target modified description'])
+        verifyResponse OK, response
+
+
+        logout()
+
+
+        new TestMergeData(commonAncestor: data.commonAncestorId,
+                          source: source,
+                          target: target,
+                          sourceMap: sourceMap,
+                          targetMap: targetMap
+        )
     }
 
     TestMergeData buildComplexModelsForMerging() {
@@ -530,6 +599,581 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
       "sourceValue": "Description",
       "targetValue": null,
       "commonAncestorValue": null,
+      "isMergeConflict": false,
+      "type": "modification"
+    }
+  ]
+}'''
+    }
+
+    static String getExpectedSubFolderMergeDiffJson() {
+        '''{
+  "sourceId": "${json-unit.matches:id}",
+  "targetId": "${json-unit.matches:id}",
+  "path": "vf:Functional Test VersionedFolder With Sub Folders$source",
+  "label": "Functional Test VersionedFolder With Sub Folders",
+  "count": 74,
+  "diffs": [
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source@description",
+      "sourceValue": "source description on the versioned folder",
+      "targetValue": "Target modified description",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder 2 in VersionedFolder|dm:Functional Test DataModel 2$source@description",
+      "sourceValue": "DescriptionLeft",
+      "targetValue": "DescriptionRight",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder 2 in VersionedFolder|dm:Functional Test DataModel 2$source|dc:addLeftOnly",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder 2 in VersionedFolder|dm:Functional Test DataModel 2$source|dc:modifyAndDelete",
+      "isMergeConflict": true,
+      "isSourceModificationAndTargetDeletion": true,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder 2 in VersionedFolder|dm:Functional Test DataModel 2$source|dc:deleteAndModify",
+      "isMergeConflict": true,
+      "isSourceDeletionAndTargetModification": true,
+      "type": "deletion"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder 2 in VersionedFolder|dm:Functional Test DataModel 2$source|dc:deleteLeftOnly",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder 2 in VersionedFolder|dm:Functional Test DataModel 
+      2$source|dc:addAndAddReturningDifference@description",
+      "sourceValue": "DescriptionLeft",
+      "targetValue": "DescriptionRight",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder 2 in VersionedFolder|dm:Functional Test DataModel 
+      2$source|dc:existingClass|dc:addLeftToExistingClass",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder 2 in VersionedFolder|dm:Functional Test DataModel 
+      2$source|dc:existingClass|dc:deleteLeftOnlyFromExistingClass",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder 2 in VersionedFolder|dm:Functional Test DataModel 
+      2$source|dc:modifyAndModifyReturningDifference@description",
+      "sourceValue": "DescriptionLeft",
+      "targetValue": "DescriptionRight",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder 2 in VersionedFolder|dm:Functional Test DataModel 
+      2$source|dc:modifyLeftOnly@description",
+      "sourceValue": "Description",
+      "targetValue": null,
+      "commonAncestorValue": null,
+      "isMergeConflict": false,
+      "type": "modification"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder 2 in VersionedFolder|dm:Functional Test DataModel 2$source|md:functional.test
+      .addToSourceOnly",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder 2 in VersionedFolder|dm:Functional Test DataModel 2$source|md:functional.test
+      .modifyAndDelete",
+      "isMergeConflict": true,
+      "isSourceModificationAndTargetDeletion": true,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder 2 in VersionedFolder|dm:Functional Test DataModel 2$source|md:functional.test
+      .deleteFromSource",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "fieldName": "value",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder 2 in VersionedFolder|dm:Functional Test DataModel 2$source|md:functional.test
+      .modifyOnSource@value",
+      "sourceValue": "source has modified this",
+      "targetValue": "some original value",
+      "commonAncestorValue": "some original value",
+      "isMergeConflict": false,
+      "type": "modification"
+    },
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder@description",
+      "sourceValue": "source description",
+      "targetValue": "target description",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|cs:Functional Test CodeSet 
+      1$source@description",
+      "sourceValue": "DescriptionLeft",
+      "targetValue": null,
+      "commonAncestorValue": null,
+      "isMergeConflict": false,
+      "type": "modification"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|cs:Functional Test CodeSet 
+      1$source|md:functional.test.addToSourceOnly",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|cs:Functional Test CodeSet 
+      1$source|md:functional.test.modifyAndDelete",
+      "isMergeConflict": true,
+      "isSourceModificationAndTargetDeletion": true,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|cs:Functional Test CodeSet 
+      1$source|md:functional.test.deleteFromSource",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "fieldName": "value",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|cs:Functional Test CodeSet 
+      1$source|md:functional.test.modifyOnSource@value",
+      "sourceValue": "source has modified this",
+      "targetValue": "some original value",
+      "commonAncestorValue": "some original value",
+      "isMergeConflict": false,
+      "type": "modification"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|cs:Functional Test CodeSet 
+      1$source|te:Functional Test Terminology 1$source|tm:ALO",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|cs:Functional Test CodeSet 
+      1$source|te:Functional Test Terminology 1$source|tm:ALOCS",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|cs:Functional Test CodeSet 
+      1$source|te:Functional Test Terminology 1$1.0.0|tm:DAM",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|cs:Functional Test CodeSet 
+      1$source|te:Functional Test Terminology 1$1.0.0|tm:DLO",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|cs:Functional Test CodeSet 
+      1$source|te:Functional Test Terminology 1$1.0.0|tm:DLOCS",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|dm:Functional Test DataModel
+       3$source@description",
+      "sourceValue": "DescriptionLeft",
+      "targetValue": "DescriptionRight",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|dm:Functional Test DataModel
+       3$source|dc:addLeftOnly",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|dm:Functional Test DataModel
+       3$source|dc:modifyAndDelete",
+      "isMergeConflict": true,
+      "isSourceModificationAndTargetDeletion": true,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|dm:Functional Test DataModel
+       3$source|dc:deleteAndModify",
+      "isMergeConflict": true,
+      "isSourceDeletionAndTargetModification": true,
+      "type": "deletion"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|dm:Functional Test DataModel
+       3$source|dc:deleteLeftOnly",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|dm:Functional Test DataModel
+       3$source|dc:addAndAddReturningDifference@description",
+      "sourceValue": "DescriptionLeft",
+      "targetValue": "DescriptionRight",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|dm:Functional Test DataModel
+       3$source|dc:existingClass|dc:addLeftToExistingClass",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|dm:Functional Test DataModel
+       3$source|dc:existingClass|dc:deleteLeftOnlyFromExistingClass",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|dm:Functional Test DataModel
+       3$source|dc:modifyAndModifyReturningDifference@description",
+      "sourceValue": "DescriptionLeft",
+      "targetValue": "DescriptionRight",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|dm:Functional Test DataModel
+       3$source|dc:modifyLeftOnly@description",
+      "sourceValue": "Description",
+      "targetValue": null,
+      "commonAncestorValue": null,
+      "isMergeConflict": false,
+      "type": "modification"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|dm:Functional Test DataModel
+       3$source|md:functional.test.addToSourceOnly",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|dm:Functional Test DataModel
+       3$source|md:functional.test.modifyAndDelete",
+      "isMergeConflict": true,
+      "isSourceModificationAndTargetDeletion": true,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|dm:Functional Test DataModel
+       3$source|md:functional.test.deleteFromSource",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "fieldName": "value",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|dm:Functional Test DataModel
+       3$source|md:functional.test.modifyOnSource@value",
+      "sourceValue": "source has modified this",
+      "targetValue": "some original value",
+      "commonAncestorValue": "some original value",
+      "isMergeConflict": false,
+      "type": "modification"
+    },
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|te:Functional Test Terminology 1$source@description",
+      "sourceValue": "DescriptionLeft",
+      "targetValue": "DescriptionRight",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|te:Functional Test Terminology 1$source|md:functional.test
+      .addToSourceOnly",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|te:Functional Test Terminology 1$source|md:functional.test
+      .modifyAndDelete",
+      "isMergeConflict": true,
+      "isSourceModificationAndTargetDeletion": true,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|te:Functional Test Terminology 1$source|md:functional.test
+      .deleteFromSource",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "fieldName": "value",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|te:Functional Test Terminology 1$source|md:functional.test
+      .modifyOnSource@value",
+      "sourceValue": "source has modified this",
+      "targetValue": "some original value",
+      "commonAncestorValue": "some original value",
+      "isMergeConflict": false,
+      "type": "modification"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|te:Functional Test Terminology 1$source|trt:sameActionAs",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|te:Functional Test Terminology 1$source|trt:oppositeActionTo",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|te:Functional Test Terminology 1$source|trt:inverseOf@description",
+      "sourceValue": "inverseOf(Modified)",
+      "targetValue": null,
+      "commonAncestorValue": null,
+      "isMergeConflict": false,
+      "type": "modification"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|te:Functional Test Terminology 1$source|tr:ALO
+      .sameSourceActionType.SALO",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|te:Functional Test Terminology 1$source|tr:ALO
+      .similarSourceAction.AAARD",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|te:Functional Test Terminology 1$source|tr:MLO
+      .similarSourceAction.MAMRD",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|te:Functional Test Terminology 1$source|tr:SMLO
+      .sameSourceActionType.MLO@description",
+      "sourceValue": "NewDescription",
+      "targetValue": null,
+      "commonAncestorValue": null,
+      "isMergeConflict": false,
+      "type": "modification"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|te:Functional Test Terminology 1$source|tm:ALO",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|te:Functional Test Terminology 1$source|tm:MAD",
+      "isMergeConflict": true,
+      "isSourceModificationAndTargetDeletion": true,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|te:Functional Test Terminology 1$source|tm:SALO",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|te:Functional Test Terminology 1$source|tm:DAM",
+      "isMergeConflict": true,
+      "isSourceDeletionAndTargetModification": true,
+      "type": "deletion"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|te:Functional Test Terminology 1$source|tm:DLO",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|te:Functional Test Terminology 1$source|tm:AAARD@description",
+      "sourceValue": "DescriptionLeft",
+      "targetValue": "DescriptionRight",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|te:Functional Test Terminology 1$source|tm:MAMRD@description",
+      "sourceValue": "DescriptionLeft",
+      "targetValue": "DescriptionRight",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|te:Functional Test Terminology 1$source|tm:MLO@description",
+      "sourceValue": "Description",
+      "targetValue": null,
+      "commonAncestorValue": null,
+      "isMergeConflict": false,
+      "type": "modification"
+    },
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|dm:Functional Test DataModel 1$source@description",
+      "sourceValue": "DescriptionLeft",
+      "targetValue": "DescriptionRight",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|dm:Functional Test DataModel 1$source|dc:addLeftOnly",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|dm:Functional Test DataModel 1$source|dc:modifyAndDelete",
+      "isMergeConflict": true,
+      "isSourceModificationAndTargetDeletion": true,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|dm:Functional Test DataModel 1$source|dc:deleteAndModify",
+      "isMergeConflict": true,
+      "isSourceDeletionAndTargetModification": true,
+      "type": "deletion"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|dm:Functional Test DataModel 1$source|dc:deleteLeftOnly",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|dm:Functional Test DataModel 1$source|dc:addAndAddReturningDifference@description",
+      "sourceValue": "DescriptionLeft",
+      "targetValue": "DescriptionRight",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|dm:Functional Test DataModel 1$source|dc:existingClass|dc:addLeftToExistingClass",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|dm:Functional Test DataModel 1$source|dc:existingClass|dc:deleteLeftOnlyFromExistingClass",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|dm:Functional Test DataModel 1$source|dc:modifyAndModifyReturningDifference@description",
+      "sourceValue": "DescriptionLeft",
+      "targetValue": "DescriptionRight",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "fieldName": "description",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|dm:Functional Test DataModel 1$source|dc:modifyLeftOnly@description",
+      "sourceValue": "Description",
+      "targetValue": null,
+      "commonAncestorValue": null,
+      "isMergeConflict": false,
+      "type": "modification"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|dm:Functional Test DataModel 1$source|md:functional.test.addToSourceOnly",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|dm:Functional Test DataModel 1$source|md:functional.test.modifyAndDelete",
+      "isMergeConflict": true,
+      "isSourceModificationAndTargetDeletion": true,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|dm:Functional Test DataModel 1$source|md:functional.test.deleteFromSource",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "fieldName": "value",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|dm:Functional Test DataModel 1$source|md:functional.test.modifyOnSource@value",
+      "sourceValue": "source has modified this",
+      "targetValue": "some original value",
+      "commonAncestorValue": "some original value",
       "isMergeConflict": false,
       "type": "modification"
     }

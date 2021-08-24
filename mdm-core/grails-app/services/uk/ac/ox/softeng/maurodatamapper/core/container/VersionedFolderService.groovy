@@ -675,6 +675,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     }
 
     ObjectDiff<VersionedFolder> getDiffForVersionedFolders(VersionedFolder thisVersionedFolder, VersionedFolder otherVersionedFolder, String contentContext = 'none') {
+        log.debug('Obtaining diff for {} <> {}', thisVersionedFolder.diffIdentifier, otherVersionedFolder.diffIdentifier)
         ObjectDiff<VersionedFolder> coreDiff = thisVersionedFolder.diff(otherVersionedFolder, 'none')
         folderService.loadModelsIntoFolderObjectDiff(coreDiff, thisVersionedFolder, otherVersionedFolder, contentContext)
         coreDiff

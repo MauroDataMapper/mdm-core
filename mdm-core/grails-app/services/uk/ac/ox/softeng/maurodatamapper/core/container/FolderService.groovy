@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.container
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ArrayDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
@@ -43,6 +44,8 @@ import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
+
+import static uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder.arrayDiff
 
 @Transactional
 @Slf4j
@@ -287,18 +290,55 @@ class FolderService extends ContainerService<Folder> {
     }
 
     def <T extends Folder> void loadModelsIntoFolderObjectDiff(ObjectDiff<T> diff, Folder leftHandSide, Folder rightHandSide, String context) {
-        List<Model> thisModels = findAllModelsInFolder(leftHandSide)
-        List<Model> thatModels = findAllModelsInFolder(rightHandSide)
-        diff.appendList(Model, 'models', thisModels, thatModels, context)
+        log.debug('Loading models into folder object diff for [{}] <> [{}] under context {}', leftHandSide.label, rightHandSide.label, context)
+        List<Model> lhsModels = findAllModelsInFolder(leftHandSide)
+        List<Model> rhsModels = findAllModelsInFolder(rightHandSide)
+        log.debug("{} models on LHS <> {} models on RHS", lhsModels.size(), rhsModels.size())
+        diff.appendList(Model, 'models', lhsModels, rhsModels, context)
 
         // Recurse into child folder diffs
-        ArrayDiff<Folder> childFolderDiff = diff.diffs.find {it.fieldName == 'folders'}
+        ArrayDiff<Folder> childFolderDiff = diff.diffs.find {it.fieldName == 'folders'} as ArrayDiff<Folder>
 
-        if (childFolderDiff) {
+        Collection<Folder> lhsFolders = childFolderDiff.left
+        Collection<Folder> rhsFolders = childFolderDiff.right
+        log.debug("{} child folders on LHS <> {} child folders on RHS", lhsFolders.size(), rhsFolders.size())
+
+        if (lhsFolders || rhsFolders) {
+            log.debug('Loading child folder model content diffs')
             // Created folders wont have any need for a model diff as all models will be new
             // Deleted folders wont have any need for a model diff as all models will not exist
-            childFolderDiff.modified.each {childDiff ->
-                loadModelsIntoFolderObjectDiff(childDiff, childDiff.left, childDiff.right, context)
+            lhsFolders.each {lhsFolder ->
+
+                if (childFolderDiff.created.any {it.createdIdentifier == lhsFolder.diffIdentifier} ||
+                    childFolderDiff.deleted.any {it.deletedIdentifier == lhsFolder.diffIdentifier}) {
+                    return
+                }
+
+                boolean objectDiffAlreadyExists = true
+                ObjectDiff<Folder> objectDiff = childFolderDiff.modified.find {it.leftIdentifier == lhsFolder.diffIdentifier}
+
+                // If there are no diffs at the folder level then there wont be an object diff so we create an empty basic one to load the models into
+                if (!objectDiff) {
+                    objectDiffAlreadyExists = false
+                    // There has to be a RHS otherwise the LHS would be in created or deleted in whcih case we've already returned from this loop
+                    // There are no differences otherwise they'd be in the modified list so just create an empty diff with an empty array diff on the folders field
+                    Folder rhsFolder = rhsFolders.find {it.diffIdentifier == lhsFolder.diffIdentifier}
+                    objectDiff = DiffBuilder.objectDiff(Folder)
+                        .leftHandSide(lhsFolder.id.toString(), lhsFolder)
+                        .rightHandSide(rhsFolder.id.toString(), rhsFolder)
+                        .append(arrayDiff(lhsFolder.childFolders.class)
+                                    .fieldName('folders')
+                                    .leftHandSide(lhsFolder.childFolders ?: [])
+                                    .rightHandSide(rhsFolder.childFolders ?: []))
+                }
+
+                // Need to make sure the models are diffed properly as contained inside a versioned diff
+                loadModelsIntoFolderObjectDiff(objectDiff.asVersionedDiff(), objectDiff.left, objectDiff.right, context)
+
+                // If the object diff didnt exist and the one we created has diffs then make sure its added to the modified list
+                if (!objectDiffAlreadyExists && objectDiff.getNumberOfDiffs()) {
+                    childFolderDiff.modified << objectDiff
+                }
             }
         }
     }
@@ -488,4 +528,5 @@ class FolderService extends ContainerService<Folder> {
         }
         Path.from(folder)
     }
+
 }

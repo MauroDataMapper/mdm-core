@@ -40,6 +40,8 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
 
     String leftId
     String rightId
+    boolean versionedDiff
+
 
     ObjectDiff(Class<O> targetClass) {
         super(targetClass)
@@ -82,7 +84,7 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
     }
 
     boolean isVersionedDiff() {
-        Path.from(left.pathPrefix, left.pathIdentifier).first().modelIdentifier
+        versionedDiff ?: Path.from(left.pathPrefix, left.pathIdentifier).first().modelIdentifier
     }
 
     ObjectDiff<O> leftHandSide(String leftId, O lhs) {
@@ -94,6 +96,11 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
     ObjectDiff<O> rightHandSide(String rightId, O rhs) {
         rightHandSide(rhs)
         this.rightId = rightId
+        this
+    }
+
+    ObjectDiff<O> asVersionedDiff() {
+        versionedDiff = true
         this
     }
 
@@ -114,20 +121,20 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
     }
 
     def <K extends Diffable> ObjectDiff<O> appendList(Class<K> diffableClass, String fieldName,
-                                                      Collection<K> lhs, Collection<K> rhs, String context = null) throws ApiDiffException {
+                                                      Collection<K> lhs, Collection<K> rhs, String context = null,
+                                                      boolean addIfEmpty = false) throws ApiDiffException {
 
         validateFieldNameNotNull(fieldName)
-
-        // If no lhs or rhs then nothing to compare
-        if (!lhs && !rhs) return this
 
         List<K> diffableList = []
 
         ArrayDiff<K> diff = arrayDiff(diffableList.class)
             .fieldName(fieldName)
-            .leftHandSide(lhs)
-            .rightHandSide(rhs) as ArrayDiff<K>
+            .leftHandSide(lhs ?: [])
+            .rightHandSide(rhs ?: []) as ArrayDiff<K>
 
+        // If no lhs or rhs then nothing to compare
+        if (!lhs && !rhs) return addIfEmpty ? append(diff) : this
 
         // If no lhs then all rhs have been created/added
         if (!lhs) {
@@ -177,7 +184,7 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
             }
         }
 
-        if (created || deleted || modified) {
+        if (created || deleted || modified || addIfEmpty) {
             append(diff.createdObjects(created)
                        .deletedObjects(deleted)
                        .withModifiedDiffs(modified))

@@ -2237,6 +2237,21 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         builder.cleanupTestMergeData(mergeData)
     }
 
+    void 'MD06 : test finding merge difference of two complex sub folder versioned folders (as reader)'() {
+        given:
+        TestMergeData mergeData = builder.buildSubFolderModelsForMerging()
+
+        when:
+        loginReader()
+        GET("$mergeData.source/mergeDiff/$mergeData.target", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, VersionedFolderMergeBuilder.getExpectedSubFolderMergeDiffJson()
+
+        cleanup:
+        builder.cleanupTestMergeData(mergeData)
+    }
+
     void 'MI01 : test merge into of two versioned folders (as not logged in)'() {
         given:
         TestMergeData mergeData = builder.buildSimpleVersionedFoldersForMerging()

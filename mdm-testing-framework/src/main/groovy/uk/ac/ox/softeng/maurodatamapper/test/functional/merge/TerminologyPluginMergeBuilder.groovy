@@ -4,6 +4,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwa
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.BaseTestMergeBuilder
 
+import grails.gorm.transactions.Transactional
+
 import java.nio.charset.Charset
 
 import static io.micronaut.http.HttpStatus.CREATED
@@ -161,25 +163,25 @@ class TerminologyPluginMergeBuilder extends BaseTestMergeBuilder {
         baseTerminology
     }
 
-    Map modifySourceTerminology(String source) {
+    Map modifySourceTerminology(String source, String pathing = '') {
         // Modify Source
         Map sourceMap = [
-            terminologyId                             : getIdFromPath(source, 'te:Functional Test Terminology 1$source'),
-            deleteLeftOnly                            : getIdFromPath(source, 'te:Functional Test Terminology 1$source|tm:DLO'),
-            modifyLeftOnly                            : getIdFromPath(source, 'te:Functional Test Terminology 1$source|tm:MLO'),
-            secondModifyLeftOnly                      : getIdFromPath(source, 'te:Functional Test Terminology 1$source|tm:SMLO'),
-            deleteAndModify                           : getIdFromPath(source, 'te:Functional Test Terminology 1$source|tm:DAM'),
-            modifyAndDelete                           : getIdFromPath(source, 'te:Functional Test Terminology 1$source|tm:MAD'),
-            modifyAndModifyReturningDifference        : getIdFromPath(source, 'te:Functional Test Terminology 1$source|tm:MAMRD'),
-            oppositeActionTo                          : getIdFromPath(source, 'te:Functional Test Terminology 1$source|trt:oppositeActionTo'),
-            inverseOf                                 : getIdFromPath(source, 'te:Functional Test Terminology 1$source|trt:inverseOf'),
-            sameSourceActionType                      : getIdFromPath(source, 'te:Functional Test Terminology 1$source|trt:sameSourceActionType'),
-            similarSourceAction                       : getIdFromPath(source, 'te:Functional Test Terminology 1$source|trt:similarSourceAction'),
-            similarSourceActionOnModifyLeftOnly       : getIdFromPath(source, 'te:Functional Test Terminology 1$source|tr:MLO.similarSourceAction.MAMRD'),
-            sameSourceActionTypeOnSecondModifyLeftOnly: getIdFromPath(source, 'te:Functional Test Terminology 1$source|tr:SMLO.sameSourceActionType.MLO'),
-            metadataModifyOnSource                    : getIdFromPath(source, 'te:Functional Test Terminology 1$source|md:functional.test.modifyOnSource'),
-            metadataDeleteFromSource                  : getIdFromPath(source, 'te:Functional Test Terminology 1$source|md:functional.test.deleteFromSource'),
-            metadataModifyAndDelete                   : getIdFromPath(source, 'te:Functional Test Terminology 1$source|md:functional.test.modifyAndDelete'),
+            terminologyId                             : getIdFromPath(source, "${pathing}te:Functional Test Terminology 1\$source"),
+            deleteLeftOnly                            : getIdFromPath(source, "${pathing}te:Functional Test Terminology 1\$source|tm:DLO"),
+            modifyLeftOnly                            : getIdFromPath(source, "${pathing}te:Functional Test Terminology 1\$source|tm:MLO"),
+            secondModifyLeftOnly                      : getIdFromPath(source, "${pathing}te:Functional Test Terminology 1\$source|tm:SMLO"),
+            deleteAndModify                           : getIdFromPath(source, "${pathing}te:Functional Test Terminology 1\$source|tm:DAM"),
+            modifyAndDelete                           : getIdFromPath(source, "${pathing}te:Functional Test Terminology 1\$source|tm:MAD"),
+            modifyAndModifyReturningDifference        : getIdFromPath(source, "${pathing}te:Functional Test Terminology 1\$source|tm:MAMRD"),
+            oppositeActionTo                          : getIdFromPath(source, "${pathing}te:Functional Test Terminology 1\$source|trt:oppositeActionTo"),
+            inverseOf                                 : getIdFromPath(source, "${pathing}te:Functional Test Terminology 1\$source|trt:inverseOf"),
+            sameSourceActionType                      : getIdFromPath(source, "${pathing}te:Functional Test Terminology 1\$source|trt:sameSourceActionType"),
+            similarSourceAction                       : getIdFromPath(source, "${pathing}te:Functional Test Terminology 1\$source|trt:similarSourceAction"),
+            similarSourceActionOnModifyLeftOnly       : getIdFromPath(source, "${pathing}te:Functional Test Terminology 1\$source|tr:MLO.similarSourceAction.MAMRD"),
+            sameSourceActionTypeOnSecondModifyLeftOnly: getIdFromPath(source, "${pathing}te:Functional Test Terminology 1\$source|tr:SMLO.sameSourceActionType.MLO"),
+            metadataModifyOnSource                    : getIdFromPath(source, "${pathing}te:Functional Test Terminology 1\$source|md:functional.test.modifyOnSource"),
+            metadataDeleteFromSource                  : getIdFromPath(source, "${pathing}te:Functional Test Terminology 1\$source|md:functional.test.deleteFromSource"),
+            metadataModifyAndDelete                   : getIdFromPath(source, "${pathing}te:Functional Test Terminology 1\$source|md:functional.test.modifyAndDelete"),
         ]
 
         DELETE("terminologies/$sourceMap.terminologyId/terms/$sourceMap.deleteLeftOnly")
@@ -259,25 +261,25 @@ class TerminologyPluginMergeBuilder extends BaseTestMergeBuilder {
         sourceMap
     }
 
-    Map modifyTargetTerminology(String target) {
+    Map modifyTargetTerminology(String target, String pathing = '') {
         // Modify Target
         Map targetMap = [
-            terminologyId                             : getIdFromPath(target, 'te:Functional Test Terminology 1$main'),
-            deleteLeftOnly                            : getIdFromPath(target, 'te:Functional Test Terminology 1$main|tm:DLO'),
-            modifyLeftOnly                            : getIdFromPath(target, 'te:Functional Test Terminology 1$main|tm:MLO'),
-            secondModifyLeftOnly                      : getIdFromPath(target, 'te:Functional Test Terminology 1$main|tm:SMLO'),
-            deleteAndModify                           : getIdFromPath(target, 'te:Functional Test Terminology 1$main|tm:DAM'),
-            modifyAndDelete                           : getIdFromPath(target, 'te:Functional Test Terminology 1$main|tm:MAD'),
-            modifyAndModifyReturningDifference        : getIdFromPath(target, 'te:Functional Test Terminology 1$main|tm:MAMRD'),
-            oppositeActionTo                          : getIdFromPath(target, 'te:Functional Test Terminology 1$main|trt:oppositeActionTo'),
-            inverseOf                                 : getIdFromPath(target, 'te:Functional Test Terminology 1$main|trt:inverseOf'),
-            sameSourceActionType                      : getIdFromPath(target, 'te:Functional Test Terminology 1$main|trt:sameSourceActionType'),
-            similarSourceAction                       : getIdFromPath(target, 'te:Functional Test Terminology 1$main|trt:similarSourceAction'),
-            similarSourceActionOnModifyLeftOnly       : getIdFromPath(target, 'te:Functional Test Terminology 1$main|tr:MLO.similarSourceAction.MAMRD'),
-            sameSourceActionTypeOnSecondModifyLeftOnly: getIdFromPath(target, 'te:Functional Test Terminology 1$main|tr:SMLO.sameSourceActionType.MLO'),
-            metadataModifyOnSource                    : getIdFromPath(target, 'te:Functional Test Terminology 1$main|md:functional.test.modifyOnSource'),
-            metadataDeleteFromSource                  : getIdFromPath(target, 'te:Functional Test Terminology 1$main|md:functional.test.deleteFromSource'),
-            metadataModifyAndDelete                   : getIdFromPath(target, 'te:Functional Test Terminology 1$main|md:functional.test.modifyAndDelete'),
+            terminologyId                             : getIdFromPath(target, "${pathing}te:Functional Test Terminology 1\$main"),
+            deleteLeftOnly                            : getIdFromPath(target, "${pathing}te:Functional Test Terminology 1\$main|tm:DLO"),
+            modifyLeftOnly                            : getIdFromPath(target, "${pathing}te:Functional Test Terminology 1\$main|tm:MLO"),
+            secondModifyLeftOnly                      : getIdFromPath(target, "${pathing}te:Functional Test Terminology 1\$main|tm:SMLO"),
+            deleteAndModify                           : getIdFromPath(target, "${pathing}te:Functional Test Terminology 1\$main|tm:DAM"),
+            modifyAndDelete                           : getIdFromPath(target, "${pathing}te:Functional Test Terminology 1\$main|tm:MAD"),
+            modifyAndModifyReturningDifference        : getIdFromPath(target, "${pathing}te:Functional Test Terminology 1\$main|tm:MAMRD"),
+            oppositeActionTo                          : getIdFromPath(target, "${pathing}te:Functional Test Terminology 1\$main|trt:oppositeActionTo"),
+            inverseOf                                 : getIdFromPath(target, "${pathing}te:Functional Test Terminology 1\$main|trt:inverseOf"),
+            sameSourceActionType                      : getIdFromPath(target, "${pathing}te:Functional Test Terminology 1\$main|trt:sameSourceActionType"),
+            similarSourceAction                       : getIdFromPath(target, "${pathing}te:Functional Test Terminology 1\$main|trt:similarSourceAction"),
+            similarSourceActionOnModifyLeftOnly       : getIdFromPath(target, "${pathing}te:Functional Test Terminology 1\$main|tr:MLO.similarSourceAction.MAMRD"),
+            sameSourceActionTypeOnSecondModifyLeftOnly: getIdFromPath(target, "${pathing}te:Functional Test Terminology 1\$main|tr:SMLO.sameSourceActionType.MLO"),
+            metadataModifyOnSource                    : getIdFromPath(target, "${pathing}te:Functional Test Terminology 1\$main|md:functional.test.modifyOnSource"),
+            metadataDeleteFromSource                  : getIdFromPath(target, "${pathing}te:Functional Test Terminology 1\$main|md:functional.test.deleteFromSource"),
+            metadataModifyAndDelete                   : getIdFromPath(target, "${pathing}te:Functional Test Terminology 1\$main|md:functional.test.modifyAndDelete"),
         ]
 
         DELETE("terminologies/$targetMap.terminologyId/terms/$targetMap.modifyAndDelete")
@@ -337,22 +339,24 @@ class TerminologyPluginMergeBuilder extends BaseTestMergeBuilder {
         codeSetId
     }
 
-    Map modifySourceCodeSet(String source, String terminologyBranch = '$1.0.0', boolean terminologyAlreadyModified = false) {
+    @Transactional
+    Map modifySourceCodeSet(String source, String terminologyBranch = '$1.0.0', boolean terminologyAlreadyModified = false, String pathing = '',
+                            String terminologyPathing = '') {
         // Modify Source
         Map sourceMap = [
-            codeSetId                         : getIdFromPath(source, 'cs:Functional Test CodeSet 1$source'),
-            deleteLeftOnly                    : getIdFromPath(source, 'cs:Functional Test CodeSet 1$source|tm:DLO', !terminologyAlreadyModified),
-            deleteLeftOnlyCodeSet             : getIdFromPath(source, 'cs:Functional Test CodeSet 1$source|tm:DLOCS'),
-            modifyLeftOnly                    : getIdFromPath(source, 'cs:Functional Test CodeSet 1$source|tm:MLO'),
-            modifyAndDelete                   : getIdFromPath(source, 'cs:Functional Test CodeSet 1$source|tm:MAD'),
-            deleteAndModify                   : getIdFromPath(source, 'cs:Functional Test CodeSet 1$source|tm:DAM', !terminologyAlreadyModified),
-            modifyAndModifyReturningDifference: getIdFromPath(source, 'cs:Functional Test CodeSet 1$source|tm:MAMRD'),
-            addLeftOnly                       : getIdFromPath(source, "te:Functional Test Terminology 1${terminologyBranch}|tm:ALO"),
-            addLeftOnlyCodeSet                : getIdFromPath(source, "te:Functional Test Terminology 1${terminologyBranch}|tm:ALOCS"),
-            addAndAddReturningDifference      : getIdFromPath(source, "te:Functional Test Terminology 1${terminologyBranch}|tm:AAARD"),
-            metadataModifyOnSource            : getIdFromPath(source, 'cs:Functional Test CodeSet 1$source|md:functional.test.modifyOnSource'),
-            metadataDeleteFromSource          : getIdFromPath(source, 'cs:Functional Test CodeSet 1$source|md:functional.test.deleteFromSource'),
-            metadataModifyAndDelete           : getIdFromPath(source, 'cs:Functional Test CodeSet 1$source|md:functional.test.modifyAndDelete'),
+            codeSetId                         : getIdFromPath(source, "${pathing}cs:Functional Test CodeSet 1\$source"),
+            deleteLeftOnly                    : getIdFromPath(source, "${pathing}cs:Functional Test CodeSet 1\$source|tm:DLO", !terminologyAlreadyModified),
+            deleteLeftOnlyCodeSet             : getIdFromPath(source, "${pathing}cs:Functional Test CodeSet 1\$source|tm:DLOCS"),
+            modifyLeftOnly                    : getIdFromPath(source, "${pathing}cs:Functional Test CodeSet 1\$source|tm:MLO"),
+            modifyAndDelete                   : getIdFromPath(source, "${pathing}cs:Functional Test CodeSet 1\$source|tm:MAD"),
+            deleteAndModify                   : getIdFromPath(source, "${pathing}cs:Functional Test CodeSet 1\$source|tm:DAM", !terminologyAlreadyModified),
+            modifyAndModifyReturningDifference: getIdFromPath(source, "${pathing}cs:Functional Test CodeSet 1\$source|tm:MAMRD"),
+            addLeftOnly                       : getIdFromPath(source, "${terminologyPathing}te:Functional Test Terminology 1${terminologyBranch}|tm:ALO"),
+            addLeftOnlyCodeSet                : getIdFromPath(source, "${terminologyPathing}te:Functional Test Terminology 1${terminologyBranch}|tm:ALOCS"),
+            addAndAddReturningDifference      : getIdFromPath(source, "${terminologyPathing}te:Functional Test Terminology 1${terminologyBranch}|tm:AAARD"),
+            metadataModifyOnSource            : getIdFromPath(source, "${pathing}cs:Functional Test CodeSet 1\$source|md:functional.test.modifyOnSource"),
+            metadataDeleteFromSource          : getIdFromPath(source, "${pathing}cs:Functional Test CodeSet 1\$source|md:functional.test.deleteFromSource"),
+            metadataModifyAndDelete           : getIdFromPath(source, "${pathing}cs:Functional Test CodeSet 1\$source|md:functional.test.modifyAndDelete"),
         ]
 
         PUT("codeSets/$sourceMap.codeSetId", [description: 'DescriptionLeft'])
@@ -387,17 +391,18 @@ class TerminologyPluginMergeBuilder extends BaseTestMergeBuilder {
         sourceMap
     }
 
-    Map modifyTargetCodeSet(String target, String terminologyBranch = '$1.0.0', boolean terminologyAlreadyModified = false) {
+    Map modifyTargetCodeSet(String target, String terminologyBranch = '$1.0.0', boolean terminologyAlreadyModified = false, String pathing = '',
+                            String terminologyPathing = '') {
         // Modify Target
         Map targetMap = [
-            codeSetId                         : getIdFromPath(target, 'cs:Functional Test CodeSet 1$main'),
-            modifyLeftOnly                    : getIdFromPath(target, 'cs:Functional Test CodeSet 1$main|tm:MLO'),
-            modifyAndDelete                   : getIdFromPath(target, 'cs:Functional Test CodeSet 1$main|tm:MAD', !terminologyAlreadyModified),
-            modifyAndModifyReturningDifference: getIdFromPath(target, 'cs:Functional Test CodeSet 1$main|tm:MAMRD'),
-            addAndAddReturningDifference      : getIdFromPath(target, "te:Functional Test Terminology 1${terminologyBranch}|tm:AAARD"),
-            metadataModifyOnSource            : getIdFromPath(target, 'cs:Functional Test CodeSet 1$main|md:functional.test.modifyOnSource'),
-            metadataDeleteFromSource          : getIdFromPath(target, 'cs:Functional Test CodeSet 1$main|md:functional.test.deleteFromSource'),
-            metadataModifyAndDelete           : getIdFromPath(target, 'cs:Functional Test CodeSet 1$main|md:functional.test.modifyAndDelete'),
+            codeSetId                         : getIdFromPath(target, "${pathing}cs:Functional Test CodeSet 1\$main"),
+            modifyLeftOnly                    : getIdFromPath(target, "${pathing}cs:Functional Test CodeSet 1\$main|tm:MLO"),
+            modifyAndDelete                   : getIdFromPath(target, "${pathing}cs:Functional Test CodeSet 1\$main|tm:MAD", !terminologyAlreadyModified),
+            modifyAndModifyReturningDifference: getIdFromPath(target, "${pathing}cs:Functional Test CodeSet 1\$main|tm:MAMRD"),
+            addAndAddReturningDifference      : getIdFromPath(target, "${terminologyPathing}te:Functional Test Terminology 1${terminologyBranch}|tm:AAARD"),
+            metadataModifyOnSource            : getIdFromPath(target, "${pathing}cs:Functional Test CodeSet 1\$main|md:functional.test.modifyOnSource"),
+            metadataDeleteFromSource          : getIdFromPath(target, "${pathing}cs:Functional Test CodeSet 1\$main|md:functional.test.deleteFromSource"),
+            metadataModifyAndDelete           : getIdFromPath(target, "${pathing}cs:Functional Test CodeSet 1\$main|md:functional.test.modifyAndDelete"),
         ]
         PUT("codeSets/$targetMap.codeSetId/terms/$targetMap.addAndAddReturningDifference", [:])
         verifyResponse OK, response
