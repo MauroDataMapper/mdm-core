@@ -18,7 +18,7 @@
     SPDX-License-Identifier: Apache-2.0
 
 -->
-<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/3.0" xmlns:mdm="http://maurodatamapper.com/dataFlow/3.0">
+<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/4.0" xmlns:mdm="http://maurodatamapper.com/dataFlow/4.0">
   <mdm:dataFlow>
     <mdm:id>33ac687c-1e96-4037-9906-93b7ca2f346b</mdm:id>
     <mdm:label>My DataFlow label</mdm:label>
@@ -27,11 +27,13 @@
     <mdm:source>
       <mdm:id>12bd687c-1e96-7034-9906-93b7ca2f346b</mdm:id>
       <mdm:label>SourceFlowDataModel</mdm:label>
+      <mdm:path>dm:SourceFlowDataModel$main</mdm:path>
       <mdm:type>Data Asset</mdm:type>
     </mdm:source>
     <mdm:target>
       <mdm:id>58bd687c-1e96-7034-9906-93b7ca2f346b</mdm:id>
       <mdm:label>TargetFlowDataModel</mdm:label>
+      <mdm:path>dm:TargetFlowDataModel$main</mdm:path>
       <mdm:type>Data Asset</mdm:type>
     </mdm:target>      
     <mdm:dataClassComponents>
@@ -43,17 +45,21 @@
         <mdm:sourceDataClasses>
           <mdm:dataClass>
             <mdm:label>tableA</mdm:label>
+            <mdm:path>dm:SourceFlowDataModel$main|dc:tableA</mdm:path>
           </mdm:dataClass>
           <mdm:dataClass>
             <mdm:label>tableB</mdm:label>
+            <mdm:path>dm:SourceFlowDataModel$main|dc:tableB</mdm:path>
           </mdm:dataClass>        
         </mdm:sourceDataClasses>
         <mdm:targetDataClasses>
           <mdm:dataClass>
             <mdm:label>tableD</mdm:label>
+            <mdm:path>dm:TargetFlowDataModel$main|dc:tableD</mdm:path>
           </mdm:dataClass>
           <mdm:dataClass>
             <mdm:label>tableE</mdm:label>
+            <mdm:path>dm:TargetFlowDataModel$main|dc:tableE</mdm:path>
           </mdm:dataClass>        
         </mdm:targetDataClasses>  
         <mdm:dataElementComponents>
@@ -65,18 +71,21 @@
             <mdm:sourceDataElements>
               <mdm:dataElement>
                 <mdm:label>columnA</mdm:label>
+                <mdm:path>dm:SourceFlowDataModel$main|dc:tableA|de:columnA</mdm:path>
                 <mdm:dataClass>
                   <mdm:label>tableA</mdm:label>
                 </mdm:dataClass>
               </mdm:dataElement>
               <mdm:dataElement>
                 <mdm:label>columnB</mdm:label>
+                <mdm:path>dm:SourceFlowDataModel$main|dc:tableA|de:columnB</mdm:path>
                 <mdm:dataClass>
                   <mdm:label>tableA</mdm:label>
                 </mdm:dataClass>
               </mdm:dataElement>       
               <mdm:dataElement>
                 <mdm:label>columnE2</mdm:label>
+                <mdm:path>dm:SourceFlowDataModel$main|dc:tableC|de:columnE2</mdm:path>
                 <mdm:dataClass>
                   <mdm:label>tableC</mdm:label>
                 </mdm:dataClass>
@@ -85,6 +94,7 @@
             <mdm:targetDataElements>
               <mdm:dataElement>
                 <mdm:label>columnN</mdm:label>
+                <mdm:path>dm:TargetFlowDataModel$main|dc:tableD|de:columnN</mdm:path>
                 <mdm:dataClass>
                   <mdm:label>tableD</mdm:label>
                 </mdm:dataClass>

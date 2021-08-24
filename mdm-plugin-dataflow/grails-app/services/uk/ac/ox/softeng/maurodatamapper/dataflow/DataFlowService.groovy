@@ -315,7 +315,7 @@ class DataFlowService extends ModelItemService<DataFlow> {
         checkFacetsAfterImportingCatalogueItem(dataFlow)
 
         //source and target data model are imported by use of a path like "dm:my-data-model"
-        Path sourcePath = Path.from('dm', bindingMap.source.label)
+        Path sourcePath = Path.from( bindingMap.source.path)
         DataModel sourceDataModel = pathService.findResourceByPathFromRootClass(DataModel, sourcePath) as DataModel
 
         if (sourceDataModel) {
@@ -324,8 +324,8 @@ class DataFlowService extends ModelItemService<DataFlow> {
             throw new ApiBadRequestException('DFI01', "Source DataModel retrieval for ${sourcePath} failed")
         }
 
-        Path targetPath = Path.from('dm', bindingMap.target.label)
-        DataModel targetDataModel = pathService.findResourceByPathFromRootClass(DataModel, targetPath) as DataModel
+        Path targetPath = Path.from( bindingMap.target.path)
+        DataModel targetDataModel = pathService.findResourceByPathFromRootClass(DataModel,targetPath) as DataModel
 
         if (targetDataModel) {
             dataFlow.target = targetDataModel

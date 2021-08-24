@@ -7,11 +7,13 @@
         "source": {
             "id": "1e2c95e0-08ec-4e44-8791-87f649e54156",
             "label": "SourceFlowDataModel",
+            "path": "dm:SourceFlowDataModel",
             "type": "Data Asset"
         },
         "target": {
             "id": "2d2c95e0-08ec-4e44-8791-87f649e54156",
             "label": "TargetFlowDataModel",
+            "path": "dm:TargetFlowDataModel",
             "type": "Data Asset"
         },
         "dataClassComponents": [
@@ -22,18 +24,22 @@
                 "definition": "Definition of data class component",
                 "sourceDataClasses": [
                     {
-                        "label": "tableA"
+                        "label": "tableA",
+                        "path": "dm:SourceFlowDataModel|dc:tableA"
                     },
                     {
-                        "label": "tableB"
+                        "label": "tableB",
+                        "path": "dm:SourceFlowDataModel|dc:tableB"
                     }
                 ],
                 "targetDataClasses": [
                     {
-                        "label": "tableD"
+                        "label": "tableD",
+                        "path": "dm:TargetFlowDataModel|dc:tableD"
                     },
                     {
-                        "label": "tableE"
+                        "label": "tableE",
+                        "path": "dm:TargetFlowDataModel|dc:tableE"
                     }
                 ],
                 "dataElementComponents": [
@@ -45,18 +51,21 @@
                         "sourceDataElements": [
                             {
                                 "label": "columnA",
+                                "path": "dm:SourceFlowDataModel|dc:tableA|de:ColumnA",
                                 "dataClass": {
                                     "label": "tableA"
                                 }                                
                             },
                             {
                                 "label": "columnB",
+                                "path": "dm:SourceFlowDataModel|dc:tableA|de:ColumnB",
                                 "dataClass": {
                                     "label": "tableA"
                                 }                                
                             },
                             {
                                 "label": "columnE2",
+                                "path": "dm:SourceFlowDataModel|dc:tableC|de:ColumnE2",
                                 "dataClass": {
                                     "label": "tableC"
                                 }                                
@@ -65,6 +74,7 @@
                         "targetDataElements": [
                             {
                                 "label": "columnN",
+                                "path": "dm:TargetFlowDataModel|dc:tableD|de:columnN",
                                 "dataClass": {
                                     "label": "tableD"
                                 }                                
