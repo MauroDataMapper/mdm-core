@@ -112,7 +112,7 @@ Controller: semanticLink
 Controller: session
  |   GET    | /api/session/keepAlive                                                                                | Action: keepAlive
  |   GET    | /api/admin/activeSessions                                                                             | Action: activeSessions
- |   GET    | /api/session/isAuthenticated/${sesssionId}?                                                           | Action: isAuthenticatedSession
+ |   GET    | /api/session/isAuthenticated/${sessionId}?                                                           | Action: isAuthenticatedSession
 
 Controller: treeItem
  |   GET    | /api/admin/tree/${containerDomainType}/${modelDomainType}/deleted                                     | Action: deletedModels

@@ -42,6 +42,6 @@ class ProfileSpecificationProfileServiceSpec extends BaseUnitSpec implements Ser
             service.profileApplicableForDomains() == ["DataModel"]
 
             jsonProfile.sections.size() == 1
-            jsonProfile.sections[0].fields.size() == 2
+        jsonProfile.sections[0].fields.size() == 3
     }
 }

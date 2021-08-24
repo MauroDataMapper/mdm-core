@@ -61,7 +61,7 @@ class UrlMappings {
             }
 
             // Open access url
-            get "/session/isAuthenticated/$sesssionId?"(controller: 'session', action: 'isAuthenticatedSession') // New Url
+            get "/session/isAuthenticated/$sessionId?"(controller: 'session', action: 'isAuthenticatedSession') // New Url
             get '/session/isApplicationAdministration'(controller: 'session', action: 'isApplicationAdministrationSession') // New Url
             get '/session/keepAlive'(controller: 'session', action: 'keepAlive') // New Url
             get '/properties'(controller: 'apiProperty', action: 'index') {

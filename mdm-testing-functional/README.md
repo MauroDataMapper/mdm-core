@@ -457,7 +457,7 @@ Controller: session
  |   GET    | /api/session/keepAlive                                                                                                                                                           | Action: keepAlive
  |   GET    | /api/session/isApplicationAdministration                                                                                                                                         | Action: isApplicationAdministrationSession
  |   GET    | /api/admin/activeSessions                                                                                                                                                        | Action: activeSessions
- |   GET    | /api/session/isAuthenticated/${sesssionId}?                                                                                                                                      | Action: isAuthenticatedSession
+ |   GET    | /api/session/isAuthenticated/${sessionId}?                                                                                                                                      | Action: isAuthenticatedSession
 
 Controller: summaryMetadata
  |   POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/summaryMetadata                                                                                                               | Action: save
