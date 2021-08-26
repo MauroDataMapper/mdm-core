@@ -2413,7 +2413,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                     targetId: mergeData.target,
                     sourceId: mergeData.source,
                     label   : "Functional Test Model",
-                    count   : 0,
+                    count   : diffs.size(),
                     patches : diffs
                 ]
         ])
@@ -2515,6 +2515,178 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         when:
         String sameSourceActionType = responseBody().items.find { it.label == 'sameSourceActionType' }.id
         String similarSourceAction = responseBody().items.find { it.label == 'similarSourceAction' }.id
+        GET("terminologies/$targetTerminologyMap.terminologyId/terms/$addLeftOnly/termRelationships/$sameSourceActionType", MAP_ARG, true)
+
+        then:
+        verifyResponse OK, response
+        responseBody().sourceTerm.id == addLeftOnly
+        responseBody().targetTerm.id == secondAddLeftOnly
+
+        when:
+        GET("terminologies/$targetTerminologyMap.terminologyId/terms/$addLeftOnly/termRelationships/$similarSourceAction", MAP_ARG, true)
+
+        then:
+        verifyResponse OK, response
+        responseBody().sourceTerm.id == addLeftOnly
+        responseBody().targetTerm.id == targetTerminologyMap.addAndAddReturningDifference
+
+        when:
+        GET("terminologies/$targetTerminologyMap.terminologyId/metadata", MAP_ARG, true)
+
+        then:
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyOnSource'}.value == 'source has modified this'
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyAndDelete'}.value == 'source has modified this also'
+        !responseBody().items.find {it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource'}
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'addToSourceOnly'}
+
+        when:
+        Map targetCodeSetMap = mergeData.targetMap.codeSet
+        GET("codeSets/$targetCodeSetMap.codeSetId/terms", MAP_ARG, true)
+
+        then:
+        verifyResponse OK, response
+        // MAD cannot be added back into the CS as part of the merge
+        responseBody().items.code as Set == ['AAARD', 'ALO' /*, 'MAD'*/, 'MAMRD', 'MLO', 'ALOCS'] as Set
+        responseBody().items.each {t ->
+            Assert.assertEquals("${t.code} has correct terminology", targetTerminologyMap.terminologyId, t.model)
+        }
+
+
+        when:
+        GET("codeSets/$targetCodeSetMap.codeSetId/metadata", MAP_ARG, true)
+
+        then:
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyOnSource'}.value == 'source has modified this'
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyAndDelete'}.value == 'source has modified this also'
+        !responseBody().items.find {it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource'}
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'addToSourceOnly'}
+
+        cleanup:
+        builder.cleanupTestMergeData(mergeData)
+    }
+
+    void 'MI08 : test merge into of two sub folder versioned folders'() {
+        given:
+        TestMergeData mergeData = builder.buildSubFolderModelsForMerging()
+
+        when:
+        loginReader()
+        GET("$mergeData.source/mergeDiff/$mergeData.target")
+
+        then:
+        verifyResponse(OK, response)
+
+        when:
+        def diffs = responseBody().diffs
+        loginEditor()
+        PUT("$mergeData.source/mergeInto/$mergeData.target", [
+            patch:
+                [
+                    targetId: mergeData.target,
+                    sourceId: mergeData.source,
+                    label   : "Functional Test Model",
+                    count   : diffs.size(),
+                    patches : diffs
+                ]
+        ])
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == mergeData.target
+        responseBody().description == 'source description on the versioned folder'
+
+        when:
+        Map targetDataModelMap = mergeData.targetMap.dataModel1
+        GET("dataModels/$targetDataModelMap.dataModelId", MAP_ARG, true)
+
+        then:
+        responseBody().description == 'DescriptionLeft'
+
+        when:
+        GET("dataModels/$targetDataModelMap.dataModelId/dataClasses", MAP_ARG, true)
+
+        then:
+        responseBody().items.label as Set == ['existingClass', 'modifyAndModifyReturningDifference', 'modifyLeftOnly',
+                                              'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly',
+                                              'modifyRightOnly', 'addRightOnly', 'modifyAndModifyReturningNoDifference',
+                                              'addAndAddReturningNoDifference'] as Set
+        responseBody().items.find {dataClass -> dataClass.label == 'modifyAndDelete'}.description == 'Description'
+        responseBody().items.find {dataClass -> dataClass.label == 'addAndAddReturningDifference'}.description == 'DescriptionLeft'
+        responseBody().items.find {dataClass -> dataClass.label == 'modifyAndModifyReturningDifference'}.description == 'DescriptionLeft'
+        responseBody().items.find {dataClass -> dataClass.label == 'modifyLeftOnly'}.description == 'Description'
+
+        when:
+        GET("dataModels/$targetDataModelMap.dataModelId/dataClasses/$targetDataModelMap.existingClass/dataClasses", MAP_ARG, true)
+
+        then:
+        responseBody().items.label as Set == ['addRightToExistingClass', 'addLeftToExistingClass'] as Set
+
+        when:
+        GET("dataModels/$targetDataModelMap.dataModelId/metadata", MAP_ARG, true)
+
+        then:
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyOnSource'}.value == 'source has modified this'
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyAndDelete'}.value == 'source has modified this also'
+        !responseBody().items.find {it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource'}
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'addToSourceOnly'}
+
+        when:
+        Map targetTerminologyMap = mergeData.targetMap.terminology
+        GET("terminologies/$targetTerminologyMap.terminologyId", MAP_ARG, true)
+
+        then:
+        responseBody().description == 'DescriptionLeft'
+
+        when:
+        GET("terminologies/$targetTerminologyMap.terminologyId/terms", MAP_ARG, true)
+
+        then:
+        responseBody().items.code as Set == ['AAARD', 'ALO', 'ALOCS', 'ARO', 'MAD', 'MAMRD', 'MLO', 'SALO', 'SMLO', 'DLOCS'] as Set
+        responseBody().items.find {term -> term.code == 'MAD'}.description == 'Description'
+        responseBody().items.find {term -> term.code == 'AAARD'}.description == 'DescriptionLeft'
+        responseBody().items.find {term -> term.code == 'MAMRD'}.description == 'DescriptionLeft'
+        responseBody().items.find {term -> term.code == 'MLO'}.description == 'Description'
+
+        when:
+        GET("terminologies/$targetTerminologyMap.terminologyId/termRelationshipTypes", MAP_ARG, true)
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.label as Set == ['inverseOf', 'sameSourceActionType', 'similarSourceAction', 'sameActionAs'] as Set
+        responseBody().items.find {term -> term.label == 'inverseOf'}.description == 'inverseOf(Modified)'
+
+        when:
+        GET("terminologies/$targetTerminologyMap.terminologyId/terms/$targetTerminologyMap.modifyLeftOnly/termRelationships", MAP_ARG, true)
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size == 1
+        responseBody().items.label as Set == ['sameSourceActionType'] as Set
+
+        when:
+        GET("terminologies/$targetTerminologyMap.terminologyId" +
+            "/terms/$targetTerminologyMap.modifyLeftOnly" +
+            "/termRelationships/$targetTerminologyMap.sameSourceActionTypeOnSecondModifyLeftOnly",
+            MAP_ARG, true)
+
+        then:
+        verifyResponse OK, response
+        responseBody().sourceTerm.id == targetTerminologyMap.secondModifyLeftOnly
+        responseBody().targetTerm.id == targetTerminologyMap.modifyLeftOnly
+
+        when:
+        String addLeftOnly = builder.getIdFromPath(mergeData.target, 'fo:Sub Folder in VersionedFolder|te:Functional Test Terminology 1$main|tm:ALO')
+        String secondAddLeftOnly = builder.getIdFromPath(mergeData.target, 'fo:Sub Folder in VersionedFolder|te:Functional Test Terminology 1$main|tm:SALO')
+        GET("terminologies/$targetTerminologyMap.terminologyId/terms/$addLeftOnly/termRelationships", MAP_ARG, true)
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size == 2
+        responseBody().items.label as Set == ['similarSourceAction', 'sameSourceActionType'] as Set
+
+        when:
+        String sameSourceActionType = responseBody().items.find {it.label == 'sameSourceActionType'}.id
+        String similarSourceAction = responseBody().items.find {it.label == 'similarSourceAction'}.id
         GET("terminologies/$targetTerminologyMap.terminologyId/terms/$addLeftOnly/termRelationships/$sameSourceActionType", MAP_ARG, true)
 
         then:
