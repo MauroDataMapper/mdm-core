@@ -824,6 +824,90 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         cleanUpData(id)
     }
 
+    void 'VB08 :  test creating a new branch of complex terminology'() {
+        given:
+        String id = builder.buildCommonAncestorTerminology(folderId.toString())
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        GET("$id/terms")
+        verifyResponse(OK, response)
+        List<String> finalisedTermIds = responseBody().items.collect {it.id}
+
+        when:
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+
+        then:
+        verifyResponse CREATED, response
+        String branchId = responseBody().id
+
+        when: 'none of the terms branched are the same'
+        GET("$branchId/terms")
+
+        then:
+        verifyResponse(OK, response)
+        List<String> branchedTermIds = responseBody().items.collect {it.id}
+        !branchedTermIds.any {it in finalisedTermIds}
+
+
+        when:
+        Map<String, String> terms = responseBody().items.collectEntries {[it.code, it.id]}
+        GET("$branchId/termRelationshipTypes")
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 5
+        responseBody().items.any {it.label == 'parentTo' && it.parentalRelationship}
+        Map<String, String> relationshipTypes = responseBody().items.collectEntries {[it.label, it.id]}
+
+        when: 'checking relationships'
+        GET("$id/terms/$terms.DAM/termRelationships")
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+        responseBody().items.first().targetTerm.id == terms.MAD
+        responseBody().items.first().sourceTerm.id == terms.DAM
+        responseBody().items.first().relationshipType.id == relationshipTypes.inverseOf
+
+        when: 'checking relationships'
+        GET("$id/terms/$terms.MLO/termRelationships")
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().items.any {
+            it.targetTerm.id == terms.MAMRD &&
+            it.sourceTerm.id == terms.MLO &&
+            it.relationshipType.id == relationshipTypes.similarSourceAction
+        }
+        responseBody().items.any {
+            it.targetTerm.id == terms.MLO &&
+            it.sourceTerm.id == terms.SMLO &&
+            it.relationshipType.id == relationshipTypes.sameSourceActionType
+        }
+
+        when: 'checking relationships'
+        GET("$id/terms/$terms.SMLO/termRelationships")
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().items.any {
+            it.targetTerm.id == terms.MLO &&
+            it.sourceTerm.id == terms.SMLO &&
+            it.relationshipType.id == relationshipTypes.sameSourceActionType
+        }
+        responseBody().items.any {
+            it.targetTerm.id == terms.MAMRD &&
+            it.sourceTerm.id == terms.SMLO &&
+            it.relationshipType.id == relationshipTypes.parentTo
+        }
+
+        //        cleanup:
+        //        cleanUpData(branchId)
+        //        cleanUpData(id)
+    }
+
     void 'MD01 : test finding merge difference of two Model<T> (as editor)'() {
         given:
         String id = createNewItem(validJson)
@@ -1140,7 +1224,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
 
         then:
         verifyResponse OK, response
-        responseBody().items.label as Set == ['inverseOf', 'sameSourceActionType', 'similarSourceAction', 'sameActionAs'] as Set
+        responseBody().items.label as Set == ['inverseOf', 'sameSourceActionType', 'similarSourceAction', 'sameActionAs', 'parentTo'] as Set
         responseBody().items.find {term -> term.label == 'inverseOf'}.description == 'inverseOf(Modified)'
 
         when:
@@ -1249,7 +1333,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
 
         then:
         verifyResponse OK, response
-        responseBody().items.label as Set == ['inverseOf', 'sameSourceActionType', 'similarSourceAction', 'sameActionAs'] as Set
+        responseBody().items.label as Set == ['inverseOf', 'sameSourceActionType', 'similarSourceAction', 'sameActionAs', 'parentTo'] as Set
         responseBody().items.find {term -> term.label == 'inverseOf'}.description == 'inverseOf(Modified)'
 
         when:

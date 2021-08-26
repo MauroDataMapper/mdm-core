@@ -166,7 +166,9 @@ class TermRelationshipFunctionalSpec extends ResourceFunctionalSpec<TermRelation
         "finalised": false
       }
     ],
-    "displayLabel": "Is A"
+    "displayLabel": "Is A",
+    "parentalRelationship": false,
+    "childRelationship": false
   },
   "sourceTerm": {
     "id": "${json-unit.matches:id}",
@@ -200,7 +202,8 @@ class TermRelationshipFunctionalSpec extends ResourceFunctionalSpec<TermRelation
     "code": "FT02",
     "definition": "Functional Test 02"
   }
-}'''
+}
+'''
     }
 
     void 'test finding only relationships where the term is the source'() {
@@ -245,7 +248,9 @@ class TermRelationshipFunctionalSpec extends ResourceFunctionalSpec<TermRelation
             "finalised": false
           }
         ],
-        "displayLabel": "Is A"
+        "displayLabel": "Is A",
+        "parentalRelationship": false,
+        "childRelationship": false
       },
       "sourceTerm": {
         "id": "${json-unit.matches:id}",
@@ -343,7 +348,9 @@ class TermRelationshipFunctionalSpec extends ResourceFunctionalSpec<TermRelation
             "finalised": false
           }
         ],
-        "displayLabel": "Is A"
+        "displayLabel": "Is A",
+        "parentalRelationship": false,
+        "childRelationship": false
       },
       "sourceTerm": {
         "id": "${json-unit.matches:id}",
@@ -379,7 +386,8 @@ class TermRelationshipFunctionalSpec extends ResourceFunctionalSpec<TermRelation
       }
     }
   ]
-}'''
+}
+'''
 
         cleanup:
         DELETE(getDeleteEndpoint(id))

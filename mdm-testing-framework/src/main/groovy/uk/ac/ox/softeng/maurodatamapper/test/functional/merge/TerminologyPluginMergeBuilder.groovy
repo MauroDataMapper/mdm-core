@@ -146,6 +146,9 @@ class TerminologyPluginMergeBuilder extends BaseTestMergeBuilder {
         POST("terminologies/$baseTerminology/termRelationshipTypes", [label: 'sameSourceActionType'])
         verifyResponse CREATED, response
         String sameSourceActionType = responseBody().id
+        POST("terminologies/$baseTerminology/termRelationshipTypes", [label: 'parentTo', parentalRelationship: true])
+        verifyResponse CREATED, response
+        String parentTo = responseBody().id
 
         POST("terminologies/$baseTerminology/terms/$deleteAndModify/termRelationships", [
             targetTerm      : modifyAndDelete,
@@ -162,6 +165,12 @@ class TerminologyPluginMergeBuilder extends BaseTestMergeBuilder {
         POST("terminologies/$baseTerminology/terms/$secondModifyLeftOnly/termRelationships", [
             targetTerm      : modifyLeftOnly,
             relationshipType: sameSourceActionType,
+            sourceTerm      : secondModifyLeftOnly
+        ])
+        verifyResponse CREATED, response
+        POST("terminologies/$baseTerminology/terms/$secondModifyLeftOnly/termRelationships", [
+            targetTerm      : modifyAndModifyReturningDifference,
+            relationshipType: parentTo,
             sourceTerm      : secondModifyLeftOnly
         ])
         verifyResponse CREATED, response
