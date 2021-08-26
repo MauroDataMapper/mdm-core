@@ -151,6 +151,15 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         verifyResponse CREATED, response
         sourceMap.addAndAddReturningDifference = responseBody().id
 
+        POST("dataModels/$sourceMap.dataModelId/dataTypes", [label: 'addLeftOnly', domainType: 'PrimitiveType',])
+        verifyResponse CREATED, response
+        sourceMap.addLeftOnlyDataType = responseBody().id
+        POST("dataModels/$sourceMap.dataModelId/dataClasses/$sourceMap.existingClass/dataElements", [
+            label: 'addLeftOnly', dataType: sourceMap.addLeftOnlyDataType
+        ])
+        verifyResponse CREATED, response
+        sourceMap.addLeftOnlyDataElement = responseBody().id
+
         PUT("dataModels/$sourceMap.dataModelId", [description: 'DescriptionLeft'])
         verifyResponse OK, response
 

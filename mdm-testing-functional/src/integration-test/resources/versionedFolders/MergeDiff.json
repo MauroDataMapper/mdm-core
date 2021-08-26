@@ -3,7 +3,7 @@
   "targetId": "${json-unit.matches:id}",
   "path": "vf:Functional Test VersionedFolder Complex$source",
   "label": "Functional Test VersionedFolder Complex",
-  "count": 45,
+  "count": 47,
   "diffs": [
     {
       "fieldName": "description",
@@ -135,6 +135,12 @@
       "type": "deletion"
     },
     {
+      "path": "vf:Functional Test VersionedFolder Complex$source|dm:Functional Test DataModel 1$source|dc:existingClass|de:addLeftOnly",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
       "fieldName": "description",
       "path": "vf:Functional Test VersionedFolder Complex$source|dm:Functional Test DataModel 1$source|dc:modifyAndModifyReturningDifference@description",
       "sourceValue": "DescriptionLeft",
@@ -151,6 +157,12 @@
       "commonAncestorValue": null,
       "isMergeConflict": false,
       "type": "modification"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder Complex$source|dm:Functional Test DataModel 1$source|dt:addLeftOnly",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
     },
     {
       "path": "vf:Functional Test VersionedFolder Complex$source|dm:Functional Test DataModel 1$source|md:functional.test.addToSourceOnly",
