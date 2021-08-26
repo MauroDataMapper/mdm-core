@@ -685,7 +685,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
             // Cannot move anything versioned controlled into a VF, this includes a folder which contains VFs
             updatedActions.remove(MOVE_TO_VERSIONED_FOLDER)
         }
-        if (role.isVersionControlled()) {
+        if (role.isVersionable() || role.isVersionControlled()) {
             updatedActions.remove(CREATE_VERSIONED_FOLDER)
         }
         updatedActions
