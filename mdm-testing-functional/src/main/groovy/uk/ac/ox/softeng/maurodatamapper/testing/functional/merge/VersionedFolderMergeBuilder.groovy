@@ -205,6 +205,21 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         verifyResponse OK, response
 
 
+        POST("folders/${source}/folders", [
+            label: 'New Sub Folder in VersionedFolder'
+        ])
+        verifyResponse(CREATED, response)
+        sourceMap.newSubFolderId = responseBody().id
+
+
+        POST("folders/${sourceMap.subFolder2Id}/folders", [
+            label: 'New Sub-Sub Folder 2 in VersionedFolder'
+        ])
+        verifyResponse(CREATED, response)
+        sourceMap.newSubSubFolder2Id = responseBody().id
+
+        //       sourceMap.dataModel4 = dataModelPluginMergeBuilder.buildCommonAncestorDataModel(sourceMap.newSubSubFolder2Id.toString(),'4')
+
         logout()
 
 

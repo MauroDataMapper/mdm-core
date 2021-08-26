@@ -2599,6 +2599,22 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         responseBody().description == 'source description on the versioned folder'
 
         when:
+        GET("${mergeData.target}/folders")
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 3
+        responseBody().items.find {it.label == 'New Sub Folder in VersionedFolder'}
+
+        when:
+        GET("${mergeData.targetMap.subFolder2Id}/folders")
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+        responseBody().items.find {it.label == 'New Sub-Sub Folder 2 in VersionedFolder'}
+
+        when:
         Map targetDataModelMap = mergeData.targetMap.dataModel1
         GET("dataModels/$targetDataModelMap.dataModelId", MAP_ARG, true)
 
@@ -2655,7 +2671,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         then:
         verifyResponse OK, response
-        responseBody().items.label as Set == ['inverseOf', 'sameSourceActionType', 'similarSourceAction', 'sameActionAs'] as Set
+        responseBody().items.label as Set == ['inverseOf', 'sameSourceActionType', 'similarSourceAction', 'sameActionAs', 'parentTo'] as Set
         responseBody().items.find {term -> term.label == 'inverseOf'}.description == 'inverseOf(Modified)'
 
         when:

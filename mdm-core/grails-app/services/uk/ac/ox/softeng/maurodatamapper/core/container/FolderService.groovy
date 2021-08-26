@@ -514,7 +514,6 @@ class FolderService extends ContainerService<Folder> {
             if (copyPassType == CopyPassType.THIRD_PASS) {
                 // At the moment just make sure the session is flushed in the third pass, this makes sure all objects are the same
                 sessionFactory.currentSession.flush()
-                sessionFactory.currentSession.clear()
             }
         }
     }

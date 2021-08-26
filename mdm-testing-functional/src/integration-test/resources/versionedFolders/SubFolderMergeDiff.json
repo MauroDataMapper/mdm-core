@@ -3,7 +3,7 @@
   "targetId": "${json-unit.matches:id}",
   "path": "vf:Functional Test VersionedFolder With Sub Folders$source",
   "label": "Functional Test VersionedFolder With Sub Folders",
-  "count": 74,
+  "count": 76,
   "diffs": [
     {
       "fieldName": "description",
@@ -13,6 +13,18 @@
       "commonAncestorValue": null,
       "isMergeConflict": true,
       "type": "modification"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:New Sub Folder in VersionedFolder",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder 2 in VersionedFolder|fo:New Sub-Sub Folder 2 in VersionedFolder",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
     },
     {
       "fieldName": "description",
