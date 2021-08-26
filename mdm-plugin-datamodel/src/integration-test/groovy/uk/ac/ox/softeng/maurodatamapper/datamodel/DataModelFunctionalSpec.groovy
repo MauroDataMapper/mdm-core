@@ -2048,7 +2048,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         POST("$source/metadata", [namespace: 'test.com', key: 'testProperty', value: 'testValue'])
         verifyResponse(CREATED, response)
 
-        String ruleId = getIdFromPath(source, 'dm:Functional Test Model$interestingBranch|ru:Bootstrapped versioning V2Model Rule')
+        String ruleId = builder.getIdFromPath(source, 'dm:Functional Test Model$interestingBranch|ru:Bootstrapped versioning V2Model Rule')
         POST("$source/rules/${ruleId}/representations", [
             language      : 'sql',
             representation: 'testing'

@@ -340,6 +340,8 @@ class FolderService extends ContainerService<Folder> {
                     childFolderDiff.modified << objectDiff
                 }
             }
+        } else {
+            diff.diffs.remove(childFolderDiff)
         }
     }
 

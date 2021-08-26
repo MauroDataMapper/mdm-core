@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
@@ -58,6 +59,7 @@ class ReferenceSummaryMetadataServiceSpec extends MultiFacetItemAwareServiceSpec
         mockArtefact(MetadataService)
         mockArtefact(PathService)
         mockArtefact(ReferenceDataTypeService)
+        mockArtefact(VersionedFolderService)
         mockDomains(Folder, ReferenceDataModel, Edit, ReferenceSummaryMetadata, ReferenceSummaryMetadataReport, Authority, Metadata, VersionLink, SemanticLink, Classifier)
         mockArtefact(ReferenceDataModelService)
         checkAndSave(new Folder(label: 'catalogue', createdBy: StandardEmailAddress.UNIT_TEST))
