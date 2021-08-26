@@ -78,6 +78,12 @@ class SessionFunctionalSpec extends BaseFunctionalSpec {
 
     void 'get is authenticated session endpoint using different session id'() {
         when:
+        GET('session/isAuthenticated')
+
+        then:
+        verifyResponse OK, response
+
+        when:
         GET("session/isAuthenticated/${UUID.randomUUID().toString()}")
 
         then:
