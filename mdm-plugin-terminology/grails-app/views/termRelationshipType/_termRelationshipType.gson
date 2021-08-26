@@ -8,6 +8,4 @@ model {
 
 json {
     displayLabel termRelationshipType.displayLabel
-    parentalRelationship termRelationshipType.parentalRelationship
-    childRelationship termRelationshipType.childRelationship
 }

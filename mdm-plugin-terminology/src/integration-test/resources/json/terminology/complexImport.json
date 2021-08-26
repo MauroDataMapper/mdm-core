@@ -67,33 +67,25 @@
         "id": "${json-unit.matches:id}",
         "label": "is-a",
         "displayLabel": "Is A",
-        "lastUpdated": "${json-unit.matches:offsetDateTime}",
-        "parentalRelationship": false,
-        "childRelationship": false
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
       },
       {
         "id": "${json-unit.matches:id}",
         "label": "is-a-part-of",
         "displayLabel": "Is A Part Of",
-        "lastUpdated": "${json-unit.matches:offsetDateTime}",
-        "parentalRelationship": false,
-        "childRelationship": true
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
       },
       {
         "id": "${json-unit.matches:id}",
         "label": "broaderThan",
         "displayLabel": "Broader Than",
-        "lastUpdated": "${json-unit.matches:offsetDateTime}",
-        "parentalRelationship": true,
-        "childRelationship": false
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
       },
       {
         "id": "${json-unit.matches:id}",
         "label": "narrowerThan",
         "displayLabel": "Narrower Than",
-        "lastUpdated": "${json-unit.matches:offsetDateTime}",
-        "parentalRelationship": false,
-        "childRelationship": false
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
       }
     ],
     "terms": [

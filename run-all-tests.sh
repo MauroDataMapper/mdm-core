@@ -66,12 +66,12 @@ function initialReport(){
 
 initialReport
 
-unitTest
+#unitTest
+#
+#integrationTest
 
-integrationTest
-
-functionalTest
-
+#functionalTest
+#
 e2eTest
 
 echo ">> Root Test Report <<"

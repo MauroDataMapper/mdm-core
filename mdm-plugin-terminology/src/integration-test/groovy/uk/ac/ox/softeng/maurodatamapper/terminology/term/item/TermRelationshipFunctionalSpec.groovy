@@ -166,9 +166,7 @@ class TermRelationshipFunctionalSpec extends ResourceFunctionalSpec<TermRelation
         "finalised": false
       }
     ],
-    "displayLabel": "Is A",
-    "parentalRelationship": false,
-    "childRelationship": false
+    "displayLabel": "Is A"
   },
   "sourceTerm": {
     "id": "${json-unit.matches:id}",
@@ -248,9 +246,7 @@ class TermRelationshipFunctionalSpec extends ResourceFunctionalSpec<TermRelation
             "finalised": false
           }
         ],
-        "displayLabel": "Is A",
-        "parentalRelationship": false,
-        "childRelationship": false
+        "displayLabel": "Is A"
       },
       "sourceTerm": {
         "id": "${json-unit.matches:id}",
@@ -348,9 +344,7 @@ class TermRelationshipFunctionalSpec extends ResourceFunctionalSpec<TermRelation
             "finalised": false
           }
         ],
-        "displayLabel": "Is A",
-        "parentalRelationship": false,
-        "childRelationship": false
+        "displayLabel": "Is A"
       },
       "sourceTerm": {
         "id": "${json-unit.matches:id}",
