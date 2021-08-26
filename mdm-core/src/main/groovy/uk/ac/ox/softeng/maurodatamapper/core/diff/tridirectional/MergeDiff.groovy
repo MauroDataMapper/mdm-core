@@ -305,20 +305,22 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
     static <A extends Diffable> ArrayMergeDiff<A> createArrayMergeDiffFromSourceTargetArrayDiff(Path fullyQualifiedObjectPath, ArrayDiff<A> sourceTargetArrayDiff) {
         log.debug('[{}] Processing array differences against target from source', sourceTargetArrayDiff.fieldName)
         // Created and Deleted diffs in this array are left as-is as they are guaranteed to be unique and no issue
+        // When the source is diff'd against the target due to the way diffing works the objects created in the source are identified as deleted and vice-versa
+        // We could reverse the diff but then the modifications are the wrong way round
         arrayMergeDiff(sourceTargetArrayDiff.targetClass)
             .forFieldName(sourceTargetArrayDiff.fieldName)
             .insideFullyQualifiedObjectPath(fullyQualifiedObjectPath)
             .withSource(sourceTargetArrayDiff.left)
             .withTarget(sourceTargetArrayDiff.right)
             .withCommonAncestor(null)
-            .withCreatedMergeDiffs(sourceTargetArrayDiff.created.collect {c ->
+            .withCreatedMergeDiffs(sourceTargetArrayDiff.deleted.collect {c ->
                 creationMergeDiff(c.targetClass)
-                    .whichCreated(c.created)
+                    .whichCreated(c.deleted)
                     .insideFullyQualifiedObjectPath(fullyQualifiedObjectPath)
             })
-            .withDeletedMergeDiffs(sourceTargetArrayDiff.deleted.collect {d ->
+            .withDeletedMergeDiffs(sourceTargetArrayDiff.created.collect {d ->
                 deletionMergeDiff(d.targetClass)
-                    .whichDeleted(d.deleted)
+                    .whichDeleted(d.created)
                     .insideFullyQualifiedObjectPath(fullyQualifiedObjectPath)
             })
             .withModifiedMergeDiffs(sourceTargetArrayDiff.modified.collect {m ->

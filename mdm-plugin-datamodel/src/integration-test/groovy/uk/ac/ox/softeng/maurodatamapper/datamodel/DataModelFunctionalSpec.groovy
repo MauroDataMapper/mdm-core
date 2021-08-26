@@ -1216,6 +1216,44 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
+    void 'MD06 : test finding merge diff on a branch which has already been merged'() {
+        given:
+        TestMergeData mergeData = builder.buildComplexModelsForMerging(folderId.toString())
+        GET("$mergeData.source/mergeDiff/$mergeData.target?isLegacy=false")
+        verifyResponse OK, response
+        List<Map> patches = responseBody().diffs
+        PUT("$mergeData.source/mergeInto/$mergeData.target?isLegacy=false", [
+            patch: [
+                targetId: responseBody().targetId,
+                sourceId: responseBody().sourceId,
+                label   : responseBody().label,
+                count   : patches.size(),
+                patches : patches]
+        ])
+        verifyResponse OK, response
+
+        when: 'add DE and DC to existing class after a merge'
+        POST("$mergeData.sourceMap.dataModelId/dataClasses/$mergeData.sourceMap.addLeftOnly/dataClasses", [label: 'addAnotherLeftToAddLeftOnly'])
+        verifyResponse CREATED, response
+        POST("$mergeData.sourceMap.dataModelId/dataClasses/$mergeData.sourceMap.addLeftToExistingClass/dataElements", [
+            label   : 'addAnotherLeftToExistingClass',
+            dataType: mergeData.sourceMap.addLeftOnlyDataType
+        ])
+        verifyResponse CREATED, response
+        log.debug('-------------- Second Merge Request ------------------')
+
+        and:
+        GET("$mergeData.source/mergeDiff/$mergeData.target?isLegacy=false", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, expectedSecondMergeDiffJson
+
+        cleanup:
+        cleanUpData(mergeData.source)
+        cleanUpData(mergeData.target)
+        cleanUpData(mergeData.commonAncestor)
+    }
+
     void 'MI01 : test merging diff with no patch data'() {
         given:
         String id = createNewItem(validJson)
@@ -2156,6 +2194,80 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(source)
         cleanUpData(target)
         cleanUpData(id)
+    }
+
+    void 'MI11 : test merge into on a branch which has already been merged'() {
+        given:
+        TestMergeData mergeData = builder.buildComplexModelsForMerging(folderId.toString())
+        GET("$mergeData.source/mergeDiff/$mergeData.target?isLegacy=false")
+        verifyResponse OK, response
+        List<Map> patches = responseBody().diffs
+        PUT("$mergeData.source/mergeInto/$mergeData.target?isLegacy=false", [
+            patch: [
+                targetId: responseBody().targetId,
+                sourceId: responseBody().sourceId,
+                label   : responseBody().label,
+                count   : patches.size(),
+                patches : patches]
+        ])
+        verifyResponse OK, response
+
+        when: 'add DE and DC to existing class after a merge'
+        POST("$mergeData.sourceMap.dataModelId/dataClasses/$mergeData.sourceMap.addLeftOnly/dataClasses", [label: 'addAnotherLeftToAddLeftOnly'])
+        verifyResponse CREATED, response
+        POST("$mergeData.sourceMap.dataModelId/dataClasses/$mergeData.sourceMap.addLeftToExistingClass/dataElements", [
+            label   : 'addAnotherLeftToExistingClass',
+            dataType: mergeData.sourceMap.addLeftOnlyDataType
+        ])
+        verifyResponse CREATED, response
+        log.debug('-------------- Second Merge Request ------------------')
+
+        and:
+        GET("$mergeData.source/mergeDiff/$mergeData.target?isLegacy=false")
+
+        then:
+        verifyResponse OK, response
+
+        when:
+        patches = responseBody().diffs
+        PUT("$mergeData.source/mergeInto/$mergeData.target?isLegacy=false", [
+            patch: [
+                targetId: responseBody().targetId,
+                sourceId: responseBody().sourceId,
+                label   : responseBody().label,
+                count   : patches.size(),
+                patches : patches]
+        ])
+
+        then:
+        verifyResponse OK, response
+
+        when:
+        GET("$mergeData.target/dataClasses/$mergeData.targetMap.existingClass/dataElements")
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+
+        when:
+        GET("$mergeData.target/dataClasses")
+
+        then:
+        verifyResponse(OK, response)
+
+        when:
+        String addLeftOnly = responseBody().items.find {it.label == 'addLeftOnly'}.id
+        GET("$mergeData.targetMap.dataModelId/dataClasses/$addLeftOnly/dataClasses")
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+        responseBody().items.any {it.label == 'addAnotherLeftToAddLeftOnly'}
+
+        cleanup:
+        cleanUpData(mergeData.source)
+        cleanUpData(mergeData.target)
+        cleanUpData(mergeData.commonAncestor)
     }
 
     void 'test changing folder from DataModel context'() {
@@ -4959,4 +5071,27 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 }'''
     }
 
+    String getExpectedSecondMergeDiffJson() {
+        '''{
+  "sourceId": "${json-unit.matches:id}",
+  "targetId": "${json-unit.matches:id}",
+  "path": "dm:Functional Test DataModel 1$source",
+  "label": "Functional Test DataModel 1",
+  "count": 2,
+  "diffs": [
+    {
+      "path": "dm:Functional Test DataModel 1$source|dc:addLeftOnly|dc:addAnotherLeftToAddLeftOnly",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "dm:Functional Test DataModel 1$source|dc:existingClass|dc:addLeftToExistingClass|de:addAnotherLeftToExistingClass",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    }
+  ]
+}'''
+    }
 }
