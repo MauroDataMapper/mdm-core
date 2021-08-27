@@ -230,7 +230,8 @@ class TermService extends ModelItemService<Term> {
 
     Term copyTerm(Term original, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
         if (!original) throw new ApiInternalException('DCSXX', 'Cannot copy non-existent Term')
-        Term copy = new Term(createdBy: copier.emailAddress, code: original.code, definition: original.definition)
+        Term copy = new Term(createdBy: copier.emailAddress, code: original.code, definition: original.definition, url: original.url, isParent: original.isParent,
+                             depth: original.depth)
         copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
         copy
