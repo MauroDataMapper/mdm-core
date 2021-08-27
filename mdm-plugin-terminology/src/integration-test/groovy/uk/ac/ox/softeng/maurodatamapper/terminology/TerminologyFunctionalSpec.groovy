@@ -856,8 +856,14 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         then:
         verifyResponse(OK, response)
         responseBody().count == 5
-        responseBody().items.any {it.label == 'parentTo' && it.parentalRelationship}
+        responseBody().items.any {it.label == 'parentTo'}
         Map<String, String> relationshipTypes = responseBody().items.collectEntries {[it.label, it.id]}
+
+        GET("$branchId/termRelationshipTypes/$relationshipTypes.parentTo")
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().parentalRelationship
 
         when: 'checking relationships'
         GET("$id/terms/$terms.DAM/termRelationships")

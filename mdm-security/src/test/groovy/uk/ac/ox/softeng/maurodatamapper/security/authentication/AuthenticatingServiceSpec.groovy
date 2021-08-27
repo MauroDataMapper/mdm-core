@@ -17,10 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security.authentication
 
-
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
 import uk.ac.ox.softeng.maurodatamapper.core.session.SessionService
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUserService
@@ -129,11 +127,7 @@ class AuthenticatingServiceSpec extends BaseUnitSpec implements ServiceUnitTest<
         when:
         service.registerUserAsLoggedOut(session)
 
-        and:
-        service.isAuthenticatedSession(session)
-
         then:
-        thrown(ApiUnauthorizedException)
-
+        !service.isAuthenticatedSession(session)
     }
 }

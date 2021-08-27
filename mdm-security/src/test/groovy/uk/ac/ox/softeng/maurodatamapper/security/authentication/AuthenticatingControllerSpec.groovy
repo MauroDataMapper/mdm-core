@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security.authentication
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
+
 import uk.ac.ox.softeng.maurodatamapper.core.session.SessionController
 import uk.ac.ox.softeng.maurodatamapper.core.session.SessionService
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
@@ -205,10 +205,7 @@ class AuthenticatingControllerSpec extends BaseUnitSpec implements ControllerUni
         response.status == NO_CONTENT.value()
         session.isNew()
 
-        when:
-        sessionService.isAuthenticatedSession(session.id)
-
-        then:
-        thrown(ApiUnauthorizedException)
+        and:
+        !sessionService.isAuthenticatedSession(session.id)
     }
 }
