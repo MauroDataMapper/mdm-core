@@ -248,4 +248,16 @@ class Path {
     static boolean isValidPath(String possiblePath) {
         from(possiblePath).toString() == possiblePath
     }
+
+    static Path toPathPrefix(CreatorAware domain, String prefix)
+    {
+        List<CreatorAware> paths = [];
+        paths.push(domain)
+
+        while (((CreatorAware) paths.first()).getPathPrefix() != prefix) {
+             paths.push(paths.first().getPathParent())
+        }
+
+        Path.from(paths)
+    }
 }

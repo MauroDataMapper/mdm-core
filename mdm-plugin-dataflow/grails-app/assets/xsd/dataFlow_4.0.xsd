@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:mdm="http://maurodatamapper.com/dataFlow/4.0" elementFormDefault="qualified"
-           targetNamespace="http://maurodatamapper.com/dataFlow/4.0">
-  <xs:element name="dataFlow" type="mdm:dataFlowType" />
-  <xs:element name="dataFlows" type="mdm:dataFlowsType" />
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:mdm="http://maurodatamapper.com/dataFlow/4.0" elementFormDefault="qualified"
+  targetNamespace="http://maurodatamapper.com/dataFlow/4.0">
+  <xs:element name="dataFlow" type="mdm:dataFlowType"/>
+  <xs:element name="dataFlows" type="mdm:dataFlowsType"/>
   <xs:complexType name="catalogueItem">
     <xs:sequence>
-      <xs:element name="id" type="mdm:uuid" minOccurs="0" />
-      <xs:element name="label" type="mdm:mandatoryString" />
-      <xs:element name="path" type="mdm:mandatoryString" />
-      <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string" />
-      <xs:element minOccurs="0" name="aliases" type="mdm:aliasesType" />
-      <xs:element name="lastUpdated" type="xs:dateTime" minOccurs="0" />
-      <xs:element minOccurs="0" name="classifiers" type="mdm:classifiersType" />
-      <xs:element name="metadata" type="mdm:metadataCollectionType" minOccurs="0" />
-      <xs:element minOccurs="0" name="annotations" type="mdm:annotationsType" />
+      <xs:element name="id" type="mdm:uuid" minOccurs="0"/>
+      <xs:element name="label" type="mdm:mandatoryString" minOccurs="0"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string"/>
+      <xs:element minOccurs="0" name="aliases" type="mdm:aliasesType"/>
+      <xs:element name="lastUpdated" type="xs:dateTime" minOccurs="0"/>
+      <xs:element minOccurs="0" name="classifiers" type="mdm:classifiersType"/>
+      <xs:element name="metadata" type="mdm:metadataCollectionType" minOccurs="0"/>
+      <xs:element minOccurs="0" name="annotations" type="mdm:annotationsType"/>
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="dataFlowsType">
     <xs:sequence>
-      <xs:element maxOccurs="unbounded" name="dataFlow" type="mdm:dataFlowType" />
+      <xs:element maxOccurs="unbounded" name="dataFlow" type="mdm:dataFlowType"/>
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="dataFlowType">
     <xs:complexContent>
       <xs:extension base="mdm:catalogueItem">
         <xs:sequence>
-          <xs:element fixed="Data Asset" name="type" type="mdm:dataModelTypeEnum" />
+          <xs:element fixed="Data Asset" name="type" type="mdm:dataModelTypeEnum"/>
           <xs:element name="source" minOccurs="1" maxOccurs="1" type="mdm:dataModelType">
             <xs:annotation>
               <xs:documentation>The source DataModel</xs:documentation>
@@ -35,173 +35,180 @@
             <xs:annotation>
               <xs:documentation>The target DataModel</xs:documentation>
             </xs:annotation>
-          </xs:element>  
-          <xs:element name="dataClassComponents" minOccurs="0" type="mdm:dataClassComponentsType" />                
+          </xs:element>
+          <xs:element name="dataClassComponents" minOccurs="0" type="mdm:dataClassComponentsType"/>
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
   <xs:complexType name="aliasesType">
     <xs:sequence>
-      <xs:element maxOccurs="unbounded" name="alias" type="xs:string" />
+      <xs:element maxOccurs="unbounded" name="alias" type="xs:string"/>
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="classifiersType">
     <xs:sequence>
-      <xs:element maxOccurs="unbounded" name="classifier" type="mdm:classifierType" />
+      <xs:element maxOccurs="unbounded" name="classifier" type="mdm:classifierType"/>
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="classifierType">
     <xs:sequence>
-      <xs:element name="id" type="mdm:uuid" minOccurs="0" />
-      <xs:element name="label" type="mdm:mandatoryString" />
-      <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string" />
-      <xs:element name="lastUpdated" type="xs:dateTime" minOccurs="0" />
+      <xs:element name="id" type="mdm:uuid" minOccurs="0"/>
+      <xs:element name="label" type="mdm:mandatoryString"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string"/>
+      <xs:element name="lastUpdated" type="xs:dateTime" minOccurs="0"/>
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="annotationsType">
     <xs:sequence>
-      <xs:element maxOccurs="unbounded" name="annotation" type="mdm:annotationType" />
+      <xs:element maxOccurs="unbounded" name="annotation" type="mdm:annotationType"/>
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="annotationType">
     <xs:sequence>
-      <xs:element name="id" type="mdm:uuid" minOccurs="0" />
-      <xs:element name="createdBy" type="mdm:mandatoryString" />
-      <xs:element name="lastUpdated" type="xs:dateTime" minOccurs="0" />
+      <xs:element name="id" type="mdm:uuid" minOccurs="0"/>
+      <xs:element name="createdBy" type="mdm:mandatoryString"/>
+      <xs:element name="lastUpdated" type="xs:dateTime" minOccurs="0"/>
       <xs:element name="label" type="mdm:mandatoryString">
         <xs:annotation>
-          <xs:documentation />
+          <xs:documentation/>
         </xs:annotation>
       </xs:element>
-      <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string" />
-      <xs:element minOccurs="0" name="childAnnotations" type="mdm:childAnnotationsType" />
+      <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string"/>
+      <xs:element minOccurs="0" name="childAnnotations" type="mdm:childAnnotationsType"/>
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="childAnnotationsType">
     <xs:sequence>
-      <xs:element maxOccurs="unbounded" name="annotation" type="mdm:childAnnotationType" />
+      <xs:element maxOccurs="unbounded" name="annotation" type="mdm:childAnnotationType"/>
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="childAnnotationType">
     <xs:sequence>
-      <xs:element name="id" type="mdm:uuid" minOccurs="0" />
+      <xs:element name="id" type="mdm:uuid" minOccurs="0"/>
       <xs:element name="label" type="mdm:mandatoryString" minOccurs="0">
         <xs:annotation>
-          <xs:documentation />
+          <xs:documentation/>
         </xs:annotation>
       </xs:element>
-      <xs:element name="createdBy" type="mdm:mandatoryString" />
-      <xs:element name="lastUpdated" type="xs:dateTime" minOccurs="0" />
-      <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string" />
-      <xs:element minOccurs="0" name="childAnnotations" type="mdm:annotationsType" />
+      <xs:element name="createdBy" type="mdm:mandatoryString"/>
+      <xs:element name="lastUpdated" type="xs:dateTime" minOccurs="0"/>
+      <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string"/>
+      <xs:element minOccurs="0" name="childAnnotations" type="mdm:annotationsType"/>
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="metadataCollectionType">
     <xs:sequence>
-      <xs:element name="metadata" maxOccurs="unbounded" type="mdm:metadataType" />
+      <xs:element name="metadata" maxOccurs="unbounded" type="mdm:metadataType"/>
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="metadataType">
     <xs:sequence>
-      <xs:element name="id" type="mdm:uuid" minOccurs="0" />
-      <xs:element name="namespace" type="xs:string" />
-      <xs:element name="key" type="xs:string" />
-      <xs:element name="value" type="xs:string" minOccurs="1" />
-      <xs:element name="lastUpdated" type="xs:dateTime" minOccurs="0" />
+      <xs:element name="id" type="mdm:uuid" minOccurs="0"/>
+      <xs:element name="namespace" type="xs:string"/>
+      <xs:element name="key" type="xs:string"/>
+      <xs:element name="value" type="xs:string" minOccurs="1"/>
+      <xs:element name="lastUpdated" type="xs:dateTime" minOccurs="0"/>
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="exporterType">
     <xs:all>
-      <xs:element name="namespace" type="xs:string" />
-      <xs:element name="name" type="xs:string" />
-      <xs:element name="version" type="xs:decimal" />
+      <xs:element name="namespace" type="xs:string"/>
+      <xs:element name="name" type="xs:string"/>
+      <xs:element name="version" type="xs:decimal"/>
     </xs:all>
   </xs:complexType>
   <xs:simpleType name="mandatoryString">
     <xs:restriction base="xs:string">
-      <xs:minLength value="1" />
+      <xs:minLength value="1"/>
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="multiplicity">
     <xs:restriction base="xs:integer">
-      <xs:minInclusive value="-1" />
+      <xs:minInclusive value="-1"/>
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="dataModelTypeEnum">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="Data Asset" />
-      <xs:enumeration value="Data Standard" />
+      <xs:enumeration value="Data Asset"/>
+      <xs:enumeration value="Data Standard"/>
     </xs:restriction>
   </xs:simpleType>
   <xs:complexType name="dataModelType">
     <xs:sequence>
-      <xs:element name="id" type="mdm:uuid" minOccurs="1" maxOccurs="1" />
-      <xs:element name="label" type="mdm:mandatoryString" />
-      <xs:element name="type" type="mdm:dataModelTypeEnum" minOccurs="1" maxOccurs="1" />
+      <xs:element name="id" type="mdm:uuid" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="label" type="mdm:mandatoryString" minOccurs="0"/>
+      <xs:element name="path" type="mdm:mandatoryString"/>
+      <xs:element name="type" type="mdm:dataModelTypeEnum" minOccurs="1" maxOccurs="1"/>
     </xs:sequence>
-  </xs:complexType>  
+  </xs:complexType>
   <xs:complexType name="dataClassComponentsType">
     <xs:sequence>
-      <xs:element name="dataClassComponent" minOccurs="1" maxOccurs="unbounded" type="mdm:dataClassComponentType" />
+      <xs:element name="dataClassComponent" minOccurs="1" maxOccurs="unbounded"
+        type="mdm:dataClassComponentType"/>
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="dataClassComponentType">
     <xs:complexContent>
       <xs:extension base="mdm:catalogueItem">
         <xs:sequence>
-          <xs:element name="definition" type="mdm:mandatoryString" />
-          <xs:element name="sourceDataClasses" minOccurs="0" type="mdm:dataClassesType" />
-          <xs:element name="targetDataClasses" minOccurs="0" type="mdm:dataClassesType" />
-          <xs:element name="dataElementComponents" minOccurs="0" type="mdm:dataElementComponentsType" />
+          <xs:element name="definition" type="mdm:mandatoryString"/>
+          <xs:element name="sourceDataClasses" minOccurs="0" type="mdm:dataClassesType"/>
+          <xs:element name="targetDataClasses" minOccurs="0" type="mdm:dataClassesType"/>
+          <xs:element name="dataElementComponents" minOccurs="0"
+            type="mdm:dataElementComponentsType"/>
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
   <xs:complexType name="dataClassesType">
     <xs:sequence>
-      <xs:element name="dataClass" minOccurs="1" maxOccurs="unbounded" type="mdm:dataClassType" />
+      <xs:element name="dataClass" minOccurs="1" maxOccurs="unbounded" type="mdm:dataClassType"/>
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="dataClassType">
     <xs:sequence>
-      <xs:element name="label" type="mdm:mandatoryString" />
+      <xs:element name="label" type="mdm:mandatoryString" minOccurs="0"/>
+      <xs:element name="path" type="mdm:mandatoryString"/>
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="dataElementComponentsType">
     <xs:sequence>
-      <xs:element name="dataElementComponent" minOccurs="1" maxOccurs="unbounded" type="mdm:dataElementComponentType" />
+      <xs:element name="dataElementComponent" minOccurs="1" maxOccurs="unbounded"
+        type="mdm:dataElementComponentType"/>
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="dataElementComponentType">
     <xs:complexContent>
       <xs:extension base="mdm:catalogueItem">
         <xs:sequence>
-          <xs:element name="definition" minOccurs="0" type="mdm:mandatoryString" />
-          <xs:element name="sourceDataElements" minOccurs="0" type="mdm:dataElementsType" />
-          <xs:element name="targetDataElements" minOccurs="0" type="mdm:dataElementsType" />
+          <xs:element name="definition" minOccurs="0" type="mdm:mandatoryString"/>
+          <xs:element name="sourceDataElements" minOccurs="0" type="mdm:dataElementsType"/>
+          <xs:element name="targetDataElements" minOccurs="0" type="mdm:dataElementsType"/>
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
-  </xs:complexType>  
+  </xs:complexType>
   <xs:complexType name="dataElementsType">
     <xs:sequence>
-      <xs:element name="dataElement" minOccurs="1" maxOccurs="unbounded" type="mdm:dataElementType" />
+      <xs:element name="dataElement" minOccurs="1" maxOccurs="unbounded" type="mdm:dataElementType"
+      />
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="dataElementType">
     <xs:sequence>
-      <xs:element name="label" type="mdm:mandatoryString" />
+      <xs:element name="label" type="mdm:mandatoryString" minOccurs="0"/>
+      <xs:element name="path" type="mdm:mandatoryString"/>
       <xs:element name="dataClass" type="mdm:dataClassType">
         <xs:annotation>
           <xs:documentation>The label of the DataClass</xs:documentation>
         </xs:annotation>
       </xs:element>
     </xs:sequence>
-  </xs:complexType>   
+  </xs:complexType>
   <xs:simpleType name="uuid">
     <xs:restriction base="xs:string">
-      <xs:pattern value="[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-fF0-9]{4}-[a-f0-9]{12}" />
+      <xs:pattern value="[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-fF0-9]{4}-[a-f0-9]{12}"/>
     </xs:restriction>
   </xs:simpleType>
 </xs:schema>

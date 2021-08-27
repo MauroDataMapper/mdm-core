@@ -74,6 +74,7 @@
                 <mdm:path>dm:SourceFlowDataModel$main|dc:tableA|de:columnA</mdm:path>
                 <mdm:dataClass>
                   <mdm:label>tableA</mdm:label>
+                  <mdm:path>dm:SourceFlowDataModel$main|dc:tableA</mdm:path>
                 </mdm:dataClass>
               </mdm:dataElement>
               <mdm:dataElement>
@@ -81,6 +82,7 @@
                 <mdm:path>dm:SourceFlowDataModel$main|dc:tableA|de:columnB</mdm:path>
                 <mdm:dataClass>
                   <mdm:label>tableA</mdm:label>
+                  <mdm:path>dm:SourceFlowDataModel$main|dc:tableA</mdm:path>
                 </mdm:dataClass>
               </mdm:dataElement>       
               <mdm:dataElement>
@@ -88,6 +90,7 @@
                 <mdm:path>dm:SourceFlowDataModel$main|dc:tableC|de:columnE2</mdm:path>
                 <mdm:dataClass>
                   <mdm:label>tableC</mdm:label>
+                  <mdm:path>dm:SourceFlowDataModel$main|dc:tableC</mdm:path>
                 </mdm:dataClass>
               </mdm:dataElement>                         
             </mdm:sourceDataElements>
@@ -97,6 +100,7 @@
                 <mdm:path>dm:TargetFlowDataModel$main|dc:tableD|de:columnN</mdm:path>
                 <mdm:dataClass>
                   <mdm:label>tableD</mdm:label>
+                  <mdm:path>dm:TargetFlowDataModel$main|dc:tableD</mdm:path>
                 </mdm:dataClass>
               </mdm:dataElement>                             
             </mdm:targetDataElements>            

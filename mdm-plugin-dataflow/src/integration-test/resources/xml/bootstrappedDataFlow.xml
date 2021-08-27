@@ -47,7 +47,7 @@
       <mdm:label>TargetFlowDataModel</mdm:label>
 
       <mdm:path>dm:TargetFlowDataModel$main</mdm:path>
-            
+
       <mdm:type>Data Asset</mdm:type>
           
     </mdm:target>

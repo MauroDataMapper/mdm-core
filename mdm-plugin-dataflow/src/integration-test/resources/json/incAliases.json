@@ -26,7 +26,7 @@
         "exporter": {
             "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter",
             "name": "DataFlowJsonExporterService",
-            "version": "3.0"
+            "version": "4.0"
         }
     }
 }

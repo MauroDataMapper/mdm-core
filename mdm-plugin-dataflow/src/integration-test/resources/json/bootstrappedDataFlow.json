@@ -42,9 +42,10 @@
                         "sourceDataElements": [
                             {
                                 "label": "columnA",
-                                "path": "dm:SourceFlowDataModel$main|dc:tableA|de:ColumnA",
+                                "path": "dm:SourceFlowDataModel$main|dc:tableA|de:columnA",
                                 "dataClass": {
-                                    "label": "tableA"
+                                    "label": "tableA",
+                                    "path": "dm:SourceFlowDataModel$main|dc:tableA"
                                 }
                             }
                         ],
@@ -53,7 +54,8 @@
                                 "label": "columnN",
                                 "path": "dm:TargetFlowDataModel$main|dc:tableD|de:columnN",
                                 "dataClass": {
-                                    "label": "tableD"
+                                    "label": "tableD",
+                                    "path": "dm:TargetFlowDataModel$main|dc:tableD"
                                 }
                             }
                         ]
@@ -67,7 +69,8 @@
                                 "label": "columnB",
                                 "path": "dm:SourceFlowDataModel$main|dc:tableA|de:columnB",
                                 "dataClass": {
-                                    "label": "tableA"
+                                    "label": "tableA",
+                                    "path": "dm:SourceFlowDataModel$main|dc:tableA"
                                 }
                             }
                         ],
@@ -76,7 +79,8 @@
                                 "label": "columnO",
                                 "path": "dm:TargetFlowDataModel$main|dc:tableD|de:columnO",
                                 "dataClass": {
-                                    "label": "tableD"
+                                    "label": "tableD",
+                                    "path": "dm:TargetFlowDataModel$main|dc:tableD"
                                 }
                             }
                         ]
@@ -90,16 +94,18 @@
                                 "label": "columnC",
                                 "path": "dm:SourceFlowDataModel$main|dc:tableA|de:columnC",
                                 "dataClass": {
-                                    "label": "tableA"
+                                    "label": "tableA",
+                                    "path": "dm:SourceFlowDataModel$main|dc:tableA"
                                 }
                             }
                         ],
                         "targetDataElements": [
                             {
                                 "label": "columnP",
-                                "path": "dm:TargetFlowDataModel|dc:tableD|de:columnP",
+                                "path": "dm:TargetFlowDataModel$main|dc:tableD|de:columnP",
                                 "dataClass": {
-                                    "label": "tableD"
+                                    "label": "tableD",
+                                    "path": "dm:TargetFlowDataModel$main|dc:tableD"
                                 }
                             }
                         ]
@@ -111,18 +117,20 @@
                         "sourceDataElements": [
                             {
                                 "label": "columnD",
-                                "path": "dm:SourceFlowDataModel|dc:tableA|de:columnD",
+                                "path": "dm:SourceFlowDataModel$main|dc:tableA|de:columnD",
                                 "dataClass": {
-                                    "label": "tableA"
+                                    "label": "tableA",
+                                    "path": "dm:SourceFlowDataModel$main|dc:tableA"
                                 }
                             }
                         ],
                         "targetDataElements": [
                             {
                                 "label": "columnQ",
-                                "path": "dm:TargetFlowDataModel|dc:tableD|de:columnQ",
+                                "path": "dm:TargetFlowDataModel$main|dc:tableD|de:columnQ",
                                 "dataClass": {
-                                    "label": "tableD"
+                                    "label": "tableD",
+                                    "path": "dm:TargetFlowDataModel$main|dc:tableD"
                                 }
                             }
                         ]
@@ -137,17 +145,17 @@
                 "sourceDataClasses": [
                     {
                         "label": "tableC",
-                        "path": "dm:SourceFlowDataModel|dc:tableC"
+                        "path": "dm:SourceFlowDataModel$main|dc:tableC"
                     },
                     {
                         "label": "tableB",
-                        "path": "dm:SourceFlowDataModel|dc:tableB"
+                        "path": "dm:SourceFlowDataModel$main|dc:tableB"
                     }
                 ],
                 "targetDataClasses": [
                     {
                         "label": "tableE",
-                        "path": "dm:TargetFlowDataModel|dc:tableE"
+                        "path": "dm:TargetFlowDataModel$main|dc:tableE"
                     }
                 ],
                 "dataElementComponents": [
@@ -158,25 +166,28 @@
                         "sourceDataElements": [
                             {
                                 "label": "columnE1",
-                                "path": "dm:SourceFlowDataModel|dc:tableB|de:columnE1",
+                                "path": "dm:SourceFlowDataModel$main|dc:tableB|de:columnE1",
                                 "dataClass": {
-                                    "label": "tableB"
+                                    "label": "tableB",
+                                    "path": "dm:SourceFlowDataModel$main|dc:tableB"
                                 }
                             },
                             {
                                 "label": "columnE2",
-                                "path": "dm:SourceFlowDataModel|dc:tableC|de:columnE2",
+                                "path": "dm:SourceFlowDataModel$main|dc:tableC|de:columnE2",
                                 "dataClass": {
-                                    "label": "tableC"
+                                    "label": "tableC",
+                                    "path": "dm:SourceFlowDataModel$main|dc:tableC"
                                 }
                             }
                         ],
                         "targetDataElements": [
                             {
                                 "label": "columnE",
-                                "path": "dm:TargetFlowDataModel|dc:tableE|de:columnE",
+                                "path": "dm:TargetFlowDataModel$main|dc:tableE|de:columnE",
                                 "dataClass": {
-                                    "label": "tableE"
+                                    "label": "tableE",
+                                    "path": "dm:TargetFlowDataModel$main|dc:tableE"
                                 }
                             }
                         ]
@@ -189,25 +200,28 @@
                         "sourceDataElements": [
                             {
                                 "label": "columnG",
-                                "path": "dm:SourceFlowDataModel|dc:tableB|de:columnG",
+                                "path": "dm:SourceFlowDataModel$main|dc:tableB|de:columnG",
                                 "dataClass": {
-                                    "label": "tableB"
+                                    "label": "tableB",
+                                    "path": "dm:SourceFlowDataModel$main|dc:tableB"
                                 }
                             },
                             {
                                 "label": "columnJ",
-                                "path": "dm:SourceFlowDataModel|dc:tableC|de:columnJ",
+                                "path": "dm:SourceFlowDataModel$main|dc:tableC|de:columnJ",
                                 "dataClass": {
-                                    "label": "tableC"
+                                    "label": "tableC",
+                                    "path": "dm:SourceFlowDataModel$main|dc:tableC"
                                 }
                             }
                         ],
                         "targetDataElements": [
                             {
                                 "label": "columnS",
-                                "path": "dm:TargetFlowDataModel|dc:tableE|de:columnS",
+                                "path": "dm:TargetFlowDataModel$main|dc:tableE|de:columnS",
                                 "dataClass": {
-                                    "label": "tableE"
+                                    "label": "tableE",
+                                    "path": "dm:TargetFlowDataModel$main|dc:tableE"
                                 }
                             }
                         ]
@@ -219,18 +233,20 @@
                         "sourceDataElements": [
                             {
                                 "label": "columnF",
-                                "path": "dm:SourceFlowDataModel|dc:tableB|de:columnF",
+                                "path": "dm:SourceFlowDataModel$main|dc:tableB|de:columnF",
                                 "dataClass": {
-                                    "label": "tableB"
+                                    "label": "tableB",
+                                    "path": "dm:SourceFlowDataModel$main|dc:tableB"
                                 }
                             }
                         ],
                         "targetDataElements": [
                             {
                                 "label": "columnR",
-                                "path": "dm:TargetFlowDataModel|dc:tableE|de:columnR",
+                                "path": "dm:TargetFlowDataModel$main|dc:tableE|de:columnR",
                                 "dataClass": {
-                                    "label": "tableE"
+                                    "label": "tableE",
+                                    "path": "dm:TargetFlowDataModel$main|dc:tableE"
                                 }
                             }
                         ]
@@ -243,32 +259,36 @@
                         "sourceDataElements": [
                             {
                                 "label": "columnL",
-                                "path": "dm:SourceFlowDataModel|dc:tableC|de:columnL",
+                                "path": "dm:SourceFlowDataModel$main|dc:tableC|de:columnL",
                                 "dataClass": {
-                                    "label": "tableC"
+                                    "label": "tableC",
+                                    "path": "dm:SourceFlowDataModel$main|dc:tableC"
                                 }
                             },
                             {
                                 "label": "columnM",
-                                "path": "dm:SourceFlowDataModel|dc:tableC|de:columnM",
+                                "path": "dm:SourceFlowDataModel$main|dc:tableC|de:columnM",
                                 "dataClass": {
-                                    "label": "tableC"
+                                    "label": "tableC",
+                                    "path": "dm:SourceFlowDataModel$main|dc:tableC"
                                 }
                             },
                             {
                                 "label": "columnG",
-                                "path": "dm:SourceFlowDataModel|dc:tableB|de:columnG",
+                                "path": "dm:SourceFlowDataModel$main|dc:tableB|de:columnG",
                                 "dataClass": {
-                                    "label": "tableB"
+                                    "label": "tableB",
+                                    "path": "dm:SourceFlowDataModel$main|dc:tableB"
                                 }
                             }
                         ],
                         "targetDataElements": [
                             {
                                 "label": "columnV",
-                                "path": "dm:TargetFlowDataModel|dc:tableE|de:columnV",
+                                "path": "dm:TargetFlowDataModel$main|dc:tableE|de:columnV",
                                 "dataClass": {
-                                    "label": "tableE"
+                                    "label": "tableE",
+                                    "path": "dm:TargetFlowDataModel$main|dc:tableE"
                                 }
                             }
                         ]
@@ -280,18 +300,20 @@
                         "sourceDataElements": [
                             {
                                 "label": "columnJ",
-                                "path": "dm:SourceFlowDataModel|dc:tableC|de:columnJ",
+                                "path": "dm:SourceFlowDataModel$main|dc:tableC|de:columnJ",
                                 "dataClass": {
-                                    "label": "tableC"
+                                    "label": "tableC",
+                                    "path": "dm:SourceFlowDataModel$main|dc:tableC"
                                 }
                             }
                         ],
                         "targetDataElements": [
                             {
                                 "label": "columnU",
-                                "path": "dm:TargetFlowDataModel|dc:tableE|de:columnU",
+                                "path": "dm:TargetFlowDataModel$main|dc:tableE|de:columnU",
                                 "dataClass": {
-                                    "label": "tableE"
+                                    "label": "tableE",
+                                    "path": "dm:TargetFlowDataModel$main|dc:tableE"
                                 }
                             }
                         ]
@@ -304,25 +326,28 @@
                         "sourceDataElements": [
                             {
                                 "label": "columnH",
-                                "path": "dm:SourceFlowDataModel|dc:tableB|de:columnH",
+                                "path": "dm:SourceFlowDataModel$main|dc:tableB|de:columnH",
                                 "dataClass": {
-                                    "label": "tableB"
+                                    "label": "tableB",
+                                    "path": "dm:SourceFlowDataModel$main|dc:tableB"
                                 }
                             },
                             {
                                 "label": "columnI",
-                                "path": "dm:SourceFlowDataModel|dc:tableB|de:columnI",
+                                "path": "dm:SourceFlowDataModel$main|dc:tableB|de:columnI",
                                 "dataClass": {
-                                    "label": "tableB"
+                                    "label": "tableB",
+                                    "path": "dm:SourceFlowDataModel$main|dc:tableB"
                                 }
                             }
                         ],
                         "targetDataElements": [
                             {
                                 "label": "columnT",
-                                "path": "dm:TargetFlowDataModel|dc:tableE|de:columnT",
+                                "path": "dm:TargetFlowDataModel$main|dc:tableE|de:columnT",
                                 "dataClass": {
-                                    "label": "tableE"
+                                    "label": "tableE",
+                                    "path": "dm:TargetFlowDataModel$main|dc:tableE"
                                 }
                             }
                         ]
@@ -337,7 +362,7 @@
         "exporter": {
             "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter",
             "name": "DataFlowJsonExporterService",
-            "version": "3.0"
+            "version": "4.0"
         }
     }
 }

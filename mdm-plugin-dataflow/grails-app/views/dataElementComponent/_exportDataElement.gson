@@ -1,9 +1,13 @@
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 
 model {
     DataElement exportDataElement
 }
+
 json {
     label exportDataElement.label
+    path Path.toPathPrefix(exportDataElement,'dm')
+
     dataClass tmpl.'/dataClassComponent/exportDataClass'(exportDataClass: exportDataElement.dataClass) 
 }
