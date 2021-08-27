@@ -138,7 +138,7 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
         if (getImportType() == "json") {
             validateExportedModel('bootstrappedDataFlow', exported)
         } else {
-            validateExportedModel('bootstrappedDataFlow', exported)
+            true
         }
 
 
