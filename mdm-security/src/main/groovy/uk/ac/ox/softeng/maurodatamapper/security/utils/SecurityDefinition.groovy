@@ -82,7 +82,6 @@ trait SecurityDefinition {
                                name: 'administrators',
                                applicationGroupRole: GroupRole.findByName(GroupRole.SITE_ADMIN_ROLE_NAME),
                                undeleteable: true)
-            .addToGroupMembers(admin)
     }
 
     void createModernSecurityUsers(String creatorKey, boolean includeAdmin = true) {
@@ -154,7 +153,7 @@ trait SecurityDefinition {
     void getOrCreateBasicGroups(String creatorKey, boolean includeAdmin = true) {
         if (includeAdmin) {
             admins = UserGroup.findByName('administrators')
-            if (!admins) createAdminGroup(creatorKey)
+            if (!admins) createAdminGroup(creatorKey).addToGroupMembers(admin)
         }
         editors = UserGroup.findByName('editors')
         readers = UserGroup.findByName('readers')

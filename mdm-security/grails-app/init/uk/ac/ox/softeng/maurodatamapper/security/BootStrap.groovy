@@ -31,6 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityDefinition
 
 import grails.core.GrailsApplication
+import grails.util.Environment
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
@@ -49,7 +50,7 @@ class BootStrap implements SecurityDefinition {
 
     GrailsApplication grailsApplication
 
-    def init = { servletContext ->
+    def init = {servletContext ->
 
         GroupRole.withNewTransaction {
             // Add all the roles
@@ -69,16 +70,23 @@ class BootStrap implements SecurityDefinition {
             groupBasedSecurityPolicyManagerService.storeUserSecurityPolicyManager(defaultUserSecurityPolicyManager)
         }
 
-        if (grailsApplication.config.maurodatamapper.bootstrap.adminuser == true) {
-            CatalogueUser.withNewTransaction {
+
+        CatalogueUser.withNewTransaction {
+            // Admin group must exist
+            admins = UserGroup.findByName('administrators')
+            if (!admins) {
+                createAdminGroup('admin')
+                checkAndSave(messageSource, admins)
+            }
+
+            // Only allow bootstrapping to be disabled if environment is prod
+            if (Environment.current != Environment.PRODUCTION || grailsApplication.config.maurodatamapper.bootstrap.adminuser) {
+
                 admin = CatalogueUser.findByEmailAddress(StandardEmailAddress.ADMIN)
                 if (!admin) {
                     createAdminUser('admin')
                     checkAndSave(messageSource, admin)
-                }
-                admins = UserGroup.findByName('administrators')
-                if (!admins) {
-                    createAdminGroup('admin')
+                    admins.addToGroupMembers(admin)
                     checkAndSave(messageSource, admins)
                 }
             }
@@ -91,62 +99,60 @@ class BootStrap implements SecurityDefinition {
         environments {
             development {
                 //dev env relies almost entirely upon adminusers being bootstrapped
-                if (grailsApplication.config.maurodatamapper.bootstrap.adminuser == true) {
-                    CatalogueUser.withNewTransaction {
+                CatalogueUser.withNewTransaction {
 
-                        getOrCreateModernSecurityUsers('development', false)
-                        checkAndSave(messageSource, editor, reader, authenticated, pending, containerAdmin, author, reviewer)
+                    getOrCreateModernSecurityUsers('development', false)
+                    checkAndSave(messageSource, editor, reader, authenticated, pending, containerAdmin, author, reviewer)
 
-                        getOrCreateBasicGroups('development', false)
-                        checkAndSave(messageSource, editors, readers)
+                    getOrCreateBasicGroups('development', false)
+                    checkAndSave(messageSource, editors, readers)
 
-                        Folder folder = Folder.findByLabel('Development Folder')
+                    Folder folder = Folder.findByLabel('Development Folder')
 
-                        if (SecurableResourceGroupRole.bySecurableResourceAndGroupRoleIdAndUserGroupId(
-                            folder, groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole.id, editors.id).count() == 0) {
-                            // Make editors container admin (existing permissions) of the test folder
-                            checkAndSave(messageSource, new SecurableResourceGroupRole(
-                                createdBy: userEmailAddresses.development,
-                                securableResource: folder,
-                                userGroup: editors,
-                                groupRole: groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole)
-                            )
-                        }
-                        if (SecurableResourceGroupRole.bySecurableResourceAndGroupRoleIdAndUserGroupId(
-                            folder, groupRoleService.getFromCache(GroupRole.READER_ROLE_NAME).groupRole.id, readers.id).count() == 0) {
-                            // Make readers reader of the test folder
-                            checkAndSave(messageSource, new SecurableResourceGroupRole(
-                                createdBy: userEmailAddresses.development,
-                                securableResource: folder,
-                                userGroup: readers,
-                                groupRole: groupRoleService.getFromCache(GroupRole.READER_ROLE_NAME).groupRole)
-                            )
-                        }
-                        Classifier classifier = Classifier.findByLabel('Development Classifier')
-
-                        if (SecurableResourceGroupRole.bySecurableResourceAndGroupRoleIdAndUserGroupId(
-                            classifier, groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole.id, editors.id).count() == 0) {
-                            // Make editors container admin (existing permissions) of the test classifier
-                            checkAndSave(messageSource, new SecurableResourceGroupRole(
-                                createdBy: userEmailAddresses.development,
-                                securableResource: classifier,
-                                userGroup: editors,
-                                groupRole: groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole)
-                            )
-                        }
-                        if (SecurableResourceGroupRole.bySecurableResourceAndGroupRoleIdAndUserGroupId(
-                            classifier, groupRoleService.getFromCache(GroupRole.READER_ROLE_NAME).groupRole.id, readers.id).count() == 0) {
-                            // Make readers reader of the test classifier
-                            checkAndSave(messageSource, new SecurableResourceGroupRole(
-                                createdBy: userEmailAddresses.development,
-                                securableResource: classifier,
-                                userGroup: readers,
-                                groupRole: groupRoleService.getFromCache(GroupRole.READER_ROLE_NAME).groupRole)
-                            )
-                        }
+                    if (SecurableResourceGroupRole.bySecurableResourceAndGroupRoleIdAndUserGroupId(
+                        folder, groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole.id, editors.id).count() == 0) {
+                        // Make editors container admin (existing permissions) of the test folder
+                        checkAndSave(messageSource, new SecurableResourceGroupRole(
+                            createdBy: userEmailAddresses.development,
+                            securableResource: folder,
+                            userGroup: editors,
+                            groupRole: groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole)
+                        )
                     }
-                    log.debug('Development environment bootstrap complete')
+                    if (SecurableResourceGroupRole.bySecurableResourceAndGroupRoleIdAndUserGroupId(
+                        folder, groupRoleService.getFromCache(GroupRole.READER_ROLE_NAME).groupRole.id, readers.id).count() == 0) {
+                        // Make readers reader of the test folder
+                        checkAndSave(messageSource, new SecurableResourceGroupRole(
+                            createdBy: userEmailAddresses.development,
+                            securableResource: folder,
+                            userGroup: readers,
+                            groupRole: groupRoleService.getFromCache(GroupRole.READER_ROLE_NAME).groupRole)
+                        )
+                    }
+                    Classifier classifier = Classifier.findByLabel('Development Classifier')
+
+                    if (SecurableResourceGroupRole.bySecurableResourceAndGroupRoleIdAndUserGroupId(
+                        classifier, groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole.id, editors.id).count() == 0) {
+                        // Make editors container admin (existing permissions) of the test classifier
+                        checkAndSave(messageSource, new SecurableResourceGroupRole(
+                            createdBy: userEmailAddresses.development,
+                            securableResource: classifier,
+                            userGroup: editors,
+                            groupRole: groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole)
+                        )
+                    }
+                    if (SecurableResourceGroupRole.bySecurableResourceAndGroupRoleIdAndUserGroupId(
+                        classifier, groupRoleService.getFromCache(GroupRole.READER_ROLE_NAME).groupRole.id, readers.id).count() == 0) {
+                        // Make readers reader of the test classifier
+                        checkAndSave(messageSource, new SecurableResourceGroupRole(
+                            createdBy: userEmailAddresses.development,
+                            securableResource: classifier,
+                            userGroup: readers,
+                            groupRole: groupRoleService.getFromCache(GroupRole.READER_ROLE_NAME).groupRole)
+                        )
+                    }
                 }
+                log.debug('Development environment bootstrap complete')
             }
             production {
                 if (grailsApplication.config.maurodatamapper.bootstrap.folder) {
@@ -154,17 +160,18 @@ class BootStrap implements SecurityDefinition {
                         if (!Folder.count()) {
                             Folder folder = new Folder(
                                 label: 'Example Folder',
-                                createdBy: admin.emailAddress,
+                                createdBy: StandardEmailAddress.ADMIN,
                                 readableByAuthenticatedUsers: true,
                                 description: 'This folder is readable by all authenticated users, and currently only editable by users in the ' +
                                              'administrators group. Future suggestions: rename this folder to be more descriptive, and alter group ' +
                                              'access.')
                             checkAndSave(messageSource, folder)
 
+                            // Make sure the folder is secured
                             if (SecurableResourceGroupRole.bySecurableResourceAndGroupRoleIdAndUserGroupId(
                                 folder, groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole.id, admins.id).count() == 0) {
                                 checkAndSave(messageSource, new SecurableResourceGroupRole(
-                                    createdBy: admin.emailAddress,
+                                    createdBy: StandardEmailAddress.ADMIN,
                                     securableResource: folder,
                                     userGroup: admins,
                                     groupRole: groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole))
