@@ -52,7 +52,7 @@ class ReferenceType extends DataType<ReferenceType> {
         domainType = ReferenceType.simpleName
     }
 
-    ObjectDiff<ReferenceType> diff(ReferenceType otherDataType) {
+    ObjectDiff<ReferenceType> diff(ReferenceType otherDataType, String context) {
         catalogueItemDiffBuilder(ReferenceType, this, otherDataType)
             .appendString('referenceClass.label', this.referenceClass.label, otherDataType.referenceClass.label)
     }

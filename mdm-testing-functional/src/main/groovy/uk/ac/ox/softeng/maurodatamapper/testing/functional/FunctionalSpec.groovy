@@ -66,7 +66,7 @@ abstract class FunctionalSpec extends BaseFunctionalSpec implements SecurityDefi
 
     @Override
     void cleanUpData(String id = null) {
-        log.warn('Do not use cleanUpData')
+        //log.warn('Do not use cleanUpData')
     }
 
     @Autowired

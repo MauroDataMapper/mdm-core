@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
@@ -57,6 +57,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         mockArtefact(DataTypeService)
         mockArtefact(SummaryMetadataService)
         mockArtefact(PathService)
+        mockArtefact(VersionedFolderService)
         mockDomains(DataModel, DataClass, DataType, PrimitiveType,
                     ReferenceType, EnumerationType, EnumerationValue, DataElement)
 

@@ -31,7 +31,7 @@ class SessionInterceptor implements MdmInterceptor {
 
     boolean before() {
 
-        if (sessionService.isInvalidatedSession(session)) return unauthorised('Session has been invalidated')
+        if (!params.sessionId && sessionService.isInvalidatedSession(session)) return unauthorised('Session has been invalidated')
 
         // Every session access will be added to the list by the session service as a sessionlistener
         sessionService.setLastAccessedUrl(session, request.requestURI)

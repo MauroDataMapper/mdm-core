@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
@@ -52,6 +53,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
         mockArtefact(TermRelationshipService)
         mockArtefact(TermRelationshipTypeService)
         mockArtefact(PathService)
+        mockArtefact(VersionedFolderService)
         mockDomains(Terminology, Term, TermRelationship, TermRelationshipType)
 
         service.breadcrumbTreeService = Stub(BreadcrumbTreeService) {

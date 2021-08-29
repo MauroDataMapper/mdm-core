@@ -211,8 +211,8 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     @Override
     List<UUID> listReadableSecuredResourceIds(Class<? extends SecurableResource> securableResourceClass) {
         virtualSecurableResourceGroupRoles
-            .findAll {it.domainType == securableResourceClass.simpleName || it.alternateDomainType == securableResourceClass.simpleName}
-            .collect {it.domainId}
+            .findAll { it.domainType == securableResourceClass.simpleName || it.alternateDomainType == securableResourceClass.simpleName }
+            .collect { it.domainId }
             .toSet()
             .toList()
     }
@@ -384,10 +384,10 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
                     // If model is finalised then these actions are allowed
                     VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
                     return role ? role.canVersion() : false
-                    //                case MERGE_INTO_ACTION:
-                    //                    // If the model is finalised then these actions are NOT allowed
-                    //                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass,
-                    //                    id, EDITOR_ROLE_NAME)
+                case MERGE_INTO_ACTION:
+                    // If the model is finalised then these actions are NOT allowed
+                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
+                    return role ? !role.isFinalised() : false
             }
         }
 
@@ -474,7 +474,8 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     }
 
     List<String> userAvailableTreeActions(Class<? extends SecurableResource> securableResourceClass, UUID id) {
-        securedResourceUserAvailableTreeActions(hibernateProxyHandler.unwrapIfProxy(securableResourceClass) as Class<? extends SecurableResource>, id).toSet().sort()
+        securedResourceUserAvailableTreeActions(hibernateProxyHandler.unwrapIfProxy(securableResourceClass) as Class<? extends SecurableResource>,
+                                                id).toSet().sort()
     }
 
     @Override
@@ -493,7 +494,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
 
     @Override
     boolean isApplicationAdministrator() {
-        applicationPermittedRoles.any {it.name == APPLICATION_ADMIN_ROLE_NAME}
+        applicationPermittedRoles.any { it.name == APPLICATION_ADMIN_ROLE_NAME }
     }
 
     @Override
@@ -523,7 +524,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
             it.securableResourceDomainType == securableResourceDomainType && it.securableResourceId == securableResourceId
         }
         if (!found) return null
-        found.collect {it.groupRole}.sort().first()
+        found.collect { it.groupRole }.sort().first()
     }
 
     boolean hasUserAdminRights() {
@@ -642,13 +643,23 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
 
     private List<String> updateBaseModelActionsForEditor(List<String> baseActions, VirtualSecurableResourceGroupRole role) {
         List<String> updatedActions = new ArrayList<>(baseActions)
-        if (role.canFinalise()) updatedActions << FINALISE_ACTION
-        if (role.isFinalised()) {
-            updatedActions.removeAll(DISALLOWED_ONCE_FINALISED_ACTIONS)
-            updatedActions << FINALISED_EDIT_ACTIONS
+        if (role.canFinalise()) {
+            updatedActions << FINALISE_ACTION
+        } else {
+            // If it cant be finalised its either a non-main branch or inside a VF or finalised
+            // The last 2 cases we can remove the action in this method
+            updatedActions << MERGE_INTO_ACTION
         }
         if (role.canVersion()) {
             updatedActions.addAll(EDITOR_VERSIONING_ACTIONS)
+        }
+        if (role.isVersionControlled()) {
+            // If cant be versioned its inside a VF therefore shouldn't allow mergeInto
+            updatedActions.remove(MERGE_INTO_ACTION)
+        }
+        if (role.isFinalised()) {
+            updatedActions.removeAll(DISALLOWED_ONCE_FINALISED_ACTIONS)
+            updatedActions << FINALISED_EDIT_ACTIONS
         }
         updatedActions
     }
@@ -674,7 +685,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
             // Cannot move anything versioned controlled into a VF, this includes a folder which contains VFs
             updatedActions.remove(MOVE_TO_VERSIONED_FOLDER)
         }
-        if (role.isVersionControlled()) {
+        if (role.isVersionable() || role.isVersionControlled()) {
             updatedActions.remove(CREATE_VERSIONED_FOLDER)
         }
         updatedActions
@@ -712,7 +723,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     }
 
     private boolean hasApplicationLevelRole(String rolename) {
-        applicationPermittedRoles.any {it.name == rolename}
+        applicationPermittedRoles.any { it.name == rolename }
     }
 
     private List<String> getStandardActionsWithControlRole(Class<? extends SecurableResource> securableResourceClass, UUID id, String roleName) {

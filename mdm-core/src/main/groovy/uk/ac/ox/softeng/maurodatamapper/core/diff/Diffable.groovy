@@ -27,9 +27,13 @@ import groovy.transform.SelfType
 @GrailsCompileStatic
 trait Diffable<T extends Diffable> {
 
-    abstract ObjectDiff<T> diff(T obj)
+    abstract ObjectDiff<T> diff(T obj, String context)
 
     String getDiffIdentifier() {
+        getDiffIdentifier(null)
+    }
+
+    String getDiffIdentifier(String context) {
         getPathIdentifier()
     }
 

@@ -60,10 +60,6 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         getCatalogueItemClass()
     }
 
-    boolean handlesPathPrefix(String pathPrefix) {
-        false
-    }
-
     abstract void deleteAll(Collection<K> catalogueItems)
 
     K save(Map args, K catalogueItem) {

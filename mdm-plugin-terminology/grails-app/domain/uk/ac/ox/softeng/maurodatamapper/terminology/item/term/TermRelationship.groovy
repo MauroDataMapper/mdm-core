@@ -122,10 +122,10 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
     @Override
     String getPathIdentifier() {
         if (!label) label = relationshipType?.label
-        "$sourceTerm.label:$label:$targetTerm.label"
+        "$sourceTerm.code.$label.$targetTerm.code"
     }
 
-    ObjectDiff<TermRelationship> diff(TermRelationship obj) {
+    ObjectDiff<TermRelationship> diff(TermRelationship obj, String context) {
         catalogueItemDiffBuilder(TermRelationship, this, obj)
     }
 
@@ -180,8 +180,26 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
         criteria
     }
 
-    static DetachedCriteria<TermRelationship> byPathIdentifierFields(String sourceTermCode, String relationshipTypeLabel, String targetTermCode) {
-        where {
+    static DetachedCriteria<TermRelationship> byTerminologyIdAndPathIdentifierFields(UUID terminologyId, String sourceTermCode, String relationshipTypeLabel,
+                                                                                     String targetTermCode) {
+        by().and {
+            sourceTerm {
+                eq 'code', sourceTermCode
+                eq 'terminology.id', terminologyId
+            }
+            targetTerm {
+                eq 'code', targetTermCode
+                eq 'terminology.id', terminologyId
+            }
+            relationshipType {
+                eq 'label', relationshipTypeLabel
+                eq 'terminology.id', terminologyId
+            }
+        }
+    }
+
+    static DetachedCriteria<TermRelationship> byTermIdAndPathIdentifierFields(UUID termId, String sourceTermCode, String relationshipTypeLabel, String targetTermCode) {
+        by().and {
             sourceTerm {
                 eq 'code', sourceTermCode
             }
@@ -191,6 +209,9 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
             relationshipType {
                 eq 'label', relationshipTypeLabel
             }
+        }.or {
+            eq 'targetTerm.id', termId
+            eq 'sourceTerm.id', termId
         }
     }
 
@@ -282,6 +303,7 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
             }
         }
     }
+
     static DetachedCriteria<TermRelationship> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
         where {
             metadata {

@@ -200,7 +200,8 @@ class TermRelationshipFunctionalSpec extends ResourceFunctionalSpec<TermRelation
     "code": "FT02",
     "definition": "Functional Test 02"
   }
-}'''
+}
+'''
     }
 
     void 'test finding only relationships where the term is the source'() {
@@ -379,7 +380,8 @@ class TermRelationshipFunctionalSpec extends ResourceFunctionalSpec<TermRelation
       }
     }
   ]
-}'''
+}
+'''
 
         cleanup:
         DELETE(getDeleteEndpoint(id))

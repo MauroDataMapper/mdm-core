@@ -130,27 +130,6 @@ class DataClassServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         service.count() == 5
     }
 
-    void "test delete child dataclass"() {
-        given:
-        def dataClass = DataClass.findByLabel('Unit child')
-
-        expect:
-        SemanticLink.count() == 1
-        DataElement.count() == 3
-        ReferenceType.count() == 2
-        service.count() == 5
-
-        when:
-        log.info('Attempting to delete id {}', dataClass.id)
-        service.delete(dataClass)
-
-        then:
-        service.count() == 4
-        SemanticLink.count() == 1
-        DataElement.count() == 2
-        ReferenceType.count() == 2
-    }
-
     void "test save"() {
 
         when:

@@ -58,7 +58,7 @@ class SessionService implements HttpSessionListener {
     }
 
     boolean isAuthenticatedSession(String sessionId) {
-        if (isInvalidatedSession(sessionId)) throw new ApiUnauthorizedException('SSXX', 'Session has been invalidated')
+        if (isInvalidatedSession(sessionId)) return false
         retrieveSession(sessionId).getAttribute('emailAddress')
     }
 

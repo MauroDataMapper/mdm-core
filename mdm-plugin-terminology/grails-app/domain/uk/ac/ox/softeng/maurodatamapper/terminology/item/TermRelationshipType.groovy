@@ -128,7 +128,7 @@ class TermRelationshipType implements ModelItem<TermRelationshipType, Terminolog
         false
     }
 
-    ObjectDiff<TermRelationshipType> diff(TermRelationshipType otherType) {
+    ObjectDiff<TermRelationshipType> diff(TermRelationshipType otherType, String context) {
         catalogueItemDiffBuilder(TermRelationshipType, this, otherType)
             .appendString('displayLabel', this.displayLabel, otherType.displayLabel)
             .appendBoolean('parentalRelationship', this.parentalRelationship, otherType.parentalRelationship)

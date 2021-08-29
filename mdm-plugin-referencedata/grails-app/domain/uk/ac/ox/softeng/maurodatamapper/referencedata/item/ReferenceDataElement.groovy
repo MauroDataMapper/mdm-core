@@ -160,8 +160,8 @@ class ReferenceDataElement implements ModelItem<ReferenceDataElement, ReferenceD
     }
 
     @Override
-    String getDiffIdentifier() {
-        "${referenceDataModel.getDiffIdentifier()}/${pathIdentifier}"
+    String getDiffIdentifier(String context) {
+        "${referenceDataModel.getDiffIdentifier(context)}/${pathIdentifier}"
     }
 
     @Override
@@ -169,7 +169,7 @@ class ReferenceDataElement implements ModelItem<ReferenceDataElement, ReferenceD
         false
     }
 
-    ObjectDiff<ReferenceDataElement> diff(ReferenceDataElement otherDataElement) {
+    ObjectDiff<ReferenceDataElement> diff(ReferenceDataElement otherDataElement, String context) {
         catalogueItemDiffBuilder(ReferenceDataElement, this, otherDataElement)
             .appendString('referenceDataType.label', this.referenceDataType.label, otherDataElement.referenceDataType.label)
             .appendNumber('minMultiplicity', this.minMultiplicity, otherDataElement.minMultiplicity)

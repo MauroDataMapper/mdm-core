@@ -190,7 +190,7 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
      * @param otherDataModel DataModel to compare to {@code this} DataModel
      * @return ObjectDiff<DataModel>                  containing field differences and arrays of child differences
      */
-    ObjectDiff<DataModel> diff(DataModel otherDataModel) {
+    ObjectDiff<DataModel> diff(DataModel otherDataModel, String context) {
         modelDiffBuilder(DataModel, this, otherDataModel)
             .appendList(DataType, 'dataTypes', this.getDataTypes(), otherDataModel.getDataTypes())
             .appendList(DataClass, 'dataClasses', this.childDataClasses, otherDataModel.childDataClasses)

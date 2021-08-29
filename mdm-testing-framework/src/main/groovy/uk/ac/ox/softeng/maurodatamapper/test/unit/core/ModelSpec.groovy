@@ -480,7 +480,7 @@ abstract class ModelSpec<K extends Model> extends CatalogueItemSpec<K> {
         other.documentationVersion = Version.from('2')
 
         when:
-        ObjectDiff diff = domain.diff(other)
+        ObjectDiff diff = domain.diff(other, null)
 
         then:
         noExceptionThrown()

@@ -154,7 +154,9 @@ class TermRelationshipTypeFunctionalSpec extends UserAccessFunctionalSpec {
     "editDescription"
   ],
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
-  "displayLabel": "Is Part Of"
+  "displayLabel": "Is Part Of",
+  "parentalRelationship": false,
+  "childRelationship": false
 }'''
     }
 

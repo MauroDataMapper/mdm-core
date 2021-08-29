@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
@@ -25,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
@@ -33,12 +35,11 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProv
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchData
 import uk.ac.ox.softeng.maurodatamapper.path.Path
+import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
-import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipTypeService
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
-import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationshipService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.CodeSetJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
@@ -50,9 +51,7 @@ import groovy.util.logging.Slf4j
 @Transactional
 class CodeSetService extends ModelService<CodeSet> {
 
-    TermRelationshipTypeService termRelationshipTypeService
     TermService termService
-    TermRelationshipService termRelationshipService
     CodeSetJsonImporterService codeSetJsonImporterService
 
     @Override
@@ -62,7 +61,7 @@ class CodeSetService extends ModelService<CodeSet> {
 
     @Override
     List<CodeSet> getAll(Collection<UUID> ids) {
-        CodeSet.getAll(ids).findAll().collect {unwrapIfProxy(it)}
+        CodeSet.getAll(ids).findAll().collect { unwrapIfProxy(it) }
     }
 
     @Override
@@ -72,12 +71,7 @@ class CodeSetService extends ModelService<CodeSet> {
 
     @Override
     List<CodeSet> list() {
-        CodeSet.list().collect {unwrapIfProxy(it)}
-    }
-
-    @Override
-    boolean handlesPathPrefix(String pathPrefix) {
-        pathPrefix == "cs"
+        CodeSet.list().collect { unwrapIfProxy(it) }
     }
 
     @Override
@@ -139,11 +133,13 @@ class CodeSetService extends ModelService<CodeSet> {
 
     @Override
     CodeSet saveModelWithContent(CodeSet model) {
+        log.debug('Saving {}({}) without batching', model.label, model.ident())
         save(failOnError: true, validate: false, flush: true, model)
     }
 
     @Override
     CodeSet saveModelNewContentOnly(CodeSet model) {
+        log.debug('Saving {}({}) without batching', model.label, model.ident())
         save(failOnError: true, validate: false, flush: true, model)
     }
 
@@ -207,14 +203,14 @@ class CodeSetService extends ModelService<CodeSet> {
 
         if (!objectPatchData.hasPatches()) return targetModel
 
-        objectPatchData.getDiffsWithContent().each {mergeFieldDiff ->
+        objectPatchData.getDiffsWithContent().each { mergeFieldDiff ->
 
             if (mergeFieldDiff.isFieldChange()) {
                 targetModel.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
             } else if (mergeFieldDiff.isMetadataChange()) {
                 mergeLegacyMetadataIntoCatalogueItem(mergeFieldDiff, targetModel, userSecurityPolicyManager)
             } else {
-                ModelItemService modelItemService = modelItemServices.find {it.handles(mergeFieldDiff.fieldName)}
+                ModelItemService modelItemService = modelItemServices.find { it.handles(mergeFieldDiff.fieldName) }
 
                 if (modelItemService) {
 
@@ -251,7 +247,7 @@ class CodeSetService extends ModelService<CodeSet> {
                             modelItemService.copy(targetModel, modelItem, userSecurityPolicyManager)
                         }
                         // for modifications, recursively call this method
-                        mergeFieldDiff.modified.each {mergeObjectDiffData ->
+                        mergeFieldDiff.modified.each { mergeObjectDiffData ->
                             ModelItem modelItem = modelItemService.get(mergeObjectDiffData.leftId) as ModelItem
                             modelItemService.
                                 mergeLegacyObjectPatchDataIntoModelItem(mergeObjectDiffData, modelItem, targetModel, userSecurityPolicyManager)
@@ -479,4 +475,60 @@ class CodeSetService extends ModelService<CodeSet> {
         CodeSet.byMetadataNamespace(namespace).list(pagination)
     }
 
+    @Override
+    void processCreationPatchOfModelItem(ModelItem modelItem, Model targetModel, Path parentPathToCopyTo,
+                                         UserSecurityPolicyManager userSecurityPolicyManager, boolean flush = false) {
+        if (!Utils.parentClassIsAssignableFromChild(Term, modelItem.class)) {
+            throw new ApiInternalException('CSXX', "Cannot create [${modelItem.domainType}] into a CodeSet")
+        }
+        log.debug('Creating Term [{}] into CodeSet [{}]', modelItem.getDiffIdentifier(CodeSet.simpleName), Path.from(targetModel))
+
+        (targetModel as CodeSet).addToTerms(modelItem as Term)
+        save(targetModel as CodeSet, flush: flush, validate: false)
+    }
+
+    @Override
+    void processDeletionPatchOfModelItem(ModelItem modelItem, Model targetModel) {
+        if (!Utils.parentClassIsAssignableFromChild(Term, modelItem.class)) {
+            throw new ApiInternalException('CSXX', "Cannot delete [${modelItem.domainType}] from CodeSet")
+        }
+        log.debug('Removing Term from CodeSet [{}]', Path.from(targetModel))
+
+        (targetModel as CodeSet).removeFromTerms(modelItem as Term)
+        save(targetModel as CodeSet, flush: false, validate: false)
+    }
+
+    @Override
+    void updateCopiedCrossModelLinks(CodeSet copiedModel, CodeSet originalModel) {
+        super.updateCopiedCrossModelLinks(copiedModel, originalModel)
+        // Find all Terms which were added to this codeSet
+        // These will all point to the same terminology terms as the original model,
+        // However this method is designed to repoint them to the branched model which exists inside the same VF as this copied model
+        // ie VF-A has CS-B & T-C, VF-D is a branch of A with CS-E & T-F, CS-E points all its terms to those inside T-C,
+        // we need to update them to use the terms inside T-F
+        // If a T-G exists outside VF-A or D which CS-B/CS-E uses then the terms remain as-is
+        List<Term> terms = new ArrayList<>(copiedModel.terms)
+        Path copiedCodeSetPath = getFullPathForModel(copiedModel)
+        Path originalCodeSetPath = getFullPathForModel(originalModel)
+        terms.each {term ->
+
+            Terminology terminology = term.terminology
+            Path fullContextTerminologyPath = getFullPathForModel(terminology)
+            Path termPath = Path.from(terminology, term)
+            // Need to check if the CS is inside the same VF as the terminology
+            PathNode terminologyVersionedFolderPathNode = fullContextTerminologyPath.find {it.prefix == 'vf'}
+            if (terminologyVersionedFolderPathNode && originalCodeSetPath.any {it == terminologyVersionedFolderPathNode}) {
+                log.debug('Original codeset is inside the same context path as terminology for term [{}]', termPath)
+                Term branchedTerm = pathService.findResourceByPathFromRootResource(copiedModel, termPath,
+                                                                                   copiedCodeSetPath.last().modelIdentifier) as Term
+                if (branchedTerm) {
+                    copiedModel.removeFromTerms(term)
+                    copiedModel.addToTerms(branchedTerm)
+                } else {
+                    log.error('Branched term not found')
+                }
+            }
+        }
+        save(copiedModel, flush: false, validate: false)
+    }
 }

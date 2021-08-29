@@ -153,7 +153,7 @@ class DataElementSpec extends ModelItemSpec<DataElement> implements DomainUnitTe
             .addToRules(new Rule(name: 'rule 2').addToRuleRepresentations(language: 'd', representation: 'a+b'))
 
         when:
-        ObjectDiff diff = a.diff(b)
+        ObjectDiff diff = a.diff(b, null)
 
         then:
         diff.objectsAreIdentical()
@@ -166,7 +166,7 @@ class DataElementSpec extends ModelItemSpec<DataElement> implements DomainUnitTe
             .addToRules(new Rule(name: 'rule 3').addToRuleRepresentations(language: 'd', representation: 'a+b'))
 
         when:
-        ObjectDiff diff = a.diff(b)
+        ObjectDiff diff = a.diff(b, null)
 
         then:
         diff.numberOfDiffs == 2
@@ -179,7 +179,7 @@ class DataElementSpec extends ModelItemSpec<DataElement> implements DomainUnitTe
             .addToRules(new Rule(name: 'rule 2').addToRuleRepresentations(language: 'e', representation: 'a+b'))
 
         when:
-        ObjectDiff diff = a.diff(b)
+        ObjectDiff diff = a.diff(b, null)
 
         then:
         diff.numberOfDiffs == 2
@@ -192,7 +192,7 @@ class DataElementSpec extends ModelItemSpec<DataElement> implements DomainUnitTe
             .addToRules(new Rule(name: 'rule 2').addToRuleRepresentations(language: 'd', representation: 'a+e'))
 
         when:
-        ObjectDiff diff = a.diff(b)
+        ObjectDiff diff = a.diff(b, null)
 
         then:
         diff.objectsAreIdentical()

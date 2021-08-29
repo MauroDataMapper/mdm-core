@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.test.functional
+package uk.ac.ox.softeng.maurodatamapper.test.functional.merge
 
 /**
  * @since 26/07/2021
@@ -26,6 +26,8 @@ class TestMergeData {
     String target
     String commonAncestor
 
-    Map<String, String> sourceMap
-    Map<String, String> targetMap
+    Map<String, Object> sourceMap
+    Map<String, Object> targetMap
+
+    Map<String, Object> otherMap
 }

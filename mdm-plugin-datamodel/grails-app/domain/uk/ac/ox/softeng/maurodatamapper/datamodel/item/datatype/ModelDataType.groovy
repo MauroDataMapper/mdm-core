@@ -40,7 +40,7 @@ class ModelDataType extends DataType<ModelDataType> {
         domainType = ModelDataType.simpleName
     }
 
-    ObjectDiff<ModelDataType> diff(ModelDataType otherDataType) {
+    ObjectDiff<ModelDataType> diff(ModelDataType otherDataType, String context) {
         catalogueItemDiffBuilder(ModelDataType, this, otherDataType)
             .appendString('modelResourceId', this.modelResourceId.toString(), otherDataType.modelResourceId.toString())
             .appendString('modelResourceDomainType', this.modelResourceDomainType, otherDataType.modelResourceDomainType)

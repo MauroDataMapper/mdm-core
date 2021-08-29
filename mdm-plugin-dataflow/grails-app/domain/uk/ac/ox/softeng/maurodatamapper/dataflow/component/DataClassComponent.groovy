@@ -129,7 +129,7 @@ class DataClassComponent implements ModelItem<DataClassComponent, DataModel> {
         dataElementComponents
     }
 
-    ObjectDiff<DataClassComponent> diff(DataClassComponent otherDataFlow) {
+    ObjectDiff<DataClassComponent> diff(DataClassComponent otherDataFlow, String context) {
         catalogueItemDiffBuilder(DataClassComponent, this, otherDataFlow)
     }
 

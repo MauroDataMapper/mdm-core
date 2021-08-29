@@ -124,7 +124,9 @@ class TermRelationshipTypeFunctionalSpec extends ResourceFunctionalSpec<TermRela
     "update"
   ],
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
-  "displayLabel": "Is A"
+  "displayLabel": "Is A",
+  "parentalRelationship": false,
+  "childRelationship": false
 }'''
     }
 }

@@ -52,6 +52,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelJso
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
 import uk.ac.ox.softeng.maurodatamapper.path.Path
+import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
@@ -98,11 +99,6 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     @Override
     List<DataModel> list() {
         DataModel.list().collect {unwrapIfProxy(it)}
-    }
-
-    @Override
-    boolean handlesPathPrefix(String pathPrefix) {
-        pathPrefix == "dm"
     }
 
     @Override
@@ -832,5 +828,29 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         }
 
         catalogueItem
+    }
+
+    @Override
+    int getSortResultForFieldPatchPath(Path leftPath, Path rightPath) {
+        PathNode leftLastNode = leftPath.last()
+        PathNode rightLastNode = rightPath.last()
+        // Merge datatypes then dataclasses then dataelements this makes sure any dataelements created already have datatypes in place
+        if (leftLastNode.prefix == 'dt') {
+            if (rightLastNode.prefix == 'dt') return 0
+            if (rightLastNode.prefix in ['de', 'dc']) return -1
+            return 0
+        }
+        if (leftLastNode.prefix == 'dc') {
+            if (rightLastNode.prefix == 'dr') return 1
+            if (rightLastNode.prefix == 'dc') return 0
+            if (rightLastNode.prefix == 'de') return -1
+            return 0
+        }
+        if (leftLastNode.prefix == 'de') {
+            if (rightLastNode.prefix in ['dt', 'dc']) return 1
+            if (rightLastNode.prefix == 'de') return 0
+            return 0
+        }
+        0
     }
 }

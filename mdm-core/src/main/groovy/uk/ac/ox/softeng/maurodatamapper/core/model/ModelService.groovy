@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedExcept
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.FieldDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
@@ -76,7 +77,9 @@ import java.time.ZoneOffset
 import java.util.function.Predicate
 
 @Slf4j
-abstract class ModelService<K extends Model> extends CatalogueItemService<K> implements SecurableResourceService<K>, VersionLinkAwareService<K> {
+abstract class ModelService<K extends Model>
+    extends CatalogueItemService<K>
+    implements SecurableResourceService<K>, VersionLinkAwareService<K> {
 
     protected static HibernateProxyHandler proxyHandler = new HibernateProxyHandler()
 
@@ -91,6 +94,9 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     @Autowired(required = false)
     Set<MultiFacetItemAwareService> multiFacetItemAwareServices
+
+    @Autowired
+    VersionedFolderService versionedFolderService
 
     @Autowired
     VersionLinkService versionLinkService
@@ -238,7 +244,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         // A specific identity of the model has been requested so make sure we limit to that
         if (split.size() == 2) {
             String identity = split[1]
-            DetachedCriteria criteria = parentId ? modelClass.byFolderId(parentId) : modelClass.by()
+            DetachedCriteria criteria = useParentIdForSearching(parentId) ? modelClass.byFolderId(parentId) : modelClass.by()
 
             criteria.eq('label', label)
 
@@ -256,6 +262,14 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
         // If no identity part then we can just get the latest model by the label
         findLatestModelByLabel(label)
+    }
+
+    boolean useParentIdForSearching(UUID parentId) {
+        parentId
+    }
+
+    K findByFolderIdAndLabel(UUID folderId, String label) {
+        modelClass.byFolderId(folderId).eq('label', label).get() as K
     }
 
     K finaliseModel(K model, User user, Version requestedModelVersion, VersionChangeType versionChangeType,
@@ -460,7 +474,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         log.debug('Merging patch data into {}', targetModel.id)
         if (isLegacy) return mergeLegacyObjectPatchDataIntoModel(objectPatchData, targetModel, userSecurityPolicyManager)
 
-        objectPatchData.patches.each {fieldPatch ->
+        getSortedFieldPatchDataForMerging(objectPatchData).each { fieldPatch ->
             switch (fieldPatch.type) {
                 case 'creation':
                     return processCreationPatchIntoModel(fieldPatch, targetModel, sourceModel, userSecurityPolicyManager)
@@ -475,8 +489,35 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         targetModel
     }
 
+    List<FieldPatchData> getSortedFieldPatchDataForMerging(ObjectPatchData objectPatchData) {
+        /*
+          We can process modifications in any order
+          Process creations before deletions, that way any deletions will automatically take care of any links to potentially created objects
+           */
+        objectPatchData.patches.sort { l, r ->
+            switch (l.type) {
+                case 'modification':
+                    if (r.type == 'modification') return 0
+                    else return -1
+                case 'creation':
+                    if (r.type == 'modification') return 1
+                    if (r.type == 'deletion') return -1
+                    return getSortResultForFieldPatchPath(l.path, r.path)
+                case 'deletion':
+                    if (r.type == 'modification') return 1
+                    if (r.type == 'creation') return 1
+                    return getSortResultForFieldPatchPath(l.path, r.path)
+            }
+        }
+    }
 
-    void processCreationPatchIntoModel(FieldPatchData creationPatch, K targetModel, K sourceModel, UserSecurityPolicyManager userSecurityPolicyManager) {
+    int getSortResultForFieldPatchPath(Path leftPath, Path rightPath) {
+        // If overridding this method any nodes you dont care about should return a result of 0
+        0
+    }
+
+    void processCreationPatchIntoModel(FieldPatchData creationPatch, K targetModel, K sourceModel,
+                                       UserSecurityPolicyManager userSecurityPolicyManager) {
         CreatorAware domainToCopy = pathService.findResourceByPathFromRootResource(sourceModel, creationPatch.path)
         if (!domainToCopy) {
             log.warn('Could not process creation patch into model at path [{}] as no such path exists in the source', creationPatch.path)
@@ -485,7 +526,8 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         log.debug('Creating {} into {}', creationPatch.path, creationPatch.relativePathToRoot.parent)
         // Potential deletions are modelitems or facets from model or modelitem
         if (Utils.parentClassIsAssignableFromChild(ModelItem, domainToCopy.class)) {
-            processCreationPatchOfModelItem(domainToCopy as ModelItem, targetModel, creationPatch.relativePathToRoot.parent, userSecurityPolicyManager)
+            processCreationPatchOfModelItem(domainToCopy as ModelItem, targetModel, creationPatch.relativePathToRoot.parent,
+                                            userSecurityPolicyManager)
         }
         if (Utils.parentClassIsAssignableFromChild(MultiFacetItemAware, domainToCopy.class)) {
             processCreationPatchOfFacet(domainToCopy as MultiFacetItemAware, targetModel, creationPatch.relativePathToRoot.parent)
@@ -495,14 +537,15 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     void processDeletionPatchIntoModel(FieldPatchData deletionPatch, K targetModel) {
         CreatorAware domain = pathService.findResourceByPathFromRootResource(targetModel, deletionPatch.relativePathToRoot)
         if (!domain) {
-            log.warn('Could not process deletion patch into model at path [{}] as no such path exists in the target', deletionPatch.relativePathToRoot)
+            log.warn('Could not process deletion patch into model at path [{}] as no such path exists in the target',
+                     deletionPatch.relativePathToRoot)
             return
         }
         log.debug('Deleting [{}]', deletionPatch.relativePathToRoot)
 
         // Potential deletions are modelitems or facets from model or modelitem
         if (Utils.parentClassIsAssignableFromChild(ModelItem, domain.class)) {
-            processDeletionPatchOfModelItem(domain as ModelItem)
+            processDeletionPatchOfModelItem(domain as ModelItem, targetModel)
         }
         if (Utils.parentClassIsAssignableFromChild(MultiFacetItemAware, domain.class)) {
             processDeletionPatchOfFacet(domain as MultiFacetItemAware, targetModel, deletionPatch.relativePathToRoot)
@@ -512,13 +555,14 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     void processModificationPatchIntoModel(FieldPatchData modificationPatch, K targetModel) {
         CreatorAware domain = pathService.findResourceByPathFromRootResource(targetModel, modificationPatch.relativePathToRoot)
         if (!domain) {
-            log.warn('Could not process modifiation patch into model at path [{}] as no such path exists in the target', modificationPatch.relativePathToRoot)
+            log.warn('Could not process modifiation patch into model at path [{}] as no such path exists in the target',
+                     modificationPatch.relativePathToRoot)
             return
         }
         String fieldName = modificationPatch.fieldName
-        log.debug('Modifying [{}] in [{}]', fieldName, modificationPatch.relativePathToRoot)
+        log.debug('Modifying [{}] in [{}]', fieldName, modificationPatch)
         domain."${fieldName}" = modificationPatch.sourceValue
-        DomainService domainService = getDomainServices().find {it.handles(domain.class)}
+        DomainService domainService = getDomainServices().find { it.handles(domain.class) }
         if (!domainService) throw new ApiInternalException('MSXX', "No domain service to handle modification of [${domain.domainType}]")
 
         if (!domain.validate())
@@ -526,16 +570,17 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         domainService.save(domain, flush: false, validate: false)
     }
 
-    void processDeletionPatchOfModelItem(ModelItem modelItem) {
-        ModelItemService modelItemService = modelItemServices.find {it.handles(modelItem.class)}
+    void processDeletionPatchOfModelItem(ModelItem modelItem, Model targetModel) {
+        ModelItemService modelItemService = modelItemServices.find { it.handles(modelItem.class) }
         if (!modelItemService) throw new ApiInternalException('MSXX', "No domain service to handle deletion of [${modelItem.domainType}]")
         log.debug('Deleting ModelItem from Model')
         modelItemService.delete(modelItem)
     }
 
     CatalogueItem processDeletionPatchOfFacet(MultiFacetItemAware multiFacetItemAware, Model targetModel, Path path) {
-        MultiFacetItemAwareService multiFacetItemAwareService = multiFacetItemAwareServices.find {it.handles(multiFacetItemAware.class)}
-        if (!multiFacetItemAwareService) throw new ApiInternalException('MSXX', "No domain service to handle deletion of [${multiFacetItemAware.domainType}]")
+        MultiFacetItemAwareService multiFacetItemAwareService = multiFacetItemAwareServices.find { it.handles(multiFacetItemAware.class) }
+        if (!multiFacetItemAwareService) throw new ApiInternalException('MSXX',
+                                                                        "No domain service to handle deletion of [${multiFacetItemAware.domainType}]")
         log.debug('Deleting Facet from path [{}]', path)
         multiFacetItemAwareService.delete(multiFacetItemAware)
 
@@ -563,7 +608,8 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         catalogueItem
     }
 
-    void processCreationPatchOfModelItem(ModelItem modelItemToCopy, Model targetModel, Path parentPathToCopyTo, UserSecurityPolicyManager userSecurityPolicyManager) {
+    void processCreationPatchOfModelItem(ModelItem modelItemToCopy, Model targetModel, Path parentPathToCopyTo,
+                                         UserSecurityPolicyManager userSecurityPolicyManager, boolean flush = false) {
         ModelItemService modelItemService = modelItemServices.find {it.handles(modelItemToCopy.class)}
         if (!modelItemService) throw new ApiInternalException('MSXX', "No domain service to handle creation of [${modelItemToCopy.domainType}]")
         log.debug('Creating ModelItem into Model at [{}]', parentPathToCopyTo)
@@ -574,12 +620,15 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         if (!copy.validate())
             throw new ApiInvalidModelException('MS01', 'Copied ModelItem is invalid', copy.errors, messageSource)
 
-        modelItemService.save(copy, flush: false, validate: false)
+        modelItemService.save(copy, flush: flush, validate: false)
     }
 
     void processCreationPatchOfFacet(MultiFacetItemAware multiFacetItemAwareToCopy, Model targetModel, Path parentPathToCopyTo) {
-        MultiFacetItemAwareService multiFacetItemAwareService = multiFacetItemAwareServices.find {it.handles(multiFacetItemAwareToCopy.class)}
-        if (!multiFacetItemAwareService) throw new ApiInternalException('MSXX', "No domain service to handle creation of [${multiFacetItemAwareToCopy.domainType}]")
+        MultiFacetItemAwareService multiFacetItemAwareService = multiFacetItemAwareServices.find { it.handles(multiFacetItemAwareToCopy.class) }
+        if (!multiFacetItemAwareService) {
+            throw new ApiInternalException('MSXX',
+                                           "No domain service to handle creation of [${multiFacetItemAwareToCopy.domainType}]")
+        }
         log.debug('Creating Facet into Model at [{}]', parentPathToCopyTo)
 
         CatalogueItem parentToCopyInto = pathService.findResourceByPathFromRootResource(targetModel, parentPathToCopyTo) as CatalogueItem
@@ -596,7 +645,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     K mergeLegacyObjectPatchDataIntoModel(ObjectPatchData objectPatchData, K targetModel, UserSecurityPolicyManager userSecurityPolicyManager) {
 
         log.debug('Merging legacy {} diffs into model {}', objectPatchData.getDiffsWithContent().size(), targetModel.label)
-        objectPatchData.getDiffsWithContent().each {mergeFieldDiff ->
+        objectPatchData.getDiffsWithContent().each { mergeFieldDiff ->
             log.debug('{}', mergeFieldDiff.summary)
 
             if (mergeFieldDiff.isFieldChange()) {
@@ -604,7 +653,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
             } else if (mergeFieldDiff.isMetadataChange()) {
                 mergeLegacyMetadataIntoCatalogueItem(mergeFieldDiff, targetModel, userSecurityPolicyManager)
             } else {
-                ModelItemService modelItemService = modelItemServices.find {it.handles(mergeFieldDiff.fieldName)}
+                ModelItemService modelItemService = modelItemServices.find { it.handles(mergeFieldDiff.fieldName) }
                 if (modelItemService) {
                     modelItemService.processLegacyFieldPatchData(mergeFieldDiff, targetModel, userSecurityPolicyManager)
                 } else {
@@ -629,7 +678,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         if (versionLinkType == VersionLinkType.NEW_FORK_OF) return includeForks ? versionTreeModelList : []
 
         List<VersionLink> versionLinks = versionLinkService.findAllByTargetModelId(instance.id)
-        versionLinks.each {link ->
+        versionLinks.each { link ->
             K linkedModel = get(link.multiFacetAwareItemId)
             versionTreeModelList.
                 addAll(buildModelVersionTree(linkedModel, link.linkType, rootVersionTreeModel, includeForks, branchesOnly, userSecurityPolicyManager))
@@ -638,7 +687,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     }
 
     ObjectDiff<K> getDiffForModels(K thisModel, K otherModel) {
-        thisModel.diff(otherModel)
+        thisModel.diff(otherModel, 'none')
     }
 
     K findCommonAncestorBetweenModels(K leftModel, K rightModel) {
@@ -718,11 +767,11 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     MergeDiff<K> getMergeDiffForModels(K sourceModel, K targetModel) {
         K commonAncestor = findCommonAncestorBetweenModels(sourceModel, targetModel)
 
-        ObjectDiff<K> caDiffSource = commonAncestor.diff(sourceModel)
-        ObjectDiff<K> caDiffTarget = commonAncestor.diff(targetModel)
+        ObjectDiff<K> caDiffSource = commonAncestor.diff(sourceModel, 'none')
+        ObjectDiff<K> caDiffTarget = commonAncestor.diff(targetModel, 'none')
 
         // Remove the branchname as  diff as we know its a diff and for merging we dont want it
-        Predicate branchNamePredicate = [test: {FieldDiff fieldDiff ->
+        Predicate branchNamePredicate = [test: { FieldDiff fieldDiff ->
             fieldDiff.fieldName == 'branchName'
         },] as Predicate
 
@@ -890,7 +939,8 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
                     if (!latest) {
                         log.info('No finalised model to create branch from so finalising existing main branch')
                         latest = findCurrentMainBranchByLabel(model.label)
-                        // If there is no default branch or finalised branch then the countBy found the current imported model so we dont need to do anything
+                        // If there is no default branch or finalised branch then the countBy found the current imported model so we dont need to
+                        // do anything
                         if (!latest) {
                             log.info('Marked as importAsNewBranchModelVersion but no existing Models with label [{}]', model.label)
                             return
@@ -965,8 +1015,8 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
                                       String branchName,
                                       boolean throwErrors,
                                       UserSecurityPolicyManager userSecurityPolicyManager) {
-        Model copiedModel = copyModel(original, folderToCopyInto, copier, true, original.label, original.documentationVersion,
-                                      branchName, false, userSecurityPolicyManager)
+        Model copiedModel = copyModel(original, folderToCopyInto, copier, copyPermissions, label, copyDocVersion,
+                                      branchName, throwErrors, userSecurityPolicyManager)
 
         if ((copiedModel as GormValidateable).validate()) {
             saveModelWithContent(copiedModel)
@@ -977,5 +1027,27 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         } else throw new ApiInvalidModelException('DMSXX', 'Copied Model is invalid',
                                                   (copiedModel as GormValidateable).errors, messageSource)
         copiedModel
+    }
+
+    void updateCopiedCrossModelLinks(K copiedModel, K originalModel) {
+        log.debug('Updating cross model links for [{}]', Path.from(copiedModel))
+
+        // TODO
+        // Find all SLs which were copied
+        // These will all point to the same target as the original model,
+        // However this method is designed to repoint them to the branched model which exists inside the same VF as this copied model
+        // ie VF A has Models B & C, VF D is a branch of A with models E & F, if SLs exist from B to C then SLs now exist from E to C
+        // we need to update them to E to F.
+        // If a model G exists outside VF A or D with links from B to G then SLs exist from E to G, these remain as they are
+    }
+
+    Path getFullPathForModel(Model model) {
+        // Returns the path for the model in the correct context
+        // If part of a VF then the context is from the VF otherwise the context is just the model
+        if (versionedFolderService.isVersionedFolderFamily(model.folder)) {
+            Path contextPath = versionedFolderService.getFullContextPathForFolder(model.folder)
+            return Path.from(contextPath, model)
+        }
+        Path.from(model)
     }
 }

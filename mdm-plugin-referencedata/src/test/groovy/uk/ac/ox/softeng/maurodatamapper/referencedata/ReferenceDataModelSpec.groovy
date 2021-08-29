@@ -76,14 +76,14 @@ class ReferenceDataModelSpec extends ModelSpec<ReferenceDataModel> implements Do
         when:
         def dm1 = new ReferenceDataModel(label: 'test model 1', folder: testFolder, authority: testAuthority, createdBy: UNIT_TEST)
         def dm2 = new ReferenceDataModel(label: 'test model 2', folder: testFolder, authority: testAuthority, createdBy: UNIT_TEST)
-        Diff<ReferenceDataModel> diff = dm1.diff(dm2)
+        Diff<ReferenceDataModel> diff = dm1.diff(dm2, null)
 
         then:
         diff.getNumberOfDiffs() == 1
 
         when:
         dm2.label = 'test model 1'
-        diff = dm1.diff(dm2)
+        diff = dm1.diff(dm2, null)
 
         then:
         diff.objectsAreIdentical()
@@ -127,7 +127,7 @@ class ReferenceDataModelSpec extends ModelSpec<ReferenceDataModel> implements Do
         dm2.addToReferenceDataTypes(dt)
 
 
-        Diff<ReferenceDataModel> diff = dm1.diff(dm2)
+        Diff<ReferenceDataModel> diff = dm1.diff(dm2, null)
         then:
         diff.diffs.size() == 1
         diff.diffs.any {it.fieldName == 'referenceDataTypes'}
@@ -135,7 +135,7 @@ class ReferenceDataModelSpec extends ModelSpec<ReferenceDataModel> implements Do
 
         when:
         dm2.label = "test model 2"
-        diff = dm1.diff(dm2)
+        diff = dm1.diff(dm2, null)
 
         then:
         diff.diffs.size() == 2

@@ -77,7 +77,7 @@
         "displayLabel": "Is A Part Of",
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "parentalRelationship": false,
-        "childRelationship": true
+        "childRelationship": false
       },
       {
         "id": "${json-unit.matches:id}",
@@ -93,7 +93,7 @@
         "displayLabel": "Narrower Than",
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "parentalRelationship": false,
-        "childRelationship": false
+        "childRelationship": true
       }
     ],
     "terms": [

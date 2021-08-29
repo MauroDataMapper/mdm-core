@@ -130,7 +130,7 @@ class BasicModelItem implements ModelItem<BasicModelItem, BasicModel>, GormEntit
         new DetachedCriteria<BasicModel>(BasicModel).idEq(id).join('classifiers').get()
     }
 
-    ObjectDiff<BasicModelItem> diff(BasicModelItem obj) {
+    ObjectDiff<BasicModelItem> diff(BasicModelItem obj, String context) {
         catalogueItemDiffBuilder(BasicModelItem, this, obj)
     }
 }

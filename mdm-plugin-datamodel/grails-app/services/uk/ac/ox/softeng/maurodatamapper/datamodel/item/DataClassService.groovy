@@ -77,11 +77,6 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     }
 
     @Override
-    boolean handlesPathPrefix(String pathPrefix) {
-        pathPrefix == "dc"
-    }
-
-    @Override
     DataClass save(Map args, DataClass domain) {
         // If not previously saved then allow a deep save and/or datatype save
         if (!domain.ident()) {
@@ -154,14 +149,19 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         if (dataClass.parentDataClass) {
             DataClass parent = dataClass.parentDataClass
             parent.removeFromDataClasses(dataClass)
-            parent.trackChanges()
+            if (flush) parent.trackChanges()
         }
         removeAssociations(dataClass)
         List<DataElement> dataElements = dataElementService.findAllByDataClass(dataClass)
         dataElementService.deleteAll(dataElements)
         dataClass.dataElements = []
-        dataModel.trackChanges() // Discard any latent changes to the DataModel as we dont want them
-        dataClass.delete(flush: flush)
+        try {
+            dataModel.save(validate: false, flush: false)
+            dataClass.delete(flush: flush)
+        } catch (Exception exception) {
+            // updating the DM on a nested DC delete???
+            throw new ApiInternalException('DCSXX', 'Failed to delete the DataClass', exception)
+        }
     }
 
     @Override
@@ -297,7 +297,6 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         removeReferenceTypes(dataClass)
         dataClass.breadcrumbTree.removeFromParent()
         dataClass.dataModel.removeFromDataClasses(dataClass)
-        dataClass.extendedDataClasses
         dataClass.dataClasses?.each {removeAssociations(it)}
     }
 

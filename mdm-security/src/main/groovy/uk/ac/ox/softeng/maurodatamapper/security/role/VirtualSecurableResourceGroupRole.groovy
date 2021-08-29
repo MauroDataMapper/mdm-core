@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security.role
 
-import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
+
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 
@@ -189,7 +189,11 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
     }
 
     boolean isVersionControlled() {
-        domainType == VersionedFolder.simpleName || versionControlled
+        versionControlled
+    }
+
+    boolean isVersionable() {
+        versionable
     }
 
     boolean hasVersionedContents() {
