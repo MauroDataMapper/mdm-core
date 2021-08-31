@@ -73,7 +73,7 @@ class UrlMappings {
                  * ReferenceDataValues
                  */
 
-                '/referenceDataValues'(resources: 'referenceDataValue', excludes: DEFAULT_EXCLUDES_AND_NO_SAVE)
+                '/referenceDataValues'(resources: 'referenceDataValue', excludes: DEFAULT_EXCLUDES)
                 post '/referenceDataValues/search'(controller: 'referenceDataValue', action: 'search')
                 get '/referenceDataValues/search'(controller: 'referenceDataValue', action: 'search')
 
@@ -125,7 +125,6 @@ class UrlMappings {
                     '/summaryMetadataReports'(resources: 'referenceSummaryMetadataReport', excludes: DEFAULT_EXCLUDES)
                 }
             }
-
         }
     }
 }

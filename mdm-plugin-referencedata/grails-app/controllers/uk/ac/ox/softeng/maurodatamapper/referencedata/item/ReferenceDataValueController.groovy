@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
+import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 
 import groovy.util.logging.Slf4j
@@ -90,7 +91,6 @@ class ReferenceDataValueController extends EditLoggingController<ReferenceDataVa
 
             respond referenceDataRows, [model: [numberOfRows: rowNumbers.size(), referenceDataRows:
                 referenceDataRows, userSecurityPolicyManager: currentUserSecurityPolicyManager], view: 'searchAsRows']
-
         } else {
             //Make a list of referenceDataValues which have a value matching the search term
             List referenceDataValues =
@@ -138,12 +138,32 @@ class ReferenceDataValueController extends EditLoggingController<ReferenceDataVa
         referenceDataValueService.findAllByReferenceDataModelId(params.referenceDataModelId, params)
     }
 
-    void serviceDeleteResource(ReferenceDataValue resource) {
-        //referenceDataValueService.delete(resource, true)
+    @Override
+    protected ReferenceDataValue saveResource(ReferenceDataValue resource) {
+        log.trace('save resource')
+        resource.save(flush: true, validate: false)
+        if (!params.boolean('noHistory')) {
+            ReferenceDataElement owner = resource.referenceDataElement
+            owner.addToEditsTransactionally(EditTitle.CREATE, currentUser, "[$resource.editLabel] added to component [$owner.editLabel]")
+        }
+        resource
     }
 
-    protected void serviceInsertResource(ReferenceDataValue resource) {
-        //referenceDataValueService.save(flush: true, resource)
+    @Override
+    protected ReferenceDataValue updateResource(ReferenceDataValue resource) {
+        log.trace('update {}', resource.ident())
+        List<String> dirtyPropertyNames = resource.getDirtyPropertyNames()
+        resource.save(flush: true, validate: false)
+        if (!params.boolean('noHistory')) {
+            ReferenceDataElement owner = resource.referenceDataElement
+            owner.addToEditsTransactionally(EditTitle.UPDATE, currentUser, resource.editLabel, dirtyPropertyNames)
+        }
+        resource
+    }
+
+    @Override
+    protected void serviceDeleteResource(ReferenceDataValue resource) {
+        referenceDataValueService.delete(resource, true)
     }
 
     /**
@@ -151,7 +171,7 @@ class ReferenceDataValueController extends EditLoggingController<ReferenceDataVa
      */
     private List rowify(List<ReferenceDataValue> referenceDataValues) {
         //Sort the list by rowNumber ascending
-        referenceDataValues.sort { it.getProperty(params.sortBy) }
+        referenceDataValues.sort {it.getProperty(params.sortBy)}
 
         //Make a list of row numbers
         List rowNumbers = []
@@ -164,7 +184,7 @@ class ReferenceDataValueController extends EditLoggingController<ReferenceDataVa
         //Make a List containing rows
         List referenceDataRows = []
         //Make a row for each row number
-        rowNumbers.eachWithIndex { rowNumber, i ->
+        rowNumbers.eachWithIndex {rowNumber, i ->
             List referenceDataRow = []
             referenceDataValues.each {
                 if (it.rowNumber == rowNumber) {

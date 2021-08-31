@@ -40,7 +40,7 @@ class ReferenceDataValue implements CreatorAware, Diffable<ReferenceDataValue> {
     static belongsTo = [referenceDataModel: ReferenceDataModel, referenceDataElement: ReferenceDataElement]
 
     static constraints = {
-        value blank: true, nullable: true
+        value blank: true, nullable: true, unique: ['rowNumber', 'referenceDataElement']
     }
 
     static mapping = {
@@ -68,6 +68,10 @@ class ReferenceDataValue implements CreatorAware, Diffable<ReferenceDataValue> {
     @Override
     String getPathIdentifier() {
         rowNumber
+    }
+
+    String getEditLabel() {
+        "$domainType:$value"
     }
 
     ObjectDiff<ReferenceDataValue> diff(ReferenceDataValue otherValue, String context) {
