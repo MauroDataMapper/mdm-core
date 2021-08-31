@@ -11,7 +11,7 @@ apiUser:
 ---
 maurodatamapper:
     security:
-        public: true
+        public: false
     authority:
         name: 'Mauro Data Mapper'
         url: http://localhost

@@ -17,11 +17,15 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.interceptor.TieredAccessSecurableResourceInterceptor
 import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.security.policy.GroupBasedUserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
+
+import grails.util.Environment
+
+import static org.springframework.http.HttpStatus.NOT_FOUND
 
 class CatalogueUserInterceptor extends TieredAccessSecurableResourceInterceptor {
 
@@ -87,6 +91,20 @@ class CatalogueUserInterceptor extends TieredAccessSecurableResourceInterceptor 
                        forbiddenDueToNotApplicationAdministrator()
             }
             return currentUserSecurityPolicyManager.isApplicationAdministrator() ?: forbiddenDueToNotApplicationAdministrator()
+        }
+
+        // If attempting to create initial admin user, inside prod env with adminuser bootstrap disabled
+        if (actionName == 'createInitialAdminUser') {
+            if (Environment.current == Environment.PRODUCTION && !grailsApplication.config.maurodatamapper.bootstrap.adminuser) {
+                // If no site-admin groups then the administrators group hasnt been created which means no admin user exists
+                // Therefore this endpoint has to be open
+                if (UserGroup.countByApplicationGroupRole(GroupRole.findByName(GroupRole.SITE_ADMIN_ROLE_NAME)) == 0) {
+                    return true
+                }
+            }
+            // Otherwise endpoint doesnt exist
+            renderMapForResponse(model: [path: request.requestURI], status: NOT_FOUND, view: '/notFound')
+            return false
         }
 
         checkTieredAccessActionAuthorisationOnSecuredResource(CatalogueUser, getId())

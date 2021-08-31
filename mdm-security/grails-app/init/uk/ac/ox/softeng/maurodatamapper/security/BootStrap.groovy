@@ -69,25 +69,29 @@ class BootStrap implements SecurityDefinition {
             groupBasedSecurityPolicyManagerService.buildUserSecurityPolicyManager(defaultUserSecurityPolicyManager)
             groupBasedSecurityPolicyManagerService.storeUserSecurityPolicyManager(defaultUserSecurityPolicyManager)
         }
-
-
-        CatalogueUser.withNewTransaction {
-            // Admin group must exist
-            admins = UserGroup.findByName('administrators')
-            if (!admins) {
-                createAdminGroup('admin')
-                checkAndSave(messageSource, admins)
-            }
-
-            // Only allow bootstrapping to be disabled if environment is prod
-            if (Environment.current != Environment.PRODUCTION || grailsApplication.config.maurodatamapper.bootstrap.adminuser) {
-
+        // Only allow bootstrapping to be disabled if environment is prod
+        if (Environment.current != Environment.PRODUCTION || grailsApplication.config.maurodatamapper.bootstrap.adminuser) {
+            log.info('Bootstrapping admin user and administrators group')
+            CatalogueUser.withNewTransaction {
                 admin = CatalogueUser.findByEmailAddress(StandardEmailAddress.ADMIN)
                 if (!admin) {
                     createAdminUser('admin')
                     checkAndSave(messageSource, admin)
-                    admins.addToGroupMembers(admin)
+
+                }
+                admins = UserGroup.findByName('administrators')
+                if (!admins) {
+                    createAdminGroup('admin')
                     checkAndSave(messageSource, admins)
+                }
+            }
+        }
+
+        if (Environment.current == Environment.PRODUCTION && !grailsApplication.config.maurodatamapper.bootstrap.adminuser) {
+            CatalogueUser.withNewTransaction {
+                if (UserGroup.countByApplicationGroupRole(GroupRole.findByName(GroupRole.SITE_ADMIN_ROLE_NAME)) == 0) {
+                    log.warn('Bootstrapping of admin user has been disabled and there are no site admin level groups, the create user endpoint will be opened to allow an ' +
+                             'admin user to be created')
                 }
             }
         }

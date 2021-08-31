@@ -82,6 +82,7 @@ trait SecurityDefinition {
                                name: 'administrators',
                                applicationGroupRole: GroupRole.findByName(GroupRole.SITE_ADMIN_ROLE_NAME),
                                undeleteable: true)
+            .addToGroupMembers(admin)
     }
 
     void createModernSecurityUsers(String creatorKey, boolean includeAdmin = true) {

@@ -88,7 +88,7 @@ class CatalogueUserController extends EditLoggingController<CatalogueUser> /* im
         // This will then make sure the groups actually have a record of the user inside them
         // Which will allow the save to persist the membership
         if (instance.hasChanged('groups')) {
-            instance.groups.each { group ->
+            instance.groups.each {group ->
                 if (!group.hasMember(instance)) group.addToGroupMembers(instance)
             }
         }
@@ -244,6 +244,19 @@ class CatalogueUserController extends EditLoggingController<CatalogueUser> /* im
 
     def userExists() {
         respond exists: catalogueUserService.emailAddressExists(params.emailAddress)
+    }
+
+    @Transactional
+    def createInitialAdminUser() {
+        internalCurrentUser = null
+        def instance = catalogueUserService.createInitialAdminUser(createResource())
+        if (!validateResource(instance, 'create')) return
+        saveResource instance
+        if (instance.tempPassword) {
+            log.warn('Initial user had no password set, sending an email with a temporary password')
+            emailService.sendEmailToUser(siteUrl, EMAIL_ADMIN_REGISTER_SUBJECT, EMAIL_ADMIN_REGISTER_BODY, instance)
+        }
+        super.saveResponse(instance)
     }
 
     @Transactional

@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security
 
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFile
 import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFileService
@@ -34,6 +35,7 @@ import java.time.OffsetDateTime
 class CatalogueUserService implements UserService {
 
     UserImageFileService userImageFileService
+    UserGroupService userGroupService
 
     CatalogueUser get(Serializable id) {
         CatalogueUser.get(id) ?: id instanceof String ? findByEmailAddress(id) : null
@@ -143,6 +145,22 @@ class CatalogueUserService implements UserService {
         administratorRegisterNewUser(actor, user)
     }
 
+    CatalogueUser createInitialAdminUser(CatalogueUser initialAdminUser) {
+        log.debug("Creating initial admin user")
+
+        initialAdminUser.pending = false
+        initialAdminUser.createdBy = StandardEmailAddress.ADMIN
+
+        if (!initialAdminUser.password) {
+            initialAdminUser.tempPassword = SecurityUtils.generateRandomPassword()
+        }
+        initialAdminUser.validate()
+
+        userGroupService.createAndSaveAdministratorsGroup(initialAdminUser)
+
+        initialAdminUser
+    }
+
     CatalogueUser administratorRegisterNewUser(CatalogueUser actor, CatalogueUser user) {
         log.debug("Registering user '${user.emailAddress}' (Actor: '${actor.emailAddress}')")
 
@@ -230,9 +248,9 @@ class CatalogueUserService implements UserService {
         CSVWriter writer = new CSVWriter(streamWriter)
         String[] headerUsers = ['Email Address', 'First Name', 'Last Name', 'Last Login', 'Organisation', 'Job Title', 'Disabled', 'Pending']
         writer.writeNext(headerUsers, false)
-        allUsers.each { user ->
+        allUsers.each {user ->
             String[] userDetails = [user.emailAddress, user.firstName, user.lastName, user.lastLogin, user.organisation, user.jobTitle,
-                                       user.disabled, user.pending]
+                                    user.disabled, user.pending]
             writer.writeNext(userDetails, false)
         }
         writer.close()
