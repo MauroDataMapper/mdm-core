@@ -36,6 +36,7 @@ import grails.testing.spock.OnceBefore
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import spock.lang.Shared
+import spock.lang.Unroll
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
 
@@ -4165,6 +4166,43 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanup:
         cleanUpData(id)
         cleanUpData(finalisedId)
+    }
+
+    @Unroll
+    void 'DC01 : test breaking dataclasses [Attempt #i]'() {
+        given:
+        String ca = builder.buildCommonAncestorDataModel(folderId.toString())
+        PUT("$ca/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$ca/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String mainId = responseBody().id
+
+        when:
+        PUT("$ca/newBranchModelVersion", [branchName: 'source'])
+        verifyResponse CREATED, response
+        String sourceId = responseBody().id
+        String deleteAndDelete = builder.getIdFromPath(sourceId, "dm:Functional Test DataModel 1\$source|dc:deleteAndDelete")
+        String existingClass = builder.getIdFromPath(sourceId, "dm:Functional Test DataModel 1\$source|dc:existingClass")
+        String deleteLeftOnlyFromExistingClass = builder.getIdFromPath(sourceId, "dm:Functional Test DataModel 1\$source|dc:existingClass|dc:deleteLeftOnlyFromExistingClass")
+        DELETE("$sourceId/dataClasses/$deleteAndDelete")
+
+        then:
+        verifyResponse NO_CONTENT, response
+
+        when:
+        DELETE("$sourceId/dataClasses/$existingClass/dataClasses/$deleteLeftOnlyFromExistingClass")
+
+        then:
+        verifyResponse NO_CONTENT, response
+
+        cleanup:
+        cleanUpData(ca)
+        cleanUpData(mainId)
+        cleanUpData(sourceId)
+
+        where:
+        i << (1..100)
     }
 
     @Transactional

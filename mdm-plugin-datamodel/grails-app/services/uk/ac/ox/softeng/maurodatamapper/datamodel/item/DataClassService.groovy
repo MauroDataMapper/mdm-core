@@ -144,22 +144,19 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
 
     void delete(DataClass dataClass, boolean flush = false) {
         if (!dataClass) return
-        DataModel dataModel = proxyHandler.unwrapIfProxy(dataClass.dataModel)
-        dataClass.dataModel = dataModel
+        DataModel dataModel = dataClass.dataModel
+        dataModel.lock()
         if (dataClass.parentDataClass) {
             DataClass parent = dataClass.parentDataClass
             parent.removeFromDataClasses(dataClass)
-            if (flush) parent.trackChanges()
         }
         removeAssociations(dataClass)
         List<DataElement> dataElements = dataElementService.findAllByDataClass(dataClass)
         dataElementService.deleteAll(dataElements)
         dataClass.dataElements = []
         try {
-            dataModel.save(validate: false, flush: false)
             dataClass.delete(flush: flush)
         } catch (Exception exception) {
-            // updating the DM on a nested DC delete???
             throw new ApiInternalException('DCSXX', 'Failed to delete the DataClass', exception)
         }
     }
