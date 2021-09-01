@@ -1,0 +1,222 @@
+{
+  "dataModel": {
+    "id": "79ee183f-f0c9-4003-b69c-48c3af4d00de",
+    "label": "National Minimum Data Set for Thoracic Surgery and Lung Cancer Surgery",
+    "lastUpdated": "2021-09-01T17:02:56.391Z",
+    "metadata": [
+      {
+        "id": "20cc5518-02bc-436e-8744-394a317b749d",
+        "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+        "key": "SCTSImport",
+        "value": "0.1",
+        "lastUpdated": "2021-09-01T17:02:56.399Z"
+      }
+    ],
+    "type": "Data Standard",
+    "documentationVersion": "1.0.0",
+    "finalised": false,
+    "authority": {
+      "id": "856bcc5e-9e92-47d5-8de3-9737b3c9e877",
+      "url": "http://localhost",
+      "label": "Test Authority"
+    },
+    "dataTypes": [
+      {
+        "id": "b1ea6866-c4c3-4652-9239-ea0c45d47818",
+        "label": "ASA Grade American Society of Anaesthetists grade",
+        "lastUpdated": "2021-09-01T17:02:56.411Z",
+        "domainType": "EnumerationType",
+        "enumerationValues": [
+          {
+            "id": "ac0fb54d-43e1-45b6-987e-cb775a093bfe",
+            "index": 4,
+            "key": "5",
+            "value": "A moribund person who is not expected to survive without the operation",
+            "lastUpdated": "2021-09-01T17:02:56.415Z"
+          },
+          {
+            "id": "78172812-00b7-4a0b-b0de-74177ebb8cb6",
+            "index": 2,
+            "key": "2",
+            "value": "Mild systemic disease",
+            "lastUpdated": "2021-09-01T17:02:56.416Z"
+          },
+          {
+            "id": "ce2b4235-b17b-4c6c-8c2a-b02363e4e268",
+            "index": 3,
+            "key": "4",
+            "value": "Severe systemic disease that is a constant threat to life",
+            "lastUpdated": "2021-09-01T17:02:56.413Z"
+          },
+          {
+            "id": "58f14f4c-efb8-4676-9e0f-db72c166c496",
+            "index": 1,
+            "key": "1",
+            "value": "Healthy person",
+            "lastUpdated": "2021-09-01T17:02:56.415Z"
+          },
+          {
+            "id": "5f1f6399-eab6-42a7-bb4f-982fc6a184ac",
+            "index": 0,
+            "key": "3",
+            "value": "Severe systemic disease",
+            "lastUpdated": "2021-09-01T17:02:56.414Z"
+          }
+        ]
+      },
+      {
+        "id": "2f2b5824-d324-47b8-aaab-f69406320a6b",
+        "label": "Dyspnoea score",
+        "lastUpdated": "2021-09-01T17:02:56.413Z",
+        "domainType": "EnumerationType",
+        "enumerationValues": [
+          {
+            "id": "fbf7ea00-658d-4218-a8e5-bef21f2d0009",
+            "index": 1,
+            "key": "3",
+            "value": "Walks slower than contemporaries on level ground because of breathlessness or has to stop for breath when walking at own pace",
+            "lastUpdated": "2021-09-01T17:02:56.423Z"
+          },
+          {
+            "id": "bd74116f-fb8b-4d2a-8340-b34c50eea4a2",
+            "index": 3,
+            "key": "1",
+            "value": "dyspnoea on strenuous exercise",
+            "lastUpdated": "2021-09-01T17:02:56.424Z"
+          },
+          {
+            "id": "b58c9adc-a81a-449b-ace9-459e4f2211c6",
+            "index": 0,
+            "key": "4",
+            "value": "Stops for breath after walking about 100 meters or after a few minutes on level ground",
+            "lastUpdated": "2021-09-01T17:02:56.424Z"
+          },
+          {
+            "id": "088525c6-8834-4ed3-9ce7-b32f6a880882",
+            "index": 2,
+            "key": "5",
+            "value": "Too breathless to leave the house or breathless when dressing or undressing",
+            "lastUpdated": "2021-09-01T17:02:56.421Z"
+          },
+          {
+            "id": "8e19b98c-93b5-4edb-909b-733c7d597188",
+            "index": 4,
+            "key": "2",
+            "value": "when hurrying or walking uphill",
+            "lastUpdated": "2021-09-01T17:02:56.422Z"
+          }
+        ]
+      },
+      {
+        "id": "59fb89b7-71be-440e-a18c-84096a9e7d0e",
+        "label": "Performance status (ECOG)",
+        "lastUpdated": "2021-09-01T17:02:56.412Z",
+        "domainType": "EnumerationType",
+        "enumerationValues": [
+          {
+            "id": "17112843-c6f4-4b33-8494-2d86f138fb9e",
+            "index": 0,
+            "key": "2",
+            "value": "Ambulatory and capable of all selfcare but unable to carry out any work activities; up and about more than 50% of waking hours",
+            "lastUpdated": "2021-09-01T17:02:56.42Z"
+          },
+          {
+            "id": "a417ac12-480b-4ce7-b7b4-e57ac5179273",
+            "index": 2,
+            "key": "0",
+            "value": "Fully active, able to carry on all pre-disease performance without restriction",
+            "lastUpdated": "2021-09-01T17:02:56.421Z"
+          },
+          {
+            "id": "b2f967af-3055-47e4-9a42-ddb3793af632",
+            "index": 1,
+            "key": "3",
+            "value": "Capable of only limited selfcare; confined to bed or chair more than 50% of waking hours",
+            "lastUpdated": "2021-09-01T17:02:56.419Z"
+          },
+          {
+            "id": "468a7032-32c9-4c61-8d5c-650c7ed651bf",
+            "index": 3,
+            "key": "1",
+            "value": "Restricted in physically strenuous activity but ambulatory and able to carry out work of a light or sedentary nature, e.g., light house work, office work",
+            "lastUpdated": "2021-09-01T17:02:56.419Z"
+          },
+          {
+            "id": "9816a3b6-0529-4a2b-bd0d-347fd9f151c3",
+            "index": 4,
+            "key": "4",
+            "value": "Completely disabled; cannot carry on any selfcare; totally confined to bed or chair",
+            "lastUpdated": "2021-09-01T17:02:56.418Z"
+          }
+        ]
+      },
+      {
+        "id": "2208adc1-dea8-4b03-af2a-4c294b239623",
+        "label": "Sex",
+        "lastUpdated": "2021-09-01T17:02:56.412Z",
+        "domainType": "EnumerationType",
+        "enumerationValues": [
+          {
+            "id": "833c3c40-c02e-4da4-8a34-3251416040a8",
+            "index": 1,
+            "key": "F",
+            "value": "female",
+            "lastUpdated": "2021-09-01T17:02:56.417Z"
+          },
+          {
+            "id": "dbbfd3c9-4fa9-4d4c-80c2-a2aa55bb7901",
+            "index": 0,
+            "key": "M",
+            "value": "male",
+            "lastUpdated": "2021-09-01T17:02:56.417Z"
+          }
+        ]
+      },
+      {
+        "id": "a685d56d-f0be-4c22-a15e-42bc811b31d3",
+        "label": "24hrTime",
+        "lastUpdated": "2021-09-01T17:02:56.434Z",
+        "domainType": "PrimitiveType"
+      },
+      {
+        "id": "455b1a9b-c20b-474b-9333-ddbc3570133d",
+        "label": "ddmmyyyy",
+        "lastUpdated": "2021-09-01T17:02:56.436Z",
+        "domainType": "PrimitiveType"
+      },
+      {
+        "id": "099bc88c-58da-401c-bf71-1858327569a8",
+        "label": "external_code",
+        "lastUpdated": "2021-09-01T17:02:56.434Z",
+        "domainType": "PrimitiveType"
+      },
+      {
+        "id": "080a3e2f-adaa-48bc-b6e7-8c0bbbd8d9aa",
+        "label": "mainly_numeric",
+        "lastUpdated": "2021-09-01T17:02:56.436Z",
+        "domainType": "PrimitiveType"
+      },
+      {
+        "id": "d6effbb0-091e-482a-a2d6-274f965627f8",
+        "label": "openworld_tick",
+        "lastUpdated": "2021-09-01T17:02:56.435Z",
+        "domainType": "PrimitiveType"
+      },
+      {
+        "id": "6b5de7fb-0191-47c8-82f4-e9015c67f62d",
+        "label": "text",
+        "lastUpdated": "2021-09-01T17:02:56.435Z",
+        "domainType": "PrimitiveType"
+      }
+    ]
+  },
+  "exportMetadata": {
+    "exportedBy": "Admin User",
+    "exportedOn": "2021-09-01T17:02:56.447Z",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
+      "name": "DataModelJsonExporterService",
+      "version": "3.0"
+    }
+  }
+}

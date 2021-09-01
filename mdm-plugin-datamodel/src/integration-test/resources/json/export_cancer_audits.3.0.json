@@ -1,0 +1,4363 @@
+{
+  "dataModel": {
+    "id": "f1190bce-1756-48f5-afad-e82cf8399d36",
+    "label": "National Minimum Data Set for Thoracic Surgery and Lung Cancer Surgery",
+    "lastUpdated": "2021-09-01T17:02:58.781Z",
+    "metadata": [
+      {
+        "id": "ae2824ef-fc4d-441b-8f78-715ddd8a4434",
+        "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+        "key": "SCTSImport",
+        "value": "0.1",
+        "lastUpdated": "2021-09-01T17:02:58.854Z"
+      }
+    ],
+    "type": "Data Standard",
+    "documentationVersion": "1.0.0",
+    "finalised": false,
+    "authority": {
+      "id": "856bcc5e-9e92-47d5-8de3-9737b3c9e877",
+      "url": "http://localhost",
+      "label": "Test Authority"
+    },
+    "dataTypes": [
+      {
+        "id": "46d50fb9-fe4a-4867-a9a7-ccb5ac2362cd",
+        "label": "ASA Grade American Society of Anaesthetists grade",
+        "lastUpdated": "2021-09-01T17:02:58.864Z",
+        "domainType": "EnumerationType",
+        "enumerationValues": [
+          {
+            "id": "7def017a-999e-4fe4-baa2-94fe610f4062",
+            "index": 1,
+            "key": "4",
+            "value": "Severe systemic disease that is a constant threat to life",
+            "lastUpdated": "2021-09-01T17:02:58.868Z"
+          },
+          {
+            "id": "fb99730c-d950-48a2-b94d-b949571cfd48",
+            "index": 3,
+            "key": "1",
+            "value": "Healthy person",
+            "lastUpdated": "2021-09-01T17:02:58.867Z"
+          },
+          {
+            "id": "a14a1a1a-d123-4c9d-a55f-14528d1775c1",
+            "index": 2,
+            "key": "5",
+            "value": "A moribund person who is not expected to survive without the operation",
+            "lastUpdated": "2021-09-01T17:02:58.867Z"
+          },
+          {
+            "id": "cdbc92b4-7d84-4e78-89e6-e5fee50b8506",
+            "index": 0,
+            "key": "2",
+            "value": "Mild systemic disease",
+            "lastUpdated": "2021-09-01T17:02:58.869Z"
+          },
+          {
+            "id": "5e977310-13d5-40aa-876d-b8d70be4cff7",
+            "index": 4,
+            "key": "3",
+            "value": "Severe systemic disease",
+            "lastUpdated": "2021-09-01T17:02:58.868Z"
+          }
+        ]
+      },
+      {
+        "id": "08b0918b-c2a2-4c8a-8d38-cbb28b5d82dd",
+        "label": "Dyspnoea score",
+        "lastUpdated": "2021-09-01T17:02:58.865Z",
+        "domainType": "EnumerationType",
+        "enumerationValues": [
+          {
+            "id": "ebdf7bbb-74fd-461b-81ec-eeeff644f19b",
+            "index": 3,
+            "key": "5",
+            "value": "Too breathless to leave the house or breathless when dressing or undressing",
+            "lastUpdated": "2021-09-01T17:02:58.872Z"
+          },
+          {
+            "id": "ee3bb57f-94cc-4cff-9cae-a6ae3b88f572",
+            "index": 4,
+            "key": "4",
+            "value": "Stops for breath after walking about 100 meters or after a few minutes on level ground",
+            "lastUpdated": "2021-09-01T17:02:58.872Z"
+          },
+          {
+            "id": "fc5ed41e-bece-4b5d-9918-cf1f35506628",
+            "index": 2,
+            "key": "2",
+            "value": "when hurrying or walking uphill",
+            "lastUpdated": "2021-09-01T17:02:58.874Z"
+          },
+          {
+            "id": "748aab7d-974a-4f67-82c4-1c8a00897f5e",
+            "index": 1,
+            "key": "1",
+            "value": "dyspnoea on strenuous exercise",
+            "lastUpdated": "2021-09-01T17:02:58.873Z"
+          },
+          {
+            "id": "87462826-8f06-4aee-a42f-a6133726a436",
+            "index": 0,
+            "key": "3",
+            "value": "Walks slower than contemporaries on level ground because of breathlessness or has to stop for breath when walking at own pace",
+            "lastUpdated": "2021-09-01T17:02:58.873Z"
+          }
+        ]
+      },
+      {
+        "id": "4c173b80-b1e2-446d-8614-b61f3ed9119b",
+        "label": "Performance status (ECOG)",
+        "lastUpdated": "2021-09-01T17:02:58.864Z",
+        "domainType": "EnumerationType",
+        "enumerationValues": [
+          {
+            "id": "169c305b-143c-4e37-bf7d-111acc985356",
+            "index": 2,
+            "key": "2",
+            "value": "Ambulatory and capable of all selfcare but unable to carry out any work activities; up and about more than 50% of waking hours",
+            "lastUpdated": "2021-09-01T17:02:58.869Z"
+          },
+          {
+            "id": "f33905ed-b696-4f75-bbc0-0c2c327da6a0",
+            "index": 3,
+            "key": "4",
+            "value": "Completely disabled; cannot carry on any selfcare; totally confined to bed or chair",
+            "lastUpdated": "2021-09-01T17:02:58.871Z"
+          },
+          {
+            "id": "7deaf1f8-295e-49a8-a39c-8004ba8d55f5",
+            "index": 1,
+            "key": "3",
+            "value": "Capable of only limited selfcare; confined to bed or chair more than 50% of waking hours",
+            "lastUpdated": "2021-09-01T17:02:58.87Z"
+          },
+          {
+            "id": "63dba320-b7d6-45a6-a55e-d4f0b60f6287",
+            "index": 4,
+            "key": "0",
+            "value": "Fully active, able to carry on all pre-disease performance without restriction",
+            "lastUpdated": "2021-09-01T17:02:58.871Z"
+          },
+          {
+            "id": "748b2657-33cd-4ed1-b4bf-37fb25168707",
+            "index": 0,
+            "key": "1",
+            "value": "Restricted in physically strenuous activity but ambulatory and able to carry out work of a light or sedentary nature, e.g., light house work, office work",
+            "lastUpdated": "2021-09-01T17:02:58.87Z"
+          }
+        ]
+      },
+      {
+        "id": "3a037586-0b8c-43df-9eac-5646a58c6f84",
+        "label": "Sex",
+        "lastUpdated": "2021-09-01T17:02:58.863Z",
+        "domainType": "EnumerationType",
+        "enumerationValues": [
+          {
+            "id": "f87077e7-80b8-4261-96c3-59f8897f5a33",
+            "index": 1,
+            "key": "F",
+            "value": "female",
+            "lastUpdated": "2021-09-01T17:02:58.865Z"
+          },
+          {
+            "id": "78c705dc-b646-4093-9622-69df5d141725",
+            "index": 0,
+            "key": "M",
+            "value": "male",
+            "lastUpdated": "2021-09-01T17:02:58.866Z"
+          }
+        ]
+      },
+      {
+        "id": "dec3fc8f-53a4-4591-a311-ea4306ca06ff",
+        "label": "24hrTime",
+        "lastUpdated": "2021-09-01T17:02:58.882Z",
+        "domainType": "PrimitiveType"
+      },
+      {
+        "id": "82781a06-39d7-470a-b336-2278f90bd523",
+        "label": "ddmmyyyy",
+        "lastUpdated": "2021-09-01T17:02:58.883Z",
+        "domainType": "PrimitiveType"
+      },
+      {
+        "id": "24582847-98bb-409e-b2d9-944ffca2eb2a",
+        "label": "external_code",
+        "lastUpdated": "2021-09-01T17:02:58.883Z",
+        "domainType": "PrimitiveType"
+      },
+      {
+        "id": "9e08e65b-8ac4-4f10-99fb-cf054ff16584",
+        "label": "mainly_numeric",
+        "lastUpdated": "2021-09-01T17:02:58.882Z",
+        "domainType": "PrimitiveType"
+      },
+      {
+        "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+        "label": "openworld_tick",
+        "lastUpdated": "2021-09-01T17:02:58.881Z",
+        "domainType": "PrimitiveType"
+      },
+      {
+        "id": "1ea196d0-6f23-41cc-a3e1-0e1f902b9c54",
+        "label": "text",
+        "lastUpdated": "2021-09-01T17:02:58.883Z",
+        "domainType": "PrimitiveType"
+      }
+    ],
+    "childDataClasses": [
+      {
+        "id": "543b15b8-74e3-4042-933f-ad35220c539d",
+        "label": "Core",
+        "lastUpdated": "2021-09-01T17:02:58.898Z",
+        "dataClasses": [
+          {
+            "id": "56fba102-bd81-498e-88f8-c991eb23fb47",
+            "label": "Pre-Operative primary lung cancer diagnostic staging tests",
+            "description": "Omit where data is not available.  Do not estimate.  If the data is too incomplete to analyse it is better that we know that",
+            "lastUpdated": "2021-09-01T17:02:58.944Z",
+            "dataClasses": [
+              {
+                "id": "4247a171-9abe-47cd-818f-9d78c2d565d8",
+                "label": "Primary lung cancer histological diagnosis",
+                "description": "Update after surgery if it changes.  This is not an audit of the preoperative diagnostic accuracy.  The definitive histology is what we need",
+                "lastUpdated": "2021-09-01T17:02:58.967Z",
+                "metadata": [
+                  {
+                    "id": "8e3f8668-8e9a-4b1d-b3bb-f867abb1cf97",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number of Answers",
+                    "value": "ONE",
+                    "lastUpdated": "2021-09-01T17:02:58.969Z"
+                  }
+                ],
+                "dataElements": [
+                  {
+                    "id": "7754888e-10e0-4b35-bbfc-9abbdad42692",
+                    "label": "Squamous",
+                    "lastUpdated": "2021-09-01T17:02:59.125Z",
+                    "metadata": [
+                      {
+                        "id": "f37a35d7-0922-4467-82d7-2a04fc9ce2fd",
+                        "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                        "key": "Number",
+                        "value": "100",
+                        "lastUpdated": "2021-09-01T17:02:59.303Z"
+                      },
+                      {
+                        "id": "617bdf62-afb7-46df-8400-2c22a30c66f0",
+                        "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                        "key": "Notes",
+                        "value": "N/A",
+                        "lastUpdated": "2021-09-01T17:02:59.338Z"
+                      }
+                    ],
+                    "dataType": {
+                      "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                      "label": "openworld_tick",
+                      "lastUpdated": "2021-09-01T17:02:58.881Z",
+                      "domainType": "PrimitiveType"
+                    }
+                  },
+                  {
+                    "id": "c1544127-3bef-448d-89a8-2b78a9a41239",
+                    "label": "Undifferentiated",
+                    "lastUpdated": "2021-09-01T17:02:59.138Z",
+                    "metadata": [
+                      {
+                        "id": "cd37d1a0-a9c2-4b67-ab4b-5c520425f51f",
+                        "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                        "key": "Number",
+                        "value": "102",
+                        "lastUpdated": "2021-09-01T17:02:59.287Z"
+                      },
+                      {
+                        "id": "bcb0d8fb-157a-4e04-b58c-4e70b953fb85",
+                        "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                        "key": "Notes",
+                        "value": "N/A",
+                        "lastUpdated": "2021-09-01T17:02:59.283Z"
+                      }
+                    ],
+                    "dataType": {
+                      "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                      "label": "openworld_tick",
+                      "lastUpdated": "2021-09-01T17:02:58.881Z",
+                      "domainType": "PrimitiveType"
+                    }
+                  },
+                  {
+                    "id": "fba523b8-eef3-4a02-a135-c3f4a92d5147",
+                    "label": "Small cell",
+                    "lastUpdated": "2021-09-01T17:02:59.155Z",
+                    "metadata": [
+                      {
+                        "id": "4201d6a4-dfdf-4885-b0af-860a975b1323",
+                        "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                        "key": "Number",
+                        "value": "98",
+                        "lastUpdated": "2021-09-01T17:02:59.332Z"
+                      },
+                      {
+                        "id": "4fd53767-3d60-43c5-a879-6beba050e04f",
+                        "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                        "key": "Notes",
+                        "value": "N/A",
+                        "lastUpdated": "2021-09-01T17:02:59.334Z"
+                      }
+                    ],
+                    "dataType": {
+                      "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                      "label": "openworld_tick",
+                      "lastUpdated": "2021-09-01T17:02:58.881Z",
+                      "domainType": "PrimitiveType"
+                    }
+                  },
+                  {
+                    "id": "d7af82d0-563d-4e54-ae97-fb1c2c3baee7",
+                    "label": "Adeno",
+                    "lastUpdated": "2021-09-01T17:02:59.122Z",
+                    "metadata": [
+                      {
+                        "id": "19ffc28a-8695-48d3-963a-afee7720d4c5",
+                        "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                        "key": "Notes",
+                        "value": "N/A",
+                        "lastUpdated": "2021-09-01T17:02:59.315Z"
+                      },
+                      {
+                        "id": "3814db50-5bca-4e76-9a7e-8d088dd98625",
+                        "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                        "key": "Number",
+                        "value": "101",
+                        "lastUpdated": "2021-09-01T17:02:59.326Z"
+                      }
+                    ],
+                    "dataType": {
+                      "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                      "label": "openworld_tick",
+                      "lastUpdated": "2021-09-01T17:02:58.881Z",
+                      "domainType": "PrimitiveType"
+                    }
+                  },
+                  {
+                    "id": "c41404f8-8bf8-4485-93ba-1fb7049c7599",
+                    "label": "Other or further information",
+                    "description": "Write in",
+                    "lastUpdated": "2021-09-01T17:02:59.118Z",
+                    "metadata": [
+                      {
+                        "id": "8f55f979-48c9-4cef-83c3-76d21a797733",
+                        "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                        "key": "Number",
+                        "value": "104",
+                        "lastUpdated": "2021-09-01T17:02:59.267Z"
+                      },
+                      {
+                        "id": "283295c0-caf6-4bfe-90a1-69210bb4ff9f",
+                        "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                        "key": "Notes",
+                        "value": "N/A",
+                        "lastUpdated": "2021-09-01T17:02:59.322Z"
+                      }
+                    ],
+                    "dataType": {
+                      "id": "1ea196d0-6f23-41cc-a3e1-0e1f902b9c54",
+                      "label": "text",
+                      "lastUpdated": "2021-09-01T17:02:58.883Z",
+                      "domainType": "PrimitiveType"
+                    }
+                  },
+                  {
+                    "id": "3b29ad3b-a2a8-499b-a06b-b5695bd980ac",
+                    "label": "NSCLC",
+                    "lastUpdated": "2021-09-01T17:02:59.121Z",
+                    "metadata": [
+                      {
+                        "id": "ce24dd4c-bd16-40e2-a523-2e699aa9ba44",
+                        "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                        "key": "Number",
+                        "value": "99",
+                        "lastUpdated": "2021-09-01T17:02:59.287Z"
+                      },
+                      {
+                        "id": "34f59403-678e-4a25-b8c2-af86dd3f2e06",
+                        "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                        "key": "Notes",
+                        "value": "N/A",
+                        "lastUpdated": "2021-09-01T17:02:59.325Z"
+                      }
+                    ],
+                    "dataType": {
+                      "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                      "label": "openworld_tick",
+                      "lastUpdated": "2021-09-01T17:02:58.881Z",
+                      "domainType": "PrimitiveType"
+                    }
+                  },
+                  {
+                    "id": "a009bd67-ffe6-4cbd-8c62-17973f30fcee",
+                    "label": "Broncheoalveolar",
+                    "lastUpdated": "2021-09-01T17:02:59.126Z",
+                    "metadata": [
+                      {
+                        "id": "b0758452-a5ba-4c2f-b57d-66ed8ba6888f",
+                        "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                        "key": "Notes",
+                        "value": "N/A",
+                        "lastUpdated": "2021-09-01T17:02:59.278Z"
+                      },
+                      {
+                        "id": "904edb9f-a60e-4de7-9551-296aa91722bb",
+                        "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                        "key": "Number",
+                        "value": "103",
+                        "lastUpdated": "2021-09-01T17:02:59.268Z"
+                      }
+                    ],
+                    "dataType": {
+                      "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                      "label": "openworld_tick",
+                      "lastUpdated": "2021-09-01T17:02:58.881Z",
+                      "domainType": "PrimitiveType"
+                    }
+                  }
+                ]
+              }
+            ],
+            "dataElements": [
+              {
+                "id": "f370161a-1d17-4b18-9e85-23c57dad725f",
+                "label": "CT",
+                "description": "CT scan has been carried out as part of pre-operative staging",
+                "lastUpdated": "2021-09-01T17:02:59.157Z",
+                "metadata": [
+                  {
+                    "id": "6f285c63-7f50-4b46-b619-d9e3212f6c0a",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.342Z"
+                  },
+                  {
+                    "id": "7fc480fe-933c-4e38-ab94-2e3cbc8f11b4",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "94",
+                    "lastUpdated": "2021-09-01T17:02:59.348Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "d087e429-2aa9-4299-8d1a-377a16f0d95c",
+                "label": "T Stage",
+                "description": "Coded classification of the extent of the primary tumour immediately prior to surgery",
+                "lastUpdated": "2021-09-01T17:02:59.146Z",
+                "metadata": [
+                  {
+                    "id": "5cbfb97e-625b-4071-8ea6-600f2f95986d",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "Is this pathological or integrated?",
+                    "lastUpdated": "2021-09-01T17:02:59.335Z"
+                  },
+                  {
+                    "id": "20ddf531-1410-4b1b-a974-1532e3659eb7",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "105",
+                    "lastUpdated": "2021-09-01T17:02:59.32Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "24582847-98bb-409e-b2d9-944ffca2eb2a",
+                  "label": "external_code",
+                  "lastUpdated": "2021-09-01T17:02:58.883Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "3af01c8a-f783-44cc-8f86-4eaee7094810",
+                "label": "M Stage",
+                "description": "Coded classification of distant metastasis immediately prior to surgery",
+                "lastUpdated": "2021-09-01T17:02:59.14Z",
+                "metadata": [
+                  {
+                    "id": "3a8bb378-8142-4342-9efa-3f870624207e",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.328Z"
+                  },
+                  {
+                    "id": "f03d409f-52dc-4bd1-8d81-8e9e4e71f432",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "107",
+                    "lastUpdated": "2021-09-01T17:02:59.302Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "24582847-98bb-409e-b2d9-944ffca2eb2a",
+                  "label": "external_code",
+                  "lastUpdated": "2021-09-01T17:02:58.883Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "0cb5525c-29c5-4a55-8710-1bd89049a952",
+                "label": "N Stage",
+                "description": "Coded classification of the degree of spread to regional lymph nodes immediately prior to surgery",
+                "lastUpdated": "2021-09-01T17:02:59.123Z",
+                "metadata": [
+                  {
+                    "id": "08a3114a-cb0a-4258-9367-6c49377b4ac8",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "Is this pathological or integrated?",
+                    "lastUpdated": "2021-09-01T17:02:59.311Z"
+                  },
+                  {
+                    "id": "d6a53448-3b30-4a07-8fc7-44d1f64874de",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "106",
+                    "lastUpdated": "2021-09-01T17:02:59.293Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "24582847-98bb-409e-b2d9-944ffca2eb2a",
+                  "label": "external_code",
+                  "lastUpdated": "2021-09-01T17:02:58.883Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "5561fa97-08c5-4f37-bbfe-6520664dc921",
+                "label": "PET",
+                "description": "PET scan has been carried out as part of pre-operative staging",
+                "lastUpdated": "2021-09-01T17:02:59.125Z",
+                "metadata": [
+                  {
+                    "id": "86b4d677-b351-4be5-b036-e78b600a8451",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.266Z"
+                  },
+                  {
+                    "id": "bbf88e9c-142c-4e0e-b41f-7ef1067177f9",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "96",
+                    "lastUpdated": "2021-09-01T17:02:59.282Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "b3e51631-928b-40ab-94e4-7ff00cbfe5cc",
+                "label": "Pre-operative tissue diagnosis made",
+                "description": "by any method e.g. bronchoscopy, CT guided core biopsy or FNA, EBUS etc",
+                "lastUpdated": "2021-09-01T17:02:59.134Z",
+                "metadata": [
+                  {
+                    "id": "922716e5-a9d5-4de2-a5c0-735efab70843",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.269Z"
+                  },
+                  {
+                    "id": "97e02c1b-7a44-4277-b85f-77bb320ba296",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "97",
+                    "lastUpdated": "2021-09-01T17:02:59.273Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "bb84a9e4-66e7-4acd-a013-a140ce8b504f",
+                "label": "MRI",
+                "description": "MRI scan has been carried out as part of pre-operative staging",
+                "lastUpdated": "2021-09-01T17:02:59.148Z",
+                "metadata": [
+                  {
+                    "id": "3e548e8e-ef31-46e7-817b-fcec2ce5c8c3",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "95",
+                    "lastUpdated": "2021-09-01T17:02:59.33Z"
+                  },
+                  {
+                    "id": "412bbe3d-5ac4-46a7-8be4-947f812d0dd1",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.331Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              }
+            ]
+          }, {
+            "id": "d7a0869a-7347-442b-9cac-43a586dfd2f5",
+            "label": "Primary lung cancer pathological (post-op) TNM staging",
+            "lastUpdated": "2021-09-01T17:02:58.942Z",
+            "dataElements": [
+              {
+                "id": "afdd088d-c499-447b-9809-8043dd0324fc",
+                "label": "M Stage",
+                "description": "Coded classification of distant metastasis assessed after surgery",
+                "lastUpdated": "2021-09-01T17:02:59.106Z",
+                "metadata": [
+                  {
+                    "id": "fc17ab26-5f89-4e89-ad98-de2687bdfeed",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "120",
+                    "lastUpdated": "2021-09-01T17:02:59.306Z"
+                  },
+                  {
+                    "id": "d4762e4c-c206-4e26-9b86-d7d3e67568ee",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.291Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "24582847-98bb-409e-b2d9-944ffca2eb2a",
+                  "label": "external_code",
+                  "lastUpdated": "2021-09-01T17:02:58.883Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "18b26078-bc53-421d-8faf-4cfac9af7e8c",
+                "label": "N Stage",
+                "description": "Coded classification of the degree of spread to regional lymph nodes assessed after surgery",
+                "lastUpdated": "2021-09-01T17:02:59.137Z",
+                "metadata": [
+                  {
+                    "id": "3dbf9232-3fb7-476c-95b8-0e257500fddf",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "119",
+                    "lastUpdated": "2021-09-01T17:02:59.329Z"
+                  },
+                  {
+                    "id": "63c7eeb0-edf3-4027-b801-31a0ec9893e6",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "Is this pathological or integrated?",
+                    "lastUpdated": "2021-09-01T17:02:59.339Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "24582847-98bb-409e-b2d9-944ffca2eb2a",
+                  "label": "external_code",
+                  "lastUpdated": "2021-09-01T17:02:58.883Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "3061d51c-51df-4d95-96a8-b54daccea37e",
+                "label": "T Stage",
+                "description": "Coded classification of the extent of the primary tumour assessed after surgery",
+                "lastUpdated": "2021-09-01T17:02:59.146Z",
+                "metadata": [
+                  {
+                    "id": "f2314181-152c-4e95-b169-cb2d065b6a29",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "118",
+                    "lastUpdated": "2021-09-01T17:02:59.303Z"
+                  },
+                  {
+                    "id": "9c7f1560-64f0-470e-be34-06137eb17ce3",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "Is this pathological or integrated?",
+                    "lastUpdated": "2021-09-01T17:02:59.275Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "24582847-98bb-409e-b2d9-944ffca2eb2a",
+                  "label": "external_code",
+                  "lastUpdated": "2021-09-01T17:02:58.883Z",
+                  "domainType": "PrimitiveType"
+                }
+              }
+            ]
+          }, {
+            "id": "6ba44f91-f0e8-42fd-8bc4-6af6c4355b34",
+            "label": "Operative priority",
+            "lastUpdated": "2021-09-01T17:02:58.944Z",
+            "metadata": [
+              {
+                "id": "7b2ee552-d604-41c9-9f61-222543c1969e",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Number of Answers",
+                "value": "ONE",
+                "lastUpdated": "2021-09-01T17:02:58.953Z"
+              }
+            ],
+            "dataElements": [
+              {
+                "id": "ab6b8bac-7d37-4be4-9991-5c97f77335b2",
+                "label": "Elective",
+                "description": "booked admission for surgery",
+                "lastUpdated": "2021-09-01T17:02:59.147Z",
+                "metadata": [
+                  {
+                    "id": "7ca3ffc1-7786-4ec4-875c-a8f2a2233ea7",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "12",
+                    "lastUpdated": "2021-09-01T17:02:59.347Z"
+                  },
+                  {
+                    "id": "c3b8c1e4-4751-4094-8bc3-2bca3d9ad127",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.285Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "5c6a0dc1-9169-4091-bf89-018041136da3",
+                "label": "Emergency",
+                "description": "operation arranged outside scheduled lists",
+                "lastUpdated": "2021-09-01T17:02:59.12Z",
+                "metadata": [
+                  {
+                    "id": "e562e58c-e6c9-4870-834a-40c83da918e4",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.297Z"
+                  },
+                  {
+                    "id": "e267d755-6a41-4252-afce-03afe2b6f47c",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "14",
+                    "lastUpdated": "2021-09-01T17:02:59.296Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "9fd756a4-2f39-465b-8664-4b376352ebf5",
+                "label": "Urgent",
+                "description": "decision to operate on next available list",
+                "lastUpdated": "2021-09-01T17:02:59.136Z",
+                "metadata": [
+                  {
+                    "id": "3ad8a95c-b04e-4db6-a27b-ae5e4e9df99f",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "13",
+                    "lastUpdated": "2021-09-01T17:02:59.328Z"
+                  },
+                  {
+                    "id": "606136fd-6477-430f-b247-2c0ed5146bb3",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.338Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              }
+            ]
+          }, {
+            "id": "b1b31ec0-8147-4392-9efa-954bd720e3e3",
+            "label": "Primary lung cancer surgical resection performed",
+            "description": "Combinations are allowed to make up pneumonectomies, or lobectomy plus part of adjacent lobe",
+            "lastUpdated": "2021-09-01T17:02:58.946Z",
+            "metadata": [
+              {
+                "id": "1637edbe-e4bc-4371-a764-30a8ebf6f566",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Number of Answers",
+                "value": "MANY",
+                "lastUpdated": "2021-09-01T17:02:58.952Z"
+              }
+            ],
+            "dataElements": [
+              {
+                "id": "09b6aee2-8026-41c4-ba33-77cc549e837a",
+                "label": "Right upper lobe",
+                "lastUpdated": "2021-09-01T17:02:59.143Z",
+                "metadata": [
+                  {
+                    "id": "e5bf9cce-59ef-4e4a-9198-70a27738a354",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "114",
+                    "lastUpdated": "2021-09-01T17:02:59.297Z"
+                  },
+                  {
+                    "id": "0b127a05-4ebd-4db1-9185-e220d90dafec",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.312Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "235148cb-f0f8-4081-8b5e-aed5ba80b702",
+                "label": "Sublobar resection (whether wedge or segment)",
+                "lastUpdated": "2021-09-01T17:02:59.153Z",
+                "metadata": [
+                  {
+                    "id": "ffaba926-6aef-44ff-a00e-104c35af2391",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.307Z"
+                  },
+                  {
+                    "id": "87284f8c-ec47-4854-bce2-158f87505f7f",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "117",
+                    "lastUpdated": "2021-09-01T17:02:59.266Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "3df6ca2c-83df-4c27-a915-919f5697196f",
+                "label": "Middle lobe",
+                "lastUpdated": "2021-09-01T17:02:59.105Z",
+                "metadata": [
+                  {
+                    "id": "5f587e97-02f7-4e39-85aa-f102298b84ad",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.335Z"
+                  },
+                  {
+                    "id": "3114a673-ad13-474f-872d-8cb2c50dc259",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "115",
+                    "lastUpdated": "2021-09-01T17:02:59.324Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "f09d3112-3780-47b8-b41c-fea2627b04c3",
+                "label": "Left upper lobe",
+                "lastUpdated": "2021-09-01T17:02:59.13Z",
+                "metadata": [
+                  {
+                    "id": "d64ba063-6a52-4521-9229-aeddd7d928c7",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "112",
+                    "lastUpdated": "2021-09-01T17:02:59.292Z"
+                  },
+                  {
+                    "id": "d7e0cfae-a660-4ea4-a53c-9282570a8de9",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.294Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "8a6324cf-d839-4a31-a567-03d87cdbd524",
+                "label": "Left lower lobe",
+                "lastUpdated": "2021-09-01T17:02:59.117Z",
+                "metadata": [
+                  {
+                    "id": "0102fa97-970e-454a-9745-d62a25f9b695",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.307Z"
+                  },
+                  {
+                    "id": "1a8ed999-5672-4511-8fa6-b8d2d0e131b8",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "113",
+                    "lastUpdated": "2021-09-01T17:02:59.315Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "fdde7f3d-e4e0-4f8d-990e-7b557108eb32",
+                "label": "Right lower lobe",
+                "lastUpdated": "2021-09-01T17:02:59.154Z",
+                "metadata": [
+                  {
+                    "id": "b36e8792-401a-4046-ab32-2f050c1b8b16",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.279Z"
+                  },
+                  {
+                    "id": "91d7a220-35bf-4d8b-a37d-7ee26375b9ef",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "116",
+                    "lastUpdated": "2021-09-01T17:02:59.269Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "b26bd274-ce25-41c0-8dad-c8295e19f453",
+                "label": "Frozen section for staging",
+                "lastUpdated": "2021-09-01T17:02:59.152Z",
+                "metadata": [
+                  {
+                    "id": "cfeb7cab-d0f0-4c9c-bafd-25ca2bd0563f",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.288Z"
+                  },
+                  {
+                    "id": "58b5a3f5-ec66-4b0c-9bea-f976973c0060",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "111",
+                    "lastUpdated": "2021-09-01T17:02:59.334Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "454ac347-3ed2-4dbf-bc91-db7b29ed08d2",
+                "label": "Frozen section taken for diagnosis",
+                "lastUpdated": "2021-09-01T17:02:59.131Z",
+                "metadata": [
+                  {
+                    "id": "76d9eae4-095b-4f8e-85ae-ce3b4b283aea",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "110",
+                    "lastUpdated": "2021-09-01T17:02:59.344Z"
+                  },
+                  {
+                    "id": "4c1d66af-c33d-4ac5-9b2f-419484e5f735",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.333Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              }
+            ]
+          }, {
+            "id": "0541c1e4-27a6-490d-a01f-85921f2f531b",
+            "label": "Pathological category",
+            "description": "This is the pathological category (based on what used to be called the “surgical \n            sieve”) of the aetiology of the condition for which surgery is being performed.  \n            It includes specific commonly occurring thoracic diagnoses. The field should be entered \n            at the time of surgery and revised as necessary in the light of information \n            from pathology at the time of discharge.\n            \n            An example of a multiple entry would be an empyema where the initiating problem was trauma \n            (stabbing for example).  Both are worth retrieving to count trauma and to count empyema so \n            enter both.  The data analyst can recognise that the operative episode was single.",
+            "lastUpdated": "2021-09-01T17:02:58.942Z",
+            "metadata": [
+              {
+                "id": "8fd596dd-f700-400f-a179-1bbd16736958",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Number of Answers",
+                "value": "MANY",
+                "lastUpdated": "2021-09-01T17:02:58.952Z"
+              }
+            ],
+            "dataElements": [
+              {
+                "id": "8a26d63f-4866-4b77-a1a0-8324a43c4268",
+                "label": "Pneumothorax",
+                "lastUpdated": "2021-09-01T17:02:59.123Z",
+                "metadata": [
+                  {
+                    "id": "27dfc418-76dc-4fac-b60f-12eaa9c96bb8",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.321Z"
+                  },
+                  {
+                    "id": "f0a81ffc-99ff-413a-84c2-87d1b346d0b6",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "30",
+                    "lastUpdated": "2021-09-01T17:02:59.302Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "9302db1c-62aa-46d1-babc-6e606e0b3ecd",
+                "label": "Carcinoid",
+                "lastUpdated": "2021-09-01T17:02:59.156Z",
+                "metadata": [
+                  {
+                    "id": "d5cfc454-9c55-41c3-ae4f-d368d9319e6d",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.292Z"
+                  },
+                  {
+                    "id": "8e0f950e-9457-4f69-9f8b-3bd962e6c77d",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "25",
+                    "lastUpdated": "2021-09-01T17:02:59.267Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "312b9698-6bb8-4e81-b56c-602e41c2a272",
+                "label": "Mesothelioma",
+                "lastUpdated": "2021-09-01T17:02:59.149Z",
+                "metadata": [
+                  {
+                    "id": "7df80dab-784e-417f-9aa5-aa4d093c5635",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "22",
+                    "lastUpdated": "2021-09-01T17:02:59.348Z"
+                  },
+                  {
+                    "id": "baaf1963-bb1f-4036-8eab-b98de35ead13",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.282Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "568c8b1d-4c34-4be0-97f2-181246e89ce5",
+                "label": "Parenchymal lung disease (as the pathology of interest – not comorbidity)",
+                "lastUpdated": "2021-09-01T17:02:59.109Z",
+                "metadata": [
+                  {
+                    "id": "32338c3c-de55-47de-b1a8-7a4784a20d7f",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.324Z"
+                  },
+                  {
+                    "id": "74c11962-4f00-43db-ab4c-bdc6d4123f41",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "28",
+                    "lastUpdated": "2021-09-01T17:02:59.343Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "98ea3ea1-c747-4781-ad85-bb3cbf5e1e8b",
+                "label": "Vascular lesion",
+                "lastUpdated": "2021-09-01T17:02:59.132Z",
+                "metadata": [
+                  {
+                    "id": "0e66ee77-0909-42ad-a30a-52f4d8762dd0",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "29",
+                    "lastUpdated": "2021-09-01T17:02:59.313Z"
+                  },
+                  {
+                    "id": "9b93dbd3-a493-4c4b-8816-ccdced58bfba",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.274Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "47bc7f25-e0c2-4c9e-8ccf-6964719d6a19",
+                "label": "Empyema (include all aetiologies of pleural sepsis)",
+                "lastUpdated": "2021-09-01T17:02:59.131Z",
+                "metadata": [
+                  {
+                    "id": "7df9d472-5e61-4620-bb59-d1ee38a6c532",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "27",
+                    "lastUpdated": "2021-09-01T17:02:59.348Z"
+                  },
+                  {
+                    "id": "bd1456b6-d4be-4072-bfd2-9772b02e3608",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.283Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "98769261-8b98-4682-8978-654ffa56bd99",
+                "label": "Other primary thoracic malignancy",
+                "lastUpdated": "2021-09-01T17:02:59.144Z",
+                "metadata": [
+                  {
+                    "id": "1c716db2-8aa5-4f22-8743-cbcb30636c71",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.316Z"
+                  },
+                  {
+                    "id": "0cb93ad5-5ea3-40f8-9adf-417d013a1077",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "23",
+                    "lastUpdated": "2021-09-01T17:02:59.312Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "08be06a7-7b93-4cfe-80b1-540fb7e55968",
+                "label": "Other",
+                "description": "Write in the other value",
+                "lastUpdated": "2021-09-01T17:02:59.119Z",
+                "metadata": [
+                  {
+                    "id": "96c60b84-5bf2-479f-b7d9-474a925125d8",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.273Z"
+                  },
+                  {
+                    "id": "1012e776-a02b-44ea-b43c-3212f3b882c4",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "32",
+                    "lastUpdated": "2021-09-01T17:02:59.313Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "1ea196d0-6f23-41cc-a3e1-0e1f902b9c54",
+                  "label": "text",
+                  "lastUpdated": "2021-09-01T17:02:58.883Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "684854da-0491-415e-8530-ef2bfd0f9003",
+                "label": "Pleural effusion",
+                "lastUpdated": "2021-09-01T17:02:59.103Z",
+                "metadata": [
+                  {
+                    "id": "65bbd86f-7a29-4231-a6a7-8930c929abc2",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.339Z"
+                  },
+                  {
+                    "id": "c0cbda65-d83f-4a5b-8a52-95ada892632c",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "31",
+                    "lastUpdated": "2021-09-01T17:02:59.283Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "34cce5c3-9562-4dc1-9ab0-640ef46cefdc",
+                "label": "Congenital",
+                "lastUpdated": "2021-09-01T17:02:59.13Z",
+                "metadata": [
+                  {
+                    "id": "4cab3c84-8ed6-48e3-a66a-055e5e342245",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.333Z"
+                  },
+                  {
+                    "id": "41f55916-a195-4cc2-88c9-d48c86bebaa0",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "18",
+                    "lastUpdated": "2021-09-01T17:02:59.331Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "cc9c1f0a-6ef0-4d57-afcd-7a1071c53613",
+                "label": "Primary cancer lung (known or probable)",
+                "lastUpdated": "2021-09-01T17:02:59.158Z",
+                "metadata": [
+                  {
+                    "id": "636265f7-6c5b-4a42-ba92-8fd99a69e7b0",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "20",
+                    "lastUpdated": "2021-09-01T17:02:59.339Z"
+                  },
+                  {
+                    "id": "424195a4-8d78-48a0-b44e-3a46c465252f",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.332Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "ce18b262-bfad-450e-a5da-8ddfef7c9910",
+                "label": "Upper GI cancer",
+                "lastUpdated": "2021-09-01T17:02:59.128Z",
+                "metadata": [
+                  {
+                    "id": "61b5d69e-a362-4469-9e7a-317023a03216",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "21",
+                    "lastUpdated": "2021-09-01T17:02:59.339Z"
+                  },
+                  {
+                    "id": "97625464-0b19-4a47-8d3e-10070b781056",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.273Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "83986848-fbaf-41dd-b68d-31741b19670b",
+                "label": "Trauma/accident",
+                "lastUpdated": "2021-09-01T17:02:59.14Z",
+                "metadata": [
+                  {
+                    "id": "6dc8b396-4578-4f54-98e3-c0067cd27e01",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.341Z"
+                  },
+                  {
+                    "id": "9f03a17c-ee86-47a2-b75f-ebe8baa275d3",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "19",
+                    "lastUpdated": "2021-09-01T17:02:59.276Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "7d3818bc-470a-4f61-912f-fe1d1237bbb3",
+                "label": "Malignant disease other (secondary, recurrent or metastatic)",
+                "lastUpdated": "2021-09-01T17:02:59.149Z",
+                "metadata": [
+                  {
+                    "id": "ad83559e-7078-4690-8054-5c58246d087f",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "24",
+                    "lastUpdated": "2021-09-01T17:02:59.277Z"
+                  },
+                  {
+                    "id": "f16c7633-d650-4a61-8848-9348f9f21d98",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.302Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "eba3cfda-3df7-44a9-9b7b-b8e5502dcaab",
+                "label": "Benign neoplasms",
+                "lastUpdated": "2021-09-01T17:02:59.11Z",
+                "metadata": [
+                  {
+                    "id": "e6e51883-e92c-4f80-9963-ee428f31db85",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "26",
+                    "lastUpdated": "2021-09-01T17:02:59.297Z"
+                  },
+                  {
+                    "id": "19d2f85f-234b-45f8-afb3-b06dd0945122",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.315Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              }
+            ]
+          }, {
+            "id": "cf945535-3556-4cdd-a42e-e9bb72f9822e",
+            "label": "Named operations",
+            "description": "Select the procedure(s) performed at this operation. Thus pleural biopsy and pleurodesis can both be entered.  \n            This is not a comprehensive list but is designed to capture the commonest and most well-defined operations",
+            "lastUpdated": "2021-09-01T17:02:58.943Z",
+            "metadata": [
+              {
+                "id": "2946abae-b999-4b0c-9482-f1011362fbaa",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Number of Answers",
+                "value": "MANY",
+                "lastUpdated": "2021-09-01T17:02:58.952Z"
+              }
+            ],
+            "dataElements": [
+              {
+                "id": "0ee41535-63b0-4a12-9631-089707124701",
+                "label": "Sub lobar lung resection wedge or segmentectomy",
+                "lastUpdated": "2021-09-01T17:02:59.121Z",
+                "metadata": [
+                  {
+                    "id": "967a3d52-0be1-4605-a590-a55559beb199",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.272Z"
+                  },
+                  {
+                    "id": "863cadda-5771-43b1-8096-18dd3788edb0",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "47",
+                    "lastUpdated": "2021-09-01T17:02:59.265Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "16562de9-e26d-4bff-90b6-45aed6715ccf",
+                "label": "Lobectomy/bilobectomy (any indication)",
+                "lastUpdated": "2021-09-01T17:02:59.131Z",
+                "metadata": [
+                  {
+                    "id": "b1e88d74-1ac7-4c0a-9dcf-b72d7452ba92",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "44",
+                    "lastUpdated": "2021-09-01T17:02:59.279Z"
+                  },
+                  {
+                    "id": "3b28dd74-79a9-40ec-969a-a911cc197274",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.328Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "21453cc0-b18c-45e9-8daa-0adfee8eecd1",
+                "label": "Decortication",
+                "lastUpdated": "2021-09-01T17:02:59.135Z",
+                "metadata": [
+                  {
+                    "id": "f39b064e-d3ac-43d4-b9bd-c17e9626826b",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.304Z"
+                  },
+                  {
+                    "id": "8283cd21-870d-4b82-b2fe-9ef5eb9265b2",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "54",
+                    "lastUpdated": "2021-09-01T17:02:59.264Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "a3264296-b923-4e57-bce9-e29ebd94afbb",
+                "label": "Sympathectomy",
+                "lastUpdated": "2021-09-01T17:02:59.105Z",
+                "metadata": [
+                  {
+                    "id": "20eda1be-407f-4b89-ae68-22083c37e420",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "58",
+                    "lastUpdated": "2021-09-01T17:02:59.32Z"
+                  },
+                  {
+                    "id": "8346e812-c196-4db6-be60-822e4b9be459",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.264Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "06e9ef30-3fc5-46fe-9966-8aa5b72614df",
+                "label": "Other (enter text)",
+                "description": "other values not in the previous list",
+                "lastUpdated": "2021-09-01T17:02:59.148Z",
+                "metadata": [
+                  {
+                    "id": "97dfad97-99b3-4938-a69b-419606f9d4b3",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "65",
+                    "lastUpdated": "2021-09-01T17:02:59.273Z"
+                  },
+                  {
+                    "id": "b3bb91da-7c8d-4d57-8e31-595f747ea4a5",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.281Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "1ea196d0-6f23-41cc-a3e1-0e1f902b9c54",
+                  "label": "text",
+                  "lastUpdated": "2021-09-01T17:02:58.883Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "e2ce8a9d-2054-4168-bb24-10ce718fe4ac",
+                "label": "Pectus surgery",
+                "lastUpdated": "2021-09-01T17:02:59.118Z",
+                "metadata": [
+                  {
+                    "id": "09cac22b-7e21-4b6f-b5e7-c7113b5014d6",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "57",
+                    "lastUpdated": "2021-09-01T17:02:59.311Z"
+                  },
+                  {
+                    "id": "a26bb8ee-f13b-448d-840a-eb136bb0d0d8",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.276Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "1269b912-2f14-4d04-9ec5-2bb9b1c85a5c",
+                "label": "Pleural biopsy (any technique)",
+                "lastUpdated": "2021-09-01T17:02:59.113Z",
+                "metadata": [
+                  {
+                    "id": "c0f642de-f5eb-42e9-b58e-28918e7074ea",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "53",
+                    "lastUpdated": "2021-09-01T17:02:59.284Z"
+                  },
+                  {
+                    "id": "d3582a9a-6881-43cc-b8c0-bf2a605a3f1d",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.289Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "fbba3c04-e240-490a-bb40-6d7462d83dbe",
+                "label": "Hiatus hernia surgery (any)",
+                "lastUpdated": "2021-09-01T17:02:59.152Z",
+                "metadata": [
+                  {
+                    "id": "4cadb87e-7ba3-4a04-9042-3a7c40584f2c",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.334Z"
+                  },
+                  {
+                    "id": "3f2131dc-25d0-420c-858d-91494b016ff0",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "56",
+                    "lastUpdated": "2021-09-01T17:02:59.33Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "6d2a2265-bcfb-4a8f-bcc1-2f393a58975f",
+                "label": "Oesophagoscopy",
+                "lastUpdated": "2021-09-01T17:02:59.141Z",
+                "metadata": [
+                  {
+                    "id": "9368e78a-5a19-43e2-9d9c-eb511f7afab1",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.27Z"
+                  },
+                  {
+                    "id": "c8e35332-77d3-4c82-8c7f-fee8f0e0f827",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "63",
+                    "lastUpdated": "2021-09-01T17:02:59.286Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "a83b3caa-0108-458a-bec1-81106fa9da1f",
+                "label": "Thymectomy for myasthenia",
+                "lastUpdated": "2021-09-01T17:02:59.124Z",
+                "metadata": [
+                  {
+                    "id": "29c006f9-17fd-4ac7-9f3e-b41de32d4bd3",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "59",
+                    "lastUpdated": "2021-09-01T17:02:59.322Z"
+                  },
+                  {
+                    "id": "08ce147c-55c2-4cd5-b71c-860789abd3bb",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.311Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "eb9eb108-5455-43da-ba73-93d90bcb6235",
+                "label": "Bullectomy",
+                "lastUpdated": "2021-09-01T17:02:59.142Z",
+                "metadata": [
+                  {
+                    "id": "9b68e0d0-66a7-4b8c-8c1a-4dc44b27f841",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.274Z"
+                  },
+                  {
+                    "id": "85f64c8a-c11c-4a8f-a7cd-ef2806186fb6",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "51",
+                    "lastUpdated": "2021-09-01T17:02:59.265Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "c19d3e07-f335-4c9b-9e50-f1f5b34bacff",
+                "label": "Pneumonectomy (any indication)",
+                "lastUpdated": "2021-09-01T17:02:59.141Z",
+                "metadata": [
+                  {
+                    "id": "d66ea849-0779-4682-a847-8d4fbec38ee4",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.292Z"
+                  },
+                  {
+                    "id": "f564a242-5dc1-4a14-9463-f85d6ca61a92",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "46",
+                    "lastUpdated": "2021-09-01T17:02:59.305Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "145f2342-8df3-4865-96de-b30d674ddb10",
+                "label": "Chest drain insertion",
+                "lastUpdated": "2021-09-01T17:02:59.106Z",
+                "metadata": [
+                  {
+                    "id": "7fc8bb62-1ffc-474e-b241-c7ade1289090",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "64",
+                    "lastUpdated": "2021-09-01T17:02:59.348Z"
+                  },
+                  {
+                    "id": "aeb9ea73-6400-4195-9c15-e88f611e41ea",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.278Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "39d67576-5444-48fd-b16e-fa477e9b33d2",
+                "label": "Lobectomy/bilobectomy (complex) with chest wall resection, airway resection etc",
+                "lastUpdated": "2021-09-01T17:02:59.119Z",
+                "metadata": [
+                  {
+                    "id": "46d17594-f9a6-4d6c-819f-31fe10ba0012",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "45",
+                    "lastUpdated": "2021-09-01T17:02:59.332Z"
+                  },
+                  {
+                    "id": "d8f01a72-4919-4c0b-84c3-5be8cded045b",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.295Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "f0efe1a8-fbc4-48ec-97c9-3d289088e5b3",
+                "label": "Pneumothorax surgery (any technique)",
+                "lastUpdated": "2021-09-01T17:02:59.118Z",
+                "metadata": [
+                  {
+                    "id": "d3e1c4b3-5426-416a-a831-78fcffd01d3e",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.291Z"
+                  },
+                  {
+                    "id": "291c0166-66ec-48db-b624-185335176424",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "49",
+                    "lastUpdated": "2021-09-01T17:02:59.322Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "231effc2-58b1-4dd4-b33c-56ea016fbcb5",
+                "label": "Pleurodesis",
+                "lastUpdated": "2021-09-01T17:02:59.107Z",
+                "metadata": [
+                  {
+                    "id": "92b2b845-f89e-4bfe-a7bc-d1701b811277",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.269Z"
+                  },
+                  {
+                    "id": "051898a1-f5c6-410f-bf11-40e44d431a8a",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "52",
+                    "lastUpdated": "2021-09-01T17:02:59.31Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "97c400be-b81a-4c29-811f-f33dea15034c",
+                "label": "Mediastinoscopy/mediastinotomy",
+                "lastUpdated": "2021-09-01T17:02:59.117Z",
+                "metadata": [
+                  {
+                    "id": "18d48fb8-9eeb-4572-ad09-a251c0d8ee32",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.314Z"
+                  },
+                  {
+                    "id": "11a3b890-1105-4f23-8b7d-564a4b38f1c4",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "48",
+                    "lastUpdated": "2021-09-01T17:02:59.313Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "9dfcf753-76a6-42d8-a01f-4f37e67684dc",
+                "label": "Thymectomy for thymoma",
+                "lastUpdated": "2021-09-01T17:02:59.153Z",
+                "metadata": [
+                  {
+                    "id": "d4c72e58-435d-4fef-904d-4a9d397f7c9d",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.291Z"
+                  },
+                  {
+                    "id": "d6858aa9-0aeb-4539-8fbd-65502a73e071",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "60",
+                    "lastUpdated": "2021-09-01T17:02:59.293Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "a64f75bb-f201-4f9a-aaf7-e69aeb966545",
+                "label": "Bronchoscopy",
+                "lastUpdated": "2021-09-01T17:02:59.119Z",
+                "metadata": [
+                  {
+                    "id": "1f95ec10-f9df-4ec1-8831-c9c9a588e3c1",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.319Z"
+                  },
+                  {
+                    "id": "aa4d5050-9072-4047-bdb2-2ccb64ad2d26",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "62",
+                    "lastUpdated": "2021-09-01T17:02:59.277Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "911cf6ad-77ef-4a9e-85ac-6c1176d956be",
+                "label": "Thyroid surgery",
+                "lastUpdated": "2021-09-01T17:02:59.136Z",
+                "metadata": [
+                  {
+                    "id": "3d116618-2033-41b0-858d-7e54ae442450",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.329Z"
+                  },
+                  {
+                    "id": "87a35a0d-84b3-461b-bdc7-06622965c867",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "61",
+                    "lastUpdated": "2021-09-01T17:02:59.266Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "a68a7f2a-22f3-4e17-873a-8fb8ec39d68d",
+                "label": "Lung volume reduction",
+                "lastUpdated": "2021-09-01T17:02:59.128Z",
+                "metadata": [
+                  {
+                    "id": "94138d28-3a60-4399-b0e0-69ef002f4f4c",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "50",
+                    "lastUpdated": "2021-09-01T17:02:59.27Z"
+                  },
+                  {
+                    "id": "4bf6f328-4555-4ce2-848f-99e9f4659add",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.333Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "efcbeed8-ff1d-450b-b017-223346efbc54",
+                "label": "Upper GI resection (any)",
+                "lastUpdated": "2021-09-01T17:02:59.143Z",
+                "metadata": [
+                  {
+                    "id": "7fd74a6c-0748-447e-8558-cd2d8d241880",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "55",
+                    "lastUpdated": "2021-09-01T17:02:59.349Z"
+                  },
+                  {
+                    "id": "e815cc00-80e9-4b55-9323-026b692d4ec9",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.298Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              }
+            ]
+          }, {
+            "id": "cfddb386-9156-450f-b78f-b58f1b879ad6",
+            "label": "Pre-operative Risk Factors: non-pulmonary",
+            "lastUpdated": "2021-09-01T17:02:58.945Z",
+            "dataElements": [
+              {
+                "id": "865607a2-2dfc-4968-aa0d-d7a54ad08273",
+                "label": "Height",
+                "description": "Patient’s height in centimetres – enter as whole number",
+                "lastUpdated": "2021-09-01T17:02:59.112Z",
+                "metadata": [
+                  {
+                    "id": "a554a710-38ce-46be-8838-94241e09fb6a",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "75",
+                    "lastUpdated": "2021-09-01T17:02:59.276Z"
+                  },
+                  {
+                    "id": "9ed60caa-6ba5-4cd5-8f48-d534e9891fe2",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.275Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "9e08e65b-8ac4-4f10-99fb-cf054ff16584",
+                  "label": "mainly_numeric",
+                  "lastUpdated": "2021-09-01T17:02:58.882Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "0b4f051e-7564-4a81-8a5e-b3d691baa262",
+                "label": "Previous history of cancer",
+                "description": "Includes cancers treated many years previously. But does not include non-melanoma skin cancer or premalignant conditions such as cervical dysplasia or Barrett’s disease",
+                "lastUpdated": "2021-09-01T17:02:59.158Z",
+                "metadata": [
+                  {
+                    "id": "eedd8d9d-5be1-44db-8eaa-c9dff75fffe4",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "88",
+                    "lastUpdated": "2021-09-01T17:02:59.301Z"
+                  },
+                  {
+                    "id": "82173417-8ffe-4138-ac8f-e4be3e0c0b2b",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.263Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "7f76653f-0bba-48cc-99cf-ce7424292e96",
+                "label": "Cardiac failure",
+                "description": "Is the patient suffering from cardiac failure",
+                "lastUpdated": "2021-09-01T17:02:59.13Z",
+                "metadata": [
+                  {
+                    "id": "79e12e9e-ded4-404c-93af-061ef6925004",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.344Z"
+                  },
+                  {
+                    "id": "811e17d3-b236-49cf-951b-5f7399110196",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "82",
+                    "lastUpdated": "2021-09-01T17:02:59.263Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "675d8965-5b91-4dd9-8bd1-98e4672431ef",
+                "label": "Steroid therapy",
+                "description": "Is the patient currently on Steroid therapy",
+                "lastUpdated": "2021-09-01T17:02:59.158Z",
+                "metadata": [
+                  {
+                    "id": "d86c042f-6f68-4492-b8fa-4dfe057f94da",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.294Z"
+                  },
+                  {
+                    "id": "012d6227-8e59-43b7-bde5-ee3316da8e63",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "84",
+                    "lastUpdated": "2021-09-01T17:02:59.309Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "b3e30f37-ac02-4dac-9a3c-e7a9dcace8b8",
+                "label": "Urea",
+                "description": "Blood Urea Nitrogen in mmol/L",
+                "lastUpdated": "2021-09-01T17:02:59.143Z",
+                "metadata": [
+                  {
+                    "id": "82ae3216-11ca-452b-9881-27d150eb0ab9",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "77",
+                    "lastUpdated": "2021-09-01T17:02:59.264Z"
+                  },
+                  {
+                    "id": "ba2f1368-5799-4e91-b5e8-3a563b3637fd",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "Used to determine kidney function",
+                    "lastUpdated": "2021-09-01T17:02:59.282Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "9e08e65b-8ac4-4f10-99fb-cf054ff16584",
+                  "label": "mainly_numeric",
+                  "lastUpdated": "2021-09-01T17:02:58.882Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "d0721be2-2521-4beb-b498-ce2859a4e71d",
+                "label": "Performance status (ECOG)",
+                "description": "The performance status of the patient according to the ECOG scale",
+                "lastUpdated": "2021-09-01T17:02:59.106Z",
+                "metadata": [
+                  {
+                    "id": "5da2a473-ddc9-4a2a-b209-e8c6103f97f2",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.335Z"
+                  },
+                  {
+                    "id": "08888f5e-b727-4ecd-9bc9-9c37709fda0d",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "86",
+                    "lastUpdated": "2021-09-01T17:02:59.31Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "4c173b80-b1e2-446d-8614-b61f3ed9119b",
+                  "label": "Performance status (ECOG)",
+                  "lastUpdated": "2021-09-01T17:02:58.864Z",
+                  "domainType": "EnumerationType",
+                  "enumerationValues": [
+                    {
+                      "id": "169c305b-143c-4e37-bf7d-111acc985356",
+                      "index": 2,
+                      "key": "2",
+                      "value": "Ambulatory and capable of all selfcare but unable to carry out any work activities; up and about more than 50% of waking hours",
+                      "lastUpdated": "2021-09-01T17:02:58.869Z"
+                    },
+                    {
+                      "id": "f33905ed-b696-4f75-bbc0-0c2c327da6a0",
+                      "index": 3,
+                      "key": "4",
+                      "value": "Completely disabled; cannot carry on any selfcare; totally confined to bed or chair",
+                      "lastUpdated": "2021-09-01T17:02:58.871Z"
+                    },
+                    {
+                      "id": "7deaf1f8-295e-49a8-a39c-8004ba8d55f5",
+                      "index": 1,
+                      "key": "3",
+                      "value": "Capable of only limited selfcare; confined to bed or chair more than 50% of waking hours",
+                      "lastUpdated": "2021-09-01T17:02:58.87Z"
+                    },
+                    {
+                      "id": "63dba320-b7d6-45a6-a55e-d4f0b60f6287",
+                      "index": 4,
+                      "key": "0",
+                      "value": "Fully active, able to carry on all pre-disease performance without restriction",
+                      "lastUpdated": "2021-09-01T17:02:58.871Z"
+                    },
+                    {
+                      "id": "748b2657-33cd-4ed1-b4bf-37fb25168707",
+                      "index": 0,
+                      "key": "1",
+                      "value": "Restricted in physically strenuous activity but ambulatory and able to carry out work of a light or sedentary nature, e.g., light house work, office work",
+                      "lastUpdated": "2021-09-01T17:02:58.87Z"
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "c8153d22-dacd-4f1c-bce3-957828ed6ebe",
+                "label": "Ischaemic Heart Disease",
+                "description": "Does the patient have ischaemic heart disease",
+                "lastUpdated": "2021-09-01T17:02:59.15Z",
+                "metadata": [
+                  {
+                    "id": "7a11443f-d631-4fe3-9fd4-b336c82aee46",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "81",
+                    "lastUpdated": "2021-09-01T17:02:59.344Z"
+                  },
+                  {
+                    "id": "1dda7d92-7287-4700-9828-7ae453049ca2",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.318Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "94606fd0-c94d-4c31-b449-0bf1cc71c21c",
+                "label": "Previous Stroke",
+                "description": "Has the patient previously had a stroke",
+                "lastUpdated": "2021-09-01T17:02:59.109Z",
+                "metadata": [
+                  {
+                    "id": "9807b7f9-c893-493e-9273-13f6b1fe6668",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "83",
+                    "lastUpdated": "2021-09-01T17:02:59.274Z"
+                  },
+                  {
+                    "id": "5b38c947-ece5-4f35-b2b8-949bda80236b",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.334Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "801c9c38-a0f4-406b-8f91-5ca858541b63",
+                "label": "Peripheral vascular disease",
+                "description": "Carotid occlusion or  > 50% stenosis; previous or planned surgery on abdominal aorta, limb arteries or carotids",
+                "lastUpdated": "2021-09-01T17:02:59.111Z",
+                "metadata": [
+                  {
+                    "id": "01407faa-9158-4a65-9624-67c3b70905ed",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "90",
+                    "lastUpdated": "2021-09-01T17:02:59.31Z"
+                  },
+                  {
+                    "id": "7a9755ef-7695-40bf-8f9a-801309dc628b",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.346Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "2df61237-87db-4d57-b460-cc535bd54b7e",
+                "label": "Hypertension",
+                "description": "Treated, or higher than 140/90 on more than one occasion",
+                "lastUpdated": "2021-09-01T17:02:59.116Z",
+                "metadata": [
+                  {
+                    "id": "911c9a25-6453-4fc4-a372-2bbb7257c79e",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.268Z"
+                  },
+                  {
+                    "id": "f3a0b4e0-e47c-4566-829e-42ddf09a3100",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "89",
+                    "lastUpdated": "2021-09-01T17:02:59.304Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "57daa822-89e1-4376-a28a-69b82aa7bc48",
+                "label": "Insulin dependent diabetes",
+                "description": "Does the patient have insulin dependent diabeties",
+                "lastUpdated": "2021-09-01T17:02:59.157Z",
+                "metadata": [
+                  {
+                    "id": "006fc9c4-ddfc-4c79-a6c3-5531bbc3b9d7",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "80",
+                    "lastUpdated": "2021-09-01T17:02:59.307Z"
+                  },
+                  {
+                    "id": "1f653eb6-b41a-4717-9481-b1e25634adbb",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.319Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "8b009404-d097-4457-a9dd-78bf9800c37d",
+                "label": "Hb",
+                "description": "Haemaglobin concentration g/dL",
+                "lastUpdated": "2021-09-01T17:02:59.113Z",
+                "metadata": [
+                  {
+                    "id": "e4a8fcfe-1048-47af-8a16-fc0a5e2bb490",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "79",
+                    "lastUpdated": "2021-09-01T17:02:59.297Z"
+                  },
+                  {
+                    "id": "ef3cb5f2-6510-43aa-9d37-442dc80d3d3d",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.301Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "9e08e65b-8ac4-4f10-99fb-cf054ff16584",
+                  "label": "mainly_numeric",
+                  "lastUpdated": "2021-09-01T17:02:58.882Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "5a6028f8-6774-4c4b-9da1-bc20ad40ea6b",
+                "label": "Hyperlipidaemia",
+                "description": "Treated, or current or previous cholesterol > 5.2 mmol/l",
+                "lastUpdated": "2021-09-01T17:02:59.145Z",
+                "metadata": [
+                  {
+                    "id": "807a78c3-2e8d-4503-81e2-9159295160ab",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.261Z"
+                  },
+                  {
+                    "id": "5d0db418-b265-49c0-8e62-d1fdd2b77040",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "92",
+                    "lastUpdated": "2021-09-01T17:02:59.335Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "49944be9-45af-4d79-b8a0-4bf87817dcc9",
+                "label": "Creatinine",
+                "description": "Serum creatinine in micro-mol/L",
+                "lastUpdated": "2021-09-01T17:02:59.108Z",
+                "metadata": [
+                  {
+                    "id": "d973261f-37cb-4317-9599-52c6e91784d5",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.295Z"
+                  },
+                  {
+                    "id": "c382fc93-ee53-411b-959e-215c1e6599ad",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "78",
+                    "lastUpdated": "2021-09-01T17:02:59.284Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "9e08e65b-8ac4-4f10-99fb-cf054ff16584",
+                  "label": "mainly_numeric",
+                  "lastUpdated": "2021-09-01T17:02:58.882Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "d9ace018-854b-42ba-85ab-c39639c490e6",
+                "label": "Alcoholism",
+                "description": "Is the patient an alcoholic",
+                "lastUpdated": "2021-09-01T17:02:59.114Z",
+                "metadata": [
+                  {
+                    "id": "3a55017e-602b-4cfc-9f23-baeb05134830",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "91",
+                    "lastUpdated": "2021-09-01T17:02:59.326Z"
+                  },
+                  {
+                    "id": "14a93dfe-2619-4a3b-b97b-b958a87ff5b8",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.313Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "62644deb-3cde-47b8-983f-b3accd2cde92",
+                "label": "Anticoagulation with warfarin or equivalent therapy",
+                "description": "Is the patient taking warfarin or equivalent",
+                "lastUpdated": "2021-09-01T17:02:59.108Z",
+                "metadata": [
+                  {
+                    "id": "84c53ccb-0472-4eca-be25-6ebf34995e5a",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "85",
+                    "lastUpdated": "2021-09-01T17:02:59.265Z"
+                  },
+                  {
+                    "id": "011949dc-528b-467e-a2b2-bc7d7d296fe6",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.307Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "8cb6bc06-7608-4e87-b643-169ced483db7",
+                "label": "ASA Grade American Society of Anaesthetists grade",
+                "description": "a system for assessing the fitness of patients before surgery",
+                "lastUpdated": "2021-09-01T17:02:59.155Z",
+                "metadata": [
+                  {
+                    "id": "d75a5d94-b41d-4415-992b-eaf1d3739f77",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "87",
+                    "lastUpdated": "2021-09-01T17:02:59.293Z"
+                  },
+                  {
+                    "id": "1c66f001-aee4-49d4-8dac-c52e6b1123a0",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "assumed 6 (brain dead, organs being removed) is out of scope",
+                    "lastUpdated": "2021-09-01T17:02:59.316Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "46d50fb9-fe4a-4867-a9a7-ccb5ac2362cd",
+                  "label": "ASA Grade American Society of Anaesthetists grade",
+                  "lastUpdated": "2021-09-01T17:02:58.864Z",
+                  "domainType": "EnumerationType",
+                  "enumerationValues": [
+                    {
+                      "id": "7def017a-999e-4fe4-baa2-94fe610f4062",
+                      "index": 1,
+                      "key": "4",
+                      "value": "Severe systemic disease that is a constant threat to life",
+                      "lastUpdated": "2021-09-01T17:02:58.868Z"
+                    },
+                    {
+                      "id": "fb99730c-d950-48a2-b94d-b949571cfd48",
+                      "index": 3,
+                      "key": "1",
+                      "value": "Healthy person",
+                      "lastUpdated": "2021-09-01T17:02:58.867Z"
+                    },
+                    {
+                      "id": "a14a1a1a-d123-4c9d-a55f-14528d1775c1",
+                      "index": 2,
+                      "key": "5",
+                      "value": "A moribund person who is not expected to survive without the operation",
+                      "lastUpdated": "2021-09-01T17:02:58.867Z"
+                    },
+                    {
+                      "id": "cdbc92b4-7d84-4e78-89e6-e5fee50b8506",
+                      "index": 0,
+                      "key": "2",
+                      "value": "Mild systemic disease",
+                      "lastUpdated": "2021-09-01T17:02:58.869Z"
+                    },
+                    {
+                      "id": "5e977310-13d5-40aa-876d-b8d70be4cff7",
+                      "index": 4,
+                      "key": "3",
+                      "value": "Severe systemic disease",
+                      "lastUpdated": "2021-09-01T17:02:58.868Z"
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "774e0e7e-2c83-4901-af28-03cf58af59d0",
+                "label": "Weight",
+                "description": "Patient’s weight in kilograms – enter to one decimal place",
+                "lastUpdated": "2021-09-01T17:02:59.11Z",
+                "metadata": [
+                  {
+                    "id": "73b9938a-8fde-4c3f-be0a-c3bf4fdc6611",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "76",
+                    "lastUpdated": "2021-09-01T17:02:59.342Z"
+                  },
+                  {
+                    "id": "d65f28b6-5a89-442d-93bd-d3ffd3367b7f",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.292Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "9e08e65b-8ac4-4f10-99fb-cf054ff16584",
+                  "label": "mainly_numeric",
+                  "lastUpdated": "2021-09-01T17:02:58.882Z",
+                  "domainType": "PrimitiveType"
+                }
+              }
+            ]
+          }, {
+            "id": "932a1548-519a-49ed-87e9-5abb39fa2b71",
+            "label": "Surgical strategy",
+            "description": "Reasons for the operation taking place",
+            "lastUpdated": "2021-09-01T17:02:58.944Z",
+            "metadata": [
+              {
+                "id": "5e1db4d1-0231-49bc-865f-1bee2fbe66a9",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Number of Answers",
+                "value": "MANY",
+                "lastUpdated": "2021-09-01T17:02:58.953Z"
+              }
+            ],
+            "dataElements": [
+              {
+                "id": "578ef679-2ab4-4c1e-bea8-aa10c05626f0",
+                "label": "Diagnostic",
+                "description": "to diagnose the condition",
+                "lastUpdated": "2021-09-01T17:02:59.123Z",
+                "metadata": [
+                  {
+                    "id": "0d402c62-2120-43f5-8a1b-f7a9bfa4268c",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.312Z"
+                  },
+                  {
+                    "id": "1c0c6f1b-3785-4bbb-9724-376f1b361d74",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "15",
+                    "lastUpdated": "2021-09-01T17:02:59.316Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "8452905d-1eca-4ca3-a114-934f7c5e9710",
+                "label": "Therapeutic",
+                "description": "to cure, alleviate or palliate",
+                "lastUpdated": "2021-09-01T17:02:59.11Z",
+                "metadata": [
+                  {
+                    "id": "bddd33a2-5055-4b1b-bc84-2ac9bb10b7a4",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "17",
+                    "lastUpdated": "2021-09-01T17:02:59.283Z"
+                  },
+                  {
+                    "id": "90de3525-f0b3-4d20-a2f6-605cae0b0e01",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.268Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "e70efdb9-6217-439f-9d03-a3379cd4b05d",
+                "label": "Staging or assessment",
+                "description": "to stage a neoplasm or to assess the progress of the condition",
+                "lastUpdated": "2021-09-01T17:02:59.104Z",
+                "metadata": [
+                  {
+                    "id": "3e42cc09-b064-4d92-ab50-67fe5e4a17ce",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "16",
+                    "lastUpdated": "2021-09-01T17:02:59.33Z"
+                  },
+                  {
+                    "id": "7d604360-1111-4e14-807b-22609dba30c2",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.347Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              }
+            ]
+          }, {
+            "id": "9a0cac33-39e9-4305-9ba3-56e7dc22ee89",
+            "label": "Discharge data",
+            "lastUpdated": "2021-09-01T17:02:58.945Z",
+            "dataElements": [
+              {
+                "id": "94003b28-ab71-45b8-93ea-f82d4ae9af9f",
+                "label": "IPPV",
+                "description": "Ventilation required because of complications subsequentially to the primary surgery",
+                "lastUpdated": "2021-09-01T17:02:59.113Z",
+                "metadata": [
+                  {
+                    "id": "a7cf72a2-8674-4e3f-94e6-e4200a134149",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "124",
+                    "lastUpdated": "2021-09-01T17:02:59.277Z"
+                  },
+                  {
+                    "id": "b147b4da-e47c-498d-b4c5-de6611d7703e",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.278Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "7b8a0adc-1ce0-4a11-a695-0ba70b10836f",
+                "label": "Date of ITU Readmission",
+                "description": "Date of ITU readmission.  Only include admissions because of complications as opposed to the elective use of ITU or HDU after surgery",
+                "lastUpdated": "2021-09-01T17:02:59.148Z",
+                "metadata": [
+                  {
+                    "id": "d0c27769-9260-4867-afb5-eb127184363e",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.288Z"
+                  },
+                  {
+                    "id": "17dd3d2f-2239-4cf6-9f9d-af1bc0bbd7b2",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "122",
+                    "lastUpdated": "2021-09-01T17:02:59.314Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "82781a06-39d7-470a-b336-2278f90bd523",
+                  "label": "ddmmyyyy",
+                  "lastUpdated": "2021-09-01T17:02:58.883Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "8235522e-71b5-4100-993d-7dcc6b4ce73d",
+                "label": "Return to theatre within the same admission",
+                "description": "Return to theatre within the same admission excluding suction bronchoscopy or insertion of chest drain",
+                "lastUpdated": "2021-09-01T17:02:59.117Z",
+                "metadata": [
+                  {
+                    "id": "d7c9bd29-1f6e-44ef-a6c0-f315d399db6c",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.294Z"
+                  },
+                  {
+                    "id": "d7730385-2e4b-42d9-b2ba-a7b8e4c6638d",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "127",
+                    "lastUpdated": "2021-09-01T17:02:59.293Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "c4d5839c-7512-4d41-9038-1ccf5933a813",
+                "label": "No complications",
+                "description": "If the patient suffered any complications then leave blank",
+                "lastUpdated": "2021-09-01T17:02:59.112Z",
+                "metadata": [
+                  {
+                    "id": "15e6fe81-e0b4-484f-adfa-b5c1dc0013a6",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "121",
+                    "lastUpdated": "2021-09-01T17:02:59.314Z"
+                  },
+                  {
+                    "id": "91310864-8b80-466a-a9c1-c546aa1b0fbc",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.269Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "6f64a6cd-e353-4810-ad85-41778d26c218",
+                "label": "Date of Discharge from ITU",
+                "description": "Date of Discharge from ITU when patient readmitted as above",
+                "lastUpdated": "2021-09-01T17:02:59.112Z",
+                "metadata": [
+                  {
+                    "id": "c38c0108-3328-41e8-84dc-334ed1bf0882",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.284Z"
+                  },
+                  {
+                    "id": "761ff70c-99a5-405e-8295-ef30101f853f",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "123",
+                    "lastUpdated": "2021-09-01T17:02:59.343Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "82781a06-39d7-470a-b336-2278f90bd523",
+                  "label": "ddmmyyyy",
+                  "lastUpdated": "2021-09-01T17:02:58.883Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "108eed1b-3a40-4123-befd-6c21a9584880",
+                "label": "Air leak >7 days",
+                "description": "Occurence of an air leak(s) after seven days have elapsed",
+                "lastUpdated": "2021-09-01T17:02:59.144Z",
+                "metadata": [
+                  {
+                    "id": "1ad1952d-fdfd-4197-88dc-c9993d0124c3",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.315Z"
+                  },
+                  {
+                    "id": "1f17abf7-4f8e-4c84-87e8-b77886e82efc",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "125",
+                    "lastUpdated": "2021-09-01T17:02:59.319Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "790efd74-6c7f-40f7-8520-e380147c90ca",
+                "label": "Death",
+                "description": "Patient has died before discharge or transfer",
+                "lastUpdated": "2021-09-01T17:02:59.154Z",
+                "metadata": [
+                  {
+                    "id": "6be79f05-7401-4792-9890-a2d149d31b91",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.34Z"
+                  },
+                  {
+                    "id": "ead1715c-6803-4b34-b5e0-47fb7d46c089",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "129",
+                    "lastUpdated": "2021-09-01T17:02:59.3Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "bf464c33-54f6-499e-b4f6-4552ac57bfa4",
+                "label": "Infection",
+                "description": "Infection requiring extension of hospital stay",
+                "lastUpdated": "2021-09-01T17:02:59.15Z",
+                "metadata": [
+                  {
+                    "id": "2f00dd63-6444-425c-a9e3-93a467980d30",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "126",
+                    "lastUpdated": "2021-09-01T17:02:59.323Z"
+                  },
+                  {
+                    "id": "aed3b39f-9993-4bbe-9f05-bb3db07afa1d",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.278Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "4b8713f4-6dbc-41f2-af19-3042975b5bc3",
+                "label": "Date of Discharge/Transfer/Death",
+                "description": "The date of Discharge/Transfer/Death",
+                "lastUpdated": "2021-09-01T17:02:59.145Z",
+                "metadata": [
+                  {
+                    "id": "834929c5-5a0d-476e-bb6b-59a4c3360016",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "128",
+                    "lastUpdated": "2021-09-01T17:02:59.265Z"
+                  },
+                  {
+                    "id": "934bf925-5a39-46b6-ba80-6e61c9eb1cc1",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "Following indicator denotes death",
+                    "lastUpdated": "2021-09-01T17:02:59.27Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "82781a06-39d7-470a-b336-2278f90bd523",
+                  "label": "ddmmyyyy",
+                  "lastUpdated": "2021-09-01T17:02:58.883Z",
+                  "domainType": "PrimitiveType"
+                }
+              }
+            ]
+          }, {
+            "id": "619f833f-9ad3-4f9b-a0e9-fe4f04afd617",
+            "label": "Procedure type",
+            "description": "Multiple entries are appropriate if performed in the same session.  \n            Select the options that best describe the operation as a whole – if there was more than one procedure, enter each.  \n            The data analyst can see that they are part of a single operative episode",
+            "lastUpdated": "2021-09-01T17:02:58.943Z",
+            "metadata": [
+              {
+                "id": "859baa27-dacb-4c7f-88b5-0210c714b46d",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Number of Answers",
+                "value": "MANY",
+                "lastUpdated": "2021-09-01T17:02:58.951Z"
+              }
+            ],
+            "dataElements": [
+              {
+                "id": "5cd3dc08-3db9-4972-9e4a-96ae11d21902",
+                "label": "Thoracotomy",
+                "lastUpdated": "2021-09-01T17:02:59.134Z",
+                "metadata": [
+                  {
+                    "id": "0367e545-f9ca-42da-88b0-2e621ad92492",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.31Z"
+                  },
+                  {
+                    "id": "3304a6e1-2636-4ad6-87ca-d66858626fa8",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "40",
+                    "lastUpdated": "2021-09-01T17:02:59.325Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "6b35d95a-3895-49c3-a379-be5ce6884974",
+                "label": "Other major incision",
+                "lastUpdated": "2021-09-01T17:02:59.132Z",
+                "metadata": [
+                  {
+                    "id": "0a64057b-6d0c-4ec3-a78a-ad69e597b057",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "42",
+                    "lastUpdated": "2021-09-01T17:02:59.311Z"
+                  },
+                  {
+                    "id": "ca8f938d-c44b-4a8b-a464-0087685e1c15",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.286Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "351ec7a7-703b-4f21-88f2-08fd352cb364",
+                "label": "Other intermediate procedure (of a similar order of magnitude to a rib resection)",
+                "lastUpdated": "2021-09-01T17:02:59.135Z",
+                "metadata": [
+                  {
+                    "id": "602b8962-9fc1-43e9-8663-4e3303793980",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.338Z"
+                  },
+                  {
+                    "id": "dadfedfb-7573-4738-b5be-9bf3ec1b9a03",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "38",
+                    "lastUpdated": "2021-09-01T17:02:59.295Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "9242582f-09d6-4b7b-9cbd-58fbc587cd13",
+                "label": "Other minor procedure (of the scale of node biopsies)",
+                "lastUpdated": "2021-09-01T17:02:59.104Z",
+                "metadata": [
+                  {
+                    "id": "82a01327-3f16-4ddd-bb10-725395039225",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.264Z"
+                  },
+                  {
+                    "id": "ca4d7923-116a-4b57-890f-894cc36259d7",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "36",
+                    "lastUpdated": "2021-09-01T17:02:59.286Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "46be8c67-f9fb-4a20-89ba-dedc09add817",
+                "label": "Endoscopy (bronchoscopy/oesophagoscopy + any other procedure)",
+                "lastUpdated": "2021-09-01T17:02:59.108Z",
+                "metadata": [
+                  {
+                    "id": "722b96eb-7538-43c5-ad72-9a7e491d9f42",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.342Z"
+                  },
+                  {
+                    "id": "6da3091c-f66f-4bd9-8e82-2b1d2915beaa",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "34",
+                    "lastUpdated": "2021-09-01T17:02:59.341Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "74862605-23f5-404c-862a-3a35c64b79ea",
+                "label": "Median sternotomy",
+                "lastUpdated": "2021-09-01T17:02:59.116Z",
+                "metadata": [
+                  {
+                    "id": "f8698012-aead-4c42-946c-94f0cf495b03",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.305Z"
+                  },
+                  {
+                    "id": "7cc3ce28-f18c-4471-8602-48390b2e068d",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "41",
+                    "lastUpdated": "2021-09-01T17:02:59.347Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "680cc46a-b929-4dbe-b5ca-63fc5f3fe085",
+                "label": "Drain insertion",
+                "lastUpdated": "2021-09-01T17:02:59.147Z",
+                "metadata": [
+                  {
+                    "id": "9cc7556e-bde8-4545-9870-a3509cc7243b",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.275Z"
+                  },
+                  {
+                    "id": "fc386097-c5f7-4bba-9550-ebf5107aa2de",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "35",
+                    "lastUpdated": "2021-09-01T17:02:59.306Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "c0559a3f-03fe-40b7-a72c-d5d8d354b31b",
+                "label": "VATS",
+                "lastUpdated": "2021-09-01T17:02:59.145Z",
+                "metadata": [
+                  {
+                    "id": "76a817e8-ed7e-4b4d-a3e1-330b787e9bfc",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.343Z"
+                  },
+                  {
+                    "id": "f42ae13b-de67-4784-8c9e-c99284840f1d",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "39",
+                    "lastUpdated": "2021-09-01T17:02:59.304Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "d98ef336-38a0-44f2-b1d3-73c892bd821e",
+                "label": "Mediastinoscopy and/or mediastinotomy",
+                "lastUpdated": "2021-09-01T17:02:59.114Z",
+                "metadata": [
+                  {
+                    "id": "ee14e71f-fcda-40ca-8451-578c552781ca",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.301Z"
+                  },
+                  {
+                    "id": "f2a13f03-0730-47df-a79e-0b579819aa2f",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "37",
+                    "lastUpdated": "2021-09-01T17:02:59.303Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "447ee012-8390-47c9-b3ab-12b8528983d9",
+                "label": "Endoscopy (bronchoscopy/oesophagoscopy +/- biopsy)",
+                "lastUpdated": "2021-09-01T17:02:59.156Z",
+                "metadata": [
+                  {
+                    "id": "9683d6d5-d09d-469f-b2d2-9d9373c7e70d",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "33",
+                    "lastUpdated": "2021-09-01T17:02:59.272Z"
+                  },
+                  {
+                    "id": "8f23044f-edc5-4035-933f-4b39ba0af643",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.267Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              }
+            ]
+          }, {
+            "id": "2a9e42fe-6005-46a2-9502-a5e17b9adb8f",
+            "label": "Pre-operative Risk Factors: pulmonary",
+            "lastUpdated": "2021-09-01T17:02:58.943Z",
+            "dataElements": [
+              {
+                "id": "623910e8-6971-4cef-aac1-5d3be9dbfeb0",
+                "label": "COPD",
+                "description": "FEV1/FVC ration <0.7 after bronchodilator therapy",
+                "lastUpdated": "2021-09-01T17:02:59.136Z",
+                "metadata": [
+                  {
+                    "id": "b306e2cb-817d-42e7-9539-b5decd2b2393",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "74",
+                    "lastUpdated": "2021-09-01T17:02:59.279Z"
+                  },
+                  {
+                    "id": "d353212a-4197-4da8-a042-cb4049d469ce",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.288Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "417a2e6d-8d04-478e-9dd3-9bb6937f2928",
+                "label": "Diffusion capacity (% predicted KCO)",
+                "description": "Diffusing capacity of the lung per unit volume, standardised for alveolar volume",
+                "lastUpdated": "2021-09-01T17:02:59.124Z",
+                "metadata": [
+                  {
+                    "id": "b4cf5206-c0e0-4e38-8d36-48618f2a4e17",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "70",
+                    "lastUpdated": "2021-09-01T17:02:59.282Z"
+                  },
+                  {
+                    "id": "33280977-2a34-443d-a1ff-60ec6c17c316",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.325Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "9e08e65b-8ac4-4f10-99fb-cf054ff16584",
+                  "label": "mainly_numeric",
+                  "lastUpdated": "2021-09-01T17:02:58.882Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "4081679b-4f2f-48f7-a19e-cc3103dcb6b0",
+                "label": "% predicted FEV1",
+                "lastUpdated": "2021-09-01T17:02:59.141Z",
+                "metadata": [
+                  {
+                    "id": "d3a8ed9e-4a95-4bf0-865d-f8b931761f20",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.291Z"
+                  },
+                  {
+                    "id": "a150bff1-8f10-4fce-9193-90f1ccc00899",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "67",
+                    "lastUpdated": "2021-09-01T17:02:59.276Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "9e08e65b-8ac4-4f10-99fb-cf054ff16584",
+                  "label": "mainly_numeric",
+                  "lastUpdated": "2021-09-01T17:02:58.882Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "84d5b6cb-b230-4221-8819-e2c30241d0a2",
+                "label": "Pack years",
+                "description": "the amount a person has smoked over a long period of time. It is calculated by multiplying the number of packs of cigarettes smoked per day by the number of years the person has smoked",
+                "lastUpdated": "2021-09-01T17:02:59.144Z",
+                "metadata": [
+                  {
+                    "id": "98f1e189-a055-41e0-a5f9-24be65883d30",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.274Z"
+                  },
+                  {
+                    "id": "e3823c9f-17dd-48d2-a6cd-be5d7bcd2275",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "72",
+                    "lastUpdated": "2021-09-01T17:02:59.296Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "9e08e65b-8ac4-4f10-99fb-cf054ff16584",
+                  "label": "mainly_numeric",
+                  "lastUpdated": "2021-09-01T17:02:58.882Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "24440c99-5ba8-4368-91fe-abf56c3e340f",
+                "label": "% Predicted FVC",
+                "lastUpdated": "2021-09-01T17:02:59.152Z",
+                "metadata": [
+                  {
+                    "id": "2a25b5eb-651a-4c8c-b291-1c44784cdadc",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.323Z"
+                  },
+                  {
+                    "id": "18e851ec-7a60-49d8-b81c-68e1b8c73ea1",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "69",
+                    "lastUpdated": "2021-09-01T17:02:59.314Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "9e08e65b-8ac4-4f10-99fb-cf054ff16584",
+                  "label": "mainly_numeric",
+                  "lastUpdated": "2021-09-01T17:02:58.882Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "7d4b503b-79b1-4481-a8f9-587f9be8831d",
+                "label": "Measured FEV1",
+                "description": "the amount of air that is forcefully exhaled in the first second of the FVC test",
+                "lastUpdated": "2021-09-01T17:02:59.126Z",
+                "metadata": [
+                  {
+                    "id": "e75b9077-8712-4fb7-a882-c02d1d370796",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "66",
+                    "lastUpdated": "2021-09-01T17:02:59.298Z"
+                  },
+                  {
+                    "id": "e0edd604-4ffd-4345-b797-b677fc9aac34",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.296Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "9e08e65b-8ac4-4f10-99fb-cf054ff16584",
+                  "label": "mainly_numeric",
+                  "lastUpdated": "2021-09-01T17:02:58.882Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "a8cb9f8c-95a7-4214-ab81-56020ff42d8c",
+                "label": "Measured FVC",
+                "description": "the total amount of air exhaled during the FEV test",
+                "lastUpdated": "2021-09-01T17:02:59.155Z",
+                "metadata": [
+                  {
+                    "id": "f471cfc9-2dea-4d10-b2f8-f5f7952a09dc",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "68",
+                    "lastUpdated": "2021-09-01T17:02:59.304Z"
+                  },
+                  {
+                    "id": "1241b2ef-722d-4804-b4c5-f5d2cd43b505",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.313Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "9e08e65b-8ac4-4f10-99fb-cf054ff16584",
+                  "label": "mainly_numeric",
+                  "lastUpdated": "2021-09-01T17:02:58.882Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "b02dc6a2-a2ea-4077-8cb4-d96f5cedd8c0",
+                "label": "Never smoked",
+                "description": "Enter “1” if applicable",
+                "lastUpdated": "2021-09-01T17:02:59.137Z",
+                "metadata": [
+                  {
+                    "id": "22b3115f-ccbf-4830-bb23-880abb9252da",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.321Z"
+                  },
+                  {
+                    "id": "2d90b500-8471-45d0-a7c4-1baacccfc8c8",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "71",
+                    "lastUpdated": "2021-09-01T17:02:59.323Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "1911d61d-6d66-4d33-81d3-83a1e0e6a169",
+                "label": "Dyspnoea score",
+                "description": "a questionnaire that consists of five statements about perceived breathlessness",
+                "lastUpdated": "2021-09-01T17:02:59.134Z",
+                "metadata": [
+                  {
+                    "id": "a69edb26-65e6-430c-bab6-6a5361ec3f25",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.277Z"
+                  },
+                  {
+                    "id": "d0d4d7a5-8789-48b3-bf58-a2762e386bc8",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "73",
+                    "lastUpdated": "2021-09-01T17:02:59.288Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "08b0918b-c2a2-4c8a-8d38-cbb28b5d82dd",
+                  "label": "Dyspnoea score",
+                  "lastUpdated": "2021-09-01T17:02:58.865Z",
+                  "domainType": "EnumerationType",
+                  "enumerationValues": [
+                    {
+                      "id": "ebdf7bbb-74fd-461b-81ec-eeeff644f19b",
+                      "index": 3,
+                      "key": "5",
+                      "value": "Too breathless to leave the house or breathless when dressing or undressing",
+                      "lastUpdated": "2021-09-01T17:02:58.872Z"
+                    },
+                    {
+                      "id": "ee3bb57f-94cc-4cff-9cae-a6ae3b88f572",
+                      "index": 4,
+                      "key": "4",
+                      "value": "Stops for breath after walking about 100 meters or after a few minutes on level ground",
+                      "lastUpdated": "2021-09-01T17:02:58.872Z"
+                    },
+                    {
+                      "id": "fc5ed41e-bece-4b5d-9918-cf1f35506628",
+                      "index": 2,
+                      "key": "2",
+                      "value": "when hurrying or walking uphill",
+                      "lastUpdated": "2021-09-01T17:02:58.874Z"
+                    },
+                    {
+                      "id": "748aab7d-974a-4f67-82c4-1c8a00897f5e",
+                      "index": 1,
+                      "key": "1",
+                      "value": "dyspnoea on strenuous exercise",
+                      "lastUpdated": "2021-09-01T17:02:58.873Z"
+                    },
+                    {
+                      "id": "87462826-8f06-4aee-a42f-a6133726a436",
+                      "index": 0,
+                      "key": "3",
+                      "value": "Walks slower than contemporaries on level ground because of breathlessness or has to stop for breath when walking at own pace",
+                      "lastUpdated": "2021-09-01T17:02:58.873Z"
+                    }
+                  ]
+                }
+              }
+            ]
+          }, {
+            "id": "574ab987-542e-4173-aba5-7865d0644859",
+            "label": "Primary organ/System targeted",
+            "description": "Select the main target organ(s) of the operation. This is an anatomical list\nMore than one may be entered (e.g. lung and trachea/main bronchi for bronchoplastic lung resections) but coincidental surgery, \nsuch as chest wall if that is purely the route of access, or main bronchus division for a simple \npneumonectomy will not be helpful in data analysis",
+            "lastUpdated": "2021-09-01T17:02:58.945Z",
+            "metadata": [
+              {
+                "id": "786e47d6-88cd-43ab-93bf-0c078e3e8a2c",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Number of Answers",
+                "value": "MANY",
+                "lastUpdated": "2021-09-01T17:02:58.953Z"
+              }
+            ],
+            "dataElements": [
+              {
+                "id": "a9a7b40c-83b0-4efa-ba7b-9172798cf9fd",
+                "label": "Chest wall",
+                "lastUpdated": "2021-09-01T17:02:59.122Z",
+                "metadata": [
+                  {
+                    "id": "2594c617-0883-448a-95bc-18253c6dda6d",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.321Z"
+                  },
+                  {
+                    "id": "f5969168-6ada-48b3-b06d-3c64543632b4",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "44",
+                    "lastUpdated": "2021-09-01T17:02:59.305Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "e4cadbb5-6292-484b-83fa-c9d568adfae8",
+                "label": "Mediastinum",
+                "lastUpdated": "2021-09-01T17:02:59.137Z",
+                "metadata": [
+                  {
+                    "id": "49b3456f-0c1a-4b57-8c8c-6fc813f5f1ff",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "47",
+                    "lastUpdated": "2021-09-01T17:02:59.332Z"
+                  },
+                  {
+                    "id": "c7b9dd2a-659a-41f7-9ded-825fe039a397",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.286Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "a0776085-8477-4fd6-92a7-77bc0ebbe8c9",
+                "label": "Oesophagus",
+                "lastUpdated": "2021-09-01T17:02:59.107Z",
+                "metadata": [
+                  {
+                    "id": "ef24a553-6281-4e07-bcd8-262f02ec7c94",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.301Z"
+                  },
+                  {
+                    "id": "ce8821a0-301c-4eb5-96e4-e6b02c25fd88",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "48",
+                    "lastUpdated": "2021-09-01T17:02:59.287Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "8f7b66ff-514b-41af-a187-4c464cc17185",
+                "label": "Pleura",
+                "lastUpdated": "2021-09-01T17:02:59.147Z",
+                "metadata": [
+                  {
+                    "id": "1ad82c21-161b-48ee-9984-1e0ea0a4f6dd",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.316Z"
+                  },
+                  {
+                    "id": "6cdbddae-00cf-4674-9106-e591e5f81bc1",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "50",
+                    "lastUpdated": "2021-09-01T17:02:59.34Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "b026ef05-fb51-4c90-a597-878a117edc18",
+                "label": "Trachea and/or main bronchi",
+                "lastUpdated": "2021-09-01T17:02:59.129Z",
+                "metadata": [
+                  {
+                    "id": "f8869c8a-8ab2-40c4-b4e8-d1aa96bb5b13",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "53",
+                    "lastUpdated": "2021-09-01T17:02:59.305Z"
+                  },
+                  {
+                    "id": "31a29792-55d0-4be7-80df-a7652c44bd53",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.324Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "0c5328d5-37dc-4f1b-bcc9-1e97eda7dd66",
+                "label": "Thymus",
+                "lastUpdated": "2021-09-01T17:02:59.132Z",
+                "metadata": [
+                  {
+                    "id": "661d532d-39fd-4815-8d74-e06c1bafc754",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "51",
+                    "lastUpdated": "2021-09-01T17:02:59.34Z"
+                  },
+                  {
+                    "id": "3c111de0-f1aa-44b4-8206-59400511748c",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.329Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "cdd1646c-9567-46ce-85a5-809d5d2ee8b5",
+                "label": "Diaphragm",
+                "lastUpdated": "2021-09-01T17:02:59.157Z",
+                "metadata": [
+                  {
+                    "id": "90109ada-f5fc-4dee-92db-a37ae7f5bbda",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "45",
+                    "lastUpdated": "2021-09-01T17:02:59.268Z"
+                  },
+                  {
+                    "id": "de7e062e-4f87-4f85-a76d-8d6d14c1cc58",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.296Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "b73ecc0c-42fd-4d6d-97fe-b76922a4d306",
+                "label": "Thyroid",
+                "lastUpdated": "2021-09-01T17:02:59.107Z",
+                "metadata": [
+                  {
+                    "id": "c3cd0f20-c7e3-4bb1-9791-2893eea10b4b",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.285Z"
+                  },
+                  {
+                    "id": "dc9a7dda-726c-41a0-84fa-1c7ee44afd45",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "52",
+                    "lastUpdated": "2021-09-01T17:02:59.295Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "117fff3f-7e33-48c5-b69b-b4bfd96a3bb2",
+                "label": "Pericardium",
+                "lastUpdated": "2021-09-01T17:02:59.111Z",
+                "metadata": [
+                  {
+                    "id": "25544cc6-e1bd-4f57-a927-e24a80b85a57",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "49",
+                    "lastUpdated": "2021-09-01T17:02:59.321Z"
+                  },
+                  {
+                    "id": "0c90f459-a35f-48c3-9d48-da93a0145eda",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.312Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "182f4df5-e56e-4de6-9e14-b9401ab2909a",
+                "label": "Other",
+                "lastUpdated": "2021-09-01T17:02:59.122Z",
+                "metadata": [
+                  {
+                    "id": "75097da1-4c67-4953-b3da-da4260ad1b38",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "54",
+                    "lastUpdated": "2021-09-01T17:02:59.343Z"
+                  },
+                  {
+                    "id": "70850817-1611-40e0-84cd-6523eaaadec3",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.342Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "4eec8385-c14c-4f5a-b6d7-a8648e60e29c",
+                "label": "Aorta and/or great vessels",
+                "lastUpdated": "2021-09-01T17:02:59.129Z",
+                "metadata": [
+                  {
+                    "id": "3525a388-7220-432f-bf3a-94ee64e05c21",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "43",
+                    "lastUpdated": "2021-09-01T17:02:59.325Z"
+                  },
+                  {
+                    "id": "4b5f3e1c-6e56-4875-ae22-5d8a67e28471",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.333Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              },
+              {
+                "id": "491ff757-2be3-4a7a-ba8c-392adc6fc1b6",
+                "label": "Lung",
+                "lastUpdated": "2021-09-01T17:02:59.154Z",
+                "metadata": [
+                  {
+                    "id": "cac093b7-217f-409d-8b07-fc63cee4cea4",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Number",
+                    "value": "46",
+                    "lastUpdated": "2021-09-01T17:02:59.287Z"
+                  },
+                  {
+                    "id": "c62f3aad-1332-4e4e-980c-c8d80904cd79",
+                    "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                    "key": "Notes",
+                    "value": "N/A",
+                    "lastUpdated": "2021-09-01T17:02:59.285Z"
+                  }
+                ],
+                "dataType": {
+                  "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+                  "label": "openworld_tick",
+                  "lastUpdated": "2021-09-01T17:02:58.881Z",
+                  "domainType": "PrimitiveType"
+                }
+              }
+            ]
+          }
+        ],
+        "dataElements": [
+          {
+            "id": "5f6a9937-a8df-47a7-a8d1-cc54c1f0a080",
+            "label": "Date of Birth",
+            "lastUpdated": "2021-09-01T17:02:59.153Z",
+            "metadata": [
+              {
+                "id": "f3eba44b-7b8b-45b8-a2f7-4be086eb64c2",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Number",
+                "value": "6",
+                "lastUpdated": "2021-09-01T17:02:59.304Z"
+              },
+              {
+                "id": "4078643f-f9bf-4611-8ef3-83275a03c805",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Notes",
+                "value": "Used to calculate age in years at surgery by subtracting from Date of Operation",
+                "lastUpdated": "2021-09-01T17:02:59.331Z"
+              }
+            ],
+            "dataType": {
+              "id": "82781a06-39d7-470a-b336-2278f90bd523",
+              "label": "ddmmyyyy",
+              "lastUpdated": "2021-09-01T17:02:58.883Z",
+              "domainType": "PrimitiveType"
+            }
+          },
+          {
+            "id": "f47ed333-d8ba-4802-92b8-90a6390b14b5",
+            "label": "Preoperative neoadjuvant radiotherapy",
+            "description": "Patient has been given preoperative neoadjuvant radiotherapy",
+            "lastUpdated": "2021-09-01T17:02:59.12Z",
+            "metadata": [
+              {
+                "id": "f88f47d2-2447-4c1b-9294-1479d597eae8",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Number",
+                "value": "109",
+                "lastUpdated": "2021-09-01T17:02:59.306Z"
+              },
+              {
+                "id": "7a5a6439-8173-4129-9f6a-33fc09fdfdcb",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Notes",
+                "value": "N/A",
+                "lastUpdated": "2021-09-01T17:02:59.344Z"
+              }
+            ],
+            "dataType": {
+              "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+              "label": "openworld_tick",
+              "lastUpdated": "2021-09-01T17:02:58.881Z",
+              "domainType": "PrimitiveType"
+            }
+          },
+          {
+            "id": "bc73dbae-c467-4874-b55b-132292089ff3",
+            "label": "NHS number",
+            "description": "Enter as 10 digit number with no spaces or import from hospital PAS",
+            "lastUpdated": "2021-09-01T17:02:59.142Z",
+            "metadata": [
+              {
+                "id": "69566d3c-918d-40f8-8959-f9e9e132f979",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Notes",
+                "value": "This will enable tracking to death certification",
+                "lastUpdated": "2021-09-01T17:02:59.34Z"
+              },
+              {
+                "id": "66cd3ac5-227d-4d4c-9988-3ffd8d7a088b",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Number",
+                "value": "3",
+                "lastUpdated": "2021-09-01T17:02:59.34Z"
+              }
+            ],
+            "dataType": {
+              "id": "1ea196d0-6f23-41cc-a3e1-0e1f902b9c54",
+              "label": "text",
+              "lastUpdated": "2021-09-01T17:02:58.883Z",
+              "domainType": "PrimitiveType"
+            }
+          },
+          {
+            "id": "e208c5dc-d802-476f-8423-8457eda14224",
+            "label": "Date of surgical referral",
+            "lastUpdated": "2021-09-01T17:02:59.133Z",
+            "metadata": [
+              {
+                "id": "2e0f19c0-6f21-4d7a-b181-9e09aca2b284",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Notes",
+                "value": "N/A",
+                "lastUpdated": "2021-09-01T17:02:59.323Z"
+              },
+              {
+                "id": "9e08694a-30cb-4e17-b680-a307aed8e5e8",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Number",
+                "value": "10",
+                "lastUpdated": "2021-09-01T17:02:59.275Z"
+              }
+            ],
+            "dataType": {
+              "id": "82781a06-39d7-470a-b336-2278f90bd523",
+              "label": "ddmmyyyy",
+              "lastUpdated": "2021-09-01T17:02:58.883Z",
+              "domainType": "PrimitiveType"
+            }
+          },
+          {
+            "id": "11034da1-53b6-4eb0-9940-a6f7946e12e9",
+            "label": "Date of first surgical assessment",
+            "lastUpdated": "2021-09-01T17:02:59.121Z",
+            "metadata": [
+              {
+                "id": "88e2eaa3-90d6-4a48-bd3c-9c6f51dcafc7",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Notes",
+                "value": "N/A",
+                "lastUpdated": "2021-09-01T17:02:59.267Z"
+              },
+              {
+                "id": "76a234e5-5de8-4225-ae28-1351ff99fe8c",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Number",
+                "value": "11",
+                "lastUpdated": "2021-09-01T17:02:59.343Z"
+              }
+            ],
+            "dataType": {
+              "id": "82781a06-39d7-470a-b336-2278f90bd523",
+              "label": "ddmmyyyy",
+              "lastUpdated": "2021-09-01T17:02:58.883Z",
+              "domainType": "PrimitiveType"
+            }
+          },
+          {
+            "id": "6a540f2f-8f6f-477b-b37a-91e9574eaa1a",
+            "label": "Post code",
+            "lastUpdated": "2021-09-01T17:02:59.133Z",
+            "metadata": [
+              {
+                "id": "d9e33d91-e3f0-46f9-9b72-681246ce24b6",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Number",
+                "value": "5",
+                "lastUpdated": "2021-09-01T17:02:59.295Z"
+              },
+              {
+                "id": "3ffe51bd-acac-4ff6-8ac8-176227636c34",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Notes",
+                "value": "This has two purposes.  One is that you know where your cases come from.  The other is that any secondary use for research will allow us to link to deprivation indices",
+                "lastUpdated": "2021-09-01T17:02:59.33Z"
+              }
+            ],
+            "dataType": {
+              "id": "1ea196d0-6f23-41cc-a3e1-0e1f902b9c54",
+              "label": "text",
+              "lastUpdated": "2021-09-01T17:02:58.883Z",
+              "domainType": "PrimitiveType"
+            }
+          },
+          {
+            "id": "94e899ac-6d46-4755-b5af-d94d672d1eb2",
+            "label": "Centre identification",
+            "description": "Enter as text or as pre-defined code",
+            "lastUpdated": "2021-09-01T17:02:59.146Z",
+            "metadata": [
+              {
+                "id": "6d9e4a78-4169-4093-a467-f520e9d95586",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Notes",
+                "value": "This should be an automatic part of a local system",
+                "lastUpdated": "2021-09-01T17:02:59.341Z"
+              },
+              {
+                "id": "b378f9a4-ad6f-4725-9656-81a939cc3223",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Number",
+                "value": "1",
+                "lastUpdated": "2021-09-01T17:02:59.279Z"
+              }
+            ],
+            "dataType": {
+              "id": "24582847-98bb-409e-b2d9-944ffca2eb2a",
+              "label": "external_code",
+              "lastUpdated": "2021-09-01T17:02:58.883Z",
+              "domainType": "PrimitiveType"
+            }
+          },
+          {
+            "id": "ff0ffd41-895f-4d45-9232-91ccb6218bb6",
+            "label": "Hospital number",
+            "lastUpdated": "2021-09-01T17:02:59.135Z",
+            "metadata": [
+              {
+                "id": "4fdc956f-cc4e-466b-b910-5698bf4e0885",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Notes",
+                "value": "Until we all use NHS numbers this will be needed to send back to you cases for data verification etc. Enter in local format or import from Hospital PAS",
+                "lastUpdated": "2021-09-01T17:02:59.334Z"
+              },
+              {
+                "id": "f1eea0e2-4bd6-4014-b62e-82857c951248",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Number",
+                "value": "4",
+                "lastUpdated": "2021-09-01T17:02:59.302Z"
+              }
+            ],
+            "dataType": {
+              "id": "1ea196d0-6f23-41cc-a3e1-0e1f902b9c54",
+              "label": "text",
+              "lastUpdated": "2021-09-01T17:02:58.883Z",
+              "domainType": "PrimitiveType"
+            }
+          },
+          {
+            "id": "9a14f90c-4314-47f5-9661-32bcb0cbba69",
+            "label": "Lung Cancer Surgery",
+            "description": "Is the patient undergoing",
+            "lastUpdated": "2021-09-01T17:02:59.142Z",
+            "metadata": [
+              {
+                "id": "c34cbb22-ee9a-42a9-a8cb-d34ce5ba0665",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Notes",
+                "value": "N/A",
+                "lastUpdated": "2021-09-01T17:02:59.284Z"
+              },
+              {
+                "id": "c5802173-ee2a-4045-98d3-08801eebaefb",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Number",
+                "value": "93",
+                "lastUpdated": "2021-09-01T17:02:59.285Z"
+              }
+            ],
+            "dataType": {
+              "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+              "label": "openworld_tick",
+              "lastUpdated": "2021-09-01T17:02:58.881Z",
+              "domainType": "PrimitiveType"
+            }
+          },
+          {
+            "id": "a2c3a0f1-50b8-4d0c-877c-83f4feb604b3",
+            "label": "Date of Operation",
+            "description": "Date on which primary procedure takes place",
+            "lastUpdated": "2021-09-01T17:02:59.124Z",
+            "metadata": [
+              {
+                "id": "211238ab-ca63-4f24-b2ec-151fb4b70d9e",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Number",
+                "value": "8",
+                "lastUpdated": "2021-09-01T17:02:59.32Z"
+              },
+              {
+                "id": "fd6bdafb-8a43-46b5-b2c8-c2602c90c0c2",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Notes",
+                "value": "This dataset is built around a surgical procedure",
+                "lastUpdated": "2021-09-01T17:02:59.306Z"
+              }
+            ],
+            "dataType": {
+              "id": "82781a06-39d7-470a-b336-2278f90bd523",
+              "label": "ddmmyyyy",
+              "lastUpdated": "2021-09-01T17:02:58.883Z",
+              "domainType": "PrimitiveType"
+            }
+          },
+          {
+            "id": "02444a94-b5b1-419a-a7b1-507d45636b7b",
+            "label": "Preoperative neoadjuvant chemotherapy",
+            "description": "Patient has been given preoperative neoadjuvant chemotherapy",
+            "lastUpdated": "2021-09-01T17:02:59.133Z",
+            "metadata": [
+              {
+                "id": "88a0d7ae-103d-4b69-bbb3-5cdf014a94e5",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Number",
+                "value": "108",
+                "lastUpdated": "2021-09-01T17:02:59.266Z"
+              },
+              {
+                "id": "6dfc2687-25b1-4cc8-bbd8-e22eef4abc5a",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Notes",
+                "value": "N/A",
+                "lastUpdated": "2021-09-01T17:02:59.341Z"
+              }
+            ],
+            "dataType": {
+              "id": "c1a68db0-a949-4d10-afc7-7351b0889d3c",
+              "label": "openworld_tick",
+              "lastUpdated": "2021-09-01T17:02:58.881Z",
+              "domainType": "PrimitiveType"
+            }
+          },
+          {
+            "id": "2fc1865e-4448-4f2c-a56b-de376aeeee39",
+            "label": "Sex",
+            "lastUpdated": "2021-09-01T17:02:59.138Z",
+            "metadata": [
+              {
+                "id": "214d6d26-7e32-4bd4-a0e7-73bb06a72998",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Notes",
+                "value": "N/A",
+                "lastUpdated": "2021-09-01T17:02:59.32Z"
+              },
+              {
+                "id": "2939a9b9-6bdd-4f95-a46b-5051c1e39bd9",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Number",
+                "value": "7",
+                "lastUpdated": "2021-09-01T17:02:59.322Z"
+              }
+            ],
+            "dataType": {
+              "id": "3a037586-0b8c-43df-9eac-5646a58c6f84",
+              "label": "Sex",
+              "lastUpdated": "2021-09-01T17:02:58.863Z",
+              "domainType": "EnumerationType",
+              "enumerationValues": [
+                {
+                  "id": "f87077e7-80b8-4261-96c3-59f8897f5a33",
+                  "index": 1,
+                  "key": "F",
+                  "value": "female",
+                  "lastUpdated": "2021-09-01T17:02:58.865Z"
+                },
+                {
+                  "id": "78c705dc-b646-4093-9622-69df5d141725",
+                  "index": 0,
+                  "key": "M",
+                  "value": "male",
+                  "lastUpdated": "2021-09-01T17:02:58.866Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "b76df359-4593-48a2-8a47-85ad371c66dd",
+            "label": "Surgeon identifier",
+            "description": "Consultant surgeon GMC number",
+            "lastUpdated": "2021-09-01T17:02:59.126Z",
+            "metadata": [
+              {
+                "id": "7ab6b5a9-18c4-49c2-a3b5-1f20229b6bda",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Number",
+                "value": "2",
+                "lastUpdated": "2021-09-01T17:02:59.347Z"
+              },
+              {
+                "id": "1e675a23-4b97-4e3f-b25f-e890ac851828",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Notes",
+                "value": "Required for revalidation issues",
+                "lastUpdated": "2021-09-01T17:02:59.319Z"
+              }
+            ],
+            "dataType": {
+              "id": "24582847-98bb-409e-b2d9-944ffca2eb2a",
+              "label": "external_code",
+              "lastUpdated": "2021-09-01T17:02:58.883Z",
+              "domainType": "PrimitiveType"
+            }
+          },
+          {
+            "id": "a2e1f410-9882-4b93-9323-dc83d142e2de",
+            "label": "Time of operation",
+            "description": "Refers to time operation commences",
+            "lastUpdated": "2021-09-01T17:02:59.109Z",
+            "metadata": [
+              {
+                "id": "6118236f-388b-45be-8bd4-a85a7ac87f31",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Notes",
+                "value": "N/A",
+                "lastUpdated": "2021-09-01T17:02:59.338Z"
+              },
+              {
+                "id": "e99888b7-d59f-42de-b4e4-eeb774109674",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "key": "Number",
+                "value": "9",
+                "lastUpdated": "2021-09-01T17:02:59.3Z"
+              }
+            ],
+            "dataType": {
+              "id": "dec3fc8f-53a4-4591-a311-ea4306ca06ff",
+              "label": "24hrTime",
+              "lastUpdated": "2021-09-01T17:02:58.882Z",
+              "domainType": "PrimitiveType"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "exportMetadata": {
+    "exportedBy": "Admin User",
+    "exportedOn": "2021-09-01T17:02:59.375Z",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
+      "name": "DataModelJsonExporterService",
+      "version": "3.0"
+    }
+  }
+}
