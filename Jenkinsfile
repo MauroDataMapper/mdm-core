@@ -470,7 +470,6 @@ pipeline {
             jacoco classPattern: '**/build/classes', execPattern: '**/build/jacoco/*.exec', sourceInclusionPattern: '**/*.java,**/*.groovy',
                    sourcePattern: '**/src/main/groovy,**/grails-app/controllers,**/grails-app/domain,**/grails-app/services,**/grails-app/utils'
             archiveArtifacts allowEmptyArchive: true, artifacts: '**/*.log'
-            slackNotification()
             zulipNotification(topic: 'mdm-core')
         }
     }
