@@ -75,6 +75,11 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     @Shared
     UUID importedDataModelId
 
+    @Transactional
+    Authority getTestAuthority() {
+        Authority.findByDefaultAuthority(true)
+    }
+
     @OnceBefore
     @Transactional
     def checkAndSetupData() {
@@ -82,8 +87,6 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
         folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
         checkAndSave(folder)
-        Authority testAuthority = Authority.findByLabel('Test Authority')
-        checkAndSave(testAuthority)
 
         DataModel dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: FUNCTIONAL_TEST,
                                             folder: folder, authority: testAuthority).save(flush: true)

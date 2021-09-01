@@ -129,8 +129,12 @@ class AuthorityFunctionalSpec extends UserAccessFunctionalSpec {
         verifyNotFound(response, id)
     }
 
+    void verifyR05InvalidDataResponse(HttpResponse<Map> response, String id) {
+        verifyNotFound(response, id)
+    }
+
     @Override
-    void verifyR05KnownIdResponse(HttpResponse<Map> response, String id) {
+    void verifyR05ValidDataResponse(HttpResponse<Map> response, String id) {
         verifyNotFound(response, id)
     }
 

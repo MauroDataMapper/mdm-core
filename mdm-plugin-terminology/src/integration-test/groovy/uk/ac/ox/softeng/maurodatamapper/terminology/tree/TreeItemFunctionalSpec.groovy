@@ -82,13 +82,15 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     @Autowired
     TerminologyService terminologyService
 
+    @Transactional
+    Authority getTestAuthority() {
+        Authority.findByDefaultAuthority(true)
+    }
+
     @OnceBefore
     @Transactional
     def checkAndSetupData() {
         log.debug('Check and setup test data')
-
-        Authority testAuthority = Authority.findByLabel('Test Authority')
-        checkAndSave(testAuthority)
 
         folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
         checkAndSave(folder)

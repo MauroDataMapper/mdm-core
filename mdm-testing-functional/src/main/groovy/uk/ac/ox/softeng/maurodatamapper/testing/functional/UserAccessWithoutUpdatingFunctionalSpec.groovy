@@ -142,11 +142,11 @@ abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAcces
         verifyForbidden response
     }
 
-    void verifyR05UnknownIdResponse(HttpResponse<Map> response, String id) {
-        verifyNotFound response, id
+    void verifyR05InvalidDataResponse(HttpResponse<Map> response, String id) {
+        verifyForbidden response
     }
 
-    void verifyR05KnownIdResponse(HttpResponse<Map> response, String id) {
+    void verifyR05ValidDataResponse(HttpResponse<Map> response, String id) {
         verifyForbidden response
     }
 

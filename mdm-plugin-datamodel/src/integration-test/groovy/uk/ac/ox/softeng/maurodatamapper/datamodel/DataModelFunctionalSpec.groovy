@@ -152,7 +152,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
   "authority": {
     "id": "${json-unit.matches:id}",
     "url": "http://localhost",
-    "label": "Test Authority"
+    "label": "Test Authority",
+    "defaultAuthority": true
   }
 }'''
     }
@@ -3066,7 +3067,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
   "authority": {
       "id": "${json-unit.matches:id}",
       "url": "http://localhost",
-      "label": "Test Authority"
+      "label": "Test Authority",
+      "defaultAuthority": true
     },
   "id": "${json-unit.matches:id}",
   "label": "Simple Test DataModel",
@@ -3137,7 +3139,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
   "authority": {
       "id": "${json-unit.matches:id}",
       "url": "http://localhost",
-      "label": "Test Authority"
+      "label": "Test Authority",
+      "defaultAuthority": true
   },
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,

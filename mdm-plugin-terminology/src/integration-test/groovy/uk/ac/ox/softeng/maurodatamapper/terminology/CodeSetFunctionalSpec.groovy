@@ -167,7 +167,8 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
   "authority": {
     "id": "${json-unit.matches:id}",
     "url": "http://localhost",
-    "label": "Test Authority"
+    "label": "Test Authority",
+    "defaultAuthority": true
   }
 }'''
     }
@@ -1656,7 +1657,8 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
                     "authority": {
                         "id": "${json-unit.matches:id}",
                         "url": "http://localhost",
-                        "label": "Test Authority"
+                        "label": "Test Authority",
+                        "defaultAuthority": true
                     }
                 }
             ]
@@ -1748,7 +1750,8 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
                     "authority": {
                         "id": "${json-unit.matches:id}",
                         "url": "http://localhost",
-                        "label": "Test Authority"
+                        "label": "Test Authority",
+                        "defaultAuthority": true
                     }
                 }
             ]
