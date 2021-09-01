@@ -142,11 +142,19 @@ abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAcces
         verifyForbidden response
     }
 
+    void verifyR05UnknownIdResponse(HttpResponse<Map> response, String id) {
+        verifyNotFound response, id
+    }
+
+    void verifyR05KnownIdResponse(HttpResponse<Map> response, String id) {
+        verifyForbidden response
+    }
+
     void verifyE03ValidResponseBody(HttpResponse<Map> response) {
         assert response.body().id
-        validJson.each { k, v ->
+        validJson.each {k, v ->
             if (v instanceof Map) {
-                v.each { k1, v1 ->
+                v.each {k1, v1 ->
                     assert response.body()[k][k1] == v1
                 }
             } else {

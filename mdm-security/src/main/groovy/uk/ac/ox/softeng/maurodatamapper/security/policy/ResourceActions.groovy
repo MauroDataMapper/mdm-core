@@ -96,5 +96,8 @@ class ResourceActions {
                                                            UPDATE_ACTION,
                                                            DISABLE_ACTION]
 
+    public static final List<String> AUTHORITY_ADMIN_ACTIONS = [SHOW_ACTION,
+                                                                UPDATE_ACTION,
+                                                                DELETE_ACTION]
 
 }
