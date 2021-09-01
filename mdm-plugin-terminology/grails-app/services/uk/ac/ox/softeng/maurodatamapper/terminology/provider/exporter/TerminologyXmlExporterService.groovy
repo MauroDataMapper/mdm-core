@@ -42,7 +42,7 @@ class TerminologyXmlExporterService extends TerminologyExporterProviderService i
 
     @Override
     String getVersion() {
-        '3.1'
+        '4.0'
     }
 
     @Override
@@ -73,6 +73,6 @@ class TerminologyXmlExporterService extends TerminologyExporterProviderService i
     @Override
     ByteArrayOutputStream exportTerminologies(User currentUser, List<Terminology> terminologies) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(terminologies, 'terminology', version, 'gml', exportMetadata), fileType)
+        exportModel(new ExportModel(terminologies, 'terminology', version, '3.2', 'gml', exportMetadata), fileType)
     }
 }
