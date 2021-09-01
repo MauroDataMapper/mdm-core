@@ -18,7 +18,7 @@
     SPDX-License-Identifier: Apache-2.0
 
 -->
-<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/3.1" xmlns:mdm="http://maurodatamapper.com/terminology/3.1">
+<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/4.0" xmlns:mdm="http://maurodatamapper.com/terminology/3.2">
   <mdm:terminologies>
     <mdm:terminology>
       <mdm:id>dd1d02c8-8450-4c92-8c66-c0ee61cc0f76</mdm:id>
@@ -81,7 +81,7 @@
         </mdm:term>
       </mdm:terms>
     </mdm:terminology>
-    <mdm:terminology xmlns:mdm="http://maurodatamapper.com/terminology/3.1">
+    <mdm:terminology xmlns:mdm="http://maurodatamapper.com/terminology/3.2">
       <mdm:id>c74d1a60-dec2-40e9-97f3-1313f2340da3</mdm:id>
       <mdm:label>Complex Test Terminology</mdm:label>
       <mdm:lastUpdated>2021-06-02T12:14:21.935Z</mdm:lastUpdated>
@@ -1488,7 +1488,7 @@
     <exp:exporter>
       <exp:namespace>uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter</exp:namespace>
       <exp:name>TerminologyXmlExporterService</exp:name>
-      <exp:version>3.1</exp:version>
+      <exp:version>4.0</exp:version>
     </exp:exporter>
   </exp:exportMetadata>
 </exp:exportModel>
