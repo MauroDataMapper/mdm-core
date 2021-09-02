@@ -215,7 +215,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
             metadataService.copy(metadata, targetCatalogueItem)
         }
         // for modifications, recursively call this method
-        fieldPatchData.modified.each { modifiedObjectPatchData ->
+        fieldPatchData.modified.each {modifiedObjectPatchData ->
             metadataService.mergeLegacyMetadataIntoCatalogueItem(targetCatalogueItem, modifiedObjectPatchData)
         }
     }

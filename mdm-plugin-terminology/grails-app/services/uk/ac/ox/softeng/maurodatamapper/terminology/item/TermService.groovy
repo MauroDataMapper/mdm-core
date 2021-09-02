@@ -122,7 +122,6 @@ class TermService extends ModelItemService<Term> {
                 .executeUpdate()
 
             log.trace('Terms removed')
-
         }
     }
 

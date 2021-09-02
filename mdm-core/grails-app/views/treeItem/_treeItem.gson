@@ -12,7 +12,7 @@ json {
     domainType treeItem.domainType
     label treeItem.label
     hasChildren treeItem.hasChildren()
-   availableActions treeItem.availableActions
+    availableActions treeItem.availableActions
 
     if (treeItem instanceof ContainerTreeItem) {
         ContainerTreeItem cti = (ContainerTreeItem) treeItem

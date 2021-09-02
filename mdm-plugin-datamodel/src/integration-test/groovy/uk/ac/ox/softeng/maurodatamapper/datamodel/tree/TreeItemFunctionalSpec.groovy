@@ -123,7 +123,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         checkAndSave(importTestFolder)
 
         DataModel importingDataModel = new DataModel(label: 'Functional Test Importing DataModel', createdBy: FUNCTIONAL_TEST,
-                                            folder: importTestFolder, authority: testAuthority).save(flush: true)
+                                                     folder: importTestFolder, authority: testAuthority).save(flush: true)
         importingDataModelId = importingDataModel.id
 
         DataClass importingParentDataClass = new DataClass(label: 'Functional Test Importing Parent DataClass',
@@ -345,8 +345,8 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         List<Map> children = localResponse.body().first().children
 
         then:
-        children.any { it.label == 'Functional Test DataModel' && !it.branchName && !it.modelVersion }
-        children.any { it.label == 'Functional Test DataModel 2' && !it.branchName && !it.modelVersion }
+        children.any {it.label == 'Functional Test DataModel' && !it.branchName && !it.modelVersion}
+        children.any {it.label == 'Functional Test DataModel 2' && !it.branchName && !it.modelVersion}
         children.any {
             it.label == 'Functional Test Model doc superseded' &&
             it.documentationVersion == '2.0.0' &&
@@ -398,8 +398,8 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         List<Map> children = localResponse.body().first().children
 
         then:
-        children.any { it.label == 'Functional Test DataModel' }
-        children.any { it.label == 'Functional Test DataModel 2' }
+        children.any {it.label == 'Functional Test DataModel'}
+        children.any {it.label == 'Functional Test DataModel 2'}
         // New branch is in tree
         children.any {
             it.label == 'Functional Test Model model superseded' &&
@@ -432,8 +432,8 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         children = localResponse.body().first().children
 
         then:
-        children.any { it.label == 'Functional Test DataModel' }
-        children.any { it.label == 'Functional Test DataModel 2' }
+        children.any {it.label == 'Functional Test DataModel'}
+        children.any {it.label == 'Functional Test DataModel 2'}
         // Finalised model version is in the tree
         children.any {
             it.label == 'Functional Test Model model superseded' &&
@@ -485,8 +485,8 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         List<Map> children = localResponse.body().first().children
 
         then:
-        children.any { it.label == 'Functional Test DataModel' }
-        children.any { it.label == 'Functional Test DataModel 2' }
+        children.any {it.label == 'Functional Test DataModel'}
+        children.any {it.label == 'Functional Test DataModel 2'}
         // New branch is in tree
         children.any {
             it.label == 'Functional Test Model model superseded' &&

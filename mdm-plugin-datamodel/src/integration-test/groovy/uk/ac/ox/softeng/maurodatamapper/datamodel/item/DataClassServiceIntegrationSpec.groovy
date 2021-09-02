@@ -229,7 +229,6 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         expect:
         dataClassService.findAllContentOfDataClassIdInDataModelId(dataModel.id, grandParentId).size() == 1
         dataClassService.findAllContentOfDataClassIdInDataModelId(dataModel.id, parentId).size() == 2
-
     }
 
     void 'test findAllByDataModelId'() {
@@ -365,7 +364,6 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         expect:
         check(copyModel)
         dataModelService.saveModelNewContentOnly(copyModel)
-
 
         when:
         sessionFactory.currentSession.flush()

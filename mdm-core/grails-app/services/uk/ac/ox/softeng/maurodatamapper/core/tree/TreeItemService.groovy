@@ -102,7 +102,6 @@ class TreeItemService {
         log.info('Creating container drill tree')
         long start = System.currentTimeMillis()
 
-
         List<ContainerTreeItem> fullTree = buildContainerTree(containerClass, userSecurityPolicyManager, includeDocumentSuperseded, includeModelSuperseded,
                                                               includeDeleted, removeEmptyContainers)
         ContainerTreeItem treeItem = drillDownIntoTree(fullTree, container.id)
@@ -203,7 +202,6 @@ class TreeItemService {
         log.debug('Searched container tree build took: {}', Utils.timeTaken(start))
         tree
     }
-
 
     /**
      * Obtain the tree content for the provided catalogue item.
@@ -432,7 +430,6 @@ class TreeItemService {
             List<ModelTreeItem> collectedReadableTreeItems = labelGrouping.collectMany {k, v -> v as Collection} as List<ModelTreeItem>
             readableTreeItems.addAll(collectedReadableTreeItems)
             log.debug('Complete listing of {} took: {}', service.modelClass.simpleName, Utils.timeTaken(start1))
-
         }
         readableTreeItems
     }
@@ -669,7 +666,5 @@ class TreeItemService {
             it.isEmptyContainerTree()
         })
         rootTreeItems.each {it.recursivelyRemoveEmptyChildContainers()}
-
     }
-
 }

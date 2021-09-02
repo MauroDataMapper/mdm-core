@@ -351,7 +351,6 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
                 log.warn('No ReferenceType with label {} is owned by DataModel, merging existing and assigning to DataModel', label)
                 ReferenceType keep = dataTypeService.mergeDataTypes(dmGrouped.dataModel)
                 dataModel.addToDataTypes(keep)
-
             }
         }
     }
@@ -587,7 +586,6 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         log.debug('Copied required DataClass, now checking for reference classes which haven\'t been matched or added')
         matchUpAndAddMissingReferenceTypeClasses(copiedDataModel, original.dataModel, copier, userSecurityPolicyManager)
         copiedDataClass
-
     }
 
     @Override
@@ -650,9 +648,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         }
 
         copy
-
     }
-
 
     DataClass copyCatalogueItemInformation(DataClass original,
                                            DataClass copy,
@@ -697,7 +693,6 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         matchUpAndAddMissingReferenceTypeClasses(copiedDataModel, originalDataModel, copier, userSecurityPolicyManager)
     }
 
-
     @Deprecated(forRemoval = true)
     private Set<ReferenceType> getAllNestedReferenceTypes(DataClass dataClass) {
         Set<ReferenceType> referenceTypes = []
@@ -709,11 +704,9 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         referenceTypes
     }
 
-
     private Set<ReferenceType> findAllEmptyReferenceTypes(DataModel dataModel) {
         dataModel.referenceTypes.findAll {!(it as ReferenceType).referenceClass} as Set<ReferenceType>
     }
-
 
     String buildPath(DataClass dataClass) {
         if (!dataClass.parentDataClass) return dataClass.label

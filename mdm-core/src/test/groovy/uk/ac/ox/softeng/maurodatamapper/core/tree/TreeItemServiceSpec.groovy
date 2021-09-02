@@ -265,7 +265,6 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
 
         then:
         tree.isEmpty()
-
     }
 
     void 'C04 : test building container folder only tree remove empty folders'() {
@@ -342,8 +341,6 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         !((ModelTreeItem) tree[0][0]).finalised
         !((ModelTreeItem) tree[0][0]).superseded
         ((ModelTreeItem) tree[0][0]).documentationVersion == Version.from('1.0.0')
-
-
     }
 
     void 'C06 : test building container tree with 2 empty models at the top level and empty folders removed'() {
@@ -430,8 +427,6 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         !((ModelTreeItem) tree[1][0]).finalised
         !((ModelTreeItem) tree[1][0]).superseded
         ((ModelTreeItem) tree[1][0]).documentationVersion == Version.from('1.0.0')
-
-
     }
 
     void 'C07 : test building container tree with 2 empty models with different superseding and deleted variations'() {
@@ -608,8 +603,6 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         !((ModelTreeItem) tree[1][0]).finalised
         !((ModelTreeItem) tree[1][0]).superseded
         ((ModelTreeItem) tree[1][0]).documentationVersion == Version.from('1.0.0')
-
-
     }
 
     void 'C09 : test building container tree with 2 empty models at different levels and empty folders removed'() {
@@ -706,8 +699,6 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         !((ModelTreeItem) tree[1][0][0]).finalised
         !((ModelTreeItem) tree[1][0][0]).superseded
         ((ModelTreeItem) tree[1][0][0]).documentationVersion == Version.from('1.0.0')
-
-
     }
 
     void 'C10 : test building container tree with 2 empty models at other different levels and empty folders removed'() {
@@ -814,8 +805,6 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         !((ModelTreeItem) tree[1][0][0][0]).finalised
         !((ModelTreeItem) tree[1][0][0][0]).superseded
         ((ModelTreeItem) tree[1][0][0][0]).documentationVersion == Version.from('1.0.0')
-
-
     }
 
     void 'FCI : test findTreeCapableCatalogueItem'() {
@@ -1054,13 +1043,13 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
             findAllReadableModels(_, true, true, true) >> [basicModel]
             getModelClass() >> BasicModel
             findAllModelIdsWithTreeChildren(_) >> [basicModel]
-            handles(_) >> { Class clazz -> clazz == BasicModel }
+            handles(_) >> {Class clazz -> clazz == BasicModel}
             hasTreeTypeModelItems(basicModel, false) >> true
             findAllTreeTypeModelItemsIn(basicModel, false) >> [item1, item2]
         }
         ModelItemService basicModelItemService = Stub() {
             getModelClass() >> BasicModelItem
-            handles(_) >> { Class clazz -> clazz == BasicModelItem }
+            handles(_) >> {Class clazz -> clazz == BasicModelItem}
             hasTreeTypeModelItems(item1, false) >> false
             hasTreeTypeModelItems(item2, false) >> true
             hasTreeTypeModelItems(item3, false) >> false
@@ -1116,7 +1105,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
             findAllReadableModels(_, true, true, true) >> [basicModel]
             getModelClass() >> BasicModel
             findAllModelIdsWithTreeChildren(_) >> [basicModel]
-            handles(_) >> { Class clazz -> clazz == BasicModel }
+            handles(_) >> {Class clazz -> clazz == BasicModel}
             hasTreeTypeModelItems(basicModel, false) >> true
             findAllTreeTypeModelItemsIn(basicModel, false) >> [item1, item2]
         }
@@ -1237,7 +1226,6 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         tree[1].every {it.renderChildren}
         tree[1].every {!it.deleted}
 
-
         and:
         tree[1][0].label == 'reader1Child'
         tree[1][0].id == Folder.findByLabel('reader1Child').id
@@ -1283,7 +1271,6 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         ((ModelTreeItem) tree[1][1]).documentationVersion == Version.from('2.1.0')
     }
 
-
     void 'S02 : test building search tree 2 for search term [2] domain type folder'() {
         given:
         UserSecurityPolicyManager testPolicy = configureSearchData()
@@ -1321,7 +1308,6 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         tree[0].every {it.renderChildren}
         tree[0].every {!it.deleted}
 
-
         and:
         tree[0][0].label == 'reader1Child'
         tree[0][0].id == Folder.findByLabel('reader1Child').id
@@ -1352,7 +1338,6 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         tree[0][0][0].rootId == tree[0].id
         tree[0][0][0].parentId == tree[0][0].id
         tree[0][0][0].depth == 2
-
     }
 
     void 'S03 : test building search tree 3 for search term [2] domain type basic model'() {
@@ -1518,7 +1503,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
             getModelClass() >> BasicModel
             findAllModelIdsWithTreeChildren(_) >> [basicModel]
             findAllSupersededModelIds(_) >> [basicModel2.id]
-            handles(_) >> { Class clazz -> clazz == BasicModel }
+            handles(_) >> {Class clazz -> clazz == BasicModel}
             hasTreeTypeModelItems(basicModel, false) >> true
             findAllTreeTypeModelItemsIn(basicModel, false) >> [item1, item2]
             findAllReadableTreeTypeCatalogueItemsBySearchTermAndDomain(testPolicy, '2', null) >> [basicModel2]
@@ -1532,7 +1517,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         ModelItemService basicModelItemService = Stub() {
             getCatalogueItemClass() >> BasicModelItem
             getModelItemClass() >> BasicModelItem
-            handles(_) >> { Class clazz -> clazz == BasicModelItem }
+            handles(_) >> {Class clazz -> clazz == BasicModelItem}
             hasTreeTypeModelItems(item1, false) >> false
             hasTreeTypeModelItems(item2, false) >> true
             hasTreeTypeModelItems(item3, false) >> false
@@ -1551,6 +1536,4 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         folderService.findAllReadableContainersBySearchTerm(testPolicy, '2') >> [Folder.findByLabel('reader2Child')]
         testPolicy
     }
-
-
 }

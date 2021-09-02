@@ -94,7 +94,6 @@ class TreeItemController extends RestfulController<TreeItem> implements MdmContr
                                                    shouldIncludeModelSupersededItems(),
                                                    shouldIncludeDeletedItems(),
                                                    false)
-
     }
 
     def search() {

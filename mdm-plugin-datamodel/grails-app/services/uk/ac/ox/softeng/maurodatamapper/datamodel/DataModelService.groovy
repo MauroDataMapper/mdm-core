@@ -595,7 +595,6 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
                 throw new ApiNotYetImplementedException('MSXX', 'Model permission copying')
             }
             log.warn('Permission copying is not yet implemented')
-
         }
 
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
@@ -654,7 +653,6 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             dataElementService.findAllSimilarDataElementsInDataModel(otherDataModel, de, maxResults)
         }
     }
-
 
     Map<UUID, Long> obtainChildKnowledge(List<DataModel> parents) {
         if (!parents) return [:]
