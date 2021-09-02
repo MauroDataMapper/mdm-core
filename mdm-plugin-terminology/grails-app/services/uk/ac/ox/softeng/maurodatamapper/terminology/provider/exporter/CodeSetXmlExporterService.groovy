@@ -42,7 +42,7 @@ class CodeSetXmlExporterService extends CodeSetExporterProviderService implement
 
     @Override
     String getVersion() {
-        '3.1'
+        '4.0'
     }
 
     @Override
