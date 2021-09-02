@@ -54,6 +54,11 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
 
     ProfileSpecificationProfileService profileSpecificationProfileService
 
+    @Transactional
+    Authority getTestAuthority() {
+        Authority.findByDefaultAuthority(true)
+    }
+
     @OnceBefore
     @Transactional
     def checkAndSetupData() {
@@ -62,8 +67,6 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         checkAndSave(folder)
         folder.addToMetadata(new Metadata(namespace: "test.namespace", key: "propertyKey", value: "propertyValue", createdBy: FUNCTIONAL_TEST))
         checkAndSave(folder)
-        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: FUNCTIONAL_TEST)
-        checkAndSave(testAuthority)
 
         complexDataModelId = BootstrapModels.buildAndSaveComplexDataModel(messageSource, folder, testAuthority).id
         simpleDataModelId = BootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder, testAuthority).id
@@ -75,7 +78,6 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
     def cleanupSpec() {
         log.debug('CleanupSpec DataFlowFunctionalSpec')
         cleanUpResources(DataModel, Folder)
-        Authority.findByLabel('Test Authority').delete(flush: true)
     }
 
     @Override

@@ -42,7 +42,6 @@ class VersionedFolderServiceSpec extends BaseIntegrationSpec {
     }
 
     void setupDomainData() {
-        checkAndSave(new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST))
         checkAndSave(new VersionedFolder(label: 'catalogue', createdBy: UNIT_TEST, authority: testAuthority))
         VersionedFolder folder = new VersionedFolder(label: 'parent', createdBy: UNIT_TEST, authority: testAuthority).
             save(flush: true, failOnError: true)

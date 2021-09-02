@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.security.policy
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
@@ -45,6 +46,7 @@ import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 
 import java.util.function.Predicate
 
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.AUTHORITY_ADMIN_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.AUTHOR_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.CHANGE_FOLDER_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.CONTAINER_ADMIN_ACTIONS
@@ -58,6 +60,7 @@ import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.F
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.FINALISE_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.FULL_DELETE_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.IMPORT_ACTION
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.INDEX_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MERGE_INTO_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.NEW_BRANCH_MODEL_VERSION_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.NEW_DOCUMENTATION_ACTION
@@ -70,6 +73,7 @@ import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.R
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.REVIEWER_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.SAVE_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.SAVE_IGNORE_FINALISE
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.SHOW_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.SOFT_DELETE_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.STANDARD_CREATE_AND_EDIT_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.STANDARD_EDIT_ACTIONS
@@ -418,6 +422,19 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
             }
         }
 
+        if (Utils.parentClassIsAssignableFromChild(Authority, securableResourceClass)) {
+            switch (action) {
+            // Anyone can index
+                case INDEX_ACTION:
+                    return true
+                    // Check any access for show
+                case SHOW_ACTION:
+                    return hasAnyAccessToSecuredResource(Authority, id)
+                default:
+                    return hasApplicationLevelRole(APPLICATION_ADMIN_ROLE_NAME)
+            }
+        }
+
         log.warn('Attempt to access secured class {} id {} to {}', securableResourceClass.simpleName, id, action)
         false
 
@@ -590,6 +607,13 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
                 return READ_ONLY_ACTIONS
             }
             return []
+        }
+
+        if (Utils.parentClassIsAssignableFromChild(Authority, securableResourceClass)) {
+            if (hasApplicationLevelRole(APPLICATION_ADMIN_ROLE_NAME)) {
+                return AUTHORITY_ADMIN_ACTIONS
+            }
+            return READ_ONLY_ACTIONS
         }
 
 

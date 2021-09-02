@@ -1,0 +1,13 @@
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<Authority> authorityList
+}
+
+json {
+    count authorityList instanceof PagedResultList ? ((PagedResultList) authorityList).getTotalCount() : authorityList?.size() ?: 0
+    items tmpl.authority(authorityList ?: [])
+}
+

@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.test.functional
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 
 import grails.gorm.transactions.Transactional
 import grails.testing.spock.OnceBefore
@@ -41,6 +42,11 @@ abstract class ResourceFunctionalSpec<D extends GormEntity> extends BaseFunction
     Path resourcesPath
     @Shared
     Path xmlResourcesPath
+
+    @Transactional
+    Authority getTestAuthority() {
+        Authority.findByDefaultAuthority(true)
+    }
 
     @OnceBefore
     void setupResourcesPath() {

@@ -19,6 +19,8 @@
 maurodatamapper:
     security:
         public: false
+    bootstrap:
+        authority: true
 ---
 simplejavamail:
     smtp:

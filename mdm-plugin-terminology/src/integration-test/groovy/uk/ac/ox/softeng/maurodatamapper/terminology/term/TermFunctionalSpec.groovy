@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.term
 
-import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.TerminologyService
@@ -80,8 +80,6 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     @Transactional
     def checkAndSetupData() {
         log.debug('Check and setup test data')
-        Authority testAuthority = Authority.findByLabel('Test Authority')
-        checkAndSave(testAuthority)
         folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
         checkAndSave(folder)
         Terminology terminology = new Terminology(label: 'Functional Test Terminology', createdBy: FUNCTIONAL_TEST,

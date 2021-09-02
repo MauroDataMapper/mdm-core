@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.test.functional.facet
 
-import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 
@@ -34,9 +34,6 @@ abstract class CatalogueItemFacetFunctionalSpec<D extends GormEntity> extends Re
 
     @Shared
     Folder folder
-
-    @Shared
-    Authority testAuthority
 
     abstract UUID getCatalogueItemId()
 
@@ -55,7 +52,6 @@ abstract class CatalogueItemFacetFunctionalSpec<D extends GormEntity> extends Re
         log.debug('Check and setup test data')
         folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
         checkAndSave(folder)
-        testAuthority = Authority.findByLabel('Test Authority')
     }
 
     @Transactional

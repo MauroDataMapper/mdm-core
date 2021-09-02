@@ -31,6 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityDefinition
 
 import grails.core.GrailsApplication
+import grails.util.Environment
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
@@ -49,7 +50,7 @@ class BootStrap implements SecurityDefinition {
 
     GrailsApplication grailsApplication
 
-    def init = { servletContext ->
+    def init = {servletContext ->
 
         GroupRole.withNewTransaction {
             // Add all the roles
@@ -68,17 +69,30 @@ class BootStrap implements SecurityDefinition {
             groupBasedSecurityPolicyManagerService.buildUserSecurityPolicyManager(defaultUserSecurityPolicyManager)
             groupBasedSecurityPolicyManagerService.storeUserSecurityPolicyManager(defaultUserSecurityPolicyManager)
         }
+        // Only allow bootstrapping to be disabled if environment is prod
+        if (Environment.current != Environment.PRODUCTION || grailsApplication.config.maurodatamapper.bootstrap.adminuser) {
+            log.info('Bootstrapping admin user and administrators group')
+            CatalogueUser.withNewTransaction {
+                admin = CatalogueUser.findByEmailAddress(StandardEmailAddress.ADMIN)
+                if (!admin) {
+                    createAdminUser('admin')
+                    checkAndSave(messageSource, admin)
 
-        CatalogueUser.withNewTransaction {
-            admin = CatalogueUser.findByEmailAddress(StandardEmailAddress.ADMIN)
-            if (!admin) {
-                createAdminUser('admin')
-                checkAndSave(messageSource, admin)
+                }
+                admins = UserGroup.findByName('administrators')
+                if (!admins) {
+                    createAdminGroup('admin')
+                    checkAndSave(messageSource, admins)
+                }
             }
-            admins = UserGroup.findByName('administrators')
-            if (!admins) {
-                createAdminGroup('admin')
-                checkAndSave(messageSource, admins)
+        }
+
+        if (Environment.current == Environment.PRODUCTION && !grailsApplication.config.maurodatamapper.bootstrap.adminuser) {
+            CatalogueUser.withNewTransaction {
+                if (UserGroup.countByApplicationGroupRole(GroupRole.findByName(GroupRole.SITE_ADMIN_ROLE_NAME)) == 0) {
+                    log.warn('Bootstrapping of admin user has been disabled and there are no site admin level groups, the create user endpoint will be opened to allow an ' +
+                             'admin user to be created')
+                }
             }
         }
 
@@ -88,6 +102,7 @@ class BootStrap implements SecurityDefinition {
 
         environments {
             development {
+                //dev env relies almost entirely upon adminusers being bootstrapped
                 CatalogueUser.withNewTransaction {
 
                     getOrCreateModernSecurityUsers('development', false)
@@ -144,24 +159,27 @@ class BootStrap implements SecurityDefinition {
                 log.debug('Development environment bootstrap complete')
             }
             production {
-                CatalogueUser.withNewTransaction {
-                    if (!Folder.count()) {
-                        Folder folder = new Folder(
-                            label: 'Example Folder',
-                            createdBy: admin.emailAddress,
-                            readableByAuthenticatedUsers: true,
-                            description: 'This folder is readable by all authenticated users, and currently only editable by users in the ' +
-                                         'administrators group. Future suggestions: rename this folder to be more descriptive, and alter group ' +
-                                         'access.')
-                        checkAndSave(messageSource, folder)
+                if (grailsApplication.config.maurodatamapper.bootstrap.folder) {
+                    CatalogueUser.withNewTransaction {
+                        if (!Folder.count()) {
+                            Folder folder = new Folder(
+                                label: 'Example Folder',
+                                createdBy: StandardEmailAddress.ADMIN,
+                                readableByAuthenticatedUsers: true,
+                                description: 'This folder is readable by all authenticated users, and currently only editable by users in the ' +
+                                             'administrators group. Future suggestions: rename this folder to be more descriptive, and alter group ' +
+                                             'access.')
+                            checkAndSave(messageSource, folder)
 
-                        if (SecurableResourceGroupRole.bySecurableResourceAndGroupRoleIdAndUserGroupId(
-                            folder, groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole.id, admins.id).count() == 0) {
-                            checkAndSave(messageSource, new SecurableResourceGroupRole(
-                                createdBy: admin.emailAddress,
-                                securableResource: folder,
-                                userGroup: admins,
-                                groupRole: groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole))
+                            // Make sure the folder is secured
+                            if (SecurableResourceGroupRole.bySecurableResourceAndGroupRoleIdAndUserGroupId(
+                                folder, groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole.id, admins.id).count() == 0) {
+                                checkAndSave(messageSource, new SecurableResourceGroupRole(
+                                    createdBy: StandardEmailAddress.ADMIN,
+                                    securableResource: folder,
+                                    userGroup: admins,
+                                    groupRole: groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole))
+                            }
                         }
                     }
                 }

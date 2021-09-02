@@ -17,7 +17,7 @@ json {
     finalised export.finalised
     if (export.finalised) dateFinalised OffsetDateTimeConverter.toString(export.dateFinalised)
     if (export.modelVersion) modelVersion export.modelVersion
-    authority tmpl.'/authority/authority'(export.authority)
+    authority tmpl.'/authority/export'(export.authority)
     if (export.referenceDataTypes) referenceDataTypes tmpl.'/referenceDataType/export'(export.referenceDataTypes.sort())
     if (export.referenceDataElements) referenceDataElements tmpl.'/referenceDataElement/export'(export.referenceDataElements.sort())    
     if (export.referenceDataValues) referenceDataValues tmpl.'/referenceDataValue/export'(export.referenceDataValues.sort{a,b -> 

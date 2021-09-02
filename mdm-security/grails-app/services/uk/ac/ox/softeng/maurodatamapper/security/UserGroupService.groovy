@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRoleService
@@ -99,5 +100,17 @@ class UserGroupService implements DomainService<UserGroup> {
     List<UserGroup> findAllBySecurableResourceAndGroupRoleId(String securableResourceDomainType, UUID securableResourceId, UUID groupRoleId,
                                                              Map pagination = [:]) {
         UserGroup.bySecurableResourceAndGroupRoleId(securableResourceDomainType, securableResourceId, groupRoleId).list(pagination)
+    }
+
+    UserGroup createAndSaveAdministratorsGroup(CatalogueUser initialAdminUser) {
+        UserGroup admins = new UserGroup(createdBy: initialAdminUser.emailAddress,
+                                         name: 'administrators',
+                                         applicationGroupRole: groupRoleService.getFromCache(GroupRole.SITE_ADMIN_ROLE_NAME).groupRole,
+                                         undeleteable: true)
+            .addToGroupMembers(initialAdminUser)
+        if (!admins.validate()) {
+            throw new ApiInvalidModelException('UG01', 'Administrators group cannot be created', admins.errors)
+        }
+        admins.save(validate: false, flush: false)
     }
 }

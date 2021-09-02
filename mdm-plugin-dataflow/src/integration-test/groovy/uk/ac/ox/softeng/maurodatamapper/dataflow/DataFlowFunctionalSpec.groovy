@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.dataflow
 
-import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.dataflow.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -33,8 +33,8 @@ import spock.lang.Shared
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getFUNCTIONAL_TEST
 
-import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.CREATED
+import static io.micronaut.http.HttpStatus.OK
 
 /**
  * <pre>
@@ -79,9 +79,6 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
         log.debug('Check and setup test data')
         folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
         checkAndSave(folder)
-        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: FUNCTIONAL_TEST)
-        checkAndSave(testAuthority)
-
 
         sourceDataModelId = BootstrapModels.buildAndSaveSourceDataModel(messageSource, folder, testAuthority).id
         targetDataModelId = BootstrapModels.buildAndSaveTargetDataModel(messageSource, folder, testAuthority).id
@@ -93,7 +90,6 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
     def cleanupSpec() {
         log.debug('CleanupSpec DataFlowFunctionalSpec')
         cleanUpResources(DataModel, Folder)
-        Authority.findByLabel('Test Authority').delete(flush: true)
     }
 
     String getResourcePath() {

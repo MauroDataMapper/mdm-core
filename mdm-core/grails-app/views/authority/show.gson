@@ -1,0 +1,9 @@
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+
+model {
+    Authority authority
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json tmpl.authority_full(authority: authority, userSecurityPolicyManager: userSecurityPolicyManager)

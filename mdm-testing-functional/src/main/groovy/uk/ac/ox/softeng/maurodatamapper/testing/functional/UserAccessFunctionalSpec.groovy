@@ -174,13 +174,13 @@ abstract class UserAccessFunctionalSpec extends UserAccessWithoutUpdatingFunctio
         PUT("$id", invalidUpdateJson)
 
         then: 'The response is correct'
-        verifyForbidden response
+        verifyR05InvalidDataResponse response, id
 
         when: 'The update action is called with valid data'
         PUT("$id", validUpdateJson)
 
         then: 'The response is correct'
-        verifyForbidden response
+        verifyR05ValidDataResponse response, id
 
         cleanup:
         removeValidIdObject(id)

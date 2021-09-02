@@ -51,8 +51,8 @@ class AuthorityController extends EditLoggingController<Authority> {
         Authority authority = super.updateResource(resource) as Authority
         if (securityPolicyManagerService) {
             currentUserSecurityPolicyManager = securityPolicyManagerService.updateSecurityForSecurableResource(authority,
-                    changedProperties,
-                    currentUser)
+                                                                                                               changedProperties,
+                                                                                                               currentUser)
         }
         authority
     }
@@ -72,4 +72,11 @@ class AuthorityController extends EditLoggingController<Authority> {
         authorityService.delete(resource)
     }
 
+    @Override
+    protected boolean validateResourceDeletion(Authority instance, String view) {
+        if (instance.defaultAuthority) {
+            return forbidden('Cannot delete the default authority')
+        }
+        true
+    }
 }

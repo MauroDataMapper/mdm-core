@@ -17,21 +17,16 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.test.functional.facet
 
-import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 
 import grails.gorm.transactions.Transactional
-import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
-import spock.lang.Shared
 
 @Slf4j
 abstract class ContainerFacetFunctionalSpec<D extends GormEntity> extends ResourceFunctionalSpec<D> {
-
-    @Shared
-    Authority testAuthority
 
     abstract UUID getContainerId()
 
@@ -42,14 +37,6 @@ abstract class ContainerFacetFunctionalSpec<D extends GormEntity> extends Resour
     @Override
     String getResourcePath() {
         "${getContainerDomainResourcePath()}/${getContainerId()}/${getFacetResourcePath()}"
-    }
-
-    @OnceBefore
-    @Transactional
-    def checkAndSetupFolderAndAuthority() {
-        log.debug('Check and setup test data')
-        testAuthority = Authority.findByLabel('Test Authority')
-        checkAndSave(testAuthority)
     }
 
     @Transactional

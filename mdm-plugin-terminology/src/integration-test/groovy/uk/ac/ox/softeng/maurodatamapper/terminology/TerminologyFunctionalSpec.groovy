@@ -161,7 +161,8 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
   "authority": {
     "id": "${json-unit.matches:id}",
     "url": "http://localhost",
-    "label": "Test Authority"
+    "label": "Test Authority",
+    "defaultAuthority": true
   }
 }'''
     }
@@ -1684,7 +1685,8 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                     "authority": {
                         "id": "${json-unit.matches:id}",
                         "url": "http://localhost",
-                        "label": "Test Authority"
+                        "label": "Test Authority",
+                        "defaultAuthority": true
                     }
                 }
             ]
@@ -1776,7 +1778,8 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                     "authority": {
                         "id": "${json-unit.matches:id}",
                         "url": "http://localhost",
-                        "label": "Test Authority"
+                        "label": "Test Authority",
+                        "defaultAuthority": true
                     }
                 }
             ]

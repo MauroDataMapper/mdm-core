@@ -147,7 +147,8 @@ class NestedVersionedFolderInFolderFunctionalSpec extends UserAccessFunctionalSp
   "authority": {
     "id": "${json-unit.matches:id}",
     "url": "http://localhost",
-    "label": "Mauro Data Mapper"
+    "label": "Mauro Data Mapper",
+    "defaultAuthority": true
   }
 }
 '''

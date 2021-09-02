@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 
-import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
@@ -60,8 +60,6 @@ class ReferenceDataValueFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
         folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
         checkAndSave(folder)
-        Authority testAuthority = new Authority(label: 'Test Authority', url: 'https://localhost', createdBy: FUNCTIONAL_TEST)
-        checkAndSave(testAuthority)
 
         ReferenceDataModel referenceDataModel = new ReferenceDataModel(label: 'Functional Test ReferenceDataModel', createdBy: FUNCTIONAL_TEST, folder: folder,
                                                                        authority: testAuthority).save(flush: true)
@@ -82,7 +80,6 @@ class ReferenceDataValueFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     void cleanupSpec() {
         log.debug('CleanupSpec ReferenceDataValueFunctionalSpec')
         cleanUpResources(ReferenceDataModel, ReferenceDataElement, ReferenceDataType, Folder)
-        Authority.findByLabel('Test Authority').delete(flush: true)
     }
 
     @Override

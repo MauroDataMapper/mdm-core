@@ -166,4 +166,12 @@ environments:
             password: MauroDataMapper1234
             dbCreate: none
             url: 'jdbc:postgresql://${database.host}:${database.port}/${database.name}'
+    production:
+        dataSource:
+            driverClassName: org.postgresql.Driver
+            dialect: org.hibernate.dialect.PostgreSQL10Dialect
+            username: maurodatamapper
+            password: MauroDataMapper1234
+            dbCreate: none
+            url: 'jdbc:postgresql://${database.host}:${database.port}/${database.name}'
 ---

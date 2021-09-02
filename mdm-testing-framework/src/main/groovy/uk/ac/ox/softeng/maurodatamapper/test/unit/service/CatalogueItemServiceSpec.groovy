@@ -60,8 +60,8 @@ class CatalogueItemServiceSpec extends BaseUnitSpec {
         mockArtefact(AuthorityService)
         mockDomains(Classifier, Folder, Annotation, Edit, Metadata, ReferenceFile, SemanticLink, BreadcrumbTree, Authority)
         checkAndSave(new Folder(label: 'catalogue', createdBy: StandardEmailAddress.UNIT_TEST))
-        checkAndSave(new Authority(label: 'Test Authority', url: 'http:localhost', createdBy: StandardEmailAddress.UNIT_TEST))
-        checkAndSave(new Authority(label: 'Mauro Data Mapper', url: 'http://localhost', createdBy: StandardEmailAddress.UNIT_TEST))
+        checkAndSave(new Authority(label: 'Test Authority', url: 'http://localhost', createdBy: StandardEmailAddress.UNIT_TEST, defaultAuthority: true))
+        //        checkAndSave(new Authority(label: 'Mauro Data Mapper', url: 'http://localhost', createdBy: StandardEmailAddress.UNIT_TEST))
     }
 
     Folder getTestFolder() {
