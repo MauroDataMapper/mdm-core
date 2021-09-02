@@ -86,7 +86,8 @@ class ResourceActions {
     public static final List<String> DISALLOWED_ONCE_FINALISED_ACTIONS = [UPDATE_ACTION,
                                                                           SAVE_ACTION,
                                                                           EDIT_DESCRIPTION_ACTION,
-                                                                          FINALISE_ACTION]
+                                                                          FINALISE_ACTION,
+                                                                          MERGE_INTO_ACTION]
 
     public static final List<String> DISALLOWED_MODELITEM_ACTIONS = [SOFT_DELETE_ACTION,
                                                                      FINALISE_ACTION]
@@ -95,5 +96,8 @@ class ResourceActions {
                                                            UPDATE_ACTION,
                                                            DISABLE_ACTION]
 
+    public static final List<String> AUTHORITY_ADMIN_ACTIONS = [SHOW_ACTION,
+                                                                UPDATE_ACTION,
+                                                                DELETE_ACTION]
 
 }

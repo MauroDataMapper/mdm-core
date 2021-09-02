@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package path
+package uk.ac.ox.softeng.maurodatamapper.terminology.path
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
@@ -163,7 +163,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
     }
 
-    void "test getting terminology by ID and path"() {
+    void "1 test getting terminology by ID and path"() {
         given:
         setupData()
         CatalogueItem catalogueItem
@@ -235,12 +235,17 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         !catalogueItem
+    }
 
+    void "2 test getting terminology by path only"() {
+        given:
+        setupData()
+        CatalogueItem catalogueItem
         /*
         Terminology 1 by path
         */
         when:
-        path = Path.from(terminology1)
+        Path path = Path.from(terminology1)
         catalogueItem = pathService.findResourceByPathFromRootClass(Terminology, path) as CatalogueItem
 
         then:
@@ -261,7 +266,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         catalogueItem.id == terminology2.id
     }
 
-    void "test getting terms for terminology"() {
+    void "3 test getting terms for terminology"() {
         given:
         setupData()
         CatalogueItem catalogueItem
@@ -375,7 +380,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         catalogueItem == null
     }
 
-    void "test getting code set by ID and path"() {
+    void "4 test getting code set by ID and path"() {
         given:
         setupData()
         CatalogueItem catalogueItem
@@ -473,7 +478,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         catalogueItem.id == codeSet2.id
     }
 
-    void "test getting terms for codeset"() {
+    void "5 test getting terms for codeset"() {
         given:
         setupData()
         CatalogueItem catalogueItem
@@ -556,7 +561,25 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         catalogueItem == null
     }
 
-    void "test get Terminology by path when there is a branch"() {
+    void '6 test getting term from codeset using FQ terminology path'() {
+        given:
+        setupData()
+        CatalogueItem catalogueItem
+        /*
+       CodeSet 1 Term 1 with terminology in path
+       this is probably how all terms should be pathed inside a CS as there may be the same codes shared between terminologies
+        */
+        when:
+        Path path = Path.from("te:${terminology1.pathIdentifier}|tm:${terminology1_term1.pathIdentifier}")
+        catalogueItem = pathService.findResourceByPathFromRootResource(codeSet1, path) as CatalogueItem
+
+        then:
+        catalogueItem.label == terminology1_term1.label
+        catalogueItem.domainType == "Term"
+        catalogueItem.id == terminology1_term1.id
+    }
+
+    void "7 test get Terminology by path when there is a branch"() {
         given:
         setupData()
         CatalogueItem catalogueItem
@@ -594,7 +617,7 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         catalogueItem.id == terminology3draft.id
     }
 
-    void "test get Terminology by path when there are finalised and non-finalised versions"() {
+    void "8 test get Terminology by path when there are finalised and non-finalised versions"() {
         given:
         setupData()
         CatalogueItem catalogueItem

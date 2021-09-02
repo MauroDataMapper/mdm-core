@@ -93,7 +93,7 @@ class RuleRepresentation implements Diffable<RuleRepresentation>, EditHistoryAwa
     }
 
     @Override
-    ObjectDiff<RuleRepresentation> diff(RuleRepresentation obj) {
+    ObjectDiff<RuleRepresentation> diff(RuleRepresentation obj, String context) {
         DiffBuilder.objectDiff(RuleRepresentation)
             .leftHandSide(id.toString(), this)
             .rightHandSide(obj.id.toString(), obj)

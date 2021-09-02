@@ -127,7 +127,7 @@ class DataElementComponent implements ModelItem<DataElementComponent, DataModel>
         false
     }
 
-    ObjectDiff<DataElementComponent> diff(DataElementComponent otherDataFlow) {
+    ObjectDiff<DataElementComponent> diff(DataElementComponent otherDataFlow, String context) {
         catalogueItemDiffBuilder(DataElementComponent, this, otherDataFlow)
     }
 

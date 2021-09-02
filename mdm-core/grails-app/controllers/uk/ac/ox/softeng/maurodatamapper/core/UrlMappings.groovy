@@ -17,11 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core
 
-
 import static uk.ac.ox.softeng.maurodatamapper.core.web.mapping.UrlMappingActions.DEFAULT_EXCLUDES
 import static uk.ac.ox.softeng.maurodatamapper.core.web.mapping.UrlMappingActions.DEFAULT_EXCLUDES_AND_NO_UPDATE
 import static uk.ac.ox.softeng.maurodatamapper.core.web.mapping.UrlMappingActions.INCLUDES_INDEX_ONLY
-import static uk.ac.ox.softeng.maurodatamapper.core.web.mapping.UrlMappingActions.INCLUDES_READ_ONLY
 
 class UrlMappings {
 
@@ -126,7 +124,7 @@ class UrlMappings {
                 delete '/readByAuthenticated'(controller: 'classifier', action: 'readByAuthenticated')
             }
 
-            '/authorities'(resources: 'authority', includes: INCLUDES_READ_ONLY)
+            '/authorities'(resources: 'authority', excludes: DEFAULT_EXCLUDES)
 
             /*
              Full Searching

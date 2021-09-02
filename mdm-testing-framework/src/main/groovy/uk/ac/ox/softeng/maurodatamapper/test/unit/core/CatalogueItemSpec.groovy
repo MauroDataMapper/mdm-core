@@ -436,7 +436,7 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         setValidDomainValues()
 
         when:
-        ObjectDiff diff = domain.diff(domain)
+        ObjectDiff diff = domain.diff(domain, null)
 
         then:
         noExceptionThrown()
@@ -451,7 +451,7 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         K other = createValidDomain('another item')
 
         when:
-        ObjectDiff diff = domain.diff(other)
+        ObjectDiff diff = domain.diff(other, null)
 
         then:
         noExceptionThrown()
@@ -471,7 +471,7 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         other.addToMetadata('ns1', 'k1', 'v1')
 
         when:
-        ObjectDiff diff = domain.diff(other)
+        ObjectDiff diff = domain.diff(other, null)
 
         then:
         noExceptionThrown()
@@ -482,7 +482,7 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         when:
         domain.addToMetadata('ns1', 'k1', 'v1')
         other.addToMetadata('ns1', 'k1', 'v2')
-        diff = domain.diff(other)
+        diff = domain.diff(other, null)
 
         then:
         diff.numberOfDiffs == expectedBaseLevelOfDiffs + 1
@@ -498,7 +498,7 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
 
         when:
         domain.addToMetadata('ns1', 'k2', 'v1')
-        diff = domain.diff(other)
+        diff = domain.diff(other, null)
 
         then:
         diff.numberOfDiffs == expectedBaseLevelOfDiffs + 2
@@ -520,7 +520,7 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         other.addToAnnotations(createdBy: editor.emailAddress, label: 'test annotation')
 
         when:
-        ObjectDiff diff = domain.diff(other)
+        ObjectDiff diff = domain.diff(other, null)
 
         then:
         noExceptionThrown()
@@ -531,7 +531,7 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         when:
         domain.addToAnnotations(createdBy: editor.emailAddress, label: 'test annotation 1')
         other.addToAnnotations(createdBy: editor.emailAddress, label: 'test annotation 1', description: 'hello')
-        diff = domain.diff(other)
+        diff = domain.diff(other, null)
 
         then:
         diff.numberOfDiffs == expectedBaseLevelOfDiffs + 1
@@ -547,7 +547,7 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
 
         when:
         domain.addToAnnotations(createdBy: editor.emailAddress, label: 'test annotation 3')
-        diff = domain.diff(other)
+        diff = domain.diff(other, null)
 
         then:
         diff.numberOfDiffs == expectedBaseLevelOfDiffs + 2

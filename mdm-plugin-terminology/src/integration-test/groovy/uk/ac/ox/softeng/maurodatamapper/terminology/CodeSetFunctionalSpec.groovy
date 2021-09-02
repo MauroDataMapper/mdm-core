@@ -24,6 +24,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.TerminologyPluginMergeBuilder
+import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.TestMergeData
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Transactional
@@ -91,6 +93,9 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
     @Shared
     UUID movingFolderId
 
+    @Shared
+    TerminologyPluginMergeBuilder builder
+
     @OnceBefore
     @Transactional
     def checkAndSetupData() {
@@ -102,6 +107,8 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         assert folderId
         movingFolderId = new Folder(label: 'Functional Test Folder 2', createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true).id
         assert movingFolderId
+
+        builder = new TerminologyPluginMergeBuilder(this)
     }
 
     @Transactional
@@ -160,216 +167,9 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
   "authority": {
     "id": "${json-unit.matches:id}",
     "url": "http://localhost",
-    "label": "Test Authority"
+    "label": "Test Authority",
+    "defaultAuthority": true
   }
-}'''
-    }
-
-    String getExpectedMergeDiffJson() {
-        '''{
-  "leftId": "${json-unit.matches:id}",
-  "rightId": "${json-unit.matches:id}",
-  "label": "Functional Test Model",
-  "count": 8,
-  "diffs": [
-    {
-      "description": {
-        "left": "DescriptionRight",
-        "right": "DescriptionLeft",
-        "isMergeConflict": true,
-        "commonAncestorValue": null
-      }
-    },
-    {
-      "terms": {
-        "deleted": [
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "DAM: deleteAndModify",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test Model",
-                  "domainType": "Terminology",
-                  "finalised": true
-                }
-              ]
-            },
-            "isMergeConflict": true,
-            "commonAncestorValue": {
-              "id": "${json-unit.matches:id}",
-              "label": "DAM: deleteAndModify",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test Model",
-                  "domainType": "Terminology",
-                  "finalised": true
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "DLO: deleteLeftOnly",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test Model",
-                  "domainType": "Terminology",
-                  "finalised": true
-                }
-              ]
-            },
-            "isMergeConflict": false
-          }
-        ],
-        "created": [
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "ALO: addLeftOnly",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test Model",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            },
-            "isMergeConflict": false
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "MAD: modifyAndDelete",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test Model",
-                  "domainType": "Terminology",
-                  "finalised": false
-                }
-              ]
-            },
-            "isMergeConflict": true,
-            "commonAncestorValue": {
-              "id": "${json-unit.matches:id}",
-              "label": "MAD: modifyAndDelete",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test Model",
-                  "domainType": "Terminology",
-                  "finalised": true
-                }
-              ]
-            }
-          }
-        ],
-        "modified": [
-          {
-            "leftId": "${json-unit.matches:id}",
-            "rightId": "${json-unit.matches:id}",
-            "label": "MLO: modifyLeftOnly",
-            "leftBreadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Functional Test Model",
-                "domainType": "Terminology",
-                "finalised": true
-              }
-            ],
-            "rightBreadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Functional Test Model",
-                "domainType": "Terminology",
-                "finalised": true
-              }
-            ],
-            "count": 1,
-            "diffs": [
-              {
-                "description": {
-                  "left": null,
-                  "right": "Description",
-                  "isMergeConflict": false
-                }
-              }
-            ]
-          },
-          {
-            "leftId": "${json-unit.matches:id}",
-            "rightId": "${json-unit.matches:id}",
-            "label": "MAMRD: modifyAndModifyReturningDifference",
-            "leftBreadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Functional Test Model",
-                "domainType": "Terminology",
-                "finalised": false
-              }
-            ],
-            "rightBreadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Functional Test Model",
-                "domainType": "Terminology",
-                "finalised": false
-              }
-            ],
-            "count": 1,
-            "diffs": [
-              {
-                "description": {
-                  "left": "DescriptionRight",
-                  "right": "DescriptionLeft",
-                  "isMergeConflict": true,
-                  "commonAncestorValue": null
-                }
-              }
-            ]
-          },
-          {
-            "leftId": "${json-unit.matches:id}",
-            "rightId": "${json-unit.matches:id}",
-            "label": "AAARD: addAndAddReturningDifference",
-            "leftBreadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Functional Test Model",
-                "domainType": "Terminology",
-                "finalised": false
-              }
-            ],
-            "rightBreadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Functional Test Model",
-                "domainType": "Terminology",
-                "finalised": false
-              }
-            ],
-            "count": 1,
-            "diffs": [
-              {
-                "description": {
-                  "left": "DescriptionRight",
-                  "right": "DescriptionLeft",
-                  "isMergeConflict": true,
-                  "commonAncestorValue": null
-                }
-              }
-            ]
-          }
-        ]
-      }
-    }
-  ]
 }'''
     }
 
@@ -1154,151 +954,45 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         cleanUpData(id)
     }
 
-    void 'VB09c : test merging diff into draft model'() {
-        //TODO This test currently uses the ModelService mergeInto method which doesn't cater for modifications to codesets - update/override required
+    void 'MD01 : test merging diff into draft model legacy style'() {
         given:
-        POST("folders/${folderId}/terminologies", validJson, MAP_ARG, true)
-        verifyResponse(CREATED, response)
-        String baseTerminology = responseBody().id
-
-        POST("terminologies/$baseTerminology/terms", [code: 'DLO', definition: 'deleteLeftOnly'], MAP_ARG, true)
-        verifyResponse CREATED, response
-        String deleteLeftOnly = responseBody().id
-        POST("terminologies/$baseTerminology/terms", [code: 'MLO', definition: 'modifyLeftOnly'], MAP_ARG, true)
-        verifyResponse CREATED, response
-        String modifyLeftOnly = responseBody().id
-        POST("terminologies/$baseTerminology/terms", [code: 'DAM', definition: 'deleteAndModify'], MAP_ARG, true)
-        verifyResponse CREATED, response
-        String deleteAndModify = responseBody().id
-        POST("terminologies/$baseTerminology/terms", [code: 'MAD', definition: 'modifyAndDelete'], MAP_ARG, true)
-        verifyResponse CREATED, response
-        String modifyAndDelete = responseBody().id
-        POST("terminologies/$baseTerminology/terms", [code: 'MAMRD', definition: 'modifyAndModifyReturningDifference'], MAP_ARG, true)
-        verifyResponse CREATED, response
-        String modifyAndModifyReturningDifference = responseBody().id
-
-        PUT("terminologies/$baseTerminology/finalise", [versionChangeType: 'Major'], MAP_ARG, true)
-        verifyResponse OK, response
-        PUT("terminologies/$baseTerminology/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME], MAP_ARG, true)
-        verifyResponse CREATED, response
-        String targetTerminology = responseBody().id
-        PUT("terminologies/$baseTerminology/newBranchModelVersion", [branchName: 'source'], MAP_ARG, true)
-        verifyResponse CREATED, response
-        String sourceTerminology = responseBody().id
-
-        String baseCodeSet = createNewItem(validJson)
-
-        PUT("$baseCodeSet", [terms: [
-            [id: deleteLeftOnly],
-            [id: modifyLeftOnly],
-            [id: deleteAndModify],
-            [id: modifyAndDelete],
-            [id: modifyAndModifyReturningDifference]
-        ]])
-        verifyResponse OK, response
-
-        PUT("$baseCodeSet/finalise", [versionChangeType: 'Major'])
-        verifyResponse OK, response
-        PUT("$baseCodeSet/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
-        verifyResponse CREATED, response
-        String target = responseBody().id
-        PUT("$baseCodeSet/newBranchModelVersion", [branchName: 'source'])
-        verifyResponse CREATED, response
-        String source = responseBody().id
-
-        //dataModel description
-        PUT("$source", [description: 'DescriptionLeft'])
-        verifyResponse OK, response
-
-        //to modify
-        GET("terminologies/$sourceTerminology/path/tm%3AMLO:%20modifyLeftOnly", MAP_ARG, true)
-        verifyResponse OK, response
-        String sourceModifyLeftOnly = responseBody().id
-        GET("terminologies/$sourceTerminology/path/tm%3AMAD:%20modifyAndDelete", MAP_ARG, true)
-        verifyResponse OK, response
-        String sourceModifyAndDelete = responseBody().id
-        GET("terminologies/$sourceTerminology/path/tm%3AMAMRD:%20modifyAndModifyReturningDifference", MAP_ARG, true)
-        verifyResponse OK, response
-        String sourceModifyAndModifyReturningDifference = responseBody().id
-
-        PUT("terminologies/$sourceTerminology/terms/$sourceModifyLeftOnly", [description: 'Description'], MAP_ARG, true)
-        verifyResponse OK, response
-        PUT("terminologies/$sourceTerminology/terms/$sourceModifyAndDelete", [description: 'Description'], MAP_ARG, true)
-        verifyResponse OK, response
-        PUT("terminologies/$sourceTerminology/terms/$sourceModifyAndModifyReturningDifference", [description: 'DescriptionLeft'],
-            MAP_ARG, true)
-        verifyResponse OK, response
-
-        POST("terminologies/$sourceTerminology/terms/", [code: 'ALO', definition: 'addLeftOnly'], MAP_ARG, true)
-        verifyResponse CREATED, response
-        String addLeftOnly = responseBody().id
-        POST("terminologies/$sourceTerminology/terms/", [code: 'AAARD', definition: 'addAndAddReturningDifference', description:
-            'DescriptionLeft'], MAP_ARG, true)
-        verifyResponse CREATED, response
-        String sourceAddAndAddReturningDifference = responseBody().id
-
-        //terms
-        PUT("$source", [terms: [
-            [id: sourceModifyLeftOnly],
-            [id: sourceModifyAndDelete],
-            [id: sourceModifyAndModifyReturningDifference],
-            [id: addLeftOnly],
-            [id: sourceAddAndAddReturningDifference]
-        ]])
-        verifyResponse OK, response
-
-        //dataModel description
-        PUT("$target", [description: 'DescriptionRight'])
-        verifyResponse OK, response
-
-
-        GET("terminologies/$targetTerminology/path/tm%3ADAM:%20deleteAndModify", MAP_ARG, true)
-        verifyResponse OK, response
-        deleteAndModify = responseBody().id
-        GET("terminologies/$targetTerminology/path/tm%3AMAMRD:%20modifyAndModifyReturningDifference", MAP_ARG, true)
-        verifyResponse OK, response
-        modifyAndModifyReturningDifference = responseBody().id
-
-        GET("terminologies/$targetTerminology//path/tm%3ADLO:%20deleteLeftOnly", MAP_ARG, true)
-        verifyResponse OK, response
-        deleteLeftOnly = responseBody().id
-        GET("terminologies/$targetTerminology/path/tm%3AMLO:%20modifyLeftOnly", MAP_ARG, true)
-        verifyResponse OK, response
-        modifyLeftOnly = responseBody().id
-
-        PUT("terminologies/$targetTerminology/terms/$deleteAndModify", [description: 'Description'], MAP_ARG, true)
-        verifyResponse OK, response
-        PUT("terminologies/$targetTerminology/terms/$modifyAndModifyReturningDifference", [description: 'DescriptionRight'],
-            MAP_ARG, true)
-        verifyResponse OK, response
-
-        POST("terminologies/$targetTerminology/terms/", [code: 'AAARD', definition: 'addAndAddReturningDifference', description:
-            'DescriptionRight'], MAP_ARG, true)
-        verifyResponse CREATED, response
-        String addAndAddReturningDifference = responseBody().id
-
-        //terms
-        PUT("$target", [terms: [
-            [id: deleteAndModify],
-            [id: deleteLeftOnly],
-            [id: modifyLeftOnly],
-            [id: modifyAndModifyReturningDifference],
-            [id: addAndAddReturningDifference]
-        ]])
-        verifyResponse OK, response
+        TestMergeData testMergeData = builder.buildComplexCodeSetModelsForMerging(folderId.toString())
 
         when:
-        GET("$source/mergeDiff/$target", STRING_ARG)
+        GET("$testMergeData.source/mergeDiff/$testMergeData.target", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, expectedLegacyMergeDiffJson
+
+        cleanup:
+        builder.cleanupTestMergeData(testMergeData)
+    }
+
+    void 'MD02 : test merging diff into draft model new style'() {
+        given:
+        TestMergeData testMergeData = builder.buildComplexCodeSetModelsForMerging(folderId.toString())
+
+        when:
+        GET("$testMergeData.source/mergeDiff/$testMergeData.target?isLegacy=false", STRING_ARG)
 
         then:
         verifyJsonResponse OK, expectedMergeDiffJson
+
+        cleanup:
+        builder.cleanupTestMergeData(testMergeData)
+    }
+
+    void 'MI01: test merging diff into model legacy style'() {
+
+        given:
+        TestMergeData testMergeData = builder.buildComplexCodeSetModelsForMerging(folderId.toString())
 
         when:
         def requestBody = [
             changeNotice: 'Functional Test Merge Change Notice',
             patch       : [
-                leftId : target,
-                rightId: source,
+                leftId : testMergeData.target,
+                rightId: testMergeData.source,
                 label  : "Functional Test Model",
                 count  : 7,
                 diffs  : [
@@ -1310,32 +1004,24 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
                         fieldName: "terms",
                         deleted  : [
                             [
-                                id: deleteAndModify,
+                                id: testMergeData.sourceMap.codeSet.deleteAndModify,
                             ],
                             [
-                                id: deleteLeftOnly,
+                                id: testMergeData.sourceMap.codeSet.deleteLeftOnly,
+                            ],
+                            [
+                                id: testMergeData.sourceMap.codeSet.deleteLeftOnlyCodeSet,
                             ]
                         ],
                         created  : [
                             [
-                                id: addLeftOnly,
+                                id: testMergeData.sourceMap.codeSet.addLeftOnly,
                             ],
                             [
-                                id: sourceModifyAndDelete,
-                            ]
-                        ],
-                        modified : [
-                            [
-                                leftId : addAndAddReturningDifference,
-                                rightId: sourceAddAndAddReturningDifference,
+                                id: testMergeData.sourceMap.codeSet.addLeftOnlyCodeSet,
                             ],
                             [
-                                leftId : modifyAndModifyReturningDifference,
-                                rightId: sourceModifyAndModifyReturningDifference,
-                            ],
-                            [
-                                leftId : modifyLeftOnly,
-                                rightId: sourceModifyLeftOnly,
+                                id: testMergeData.sourceMap.codeSet.modifyAndDelete,
                             ]
                         ]
                     ]
@@ -1344,27 +1030,22 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         ]
 
 
-        PUT("$source/mergeInto/$target", requestBody)
+        PUT("$testMergeData.source/mergeInto/$testMergeData.target", requestBody)
 
         then:
         verifyResponse OK, response
-        responseBody().id == target
+        responseBody().id == testMergeData.target
         responseBody().description == 'DescriptionLeft'
 
         when:
-        GET("$target/terms")
+        GET("$testMergeData.target/terms")
 
         then:
         responseBody().items.label as Set == ['AAARD: addAndAddReturningDifference', 'ALO: addLeftOnly', 'MAD: modifyAndDelete',
-                                              'MAMRD: modifyAndModifyReturningDifference', 'MLO: modifyLeftOnly'] as Set
-        responseBody().items.find { dataClass -> dataClass.label == 'MAD: modifyAndDelete' }.description == 'Description'
-        responseBody().items.find { dataClass -> dataClass.label == 'AAARD: addAndAddReturningDifference' }.description == 'DescriptionLeft'
-        responseBody().items.find { dataClass -> dataClass.label == 'MAMRD: modifyAndModifyReturningDifference' }.description ==
-        'DescriptionLeft'
-        responseBody().items.find { dataClass -> dataClass.label == 'MLO: modifyLeftOnly' }.description == 'Description'
+                                              'MAMRD: modifyAndModifyReturningDifference', 'MLO: modifyLeftOnly', 'ALOCS: addLeftOnlyCodeSet'] as Set
 
         when: 'List edits for the Target CodeSet'
-        GET("$target/edits", MAP_ARG)
+        GET("$testMergeData.target/edits", MAP_ARG)
 
         then: 'The response is OK'
         verifyResponse OK, response
@@ -1375,20 +1056,56 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         }
 
         cleanup:
-        cleanUpData(source)
-        cleanUpData(target)
-
-        DELETE("terminologies/$baseTerminology?permanent=true", MAP_ARG, true)
-        response.status() == NO_CONTENT
-        DELETE("terminologies/$sourceTerminology?permanent=true", MAP_ARG, true)
-        response.status() == NO_CONTENT
-        DELETE("terminologies/$targetTerminology?permanent=true", MAP_ARG, true)
-        response.status() == NO_CONTENT
-
-        cleanUpData(baseCodeSet)
+        builder.cleanupTestMergeData(testMergeData)
     }
 
-    void 'cd  folder from CodeSet context'() {
+
+    void 'MI02 : test merging into into draft model new style'() {
+        given:
+        TestMergeData testMergeData = builder.buildComplexCodeSetModelsForMerging(folderId.toString())
+
+        when:
+        GET("$testMergeData.source/mergeDiff/$testMergeData.target?isLegacy=false")
+
+        then:
+        verifyResponse OK, response
+
+        when:
+        List<Map> patches = responseBody().diffs
+        PUT("$testMergeData.source/mergeInto/$testMergeData.target?isLegacy=false", [
+            patch: [
+                targetId: responseBody().targetId,
+                sourceId: responseBody().sourceId,
+                label   : responseBody().label,
+                count   : patches.size(),
+                patches : patches]
+        ])
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == testMergeData.target
+        responseBody().description == 'DescriptionLeft'
+
+        when:
+        GET("$testMergeData.target/terms")
+
+        then:
+        responseBody().items.code as Set == ['AAARD', 'ALO', 'MAMRD', 'MLO', 'ALOCS'] as Set
+
+        when:
+        GET("${testMergeData.target}/metadata")
+
+        then:
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyOnSource'}.value == 'source has modified this'
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyAndDelete'}.value == 'source has modified this also'
+        !responseBody().items.find {it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource'}
+        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'addToSourceOnly'}
+
+        cleanup:
+        builder.cleanupTestMergeData(testMergeData)
+    }
+
+    void 'change  folder from CodeSet context'() {
         given: 'The save action is executed with valid data'
         String id = createNewItem(validJson)
 
@@ -1631,7 +1348,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
     void 'test delete multiple models'() {
         given:
         def idstoDelete = []
-        (1..4).each { n ->
+        (1..4).each {n ->
             idstoDelete << createNewItem([
                 folder: folderId,
                 label : UUID.randomUUID().toString()
@@ -1940,7 +1657,8 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
                     "authority": {
                         "id": "${json-unit.matches:id}",
                         "url": "http://localhost",
-                        "label": "Test Authority"
+                        "label": "Test Authority",
+                        "defaultAuthority": true
                     }
                 }
             ]
@@ -2032,7 +1750,8 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
                     "authority": {
                         "id": "${json-unit.matches:id}",
                         "url": "http://localhost",
-                        "label": "Test Authority"
+                        "label": "Test Authority",
+                        "defaultAuthority": true
                     }
                 }
             ]
@@ -2138,6 +1857,245 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
         cleanup:
         cleanUpData(id)
+    }
+
+    String getExpectedMergeDiffJson() {
+        '''{
+  "sourceId": "${json-unit.matches:id}",
+  "targetId": "${json-unit.matches:id}",
+  "path": "cs:Functional Test CodeSet 1$source",
+  "label": "Functional Test CodeSet 1",
+  "count": 10,
+  "diffs": [
+    {
+      "fieldName": "description",
+      "path": "cs:Functional Test CodeSet 1$source@description",
+      "sourceValue": "DescriptionLeft",
+      "targetValue": null,
+      "commonAncestorValue": null,
+      "isMergeConflict": false,
+      "type": "modification"
+    },
+    {
+      "path": "cs:Functional Test CodeSet 1$source|md:functional.test.addToSourceOnly",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "cs:Functional Test CodeSet 1$source|md:functional.test.modifyAndDelete",
+      "isMergeConflict": true,
+      "isSourceModificationAndTargetDeletion": true,
+      "type": "creation"
+    },
+    {
+      "path": "cs:Functional Test CodeSet 1$source|md:functional.test.deleteFromSource",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "fieldName": "value",
+      "path": "cs:Functional Test CodeSet 1$source|md:functional.test.modifyOnSource@value",
+      "sourceValue": "source has modified this",
+      "targetValue": "some original value",
+      "commonAncestorValue": "some original value",
+      "isMergeConflict": false,
+      "type": "modification"
+    },
+    {
+      "path": "cs:Functional Test CodeSet 1$source|te:Functional Test Terminology 1$1.0.0|tm:ALO",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "cs:Functional Test CodeSet 1$source|te:Functional Test Terminology 1$1.0.0|tm:ALOCS",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "cs:Functional Test CodeSet 1$source|te:Functional Test Terminology 1$1.0.0|tm:DAM",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "path": "cs:Functional Test CodeSet 1$source|te:Functional Test Terminology 1$1.0.0|tm:DLO",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "path": "cs:Functional Test CodeSet 1$source|te:Functional Test Terminology 1$1.0.0|tm:DLOCS",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    }
+  ]
+}'''
+    }
+
+    String getExpectedLegacyMergeDiffJson() {
+        '''{
+  "leftId": "${json-unit.matches:id}",
+  "rightId": "${json-unit.matches:id}",
+  "label": "Functional Test CodeSet 1",
+  "count": 10,
+  "diffs": [
+    {
+      "description": {
+        "left": null,
+        "right": "DescriptionLeft",
+        "isMergeConflict": false
+      }
+    },
+    {
+      "metadata": {
+        "deleted": [
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "namespace": "functional.test",
+              "key": "deleteFromSource",
+              "value": "some other original value"
+            },
+            "isMergeConflict": false
+          }
+        ],
+        "created": [
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "namespace": "functional.test",
+              "key": "addToSourceOnly",
+              "value": "adding to source only"
+            },
+            "isMergeConflict": false
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "namespace": "functional.test",
+              "key": "modifyAndDelete",
+              "value": "source has modified this also"
+            },
+            "isMergeConflict": true,
+            "commonAncestorValue": {
+              "id": "${json-unit.matches:id}",
+              "namespace": "functional.test",
+              "key": "modifyAndDelete",
+              "value": "some other original value 2"
+            }
+          }
+        ],
+        "modified": [
+          {
+            "leftId": "${json-unit.matches:id}",
+            "rightId": "${json-unit.matches:id}",
+            "namespace": "functional.test",
+            "key": "modifyOnSource",
+            "count": 1,
+            "diffs": [
+              {
+                "value": {
+                  "left": "some original value",
+                  "right": "source has modified this",
+                  "isMergeConflict": false
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "terms": {
+        "deleted": [
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "DLOCS: deleteLeftOnlyCodeSet",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test Terminology 1",
+                  "domainType": "Terminology",
+                  "finalised": true
+                }
+              ]
+            },
+            "isMergeConflict": false
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "DLO: deleteLeftOnly",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test Terminology 1",
+                  "domainType": "Terminology",
+                  "finalised": true
+                }
+              ]
+            },
+            "isMergeConflict": false
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "DAM: deleteAndModify",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test Terminology 1",
+                  "domainType": "Terminology",
+                  "finalised": true
+                }
+              ]
+            },
+            "isMergeConflict": false
+          }
+        ],
+        "created": [
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "ALO: addLeftOnly",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test Terminology 1",
+                  "domainType": "Terminology",
+                  "finalised": true
+                }
+              ]
+            },
+            "isMergeConflict": false
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "ALOCS: addLeftOnlyCodeSet",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test Terminology 1",
+                  "domainType": "Terminology",
+                  "finalised": true
+                }
+              ]
+            },
+            "isMergeConflict": false
+          }
+        ]
+      }
+    }
+  ]
+}
+'''
     }
 
 }

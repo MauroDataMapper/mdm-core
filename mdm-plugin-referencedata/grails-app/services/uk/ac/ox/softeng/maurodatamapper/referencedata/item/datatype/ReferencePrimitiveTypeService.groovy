@@ -44,6 +44,12 @@ class ReferencePrimitiveTypeService extends ModelItemService<ReferencePrimitiveT
         ReferencePrimitiveType.get(id)
     }
 
+    @Override
+    boolean handlesPathPrefix(String pathPrefix) {
+        // Have to override to ensure we type DataTypeService
+        false
+    }
+
     Long count() {
         ReferencePrimitiveType.count()
     }

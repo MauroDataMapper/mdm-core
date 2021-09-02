@@ -31,6 +31,8 @@ import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.SimpleType
 import groovy.util.logging.Slf4j
 
+import java.util.function.Predicate
+
 import static uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder.arrayMergeDiff
 import static uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder.creationMergeDiff
 import static uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder.deletionMergeDiff
@@ -65,6 +67,8 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
     private ObjectDiff<M> commonAncestorDiffTarget
     private ObjectDiff<M> sourceDiffTarget
 
+    List<TriDirectionalDiff> flattenedDiffs
+
     MergeDiff(Class<M> targetClass) {
         super(targetClass)
         diffs = []
@@ -77,7 +81,7 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
 
     @Override
     Integer getNumberOfDiffs() {
-        diffs?.sum {it.getNumberOfDiffs()} as Integer ?: 0
+        flattenedDiffs ? flattenedDiffs.size() : diffs?.sum {it.getNumberOfDiffs()} as Integer ?: 0
     }
 
     String getSourceIdentifier() {
@@ -118,13 +122,8 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
     }
 
     List<TriDirectionalDiff> getFlattenedDiffs() {
-        diffs.sort().collectMany { diff ->
-            if (diff.diffType == FieldMergeDiff.simpleName) return [diff]
-            if (diff.diffType == ArrayMergeDiff.simpleName) {
-                return (diff as ArrayMergeDiff).getFlattenedDiffs()
-            }
-            []
-        } as List<TriDirectionalDiff>
+        if (!flattenedDiffs) flatten()
+        flattenedDiffs
     }
 
     @Override
@@ -173,6 +172,23 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
 
     MergeDiff<M> asMergeConflict() {
         super.asMergeConflict() as MergeDiff<M>
+    }
+
+    MergeDiff<M> flatten() {
+        flattenedDiffs = diffs.sort().collectMany {diff ->
+            if (diff.diffType == FieldMergeDiff.simpleName) return [diff]
+            if (diff.diffType == ArrayMergeDiff.simpleName) {
+                return (diff as ArrayMergeDiff).getFlattenedDiffs()
+            }
+            []
+        } as List<TriDirectionalDiff>
+        this
+    }
+
+    MergeDiff<M> clean(@DelegatesTo(Predicate) @ClosureParams(value = SimpleType,
+        options = 'uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.TriDirectionalDiff') Closure removeIfTest) {
+        flattenedDiffs.removeIf([test: removeIfTest,] as Predicate)
+        this
     }
 
     FieldMergeDiff find(@DelegatesTo(List) @ClosureParams(value = SimpleType,
@@ -289,20 +305,22 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
     static <A extends Diffable> ArrayMergeDiff<A> createArrayMergeDiffFromSourceTargetArrayDiff(Path fullyQualifiedObjectPath, ArrayDiff<A> sourceTargetArrayDiff) {
         log.debug('[{}] Processing array differences against target from source', sourceTargetArrayDiff.fieldName)
         // Created and Deleted diffs in this array are left as-is as they are guaranteed to be unique and no issue
+        // When the source is diff'd against the target due to the way diffing works the objects created in the source are identified as deleted and vice-versa
+        // We could reverse the diff but then the modifications are the wrong way round
         arrayMergeDiff(sourceTargetArrayDiff.targetClass)
             .forFieldName(sourceTargetArrayDiff.fieldName)
             .insideFullyQualifiedObjectPath(fullyQualifiedObjectPath)
             .withSource(sourceTargetArrayDiff.left)
             .withTarget(sourceTargetArrayDiff.right)
             .withCommonAncestor(null)
-            .withCreatedMergeDiffs(sourceTargetArrayDiff.created.collect {c ->
+            .withCreatedMergeDiffs(sourceTargetArrayDiff.deleted.collect {c ->
                 creationMergeDiff(c.targetClass)
-                    .whichCreated(c.created)
+                    .whichCreated(c.deleted)
                     .insideFullyQualifiedObjectPath(fullyQualifiedObjectPath)
             })
-            .withDeletedMergeDiffs(sourceTargetArrayDiff.deleted.collect {d ->
+            .withDeletedMergeDiffs(sourceTargetArrayDiff.created.collect {d ->
                 deletionMergeDiff(d.targetClass)
-                    .whichDeleted(d.deleted)
+                    .whichDeleted(d.created)
                     .insideFullyQualifiedObjectPath(fullyQualifiedObjectPath)
             })
             .withModifiedMergeDiffs(sourceTargetArrayDiff.modified.collect {m ->
@@ -313,7 +331,6 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
                     .withSourceDiffedAgainstTarget(m)
                     .generate()
             })
-
     }
 
     static <A extends Diffable> ArrayMergeDiff<A> createBaseArrayMergeDiffPresentOnOneSide(Path fullyQualifiedObjectPath,
@@ -332,7 +349,7 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
     static <A extends Diffable> ArrayMergeDiff<A> createArrayMergeDiffPresentOnBothSides(Path fullyQualifiedObjectPath,
                                                                                          ArrayDiff<A> caSourceArrayDiff,
                                                                                          ArrayDiff<A> caTargetArrayDiff) {
-        log.debug('[{}] Processing array differences against common ancestor on both sides', caSourceArrayDiff.fieldName)
+        log.debug('[{}] Processing array differences against common ancestor on both sides inside [{}]', caSourceArrayDiff.fieldName, fullyQualifiedObjectPath)
         createBaseArrayMergeDiffPresentOnOneSide(fullyQualifiedObjectPath, caSourceArrayDiff)
             .withTarget(caTargetArrayDiff.right)
             .withCreatedMergeDiffs(createCreationMergeDiffsPresentOnBothSides(fullyQualifiedObjectPath, caSourceArrayDiff, caTargetArrayDiff))
@@ -426,11 +443,13 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
                 return null
             }
             if (diff.createdIdentifier in caTargetDiff.deleted*.deletedIdentifier) {
+                log.warn('[{}] ca/source created and ca/target deleted', diff.createdIdentifier)
                 //  Impossible as it didnt exist in CA therefore target can't have deleted it
                 return null
             }
             if (diff.createdIdentifier in caTargetDiff.modified*.getRightIdentifier()) {
                 //  Impossible as it didnt exist in CA therefore target can't have modified it
+                log.warn('[{}] ca/source created and ca/target modified', diff.createdIdentifier)
                 return null
             }
             // Only added on source side : no conflict
@@ -467,6 +486,7 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
         caSourceDeletedDiffs.collect {diff ->
             if (diff.deletedIdentifier in caTargetDiff.created*.createdIdentifier) {
                 //  Impossible as you can't delete something which never existed
+                log.warn('[{}] ca/source deleted and ca/target created', diff.deletedIdentifier)
                 return null
             }
             if (diff.deletedIdentifier in caTargetDiff.deleted*.deletedIdentifier) {
@@ -555,7 +575,7 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
                 log.debug('[{}] ca/source created exists in ca/target created. This is a potential merge modification', caSourceCreationDiff.createdIdentifier)
 
                 // Get the diff of the 2 objects, we need to determine if theres actually a merge conflict
-                ObjectDiff<M> sourceTargetDiff = caSourceCreationDiff.created.diff(caTargetCreationDiff.created)
+                ObjectDiff<M> sourceTargetDiff = caSourceCreationDiff.created.diff(caTargetCreationDiff.created, 'merge')
                 // If objects are identical then theres no merge difference so it can be ignored
                 if (sourceTargetDiff.objectsAreIdentical()) {
                     log.debug('Both sides created but the creations are identical')

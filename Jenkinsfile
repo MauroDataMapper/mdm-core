@@ -440,6 +440,27 @@ pipeline {
             }
         }
 
+        stage('Continuous Deployment'){
+            when {
+                allOf {
+                    branch 'develop'
+                    expression {
+                        currentBuild.currentResult == 'SUCCESS'
+                    }
+                }
+            }
+            steps {
+                script {
+                    try {
+                        println("Triggering the [continuous-deployment] job")
+                        build quietPeriod: 300, wait: false, job: 'continuous-deployment'
+                    } catch (hudson.AbortException ignored) {
+                        println("Cannot trigger the [continuous-deployment] job as it doesn't exist")
+                    }
+                }
+            }
+        }
+
         stage('Deploy master to Artifactory') {
             when {
                 allOf {
@@ -470,7 +491,6 @@ pipeline {
             jacoco classPattern: '**/build/classes', execPattern: '**/build/jacoco/*.exec', sourceInclusionPattern: '**/*.java,**/*.groovy',
                    sourcePattern: '**/src/main/groovy,**/grails-app/controllers,**/grails-app/domain,**/grails-app/services,**/grails-app/utils'
             archiveArtifacts allowEmptyArchive: true, artifacts: '**/*.log'
-            slackNotification()
             zulipNotification(topic: 'mdm-core')
         }
     }

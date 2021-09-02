@@ -17,12 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.authority
 
-import grails.core.GrailsApplication
+import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
+
 import grails.gorm.transactions.Transactional
 
 @Transactional
-class AuthorityService {
-    GrailsApplication grailsApplication
+class AuthorityService implements SecurableResourceService<Authority> {
 
     Authority get(Serializable id) {
         Authority.get(id)
@@ -40,16 +40,46 @@ class AuthorityService {
         authority.delete(flush: true)
     }
 
+    @Override
+    boolean handles(Class clazz) {
+        clazz == Authority
+    }
+
+    @Override
+    boolean handles(String domainType) {
+        domainType == Authority.simpleName
+    }
+
+    @Override
+    List<Authority> getAll(Collection<UUID> authorityIds) {
+        Authority.getAll(authorityIds)
+    }
+
+    @Override
+    List<Authority> list() {
+        Authority.list()
+    }
+
+    @Override
+    List<Authority> findAllReadableByEveryone() {
+        Authority.findAllByReadableByEveryone(true)
+    }
+
+    @Override
+    List<Authority> findAllReadableByAuthenticatedUsers() {
+        Authority.findAllByReadableByAuthenticatedUsers(true)
+    }
+
     Authority save(Authority authority) {
         authority.save(failOnError: true, validate: false)
     }
 
     Authority getDefaultAuthority() {
-        Authority.findByLabel(grailsApplication.config.getProperty(Authority.DEFAULT_NAME_CONFIG_PROPERTY))
+        Authority.findByDefaultAuthority(true)
     }
 
     boolean defaultAuthorityExists() {
-        Authority.countByLabel(grailsApplication.config.getProperty(Authority.DEFAULT_NAME_CONFIG_PROPERTY)) > 0
+        Authority.countByDefaultAuthority(true) > 0
     }
 
     Authority findByLabel(String label) {

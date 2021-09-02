@@ -68,8 +68,9 @@ class UrlMappings {
                         put '/adminPasswordReset'(controller: 'catalogueUser', action: 'adminPasswordReset') // New URL
                         put '/approveRegistration'(controller: 'catalogueUser', action: 'approveRegistration') // New URL
                         put '/rejectRegistration'(controller: 'catalogueUser', action: 'rejectRegistration') // New URL
-
                     }
+
+                    post '/initialAdminUser'(controller: 'catalogueUser', action: 'createInitialAdminUser')
                 }
                 post '/activeSessions'(controller: 'authenticating', action: 'activeSessionsWithCredentials')
 

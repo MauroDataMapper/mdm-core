@@ -25,11 +25,8 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.CodeSetExp
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.CodeSetImporterProviderService
 
 import grails.gorm.transactions.Transactional
-import grails.web.http.HttpHeaders
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.CustomEditorConfigurer
-
-import static org.springframework.http.HttpStatus.OK
 
 class CodeSetController extends ModelController<CodeSet> {
     static responseFormats = ['json', 'xml']
@@ -62,18 +59,7 @@ class CodeSetController extends ModelController<CodeSet> {
 
         updateResource instance
 
-        request.withFormat {
-            form multipartForm {
-                flash.message = message(code: 'default.updated.message', args: [classMessageArg, instance.id])
-                redirect instance
-            }
-            '*' {
-                response.addHeader(HttpHeaders.LOCATION,
-                                   grailsLinkGenerator.link(resource: this.controllerName, action: 'show', id: instance.id, absolute: true,
-                                                            namespace: hasProperty('namespace') ? this.namespace : null))
-                respond instance, [status: OK, view: 'update']
-            }
-        }
+        updateResponse instance
     }
 
     @Override

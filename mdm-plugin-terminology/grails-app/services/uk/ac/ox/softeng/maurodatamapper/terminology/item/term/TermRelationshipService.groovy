@@ -27,6 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
@@ -35,6 +36,8 @@ import groovy.util.logging.Slf4j
 @Slf4j
 @Transactional
 class TermRelationshipService extends ModelItemService<TermRelationship> {
+
+    TermService termService
 
     TermRelationship get(Serializable id) {
         TermRelationship.get(id)
@@ -209,11 +212,13 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
 
     @Override
     TermRelationship findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
-        String[] split = pathIdentifier.split(/-/)
+        String[] split = pathIdentifier.split(/\./)
         if (split.size() != 3) throw new ApiBadRequestException('TRS01', "TermRelationship Path identifier is invalid [${pathIdentifier}]")
-        TermRelationship.byPathIdentifierFields(split[0], split[1], split[2]).or {
-            eq 'sourceTerm.id', parentId
-            eq 'targetTerm.id', parentId
-        }.get()
+
+        if (termService.get(parentId)) {
+            TermRelationship.byTermIdAndPathIdentifierFields(parentId, split[0], split[1], split[2]).get()
+        } else {
+            TermRelationship.byTerminologyIdAndPathIdentifierFields(parentId, split[0], split[1], split[2]).get()
+        }
     }
 }

@@ -58,11 +58,6 @@ class TermService extends ModelItemService<Term> {
         Term.getAll(ids).findAll()
     }
 
-    @Override
-    boolean handlesPathPrefix(String pathPrefix) {
-        pathPrefix == "tm"
-    }
-
     List<Term> list(Map args) {
         Term.list(args)
     }
@@ -87,7 +82,11 @@ class TermService extends ModelItemService<Term> {
         termRelationshipService.deleteAll(termRelationships)
         term.sourceTermRelationships = []
         term.targetTermRelationships = []
-        terminology.trackChanges() // Discard any latent changes to the Terminology as we dont want them
+        if (flush) {
+            // Discard any latent changes to the Terminology as we dont want them in the flish
+            terminology.trackChanges()
+            terminology.discard()
+        }
         term.delete(flush: flush)
     }
 
@@ -231,7 +230,8 @@ class TermService extends ModelItemService<Term> {
 
     Term copyTerm(Term original, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
         if (!original) throw new ApiInternalException('DCSXX', 'Cannot copy non-existent Term')
-        Term copy = new Term(createdBy: copier.emailAddress, code: original.code, definition: original.definition)
+        Term copy = new Term(createdBy: copier.emailAddress, code: original.code, definition: original.definition, url: original.url, isParent: original.isParent,
+                             depth: original.depth)
         copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
         copy

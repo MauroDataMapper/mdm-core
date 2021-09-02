@@ -56,7 +56,7 @@ class BootStrap {
     @Autowired
     MessageSource messageSource
 
-    def init = { servletContext ->
+    def init = {servletContext ->
         Utils.outputRuntimeArgs(BootStrap)
         log.debug('Grails Environment: {} (mdm.env property : {})', Environment.current.name, System.getProperty('mdm.env') ?: '')
         if (grailsApplication.config.maurodatamapper.security.public) {
@@ -135,7 +135,7 @@ class BootStrap {
             log.warn('Multiple email plugins found - we\'ll use the first one')
         }
 
-        emailers.every { emailer ->
+        emailers.every {emailer ->
             log.debug('Configuring emailer: {}/{}', emailer.namespace, emailer.name)
             try {
                 return emailer.configure(config)
@@ -148,11 +148,13 @@ class BootStrap {
 
     void loadDefaultAuthority() {
         Authority.withNewTransaction {
-            if (!authorityService.defaultAuthorityExists()) {
+            if (!authorityService.defaultAuthorityExists() && grailsApplication.config.maurodatamapper.bootstrap.authority) {
                 Authority authority = new Authority(label: grailsApplication.config.getProperty(Authority.DEFAULT_NAME_CONFIG_PROPERTY),
                                                     url: grailsApplication.config.getProperty(Authority.DEFAULT_URL_CONFIG_PROPERTY),
                                                     createdBy: StandardEmailAddress.ADMIN,
-                                                    readableByEveryone: true)
+                                                    readableByEveryone: true,
+                                                    readableByAuthenticatedUsers: true,
+                                                    defaultAuthority: true)
                 checkAndSave(messageSource, authority)
             }
         }

@@ -546,7 +546,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         responseBody().id != id
         responseBody().label == validJson.label
         responseBody().documentationVersion == '1.0.0'
-        responseBody().availableActions == getEditorAvailableActions().sort() - 'finalise'
+        responseBody().availableActions == (getEditorAvailableActions() + 'mergeInto').sort() - 'finalise'
         responseBody().branchName == 'newBranchModelVersion'
         !responseBody().modelVersion
 
@@ -648,7 +648,8 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         responseBody().documentationVersion == '1.0.0'
         responseBody().branchName == 'newBranchModelVersion'
         !responseBody().modelVersion
-        responseBody().availableActions == (getEditorAvailableActions() - [ResourceActions.FINALISE_ACTION]).sort()
+        responseBody().availableActions ==
+        (getEditorAvailableActions() + [ResourceActions.MERGE_INTO_ACTION] - [ResourceActions.FINALISE_ACTION]).sort()
 
         when:
         PUT("$branchId/finalise", [versionChangeType: 'Major'])
@@ -894,8 +895,8 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         then:
         verifyResponse OK, response
         responseBody().count == 2
-        responseBody().items.each {it.id in [newBranchId, latestDraftId]}
-        responseBody().items.each {it.label == validJson.label}
+        responseBody().items.each { it.id in [newBranchId, latestDraftId] }
+        responseBody().items.each { it.label == validJson.label }
 
         cleanup:
         removeValidIdObjectUsingTransaction(id)
@@ -1095,7 +1096,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
     }
 
     void cleanupModelVersionTree(Map<String, String> data) {
-        data.each {k, v ->
+        data.each { k, v ->
             removeValidIdObjectUsingTransaction(v)
         }
         cleanUpRoles(data.values())

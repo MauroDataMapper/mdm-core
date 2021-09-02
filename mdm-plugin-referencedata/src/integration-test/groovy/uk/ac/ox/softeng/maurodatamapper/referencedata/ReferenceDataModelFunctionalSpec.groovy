@@ -163,7 +163,8 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
   "authority": {
     "id": "${json-unit.matches:id}",
     "url": "http://localhost",
-    "label": "Test Authority"
+    "label": "Test Authority",
+    "defaultAuthority": true
   }
 }'''
     }

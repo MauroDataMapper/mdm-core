@@ -64,6 +64,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
 
     @Override
     boolean handlesPathPrefix(String pathPrefix) {
+        // Have to override as the DataType class is abstract and can therefore not be instantiated
         pathPrefix == "dt"
     }
 

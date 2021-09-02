@@ -52,6 +52,12 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
         ReferenceDataType.get(id)
     }
 
+    @Override
+    boolean handlesPathPrefix(String pathPrefix) {
+        // Have to override as the DataType class is abstract and can therefore not be instantiated
+        pathPrefix == "rdt"
+    }
+
     Long count() {
         ReferenceDataType.count()
     }

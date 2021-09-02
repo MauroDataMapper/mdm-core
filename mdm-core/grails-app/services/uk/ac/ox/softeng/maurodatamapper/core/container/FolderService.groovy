@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.container
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ArrayDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
@@ -27,8 +28,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
+import uk.ac.ox.softeng.maurodatamapper.core.model.CopyPassType
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -41,6 +44,8 @@ import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
+
+import static uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder.arrayDiff
 
 @Transactional
 @Slf4j
@@ -284,20 +289,59 @@ class FolderService extends ContainerService<Folder> {
         } as List<Model>
     }
 
-    def <T extends Folder> void loadModelsIntoFolderObjectDiff(ObjectDiff<T> diff, Folder leftHandSide, Folder rightHandSide) {
-        List<Model> thisModels = findAllModelsInFolder(leftHandSide)
-        List<Model> thatModels = findAllModelsInFolder(rightHandSide)
-        diff.appendList(Model, 'models', thisModels, thatModels)
+    def <T extends Folder> void loadModelsIntoFolderObjectDiff(ObjectDiff<T> diff, Folder leftHandSide, Folder rightHandSide, String context) {
+        log.debug('Loading models into folder object diff for [{}] <> [{}] under context {}', leftHandSide.label, rightHandSide.label, context)
+        List<Model> lhsModels = findAllModelsInFolder(leftHandSide)
+        List<Model> rhsModels = findAllModelsInFolder(rightHandSide)
+        log.debug("{} models on LHS <> {} models on RHS", lhsModels.size(), rhsModels.size())
+        diff.appendList(Model, 'models', lhsModels, rhsModels, context)
 
         // Recurse into child folder diffs
-        ArrayDiff<Folder> childFolderDiff = diff.diffs.find {it.fieldName == 'folders'}
+        ArrayDiff<Folder> childFolderDiff = diff.diffs.find {it.fieldName == 'folders'} as ArrayDiff<Folder>
 
-        if (childFolderDiff) {
+        Collection<Folder> lhsFolders = childFolderDiff.left
+        Collection<Folder> rhsFolders = childFolderDiff.right
+        log.debug("{} child folders on LHS <> {} child folders on RHS", lhsFolders.size(), rhsFolders.size())
+
+        if (lhsFolders || rhsFolders) {
+            log.debug('Loading child folder model content diffs')
             // Created folders wont have any need for a model diff as all models will be new
             // Deleted folders wont have any need for a model diff as all models will not exist
-            childFolderDiff.modified.each {childDiff ->
-                loadModelsIntoFolderObjectDiff(childDiff, childDiff.left, childDiff.right)
+            lhsFolders.each {lhsFolder ->
+
+                if (childFolderDiff.created.any {it.createdIdentifier == lhsFolder.diffIdentifier} ||
+                    childFolderDiff.deleted.any {it.deletedIdentifier == lhsFolder.diffIdentifier}) {
+                    return
+                }
+
+                boolean objectDiffAlreadyExists = true
+                ObjectDiff<Folder> objectDiff = childFolderDiff.modified.find {it.leftIdentifier == lhsFolder.diffIdentifier}
+
+                // If there are no diffs at the folder level then there wont be an object diff so we create an empty basic one to load the models into
+                if (!objectDiff) {
+                    objectDiffAlreadyExists = false
+                    // There has to be a RHS otherwise the LHS would be in created or deleted in whcih case we've already returned from this loop
+                    // There are no differences otherwise they'd be in the modified list so just create an empty diff with an empty array diff on the folders field
+                    Folder rhsFolder = rhsFolders.find {it.diffIdentifier == lhsFolder.diffIdentifier}
+                    objectDiff = DiffBuilder.objectDiff(Folder)
+                        .leftHandSide(lhsFolder.id.toString(), lhsFolder)
+                        .rightHandSide(rhsFolder.id.toString(), rhsFolder)
+                        .append(arrayDiff(lhsFolder.childFolders.class)
+                                    .fieldName('folders')
+                                    .leftHandSide(lhsFolder.childFolders ?: [])
+                                    .rightHandSide(rhsFolder.childFolders ?: []))
+                }
+
+                // Need to make sure the models are diffed properly as contained inside a versioned diff
+                loadModelsIntoFolderObjectDiff(objectDiff.asVersionedDiff(), objectDiff.left, objectDiff.right, context)
+
+                // If the object diff didnt exist and the one we created has diffs then make sure its added to the modified list
+                if (!objectDiffAlreadyExists && objectDiff.getNumberOfDiffs()) {
+                    childFolderDiff.modified << objectDiff
+                }
             }
+        } else {
+            diff.diffs.remove(childFolderDiff)
         }
     }
 
@@ -309,43 +353,58 @@ class FolderService extends ContainerService<Folder> {
 
     Folder copyFolder(Folder original, Folder folderToCopyInto, User copier, boolean copyPermissions, String modelBranchName,
                       Version modelCopyDocVersion, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
-        log.debug('Copying folder {}', original.id)
-        Folder copiedFolder = new Folder(deleted: false, parentFolder: folderToCopyInto, createdBy: copier, description: original.description,
-                                         label: original.label)
-        copyFolder(original, copiedFolder, original.label, copier, copyPermissions, modelBranchName, modelCopyDocVersion, throwErrors, userSecurityPolicyManager)
+        Folder copiedFolder = new Folder(deleted: false, parentFolder: folderToCopyInto)
+        copyFolder(original, copiedFolder, original.label, copier, copyPermissions, modelBranchName, modelCopyDocVersion, throwErrors,
+                   userSecurityPolicyManager)
     }
 
     Folder copyFolder(Folder original, Folder copiedFolder, String label, User copier, boolean copyPermissions, String modelBranchName,
                       Version modelCopyDocVersion, boolean throwErrors,
                       UserSecurityPolicyManager userSecurityPolicyManager) {
-        copiedFolder = copyBasicFolderInformation(original, copiedFolder, label, copier)
+        log.debug('Copying folder {}[{}]', original.id, original.label)
+        copyFolderPass(CopyPassType.FIRST_PASS, original, copiedFolder, label, copier, copyPermissions, modelBranchName, modelCopyDocVersion,
+                       throwErrors, userSecurityPolicyManager)
+        copyFolderPass(CopyPassType.SECOND_PASS, original, copiedFolder, label, copier, copyPermissions, modelBranchName, modelCopyDocVersion,
+                       throwErrors, userSecurityPolicyManager)
+        copyFolderPass(CopyPassType.THIRD_PASS, original, copiedFolder, label, copier, copyPermissions, modelBranchName, modelCopyDocVersion,
+                       throwErrors, userSecurityPolicyManager)
+        get(copiedFolder.id)
+    }
 
-        if (copyPermissions) {
-            if (throwErrors) {
-                throw new ApiNotYetImplementedException('MSXX', 'Folder permission copying')
+    Folder copyFolderPass(CopyPassType copyPassType, Folder original, Folder copiedFolder,
+                          String label, User copier, boolean copyPermissions,
+                          String modelBranchName,
+                          Version modelCopyDocVersion, boolean throwErrors,
+                          UserSecurityPolicyManager userSecurityPolicyManager) {
+        log.debug('{} performing copy folder pass for {}[{}]', copyPassType, original.id, original.label)
+        if (copyPassType == CopyPassType.FIRST_PASS) {
+            copiedFolder = copyBasicFolderInformation(original, copiedFolder, label, copier)
+
+            if (copyPermissions) {
+                if (throwErrors) {
+                    throw new ApiNotYetImplementedException('MSXX', 'Folder permission copying')
+                }
+                log.warn('Permission copying is not yet implemented')
+
             }
-            log.warn('Permission copying is not yet implemented')
+            log.debug('Validating and saving copy')
+            setFolderRefinesFolder(copiedFolder, original, copier)
 
+            if (copiedFolder.validate()) {
+                save(copiedFolder, flush: true, validate: false)
+                editService.createAndSaveEdit(EditTitle.COPY, copiedFolder.id, copiedFolder.domainType,
+                                              "Folder ${original.label} created as a copy of ${original.id}",
+                                              copier
+                )
+                if (securityPolicyManagerService) {
+                    userSecurityPolicyManager =
+                        securityPolicyManagerService.addSecurityForSecurableResource(copiedFolder, userSecurityPolicyManager.user,
+                                                                                     copiedFolder.label)
+                }
+            } else throw new ApiInvalidModelException('FS01', 'Copied Folder is invalid', copiedFolder.errors, messageSource)
         }
-        log.debug('Validating and saving copy')
-        setFolderRefinesFolder(copiedFolder, original, copier)
-
-        if (copiedFolder.validate()) {
-            save(copiedFolder, flush: true, validate: false)
-            editService.createAndSaveEdit(EditTitle.COPY, copiedFolder.id, copiedFolder.domainType,
-                                          "Folder ${original.label} created as a copy of ${original.id}",
-                                          copier
-            )
-            if (securityPolicyManagerService) {
-                userSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(copiedFolder, userSecurityPolicyManager.user,
-                                                                                                         copiedFolder.label)
-            }
-        } else throw new ApiInvalidModelException('FS01', 'Copied Folder is invalid', copiedFolder.errors, messageSource)
-
-
-        //        folderCopy.trackChanges()
-
-        copyFolderContents(original, copiedFolder, copier, copyPermissions, modelCopyDocVersion, modelBranchName, throwErrors, userSecurityPolicyManager)
+        copyFolderContents(original, copiedFolder, copier, copyPassType, copyPermissions, modelCopyDocVersion, modelBranchName, throwErrors,
+                           userSecurityPolicyManager)
 
         log.debug('Folder copy complete')
         copiedFolder
@@ -378,6 +437,7 @@ class FolderService extends ContainerService<Folder> {
     }
 
     void copyFolderContents(Folder original, Folder folderCopy, User copier,
+                            CopyPassType copyPassType,
                             boolean copyPermissions,
                             Version copyDocVersion,
                             String branchName,
@@ -386,36 +446,88 @@ class FolderService extends ContainerService<Folder> {
         // If changing label then we need to prefix all the new models so the names dont introduce label conflicts as this situation arises in forking
         String labelSuffix = folderCopy.label == original.label ? '' : " (${folderCopy.label})"
 
-        log.debug('Copying models from original folder into copied folder')
-        modelServices.each {service ->
-            List<Model> originalModels = service.findAllByContainerId(original.id) as List<Model>
-            List<Model> copiedModels = originalModels.collect {Model model ->
-
-                service.copyModel(model, folderCopy, copier, copyPermissions,
-                                  "${model.label}${labelSuffix}",
-                                  copyDocVersion, branchName, throwErrors,
-                                  userSecurityPolicyManager)
-            }
-            // We can't save until after all copied as the save clears the sessions
-            copiedModels.each {copy ->
-                log.debug('Validating and saving model copy')
-                service.validate(copy)
-                if (copy.hasErrors()) {
-                    throw new ApiInvalidModelException('VFS02', 'Copied Model is invalid', copy.errors, messageSource)
-                }
-                service.saveModelWithContent(copy)
-            }
-        }
+        log.debug('{} copying models from original folder into copied folder', copyPassType)
+        copyModelsInFolder(original, folderCopy, copier, copyPassType, labelSuffix, copyPermissions, copyDocVersion, branchName,
+                           throwErrors, userSecurityPolicyManager)
 
         List<Folder> folders = findAllByParentId(original.id)
-        log.debug('Copying {} sub folders inside folder', folders.size())
+        log.debug('{} copying {} sub folders inside folder', copyPassType, folders.size())
         folders.each {childFolder ->
-            Folder childCopy = new Folder(parentFolder: folderCopy, deleted: false)
-            copyFolder(childFolder, childCopy, childFolder.label, copier, copyPermissions, branchName, copyDocVersion, throwErrors, userSecurityPolicyManager)
+            Folder childCopy
+            if (copyPassType == CopyPassType.FIRST_PASS) {
+                childCopy = new Folder(parentFolder: folderCopy, deleted: false)
+                folderCopy.addToChildFolders(childCopy)
+            } else {
+                childCopy = folderCopy.childFolders.find {it.label == childFolder.label}
+                if (!childCopy) {
+                    throw new ApiInternalException('FSXX', "${childCopy.label} does not exist inside ${folderCopy.label}")
+                }
+            }
+            copyFolderPass(copyPassType, childFolder, childCopy, childFolder.label, copier, copyPermissions, branchName, copyDocVersion,
+                           throwErrors, userSecurityPolicyManager)
+        }
+    }
+
+    void copyModelsInFolder(Folder originalFolder, Folder copiedFolder, User copier,
+                            CopyPassType copyPassType,
+                            String labelSuffix,
+                            boolean copyPermissions,
+                            Version copyDocVersion,
+                            String branchName,
+                            boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
+        modelServices.each {service ->
+            List<Model> originalModels = service.findAllByContainerId(originalFolder.id) as List<Model>
+            List<Model> copiedModels = originalModels.collect {Model originalModel ->
+
+                switch (copyPassType) {
+                    case CopyPassType.FIRST_PASS:
+                        // First pass copy/create all the models
+                        // Any links across models will remain pointing to the original VF models
+                        return service.copyModel(originalModel, copiedFolder, copier, copyPermissions,
+                                                 "${originalModel.label}${labelSuffix}",
+                                                 copyDocVersion, branchName, throwErrors,
+                                                 userSecurityPolicyManager)
+                    case CopyPassType.SECOND_PASS:
+                        // Second pass work through all the models and update the links across models
+                        Model copiedModel = service.findByFolderIdAndLabel(copiedFolder.id, "${originalModel.label}${labelSuffix}")
+                        if (!copiedModel) {
+                            throw new ApiInternalException('FSXX', "${originalModel.label}${labelSuffix} does not exist inside ${copiedFolder.label}")
+                        }
+                        return service.updateCopiedCrossModelLinks(copiedModel, originalModel)
+                    case CopyPassType.THIRD_PASS:
+                        return service.findByFolderIdAndLabel(copiedFolder.id, "${originalModel.label}${labelSuffix}")
+                }
+                null
+            }
+
+            if (copyPassType == CopyPassType.FIRST_PASS) {
+                // We can't save until after all copied as the save clears the sessions
+                copiedModels.each {copy ->
+                    log.debug('Validating and saving model copy')
+                    service.validate(copy)
+                    if (copy.hasErrors()) {
+                        throw new ApiInvalidModelException('VFS02', 'Copied Model is invalid', copy.errors, messageSource)
+                    }
+                    service.saveModelWithContent(copy)
+                }
+            }
+            if (copyPassType == CopyPassType.THIRD_PASS) {
+                // At the moment just make sure the session is flushed in the third pass, this makes sure all objects are the same
+                sessionFactory.currentSession.flush()
+            }
         }
     }
 
     void setFolderRefinesFolder(Folder source, Folder target, User catalogueUser) {
         source.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdBy: catalogueUser.emailAddress, targetMultiFacetAwareItem: target)
     }
+
+    Path getFullPathForFolder(Folder folder) {
+        if (folder.parentFolder) {
+            Path parentPath = getFullPathForFolder(folder.parentFolder)
+            return Path.from(parentPath, folder)
+        }
+        Path.from(folder)
+    }
+
 }

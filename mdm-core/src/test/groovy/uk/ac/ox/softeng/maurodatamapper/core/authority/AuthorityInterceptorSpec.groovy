@@ -43,5 +43,4 @@ class AuthorityInterceptorSpec extends ResourceInterceptorUnitSpec implements In
     HttpStatus getSaveAllowedCode() {
         HttpStatus.FORBIDDEN
     }
-
 }

@@ -82,6 +82,7 @@ class ReferenceDataModel implements Model<ReferenceDataModel>, ReferenceSummaryM
         documentationVersion type: VersionUserType
         modelVersion type: VersionUserType
         folder cascade: 'none'
+        authority fetch: 'join'
         referenceDataTypes cascade: 'all-delete-orphan', cascadeValidate: 'dirty'
         referenceDataElements cascade: 'all-delete-orphan', cascadeValidate: 'dirty'
         referenceDataValues cascade: 'all-delete-orphan', cascadeValidate: 'dirty'
@@ -119,7 +120,7 @@ class ReferenceDataModel implements Model<ReferenceDataModel>, ReferenceSummaryM
         'rdm'
     }
 
-    ObjectDiff<ReferenceDataModel> diff(ReferenceDataModel otherDataModel) {
+    ObjectDiff<ReferenceDataModel> diff(ReferenceDataModel otherDataModel, String context) {
         modelDiffBuilder(ReferenceDataModel, this, otherDataModel)
             .appendList(ReferenceDataType, 'referenceDataTypes', this.referenceDataTypes, otherDataModel.referenceDataTypes)
             .appendList(ReferenceDataType, 'referenceDataElements', this.referenceDataElements, otherDataModel.referenceDataElements)

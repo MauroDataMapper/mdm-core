@@ -36,7 +36,7 @@ class PrimitiveType extends DataType<PrimitiveType> {
         domainType = PrimitiveType.simpleName
     }
 
-    ObjectDiff<PrimitiveType> diff(PrimitiveType otherDataType) {
+    ObjectDiff<PrimitiveType> diff(PrimitiveType otherDataType, String context) {
         catalogueItemDiffBuilder(PrimitiveType, this, otherDataType)
             .appendString('units', this.units, otherDataType.units)
 

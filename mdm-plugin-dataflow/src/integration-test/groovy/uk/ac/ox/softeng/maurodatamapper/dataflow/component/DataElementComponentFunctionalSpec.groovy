@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.dataflow.component
 
-import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlow
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -96,8 +96,6 @@ class DataElementComponentFunctionalSpec extends ResourceFunctionalSpec<DataElem
         log.debug('Check and setup test data')
         folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
         checkAndSave(folder)
-        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: FUNCTIONAL_TEST)
-        checkAndSave(testAuthority)
         DataModel sourceDataModel = new DataModel(label: 'Functional Test DataModel Source', createdBy: FUNCTIONAL_TEST,
                                                   folder: folder, type: DataModelType.DATA_ASSET, authority: testAuthority).save(flush: true)
         sourceDataModelId = sourceDataModel.id
@@ -151,7 +149,6 @@ class DataElementComponentFunctionalSpec extends ResourceFunctionalSpec<DataElem
     def cleanupSpec() {
         log.debug('CleanupSpec DataModelFunctionalSpec')
         cleanUpResources(DataClassComponent, DataFlow, DataElement, DataType, DataClass, DataModel, Folder)
-        Authority.findByLabel('Test Authority').delete(flush: true)
     }
 
     @Override

@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.security.policy
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
@@ -45,6 +46,7 @@ import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 
 import java.util.function.Predicate
 
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.AUTHORITY_ADMIN_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.AUTHOR_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.CHANGE_FOLDER_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.CONTAINER_ADMIN_ACTIONS
@@ -58,6 +60,7 @@ import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.F
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.FINALISE_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.FULL_DELETE_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.IMPORT_ACTION
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.INDEX_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MERGE_INTO_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.NEW_BRANCH_MODEL_VERSION_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.NEW_DOCUMENTATION_ACTION
@@ -70,6 +73,7 @@ import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.R
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.REVIEWER_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.SAVE_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.SAVE_IGNORE_FINALISE
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.SHOW_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.SOFT_DELETE_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.STANDARD_CREATE_AND_EDIT_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.STANDARD_EDIT_ACTIONS
@@ -211,8 +215,8 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     @Override
     List<UUID> listReadableSecuredResourceIds(Class<? extends SecurableResource> securableResourceClass) {
         virtualSecurableResourceGroupRoles
-            .findAll {it.domainType == securableResourceClass.simpleName || it.alternateDomainType == securableResourceClass.simpleName}
-            .collect {it.domainId}
+            .findAll { it.domainType == securableResourceClass.simpleName || it.alternateDomainType == securableResourceClass.simpleName }
+            .collect { it.domainId }
             .toSet()
             .toList()
     }
@@ -384,10 +388,10 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
                     // If model is finalised then these actions are allowed
                     VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
                     return role ? role.canVersion() : false
-                    //                case MERGE_INTO_ACTION:
-                    //                    // If the model is finalised then these actions are NOT allowed
-                    //                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass,
-                    //                    id, EDITOR_ROLE_NAME)
+                case MERGE_INTO_ACTION:
+                    // If the model is finalised then these actions are NOT allowed
+                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
+                    return role ? !role.isFinalised() : false
             }
         }
 
@@ -415,6 +419,19 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
                     return hasApplicationLevelRole(CONTAINER_GROUP_ADMIN_ROLE_NAME)
                 default:
                     return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, GROUP_ADMIN_ROLE_NAME)
+            }
+        }
+
+        if (Utils.parentClassIsAssignableFromChild(Authority, securableResourceClass)) {
+            switch (action) {
+            // Anyone can index
+                case INDEX_ACTION:
+                    return true
+                    // Check any access for show
+                case SHOW_ACTION:
+                    return hasAnyAccessToSecuredResource(Authority, id)
+                default:
+                    return hasApplicationLevelRole(APPLICATION_ADMIN_ROLE_NAME)
             }
         }
 
@@ -474,7 +491,8 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     }
 
     List<String> userAvailableTreeActions(Class<? extends SecurableResource> securableResourceClass, UUID id) {
-        securedResourceUserAvailableTreeActions(hibernateProxyHandler.unwrapIfProxy(securableResourceClass) as Class<? extends SecurableResource>, id).toSet().sort()
+        securedResourceUserAvailableTreeActions(hibernateProxyHandler.unwrapIfProxy(securableResourceClass) as Class<? extends SecurableResource>,
+                                                id).toSet().sort()
     }
 
     @Override
@@ -493,7 +511,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
 
     @Override
     boolean isApplicationAdministrator() {
-        applicationPermittedRoles.any {it.name == APPLICATION_ADMIN_ROLE_NAME}
+        applicationPermittedRoles.any { it.name == APPLICATION_ADMIN_ROLE_NAME }
     }
 
     @Override
@@ -523,7 +541,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
             it.securableResourceDomainType == securableResourceDomainType && it.securableResourceId == securableResourceId
         }
         if (!found) return null
-        found.collect {it.groupRole}.sort().first()
+        found.collect { it.groupRole }.sort().first()
     }
 
     boolean hasUserAdminRights() {
@@ -591,6 +609,13 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
             return []
         }
 
+        if (Utils.parentClassIsAssignableFromChild(Authority, securableResourceClass)) {
+            if (hasApplicationLevelRole(APPLICATION_ADMIN_ROLE_NAME)) {
+                return AUTHORITY_ADMIN_ACTIONS
+            }
+            return READ_ONLY_ACTIONS
+        }
+
 
         log.warn('Attempt to gain available actions for unknown secured class {} id {}', securableResourceClass.simpleName, id)
         []
@@ -642,13 +667,23 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
 
     private List<String> updateBaseModelActionsForEditor(List<String> baseActions, VirtualSecurableResourceGroupRole role) {
         List<String> updatedActions = new ArrayList<>(baseActions)
-        if (role.canFinalise()) updatedActions << FINALISE_ACTION
-        if (role.isFinalised()) {
-            updatedActions.removeAll(DISALLOWED_ONCE_FINALISED_ACTIONS)
-            updatedActions << FINALISED_EDIT_ACTIONS
+        if (role.canFinalise()) {
+            updatedActions << FINALISE_ACTION
+        } else {
+            // If it cant be finalised its either a non-main branch or inside a VF or finalised
+            // The last 2 cases we can remove the action in this method
+            updatedActions << MERGE_INTO_ACTION
         }
         if (role.canVersion()) {
             updatedActions.addAll(EDITOR_VERSIONING_ACTIONS)
+        }
+        if (role.isVersionControlled()) {
+            // If cant be versioned its inside a VF therefore shouldn't allow mergeInto
+            updatedActions.remove(MERGE_INTO_ACTION)
+        }
+        if (role.isFinalised()) {
+            updatedActions.removeAll(DISALLOWED_ONCE_FINALISED_ACTIONS)
+            updatedActions << FINALISED_EDIT_ACTIONS
         }
         updatedActions
     }
@@ -674,7 +709,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
             // Cannot move anything versioned controlled into a VF, this includes a folder which contains VFs
             updatedActions.remove(MOVE_TO_VERSIONED_FOLDER)
         }
-        if (role.isVersionControlled()) {
+        if (role.isVersionable() || role.isVersionControlled()) {
             updatedActions.remove(CREATE_VERSIONED_FOLDER)
         }
         updatedActions
@@ -712,7 +747,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     }
 
     private boolean hasApplicationLevelRole(String rolename) {
-        applicationPermittedRoles.any {it.name == rolename}
+        applicationPermittedRoles.any { it.name == rolename }
     }
 
     private List<String> getStandardActionsWithControlRole(Class<? extends SecurableResource> securableResourceClass, UUID id, String roleName) {

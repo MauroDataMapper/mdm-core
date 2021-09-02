@@ -96,7 +96,7 @@ class BasicModel implements Model<BasicModel>, GormEntity<BasicModel> {
         addTo('modelItems', basicModelItem)
     }
 
-    ObjectDiff<BasicModel> diff(BasicModel obj) {
+    ObjectDiff<BasicModel> diff(BasicModel obj, String context) {
         modelDiffBuilder(BasicModel, this, obj)
     }
 

@@ -71,7 +71,7 @@ class EnumerationType extends DataType<EnumerationType> implements IndexedSiblin
         log.trace('DT before validate {} took {}', this.label, Utils.timeTaken(st))
     }
 
-    ObjectDiff<EnumerationType> diff(EnumerationType otherDataType) {
+    ObjectDiff<EnumerationType> diff(EnumerationType otherDataType, String context) {
         catalogueItemDiffBuilder(EnumerationType, this, otherDataType)
             .appendList(EnumerationValue, 'enumerationValues', this.enumerationValues, otherDataType.enumerationValues)
     }

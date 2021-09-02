@@ -71,7 +71,7 @@ class ReferenceEnumerationType extends ReferenceDataType<ReferenceEnumerationTyp
         log.trace('DT before validate {} took {}', this.label, Utils.timeTaken(st))
     }
 
-    ObjectDiff<ReferenceEnumerationType> diff(ReferenceEnumerationType otherDataType) {
+    ObjectDiff<ReferenceEnumerationType> diff(ReferenceEnumerationType otherDataType, String context) {
         catalogueItemDiffBuilder(ReferenceEnumerationType, this, otherDataType)
             .appendList(ReferenceEnumerationValue, 'referenceEnumerationValues', this.referenceEnumerationValues, otherDataType.referenceEnumerationValues)
     }

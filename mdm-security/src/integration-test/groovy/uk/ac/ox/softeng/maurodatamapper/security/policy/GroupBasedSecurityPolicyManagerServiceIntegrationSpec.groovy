@@ -151,7 +151,7 @@ class GroupBasedSecurityPolicyManagerServiceIntegrationSpec extends BaseIntegrat
         policy.userGroups.size() == 4
         policy.applicationPermittedRoles.size() == 5
         policy.securableResourceGroupRoles.size() == 1
-        policy.virtualSecurableResourceGroupRoles.size() == 87
+        policy.virtualSecurableResourceGroupRoles.size() == 93
 
         when:
         Set<VirtualSecurableResourceGroupRole> folderRoles = policy.virtualSecurableResourceGroupRoles.findAll {it.domainId == folder.id}
@@ -209,7 +209,7 @@ class GroupBasedSecurityPolicyManagerServiceIntegrationSpec extends BaseIntegrat
         policy.userGroups.size() == 4
         policy.applicationPermittedRoles.size() == 5
         policy.securableResourceGroupRoles.size() == 1
-        policy.virtualSecurableResourceGroupRoles.size() == 87
+        policy.virtualSecurableResourceGroupRoles.size() == 93
 
         when:
         Set<VirtualSecurableResourceGroupRole> folderRoles = policy.virtualSecurableResourceGroupRoles.findAll {it.domainId == folder.id}

@@ -100,7 +100,8 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
 
     TermRelationshipType copyTermRelationshipType(Terminology copiedTerminology, TermRelationshipType original, User copier) {
         TermRelationshipType copy = new TermRelationshipType(createdBy: copier.emailAddress, label: original.label, description: original.description,
-                                                             displayLabel: original.displayLabel)
+                                                             displayLabel: original.displayLabel, parentalRelationship: original.parentalRelationship,
+                                                             childRelationship: original.childRelationship)
         copiedTerminology.addToTermRelationshipTypes(copy)
         copy
     }

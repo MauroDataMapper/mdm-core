@@ -1,0 +1,23 @@
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+
+inherits template: '/authority/authority'
+
+model {
+    Authority authority
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json {
+    readableByEveryone authority.readableByEveryone
+    readableByAuthenticatedUsers authority.readableByAuthenticatedUsers
+    availableActions getAuthorityActions(authority, userSecurityPolicyManager)
+}
+
+static List<String> getAuthorityActions(Authority authority,
+                                        UserSecurityPolicyManager userSecurityPolicyManager) {
+    List<String> actions = userSecurityPolicyManager.userAvailableActions(authority.getClass(), authority.id)
+    // Make sure that the available actions for the default authority never includes delete
+    if (authority.defaultAuthority) actions.remove('delete')
+    actions
+}

@@ -42,6 +42,12 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> implements Su
     DataTypeService dataTypeService
 
     @Override
+    boolean handlesPathPrefix(String pathPrefix) {
+        // Have to override to ensure we type DataTypeService
+        false
+    }
+
+    @Override
     ReferenceType get(Serializable id) {
         ReferenceType.get(id)
     }

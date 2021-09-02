@@ -121,7 +121,7 @@ class Annotation implements MultiFacetItemAware, PathAware, InformationAware, Di
     }
 
     @Override
-    ObjectDiff<Annotation> diff(Annotation otherAnnotation) {
+    ObjectDiff<Annotation> diff(Annotation otherAnnotation, String context) {
         DiffBuilder.objectDiff(Annotation)
             .leftHandSide(this.id.toString(), this)
             .rightHandSide(otherAnnotation.id.toString(), otherAnnotation)

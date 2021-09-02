@@ -17,14 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.authority
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.InformationAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 
-class Authority implements InformationAware, CreatorAware, SecurableResource {
+class Authority implements InformationAware, SecurableResource, EditHistoryAware {
 
     public static final String DEFAULT_NAME_CONFIG_PROPERTY = 'maurodatamapper.authority.name'
     public static final String DEFAULT_URL_CONFIG_PROPERTY = 'maurodatamapper.authority.url'
@@ -33,6 +32,7 @@ class Authority implements InformationAware, CreatorAware, SecurableResource {
     String url
     Boolean readableByEveryone
     Boolean readableByAuthenticatedUsers
+    Boolean defaultAuthority
 
     //    static hasMany = [
     //        models          : Model,
@@ -45,9 +45,14 @@ class Authority implements InformationAware, CreatorAware, SecurableResource {
         url blank: false
     }
 
+    static mapping = {
+        defaultAuthority defaultValue: false
+    }
+
     Authority() {
         readableByAuthenticatedUsers = false
         readableByEveryone = false
+        defaultAuthority = false
     }
 
     @Override
@@ -67,6 +72,11 @@ class Authority implements InformationAware, CreatorAware, SecurableResource {
 
     @Override
     String toString() {
-        "${label}@${url}"
+        getPathIdentifier()
+    }
+
+    @Override
+    String getEditLabel() {
+        getPathIdentifier()
     }
 }

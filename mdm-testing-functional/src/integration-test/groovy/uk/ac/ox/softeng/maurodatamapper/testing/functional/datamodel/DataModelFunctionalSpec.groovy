@@ -294,7 +294,8 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
   "authority": {
     "id": "${json-unit.matches:id}",
     "url": "http://localhost",
-    "label": "Mauro Data Mapper"
+    "label": "Mauro Data Mapper",
+    "defaultAuthority": true
   },
   "availableActions": [
     "delete",
@@ -572,7 +573,8 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
   "authority": {
     "id": "${json-unit.matches:id}",
     "url": "http://localhost",
-    "label": "Mauro Data Mapper"
+    "label": "Mauro Data Mapper",
+    "defaultAuthority": true
   },
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "classifiers": [
@@ -645,7 +647,8 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
   "authority": {
     "id": "${json-unit.matches:id}",
     "url": "http://localhost",
-    "label": "Mauro Data Mapper"
+    "label": "Mauro Data Mapper",
+    "defaultAuthority": true
   },
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "classifiers": [
@@ -722,7 +725,8 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
   "authority": {
     "id": "${json-unit.matches:id}",
     "url": "http://localhost",
-    "label": "Mauro Data Mapper"
+    "label": "Mauro Data Mapper",
+    "defaultAuthority": true
   },
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "classifiers": [

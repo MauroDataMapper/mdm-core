@@ -149,7 +149,7 @@ class ReferenceEnumerationValue implements ModelItem<ReferenceEnumerationValue, 
         if (referenceEnumerationType?.id) referenceEnumerationType.updateChildIndexes(this, oldIndex)
     }
 
-    ObjectDiff<ReferenceEnumerationValue> diff(ReferenceEnumerationValue otherEnumerationValue) {
+    ObjectDiff<ReferenceEnumerationValue> diff(ReferenceEnumerationValue otherEnumerationValue, String context) {
         catalogueItemDiffBuilder(ReferenceEnumerationValue, this, otherEnumerationValue)
             .appendString('key', this.key, otherEnumerationValue.key)
             .appendString('value', this.value, otherEnumerationValue.value)

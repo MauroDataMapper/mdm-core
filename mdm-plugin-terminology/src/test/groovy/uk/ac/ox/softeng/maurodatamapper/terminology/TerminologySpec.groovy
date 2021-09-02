@@ -80,14 +80,14 @@ class TerminologySpec extends ModelSpec<Terminology> implements DomainUnitTest<T
         when:
         def t1 = new Terminology(label: 'test model 1', folder: testFolder, authority: testAuthority)
         def t2 = new Terminology(label: 'test model 2', folder: testFolder, authority: testAuthority)
-        Diff<Terminology> diff = t1.diff(t2)
+        Diff<Terminology> diff = t1.diff(t2, null)
 
         then:
         diff.getNumberOfDiffs() == 1
 
         when:
         t2.label = 'test model 1'
-        diff = t1.diff(t2)
+        diff = t1.diff(t2, null)
 
         then:
         diff.objectsAreIdentical()

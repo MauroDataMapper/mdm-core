@@ -42,7 +42,7 @@ class DeletionMergeDiff<D extends Diffable> extends TriDirectionalDiff<D> implem
     }
 
     String getDeletedIdentifier() {
-        value.diffIdentifier
+        value.getDiffIdentifier(fullyQualifiedObjectPath.toString())
     }
 
     boolean isSourceDeletionAndTargetModification() {
@@ -50,6 +50,9 @@ class DeletionMergeDiff<D extends Diffable> extends TriDirectionalDiff<D> implem
     }
 
     Path getFullyQualifiedPath() {
+        if (Path.isValidPath(deletedIdentifier)) {
+            return Path.from(fullyQualifiedObjectPath, Path.from(deletedIdentifier))
+        }
         String cleanedIdentifier = deletedIdentifier.split('/').last()
         Path.from(fullyQualifiedObjectPath, deleted.pathPrefix, cleanedIdentifier)
     }
