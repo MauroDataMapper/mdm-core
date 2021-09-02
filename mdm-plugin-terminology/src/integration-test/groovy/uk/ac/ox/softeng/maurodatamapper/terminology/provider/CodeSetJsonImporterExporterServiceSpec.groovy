@@ -64,6 +64,9 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
     UUID simpleCodeSetId
 
     @Shared
+    UUID complexCodeSetId
+
+    @Shared
     UUID simpleTerminologyId
 
     @Shared
@@ -125,6 +128,7 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         log.debug('Setting up CodeSetServiceSpec unit')
 
         simpleCodeSetId = simpleCodeSet.id
+        complexCodeSetId = complexCodeSet.id
         simpleTerminologyId = simpleTerminology.id
     }
 
@@ -150,7 +154,7 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         log.info('Saving imported model')
         assert codeSetService.saveModelWithContent(imported)
         sessionFactory.currentSession.flush()
-        assert codeSetService.count() == 2
+        assert codeSetService.count() == 3
 
         CodeSet codeSet = codeSetService.get(imported.id)
 
@@ -211,7 +215,7 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String exported = exportModel(simpleCodeSetId)
@@ -256,7 +260,7 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String data = new String(loadTestFile('codeSetSimple'))
@@ -290,7 +294,7 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String data = new String(loadTestFile('codeSetSimpleFinalised'))
@@ -325,7 +329,7 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String data = new String(loadTestFile('codeSetSimpleWithAliases'))
@@ -361,7 +365,7 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String data = new String(loadTestFile('codeSetSimpleWithAnnotations'))
@@ -402,7 +406,7 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String data = new String(loadTestFile('codeSetSimpleWithMetadata'))
@@ -436,7 +440,7 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String data = new String(loadTestFile('codeSetSimpleWithClassifiers'))
@@ -470,7 +474,7 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String data = new String(loadTestFile('codeSetSimpleWithKnownTerm'))
@@ -510,7 +514,7 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String data = new String(loadTestFile('codeSetSimpleWithTwoKnownTerms'))
@@ -553,7 +557,7 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String data = new String(loadTestFile('codeSetSimpleWithUnknownTerm'))
@@ -571,7 +575,7 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String data = new String(loadTestFile('codeSetSimpleWithUnknownTerminology'))
