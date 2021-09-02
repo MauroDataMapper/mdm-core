@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSetService
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
+import uk.ac.ox.softeng.maurodatamapper.terminology.TerminologyService
 import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.test.integration.BaseIntegrationSpec
 
@@ -37,7 +38,9 @@ abstract class BaseCodeSetIntegrationSpec extends BaseIntegrationSpec {
     Authority testAuthority
     AdminService adminService
     CodeSetService codeSetService
+    TerminologyService terminologyService
     CodeSet simpleCodeSet
+    CodeSet complexCodeSet
     Terminology simpleTerminology
 
     Folder getTestFolder() {
@@ -51,6 +54,7 @@ abstract class BaseCodeSetIntegrationSpec extends BaseIntegrationSpec {
         testAuthority = Authority.findByLabel('Test Authority')
         checkAndSave(testAuthority)
         simpleCodeSet = BootstrapModels.buildAndSaveSimpleCodeSet(messageSource, folder, testAuthority)
+        complexCodeSet = BootstrapModels.buildAndSaveComplexCodeSet(messageSource, folder, terminologyService, testAuthority)
         simpleTerminology = Terminology.findByLabel(BootstrapModels.SIMPLE_TERMINOLOGY_NAME)
     }
 }

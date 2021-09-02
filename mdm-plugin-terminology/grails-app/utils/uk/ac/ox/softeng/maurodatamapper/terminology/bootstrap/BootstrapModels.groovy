@@ -40,6 +40,7 @@ import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
 class BootstrapModels {
 
     public static final String COMPLEX_TERMINOLOGY_NAME = 'Complex Test Terminology'
+    public static final String COMPLEX_CODESET_NAME = 'Complex Test CodeSet'
     public static final String SIMPLE_TERMINOLOGY_NAME = 'Simple Test Terminology'
     public static final String SIMPLE_CODESET_NAME = 'Simple Test CodeSet'
     public static final String UNFINALISED_CODESET_NAME = 'Unfinalised Simple Test CodeSet'
@@ -198,6 +199,29 @@ class BootstrapModels {
 
         checkAndSave(messageSource, codeSet)
 
+        codeSet
+    }
+
+    static CodeSet buildAndSaveComplexCodeSet(MessageSource messageSource, Folder folder, TerminologyService terminologyService, Authority authority) {
+        CodeSet codeSet = new CodeSet(createdBy: DEVELOPMENT, label: COMPLEX_CODESET_NAME, folder: folder, author: 'Test Bootstrap', organisation: 'Oxford BRC',
+                                      authority: authority)
+        Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier', readableByAuthenticatedUsers: true)
+        checkAndSave(messageSource, classifier)
+        codeSet.addToClassifiers(classifier)
+        checkAndSave(messageSource, codeSet)
+
+        Terminology complexTestTerminology = Terminology.findByLabel(COMPLEX_TERMINOLOGY_NAME)
+        if (!complexTestTerminology) complexTestTerminology = buildAndSaveComplexTerminology(messageSource, folder, terminologyService, authority)
+        complexTestTerminology.terms.each {
+            codeSet.addToTerms(it)
+        }
+
+        codeSet.finalised = true
+        // Truncate the dateFinalised to milliseconds to avoid a Diff failure when test exporting and reimporting a CodeSet
+        codeSet.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.MILLIS)
+        codeSet.modelVersion = Version.from('1.0.0')
+
+        checkAndSave(messageSource, codeSet)
         codeSet
     }
 

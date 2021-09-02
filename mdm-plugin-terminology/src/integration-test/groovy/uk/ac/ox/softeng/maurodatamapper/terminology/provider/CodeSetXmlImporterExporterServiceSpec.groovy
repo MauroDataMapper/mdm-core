@@ -58,6 +58,9 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
     UUID simpleCodeSetId
 
     @Shared
+    UUID complexCodeSetId
+
+    @Shared
     UUID simpleTerminologyId
 
     CodeSetXmlImporterService codeSetXmlImporterService
@@ -109,6 +112,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         log.debug('Setting up CodeSetServiceSpec unit')
 
         simpleCodeSetId = simpleCodeSet.id
+        complexCodeSetId = complexCodeSet.id
         simpleTerminologyId = simpleTerminology.id
     }
 
@@ -134,7 +138,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         log.info('Saving imported model')
         assert codeSetService.saveModelWithContent(imported)
         sessionFactory.currentSession.flush()
-        assert codeSetService.count() == 2
+        assert codeSetService.count() == 3
 
         CodeSet codeSet = codeSetService.get(imported.id)
 
@@ -181,7 +185,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String exported = exportModel(simpleCodeSetId)
@@ -226,7 +230,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String data = new String(loadTestFile('codeSetSimple'))
@@ -260,7 +264,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String data = new String(loadTestFile('codeSetSimpleFinalised'))
@@ -295,7 +299,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String data = new String(loadTestFile('codeSetSimpleWithAliases'))
@@ -331,7 +335,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String data = new String(loadTestFile('codeSetSimpleWithAnnotations'))
@@ -372,7 +376,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String data = new String(loadTestFile('codeSetSimpleWithMetadata'))
@@ -406,7 +410,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String data = new String(loadTestFile('codeSetSimpleWithClassifiers'))
@@ -440,7 +444,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String data = new String(loadTestFile('codeSetSimpleWithKnownTerm'))
@@ -480,7 +484,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String data = new String(loadTestFile('codeSetSimpleWithTwoKnownTerms'))
@@ -523,7 +527,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String data = new String(loadTestFile('codeSetSimpleWithUnknownTerm'))
@@ -541,7 +545,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String data = new String(loadTestFile('codeSetSimpleWithUnknownTerminology'))
