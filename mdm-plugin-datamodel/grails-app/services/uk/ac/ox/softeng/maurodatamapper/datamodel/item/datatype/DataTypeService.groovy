@@ -140,12 +140,12 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     }
 
     @Override
-    boolean hasTreeTypeModelItems(DataType catalogueItem, boolean fullTreeRender) {
+    boolean hasTreeTypeModelItems(DataType catalogueItem, boolean fullTreeRender, boolean includeImportedItems) {
         fullTreeRender && catalogueItem instanceof EnumerationType ? catalogueItem.enumerationValues : false
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(DataType catalogueItem, boolean fullTreeRender) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(DataType catalogueItem, boolean fullTreeRender, boolean includeImportedItems) {
         fullTreeRender && catalogueItem instanceof EnumerationType ? catalogueItem.enumerationValues : []
     }
 

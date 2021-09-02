@@ -242,7 +242,7 @@ class TermService extends ModelItemService<Term> {
     }
 
     @Override
-    boolean hasTreeTypeModelItems(Term term, boolean fullTreeRender) {
+    boolean hasTreeTypeModelItems(Term term, boolean fullTreeRender, boolean includeImportedItems) {
         termRelationshipService.countByTermIdIsParent(term.id)
     }
 
@@ -354,7 +354,7 @@ class TermService extends ModelItemService<Term> {
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(Term term, boolean fullTreeRender = false) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(Term term, boolean fullTreeRender, boolean includeImportedItems) {
         log.debug('Building source as parent relationships')
         Set<Term> sourceAsParentTerms = TermRelationship.bySourceTermIdAndParental(term.id)
             .join('targetTerm')

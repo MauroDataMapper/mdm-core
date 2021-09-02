@@ -673,12 +673,12 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     }
 
     @Override
-    boolean hasTreeTypeModelItems(DataModel dataModel, boolean fullTreeRender, boolean includeImportedDataClasses = false) {
+    boolean hasTreeTypeModelItems(DataModel dataModel, boolean fullTreeRender, boolean includeImportedDataClasses) {
         dataModel.dataClasses || (includeImportedDataClasses ? dataModel.importedDataClasses : false) || (dataModel.dataTypes && fullTreeRender)
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(DataModel catalogueItem, boolean fullTreeRender = false, boolean includeImportedDataClasses = false) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(DataModel catalogueItem, boolean fullTreeRender, boolean includeImportedDataClasses) {
         ((includeImportedDataClasses ? dataClassService.findAllWhereRootDataClassOfDataModelIdIncludingImported(catalogueItem.id)
                                      : dataClassService.findAllWhereRootDataClassOfDataModelId(catalogueItem.id)) +
          (fullTreeRender ? DataType.byDataModelId(catalogueItem.id).list() : []) as List<ModelItem>)

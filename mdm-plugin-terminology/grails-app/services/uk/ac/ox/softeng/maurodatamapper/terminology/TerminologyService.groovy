@@ -419,12 +419,12 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    boolean hasTreeTypeModelItems(Terminology terminology, boolean fullTreeRender) {
+    boolean hasTreeTypeModelItems(Terminology terminology, boolean fullTreeRender, boolean includeImportedItems) {
         isTreeStructureCapableTerminology(terminology)
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(Terminology terminology, boolean fullTreeRender) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(Terminology terminology, boolean fullTreeRender, boolean includeImportedItems) {
         List<Term> terms = termService.findAllByTerminologyIdAndDepth(terminology.id, 1)
         if (terms.size() > 100) {
             log.warn('Too many terms found to provide a stable tree {}', terms.size())

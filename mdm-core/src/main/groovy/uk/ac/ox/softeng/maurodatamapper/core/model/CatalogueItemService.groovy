@@ -98,27 +98,23 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
     }
 
     boolean hasTreeTypeModelItems(K catalogueItem, boolean fullTreeRender) {
-        false
-    }
-
-    boolean hasTreeTypeModelItems(K catalogueItem) {
-        hasTreeTypeModelItems(catalogueItem, false)
+        hasTreeTypeModelItems(catalogueItem, fullTreeRender, false)
     }
 
     boolean hasTreeTypeModelItems(K catalogueItem, boolean fullTreeRender, boolean includeImportedItems) {
-        hasTreeTypeModelItems(catalogueItem, fullTreeRender)
-    }
-
-    List<ModelItem> findAllTreeTypeModelItemsIn(K catalogueItem, boolean fullTreeRender) {
-        []
+        false
     }
 
     List<ModelItem> findAllTreeTypeModelItemsIn(K catalogueItem) {
         findAllTreeTypeModelItemsIn(catalogueItem, false)
     }
 
+    List<ModelItem> findAllTreeTypeModelItemsIn(K catalogueItem, boolean fullTreeRender) {
+        findAllTreeTypeModelItemsIn(catalogueItem, fullTreeRender, false)
+    }
+
     List<ModelItem> findAllTreeTypeModelItemsIn(K catalogueItem, boolean fullTreeRender, boolean includeImportedItems) {
-        findAllTreeTypeModelItemsIn(catalogueItem, fullTreeRender)
+        []
     }
 
     abstract K findByIdJoinClassifiers(UUID id)
