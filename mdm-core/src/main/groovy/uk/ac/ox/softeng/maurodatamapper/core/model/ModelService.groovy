@@ -610,7 +610,7 @@ abstract class ModelService<K extends Model>
 
     void processCreationPatchOfModelItem(ModelItem modelItemToCopy, Model targetModel, Path parentPathToCopyTo,
                                          UserSecurityPolicyManager userSecurityPolicyManager, boolean flush = false) {
-        ModelItemService modelItemService = modelItemServices.find {it.handles(modelItemToCopy.class)}
+        ModelItemService modelItemService = modelItemServices.find { it.handles(modelItemToCopy.class) }
         if (!modelItemService) throw new ApiInternalException('MSXX', "No domain service to handle creation of [${modelItemToCopy.domainType}]")
         log.debug('Creating ModelItem into Model at [{}]', parentPathToCopyTo)
         CatalogueItem parentToCopyInto = pathService.findResourceByPathFromRootResource(targetModel, parentPathToCopyTo) as CatalogueItem
@@ -870,6 +870,13 @@ abstract class ModelService<K extends Model>
         Version.nextMajorVersion(parentModelVersion)
     }
 
+    Version getPreviousModelVersion(K model, Version requestedModelVersion) {
+
+        model.versionLinks.find { re }
+
+    }
+
+
     void checkFinaliseModel(K model, Boolean finalise, Boolean importAsNewBranchModelVersion = false) {
         if (finalise && (!model.finalised || !model.modelVersion)) {
             // Parameter update will have set the model as finalised, but it wont have set the model version
@@ -1050,4 +1057,26 @@ abstract class ModelService<K extends Model>
         }
         Path.from(model)
     }
+
+    K propagateFromPreviousVersion(User user, K model) {
+        //step one get previous version
+        Version previousModelVersion = getPreviousModelVersion(model, getLatestModelVersionByLabel(model.label))
+
+
+        //Model will have superseded old version.
+        //Use version links in model to follow backwards
+        //version link contains old and new
+        //todo find out if a versionlink knows its the latest Version
+        //a new model knows if its a later version of a previous
+        //does a model contain links to all its predecessors or just one, test with functional spec?
+
+
+        //step two, compare and copy across properties, disregarding properties that are already filled
+        //step three copy Catalogue Items
+        //copy facets
+        //copy semantic links
+        //mark semantic links unconfirmed
+        K
+    }
+
 }

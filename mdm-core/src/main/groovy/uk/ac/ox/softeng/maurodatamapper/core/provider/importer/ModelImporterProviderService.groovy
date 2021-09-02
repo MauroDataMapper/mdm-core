@@ -23,7 +23,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
+import com.fasterxml.jackson.databind.util.BeanUtil
 import groovy.transform.CompileStatic
+import org.apache.commons.beanutils.BeanUtils
 import org.springframework.beans.factory.annotation.Autowired
 
 @CompileStatic
@@ -44,7 +46,8 @@ abstract class ModelImporterProviderService<M extends Model, P extends ModelImpo
         M model = importModel(currentUser, params as P)
         if (!model) return null
         M updated = updateImportedModelFromParameters(model, params as P, false)
-        checkImport(currentUser, updated, params as P)
+        M checked = checkImport(currentUser, updated, params as P)
+        propagateImportedFromPreviousVersion(currentUser, params, checked)
     }
 
     @Override
@@ -63,7 +66,11 @@ abstract class ModelImporterProviderService<M extends Model, P extends ModelImpo
         // Mst check this first to ensure its in place for finding existing models
         modelService.checkAuthority(currentUser, importedModel, params.useDefaultAuthority)
 
+        //If a model exists with the same Id as the import, finalise the old one
         modelService.checkDocumentationVersion(importedModel, params.importAsNewDocumentationVersion, currentUser)
+
+        //if branchModel option is checked, find and finalise latest non default version
+        //else if no version is found or version is the default, create a finalised version of default instead
         modelService.checkBranchModelVersion(importedModel, params.importAsNewBranchModelVersion, params.newBranchName, currentUser)
 
         // Need to do all the branch management before we finalise the model otherwise the branch work overrides everything
@@ -78,6 +85,14 @@ abstract class ModelImporterProviderService<M extends Model, P extends ModelImpo
         if (params.author) importedModel.author = params.author
         if (params.organisation) importedModel.organisation = params.organisation
         if (params.description) importedModel.description = params.description
+        importedModel
+    }
+
+    M propagateImportedFromPreviousVersion(User currentUser, ModelImporterProviderServiceParameters params, M importedModel) {
+        if(params.propagateFromPreviousVersion) {
+           return modelService.propagateFromPreviousVersion(currentUser, importedModel)
+        }
+
         importedModel
     }
 }

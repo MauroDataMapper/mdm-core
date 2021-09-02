@@ -146,4 +146,11 @@ class ModelImporterProviderServiceParameters implements ImporterProviderServiceP
         hidden = true
     )
     Boolean useDefaultAuthority = true
+
+    @ImportParameterConfig(
+        displayName = 'Propagate From Previous Version',
+        description = 'Propagate descriptions and facets from the last version',
+        order = 1
+    )
+    Boolean propagateFromPreviousVersion = false
 }
