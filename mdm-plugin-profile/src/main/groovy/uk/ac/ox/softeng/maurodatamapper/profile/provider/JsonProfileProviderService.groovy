@@ -52,7 +52,7 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
                 field.validate()
             }
         }
-        jsonProfile
+        updateUneditableFields(jsonProfile)
     }
 
     JsonProfile getNewProfile() {
@@ -66,7 +66,7 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
             ProfileSection submittedSection = jsonProfile.sections.find {it.name == section.name}
             if (submittedSection) {
                 section.fields.each {field ->
-                    ProfileField submittedField = submittedSection.fields.find {it.getUniqueKey(section.name) == field.getUniqueKey(section.name)}
+                    ProfileField submittedField = findFieldInSubmittedSection(submittedSection, section.name, field.getUniqueKey(section.name))
                     if (submittedField) {
                         // Dont allow derived or uneditable fields to be set
                         if (!field.derived && !field.uneditable) {
@@ -84,6 +84,10 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
         entity.findMetadataByNamespace(metadataNamespace).each {md ->
             metadataService.save(md)
         }
+    }
+
+    ProfileField findFieldInSubmittedSection(ProfileSection submittedSection, String sectionNameToSearch, String profileFieldNameToFind) {
+        submittedSection.find {it.getUniqueKey(sectionNameToSearch) == profileFieldNameToFind}
     }
 
     void storeFieldInEntity(MultiFacetAware entity, String value, String key, String userEmailAddress) {
@@ -118,6 +122,23 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
         cleanProfile.domainType = submittedProfile.domainType
         cleanProfile.id = submittedProfile.id
         cleanProfile.label = submittedProfile.label
-        cleanProfile
+        updateUneditableFields(cleanProfile)
+    }
+
+    /**
+     * Method which can be overriden to set any uneditable fields.
+     * Default behaviour is to do nothing.
+     * @param jsonProfile
+     * @return
+     */
+    JsonProfile updateUneditableFields(JsonProfile jsonProfile) {
+        jsonProfile
+    }
+
+    void findAndSetProfileField(ProfileSection profileSection, String metadataPropertyName, String value, boolean replaceExistingValue = false) {
+        ProfileField fieldToUpdate = profileSection.find {it.metadataPropertyName == metadataPropertyName}
+        if (!fieldToUpdate.currentValue || replaceExistingValue) {
+            fieldToUpdate.currentValue = value
+        }
     }
 }

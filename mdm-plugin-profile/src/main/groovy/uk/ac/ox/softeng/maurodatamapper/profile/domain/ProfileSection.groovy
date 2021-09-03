@@ -19,6 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.profile.domain
 
 
 import grails.validation.Validateable
+import groovy.transform.stc.ClosureParams
+import groovy.transform.stc.SimpleType
 
 class ProfileSection implements Cloneable, Validateable {
 
@@ -46,13 +48,21 @@ class ProfileSection implements Cloneable, Validateable {
         !hasErrors()
     }
 
-    @Deprecated
     void setSectionName(String name) {
         this.name = name
     }
 
-    @Deprecated
     void setSectionDescription(String description) {
         this.description = description
+    }
+
+    ProfileField find(@DelegatesTo(List) @ClosureParams(value = SimpleType,
+        options = 'uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileField') Closure closure) {
+        fields.find closure
+    }
+
+    List<ProfileField> each(@DelegatesTo(List) @ClosureParams(value = SimpleType,
+        options = 'uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileField') Closure closure) {
+        fields.each closure
     }
 }

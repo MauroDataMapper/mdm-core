@@ -19,6 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.profile.provider
 
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MetadataAware
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileField
@@ -26,7 +28,9 @@ import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.provider.MauroDataMapperService
 import uk.ac.ox.softeng.maurodatamapper.security.User
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
+import grails.core.support.proxy.ProxyHandler
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.springframework.beans.factory.annotation.Autowired
@@ -37,6 +41,9 @@ import java.lang.reflect.ParameterizedType
 abstract class ProfileProviderService<P extends Profile, D extends MultiFacetAware> extends MauroDataMapperService {
 
     @Autowired
+    ProxyHandler proxyHandler
+
+    @Autowired
     MetadataService metadataService
 
     abstract void storeProfileInEntity(D entity, P profile, String userEmailAddress)
@@ -44,8 +51,6 @@ abstract class ProfileProviderService<P extends Profile, D extends MultiFacetAwa
     abstract P createProfileFromEntity(D entity)
 
     abstract String getMetadataNamespace()
-
-    boolean isJsonProfileService() { return true }
 
     boolean disabled = false
 
@@ -70,36 +75,6 @@ abstract class ProfileProviderService<P extends Profile, D extends MultiFacetAwa
 
     P getNewProfile() {
         getProfileClass().getDeclaredConstructor().newInstance()
-    }
-
-    P getAllProfileFieldValues(Map params, List<P> profiles) {
-        Set<String> filters = []
-        P returnProfile = getNewProfile()
-
-        if (!params['filter']) {
-            filters = returnProfile.getKnownFields()
-        } else if (params['filter'] instanceof String) {
-            filters = [params['filter'].toString()] as Set
-        } else {
-            filters.addAll((List<String>) params['filter'])
-        }
-
-        profiles.each { profile ->
-
-            returnProfile.getKnownFields().each { profileFieldName ->
-                if (profileFieldName in filters && profile[profileFieldName]) {
-
-                    Set returnValue = returnProfile[profileFieldName] as Set
-
-                    if (!returnValue) returnValue = new HashSet()
-
-                    returnValue.add(profile[profileFieldName])
-
-                    returnProfile[profileFieldName] = returnValue
-                }
-            }
-        }
-        returnProfile
     }
 
     Class<P> getProfileClass() {
@@ -161,4 +136,29 @@ abstract class ProfileProviderService<P extends Profile, D extends MultiFacetAwa
         cleanProfile
     }
 
+    Map<String, Collection<String>> listAllValuesInProfile(String domainType, List<String> filter, UserSecurityPolicyManager userSecurityPolicyManager) {
+        List<MetadataAware> profiledItems = findAllProfiledItems(domainType)
+        List<MetadataAware> filteredProfiledItems = []
+        profiledItems.each {profiledItem ->
+            if (profiledItem instanceof Model
+                && userSecurityPolicyManager.userCanReadSecuredResourceId(profiledItem.getClass(), profiledItem.id)) {
+                filteredProfiledItems.add(profiledItem)
+            } else if (profiledItem instanceof ModelItem) {
+
+                Model model = proxyHandler.unwrapIfProxy(profiledItem.getModel()) as Model
+                if (userSecurityPolicyManager.userCanReadResourceId(profiledItem.getClass(), profiledItem.id, model.getClass(), model.id)) {
+                    filteredProfiledItems.add(profiledItem)
+                }
+            }
+
+        }
+        List<Profile> profiles = filteredProfiledItems.collect {createProfileFromEntity(it as D)}
+        getKnownMetadataKeys()
+            .findAll {key -> (!filter || filter.contains(key))}
+            .collectEntries {key ->
+                [key, profiles.collect {profile ->
+                    profile.getAllFields().find {it.metadataPropertyName == key}.currentValue
+                }.toSet()]
+            }
+    }
 }

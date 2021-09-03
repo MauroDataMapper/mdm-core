@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile.object
 
+import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileField
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
 
 import grails.validation.Validateable
@@ -25,37 +26,7 @@ import groovy.transform.CompileStatic
 @CompileStatic
 abstract class Profile implements Comparable<Profile>, Validateable {
 
-    abstract def getField(String fieldName)
-
-    abstract void setField(String fieldName, Object value)
-
     abstract Set<String> getKnownFields()
-
-    boolean simpleFilter(Map params) {
-        boolean result = true
-        getKnownFields().each {profileFieldName ->
-            if (!params[profileFieldName]) {
-                // no filter on this field... we don't care
-            } else if (params[profileFieldName] instanceof String) {
-                String filterField = params[profileFieldName]
-                if (this[profileFieldName] != filterField) {
-                    result = false
-                }
-
-            } else {
-                // We've got a set of filters
-                List<String> filters = new ArrayList<>((List<String>) params[profileFieldName])
-                boolean found = false
-                filters.each {filter ->
-                    if (getField(profileFieldName) == filter) {
-                        found = true
-                    }
-                }
-                result &= found
-            }
-        }
-        result
-    }
 
     abstract List<ProfileSection> getSections()
 
@@ -71,5 +42,9 @@ abstract class Profile implements Comparable<Profile>, Validateable {
             }
         }
         !hasErrors()
+    }
+
+    List<ProfileField> getAllFields() {
+        sections.collectMany {it.fields}
     }
 }

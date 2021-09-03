@@ -22,11 +22,12 @@ import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
 import groovy.util.logging.Slf4j
 
 @Slf4j
-class JsonProfile extends MapBasedProfile {
+class JsonProfile extends Profile {
 
     List<ProfileSection> sections
     String domainType
     String label
+    UUID id
 
     // Empty constructor used for deserialization from Json
     JsonProfile() {
