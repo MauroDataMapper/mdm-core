@@ -15,13 +15,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.core.traits.domain
+package uk.ac.ox.softeng.maurodatamapper.traits.domain
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import grails.compiler.GrailsCompileStatic
 import groovy.transform.SelfType
 import org.grails.datastore.gorm.GormEntity
-import org.grails.datastore.mapping.proxy.EntityProxy
 import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 
 /**

@@ -20,7 +20,6 @@ package uk.ac.ox.softeng.maurodatamapper.core.provider.exporter
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 
 import groovy.xml.Namespace
-import uk.ac.ox.softeng.maurodatamapper.path.Path
 
 class ExportModel {
 
@@ -30,7 +29,6 @@ class ExportModel {
     String modelExportTemplatePath
     String exportModelType
     Namespace modelXmlNamespace
-    Path path
 
     ExportModel(CatalogueItem model, String modelType, String version, ExportMetadata exportMetadata) {
         this(model, modelType, version, '', exportMetadata)
