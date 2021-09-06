@@ -46,8 +46,7 @@ abstract class ModelImporterProviderService<M extends Model, P extends ModelImpo
         M model = importModel(currentUser, params as P)
         if (!model) return null
         M updated = updateImportedModelFromParameters(model, params as P, false)
-        M checked = checkImport(currentUser, updated, params as P)
-        propagateImportedFromPreviousVersion(currentUser, params, checked)
+        checkImport(currentUser, updated, params as P)
     }
 
     @Override
@@ -75,6 +74,8 @@ abstract class ModelImporterProviderService<M extends Model, P extends ModelImpo
 
         // Need to do all the branch management before we finalise the model otherwise the branch work overrides everything
         modelService.checkFinaliseModel(importedModel, params.finalised, params.importAsNewBranchModelVersion)
+
+        importedModel = propagateImportedFromPreviousVersion(currentUser, params, importedModel)
 
         importedModel
     }
