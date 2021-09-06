@@ -179,15 +179,6 @@ class CodeSetService extends ModelService<CodeSet> {
         CodeSet.byDeleted().list(pagination)
     }
 
-    List<CodeSet> findAllByReadableTermId(UUID termId){
-        // finds term and returns associated code sets
-        def returnCodesets = []
-        if (Term.findById(termId) != null){
-            returnCodesets.addAll(Term.findById(termId).getCodeSets().asList())
-        }
-        returnCodesets
-    }
-
     @Override
     int countByAuthorityAndLabelAndBranchNameAndNotFinalised(Authority authority, String label, String branchName) {
         CodeSet.countByAuthorityAndLabelAndBranchNameAndFinalised(authority, label, branchName, false)
@@ -421,6 +412,12 @@ class CodeSetService extends ModelService<CodeSet> {
         List<UUID> ids = userSecurityPolicyManager.listReadableSecuredResourceIds(CodeSet)
         ids ? CodeSet.findAllByIdInList(ids, pagination) : []
     }
+
+    List<CodeSet> findAllByTermIdAndUser(UUID termId, UserSecurityPolicyManager userSecurityPolicyManager, Map pagination = [:]) {
+        List<UUID> ids = userSecurityPolicyManager.listReadableSecuredResourceIds(CodeSet)
+        CodeSet.byTermIdAndIdInList(termId, ids).list(pagination)
+    }
+
 
     /**
      * Find a CodeSet by label.

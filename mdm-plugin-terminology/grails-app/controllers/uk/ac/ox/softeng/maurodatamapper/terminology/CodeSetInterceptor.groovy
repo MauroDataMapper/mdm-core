@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
-import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.interceptor.ModelInterceptor
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
@@ -67,7 +66,6 @@ class CodeSetInterceptor extends ModelInterceptor {
     }
 
     boolean before() {
-        checkIds()
         securableResourceChecks()
 
         boolean canRead = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(CodeSet, getId())
@@ -81,8 +79,8 @@ class CodeSetInterceptor extends ModelInterceptor {
 
         if (isIndex() && params.containsKey('terminologyId')) {
             // checks user's accessibility to resources based on terminologyId
-            boolean canRead = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Terminology , params.get('terminologyId'))
-            return canRead ?: notFound(Term, params.termId)
+            boolean canReadTerminology = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, params.get('terminologyId'))
+            return canReadTerminology ?: notFound(Term, params.termId)
         }
 
         checkModelActionsAuthorised()
