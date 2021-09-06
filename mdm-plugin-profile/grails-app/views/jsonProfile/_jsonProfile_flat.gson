@@ -1,9 +1,10 @@
 import uk.ac.ox.softeng.maurodatamapper.profile.object.JsonProfile
 
-inherits template: '/profile/profile', model: [profile: jsonProfile]
+inherits template: '/profile/profile_flat', model: [profile: jsonProfile]
 
 model {
     JsonProfile jsonProfile
+    String format
 }
 json {
     id jsonProfile.id

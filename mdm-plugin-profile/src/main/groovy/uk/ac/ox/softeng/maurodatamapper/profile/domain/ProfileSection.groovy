@@ -65,4 +65,8 @@ class ProfileSection implements Cloneable, Validateable {
         options = 'uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileField') Closure closure) {
         fields.each closure
     }
+
+    Map<String, String> getFlatFieldMap() {
+        fields.findAll {it.currentValue}.collectEntries {[it.fieldName, it.currentValue]}
+    }
 }

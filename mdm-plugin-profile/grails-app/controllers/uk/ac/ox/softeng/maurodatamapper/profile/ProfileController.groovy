@@ -117,7 +117,7 @@ class ProfileController implements ResourcelessMdmController {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
 
-        respond profileService.createProfile(profileProviderService, multiFacetAware)
+        respond profile: profileService.createProfile(profileProviderService, multiFacetAware), format: params.format
     }
 
     @Transactional

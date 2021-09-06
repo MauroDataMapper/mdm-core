@@ -5,6 +5,6 @@ model {
 }
 json {
     name profileSection.name
-    description profileSection.description
-    fields tmpl.'/profileField/profileField'(profileSection.fields)
+    if (profileSection.description) description profileSection.description
+    fields profileSection.flatFieldMap
 }
