@@ -48,7 +48,7 @@ class DataFlowXmlImporterService extends DataBindDataFlowImporterProviderService
 
     @Override
     String getVersion() {
-        '3.0'
+        '4.0'
     }
 
     @Override

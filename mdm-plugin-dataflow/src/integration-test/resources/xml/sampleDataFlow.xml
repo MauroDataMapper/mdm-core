@@ -18,7 +18,7 @@
     SPDX-License-Identifier: Apache-2.0
 
 -->
-<exp:exportModel xmlns:exp='http://maurodatamapper.com/export/3.0' xmlns:mdm='http://maurodatamapper.com/dataFlow/3.0'>
+<exp:exportModel xmlns:exp='http://maurodatamapper.com/export/4.0' xmlns:mdm='http://maurodatamapper.com/dataFlow/4.0'>
     <mdm:dataFlow>
         <mdm:id>edd1757b-c762-4090-84c0-9ad61dd812fe</mdm:id>
         <mdm:label>My DataFlow label</mdm:label>
@@ -27,11 +27,13 @@
         <mdm:source>
             <mdm:id>125ef610-da29-4f2d-99c0-71d91fa8e72e</mdm:id>
             <mdm:label>SourceFlowDataModel</mdm:label>
+            <mdm:path>dm:SourceFlowDataModel$main</mdm:path>
             <mdm:type>Data Asset</mdm:type>
         </mdm:source>
         <mdm:target>
             <mdm:id>4e8aabbb-543c-48ca-9ea2-e6f4032d6af5</mdm:id>
             <mdm:label>TargetFlowDataModel</mdm:label>
+            <mdm:path>dm:TargetFlowDataModel$main</mdm:path>
             <mdm:type>Data Asset</mdm:type>
         </mdm:target>
         <mdm:dataClassComponents>
@@ -45,11 +47,13 @@ FROM SourceFlowDataModel.tableA</mdm:definition>
                 <mdm:sourceDataClasses>
                     <mdm:dataClass>
                         <mdm:label>tableA</mdm:label>
+                        <mdm:path>dm:SourceFlowDataModel$main|dc:tableA</mdm:path>
                     </mdm:dataClass>
                 </mdm:sourceDataClasses>
                 <mdm:targetDataClasses>
                     <mdm:dataClass>
                         <mdm:label>tableD</mdm:label>
+                        <mdm:path>dm:TargetFlowDataModel$main|dc:tableD</mdm:path>
                     </mdm:dataClass>
                 </mdm:targetDataClasses>
                 <mdm:dataElementComponents>
@@ -60,6 +64,7 @@ FROM SourceFlowDataModel.tableA</mdm:definition>
                         <mdm:sourceDataElements>
                             <mdm:dataElement>
                                 <mdm:label>columnA</mdm:label>
+                                <mdm:path>dm:SourceFlowDataModel$main|dc:tableA|de:columnA</mdm:path>
                                 <mdm:dataClass>
                                     <mdm:label>tableA</mdm:label>
                                 </mdm:dataClass>
@@ -68,6 +73,7 @@ FROM SourceFlowDataModel.tableA</mdm:definition>
                         <mdm:targetDataElements>
                             <mdm:dataElement>
                                 <mdm:label>columnN</mdm:label>
+                                <mdm:path>dm:SourceFlowDataModel$main|dc:tableD|de:columnN</mdm:path>
                                 <mdm:dataClass>
                                     <mdm:label>tableD</mdm:label>
                                 </mdm:dataClass>
@@ -81,6 +87,7 @@ FROM SourceFlowDataModel.tableA</mdm:definition>
                         <mdm:sourceDataElements>
                             <mdm:dataElement>
                                 <mdm:label>columnB</mdm:label>
+                                <mdm:path>dm:SourceFlowDataModel$main|dc:tableA|de:columnB</mdm:path>
                                 <mdm:dataClass>
                                     <mdm:label>tableA</mdm:label>
                                 </mdm:dataClass>
@@ -89,6 +96,7 @@ FROM SourceFlowDataModel.tableA</mdm:definition>
                         <mdm:targetDataElements>
                             <mdm:dataElement>
                                 <mdm:label>columnO</mdm:label>
+                                <mdm:path>dm:TargetFlowDataModel$main|dc:tableD|de:columnO</mdm:path>
                                 <mdm:dataClass>
                                     <mdm:label>tableD</mdm:label>
                                 </mdm:dataClass>
@@ -102,6 +110,7 @@ FROM SourceFlowDataModel.tableA</mdm:definition>
                         <mdm:sourceDataElements>
                             <mdm:dataElement>
                                 <mdm:label>columnC</mdm:label>
+                                <mdm:path>dm:SourceFlowDataModel$main|dc:tableA|de:columnC</mdm:path>
                                 <mdm:dataClass>
                                     <mdm:label>tableA</mdm:label>
                                 </mdm:dataClass>
@@ -110,6 +119,7 @@ FROM SourceFlowDataModel.tableA</mdm:definition>
                         <mdm:targetDataElements>
                             <mdm:dataElement>
                                 <mdm:label>columnP</mdm:label>
+                                <mdm:path>dm:TargetFlowDataModel|dc:tableD|de:columnP</mdm:path>
                                 <mdm:dataClass>
                                     <mdm:label>tableD</mdm:label>
                                 </mdm:dataClass>
@@ -123,6 +133,7 @@ FROM SourceFlowDataModel.tableA</mdm:definition>
                         <mdm:sourceDataElements>
                             <mdm:dataElement>
                                 <mdm:label>columnD</mdm:label>
+                                <mdm:path>dm:SourceFlowDataModel|dc:tableA|de:columnD</mdm:path>
                                 <mdm:dataClass>
                                     <mdm:label>tableA</mdm:label>
                                 </mdm:dataClass>
@@ -131,6 +142,7 @@ FROM SourceFlowDataModel.tableA</mdm:definition>
                         <mdm:targetDataElements>
                             <mdm:dataElement>
                                 <mdm:label>columnQ</mdm:label>
+                                <mdm:path>dm:TargetFlowDataModel|dc:tableD|de:columnQ</mdm:path>
                                 <mdm:dataClass>
                                     <mdm:label>tableD</mdm:label>
                                 </mdm:dataClass>
@@ -159,14 +171,17 @@ INNER JOIN SourceFlowDataModel.tableC c ON b.columnE1 = c.columnE2</mdm:definiti
                 <mdm:sourceDataClasses>
                     <mdm:dataClass>
                         <mdm:label>tableB</mdm:label>
+                        <mdm:path>dm:SourceFlowDataModel|dc:tableB</mdm:path>
                     </mdm:dataClass>
                     <mdm:dataClass>
                         <mdm:label>tableC</mdm:label>
+                        <mdm:path>dm:SourceFlowDataModel|dc:tableC</mdm:path>
                     </mdm:dataClass>
                 </mdm:sourceDataClasses>
                 <mdm:targetDataClasses>
                     <mdm:dataClass>
                         <mdm:label>tableE</mdm:label>
+                        <mdm:path>dm:TargetFlowDataModel|dc:tableE</mdm:path>
                     </mdm:dataClass>
                 </mdm:targetDataClasses>
                 <mdm:dataElementComponents>
@@ -181,12 +196,14 @@ END</mdm:definition>
                         <mdm:sourceDataElements>
                             <mdm:dataElement>
                                 <mdm:label>columnH</mdm:label>
+                                <mdm:path>dm:SourceFlowDataModel|dc:tableB|de:columnH</mdm:path>
                                 <mdm:dataClass>
                                     <mdm:label>tableB</mdm:label>
                                 </mdm:dataClass>
                             </mdm:dataElement>
                             <mdm:dataElement>
                                 <mdm:label>columnI</mdm:label>
+                                <mdm:path>dm:SourceFlowDataModel|dc:tableB|de:columnI</mdm:path>
                                 <mdm:dataClass>
                                     <mdm:label>tableB</mdm:label>
                                 </mdm:dataClass>
@@ -195,6 +212,7 @@ END</mdm:definition>
                         <mdm:targetDataElements>
                             <mdm:dataElement>
                                 <mdm:label>columnT</mdm:label>
+                                <mdm:path>dm:TargetFlowDataModel|dc:tableE|de:columnT</mdm:path>
                                 <mdm:dataClass>
                                     <mdm:label>tableE</mdm:label>
                                 </mdm:dataClass>
@@ -209,12 +227,14 @@ END</mdm:definition>
                         <mdm:sourceDataElements>
                             <mdm:dataElement>
                                 <mdm:label>columnG</mdm:label>
+                                <mdm:path>dm:SourceFlowDataModel|dc:tableB|de:columnG</mdm:path>
                                 <mdm:dataClass>
                                     <mdm:label>tableB</mdm:label>
                                 </mdm:dataClass>
                             </mdm:dataElement>
                             <mdm:dataElement>
                                 <mdm:label>columnJ</mdm:label>
+                                <mdm:path>dm:SourceFlowDataModel|dc:tableC|de:columnJ</mdm:path>
                                 <mdm:dataClass>
                                     <mdm:label>tableC</mdm:label>
                                 </mdm:dataClass>
@@ -223,6 +243,7 @@ END</mdm:definition>
                         <mdm:targetDataElements>
                             <mdm:dataElement>
                                 <mdm:label>columnS</mdm:label>
+                                <mdm:path>dm:TargetFlowDataModel|dc:tableE|de:columnS</mdm:path>
                                 <mdm:dataClass>
                                     <mdm:label>tableE</mdm:label>
                                 </mdm:dataClass>
@@ -237,18 +258,21 @@ END</mdm:definition>
                         <mdm:sourceDataElements>
                             <mdm:dataElement>
                                 <mdm:label>columnG</mdm:label>
+                                <mdm:path>dm:SourceFlowDataModel|dc:tableB|de:columnG</mdm:path>
                                 <mdm:dataClass>
                                     <mdm:label>tableB</mdm:label>
                                 </mdm:dataClass>
                             </mdm:dataElement>
                             <mdm:dataElement>
                                 <mdm:label>columnL</mdm:label>
+                                <mdm:path>dm:SourceFlowDataModel|dc:tableC|de:columnL</mdm:path>
                                 <mdm:dataClass>
                                     <mdm:label>tableC</mdm:label>
                                 </mdm:dataClass>
                             </mdm:dataElement>
                             <mdm:dataElement>
                                 <mdm:label>columnM</mdm:label>
+                                <mdm:path>dm:SourceFlowDataModel|dc:tableC|de:columnM</mdm:path>
                                 <mdm:dataClass>
                                     <mdm:label>tableC</mdm:label>
                                 </mdm:dataClass>
@@ -257,6 +281,7 @@ END</mdm:definition>
                         <mdm:targetDataElements>
                             <mdm:dataElement>
                                 <mdm:label>columnV</mdm:label>
+                                <mdm:path>dm:TargetFlowDataModel|dc:tableE|de:columnV</mdm:path>
                                 <mdm:dataClass>
                                     <mdm:label>tableE</mdm:label>
                                 </mdm:dataClass>
@@ -270,6 +295,7 @@ END</mdm:definition>
                         <mdm:sourceDataElements>
                             <mdm:dataElement>
                                 <mdm:label>columnF</mdm:label>
+                                <mdm:path>dm:SourceFlowDataModel|dc:tableB|de:columnF</mdm:path>
                                 <mdm:dataClass>
                                     <mdm:label>tableB</mdm:label>
                                 </mdm:dataClass>
@@ -278,6 +304,7 @@ END</mdm:definition>
                         <mdm:targetDataElements>
                             <mdm:dataElement>
                                 <mdm:label>columnR</mdm:label>
+                                <mdm:path>dm:TargetFlowDataModel|dc:tableE|de:columnR</mdm:path>
                                 <mdm:dataClass>
                                     <mdm:label>tableE</mdm:label>
                                 </mdm:dataClass>
@@ -291,12 +318,14 @@ END</mdm:definition>
                         <mdm:sourceDataElements>
                             <mdm:dataElement>
                                 <mdm:label>columnE1</mdm:label>
+                                <mdm:path>dm:SourceFlowDataModel|dc:tableB|de:columnE1</mdm:path>
                                 <mdm:dataClass>
                                     <mdm:label>tableB</mdm:label>
                                 </mdm:dataClass>
                             </mdm:dataElement>
                             <mdm:dataElement>
                                 <mdm:label>columnE2</mdm:label>
+                                <mdm:path>dm:SourceFlowDataModel|dc:tableC|de:columnE2</mdm:path>
                                 <mdm:dataClass>
                                     <mdm:label>tableC</mdm:label>
                                 </mdm:dataClass>
@@ -305,6 +334,7 @@ END</mdm:definition>
                         <mdm:targetDataElements>
                             <mdm:dataElement>
                                 <mdm:label>columnE</mdm:label>
+                                <mdm:path>dm:TargetFlowDataModel|dc:tableE|de:columnE</mdm:path>
                                 <mdm:dataClass>
                                     <mdm:label>tableE</mdm:label>
                                 </mdm:dataClass>
@@ -318,6 +348,7 @@ END</mdm:definition>
                         <mdm:sourceDataElements>
                             <mdm:dataElement>
                                 <mdm:label>columnJ</mdm:label>
+                                <mdm:path>dm:SourceFlowDataModel|dc:tableC|de:columnJ</mdm:path>
                                 <mdm:dataClass>
                                     <mdm:label>tableC</mdm:label>
                                 </mdm:dataClass>
@@ -326,6 +357,7 @@ END</mdm:definition>
                         <mdm:targetDataElements>
                             <mdm:dataElement>
                                 <mdm:label>columnU</mdm:label>
+                                <mdm:path>dm:TargetFlowDataModel|dc:tableE|de:columnU</mdm:path>
                                 <mdm:dataClass>
                                     <mdm:label>tableE</mdm:label>
                                 </mdm:dataClass>

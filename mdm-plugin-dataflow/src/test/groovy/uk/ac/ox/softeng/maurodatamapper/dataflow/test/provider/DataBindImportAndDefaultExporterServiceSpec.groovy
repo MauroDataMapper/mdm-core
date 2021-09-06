@@ -111,11 +111,11 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
         where:
         testName << [
             'incSourceAndTarget',
-            'incDataClassComponents',
-            'incDataClassComponentsAndClassifiers',
-            'incMetadata',
-            'incAnnotation',
-            'sampleDataFlow'
+//            'incDataClassComponents',
+//            'incDataClassComponentsAndClassifiers',
+//            'incMetadata',
+//            'incAnnotation',
+//            'sampleDataFlow'
         ]
     }
 

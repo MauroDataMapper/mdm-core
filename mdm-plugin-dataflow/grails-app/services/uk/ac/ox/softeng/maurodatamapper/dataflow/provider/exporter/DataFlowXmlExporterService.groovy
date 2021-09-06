@@ -53,7 +53,7 @@ class DataFlowXmlExporterService extends DataFlowExporterProviderService impleme
 
     @Override
     String getVersion() {
-        '3.0'
+        '4.0'
     }
 
     @Override

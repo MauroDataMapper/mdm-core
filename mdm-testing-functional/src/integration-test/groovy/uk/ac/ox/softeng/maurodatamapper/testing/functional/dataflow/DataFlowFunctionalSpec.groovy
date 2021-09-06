@@ -315,7 +315,7 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
         String id = getValidId()
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/3.0")
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/4.0")
 
         then:
         verifyNotFound response, id
@@ -330,7 +330,7 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
 
         when:
         loginAuthenticated()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/3.0")
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/4.0")
 
         then:
         verifyNotFound response, id
@@ -345,7 +345,7 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
 
         when:
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/4.0", STRING_ARG)
 
         then:
         verifyJsonResponse HttpStatus.OK, '''{
@@ -357,11 +357,13 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
     "source": {
       "id": "${json-unit.matches:id}",
       "label": "SourceFlowDataModel",
+      "path": "dm:SourceFlowDataModel$main",
       "type": "Data Asset"
     },
     "target": {
       "id": "${json-unit.matches:id}",
       "label": "TargetFlowDataModel",
+      "path": "dm:TargetFlowDataModel$main",
       "type": "Data Asset"
     }
   },
@@ -371,7 +373,7 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter",
       "name": "DataFlowJsonExporterService",
-      "version": "3.0"
+      "version": "4.0"
     }
   }
 }'''
@@ -389,7 +391,7 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
         ])
 
         when:
-        POST('export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/3.0',
+        POST('export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/4.0',
              [dataFlowIds: [id, id2]]
         )
 
@@ -412,7 +414,7 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
 
         when:
         loginAuthenticated()
-        POST('export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/3.0',
+        POST('export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/4.0',
              [dataFlowIds: [id, id2]]
         )
 
@@ -435,7 +437,7 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
 
         when:
         loginReader()
-        POST('export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/3.0',
+        POST('export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/4.0',
              [dataFlowIds: [id, id2]], STRING_ARG
         )
 
@@ -449,11 +451,13 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
     "source": {
       "id": "${json-unit.matches:id}",
       "label": "SourceFlowDataModel",
+      "path": "dm:SourceFlowDataModel$main",
       "type": "Data Asset"
     },
     "target": {
       "id": "${json-unit.matches:id}",
       "label": "TargetFlowDataModel",
+      "path": "dm:TargetFlowDataModel$main",
       "type": "Data Asset"
     }
   },
@@ -463,7 +467,7 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter",
       "name": "DataFlowJsonExporterService",
-      "version": "3.0"
+      "version": "4.0"
     }
   }
 }'''
@@ -478,7 +482,7 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/4.0", STRING_ARG)
         verifyResponse HttpStatus.OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -487,7 +491,7 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
         exportedJsonString
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer/DataFlowJsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer/DataFlowJsonImporterService/4.0', [
             modelName                      : 'Functional Test Import',
             importFile                     : [
                 fileName    : 'FT Import',
@@ -507,7 +511,7 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/4.0", STRING_ARG)
         verifyResponse HttpStatus.OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -517,7 +521,7 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
 
         when:
         loginAuthenticated()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer/DataFlowJsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer/DataFlowJsonImporterService/4.0', [
             modelName                      : 'Functional Test Import',
             importFile                     : [
                 fileName    : 'FT Import',
@@ -537,7 +541,7 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/4.0", STRING_ARG)
         verifyResponse HttpStatus.OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -547,7 +551,7 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
 
         when:
         loginReader()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer/DataFlowJsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer/DataFlowJsonImporterService/4.0', [
             modelName                      : 'Functional Test Import',
             importFile                     : [
                 fileName    : 'FT Import',
@@ -569,7 +573,7 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/4.0", STRING_ARG)
         verifyResponse HttpStatus.OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -579,7 +583,7 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
 
         when:
         loginEditor()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer/DataFlowJsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer/DataFlowJsonImporterService/4.0', [
             modelName                      : 'Functional Test Import',
             importFile                     : [
                 fileName    : 'FT Import',

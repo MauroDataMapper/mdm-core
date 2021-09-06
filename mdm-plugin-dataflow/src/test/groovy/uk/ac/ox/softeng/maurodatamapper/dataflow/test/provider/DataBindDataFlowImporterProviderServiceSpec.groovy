@@ -235,7 +235,7 @@ abstract class DataBindDataFlowImporterProviderServiceSpec<K extends DataBindDat
         then:
         DataFlow.count() == 1
         ApiBadRequestException exception = thrown(ApiBadRequestException)
-        exception.message.contains('Source DataModel retrieval for dm:Invalid SourceFlowDataModel failed')
+        exception.message.contains('Source DataModel retrieval for dm:Invalid SourceFlowDataModel$main failed')
     }
 
     void 'I09 : test import with failed pathing on target model'() {
@@ -251,7 +251,7 @@ abstract class DataBindDataFlowImporterProviderServiceSpec<K extends DataBindDat
         then:
         DataFlow.count() == 1
         ApiBadRequestException exception = thrown(ApiBadRequestException)
-        exception.message.contains('Target DataModel retrieval for dm:Invalid TargetFlowDataModel failed')
+        exception.message.contains('Target DataModel retrieval for dm:Invalid TargetFlowDataModel$main failed')
     }    
 
     void 'I10 : test import with failed pathing on a source dataclass'() {

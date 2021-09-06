@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
-import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.PathAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.PathAware
 
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
