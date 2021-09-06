@@ -256,7 +256,7 @@ class Path {
         List<CreatorAware> objectsInPath  = []
         objectsInPath.push(domain)
 
-        while (objectsInPath.first().getPathPrefix() != prefix && Utils.parentClassIsAssignableFromChild(PathAware, objectsInPath.first())) {
+        while (objectsInPath.first().getPathPrefix() != prefix && Utils.parentClassIsAssignableFromChild(PathAware, objectsInPath.first().class)) {
             objectsInPath.push(objectsInPath.first().getPathParent())
         }
 
