@@ -88,7 +88,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
     @Override
     List<DataModel> getAll(Collection<UUID> ids) {
-        DataModel.getAll(ids).findAll().collect {unwrapIfProxy(it)}
+        DataModel.getAll(ids).findAll().collect { unwrapIfProxy(it) }
     }
 
     @Override
@@ -98,7 +98,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
     @Override
     List<DataModel> list() {
-        DataModel.list().collect {unwrapIfProxy(it)}
+        DataModel.list().collect { unwrapIfProxy(it) }
     }
 
     @Override
@@ -110,7 +110,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
      * DataModel allows the import of DataType and DataClass
      *
      @Override
-      List<Class>       domainImportableModelItemClasses() {[DataType, DataClass, PrimitiveType, EnumerationType, ReferenceType]}
+      List<Class>        domainImportableModelItemClasses() {[DataType, DataClass, PrimitiveType, EnumerationType, ReferenceType]}
      */
     Long count() {
         DataModel.count()
@@ -127,7 +127,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         if (dataModel.hasErrors()) {
             Errors existingErrors = dataModel.errors
             Errors cleanedErrors = new ValidationErrors(dataModel)
-            existingErrors.fieldErrors.each {fe ->
+            existingErrors.fieldErrors.each { fe ->
                 if (!fe.field.contains('dataModel')) {
                     cleanedErrors.rejectValue(fe.field, fe.code, fe.arguments, fe.defaultMessage)
                 }
@@ -200,10 +200,10 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     DataModel checkFacetsAfterImportingCatalogueItem(DataModel catalogueItem) {
         super.checkFacetsAfterImportingCatalogueItem(catalogueItem)
         if (catalogueItem.summaryMetadata) {
-            catalogueItem.summaryMetadata.each {sm ->
+            catalogueItem.summaryMetadata.each { sm ->
                 sm.multiFacetAwareItemId = catalogueItem.id
                 sm.createdBy = sm.createdBy ?: catalogueItem.createdBy
-                sm.summaryMetadataReports.each {smr ->
+                sm.summaryMetadataReports.each { smr ->
                     smr.createdBy = catalogueItem.createdBy
                 }
             }
@@ -214,7 +214,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     @Override
     DataModel saveModelWithContent(DataModel dataModel) {
 
-        if (dataModel.dataTypes.any {it.id} || dataModel.dataClasses.any {it.id}) {
+        if (dataModel.dataTypes.any { it.id } || dataModel.dataClasses.any { it.id }) {
             throw new ApiInternalException('DMSXX', 'Cannot use saveModelWithContent method to save DataModel',
                                            new IllegalStateException('DataModel has previously saved content'))
         }
@@ -250,7 +250,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         }
 
         if (dataModel.breadcrumbTree.children) {
-            dataModel.breadcrumbTree.children.each {it.skipValidation(true)}
+            dataModel.breadcrumbTree.children.each { it.skipValidation(true) }
         }
 
         save(dataModel)
@@ -280,15 +280,15 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         }
 
         if (dataModel.dataTypes) {
-            enumerationTypes.addAll dataModel.enumerationTypes.findAll {!it.id}
-            primitiveTypes.addAll dataModel.primitiveTypes.findAll {!it.id}
-            modelDataTypes.addAll dataModel.modelDataTypes.findAll {!it.id}
-            referenceTypes.addAll dataModel.referenceTypes.findAll {!it.id}
+            enumerationTypes.addAll dataModel.enumerationTypes.findAll { !it.id }
+            primitiveTypes.addAll dataModel.primitiveTypes.findAll { !it.id }
+            modelDataTypes.addAll dataModel.modelDataTypes.findAll { !it.id }
+            referenceTypes.addAll dataModel.referenceTypes.findAll { !it.id }
         }
 
         if (dataModel.dataClasses) {
-            dataClasses.addAll dataModel.dataClasses.findAll {!it.id}
-            dataElements.addAll dataModel.dataClasses.collectMany {it.dataElements.findAll {!it.id}}
+            dataClasses.addAll dataModel.dataClasses.findAll { !it.id }
+            dataElements.addAll dataModel.dataClasses.collectMany { it.dataElements.findAll { !it.id } }
         }
 
         saveContent(enumerationTypes, primitiveTypes, referenceTypes, modelDataTypes, dataClasses, dataElements)
@@ -307,18 +307,18 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         sessionFactory.currentSession.clear()
         long start = System.currentTimeMillis()
         log.trace('Disabling validation on contents')
-        enumerationTypes.each {dt ->
+        enumerationTypes.each { dt ->
             dt.skipValidation(true)
-            dt.enumerationValues.each {ev -> ev.skipValidation(true)}
+            dt.enumerationValues.each { ev -> ev.skipValidation(true) }
         }
-        primitiveTypes.each {it.skipValidation(true)}
-        referenceTypes.each {it.skipValidation(true)}
-        modelDataTypes.each {it.skipValidation(true)}
-        dataClasses.each {dc ->
+        primitiveTypes.each { it.skipValidation(true) }
+        referenceTypes.each { it.skipValidation(true) }
+        modelDataTypes.each { it.skipValidation(true) }
+        dataClasses.each { dc ->
             dc.skipValidation(true)
-            dc.dataElements.each {de -> de.skipValidation(true)}
+            dc.dataElements.each { de -> de.skipValidation(true) }
         }
-        referenceTypes.each {it.skipValidation(true)}
+        referenceTypes.each { it.skipValidation(true) }
 
         long subStart = System.currentTimeMillis()
         dataTypeService.saveAll(enumerationTypes)
@@ -353,7 +353,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         modelItemServices.findAll {
             !(it.modelItemClass in [DataClass, DataElement, DataType, EnumerationType, ModelDataType, PrimitiveType,
                                     ReferenceType, EnumerationValue])
-        }.each {modelItemService ->
+        }.each { modelItemService ->
             try {
                 modelItemService.deleteAllByModelId(dataModel.id)
             } catch (ApiNotYetImplementedException ignored) {
@@ -481,7 +481,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
     DataModel checkForAndAddDefaultDataTypes(DataModel resource, String defaultDataTypeProvider) {
         if (defaultDataTypeProvider) {
-            DefaultDataTypeProvider provider = defaultDataTypeProviders.find {it.name == defaultDataTypeProvider}
+            DefaultDataTypeProvider provider = defaultDataTypeProviders.find { it.name == defaultDataTypeProvider }
             if (provider) {
                 log.debug("Adding ${provider.displayName} default DataTypes")
                 return dataTypeService.addDefaultListOfDataTypesToDataModel(resource, provider.defaultListOfDataTypes)
@@ -492,14 +492,14 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
     void deleteAllUnusedDataTypes(DataModel dataModel) {
         log.debug('Cleaning DataModel {} of DataTypes', dataModel.label)
-        dataModel.dataTypes.findAll {!it.dataElements}.each {
+        dataModel.dataTypes.findAll { !it.dataElements }.each {
             dataTypeService.delete(it)
         }
     }
 
     void deleteAllUnusedDataClasses(DataModel dataModel) {
         log.debug('Cleaning DataModel {} of DataClasses', dataModel.label)
-        dataModel.dataClasses.findAll {dataClassService.isUnusedDataClass(it)}.each {
+        dataModel.dataClasses.findAll { dataClassService.isUnusedDataClass(it) }.each {
             dataClassService.delete(it)
         }
     }
@@ -511,24 +511,24 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         if (dataModel.dataClasses) {
             dataModel.fullSortOfChildren(dataModel.childDataClasses)
             Collection<DataClass> dataClasses = dataModel.childDataClasses
-            dataClasses.each {dc ->
+            dataClasses.each { dc ->
                 dataClassService.checkImportedDataClassAssociations(importingUser, dataModel, dc, !bindingMap.isEmpty())
             }
         }
 
         if (bindingMap && dataModel.dataTypes) {
-            Set<ReferenceType> referenceTypes = dataModel.dataTypes.findAll {it.instanceOf(ReferenceType)} as Set<ReferenceType>
+            Set<ReferenceType> referenceTypes = dataModel.dataTypes.findAll { it.instanceOf(ReferenceType) } as Set<ReferenceType>
             if (referenceTypes) {
                 log.debug('Matching {} ReferenceType referenceClasses', referenceTypes.size())
                 dataTypeService.matchReferenceClasses(dataModel, referenceTypes,
-                                                      bindingMap.dataTypes.findAll {it.domainType == DataType.REFERENCE_DOMAIN_TYPE})
+                                                      bindingMap.dataTypes.findAll { it.domainType == DataType.REFERENCE_DOMAIN_TYPE })
             }
         }
 
         // Make sure we have all the DTs inside the DM first as some will have been imported from the DEs
         if (dataModel.dataTypes) {
             dataModel.fullSortOfChildren(dataModel.dataTypes)
-            dataModel.dataTypes.each {dt ->
+            dataModel.dataTypes.each { dt ->
                 dataTypeService.checkImportedDataTypeAssociations(importingUser, dataModel, dt)
             }
         }
@@ -537,7 +537,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     }
 
     DataModel ensureAllEnumerationTypesHaveValues(DataModel dataModel) {
-        dataModel.dataTypes.findAll {it.instanceOf(EnumerationType) && !(it as EnumerationType).getEnumerationValues()}.each {EnumerationType et ->
+        dataModel.dataTypes.findAll { it.instanceOf(EnumerationType) && !(it as EnumerationType).getEnumerationValues() }.each { EnumerationType et ->
             et.addToEnumerationValues(key: '-', value: '-')
         }
         dataModel
@@ -545,7 +545,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
     List<DataElement> getAllDataElementsOfDataModel(DataModel dataModel) {
         List<DataElement> allElements = []
-        dataModel.dataClasses.each {allElements += it.dataElements ?: []}
+        dataModel.dataClasses.each { allElements += it.dataElements ?: [] }
         allElements
     }
 
@@ -553,16 +553,16 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         if (!dataElementNames) return []
         getAllDataElementsOfDataModel(dataModel).findAll {
             caseInsensitive ?
-            it.label.toLowerCase() in dataElementNames.collect {it.toLowerCase()} :
+            it.label.toLowerCase() in dataElementNames.collect { it.toLowerCase() } :
             it.label in dataElementNames
         }
     }
 
     Set<EnumerationType> findAllEnumerationTypeByNames(DataModel dataModel, Set<String> enumerationTypeNames, boolean caseInsensitive) {
         if (!enumerationTypeNames) return []
-        dataModel.dataTypes.findAll {it.instanceOf(EnumerationType)}.findAll {
+        dataModel.dataTypes.findAll { it.instanceOf(EnumerationType) }.findAll {
             caseInsensitive ?
-            it.label.toLowerCase() in enumerationTypeNames.collect {it.toLowerCase()} :
+            it.label.toLowerCase() in enumerationTypeNames.collect { it.toLowerCase() } :
             it.label in enumerationTypeNames
         } as Set<EnumerationType>
     }
@@ -585,7 +585,8 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     DataModel copyModel(DataModel original, Folder folderToCopyInto, User copier, boolean copyPermissions, String label, Version copyDocVersion,
                         String branchName, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata) {
         DataModel copy = new DataModel(author: original.author, organisation: original.organisation, modelType: original.modelType, finalised: false,
-                                       deleted: false, documentationVersion: copyDocVersion, folder: folderToCopyInto, authority: authorityService.defaultAuthority,
+                                       deleted: false, documentationVersion: copyDocVersion, folder: folderToCopyInto,
+                                       authority: authorityService.defaultAuthority,
                                        branchName: branchName
         )
 
@@ -613,14 +614,14 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
         if (original.dataTypes) {
             // Copy all the datatypes
-            original.dataTypes.each {dt ->
+            original.dataTypes.each { dt ->
                 dataTypeService.copyDataType(copy, dt, copier, userSecurityPolicyManager)
             }
         }
 
         if (original.childDataClasses) {
             // Copy all the dataclasses (this will also match up the reference types)
-            original.childDataClasses.each {dc ->
+            original.childDataClasses.each { dc ->
                 dataClassService.copyDataClass(copy, dc, copier, userSecurityPolicyManager)
             }
         }
@@ -651,7 +652,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     }
 
     List<DataElementSimilarityResult> suggestLinksBetweenModels(DataModel dataModel, DataModel otherDataModel, int maxResults) {
-        dataModel.getAllDataElements().collect {de ->
+        dataModel.getAllDataElements().collect { de ->
             dataElementService.findAllSimilarDataElementsInDataModel(otherDataModel, de, maxResults)
         }
     }
@@ -665,7 +666,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
                 groupProperty('dataModel.id')
                 count()
             }.order('dataModel')
-        criteria.list().collectEntries {[it[0], it[1]]}
+        criteria.list().collectEntries { [it[0], it[1]] }
     }
 
     @Override
@@ -722,7 +723,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     List<DataModel> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
         DataModel.byClassifierId(classifier.id)
             .list()
-            .findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.id)} as List<DataModel>
+            .findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.id) } as List<DataModel>
     }
 
     @Override
@@ -762,7 +763,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
     @Override
     List<UUID> findAllModelIdsWithTreeChildren(List<DataModel> models) {
-        models.collect {it.id}.findAll {dataClassService.countByDataModelId(it)}
+        models.collect { it.id }.findAll { dataClassService.countByDataModelId(it) }
     }
 
     @Override
@@ -827,6 +828,42 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     }
 
     @Override
+    DataModel propagateDataFromPreviousVersion(DataModel model, DataModel previousVersionModel, User user, UserSecurityPolicyManager userSecurityPolicyManager) {
+        model = propagateDataModelCatalogueItems(model, previousVersionModel, user, userSecurityPolicyManager)
+        model = propagateDataModelFacets(model, previousVersionModel, user, userSecurityPolicyManager)
+        model = propagateDataModelSymanticLinks(model, previousVersionModel)
+        model = propagateDataModelProperties(model, previousVersionModel)
+        model
+    }
+
+    DataModel propagateDataModelCatalogueItems(DataModel model, DataModel previousVersionModel, User user, UserSecurityPolicyManager userSecurityPolicyManager) {
+        //copies from previous to model >
+        //catalogueItems
+        //metadata, rules, symantic, copySummaryMetadata
+        //todo, does this overwrite existing info? if so will need to address
+        model = copyCatalogueItemInformation(previousVersionModel, model, user, userSecurityPolicyManager, true)
+        model
+    }
+
+    DataModel propagateDataModelFacets(DataModel model, DataModel previousVersionModel, User user, UserSecurityPolicyManager userSecurityPolicyManager) {
+        //metadata, summary metadata, rules, comments, attachments
+
+
+        model
+    }
+
+    DataModel propagateDataModelProperties(DataModel model, DataModel previousVersionModel) {
+        //where a value is not set, if it exists in previous, copy across
+        model.getProperties().each {
+             key, val ->
+                 if(!val) return
+                 if(previousVersionModel.properties.get(key))
+                 model[(String) key] = previousVersionModel.properties.get(key)
+        }
+        model
+    }
+
+    @Override
     CatalogueItem processDeletionPatchOfFacet(MultiFacetItemAware multiFacetItemAware, Model targetModel, Path path) {
         CatalogueItem catalogueItem = super.processDeletionPatchOfFacet(multiFacetItemAware, targetModel, path)
 
@@ -860,4 +897,5 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         }
         0
     }
+
 }

@@ -183,6 +183,8 @@ abstract class ModelService<K extends Model>
 
     abstract ModelImporterProviderService<K, ? extends ModelImporterProviderServiceParameters> getJsonModelImporterProviderService()
 
+    abstract K propagateDataFromPreviousVersion(K model, K previousVersionModel, User user, UserSecurityPolicyManager userSecurityPolicyManager)
+
     void deleteModelAndContent(K model) {
         throw new ApiNotYetImplementedException('MSXX', 'deleteModelAndContent')
     }
@@ -871,217 +873,210 @@ abstract class ModelService<K extends Model>
         Version.nextMajorVersion(parentModelVersion)
     }
 
-    Model getPreviousVersionModel(K model){
-    //in theory gets the source abd id in the version links where K is the target, the finds and returns the source model
-    UUID sourceModelId = model.versionLinks.find { it -> it.targetModelId == model.id }.sourceModel.id
-    DomainType domainType = model.versionLinks.find { it -> it.targetModelId == model.id }.sourceModel.domainType
-    DomainService domainService = getDomainServices().find { it.handles(domainType.class) }
-    if ( !domainService ) {
-        throw new ApiInternalException('MSXX', "No domain service to handle modification of [${domainType.domainType}]")
-    }
-    domainService.get(sourceModelId)
-}
-
-
-void checkFinaliseModel(K model, Boolean finalise, Boolean importAsNewBranchModelVersion = false) {
-    if (finalise && (!model.finalised || !model.modelVersion)) {
-        // Parameter update will have set the model as finalised, but it wont have set the model version
-        // If the actual import data includes finalised data then it will also containt the model version
-        // If the model hasnt been imported as a new branch model version then we need to check if any existing models
-        // If existing models then we cant finalise as we need to link the imported model
-        if (!importAsNewBranchModelVersion && countByAuthorityAndLabel(model.authority, model.label)) {
-            throw new ApiBadRequestException('MSXX', 'Request to finalise import without creating newBranchModelVersion to existing models')
+    K getPreviousVersionModel(K model) {
+        UUID sourceModelId = model.versionLinks.find().targetModelId
+        String domainType = model.versionLinks.find().targetModelDomainType
+        DomainService domainService = getDomainServices().find { it.handles(domainType) }
+        if (!domainService) {
+            throw new ApiInternalException('MSXX', "No domain service to handle modification of [${domainType}]")
         }
-        model.finalised = true
+        domainService.get(sourceModelId)
     }
-    if (model.finalised) {
-        model.dateFinalised = model.dateFinalised ?: OffsetDateTime.now()
-        model.modelVersion = model.modelVersion ?: getNextModelVersion(model, null, VersionChangeType.MAJOR)
-    } else {
-        // Make sure that, if after all the checking, the model is not finalised we dont have any modelVersion or date set
-        model.dateFinalised = null
-        model.modelVersion = null
-    }
-}
 
-@Override
-void deleteAllFacetDataByMultiFacetAwareIds(List<UUID> catalogueItemIds) {
-    super.deleteAllFacetDataByMultiFacetAwareIds(catalogueItemIds)
-    versionLinkService.deleteAllByMultiFacetAwareItemIds(catalogueItemIds)
-}
 
-void checkDocumentationVersion(K model, boolean importAsNewDocumentationVersion, User catalogueUser) {
-    if (importAsNewDocumentationVersion) {
-
-        if (countByAuthorityAndLabel(model.authority, model.label)) {
-            // Doc versions must be built off finalised versions, they cannot be built of a finalised version where a branch already exists
-            // So we just get the latest model and finalise if its not finalised
-            K latest = findLatestModelByLabel(model.label)
-
-            if (!latest || latest.id == model.id) {
-                log.info('Marked as importAsNewDocumentationVersion but no existing Models with label [{}]', model.label)
-                return
+    void checkFinaliseModel(K model, Boolean finalise, Boolean importAsNewBranchModelVersion = false) {
+        if (finalise && (!model.finalised || !model.modelVersion)) {
+            // Parameter update will have set the model as finalised, but it wont have set the model version
+            // If the actual import data includes finalised data then it will also containt the model version
+            // If the model hasnt been imported as a new branch model version then we need to check if any existing models
+            // If existing models then we cant finalise as we need to link the imported model
+            if (!importAsNewBranchModelVersion && countByAuthorityAndLabel(model.authority, model.label)) {
+                throw new ApiBadRequestException('MSXX', 'Request to finalise import without creating newBranchModelVersion to existing models')
             }
-
-            if (!latest.finalised) {
-                finaliseModel(latest, catalogueUser, Version.from('1'), null, null)
-                save(latest, flush: true, validate: false)
-            }
-
-            // Now we have a finalised model to work from
-            setModelIsNewDocumentationVersionOfModel(model, latest, catalogueUser)
-            model.documentationVersion = Version.nextMajorVersion(latest.documentationVersion)
-        } else log.info('Marked as importAsNewDocumentationVersion but no existing Models with label [{}]', model.label)
+            model.finalised = true
+        }
+        if (model.finalised) {
+            model.dateFinalised = model.dateFinalised ?: OffsetDateTime.now()
+            model.modelVersion = model.modelVersion ?: getNextModelVersion(model, null, VersionChangeType.MAJOR)
+        } else {
+            // Make sure that, if after all the checking, the model is not finalised we dont have any modelVersion or date set
+            model.dateFinalised = null
+            model.modelVersion = null
+        }
     }
-}
 
-void checkBranchModelVersion(K model, Boolean importAsNewBranchModelVersion, String branchName, User catalogueUser) {
-    if (importAsNewBranchModelVersion) {
+    @Override
+    void deleteAllFacetDataByMultiFacetAwareIds(List<UUID> catalogueItemIds) {
+        super.deleteAllFacetDataByMultiFacetAwareIds(catalogueItemIds)
+        versionLinkService.deleteAllByMultiFacetAwareItemIds(catalogueItemIds)
+    }
 
-        if (countByAuthorityAndLabel(model.authority, model.label)) {
-            // Branches need to be created from a finalised version
-            // But we can create a new branch even if existing branches
+    void checkDocumentationVersion(K model, boolean importAsNewDocumentationVersion, User catalogueUser) {
+        if (importAsNewDocumentationVersion) {
 
+            if (countByAuthorityAndLabel(model.authority, model.label)) {
+                // Doc versions must be built off finalised versions, they cannot be built of a finalised version where a branch already exists
+                // So we just get the latest model and finalise if its not finalised
+                K latest = findLatestModelByLabel(model.label)
 
-            K latest
+                if (!latest || latest.id == model.id) {
+                    log.info('Marked as importAsNewDocumentationVersion but no existing Models with label [{}]', model.label)
+                    return
+                }
 
-            // If the branch name is not the default the default branch name then we need a finalised model to branch from
-            if (branchName && branchName != VersionAwareConstraints.DEFAULT_BRANCH_NAME) {
-                latest = findLatestFinalisedModelByLabel(model.label)
-                // If no finalised model exists then we finalise the existing default branch so we can branch from it
-                if (!latest) {
-                    log.info('No finalised model to create branch from so finalising existing main branch')
-                    latest = findCurrentMainBranchByLabel(model.label)
-                    // If there is no default branch or finalised branch then the countBy found the current imported model so we dont need to
-                    // do anything
-                    if (!latest) {
-                        log.info('Marked as importAsNewBranchModelVersion but no existing Models with label [{}]', model.label)
-                        return
-                    }
+                if (!latest.finalised) {
                     finaliseModel(latest, catalogueUser, Version.from('1'), null, null)
                     save(latest, flush: true, validate: false)
                 }
-            } else {
-                // If the branch name is not provided, or is the default then we would be using the default,
-                // which would cause a unique label failure if theres already an unfinalised model with that branch
-                // therefore we should make sure we have a clean finalised model to work from
-                latest = findCurrentMainBranchByLabel(model.label)
-                if (latest && latest.id != model.id) {
-                    log.info('Main branch exists already so finalising to ensure no conflicts')
-                    finaliseModel(latest, catalogueUser, getNextModelVersion(latest, null, VersionChangeType.MAJOR), null, null)
-                    save(latest, flush: true, validate: false)
-                } else {
-                    // No main branch exists so get the latest finalised model
+
+                // Now we have a finalised model to work from
+                setModelIsNewDocumentationVersionOfModel(model, latest, catalogueUser)
+                model.documentationVersion = Version.nextMajorVersion(latest.documentationVersion)
+            } else log.info('Marked as importAsNewDocumentationVersion but no existing Models with label [{}]', model.label)
+        }
+    }
+
+    void checkBranchModelVersion(K model, Boolean importAsNewBranchModelVersion, String branchName, User catalogueUser) {
+        if (importAsNewBranchModelVersion) {
+
+            if (countByAuthorityAndLabel(model.authority, model.label)) {
+                // Branches need to be created from a finalised version
+                // But we can create a new branch even if existing branches
+
+
+                K latest
+
+                // If the branch name is not the default the default branch name then we need a finalised model to branch from
+                if (branchName && branchName != VersionAwareConstraints.DEFAULT_BRANCH_NAME) {
                     latest = findLatestFinalisedModelByLabel(model.label)
+                    // If no finalised model exists then we finalise the existing default branch so we can branch from it
                     if (!latest) {
-                        log.info('Marked as importAsNewBranchModelVersion but no existing Models with label [{}]', model.label)
-                        return
+                        log.info('No finalised model to create branch from so finalising existing main branch')
+                        latest = findCurrentMainBranchByLabel(model.label)
+                        // If there is no default branch or finalised branch then the countBy found the current imported model so we dont need to
+                        // do anything
+                        if (!latest) {
+                            log.info('Marked as importAsNewBranchModelVersion but no existing Models with label [{}]', model.label)
+                            return
+                        }
+                        finaliseModel(latest, catalogueUser, Version.from('1'), null, null)
+                        save(latest, flush: true, validate: false)
+                    }
+                } else {
+                    // If the branch name is not provided, or is the default then we would be using the default,
+                    // which would cause a unique label failure if theres already an unfinalised model with that branch
+                    // therefore we should make sure we have a clean finalised model to work from
+                    latest = findCurrentMainBranchByLabel(model.label)
+                    if (latest && latest.id != model.id) {
+                        log.info('Main branch exists already so finalising to ensure no conflicts')
+                        finaliseModel(latest, catalogueUser, getNextModelVersion(latest, null, VersionChangeType.MAJOR), null, null)
+                        save(latest, flush: true, validate: false)
+                    } else {
+                        // No main branch exists so get the latest finalised model
+                        latest = findLatestFinalisedModelByLabel(model.label)
+                        if (!latest) {
+                            log.info('Marked as importAsNewBranchModelVersion but no existing Models with label [{}]', model.label)
+                            return
+                        }
                     }
                 }
-            }
 
-            // Now we have a finalised model to work from
-            setModelIsNewBranchModelVersionOfModel(model, latest, catalogueUser)
-            model.dateFinalised = null
-            model.finalised = false
-            model.modelVersion = null
-            model.branchName = branchName ?: VersionAwareConstraints.DEFAULT_BRANCH_NAME
-            model.documentationVersion = Version.from('1')
-        } else log.info('Marked as importAsNewBranchModelVersion but no existing Models with label [{}]', model.label)
-    }
-}
-
-void setModelIsNewForkModelOfModel(K newModel, K oldModel, User catalogueUser) {
-    newModel.addToVersionLinks(
-        linkType: VersionLinkType.NEW_FORK_OF,
-        createdBy: catalogueUser.emailAddress,
-        targetModel: oldModel
-    )
-}
-
-void setModelIsNewDocumentationVersionOfModel(K newModel, K oldModel, User catalogueUser) {
-    newModel.addToVersionLinks(
-        linkType: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF,
-        createdBy: catalogueUser.emailAddress,
-        targetModel: oldModel
-    )
-}
-
-void setModelIsNewBranchModelVersionOfModel(K newModel, K oldModel, User catalogueUser) {
-    newModel.addToVersionLinks(
-        linkType: VersionLinkType.NEW_MODEL_VERSION_OF,
-        createdBy: catalogueUser.emailAddress,
-        targetModel: oldModel
-    )
-}
-
-void setModelIsFromModel(K source, K target, User user) {
-    source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetMultiFacetAwareItem: target)
-}
-
-Model copyModelAndValidateAndSave(K original,
-                                  Folder folderToCopyInto,
-                                  User copier,
-                                  boolean copyPermissions,
-                                  String label,
-                                  Version copyDocVersion,
-                                  String branchName,
-                                  boolean throwErrors,
-                                  UserSecurityPolicyManager userSecurityPolicyManager) {
-    Model copiedModel = copyModel(original, folderToCopyInto, copier, copyPermissions, label, copyDocVersion,
-                                  branchName, throwErrors, userSecurityPolicyManager)
-
-    if ((copiedModel as GormValidateable).validate()) {
-        saveModelWithContent(copiedModel)
-        if (securityPolicyManagerService) {
-            userSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(copiedModel, userSecurityPolicyManager.user,
-                                                                                                     copiedModel.label)
+                // Now we have a finalised model to work from
+                setModelIsNewBranchModelVersionOfModel(model, latest, catalogueUser)
+                model.dateFinalised = null
+                model.finalised = false
+                model.modelVersion = null
+                model.branchName = branchName ?: VersionAwareConstraints.DEFAULT_BRANCH_NAME
+                model.documentationVersion = Version.from('1')
+            } else log.info('Marked as importAsNewBranchModelVersion but no existing Models with label [{}]', model.label)
         }
-    } else throw new ApiInvalidModelException('DMSXX', 'Copied Model is invalid',
-                                              (copiedModel as GormValidateable).errors, messageSource)
-    copiedModel
-}
-
-void updateCopiedCrossModelLinks(K copiedModel, K originalModel) {
-    log.debug('Updating cross model links for [{}]', Path.from(copiedModel))
-
-    // TODO
-    // Find all SLs which were copied
-    // These will all point to the same target as the original model,
-    // However this method is designed to repoint them to the branched model which exists inside the same VF as this copied model
-    // ie VF A has Models B & C, VF D is a branch of A with models E & F, if SLs exist from B to C then SLs now exist from E to C
-    // we need to update them to E to F.
-    // If a model G exists outside VF A or D with links from B to G then SLs exist from E to G, these remain as they are
-}
-
-Path getFullPathForModel(Model model) {
-    // Returns the path for the model in the correct context
-    // If part of a VF then the context is from the VF otherwise the context is just the model
-    if (versionedFolderService.isVersionedFolderFamily(model.folder)) {
-        Path contextPath = versionedFolderService.getFullContextPathForFolder(model.folder)
-        return Path.from(contextPath, model)
     }
-    Path.from(model)
+
+    void setModelIsNewForkModelOfModel(K newModel, K oldModel, User catalogueUser) {
+        newModel.addToVersionLinks(
+            linkType: VersionLinkType.NEW_FORK_OF,
+            createdBy: catalogueUser.emailAddress,
+            targetModel: oldModel
+        )
+    }
+
+    void setModelIsNewDocumentationVersionOfModel(K newModel, K oldModel, User catalogueUser) {
+        newModel.addToVersionLinks(
+            linkType: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF,
+            createdBy: catalogueUser.emailAddress,
+            targetModel: oldModel
+        )
+    }
+
+    void setModelIsNewBranchModelVersionOfModel(K newModel, K oldModel, User catalogueUser) {
+        newModel.addToVersionLinks(
+            linkType: VersionLinkType.NEW_MODEL_VERSION_OF,
+            createdBy: catalogueUser.emailAddress,
+            targetModel: oldModel
+        )
+    }
+
+    void setModelIsFromModel(K source, K target, User user) {
+        source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetMultiFacetAwareItem: target)
+    }
+
+    Model copyModelAndValidateAndSave(K original,
+                                      Folder folderToCopyInto,
+                                      User copier,
+                                      boolean copyPermissions,
+                                      String label,
+                                      Version copyDocVersion,
+                                      String branchName,
+                                      boolean throwErrors,
+                                      UserSecurityPolicyManager userSecurityPolicyManager) {
+        Model copiedModel = copyModel(original, folderToCopyInto, copier, copyPermissions, label, copyDocVersion,
+                                      branchName, throwErrors, userSecurityPolicyManager)
+
+        if ((copiedModel as GormValidateable).validate()) {
+            saveModelWithContent(copiedModel)
+            if (securityPolicyManagerService) {
+                userSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(copiedModel, userSecurityPolicyManager.user,
+                                                                                                         copiedModel.label)
+            }
+        } else throw new ApiInvalidModelException('DMSXX', 'Copied Model is invalid',
+                                                  (copiedModel as GormValidateable).errors, messageSource)
+        copiedModel
+    }
+
+    void updateCopiedCrossModelLinks(K copiedModel, K originalModel) {
+        log.debug('Updating cross model links for [{}]', Path.from(copiedModel))
+
+        // TODO
+        // Find all SLs which were copied
+        // These will all point to the same target as the original model,
+        // However this method is designed to repoint them to the branched model which exists inside the same VF as this copied model
+        // ie VF A has Models B & C, VF D is a branch of A with models E & F, if SLs exist from B to C then SLs now exist from E to C
+        // we need to update them to E to F.
+        // If a model G exists outside VF A or D with links from B to G then SLs exist from E to G, these remain as they are
+    }
+
+    Path getFullPathForModel(Model model) {
+        // Returns the path for the model in the correct context
+        // If part of a VF then the context is from the VF otherwise the context is just the model
+        if (versionedFolderService.isVersionedFolderFamily(model.folder)) {
+            Path contextPath = versionedFolderService.getFullContextPathForFolder(model.folder)
+            return Path.from(contextPath, model)
+        }
+        Path.from(model)
+    }
+
+    K propagateFromPreviousVersion(User user, K model) {
+        //step one get previous version
+        K previousVersionModel = getPreviousVersionModel(model)
+        DomainService domainService = getDomainServices().find { it.handles(model.domainType) }
+        if (!domainService) {
+            throw new ApiInternalException('MSXX', "No domain service to handle modification of [${model.domainType}]")
+        }
+        //todo can't use the copy methods without USPM but USPM is null here, import from controller?
+        UserSecurityPolicyManager userSecurityPolicyManager = securityPolicyManagerService.retrieveUserSecurityPolicyManager(user.emailAddress)
+        domainService.propagateDataFromPreviousVersion(model, previousVersionModel, user, userSecurityPolicyManager)
+
+    }
+
 }
 
-K propagateFromPreviousVersion(User user, K model) {
-    //step one get previous version
-    Model previousVersionModel = getPreviousVersionModel(model)
-
-    //Model will have superseded old version.
-    //Use version links in model to follow backwards
-    //version link contains old and new
-    //todo find out if a versionlink knows its the latest Version
-    //a new model knows if its a later version of a previous
-    //does a model contain links to all its predecessors or just one, test with functional spec?
-
-
-    //step two, compare and copy across properties, disregarding properties that are already filled
-    //step three copy Catalogue Items
-    //copy facets
-    //copy semantic links
-    //mark semantic links unconfirmed
-    K
-}
-
-}

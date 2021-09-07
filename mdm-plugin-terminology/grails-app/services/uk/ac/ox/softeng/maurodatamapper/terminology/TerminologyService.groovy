@@ -591,6 +591,12 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
+    Terminology propagateDataFromPreviousVersion(Terminology model, Terminology previousVersionModel, User user, UserSecurityPolicyManager userSecurityPolicyManager) {
+        //todo
+        model
+    }
+
+    @Override
     boolean useParentIdForSearching(UUID parentId) {
         if (!parentId || codeSetService.get(parentId)) {
             log.debug('Accessing terminology from context of CodeSet will ignore parentId')

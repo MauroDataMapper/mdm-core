@@ -23,9 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
-import com.fasterxml.jackson.databind.util.BeanUtil
 import groovy.transform.CompileStatic
-import org.apache.commons.beanutils.BeanUtils
 import org.springframework.beans.factory.annotation.Autowired
 
 @CompileStatic
@@ -90,8 +88,9 @@ abstract class ModelImporterProviderService<M extends Model, P extends ModelImpo
     }
 
     M propagateImportedFromPreviousVersion(User currentUser, ModelImporterProviderServiceParameters params, M importedModel) {
-        if(params.propagateFromPreviousVersion) {
-           return modelService.propagateFromPreviousVersion(currentUser, importedModel)
+        if (params.propagateFromPreviousVersion) {
+            Model model = modelService.propagateFromPreviousVersion(currentUser, importedModel)
+            return model as M
         }
 
         importedModel

@@ -176,6 +176,21 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
 
     }
 
+    void 'MV02B : test import as newBranchModelVersion with existing finalised model'() {
+        given:
+
+        setupData()
+        basicParameters.finalised = false
+        basicParameters.importAsNewBranchModelVersion = true
+        basicParameters.propagateFromPreviousVersion = true
+
+        when:
+        DataModel dm = importModel(loadTestFile('simpleDataModel'))
+
+        then:
+        true
+    }
+
     void 'MV03 : test import as newBranchModelVersion with existing non-finalised model'() {
         given:
         setupData()

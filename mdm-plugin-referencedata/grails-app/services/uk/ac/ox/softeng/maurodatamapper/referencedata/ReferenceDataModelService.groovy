@@ -688,6 +688,13 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
     }
 
     @Override
+    ReferenceDataModel propagateDataFromPreviousVersion(ReferenceDataModel model, ReferenceDataModel previousVersionModel, User user,
+                                                        UserSecurityPolicyManager userSecurityPolicyManager) {
+        //todo
+        model
+    }
+
+    @Override
     List<ReferenceDataModel> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
         ReferenceDataModel.byMetadataNamespaceAndKey(namespace, key).list(pagination)
     }

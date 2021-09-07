@@ -83,6 +83,13 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         dm
     }
 
+    DataModel importNoConfirm(byte[] bytes) {
+        DataModel dm = importModel(bytes)
+        //assert dataModelService.count() == 3
+        //confirmDataModel(dm)
+        dm
+    }
+
     void 'I01 : test empty data import'() {
         given:
         setupData()

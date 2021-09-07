@@ -160,4 +160,5 @@ trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableRes
         byLabelAndNotFinalised(label)
         .eq('branchName', branchName)
     }
+
 }

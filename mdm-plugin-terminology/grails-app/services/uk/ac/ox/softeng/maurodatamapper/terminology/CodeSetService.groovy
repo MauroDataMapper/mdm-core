@@ -472,6 +472,12 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
+    CodeSet propagateDataFromPreviousVersion(CodeSet model, CodeSet previousVersionModel, User user, UserSecurityPolicyManager userSecurityPolicyManager) {
+        //todo
+        model
+    }
+
+    @Override
     List<CodeSet> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
         CodeSet.byMetadataNamespaceAndKey(namespace, key).list(pagination)
     }
