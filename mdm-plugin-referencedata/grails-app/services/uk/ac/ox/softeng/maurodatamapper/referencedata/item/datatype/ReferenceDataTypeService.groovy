@@ -119,11 +119,6 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
     }
 
     @Override
-    Class<ReferenceDataType> getModelItemClass() {
-        ReferenceDataType
-    }
-
-    @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         domainType == ReferenceDataType.simpleName
     }

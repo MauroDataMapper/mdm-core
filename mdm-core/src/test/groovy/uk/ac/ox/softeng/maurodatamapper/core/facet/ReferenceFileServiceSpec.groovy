@@ -66,7 +66,7 @@ class ReferenceFileServiceSpec extends MultiFacetItemAwareServiceSpec<ReferenceF
 
         ModelService basicModelService = Stub() {
             get(_) >> basicModel
-            getModelClass() >> BasicModel
+            getDomainClass() >> BasicModel
             handles('BasicModel') >> true
             removeReferenceFileFromCatalogueItem(basicModel.id, _) >> {UUID bmid, ReferenceFile referenceFile ->
                 basicModel.referenceFiles.remove(referenceFile)

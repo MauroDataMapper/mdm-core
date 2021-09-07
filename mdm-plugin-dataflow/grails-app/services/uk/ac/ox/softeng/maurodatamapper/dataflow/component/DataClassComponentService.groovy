@@ -153,11 +153,6 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
     }
 
     @Override
-    Class<DataClassComponent> getModelItemClass() {
-        DataClassComponent
-    }
-
-    @Override
     DataClassComponent findByIdJoinClassifiers(UUID id) {
         DataClassComponent.findById(id, [fetch: [classifiers: 'join']])
     }

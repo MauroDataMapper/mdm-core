@@ -33,8 +33,6 @@ trait VersionLinkAwareService<K extends VersionLinkAware> {
 
     abstract Class<K> getVersionLinkAwareClass()
 
-    abstract boolean handles(String domainType)
-
     abstract VersionLinkService getVersionLinkService()
 
     abstract List<K> findAllModelsByIdInList(List<UUID> ids, Map pagination)

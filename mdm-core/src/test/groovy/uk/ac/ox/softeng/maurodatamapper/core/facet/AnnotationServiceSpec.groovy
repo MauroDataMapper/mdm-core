@@ -56,7 +56,7 @@ class AnnotationServiceSpec extends MultiFacetItemAwareServiceSpec<Annotation, A
 
         ModelService basicModelService = Stub() {
             get(_) >> basicModel
-            getModelClass() >> BasicModel
+            getDomainClass() >> BasicModel
             handles('BasicModel') >> true
             removeAnnotationFromMultiFacetAware(basicModel.id, _) >> {UUID bmid, Annotation annotation ->
                 basicModel.annotations.remove(annotation)

@@ -258,11 +258,6 @@ class DataFlowService extends ModelItemService<DataFlow> {
          */
 
     @Override
-    Class<DataFlow> getModelItemClass() {
-        DataFlow
-    }
-
-    @Override
     DataFlow findByIdJoinClassifiers(UUID id) {
         DataFlow.findById(id, [fetch: [classifiers: 'join']])
     }

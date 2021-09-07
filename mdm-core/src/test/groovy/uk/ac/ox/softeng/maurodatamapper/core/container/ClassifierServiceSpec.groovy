@@ -220,7 +220,7 @@ class ClassifierServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Clas
         basicModel.addToClassifiers(Classifier.findByLabel('parent classifier'))
 
         ModelService basicModelService = Stub() {
-            getModelClass() >> BasicModel
+            getDomainClass() >> BasicModel
             findByIdJoinClassifiers(_) >> {UUID id -> BasicModel.findByIdJoinClassifiers(id)}
         }
         service.catalogueItemServices = [basicModelService]
@@ -269,7 +269,7 @@ class ClassifierServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Clas
         basicModel.addToClassifiers(Classifier.findByLabel('parent classifier'))
 
         ModelService basicModelService = Stub() {
-            getModelClass() >> BasicModel
+            getDomainClass() >> BasicModel
             findByIdJoinClassifiers(_) >> {UUID id -> BasicModel.findByIdJoinClassifiers(id)}
         }
         service.catalogueItemServices = [basicModelService]

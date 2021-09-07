@@ -145,7 +145,7 @@ class TermService extends ModelItemService<Term> {
         }
 
         if (notSaved) {
-            log.trace('Batch saving {} new {} in batches of {}', notSaved.size(), getModelItemClass().simpleName, BATCH_SIZE)
+            log.trace('Batch saving {} new {} in batches of {}', notSaved.size(), getDomainClass().simpleName, BATCH_SIZE)
             List batch = []
             int count = 0
 
@@ -237,11 +237,6 @@ class TermService extends ModelItemService<Term> {
         copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
         copy
-    }
-
-    @Override
-    Class<Term> getModelItemClass() {
-        Term
     }
 
     @Override

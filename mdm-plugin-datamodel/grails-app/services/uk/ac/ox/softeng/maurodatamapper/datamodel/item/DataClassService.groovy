@@ -753,11 +753,6 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     }
 
     @Override
-    Class<DataClass> getModelItemClass() {
-        DataClass
-    }
-
-    @Override
     boolean isCatalogueItemImportedIntoCatalogueItem(CatalogueItem catalogueItem, DataClass owningDataClass) {
         if (!(catalogueItem instanceof DataClass)) return false
         owningDataClass.id && ((DataClass) catalogueItem).parentDataClass?.id != owningDataClass.id

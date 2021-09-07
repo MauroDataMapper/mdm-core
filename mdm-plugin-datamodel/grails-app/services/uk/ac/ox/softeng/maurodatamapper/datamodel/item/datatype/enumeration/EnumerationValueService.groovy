@@ -129,11 +129,6 @@ class EnumerationValueService extends ModelItemService<EnumerationValue> impleme
     }
 
     @Override
-    Class<EnumerationValue> getModelItemClass() {
-        EnumerationValue
-    }
-
-    @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         domainType == EnumerationValue.simpleName
     }

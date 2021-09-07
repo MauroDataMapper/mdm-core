@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFileService
@@ -30,7 +29,6 @@ import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
-import grails.core.GrailsApplication
 import grails.gorm.DetachedCriteria
 import org.hibernate.SessionFactory
 
@@ -40,7 +38,6 @@ import org.hibernate.SessionFactory
 abstract class ContainerService<K extends Container> implements SecurableResourceService<K>, MultiFacetAwareService<K>, MdmDomainService<K> {
 
     SessionFactory sessionFactory
-    GrailsApplication grailsApplication
     MetadataService metadataService
     RuleService ruleService
     SemanticLinkService semanticLinkService
@@ -69,10 +66,8 @@ abstract class ContainerService<K extends Container> implements SecurableResourc
 
     abstract List<K> findAllWhereDirectParentOfContainer(K container)
 
-    abstract Class<K> getContainerClass()
-
     Class<K> getMultiFacetAwareClass() {
-        getContainerClass()
+        getDomainClass()
     }
 
     @Override

@@ -60,21 +60,6 @@ class FolderService extends ContainerService<Folder> {
     MessageSource messageSource
 
     @Override
-    boolean handles(Class clazz) {
-        clazz == Folder
-    }
-
-    @Override
-    boolean handles(String domainType) {
-        domainType == Folder.simpleName
-    }
-
-    @Override
-    Class<Folder> getContainerClass() {
-        Folder
-    }
-
-    @Override
     boolean isContainerVirtual() {
         false
     }

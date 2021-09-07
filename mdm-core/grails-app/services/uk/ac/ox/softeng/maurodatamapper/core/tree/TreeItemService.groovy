@@ -393,7 +393,7 @@ class TreeItemService {
 
         modelServices.each {service ->
 
-            log.debug('Getting all readable models of type {} ', service.modelClass.simpleName)
+            log.debug('Getting all readable models of type {} ', service.domainClass.simpleName)
             long start1 = System.currentTimeMillis()
             List<? extends Model> readableModels = service.findAllReadableModels(userSecurityPolicyManager, includeDocumentSuperseded,
                                                                                  includeModelSuperseded, includeDeleted).sort()
@@ -430,7 +430,7 @@ class TreeItemService {
             log.trace('Branch name determination took: {}', Utils.timeTaken(start4))
             List<ModelTreeItem> collectedReadableTreeItems = labelGrouping.collectMany {k, v -> v as Collection} as List<ModelTreeItem>
             readableTreeItems.addAll(collectedReadableTreeItems)
-            log.debug('Complete listing of {} took: {}', service.modelClass.simpleName, Utils.timeTaken(start1))
+            log.debug('Complete listing of {} took: {}', service.domainClass.simpleName, Utils.timeTaken(start1))
         }
         readableTreeItems
     }
@@ -474,12 +474,12 @@ class TreeItemService {
         List<CatalogueItem> catalogueItems = []
         catalogueItemServices.each {service ->
             if (service.shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-                log.debug('Searching all readable catalogue items of type {} ', service.catalogueItemClass.simpleName)
+                log.debug('Searching all readable catalogue items of type {} ', service.domainClass.simpleName)
                 long start1 = System.currentTimeMillis()
                 List<CatalogueItem> foundCatalogueItems =
                     service.findAllReadableTreeTypeCatalogueItemsBySearchTermAndDomain(userSecurityPolicyManager,
                                                                                        searchString, domainType)
-                log.debug('Found {} {} catalogue items, took: {}', foundCatalogueItems.size(), service.catalogueItemClass.simpleName,
+                log.debug('Found {} {} catalogue items, took: {}', foundCatalogueItems.size(), service.domainClass.simpleName,
                           Utils.timeTaken(start1))
                 catalogueItems.addAll(foundCatalogueItems)
             }
@@ -502,7 +502,7 @@ class TreeItemService {
         log.debug('Processing all found models and models for model items')
         modelServices.each {service ->
 
-            String modelDomainType = service.getModelClass().simpleName
+            String modelDomainType = service.domainClass.simpleName
             List<Model> models = domainTypeGroupedModels.getOrDefault(modelDomainType, [])
             List<ModelItem> modelItems = modelDomainTypeGroupedModelItems.getOrDefault(modelDomainType, [])
             List<UUID> supersededModels = []

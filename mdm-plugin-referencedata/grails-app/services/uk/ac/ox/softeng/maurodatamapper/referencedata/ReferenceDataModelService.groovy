@@ -574,11 +574,6 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
     }
 
     @Override
-    Class<ReferenceDataModel> getModelClass() {
-        ReferenceDataModel
-    }
-
-    @Override
     Integer countByContainerId(UUID containerId) {
         ReferenceDataModel.byFolderId(containerId).count()
     }

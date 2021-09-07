@@ -193,11 +193,6 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     }
 
     @Override
-    Class<DataElement> getModelItemClass() {
-        DataElement
-    }
-
-    @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         domainType == DataElement.simpleName
     }

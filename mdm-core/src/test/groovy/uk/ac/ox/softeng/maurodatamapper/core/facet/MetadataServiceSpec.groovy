@@ -65,7 +65,7 @@ class MetadataServiceSpec extends MultiFacetItemAwareServiceSpec<Metadata, Metad
 
         ModelService basicModelService = Stub() {
             get(_) >> basicModel
-            getModelClass() >> BasicModel
+            getDomainClass() >> BasicModel
             handles('BasicModel') >> true
             removeMetadataFromMultiFacetAware(basicModel.id, metadata) >> {
                 basicModel.removeFromMetadata(metadata)

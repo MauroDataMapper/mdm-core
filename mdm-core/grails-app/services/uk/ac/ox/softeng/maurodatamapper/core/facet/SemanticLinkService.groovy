@@ -50,10 +50,6 @@ class SemanticLinkService implements MultiFacetItemAwareService<SemanticLink> {
         delete(get(id))
     }
 
-    SemanticLink save(SemanticLink semanticLink) {
-        semanticLink.save(flush: true)
-    }
-
     @Override
     SemanticLink findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
         String[] split = pathIdentifier

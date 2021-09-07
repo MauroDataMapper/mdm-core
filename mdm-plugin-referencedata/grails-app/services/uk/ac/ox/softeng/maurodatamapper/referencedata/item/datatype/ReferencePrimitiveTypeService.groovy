@@ -103,11 +103,6 @@ class ReferencePrimitiveTypeService extends ModelItemService<ReferencePrimitiveT
     }
 
     @Override
-    Class<ReferencePrimitiveType> getModelItemClass() {
-        ReferencePrimitiveType
-    }
-
-    @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         domainType == ReferencePrimitiveType.simpleName
     }

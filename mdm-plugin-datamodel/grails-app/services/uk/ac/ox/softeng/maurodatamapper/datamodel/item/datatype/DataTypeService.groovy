@@ -175,11 +175,6 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     }
 
     @Override
-    Class<DataType> getModelItemClass() {
-        DataType
-    }
-
-    @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         domainType == DataType.simpleName
     }

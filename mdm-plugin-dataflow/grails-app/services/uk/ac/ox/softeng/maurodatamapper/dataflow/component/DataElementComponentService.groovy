@@ -135,11 +135,6 @@ class DataElementComponentService extends ModelItemService<DataElementComponent>
     }
 
     @Override
-    Class<DataElementComponent> getModelItemClass() {
-        DataElementComponent
-    }
-
-    @Override
     DataElementComponent findByIdJoinClassifiers(UUID id) {
         DataElementComponent.findById(id, [fetch: [classifiers: 'join']])
     }

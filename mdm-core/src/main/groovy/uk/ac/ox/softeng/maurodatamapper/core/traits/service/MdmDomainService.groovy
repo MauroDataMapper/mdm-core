@@ -47,6 +47,8 @@ trait MdmDomainService<K extends MdmDomain> implements AnonymisableService{
 
     abstract void delete(K domain)
 
+    abstract K findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier)
+
     K save(K domain) {
         // Default behaviours for save in GormEntity
         save(flush: false, validate: true, domain)
@@ -86,10 +88,8 @@ trait MdmDomainService<K extends MdmDomain> implements AnonymisableService{
         domainClass ? (domainClass.getDeclaredConstructor().newInstance() as MdmDomain).pathPrefix == pathPrefix : false
     }
 
-    abstract K findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier)
-
     void anonymise(String createdBy) {
-        getDomainClass()?.findAllByCreatedBy(createdBy).each {domain ->
+        getDomainClass().findAllByCreatedBy(createdBy).each {domain ->
             domain.createdBy = AnonymousUser.ANONYMOUS_EMAIL_ADDRESS
 
             // Don't validate because any existing errors in data can cause validations to fail

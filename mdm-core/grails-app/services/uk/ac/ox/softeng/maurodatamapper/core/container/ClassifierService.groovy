@@ -43,21 +43,6 @@ class ClassifierService extends ContainerService<Classifier> {
     HibernateSearchIndexingService hibernateSearchIndexingService
 
     @Override
-    boolean handles(Class clazz) {
-        clazz == Classifier
-    }
-
-    @Override
-    boolean handles(String domainType) {
-        domainType == Classifier.simpleName
-    }
-
-    @Override
-    Class<Classifier> getContainerClass() {
-        Classifier
-    }
-
-    @Override
     boolean isContainerVirtual() {
         true
     }

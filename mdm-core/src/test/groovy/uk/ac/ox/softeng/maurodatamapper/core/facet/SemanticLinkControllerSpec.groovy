@@ -83,7 +83,7 @@ class SemanticLinkControllerSpec extends ResourceControllerSpec<SemanticLink> im
         ModelService basicModelService = Stub() {
             get(_) >> {UUID id -> BasicModel.get(id)}
             getAll(_) >> {List<UUID> ids -> BasicModel.getAll(ids)}
-            getModelClass() >> BasicModel
+            getDomainClass() >> BasicModel
             handles('BasicModel') >> true
             removeSemanticLinkFromMultiFacetAware(_, _) >> {UUID id, SemanticLink semanticLink ->
                 BasicModel bm = BasicModel.get(id)

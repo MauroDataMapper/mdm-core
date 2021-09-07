@@ -77,7 +77,7 @@ class VersionLinkControllerSpec extends ResourceControllerSpec<VersionLink> impl
         ModelService basicModelService = Stub() {
             getAll(_) >> {List<UUID> ids -> BasicModel.getAll(ids)}
             get(_) >> {UUID id -> BasicModel.get(id)}
-            getModelClass() >> BasicModel
+            getDomainClass() >> BasicModel
             handles('BasicModel') >> true
             removeVersionLinkFromModel(_, _) >> {UUID id, VersionLink versionLink ->
                 BasicModel bm = BasicModel.get(id)

@@ -58,10 +58,6 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
         delete(get(id))
     }
 
-    VersionLink save(VersionLink versionLink) {
-        versionLink.save(flush: true)
-    }
-
     void delete(VersionLink versionLink, boolean flush = false) {
         if (!versionLink) return
 

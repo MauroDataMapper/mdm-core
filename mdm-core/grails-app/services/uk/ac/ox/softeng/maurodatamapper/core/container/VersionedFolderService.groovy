@@ -106,21 +106,6 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     @Autowired(required = false)
     SecurityPolicyManagerService securityPolicyManagerService
 
-    @Override
-    boolean handles(Class clazz) {
-        clazz == VersionedFolder
-    }
-
-    @Override
-    boolean handles(String domainType) {
-        domainType == VersionedFolder.simpleName
-    }
-
-    @Override
-    Class<Folder> getContainerClass() {
-        VersionedFolder
-    }
-
     Class<VersionedFolder> getVersionLinkAwareClass() {
         VersionedFolder
     }

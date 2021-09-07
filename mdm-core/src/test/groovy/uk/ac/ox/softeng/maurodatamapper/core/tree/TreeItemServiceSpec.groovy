@@ -69,6 +69,8 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
 
 
         folderService = Spy(FolderService)
+        folderService.proxyHandler = new DefaultProxyHandler()
+        folderService.getDomainClass() >> Folder
         classifierService = Spy(ClassifierService)
         folderService.proxyHandler = new DefaultProxyHandler()
         classifierService.proxyHandler = new DefaultProxyHandler()
@@ -302,7 +304,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         checkAndSave(basicModel)
         ModelService basicModelService = Stub() {
             findAllReadableModels(_, true, true, true) >> [basicModel]
-            getModelClass() >> BasicModel
+            getDomainClass() >> BasicModel
             findAllModelIdsWithTreeChildren(_) >> []
         }
         service.modelServices = [basicModelService]
@@ -365,7 +367,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         checkAndSave(basicModel2)
         ModelService basicModelService = Stub() {
             findAllReadableModels(_, true, true, true) >> [basicModel, basicModel2]
-            getModelClass() >> BasicModel
+            getDomainClass() >> BasicModel
             findAllModelIdsWithTreeChildren(_) >> []
         }
         service.modelServices = [basicModelService]
@@ -454,7 +456,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         checkAndSave(basicModel2)
         ModelService basicModelService = Stub() {
             findAllReadableModels(_, true, true, true) >> [basicModel, basicModel2]
-            getModelClass() >> BasicModel
+            getDomainClass() >> BasicModel
             findAllModelIdsWithTreeChildren(_) >> []
             findAllSupersededModelIds(_) >> [basicModel2.id]
         }
@@ -541,7 +543,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         checkAndSave(basicModel2)
         ModelService basicModelService = Stub() {
             findAllReadableModels(_, true, true, true) >> [basicModel, basicModel2]
-            getModelClass() >> BasicModel
+            getDomainClass() >> BasicModel
             findAllModelIdsWithTreeChildren(_) >> [basicModel.id]
         }
         service.modelServices = [basicModelService]
@@ -627,7 +629,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         checkAndSave(basicModel2)
         ModelService basicModelService = Stub() {
             findAllReadableModels(_, true, true, true) >> [basicModel, basicModel2]
-            getModelClass() >> BasicModel
+            getDomainClass() >> BasicModel
             findAllModelIdsWithTreeChildren(_) >> []
         }
         service.modelServices = [basicModelService]
@@ -723,7 +725,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         checkAndSave(basicModel2)
         ModelService basicModelService = Stub() {
             findAllReadableModels(_, true, true, true) >> [basicModel, basicModel2]
-            getModelClass() >> BasicModel
+            getDomainClass() >> BasicModel
             findAllModelIdsWithTreeChildren(_) >> []
         }
         service.modelServices = [basicModelService]
@@ -824,7 +826,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         checkAndSave(basicModel)
         ModelService basicModelService = Stub() {
             findAllReadableModels(_, true, true, true) >> [basicModel]
-            getModelClass() >> BasicModel
+            getDomainClass() >> BasicModel
             findAllModelIdsWithTreeChildren(_) >> []
             get(basicModel.id) >> basicModel
             get(_) >> null
@@ -869,7 +871,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         checkAndSave(basicModel)
         ModelService basicModelService = Stub() {
             findAllReadableModels(_, true, true, true) >> [basicModel]
-            getModelClass() >> BasicModel
+            getDomainClass() >> BasicModel
             findAllModelIdsWithTreeChildren(_) >> []
             handles(_) >> {Class clazz -> clazz == BasicModel}
             hasTreeTypeModelItems(basicModel, false) >> false
@@ -910,7 +912,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
 
         ModelService basicModelService = Stub() {
             findAllReadableModels(_, true, true, true) >> [basicModel]
-            getModelClass() >> BasicModel
+            getDomainClass() >> BasicModel
             findAllModelIdsWithTreeChildren(_) >> [basicModel]
             handles(_) >> {Class clazz -> clazz == BasicModel}
             hasTreeTypeModelItems(basicModel, false, _) >> true
@@ -976,7 +978,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
 
         ModelService basicModelService = Stub() {
             findAllReadableModels(_, true, true, true) >> [basicModel]
-            getModelClass() >> BasicModel
+            getDomainClass() >> BasicModel
             findAllModelIdsWithTreeChildren(_) >> [basicModel]
             handles(_) >> {Class clazz -> clazz == BasicModel}
             hasTreeTypeModelItems(basicModel, false, _) >> true
@@ -1045,14 +1047,14 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
 
         ModelService basicModelService = Stub() {
             findAllReadableModels(_, true, true, true) >> [basicModel]
-            getModelClass() >> BasicModel
+            getDomainClass() >> BasicModel
             findAllModelIdsWithTreeChildren(_) >> [basicModel]
             handles(_) >> {Class clazz -> clazz == BasicModel}
             hasTreeTypeModelItems(basicModel, false) >> true
             findAllTreeTypeModelItemsIn(basicModel, false) >> [item1, item2]
         }
         ModelItemService basicModelItemService = Stub() {
-            getModelClass() >> BasicModelItem
+            getDomainClass() >> BasicModelItem
             handles(_) >> {Class clazz -> clazz == BasicModelItem}
             hasTreeTypeModelItems(item1, false) >> false
             hasTreeTypeModelItems(item2, false) >> true
@@ -1107,14 +1109,14 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
 
         ModelService basicModelService = Stub() {
             findAllReadableModels(_, true, true, true) >> [basicModel]
-            getModelClass() >> BasicModel
+            getDomainClass() >> BasicModel
             findAllModelIdsWithTreeChildren(_) >> [basicModel]
             handles(_) >> {Class clazz -> clazz == BasicModel}
             hasTreeTypeModelItems(basicModel, false, _) >> true
             findAllTreeTypeModelItemsIn(basicModel, false, _) >> [item1, item2]
         }
         ModelItemService basicModelItemService = Stub() {
-            getModelClass() >> BasicModelItem
+            getDomainClass() >> BasicModelItem
             handles(_) >> {Class clazz -> clazz == BasicModelItem}
             hasTreeTypeModelItems(item1, false, _) >> false
             hasTreeTypeModelItems(item2, false, _) >> true
@@ -1502,9 +1504,9 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         checkAndSave(basicModel)
 
         ModelService basicModelService = Stub() {
-            getCatalogueItemClass() >> BasicModel
+            getDomainClass() >> BasicModel
             findAllReadableModels(_, true, true, true) >> [basicModel, basicModel2]
-            getModelClass() >> BasicModel
+            getDomainClass() >> BasicModel
             findAllModelIdsWithTreeChildren(_) >> [basicModel]
             findAllSupersededModelIds(_) >> [basicModel2.id]
             handles(_) >> {Class clazz -> clazz == BasicModel}
@@ -1519,8 +1521,8 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
             shouldPerformSearchForTreeTypeCatalogueItems('BasicModelItem') >> false
         }
         ModelItemService basicModelItemService = Stub() {
-            getCatalogueItemClass() >> BasicModelItem
-            getModelItemClass() >> BasicModelItem
+            getDomainClass() >> BasicModelItem
+            getDomainClass() >> BasicModelItem
             handles(_) >> {Class clazz -> clazz == BasicModelItem}
             hasTreeTypeModelItems(item1, false) >> false
             hasTreeTypeModelItems(item2, false) >> true

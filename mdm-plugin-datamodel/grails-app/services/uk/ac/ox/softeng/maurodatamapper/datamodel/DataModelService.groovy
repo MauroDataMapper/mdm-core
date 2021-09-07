@@ -457,9 +457,9 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
         log.trace('Removing other ModelItems in {} DataModels', idsToDelete.size())
         modelItemServices.findAll {
-            !(it.modelItemClass in [DataClass, DataElement, DataType, EnumerationType, ModelDataType, PrimitiveType,
-                                    ReferenceType, EnumerationValue])
-        }.each { modelItemService ->
+            !(it.domainClass in [DataClass, DataElement, DataType, EnumerationType, ModelDataType, PrimitiveType,
+                                 ReferenceType, EnumerationValue])
+        }.each {modelItemService ->
             try {
                 modelItemService.deleteAllByModelIds(idsToDelete)
             } catch (ApiNotYetImplementedException ignored) {
@@ -838,11 +838,6 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     List<DataModel> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
         findAllByClassifier(classifier)
             .findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.id) } as List<DataModel>
-    }
-
-    @Override
-    Class<DataModel> getModelClass() {
-        DataModel
     }
 
     @Override

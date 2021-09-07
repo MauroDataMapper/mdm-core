@@ -476,11 +476,6 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    Class<Terminology> getModelClass() {
-        Terminology
-    }
-
-    @Override
     Integer countByContainerId(UUID containerId) {
         // We do not concern ourselves any other types of containers for CodeSets at this time
         Terminology.byFolderId(containerId).count()

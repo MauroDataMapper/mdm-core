@@ -365,11 +365,6 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    Class<CodeSet> getModelClass() {
-        CodeSet
-    }
-
-    @Override
     Integer countByContainerId(UUID containerId) {
         // We do not concern ourselves any other types of containers for CodeSets at this time
         CodeSet.byFolderId(containerId).count()
