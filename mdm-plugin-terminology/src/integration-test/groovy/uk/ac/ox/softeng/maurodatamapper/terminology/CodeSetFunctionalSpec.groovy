@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
-import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
@@ -114,11 +114,10 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         folder.save(flush: true)
         folderId = folder.id
 
-        Folder movingFolder = new Folder(label: 'Functional Test Folder 2', createdBy: StandardEmailAddress.FUNCTIONAL_TEST)
-        movingFolder.save(flush: true)
-        movingFolderId = movingFolder.id
+
 
         assert folderId
+        movingFolderId = new Folder(label: 'Functional Test Folder 2', createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true).id
         assert movingFolderId
 
         builder = new TerminologyPluginMergeBuilder(this)
@@ -128,7 +127,6 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
     def cleanupSpec() {
         log.debug('CleanupSpec CodeSetFunctionalSpec')
         cleanUpResources(CodeSet, Term, Terminology, Folder, Classifier)
-        Authority.findByLabel('Test Authority').delete(flush: true)
     }
 
     @Override
@@ -1579,8 +1577,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
       
                 ],
                 "providerType": "CodeSetImporter",
-                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter
-                .CodeSetFileImporterProviderServiceParameters",
+                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters",
                 "canImportMultipleDomains": false
             },
             {
@@ -1593,8 +1590,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
       
                 ],
                 "providerType": "CodeSetImporter",
-                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter
-                .CodeSetFileImporterProviderServiceParameters",
+                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters",
                 "canImportMultipleDomains": false
             }
         ]'''
