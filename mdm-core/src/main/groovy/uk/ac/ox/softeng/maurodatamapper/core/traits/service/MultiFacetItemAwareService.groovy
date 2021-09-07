@@ -36,7 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired
  * @since 31/01/2020
  */
 @Slf4j
-trait MultiFacetItemAwareService<M extends MultiFacetItemAware> extends DomainService<M> {
+trait MultiFacetItemAwareService<M extends MultiFacetItemAware> extends MdmDomainService<M> {
 
     @Autowired(required = false)
     List<CatalogueItemService> catalogueItemServices

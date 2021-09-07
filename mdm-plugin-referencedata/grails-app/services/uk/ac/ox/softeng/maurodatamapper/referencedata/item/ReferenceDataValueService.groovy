@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -28,7 +28,7 @@ import org.hibernate.SessionFactory
 
 @Slf4j
 @Transactional
-class ReferenceDataValueService implements DomainService<ReferenceDataValue> {
+class ReferenceDataValueService implements MdmDomainService<ReferenceDataValue> {
 
     SessionFactory sessionFactory
 

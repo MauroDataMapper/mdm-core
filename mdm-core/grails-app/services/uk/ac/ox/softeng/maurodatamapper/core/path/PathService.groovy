@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.path
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
@@ -41,7 +41,7 @@ class PathService {
     List<CatalogueItemService> catalogueItemServices
 
     @Autowired(required = false)
-    List<DomainService> domainServices
+    List<MdmDomainService> domainServices
 
     @Autowired(required = false)
     List<SecurableResourceService> securableResourceServices
@@ -85,7 +85,7 @@ class PathService {
         // Find the first child in the path
         PathNode childNode = pathToFind.first()
 
-        DomainService domainService = domainServices.find {service ->
+        MdmDomainService domainService = domainServices.find {service ->
             service.handlesPathPrefix(childNode.prefix)
         }
 
@@ -121,7 +121,7 @@ class PathService {
         if (!securableResourceService) {
             throw new ApiBadRequestException('PS03', "No service available to handle [${rootClass.simpleName}]")
         }
-        if (!(securableResourceService instanceof DomainService)) {
+        if (!(securableResourceService instanceof MdmDomainService)) {
             throw new ApiBadRequestException('PS04', "[${rootClass.simpleName}] is not a pathable resource")
         }
 
@@ -159,7 +159,7 @@ class PathService {
 
         PathNode rootNode = path.first()
 
-        DomainService domainService = domainServices.find {service ->
+        MdmDomainService domainService = domainServices.find {service ->
             service.handlesPathPrefix(rootNode.prefix)
         }
 

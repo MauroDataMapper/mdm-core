@@ -31,7 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 
-trait DomainService<K extends MdmDomain> implements AnonymisableService{
+trait MdmDomainService<K extends MdmDomain> implements AnonymisableService{
 
     @Autowired
     GrailsApplication grailsApplication

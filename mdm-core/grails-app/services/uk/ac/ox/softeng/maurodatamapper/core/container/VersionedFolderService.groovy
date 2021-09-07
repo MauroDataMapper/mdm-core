@@ -50,7 +50,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.VersionLinkAwareService
 import uk.ac.ox.softeng.maurodatamapper.path.Path
@@ -92,7 +92,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     PathService pathService
 
     @Autowired(required = false)
-    Set<DomainService> domainServices
+    Set<MdmDomainService> domainServices
 
     @Autowired(required = false)
     Set<MultiFacetItemAwareService> multiFacetItemAwareServices
@@ -135,7 +135,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         folderService.getContainerPropertyNameInModel()
     }
 
-    Set<DomainService> getDomainServices() {
+    Set<MdmDomainService> getDomainServices() {
         domainServices.add(this)
         domainServices
     }
@@ -884,7 +884,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         String fieldName = modificationPatch.fieldName
         log.debug('Modifying [{}] in [{}]', fieldName, modificationPatch.path.toString(getModelIdentifier(targetVersionedFolder)))
 
-        DomainService domainService = getDomainServices().find {it.handles(domain.class)}
+        MdmDomainService domainService = getDomainServices().find {it.handles(domain.class)}
         if (!domainService) throw new ApiInternalException('MSXX', "No domain service to handle modification of [${domain.domainType}]")
 
         // If the domainService provides a special handler for modifying this field then use it,

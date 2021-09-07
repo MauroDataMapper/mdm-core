@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.security
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRoleService
 
@@ -26,7 +26,7 @@ import grails.gorm.transactions.Transactional
 import grails.validation.ValidationException
 
 @Transactional
-class UserGroupService implements DomainService<UserGroup> {
+class UserGroupService implements MdmDomainService<UserGroup> {
 
     GroupRoleService groupRoleService
 

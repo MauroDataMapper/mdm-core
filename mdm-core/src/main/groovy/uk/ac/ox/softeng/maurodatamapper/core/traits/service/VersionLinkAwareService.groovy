@@ -28,7 +28,7 @@ import groovy.transform.SelfType
 /**
  * @since 29/04/2021
  */
-@SelfType([MultiFacetAwareService, DomainService])
+@SelfType([MultiFacetAwareService, MdmDomainService])
 trait VersionLinkAwareService<K extends VersionLinkAware> {
 
     abstract Class<K> getVersionLinkAwareClass()

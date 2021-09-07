@@ -52,7 +52,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.VersionLinkAwareService
 import uk.ac.ox.softeng.maurodatamapper.path.Path
@@ -91,7 +91,7 @@ abstract class ModelService<K extends Model>
     Set<ModelItemService> modelItemServices
 
     @Autowired(required = false)
-    Set<DomainService> domainServices
+    Set<MdmDomainService> domainServices
 
     @Autowired(required = false)
     Set<MultiFacetItemAwareService> multiFacetItemAwareServices
@@ -195,7 +195,7 @@ abstract class ModelService<K extends Model>
         throw new ApiNotYetImplementedException('MSXX', 'deleteModelsAndContent')
     }
 
-    Set<DomainService> getDomainServices() {
+    Set<MdmDomainService> getDomainServices() {
         domainServices.add(this)
         domainServices
     }
@@ -599,7 +599,8 @@ abstract class ModelService<K extends Model>
         }
         String fieldName = modificationPatch.fieldName
         log.debug('Modifying [{}] in [{}]', fieldName, modificationPatch)
-        DomainService domainService = getDomainServices().find {it.handles(domain.class)}
+
+        MdmDomainService domainService = getDomainServices().find {it.handles(domain.class)}
         if (!domainService) throw new ApiInternalException('MSXX', "No domain service to handle modification of [${domain.domainType}]")
 
         // If the domainService provides a special handler for modifying this field then use it,

@@ -18,14 +18,14 @@
 package uk.ac.ox.softeng.maurodatamapper.core.facet.rule
 
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 
 @Slf4j
 @Transactional
-class RuleRepresentationService implements DomainService<RuleRepresentation> {
+class RuleRepresentationService implements MdmDomainService<RuleRepresentation> {
 
     RuleRepresentation get(Serializable id) {
         RuleRepresentation.get(id)

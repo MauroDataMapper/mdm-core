@@ -21,7 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import grails.gorm.transactions.Transactional
@@ -32,7 +32,7 @@ import java.time.OffsetDateTime
 
 @Slf4j
 @Transactional
-class SummaryMetadataReportService implements DomainService<SummaryMetadataReport> {
+class SummaryMetadataReportService implements MdmDomainService<SummaryMetadataReport> {
 
     @Autowired(required = false)
     List<CatalogueItemService> catalogueItemServices
