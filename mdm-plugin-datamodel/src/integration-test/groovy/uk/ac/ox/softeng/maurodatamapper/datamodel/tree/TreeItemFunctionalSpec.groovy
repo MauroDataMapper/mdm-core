@@ -783,15 +783,45 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         responseBody()
         responseBody().hasChildren
         responseBody().children.size() == 2
-        responseBody().children.any {it.label == 'string' && !it.hasChildren}
-        responseBody().children.any {it.label == 'Functional Test DataClass' && it.hasChildren}
+        responseBody().children.any { it.label == 'string' && !it.hasChildren }
+        responseBody().children.any { it.label == 'Functional Test DataClass' && it.hasChildren }
 
         when:
-        Map dataClassTree = responseBody().children.find {it.label == 'Functional Test DataClass'}
+        Map dataClassTree = responseBody().children.find { it.label == 'Functional Test DataClass' }
 
         then:
         dataClassTree.children.size() == 1
-        dataClassTree.children.any {it.label == 'Functional Test DataElement'}
+        dataClassTree.children.any { it.label == 'Functional Test DataElement' }
+    }
+
+    void 'AN01 : test getting ancestors of class item'() {
+
+        when:
+        GET("folders/dataClasses/${importingParentDataClassId}/ancestors")
+        then:
+        verifyResponse(OK, response)
+        responseBody().id == importTestFolder.id.toString()
+        responseBody().hasChildren
+        responseBody().children.size() == 1
+
+        responseBody().children.any({ it.id == importingDataModelId.toString() })
+        responseBody().children.any({ it.hasChildren == true })
+
+        responseBody().children.find { it.id == importingDataModelId.toString() }.children.any { it.id = importingParentDataClassId.toString() }
+        responseBody().children.find { it.id == importingDataModelId.toString() }.children.any { it.hasChildren == false }
+
+    }
+
+    void 'AN02 : test getting ancestors of DataModel item'() {
+        when:
+        GET("folders/dataModels/${importingDataModelId}/ancestors")
+        then:
+        verifyResponse(OK, response)
+        responseBody().id == importTestFolder.id.toString()
+        responseBody().hasChildren
+        responseBody().children.size() == 1
+        responseBody().children.any({ it.id == importingDataModelId.toString() })
+        responseBody().children.any({ it.hasChildren == true })
     }
 
     @Override

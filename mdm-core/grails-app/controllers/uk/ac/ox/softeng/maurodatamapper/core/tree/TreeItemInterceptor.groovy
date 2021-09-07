@@ -74,6 +74,12 @@ class TreeItemInterceptor implements MdmInterceptor {
                 Model model = proxyHandler.unwrapIfProxy(getOwningModel())
                 return checkActionAuthorisationOnUnsecuredResource(params.catalogueItemClass, params.catalogueItemId, model.getClass(), model.getId())
             }
+            if (actionName == 'ancestors') {
+                mapDomainTypeToClass('catalogueItem', true)
+                boolean canRead = currentUserSecurityPolicyManager.userCanReadResourceId(params.catalogueItemClass, params.catalogueItemId, params.catalogueItemClass,
+                                                                                         params.catalogueItemId)
+                return canRead ?: notFound(params.catalogueItemClass, params.catalogueItemId)
+            }
             // Otherwise top level action so should be allowed through
             return true
         } else if (params.modelDomainType) {

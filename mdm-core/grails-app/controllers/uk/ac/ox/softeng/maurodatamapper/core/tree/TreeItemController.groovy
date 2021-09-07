@@ -132,6 +132,16 @@ class TreeItemController extends RestfulController<TreeItem> implements MdmContr
         respond(treeItemService.buildFullModelTree(model))
     }
 
+    def ancestors() {
+        log.debug('Call to tree for containing ancestors of a catalogue item')
+        CatalogueItem catalogueItem = treeItemService.findTreeCapableCatalogueItem(params.catalogueItemClass, params.catalogueItemId)
+        if (!catalogueItem) return notFound(CatalogueItem, params.catalogueItemId)
+
+        respond(containerTreeItem:
+                    treeItemService.buildCatalogueItemTreeWithAncestors(params.containerClass, catalogueItem, currentUserSecurityPolicyManager))
+
+    }
+
     private boolean shouldIncludeDeletedItems() {
         // Not admin, no see deleted items
         if (!currentUserSecurityPolicyManager.applicationAdministrator) return false
