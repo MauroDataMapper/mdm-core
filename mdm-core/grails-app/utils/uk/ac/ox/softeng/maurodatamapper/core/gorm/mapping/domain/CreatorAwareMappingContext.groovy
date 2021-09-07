@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain
 
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.DynamicHibernateMappingContext
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import org.grails.datastore.mapping.config.Property
@@ -30,7 +30,7 @@ import org.grails.datastore.mapping.model.PersistentEntity
 class CreatorAwareMappingContext extends DynamicHibernateMappingContext {
     @Override
     boolean handlesDomainClass(Class domainClass) {
-        Utils.parentClassIsAssignableFromChild(CreatorAware, domainClass)
+        Utils.parentClassIsAssignableFromChild(MdmDomain, domainClass)
     }
 
     @Override

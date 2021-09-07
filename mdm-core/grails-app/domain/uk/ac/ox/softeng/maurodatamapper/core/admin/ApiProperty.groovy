@@ -19,11 +19,11 @@ package uk.ac.ox.softeng.maurodatamapper.core.admin
 
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.gorm.DetachedCriteria
 
-class ApiProperty implements CreatorAware {
+class ApiProperty implements MdmDomain {
 
     UUID id
     String key

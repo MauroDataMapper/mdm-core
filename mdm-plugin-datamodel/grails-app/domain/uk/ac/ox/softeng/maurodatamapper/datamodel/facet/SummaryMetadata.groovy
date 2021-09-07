@@ -24,14 +24,14 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.summarymetadata.SummaryM
 import uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.constraint.validator.SummaryMetadataLabelValidator
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class SummaryMetadata implements MultiFacetItemAware, InformationAware, CreatorAware {
+class SummaryMetadata implements MultiFacetItemAware, InformationAware, MdmDomain {
 
     public final static Integer BATCH_SIZE = 5000
 

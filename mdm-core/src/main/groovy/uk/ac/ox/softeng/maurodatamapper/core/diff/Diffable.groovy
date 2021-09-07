@@ -18,12 +18,12 @@
 package uk.ac.ox.softeng.maurodatamapper.core.diff
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.compiler.GrailsCompileStatic
 import groovy.transform.SelfType
 
-@SelfType(CreatorAware)
+@SelfType(MdmDomain)
 @GrailsCompileStatic
 trait Diffable<T extends Diffable> {
 

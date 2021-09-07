@@ -31,7 +31,7 @@ import java.time.OffsetDateTime
  */
 @SelfType(GormEntity)
 @GrailsCompileStatic
-trait CreatorAware {
+trait MdmDomain {
 
     OffsetDateTime dateCreated
     OffsetDateTime lastUpdated

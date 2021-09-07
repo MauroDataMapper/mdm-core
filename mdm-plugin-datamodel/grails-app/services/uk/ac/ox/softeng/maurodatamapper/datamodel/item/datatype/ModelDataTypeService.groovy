@@ -31,7 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
@@ -192,10 +192,10 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> implements Su
      * @return
      */
     @Override
-    boolean handlesModificationPatchOfField(FieldPatchData modificationPatch, CreatorAware targetBeingPatched, ModelDataType targetDomain, String fieldName) {
+    boolean handlesModificationPatchOfField(FieldPatchData modificationPatch, MdmDomain targetBeingPatched, ModelDataType targetDomain, String fieldName) {
         if (fieldName == 'modelResourcePath') {
 
-            CreatorAware modelResource = null
+            MdmDomain modelResource = null
             if (targetBeingPatched.domainType == VersionedFolder.simpleName) {
                 // If the modelResourcePath is a path to something internal to the source VF then this should also exist in the
                 // target VF, either because it existed in the target VF before branching occurred, or because it has already been merged from

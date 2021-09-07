@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.test.unit
 
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import groovy.util.logging.Slf4j
 import org.spockframework.util.InternalSpockError
@@ -27,7 +27,7 @@ import org.springframework.validation.FieldError
  * @since 26/09/2017
  */
 @Slf4j
-abstract class CreatorAwareSpec<K extends CreatorAware> extends BaseUnitSpec {
+abstract class CreatorAwareSpec<K extends MdmDomain> extends BaseUnitSpec {
 
     K item
 

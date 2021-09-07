@@ -20,7 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.traits.service
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.security.basic.AnonymousUser
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.core.GrailsApplication
@@ -31,7 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 
-trait DomainService<K extends CreatorAware> implements AnonymisableService {
+trait DomainService<K extends MdmDomain> implements AnonymisableService{
 
     @Autowired
     GrailsApplication grailsApplication
@@ -83,7 +83,7 @@ trait DomainService<K extends CreatorAware> implements AnonymisableService {
 
     boolean handlesPathPrefix(String pathPrefix) {
         Class<K> domainClass = getDomainClass()
-        domainClass ? (domainClass.getDeclaredConstructor().newInstance() as CreatorAware).pathPrefix == pathPrefix : false
+        domainClass ? (domainClass.getDeclaredConstructor().newInstance() as MdmDomain).pathPrefix == pathPrefix : false
     }
 
     abstract K findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier)
@@ -97,7 +97,7 @@ trait DomainService<K extends CreatorAware> implements AnonymisableService {
         }
     }
 
-    boolean handlesModificationPatchOfField(FieldPatchData modificationPatch, CreatorAware targetBeingPatched, K targetDomain, String fieldName) {
+    boolean handlesModificationPatchOfField(FieldPatchData modificationPatch, MdmDomain targetBeingPatched, K targetDomain, String fieldName) {
         false
     }
 }

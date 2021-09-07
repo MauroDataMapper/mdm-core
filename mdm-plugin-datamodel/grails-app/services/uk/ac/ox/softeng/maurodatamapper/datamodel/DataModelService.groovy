@@ -58,7 +58,7 @@ import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
@@ -379,7 +379,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
                 // to get the copy of the model in the copied folder
                 // Note: Using a method in PathService which does not check security on the securable resource owning the model
                 PathNode originalModelPathNode = fullContextOriginalModelResourcePath.last()
-                CreatorAware replacementModelResource =
+                MdmDomain replacementModelResource =
                     pathService.findResourceByPath(Path.from(originalModelPathNode.prefix, originalModelPathNode.getFullIdentifier(copiedDataModel.branchName)))
 
                 if (!replacementModelResource) {

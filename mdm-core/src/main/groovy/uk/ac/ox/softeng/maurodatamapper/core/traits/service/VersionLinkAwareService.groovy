@@ -21,7 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.VersionLinkAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import groovy.transform.SelfType
 
@@ -48,7 +48,7 @@ trait VersionLinkAwareService<K extends VersionLinkAware> {
     }
 
     List<UUID> findAllSupersededModelIds(List<K> models) {
-        findAllSupersededIds(models.collect { (it as CreatorAware).id })
+        findAllSupersededIds(models.collect { (it as MdmDomain).id })
     }
 
     List<K> findAllDocumentationSupersededModels(Map pagination) {

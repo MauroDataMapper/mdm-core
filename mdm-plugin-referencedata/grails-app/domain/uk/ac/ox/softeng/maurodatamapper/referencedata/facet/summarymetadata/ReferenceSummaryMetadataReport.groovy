@@ -20,7 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
@@ -31,7 +31,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class ReferenceSummaryMetadataReport implements CreatorAware {
+class ReferenceSummaryMetadataReport implements MdmDomain {
 
     static final DateTimeFormatter PATH_FORMATTER = DateTimeFormatter.ofPattern('yyyyMMddHHmmssSSSSSSX')
 

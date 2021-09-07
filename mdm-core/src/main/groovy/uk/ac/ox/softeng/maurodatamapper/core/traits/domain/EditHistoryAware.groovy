@@ -20,7 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.traits.domain
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.security.User
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.compiler.GrailsCompileStatic
 import groovy.transform.SelfType
@@ -31,7 +31,7 @@ import org.grails.datastore.gorm.GormEntity
  */
 @SelfType(GormEntity)
 @GrailsCompileStatic
-trait EditHistoryAware extends AddsEditHistory implements CreatorAware {
+trait EditHistoryAware extends AddsEditHistory implements MdmDomain {
 
     void addToEditsTransactionally(EditTitle title, User createdBy, String description) {
         createAndSaveEditInsideNewTransaction title, createdBy, description

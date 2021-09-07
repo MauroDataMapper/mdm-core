@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.path
 
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.PathAware
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -92,7 +92,7 @@ class Path {
         }
     }
 
-    boolean isAbsoluteTo(CreatorAware creatorAware, String modelIdentifierOverride = null) {
+    boolean isAbsoluteTo(MdmDomain creatorAware, String modelIdentifierOverride = null) {
         // If the first node in this path matches the supplied object then this path is absolute against the supplied object,
         // otherwise it may be relative or may not be inside this object
         Path rootPath = from(creatorAware)
@@ -185,7 +185,7 @@ class Path {
         from(from(parentPath), prefix, pathIdentifier)
     }
 
-    static Path from(Path parentPath, CreatorAware domain) {
+    static Path from(Path parentPath, MdmDomain domain) {
         from(parentPath, domain.pathPrefix, domain.pathIdentifier)
     }
 
@@ -225,17 +225,17 @@ class Path {
         cleanPath
     }
 
-    static Path from(CreatorAware... domains) {
+    static Path from(MdmDomain... domains) {
         new Path().tap {
-            domains.eachWithIndex {CreatorAware domain, int i ->
+            domains.eachWithIndex {MdmDomain domain, int i ->
                 pathNodes << new PathNode(domain.pathPrefix, domain.pathIdentifier, false)
             }
         }
     }
 
-    static Path from(List<CreatorAware> domains) {
+    static Path from(List<MdmDomain> domains) {
         new Path().tap {
-            domains.eachWithIndex {CreatorAware domain, int i ->
+            domains.eachWithIndex {MdmDomain domain, int i ->
                 pathNodes << new PathNode(domain.pathPrefix, domain.pathIdentifier, false)
             }
         }
@@ -251,9 +251,9 @@ class Path {
         from(possiblePath).toString() == possiblePath
     }
 
-    static Path toPathPrefix(CreatorAware domain, String prefix)
+    static Path toPathPrefix(MdmDomain domain, String prefix)
     {
-        List<CreatorAware> objectsInPath  = []
+        List<MdmDomain> objectsInPath  = []
         objectsInPath.push(domain)
 
         while (objectsInPath.first().getPathPrefix() != prefix && Utils.parentClassIsAssignableFromChild(PathAware, objectsInPath.first().class)) {

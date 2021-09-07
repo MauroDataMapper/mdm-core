@@ -61,7 +61,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 import uk.ac.ox.softeng.maurodatamapper.version.VersionChangeType
@@ -556,7 +556,7 @@ abstract class ModelService<K extends Model>
 
     void processCreationPatchIntoModel(FieldPatchData creationPatch, K targetModel, K sourceModel,
                                        UserSecurityPolicyManager userSecurityPolicyManager) {
-        CreatorAware domainToCopy = pathService.findResourceByPathFromRootResource(sourceModel, creationPatch.path)
+        MdmDomain domainToCopy = pathService.findResourceByPathFromRootResource(sourceModel, creationPatch.path)
         if (!domainToCopy) {
             log.warn('Could not process creation patch into model at path [{}] as no such path exists in the source', creationPatch.path)
             return
@@ -573,7 +573,7 @@ abstract class ModelService<K extends Model>
     }
 
     void processDeletionPatchIntoModel(FieldPatchData deletionPatch, K targetModel) {
-        CreatorAware domain = pathService.findResourceByPathFromRootResource(targetModel, deletionPatch.relativePathToRoot)
+        MdmDomain domain = pathService.findResourceByPathFromRootResource(targetModel, deletionPatch.relativePathToRoot)
         if (!domain) {
             log.warn('Could not process deletion patch into model at path [{}] as no such path exists in the target',
                      deletionPatch.relativePathToRoot)
@@ -591,7 +591,7 @@ abstract class ModelService<K extends Model>
     }
 
     void processModificationPatchIntoModel(FieldPatchData modificationPatch, K targetModel) {
-        CreatorAware domain = pathService.findResourceByPathFromRootResource(targetModel, modificationPatch.relativePathToRoot)
+        MdmDomain domain = pathService.findResourceByPathFromRootResource(targetModel, modificationPatch.relativePathToRoot)
         if (!domain) {
             log.warn('Could not process modifiation patch into model at path [{}] as no such path exists in the target',
                      modificationPatch.relativePathToRoot)

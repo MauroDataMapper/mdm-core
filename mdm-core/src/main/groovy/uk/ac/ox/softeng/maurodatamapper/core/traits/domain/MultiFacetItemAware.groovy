@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.traits.domain
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.compiler.GrailsCompileStatic
 
@@ -26,7 +26,7 @@ import grails.compiler.GrailsCompileStatic
  * @since 30/01/2020
  */
 @GrailsCompileStatic
-trait MultiFacetItemAware extends CreatorAware {
+trait MultiFacetItemAware extends MdmDomain {
 
     UUID multiFacetAwareItemId
     String multiFacetAwareItemDomainType

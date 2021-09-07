@@ -22,7 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmController
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.artefact.DomainClass
 import grails.rest.RestfulController
@@ -42,7 +42,7 @@ class PathController extends RestfulController<CatalogueItem> implements MdmCont
     }
 
     def show() {
-        CreatorAware pathedResource
+        MdmDomain pathedResource
         if (params.securableResourceId) {
             SecurableResource resource = pathService.findSecurableResourceByDomainClassAndId(params.securableResourceClass,
                                                                                              params.securableResourceId)
@@ -51,12 +51,12 @@ class PathController extends RestfulController<CatalogueItem> implements MdmCont
                 return notFound(params.securableResourceClass, params.securableResourceId)
             }
 
-            if (!(resource instanceof CreatorAware)) {
+            if (!(resource instanceof MdmDomain)) {
                 throw new ApiBadRequestException('PC01', "[${params.securableResourceDomainType}] is not a pathable resource")
             }
 
             // Permissions have been checked as part of the interceptor
-            pathedResource = pathService.findResourceByPathFromRootResource(resource as CreatorAware, params.path)
+            pathedResource = pathService.findResourceByPathFromRootResource(resource as MdmDomain, params.path)
         } else {
             pathedResource = pathService.findResourceByPathFromRootClass(params.securableResourceClass, params.path, currentUserSecurityPolicyManager)
         }

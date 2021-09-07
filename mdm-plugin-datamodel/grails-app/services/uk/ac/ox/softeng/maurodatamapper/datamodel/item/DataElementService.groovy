@@ -40,7 +40,7 @@ import uk.ac.ox.softeng.maurodatamapper.lucene.queries.mlt.BoostedMoreLikeThisQu
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
@@ -341,7 +341,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
             parent = parent.parentDataClass
         }
 
-        List<CreatorAware> pathObjects = []
+        List<MdmDomain> pathObjects = []
         pathObjects << dataElement.model
         pathObjects.addAll(parents.reverse())
         pathObjects << dataElement

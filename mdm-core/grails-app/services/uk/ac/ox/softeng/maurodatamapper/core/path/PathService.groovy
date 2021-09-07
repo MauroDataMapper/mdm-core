@@ -25,7 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.core.GrailsApplication
 import grails.gorm.transactions.Transactional
@@ -55,11 +55,11 @@ class PathService {
     }
 
     Map<String, String> listAllPrefixMappings() {
-        List<CreatorAware> domains = grailsApplication.getArtefacts(DomainClassArtefactHandler.TYPE)
-            .findAll {CreatorAware.isAssignableFrom(it.clazz) && !it.isAbstract()}
+        List<MdmDomain> domains = grailsApplication.getArtefacts(DomainClassArtefactHandler.TYPE)
+            .findAll {MdmDomain.isAssignableFrom(it.clazz) && !it.isAbstract()}
             .collect {grailsClass ->
                 // Allow unqualified path domains to exist without breaking the system
-                CreatorAware domain = grailsClass.newInstance() as CreatorAware
+                MdmDomain domain = grailsClass.newInstance() as MdmDomain
                 domain.pathPrefix ? domain : null
             }.findAll()
 
@@ -68,7 +68,7 @@ class PathService {
         }.sort() as Map<String, String>
     }
 
-    CreatorAware findResourceByPathFromRootResource(CreatorAware rootResourceOfPath, Path path, String modelIdentifierOverride = null) {
+    MdmDomain findResourceByPathFromRootResource(MdmDomain rootResourceOfPath, Path path, String modelIdentifierOverride = null) {
         log.trace('Searching for path {} inside {}:{}', path.toString(modelIdentifierOverride), rootResourceOfPath.pathPrefix,
                   rootResourceOfPath.pathIdentifier)
         if (path.isEmpty()) {
@@ -106,11 +106,11 @@ class PathService {
         findResourceByPathFromRootResource(child, pathToFind, modelIdentifierOverride)
     }
 
-    CreatorAware findResourceByPathFromRootClass(Class<? extends SecurableResource> rootClass, Path path) {
+    MdmDomain findResourceByPathFromRootClass(Class<? extends SecurableResource> rootClass, Path path) {
         findResourceByPathFromRootClass(rootClass, path, null)
     }
 
-    CreatorAware findResourceByPathFromRootClass(Class<? extends SecurableResource> rootClass, Path path, UserSecurityPolicyManager userSecurityPolicyManager) {
+    MdmDomain findResourceByPathFromRootClass(Class<? extends SecurableResource> rootClass, Path path, UserSecurityPolicyManager userSecurityPolicyManager) {
         if (path.isEmpty()) {
             throw new ApiBadRequestException('PS05', 'Must have a path to search')
         }
@@ -125,7 +125,7 @@ class PathService {
             throw new ApiBadRequestException('PS04', "[${rootClass.simpleName}] is not a pathable resource")
         }
 
-        CreatorAware rootResource = securableResourceService.findByParentIdAndPathIdentifier(null, rootNode.getFullIdentifier())
+        MdmDomain rootResource = securableResourceService.findByParentIdAndPathIdentifier(null, rootNode.getFullIdentifier())
         if (!rootResource) return null
 
         // Confirm root resource exists and its prefix matches the pathed prefix
@@ -152,7 +152,7 @@ class PathService {
      * @param path
      * @return CreatorAware resource found by Path
      */
-    CreatorAware findResourceByPath(Path path) {
+    MdmDomain findResourceByPath(Path path) {
         if (path.isEmpty()) {
             throw new ApiBadRequestException('PS05', 'Must have a path to search')
         }
@@ -168,7 +168,7 @@ class PathService {
             return null
         }
 
-        CreatorAware rootResource = domainService.findByParentIdAndPathIdentifier(null, rootNode.getFullIdentifier())
+        MdmDomain rootResource = domainService.findByParentIdAndPathIdentifier(null, rootNode.getFullIdentifier())
 
         if (!rootResource) return null
 

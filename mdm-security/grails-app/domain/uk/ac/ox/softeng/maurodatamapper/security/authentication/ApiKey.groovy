@@ -20,14 +20,14 @@ package uk.ac.ox.softeng.maurodatamapper.security.authentication
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.rest.Resource
 
 import java.time.LocalDate
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class ApiKey implements CreatorAware {
+class ApiKey implements MdmDomain {
 
     public static final String DEFAULT_NAME = 'default'
 

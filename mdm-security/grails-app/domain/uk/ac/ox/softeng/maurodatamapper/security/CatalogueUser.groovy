@@ -24,7 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareCon
 import uk.ac.ox.softeng.maurodatamapper.security.authentication.ApiKey
 import uk.ac.ox.softeng.maurodatamapper.security.utils.SecureRandomStringGenerator
 import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityUtils
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.databinding.BindUsing
 import grails.gorm.DetachedCriteria
@@ -111,7 +111,7 @@ class CatalogueUser implements Principal, EditHistoryAware, User {
         if (disabled == null) disabled = false
     }
 
-    Boolean ownsItem(CreatorAware item) {
+    Boolean ownsItem(MdmDomain item) {
         item.createdBy == emailAddress
     }
 

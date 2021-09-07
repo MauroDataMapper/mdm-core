@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.traits.domain
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.compiler.GrailsCompileStatic
 import groovy.transform.SelfType
@@ -26,7 +26,7 @@ import groovy.transform.SelfType
 /**
  * @since 17/03/2021
  */
-@SelfType(CreatorAware)
+@SelfType(MdmDomain)
 @GrailsCompileStatic
 trait ModelItemAware {
 

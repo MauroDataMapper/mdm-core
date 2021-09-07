@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.path
 
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import groovy.util.logging.Slf4j
@@ -134,7 +134,7 @@ class PathNode {
         matchesPrefix(pathNode.prefix) && matchesIdentifier(pathNode, modelIdentifierOverride)
     }
 
-    boolean matches(CreatorAware creatorAware) {
+    boolean matches(MdmDomain creatorAware) {
         matches(Path.from(creatorAware).last())
     }
 

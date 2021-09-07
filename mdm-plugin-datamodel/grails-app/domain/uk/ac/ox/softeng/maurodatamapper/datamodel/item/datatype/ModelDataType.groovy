@@ -23,7 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.path.Path
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.core.GrailsApplication
@@ -106,7 +106,7 @@ class ModelDataType extends DataType<ModelDataType> {
      * @return Path of the model, including all parents
      */
     static Path makeFullyQualifiedPath(Model model) {
-        List<CreatorAware> nodes = []
+        List<MdmDomain> nodes = []
         nodes << model
         nodes << model.folder
         folderParents(nodes, model.folder)
@@ -114,7 +114,7 @@ class ModelDataType extends DataType<ModelDataType> {
         return Path.from(nodes.reverse())
     }
 
-    static folderParents(List<CreatorAware> nodes, Folder folder) {
+    static folderParents(List<MdmDomain> nodes, Folder folder) {
         if (folder.parentFolder) {
             nodes << folder.parentFolder
             folderParents(nodes, folder.parentFolder)
