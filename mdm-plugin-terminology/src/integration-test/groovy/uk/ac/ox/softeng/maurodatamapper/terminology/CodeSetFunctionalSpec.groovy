@@ -17,12 +17,14 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
+
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.TerminologyPluginMergeBuilder
 import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.TestMergeData
@@ -39,6 +41,7 @@ import spock.lang.Shared
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.FORBIDDEN
+import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
@@ -94,6 +97,9 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
     UUID movingFolderId
 
     @Shared
+    Folder folder
+
+    @Shared
     TerminologyPluginMergeBuilder builder
 
     @OnceBefore
@@ -103,7 +109,13 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         sessionFactory.currentSession.flush()
         assert Folder.count() == 0
         assert CodeSet.count() == 0
-        folderId = new Folder(label: 'Functional Test Folder', createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true).id
+
+        folder = new Folder(label: 'Functional Test Folder', createdBy: StandardEmailAddress.FUNCTIONAL_TEST)
+        folder.save(flush: true)
+        folderId = folder.id
+
+
+
         assert folderId
         movingFolderId = new Folder(label: 'Functional Test Folder 2', createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true).id
         assert movingFolderId
@@ -114,7 +126,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
     @Transactional
     def cleanupSpec() {
         log.debug('CleanupSpec CodeSetFunctionalSpec')
-        cleanUpResources(Terminology, Folder, Classifier)
+        cleanUpResources(CodeSet, Term, Terminology, Folder, Classifier)
     }
 
     @Override
@@ -1779,7 +1791,6 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         String expected = new String(loadTestFile('simpleCodeSet')).replaceFirst('"exportedBy": "Admin User",',
                                                                                  '"exportedBy": "Unlogged User",')
 
-
         expect:
         id
 
@@ -1824,6 +1835,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
             ]
         ], MAP_ARG, true)
         verifyResponse CREATED, response
+        def tid = responseBody().id
 
 
         when: 'importing a codeset which references the terms already imported'
@@ -1857,6 +1869,111 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
         cleanup:
         cleanUpData(id)
+        DELETE("terminologies/${tid}?permanent=true")
+    }
+
+    void 'CT01 : test getting the CodeSet(s) that a Term belongs to'() {
+
+        given:
+        Map data = buildTestData()
+
+        // == actual tests for mc-9503 ==
+        when: 'the Terminology that the Term belongs does not exist.'
+        GET("terminologies/${UUID.randomUUID()}/terms/${data.term1Id}/codeSets", MAP_ARG, true)
+
+        then:
+        verifyResponse NOT_FOUND, response
+
+        when: 'the Terminology exists but the Term being searched for does not exist'
+        GET("terminologies/${data.terminologyId}/terms/${UUID.randomUUID()}/codeSets", MAP_ARG, true)
+
+        then:
+        verifyResponse NOT_FOUND, response
+
+        // this test should pass since term associated with codeset.
+        when: 'term has codesets'
+        GET("terminologies/${data.terminologyId}/terms/${data.term1Id}/codeSets", MAP_ARG, true)
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 2
+        responseBody().items.any {it.id == data.codeSet1Id}
+        responseBody().items.any {it.id == data.codeSet4Id}
+
+        when: 'term has a codeset'
+        GET("terminologies/${data.terminologyId}/terms/${data.term2Id}/codeSets", MAP_ARG, true)
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 1
+        responseBody().items.any {it.id == data.codeSet1Id}
+
+        when: 'term has no codesets'
+        GET("terminologies/${data.terminologyId}/terms/${data.term3Id}/codeSets", MAP_ARG, true)
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 0
+
+        cleanup:
+        cleanupTestData(data)
+    }
+
+    Map buildTestData() {
+        log.info("building test data for codeset test")
+
+        POST("folders/${folderId}/terminologies", [
+            label: 'Functional Test Terminology H'
+        ], MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String terminologyId = responseBody().id
+
+        POST("terminologies/${terminologyId}/terms", [
+            code: "T01", definition: "term 01"
+        ], MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String term1Id = responseBody().id
+        POST("terminologies/${terminologyId}/terms", [
+            code: "T02", definition: "term 02"
+        ], MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String term2Id = responseBody().id
+        POST("terminologies/${terminologyId}/terms", [
+            code: "T03", definition: "term 03"
+        ], MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String term3Id = responseBody().id
+
+        String id = createNewItem([label: 'codeset 1'])
+        String id2 = createNewItem([label: 'codeset 2'])
+        String id3 = createNewItem([label: 'codeset 3'])
+        String id4 = createNewItem([label: 'codeset 4'])
+
+        PUT("$id/terms/${term1Id}", [:])
+        verifyResponse(OK, response)
+        PUT("$id4/terms/${term1Id}", [:])
+        verifyResponse(OK, response)
+        PUT("$id/terms/${term2Id}", [:])
+        verifyResponse(OK, response)
+
+
+        [terminologyId: terminologyId,
+         term1Id      : term1Id,
+         term2Id      : term2Id,
+         term3Id      : term3Id,
+         codeSet1Id   : id,
+         codeSet2Id   : id2,
+         codeSet3Id   : id3,
+         codeSet4Id   : id4,]
+    }
+
+    @Transactional
+    void cleanupTestData(Map data) {
+        CodeSet.get(data.codeSet1Id).delete(flush: true, failOnError: true)
+        CodeSet.get(data.codeSet2Id).delete(flush: true, failOnError: true)
+        CodeSet.get(data.codeSet3Id).delete(flush: true, failOnError: true)
+        CodeSet.get(data.codeSet4Id).delete(flush: true, failOnError: true)
+        Terminology.get(data.terminologyId).delete(flush: true, failOnError: true)
     }
 
     String getExpectedMergeDiffJson() {

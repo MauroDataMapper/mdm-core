@@ -26,22 +26,42 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.CodeSetImp
 
 import grails.gorm.transactions.Transactional
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.config.CustomEditorConfigurer
 
 class CodeSetController extends ModelController<CodeSet> {
     static responseFormats = ['json', 'xml']
 
     CodeSetService codeSetService
     TermService termService
+    TerminologyService terminologyService
 
     @Autowired(required = false)
     Set<CodeSetExporterProviderService> exporterProviderServices
-    
+
     @Autowired(required = false)
-    Set<CodeSetImporterProviderService> importerProviderServices    
+    Set<CodeSetImporterProviderService> importerProviderServices
 
     CodeSetController() {
         super(CodeSet, 'codeSetId')
+    }
+
+    @Override
+    def index(Integer max) {
+        params.max = Math.min(max ?: 10, 100)
+
+        if (params.termId) {
+            if (!terminologyService.get(params.terminologyId)) {
+                return notFound(Terminology, params.terminologyId)
+            }
+            if (!termService.get(params.termId)) {
+                return notFound(Term, params.termId)
+            }
+        }
+
+        def res = listAllResources(params)
+        // The new grails-views code sets the modelAndView object rather than writing the response
+        // Therefore if thats written then we dont want to try and re-write it
+        if (response.isCommitted() || modelAndView) return
+        respond res, [model: [userSecurityPolicyManager: currentUserSecurityPolicyManager], view: 'index']
     }
 
     @Transactional
@@ -52,7 +72,7 @@ class CodeSetController extends ModelController<CodeSet> {
 
         Term term = termService.get(params.termId)
 
-        if (!term) return notFound(params.termId, CustomEditorConfigurer)
+        if (!term) return notFound(Term, params.termId)
 
         if (request.method == 'PUT' || params.method == 'PUT') instance.addToTerms(term)
         else instance.removeFromTerms(term)
@@ -60,6 +80,15 @@ class CodeSetController extends ModelController<CodeSet> {
         updateResource instance
 
         updateResponse instance
+    }
+
+    @Override
+    protected List<CodeSet> listAllReadableResources(Map params) {
+
+        if (params.termId) {
+            return codeSetService.findAllByTermIdAndUser(params.termId, currentUserSecurityPolicyManager, params)
+        }
+        super.listAllReadableResources(params)
     }
 
     @Override

@@ -413,6 +413,12 @@ class CodeSetService extends ModelService<CodeSet> {
         ids ? CodeSet.findAllByIdInList(ids, pagination) : []
     }
 
+    List<CodeSet> findAllByTermIdAndUser(UUID termId, UserSecurityPolicyManager userSecurityPolicyManager, Map pagination = [:]) {
+        List<UUID> ids = userSecurityPolicyManager.listReadableSecuredResourceIds(CodeSet)
+        CodeSet.byTermIdAndIdInList(termId, ids).list(pagination)
+    }
+
+
     /**
      * Find a CodeSet by label.
      * @param label
