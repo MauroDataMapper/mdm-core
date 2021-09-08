@@ -39,6 +39,11 @@ class TreeItemInterceptor implements MdmInterceptor {
 
     private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
 
+    @Override
+    boolean isShow() {
+        actionName in ['show', 'ancestors']
+    }
+
     boolean before() {
         if (params.containerDomainType) {
             mapDomainTypeToClass('container', true)
@@ -74,12 +79,6 @@ class TreeItemInterceptor implements MdmInterceptor {
                 Model model = proxyHandler.unwrapIfProxy(getOwningModel())
                 return checkActionAuthorisationOnUnsecuredResource(params.catalogueItemClass, params.catalogueItemId, model.getClass(), model.getId())
             }
-            if (actionName == 'ancestors') {
-                mapDomainTypeToClass('catalogueItem', true)
-                boolean canRead = currentUserSecurityPolicyManager.userCanReadResourceId(params.catalogueItemClass, params.catalogueItemId, params.catalogueItemClass,
-                                                                                         params.catalogueItemId)
-                return canRead ?: notFound(params.catalogueItemClass, params.catalogueItemId)
-            }
             // Otherwise top level action so should be allowed through
             return true
         } else if (params.modelDomainType) {
@@ -113,5 +112,4 @@ class TreeItemInterceptor implements MdmInterceptor {
         if (!service) throw new ApiBadRequestException('FI01', "TreeItem retrieval for model item [${domainType}] with no supporting service")
         service.get(catalogueItemId)
     }
-
 }
