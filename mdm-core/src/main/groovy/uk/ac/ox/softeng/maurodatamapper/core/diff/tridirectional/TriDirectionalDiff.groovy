@@ -97,42 +97,6 @@ abstract class TriDirectionalDiff<T> extends BiDirectionalDiff<T> {
         fullyQualifiedObjectPath
     }
 
-    @Deprecated
-    @Override
-    T getRight() {
-        super.getRight()
-    }
-
-    @Deprecated
-    @Override
-    void setRight(T right) {
-        super.setRight(right)
-    }
-
-    @Deprecated
-    @Override
-    BiDirectionalDiff<T> leftHandSide(T lhs) {
-        super.leftHandSide(lhs)
-    }
-
-    @Deprecated
-    @Override
-    BiDirectionalDiff<T> rightHandSide(T rhs) {
-        super.rightHandSide(rhs)
-    }
-
-    @Deprecated
-    @Override
-    void setLeft(T left) {
-        super.setLeft(left)
-    }
-
-    @Deprecated
-    @Override
-    T getLeft() {
-        super.getLeft()
-    }
-
     @Override
     String toString() {
         "${source} --> ${target} [${commonAncestor}]"

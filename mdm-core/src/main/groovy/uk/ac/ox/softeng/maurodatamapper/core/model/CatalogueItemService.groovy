@@ -29,7 +29,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.RuleService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.legacy.LegacyFieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
@@ -341,26 +340,5 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomai
     @Override
     K findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
         findByParentIdAndLabel(parentId, pathIdentifier)
-    }
-
-    @Deprecated
-    void mergeLegacyMetadataIntoCatalogueItem(LegacyFieldPatchData fieldPatchData, K targetCatalogueItem,
-                                              UserSecurityPolicyManager userSecurityPolicyManager) {
-        log.debug('Merging Metadata into Catalogue Item')
-        // call metadataService version of below
-        fieldPatchData.deleted.each {deletedItemPatchData ->
-            Metadata metadata = metadataService.get(deletedItemPatchData.id)
-            metadataService.delete(metadata)
-        }
-
-        // copy additions from source to target object
-        fieldPatchData.created.each {createdItemPatchData ->
-            Metadata metadata = metadataService.get(createdItemPatchData.id)
-            metadataService.copy(metadata, targetCatalogueItem)
-        }
-        // for modifications, recursively call this method
-        fieldPatchData.modified.each {modifiedObjectPatchData ->
-            metadataService.mergeLegacyMetadataIntoCatalogueItem(targetCatalogueItem, modifiedObjectPatchData)
-        }
     }
 }

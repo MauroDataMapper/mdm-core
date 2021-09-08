@@ -19,8 +19,6 @@ package uk.ac.ox.softeng.maurodatamapper.core.model
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchData
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.legacy.LegacyFieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -47,83 +45,8 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
         throw new ApiNotYetImplementedException('MIS01', "validate for ${getDomainClass().simpleName}")
     }
 
-    @Deprecated
-    K copy(Model copiedModelInto, K original, UserSecurityPolicyManager userSecurityPolicyManager) {
-        copy(copiedModelInto, original, null, userSecurityPolicyManager)
-    }
-
-    @Deprecated
-    K copy(Model copiedModelInto, K original, UUID nonModelParentId, UserSecurityPolicyManager userSecurityPolicyManager) {
-        throw new ApiNotYetImplementedException('MIS03', "copy [for ModelItem ${getDomainClass().simpleName}] (with parent id)")
-    }
-
-
     K copy(Model copiedModelInto, K original, CatalogueItem nonModelParent, UserSecurityPolicyManager userSecurityPolicyManager) {
         throw new ApiNotYetImplementedException('MIS03', "copy [for ModelItem ${getDomainClass().simpleName}]")
-    }
-
-    @Deprecated
-    Model mergeLegacyObjectPatchDataIntoModelItem(ObjectPatchData objectPatchData, K targetModelItem, Model targetModel,
-                                                  UserSecurityPolicyManager userSecurityPolicyManager) {
-        if (!objectPatchData.hasPatches()) return targetModel
-        log.debug('Merging {} diffs into modelItem [{}]', objectPatchData.getDiffsWithContent().size(), targetModelItem.label)
-        objectPatchData.getDiffsWithContent().each {mergeFieldDiff ->
-            log.debug('{}', mergeFieldDiff.summary)
-
-            if (mergeFieldDiff.isFieldChange()) {
-                targetModelItem.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
-            } else if (mergeFieldDiff.isMetadataChange()) {
-                mergeLegacyMetadataIntoCatalogueItem(mergeFieldDiff, targetModelItem, userSecurityPolicyManager)
-            } else {
-                ModelItemService modelItemService
-                UUID parentId
-                if (this.handles(mergeFieldDiff.fieldName)) {
-                    modelItemService = this
-                    parentId = targetModelItem.id
-                } else {
-                    modelItemService = modelItemServices.find { it.handles(mergeFieldDiff.fieldName) }
-                    parentId = null
-                }
-
-                if (modelItemService) {
-                    modelItemService.processLegacyFieldPatchData(mergeFieldDiff, targetModel, userSecurityPolicyManager, parentId)
-
-                } else {
-                    log.error('Unknown ModelItem field to merge [{}]', mergeFieldDiff.fieldName)
-                }
-            }
-        }
-        //Save the model item, this may break validation?
-        save(flush: true, validate: false, targetModelItem)
-        targetModel
-    }
-
-    @Deprecated
-    void processLegacyFieldPatchData(LegacyFieldPatchData fieldPatchData, Model targetModel, UserSecurityPolicyManager userSecurityPolicyManager,
-                                     UUID parentId = null) {
-        // apply deletions of children to target object
-        fieldPatchData.deleted.each {deletedItemPatchData ->
-            ModelItem modelItem = get(deletedItemPatchData.id) as ModelItem
-            delete(modelItem)
-        }
-
-        // copy additions from source to target object
-        fieldPatchData.created.each {createdItemPatchData ->
-            ModelItem modelItem = get(createdItemPatchData.id) as ModelItem
-            ModelItem copyModelItem
-            if (parentId) {
-                copyModelItem = copy(targetModel, modelItem, parentId, userSecurityPolicyManager)
-            } else {
-                copyModelItem = copy(targetModel, modelItem, userSecurityPolicyManager)
-            }
-            save(copyModelItem)
-        }
-
-        // for modifications, recursively call this method
-        fieldPatchData.modified.each {modifiedObjectPatchData ->
-            ModelItem modelItem = get(modifiedObjectPatchData.targetId) as ModelItem
-            mergeLegacyObjectPatchDataIntoModelItem(modifiedObjectPatchData, modelItem, targetModel, userSecurityPolicyManager)
-        }
     }
 
     boolean isModelItemInSameModelOrInFinalisedModel(K modelItem, K otherModelItem) {
@@ -142,7 +65,7 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
         Collection<K> notSaved = modelItems.findAll { !it.ident() }
 
         if (alreadySaved) {
-            log.debug('Straight saving {} already saved {}', alreadySaved.size(), getModelItemClass().simpleName)
+            log.debug('Straight saving {} already saved {}', alreadySaved.size(), getDomainClass().simpleName)
             getDomainClass().saveAll(alreadySaved)
         }
 

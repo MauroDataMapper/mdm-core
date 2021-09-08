@@ -270,9 +270,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         T target = queryForResource params.otherModelId
         if (!target) return notFound(params.otherModelId)
 
-        // default to legacy until UI is updated
-        String view = params.boolean('isLegacy', true) ? 'legacyMergeDiff' : 'mergeDiff'
-        respond modelService.getMergeDiffForModels(source, target), view: view
+        respond modelService.getMergeDiffForModels(source, target)
     }
 
     @Transactional
@@ -295,8 +293,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         T targetModel = queryForResource params.otherModelId
         if (!targetModel) return notFound(params.otherModelId)
 
-        T instance = modelService.mergeObjectPatchDataIntoModel(mergeIntoData.patch, targetModel, sourceModel,
-                                                                params.boolean('isLegacy', true), currentUserSecurityPolicyManager) as T
+        T instance = modelService.mergeObjectPatchDataIntoModel(mergeIntoData.patch, targetModel, sourceModel, currentUserSecurityPolicyManager) as T
 
         if (!validateResource(instance, 'merge')) return
 

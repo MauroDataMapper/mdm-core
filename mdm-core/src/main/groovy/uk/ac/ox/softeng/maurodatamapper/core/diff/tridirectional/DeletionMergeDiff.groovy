@@ -85,16 +85,6 @@ class DeletionMergeDiff<D extends Diffable> extends TriDirectionalDiff<D> implem
         super.asMergeConflict() as DeletionMergeDiff<D>
     }
 
-    @Deprecated
-    DeletionMergeDiff<D> withSource(D source) {
-        super.withSource(source) as DeletionMergeDiff<D>
-    }
-
-    @Deprecated
-    DeletionMergeDiff<D> withTarget(D target) {
-        super.withTarget(target) as DeletionMergeDiff<D>
-    }
-
     @Override
     String toString() {
         String str = "Deleted :: ${getFullyQualifiedPath()}"

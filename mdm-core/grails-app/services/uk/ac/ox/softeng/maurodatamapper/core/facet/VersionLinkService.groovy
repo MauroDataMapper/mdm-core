@@ -242,18 +242,6 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
             .get()
     }
 
-    @Deprecated(forRemoval = true)
-    List<VersionLink> findAllByModelIdAndType(UUID modelId, String type, Map paginate = [:]) {
-        switch (type) {
-            case 'source':
-                return findAllBySourceModelId(modelId, paginate)
-                break
-            case 'target':
-                return findAllByTargetModelId(modelId, paginate)
-        }
-        findAllBySourceOrTargetModelId(modelId, paginate)
-    }
-
     VersionLinkAware findVersionLinkAwareByDomainTypeAndId(String domainType, UUID modelId) {
         VersionLinkAwareService service = findServiceForVersionLinkAwareDomainType(domainType)
         VersionLinkAware model = service.get(modelId)

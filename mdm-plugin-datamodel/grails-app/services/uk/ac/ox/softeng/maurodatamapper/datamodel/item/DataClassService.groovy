@@ -620,11 +620,6 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     }
 
     @Override
-    DataClass copy(Model copiedDataModel, DataClass original, UUID parentDataClassId, UserSecurityPolicyManager userSecurityPolicyManager) {
-        copy(copiedDataModel as DataModel, original, parentDataClassId ? get(parentDataClassId) : null, userSecurityPolicyManager)
-    }
-
-    @Override
     DataClass copy(Model copiedDataModel, DataClass original, CatalogueItem parentDataClass, UserSecurityPolicyManager userSecurityPolicyManager) {
         copyDataClass(copiedDataModel as DataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager,
                       parentDataClass as DataClass,
@@ -730,17 +725,6 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         }
         // Recursively loop until no empty reference classes
         matchUpAndAddMissingReferenceTypeClasses(copiedDataModel, originalDataModel, copier, userSecurityPolicyManager)
-    }
-
-    @Deprecated(forRemoval = true)
-    private Set<ReferenceType> getAllNestedReferenceTypes(DataClass dataClass) {
-        Set<ReferenceType> referenceTypes = []
-        referenceTypes.addAll(dataClass.referenceTypes ?: [])
-        referenceTypes.addAll(dataClass.dataElements.dataType.findAll { it.instanceOf(ReferenceType) })
-        dataClass.dataClasses.each {
-            referenceTypes.addAll(getAllNestedReferenceTypes(it))
-        }
-        referenceTypes
     }
 
     private Set<ReferenceType> findAllEmptyReferenceTypes(DataModel dataModel) {

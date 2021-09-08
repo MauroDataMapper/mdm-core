@@ -249,41 +249,6 @@ class FolderService extends ContainerService<Folder> {
         Folder.byMetadataNamespace(namespace).list(pagination)
     }
 
-    @Deprecated
-    Folder findFolder(String label) {
-        findDomainByLabel(label)
-    }
-
-    @Deprecated
-    Folder findFolder(Folder parentFolder, String label) {
-        findByParentIdAndLabel(parentFolder.id, label)
-    }
-
-    @Deprecated
-    Folder findByFolderPath(String folderPath) {
-        findByPath(folderPath)
-    }
-
-    @Deprecated
-    Folder findByFolderPath(List<String> pathLabels) {
-        findByPath(pathLabels)
-    }
-
-    @Deprecated
-    Folder findByFolderPath(Folder parentFolder, List<String> pathLabels) {
-        findByPath(parentFolder, pathLabels)
-    }
-
-    @Deprecated
-    List<Folder> findAllByParentFolderId(UUID parentFolderId, Map pagination = [:]) {
-        findAllByParentId(parentFolderId, pagination)
-    }
-
-    @Deprecated
-    List<Folder> getFullPathFolders(Folder folder) {
-        getFullPathDomains(folder)
-    }
-
     List<Model> findAllModelsInFolder(Folder folder) {
         if (!modelServices) return []
         modelServices.collectMany {service ->

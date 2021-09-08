@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.traits.domain
 
-import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import grails.compiler.GrailsCompileStatic
 import groovy.transform.SelfType
@@ -37,10 +36,6 @@ trait MdmDomain {
     OffsetDateTime lastUpdated
     String createdBy
 
-    Boolean isOwnedBy(User user) {
-        createdBy == user?.emailAddress
-    }
-
     abstract UUID getId()
 
     abstract String getDomainType()
@@ -53,10 +48,5 @@ trait MdmDomain {
     // Allow domains to not be "pathed". Also provides compatability
     String getPathIdentifier() {
         null
-    }
-
-    @Deprecated(forRemoval = true)
-    void setCreatedByUser(User user) {
-        this.createdBy = user?.emailAddress
     }
 }

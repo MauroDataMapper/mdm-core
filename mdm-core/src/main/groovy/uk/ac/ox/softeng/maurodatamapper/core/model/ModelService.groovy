@@ -237,11 +237,6 @@ abstract class ModelService<K extends Model>
         []
     }
 
-    @Deprecated
-    List<K> findAllByDataLoaderPlugin(DataLoaderProviderService dataLoaderProviderService, Map pagination = [:]) {
-        findAllByMetadataNamespaceAndKey(dataLoaderProviderService.namespace, dataLoaderProviderService.name, pagination)
-    }
-
     List<K> findAllReadableModels(UserSecurityPolicyManager userSecurityPolicyManager, boolean includeDocumentSuperseded,
                                   boolean includeModelSuperseded, boolean includeDeleted) {
         List<UUID> ids = userSecurityPolicyManager.listReadableSecuredResourceIds(getDomainClass())
@@ -488,7 +483,7 @@ abstract class ModelService<K extends Model>
      * @param domainService Service which handles catalogueItems of the leftModel and rightModel type.
      * @return The model resulting from the merging of changes.
      */
-    K mergeObjectPatchDataIntoModel(ObjectPatchData objectPatchData, K targetModel, K sourceModel, boolean isLegacy,
+    K mergeObjectPatchDataIntoModel(ObjectPatchData objectPatchData, K targetModel, K sourceModel,
                                     UserSecurityPolicyManager userSecurityPolicyManager) {
 
 
@@ -497,8 +492,6 @@ abstract class ModelService<K extends Model>
             return targetModel
         }
         log.debug('Merging patch data into {}', targetModel.id)
-        if (isLegacy) return mergeLegacyObjectPatchDataIntoModel(objectPatchData, targetModel, userSecurityPolicyManager)
-
         getSortedFieldPatchDataForMerging(objectPatchData).each {fieldPatch ->
             switch (fieldPatch.type) {
                 case 'creation':
@@ -669,30 +662,6 @@ abstract class ModelService<K extends Model>
             throw new ApiInvalidModelException('MS01', 'Copied Facet is invalid', copy.errors, messageSource)
 
         multiFacetItemAwareService.save(copy, flush: false, validate: false)
-    }
-
-    @SuppressWarnings('GrDeprecatedAPIUsage')
-    @Deprecated
-    K mergeLegacyObjectPatchDataIntoModel(ObjectPatchData objectPatchData, K targetModel, UserSecurityPolicyManager userSecurityPolicyManager) {
-
-        log.debug('Merging legacy {} diffs into model {}', objectPatchData.getDiffsWithContent().size(), targetModel.label)
-        objectPatchData.getDiffsWithContent().each {mergeFieldDiff ->
-            log.debug('{}', mergeFieldDiff.summary)
-
-            if (mergeFieldDiff.isFieldChange()) {
-                targetModel.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
-            } else if (mergeFieldDiff.isMetadataChange()) {
-                mergeLegacyMetadataIntoCatalogueItem(mergeFieldDiff, targetModel, userSecurityPolicyManager)
-            } else {
-                ModelItemService modelItemService = modelItemServices.find {it.handles(mergeFieldDiff.fieldName)}
-                if (modelItemService) {
-                    modelItemService.processLegacyFieldPatchData(mergeFieldDiff, targetModel, userSecurityPolicyManager)
-                } else {
-                    log.error('Unknown ModelItem field to merge [{}]', mergeFieldDiff.fieldName)
-                }
-            }
-        }
-        targetModel
     }
 
     List<VersionTreeModel> buildModelVersionTree(K instance, VersionLinkType versionLinkType,

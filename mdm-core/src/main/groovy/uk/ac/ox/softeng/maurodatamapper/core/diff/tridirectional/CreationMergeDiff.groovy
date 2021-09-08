@@ -72,16 +72,6 @@ class CreationMergeDiff<C extends Diffable> extends TriDirectionalDiff<C> implem
         super.asMergeConflict() as CreationMergeDiff<C>
     }
 
-    @Deprecated
-    CreationMergeDiff<C> withSource(C source) {
-        super.withSource(source) as CreationMergeDiff<C>
-    }
-
-    @Deprecated
-    CreationMergeDiff<C> withTarget(C target) {
-        super.withTarget(target) as CreationMergeDiff<C>
-    }
-
     @Override
     String toString() {
         "Created :: ${createdIdentifier}"

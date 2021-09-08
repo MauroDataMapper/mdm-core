@@ -41,11 +41,6 @@ class MauroDataMapperProviderService {
         modulesList.find {it.name.equalsIgnoreCase(name) && it.version.equalsIgnoreCase(version)}
     }
 
-    @Deprecated(forRemoval = true)
-    Set<MauroDataMapperPlugin> getModules() {
-        modulesList
-    }
-
     Set<GrailsPluginMauroDataMapperPlugin> getAllGrailsPluginModules() {
         pluginManager.allPlugins.collect {
             it.name.startsWith('mdm') ? new MdmGrailsPluginMauroDataMapperPlugin(plugin: it) : new GrailsPluginMauroDataMapperPlugin(plugin: it)

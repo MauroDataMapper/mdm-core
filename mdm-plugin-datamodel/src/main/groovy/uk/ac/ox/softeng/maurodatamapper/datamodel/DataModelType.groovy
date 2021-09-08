@@ -42,12 +42,6 @@ enum DataModelType {
         value ? findForLabel(value) ?: valueOf(value) : null
     }
 
-    @Deprecated(forRemoval = true)
-    static DataModelType getValidType(DataModelType dataModelType) {
-        if (!dataModelType) return null
-        return DATA_STANDARD
-    }
-
     static List<String> labels() {
         values().collect { it.label }.sort()
     }

@@ -218,18 +218,6 @@ class SemanticLinkService implements MultiFacetItemAwareService<SemanticLink> {
         SemanticLink.withFilter(SemanticLink.byAnyMultiFacetAwareItemId(multiFacetAwareItemId), paginate).list(paginate)
     }
 
-    @Deprecated(forRemoval = true)
-    List<SemanticLink> findAllByMultiFacetAwareItemIdAndType(UUID multiFacetAwareItemId, String type, Map paginate = [:]) {
-        switch (type) {
-            case 'source':
-                return findAllBySourceMultiFacetAwareItemId(multiFacetAwareItemId, paginate)
-                break
-            case 'target':
-                return findAllByTargetMultiFacetAwareItemId(multiFacetAwareItemId, paginate)
-        }
-        findAllBySourceOrTargetMultiFacetAwareItemId(multiFacetAwareItemId, paginate)
-    }
-
     boolean areLinksIdenticalBetweenSameSourceLabelAndTargetItem(SemanticLink a, String sourceALabel, SemanticLink b, String sourceBLabel) {
         //compares the linktype, target and source to decide if a two SemanticLinks are the same
         if (a.linkType != b.linkType) return false

@@ -39,18 +39,6 @@ trait IndexedSiblingAware {
      *
      * @param ModelItem updated         The item which has been updated
      * @param Set <ModelItem>  siblings   The siblings of the updated item
-     * @param int oldIndex                  The index of the updated item before it was updated     
-     */
-    @Deprecated
-    void updateSiblingIndexes(ModelItem updated, Collection<ModelItem> siblings, Integer oldIndex) {
-        updateSiblingIndexes(updated, siblings)
-    }
-
-    /**
-     * Given a CatalogueItem which has been updated, re-index its siblings.
-     *
-     * @param ModelItem updated         The item which has been updated
-     * @param Set <ModelItem>  siblings   The siblings of the updated item
      */
     void updateSiblingIndexes(ModelItem updated, Collection<ModelItem> siblings) {
         log.trace('Updating sibling indexes {}:{}, siblings size {}, currentIndex {}, indexChanged {}, original value {}',

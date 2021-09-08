@@ -46,11 +46,6 @@ abstract class DataLoaderProviderService<T extends DataLoadable> extends MauroDa
 
     abstract List<String> getClassifiers()
 
-    @Deprecated(forRemoval = true)
-    List<T> importData(User catalogueUser) throws ApiException {
-        importData(Version.from(getVersion()), catalogueUser)
-    }
-
     abstract List<T> importData(Version version,
                                 User catalogueUser)
         throws ApiException

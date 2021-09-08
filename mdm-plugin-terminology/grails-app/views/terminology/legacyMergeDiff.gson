@@ -1,8 +1,0 @@
-import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.MergeDiff
-import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
-
-model {
-    MergeDiff<Terminology> mergeDiff
-}
-
-json tmpl.'/mergeDiff/legacyMergeDiff'(mergeDiff)

@@ -24,15 +24,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmInterceptor
  */
 trait SecurityPolicyManagerInterceptor extends MdmInterceptor {
 
-    /**
-     * No longer needed as this is only an issue under test/development
-     * In the real world when a session is destroyed the next request causes grails to autocreate a new session
-     * which calls the createSession hook inside our SessionService which results in a new session being properly stored.
-     */
-    @Deprecated
-    void checkSessionIsValid() {
-    }
-
     boolean securityPolicyManagerIsSet() {
         params.currentUserSecurityPolicyManager
     }
