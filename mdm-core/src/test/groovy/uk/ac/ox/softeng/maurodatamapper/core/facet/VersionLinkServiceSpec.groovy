@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
@@ -311,10 +312,10 @@ class VersionLinkServiceSpec extends MultiFacetItemAwareServiceSpec<VersionLink,
         // bm3 NEW_DOCUMENTATION_VERSION_OF bm2 -- bm2 is superseded
         // bm4 NEW_DOCUMENTATION_VERSION_OF bm3 -- bm3 is superseded
         when:
-        basicModel3.addToVersionLinks(new VersionLink(createdByUser: admin,
+        basicModel3.addToVersionLinks(new VersionLink(createdBy: StandardEmailAddress.UNIT_TEST,
                                                       linkType: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF,
                                                       targetModel: BasicModel.findByLabel('dm2')))
-        basicModel4.addToVersionLinks(new VersionLink(createdByUser: admin,
+        basicModel4.addToVersionLinks(new VersionLink(createdBy: StandardEmailAddress.UNIT_TEST,
                                                       linkType: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF,
                                                       targetModel: BasicModel.findByLabel('dm3')))
         checkAndSave(basicModel3)
@@ -345,7 +346,7 @@ class VersionLinkServiceSpec extends MultiFacetItemAwareServiceSpec<VersionLink,
 
         // bm3 NEW_MODEL_VERSION_OF bm2 -- bm2 is superseded
         when:
-        basicModel3.addToVersionLinks(new VersionLink(createdByUser: admin,
+        basicModel3.addToVersionLinks(new VersionLink(createdBy: StandardEmailAddress.UNIT_TEST,
                                                       linkType: VersionLinkType.NEW_MODEL_VERSION_OF,
                                                       targetModel: BasicModel.findByLabel('dm2')))
 
@@ -360,10 +361,10 @@ class VersionLinkServiceSpec extends MultiFacetItemAwareServiceSpec<VersionLink,
         // bm3 NEW_DOCUMENTATION_VERSION_OF bm2 -- not a relevant supersede
         // bm4 NEW_DOCUMENTATION_VERSION_OF bm3 -- not a relevant supersede
         when:
-        basicModel3.addToVersionLinks(new VersionLink(createdByUser: admin,
+        basicModel3.addToVersionLinks(new VersionLink(createdBy: StandardEmailAddress.UNIT_TEST,
                                                       linkType: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF,
                                                       targetModel: BasicModel.findByLabel('dm2')))
-        basicModel4.addToVersionLinks(new VersionLink(createdByUser: admin,
+        basicModel4.addToVersionLinks(new VersionLink(createdBy: StandardEmailAddress.UNIT_TEST,
                                                       linkType: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF,
                                                       targetModel: BasicModel.findByLabel('dm3')))
         checkAndSave(basicModel3)
@@ -400,7 +401,7 @@ class VersionLinkServiceSpec extends MultiFacetItemAwareServiceSpec<VersionLink,
         !link
 
         when:
-        basicModel4.addToVersionLinks(new VersionLink(createdByUser: admin,
+        basicModel4.addToVersionLinks(new VersionLink(createdBy: StandardEmailAddress.UNIT_TEST,
                                                       linkType: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF,
                                                       targetModel: BasicModel.findByLabel('dm3')))
         checkAndSave(basicModel4)

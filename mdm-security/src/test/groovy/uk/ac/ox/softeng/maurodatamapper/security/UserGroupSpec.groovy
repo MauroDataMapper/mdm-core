@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security
 
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.security.test.SecurityUsers
 import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
@@ -76,10 +77,10 @@ class UserGroupSpec extends CreatorAwareSpec<UserGroup> implements DomainUnitTes
 
     void 'test various usergroup setups'() {
         given:
-        UserGroup admins = new UserGroup(createdByUser: admin, name: 'administrators').addToGroupMembers(admin)
-        UserGroup editors = new UserGroup(createdByUser: admin, name: 'editors').addToGroupMembers(admin)
-        UserGroup readers = new UserGroup(createdByUser: admin, name: 'readers').addToGroupMembers(admin)
-        UserGroup funGroup = new UserGroup(createdByUser: reader, name: 'fungroup').addToGroupMembers(reader)
+        UserGroup admins = new UserGroup(createdBy: StandardEmailAddress.UNIT_TEST, name: 'administrators').addToGroupMembers(admin)
+        UserGroup editors = new UserGroup(createdBy: StandardEmailAddress.UNIT_TEST, name: 'editors').addToGroupMembers(admin)
+        UserGroup readers = new UserGroup(createdBy: StandardEmailAddress.UNIT_TEST, name: 'readers').addToGroupMembers(admin)
+        UserGroup funGroup = new UserGroup(createdBy: StandardEmailAddress.UNIT_TEST, name: 'fungroup').addToGroupMembers(reader)
 
         editors.addToGroupMembers(editor)
         readers.addToGroupMembers(editor)
@@ -92,7 +93,7 @@ class UserGroupSpec extends CreatorAwareSpec<UserGroup> implements DomainUnitTes
         checkAndSave editors
         checkAndSave readers
         checkAndSave funGroup
-        checkAndSave new UserGroup(createdByUser: reader, name: 'plain').addToGroupMembers(reader)
+        checkAndSave new UserGroup(createdBy: StandardEmailAddress.UNIT_TEST, name: 'plain').addToGroupMembers(reader)
 
         when:
         item = UserGroup.findByName('administrators')

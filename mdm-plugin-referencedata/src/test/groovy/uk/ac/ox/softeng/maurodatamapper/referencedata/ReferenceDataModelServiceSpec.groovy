@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
@@ -68,20 +69,20 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
 
         simpleReferenceDataModel = buildExampleReferenceDataModel()
 
-        ReferenceDataModel referenceDataModel1 = new ReferenceDataModel(createdByUser: reader1, label: 'test database', folder: testFolder,
+        ReferenceDataModel referenceDataModel1 = new ReferenceDataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'test database', folder: testFolder,
                                                                         authority: testAuthority)
-        ReferenceDataModel referenceDataModel2 = new ReferenceDataModel(createdByUser: reader2, label: 'test form', folder: testFolder,
+        ReferenceDataModel referenceDataModel2 = new ReferenceDataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'test form', folder: testFolder,
                                                                         authority: testAuthority)
-        ReferenceDataModel referenceDataModel3 = new ReferenceDataModel(createdByUser: editor, label: 'test standard', folder: testFolder,
+        ReferenceDataModel referenceDataModel3 = new ReferenceDataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'test standard', folder: testFolder,
                                                                         authority: testAuthority)
 
         checkAndSave(referenceDataModel1)
         checkAndSave(referenceDataModel2)
         checkAndSave(referenceDataModel3)
 
-        ReferenceDataType dt = new ReferencePrimitiveType(createdByUser: admin, label: 'integration datatype')
+        ReferenceDataType dt = new ReferencePrimitiveType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'integration datatype')
         referenceDataModel1.addToReferenceDataTypes(dt)
-        ReferenceDataElement dataElement = new ReferenceDataElement(label: 'sdmelement', createdByUser: editor, referenceDataType: dt)
+        ReferenceDataElement dataElement = new ReferenceDataElement(label: 'sdmelement', createdBy: StandardEmailAddress.UNIT_TEST, referenceDataType: dt)
 
         checkAndSave(referenceDataModel1)
 
@@ -142,7 +143,8 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
     void "test save"() {
 
         when:
-        ReferenceDataModel referenceDataModel = new ReferenceDataModel(createdByUser: reader2, label: 'saving test', folder: testFolder, authority: testAuthority)
+        ReferenceDataModel referenceDataModel = new ReferenceDataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'saving test', folder: testFolder,
+                                                                       authority: testAuthority)
         service.save(referenceDataModel)
 
         then:
@@ -556,7 +558,7 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
 
     void 'DMSV02 : test validation on invalid simple model'() {
         given:
-        ReferenceDataModel check = new ReferenceDataModel(createdByUser: reader1, folder: testFolder, authority: testAuthority)
+        ReferenceDataModel check = new ReferenceDataModel(createdBy: StandardEmailAddress.UNIT_TEST, folder: testFolder, authority: testAuthority)
 
         when:
         ReferenceDataModel invalid = service.validate(check)
@@ -574,8 +576,8 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
 
     void 'DMSV03 : test validation on invalid primitive datatype model'() {
         given:
-        ReferenceDataModel check = new ReferenceDataModel(createdByUser: reader1, label: 'test invalid',folder: testFolder, authority: testAuthority)
-        check.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: admin))
+        ReferenceDataModel check = new ReferenceDataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'test invalid', folder: testFolder, authority: testAuthority)
+        check.addToReferenceDataTypes(new ReferencePrimitiveType(createdBy: StandardEmailAddress.UNIT_TEST))
 
         when:
         ReferenceDataModel invalid = service.validate(check)
@@ -592,21 +594,21 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
     }
 
        void 'DMSV06 : test validation on invalid reference datatype model'() {
-        given:
-        ReferenceDataModel check = new ReferenceDataModel(createdByUser: reader1, label: 'test invalid', folder: testFolder, authority: testAuthority)
-        check.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: admin))
+           given:
+           ReferenceDataModel check = new ReferenceDataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'test invalid', folder: testFolder, authority: testAuthority)
+           check.addToReferenceDataTypes(new ReferencePrimitiveType(createdBy: StandardEmailAddress.UNIT_TEST))
 
-        when:
-        ReferenceDataModel invalid = service.validate(check)
+           when:
+           ReferenceDataModel invalid = service.validate(check)
 
-        then:
-        invalid.hasErrors()
-        invalid.errors.errorCount == 1
-        invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 1
-        invalid.errors.getFieldError('referenceDataTypes[0].label')
+           then:
+           invalid.hasErrors()
+           invalid.errors.errorCount == 1
+           invalid.errors.globalErrorCount == 0
+           invalid.errors.fieldErrorCount == 1
+           invalid.errors.getFieldError('referenceDataTypes[0].label')
 
-        cleanup:
-        GormUtils.outputDomainErrors(messageSource, invalid)
-    }
+           cleanup:
+           GormUtils.outputDomainErrors(messageSource, invalid)
+       }
 }

@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
@@ -52,17 +52,18 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
 
     void setupDomainData() {
         log.debug('Setting up ReferenceDataElementServiceSpec')
-        referenceDataModel = new ReferenceDataModel(createdByUser: admin, label: 'Integration test model', folder: testFolder, authority: testAuthority)
+        referenceDataModel =
+            new ReferenceDataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Integration test model', folder: testFolder, authority: testAuthority)
         checkAndSave(referenceDataModel)
 
-        referenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: admin, label: 'string'))
-        referenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: editor, label: 'integer'))
+        referenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'string'))
+        referenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'integer'))
 
-        ReferenceDataElement element = new ReferenceDataElement(createdByUser: admin, label: 'ele1',
+        ReferenceDataElement element = new ReferenceDataElement(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'ele1',
                                                                 referenceDataType: referenceDataModel.findReferenceDataTypeByLabel('string'))
         referenceDataModel.addToReferenceDataElements(element)
 
-        ReferenceDataElement element2 = new ReferenceDataElement(createdByUser: admin, label: 'ele2',
+        ReferenceDataElement element2 = new ReferenceDataElement(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'ele2',
                                                                  referenceDataType: referenceDataModel.findReferenceDataTypeByLabel('integer'),
                                                                  minMultiplicity: 0, maxMultiplicity: 1)
         referenceDataModel.addToReferenceDataElements(element2)
@@ -154,11 +155,13 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
     void 'test findAllByReferenceDataModelIdAndLabelIlike'() {
         given:
         setupData()
-        ReferenceDataModel other = new ReferenceDataModel(createdByUser: admin, label: 'anotherModel', folder: testFolder, authority: testAuthority)
-        other.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: admin, label: 'string'))
-        other.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: editor, label: 'integer'))
+        ReferenceDataModel other = new ReferenceDataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'anotherModel', folder: testFolder,
+                                                          authority: testAuthority)
+        other.addToReferenceDataTypes(new ReferencePrimitiveType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'string'))
+        other.addToReferenceDataTypes(new ReferencePrimitiveType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'integer'))
         checkAndSave(other)
-        ReferenceDataElement element = new ReferenceDataElement(createdByUser: admin, label: 'other element', referenceDataType: other.findReferenceDataTypeByLabel('string'))
+        ReferenceDataElement element = new ReferenceDataElement(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'other element',
+                                                                referenceDataType: other.findReferenceDataTypeByLabel('string'))
         other.addToReferenceDataElements(element)
         checkAndSave(other)
 
@@ -181,8 +184,8 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
         given:
         setupData()
         ReferenceDataElement original = referenceDataElementService.get(id)
-        ReferenceDataModel destination = new ReferenceDataModel(createdByUser: admin, label: 'Destination integration test model', folder: testFolder,
-                                                                authority: testAuthority)
+        ReferenceDataModel destination = new ReferenceDataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Destination integration test model',
+                                                                folder: testFolder, authority: testAuthority)
 
         expect:
         checkAndSave(destination)
@@ -219,8 +222,8 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
         given:
         setupData()
         ReferenceDataElement original = referenceDataElementService.get(id)
-        ReferenceDataModel destination = new ReferenceDataModel(createdByUser: admin, label: 'Destination integration test model', folder: testFolder,
-                                                                authority: testAuthority)
+        ReferenceDataModel destination = new ReferenceDataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Destination integration test model',
+                                                                folder: testFolder, authority: testAuthority)
 
         expect:
         checkAndSave(destination)

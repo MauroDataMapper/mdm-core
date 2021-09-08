@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
@@ -35,8 +35,8 @@ class EnumerationValueSpec extends ModelItemSpec<EnumerationValue> implements Do
     def setup() {
         log.debug('Setting up EnumerationValueSpec unit')
         mockDomains(DataModel, EnumerationType)
-        dataSet = new DataModel(createdByUser: admin, label: 'dataSet', folder: testFolder, authority: testAuthority)
-        enumerationType = new EnumerationType(createdByUser: admin, label: 'et', dataModel: dataSet)
+        dataSet = new DataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'dataSet', folder: testFolder, authority: testAuthority)
+        enumerationType = new EnumerationType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'et', dataModel: dataSet)
         dataSet.addToDataTypes(enumerationType)
         checkAndSave(dataSet)
     }

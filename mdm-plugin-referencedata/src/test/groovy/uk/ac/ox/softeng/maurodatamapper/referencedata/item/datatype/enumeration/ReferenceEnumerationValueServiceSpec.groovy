@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration
 
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
@@ -39,26 +40,26 @@ class ReferenceEnumerationValueServiceSpec extends CatalogueItemServiceSpec impl
         mockArtefact(ReferenceSummaryMetadataService)
         mockDomains(ReferenceDataModel, ReferenceDataType, ReferencePrimitiveType, ReferenceEnumerationType, ReferenceEnumerationValue, ReferenceDataElement)
 
-        referenceDataModel = new ReferenceDataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder, authority: testAuthority)
+        referenceDataModel = new ReferenceDataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'Unit test model', folder: testFolder, authority: testAuthority)
         checkAndSave(referenceDataModel)
 
-        referenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: admin, label: 'string'))
-        referenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: editor, label: 'integer'))
-        ReferenceEnumerationValue ev1 = new ReferenceEnumerationValue(createdByUser: admin, key: 'key2', value: 'val2')
-        ReferenceEnumerationType et1 = new ReferenceEnumerationType(createdByUser: editor, label: 'et1')
-            .addToReferenceEnumerationValues(createdByUser: admin, key: 'key1', value: 'val1')
+        referenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'string'))
+        referenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'integer'))
+        ReferenceEnumerationValue ev1 = new ReferenceEnumerationValue(createdBy: StandardEmailAddress.UNIT_TEST, key: 'key2', value: 'val2')
+        ReferenceEnumerationType et1 = new ReferenceEnumerationType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'et1')
+            .addToReferenceEnumerationValues(createdBy: StandardEmailAddress.UNIT_TEST, key: 'key1', value: 'val1')
             .addToReferenceEnumerationValues(ev1)
         referenceDataModel.addToReferenceDataTypes(et1)
-        referenceDataModel.addToReferenceDataTypes(new ReferenceEnumerationType(createdByUser: editor, label: 'et2')
-                                     .addToReferenceEnumerationValues(createdByUser: admin, key: 'key1', value: 'val1')
-                                     .addToReferenceEnumerationValues(createdByUser: admin, key: 'key2', value: 'val2')
-                                     .addToReferenceEnumerationValues(createdByUser: admin, key: 'key3', value: 'val3')
-                                     .addToReferenceEnumerationValues(createdByUser: admin, key: 'key4', value: 'val4')
+        referenceDataModel.addToReferenceDataTypes(new ReferenceEnumerationType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'et2')
+                                                       .addToReferenceEnumerationValues(createdBy: StandardEmailAddress.UNIT_TEST, key: 'key1', value: 'val1')
+                                                       .addToReferenceEnumerationValues(createdBy: StandardEmailAddress.UNIT_TEST, key: 'key2', value: 'val2')
+                                                       .addToReferenceEnumerationValues(createdBy: StandardEmailAddress.UNIT_TEST, key: 'key3', value: 'val3')
+                                                       .addToReferenceEnumerationValues(createdBy: StandardEmailAddress.UNIT_TEST, key: 'key4', value: 'val4')
         )
-        referenceDataModel.addToReferenceDataTypes(new ReferenceEnumerationType(createdByUser: admin, label: 'yesnounknown')
-                                     .addToReferenceEnumerationValues(key: 'Y', value: 'Yes')
-                                     .addToReferenceEnumerationValues(key: 'N', value: 'No')
-                                     .addToReferenceEnumerationValues(key: 'U', value: 'Unknown'))
+        referenceDataModel.addToReferenceDataTypes(new ReferenceEnumerationType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'yesnounknown')
+                                                       .addToReferenceEnumerationValues(key: 'Y', value: 'Yes')
+                                                       .addToReferenceEnumerationValues(key: 'N', value: 'No')
+                                                       .addToReferenceEnumerationValues(key: 'U', value: 'Unknown'))
 
 
         checkAndSave(referenceDataModel)
@@ -110,8 +111,8 @@ class ReferenceEnumerationValueServiceSpec extends CatalogueItemServiceSpec impl
     void "test save"() {
 
         when:
-        ReferenceEnumerationValue referenceEnumerationValue = new ReferenceEnumerationValue(createdByUser: reader2, key: 'st', value: 'saving test',
-                                                                 referenceEnumerationType: ReferenceEnumerationType.findByLabel('yesnounknown'))
+        ReferenceEnumerationValue referenceEnumerationValue = new ReferenceEnumerationValue(createdBy: StandardEmailAddress.UNIT_TEST, key: 'st', value: 'saving test',
+                                                                                            referenceEnumerationType: ReferenceEnumerationType.findByLabel('yesnounknown'))
         service.save(referenceEnumerationValue)
 
         then:

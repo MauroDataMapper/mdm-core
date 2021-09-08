@@ -87,7 +87,7 @@ class ReferenceSummaryMetadataServiceSpec extends MultiFacetItemAwareServiceSpec
 
         ReferenceDataModelService dataModelService = Stub() {
             get(_) >> referenceDataModel
-            getModelClass() >> referenceDataModel
+            getDomainClass() >> referenceDataModel
             handles('ReferenceDataModel') >> true
             removeReferenceFileFromMultiFacetAware(referenceDataModel.id, _) >> {UUID bmid, ReferenceSummaryMetadata sm ->
                 referenceDataModel.referenceSummaryMetadata.remove(sm)

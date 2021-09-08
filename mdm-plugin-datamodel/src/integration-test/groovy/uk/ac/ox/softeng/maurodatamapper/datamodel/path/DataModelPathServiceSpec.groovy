@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.path
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -83,40 +83,40 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
 
     @Override
     void setupDomainData() {
-        dataModel1 = new DataModel(createdByUser: admin, label: 'data model 1', folder: testFolder, authority: testAuthority)
+        dataModel1 = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'data model 1', folder: testFolder, authority: testAuthority)
         checkAndSave(dataModel1)
 
-        dataClass1_1 = new DataClass(createdByUser: admin, label: 'data class 1')
+        dataClass1_1 = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'data class 1')
 
-        dataClass1_1_1 = new DataClass(createdByUser: admin, label: 'data class 1_1')
+        dataClass1_1_1 = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'data class 1_1')
         dataClass1_1.addToDataClasses(dataClass1_1_1)
         dataModel1.addToDataClasses(dataClass1_1)
 
-        dataClass1_2 = new DataClass(createdByUser: admin, label: 'data class 2')
+        dataClass1_2 = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'data class 2')
         dataModel1.addToDataClasses(dataClass1_2)
 
-        dataClass1_3 = new DataClass(createdByUser: admin, label: 'data class 3')
+        dataClass1_3 = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'data class 3')
         dataModel1.addToDataClasses(dataClass1_3)
         checkAndSave(dataModel1)
 
 
-        dataModel2 = new DataModel(createdByUser: admin, label: 'data model 2', folder: testFolder, authority: testAuthority)
+        dataModel2 = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'data model 2', folder: testFolder, authority: testAuthority)
         checkAndSave(dataModel2)
 
-        dataClass2_1 = new DataClass(createdByUser: admin, label: 'data class 1')
-        DataType dt = new PrimitiveType(createdByUser: admin, label: 'path service test data type')
+        dataClass2_1 = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'data class 1')
+        DataType dt = new PrimitiveType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'path service test data type')
         dataModel2.addToDataTypes(dt)
-        dataElement2_1 = new DataElement(createdByUser: admin, label: 'data element 1', dataType: dt)
+        dataElement2_1 = new DataElement(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'data element 1', dataType: dt)
         dataClass2_1.addToDataElements(dataElement2_1)
         dataModel2.addToDataClasses(dataClass2_1)
 
-        dataClass2_2 = new DataClass(createdByUser: admin, label: 'data class 2')
+        dataClass2_2 = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'data class 2')
         dataModel2.addToDataClasses(dataClass2_2)
 
-        dataClass2_3 = new DataClass(createdByUser: admin, label: 'data class 3')
+        dataClass2_3 = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'data class 3')
         dataModel2.addToDataClasses(dataClass2_3)
 
-        dataClass2_4 = new DataClass(createdByUser: admin, label: 'data class 4')
+        dataClass2_4 = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'data class 4')
         dataModel2.addToDataClasses(dataClass2_4)
         checkAndSave(dataModel2)
 

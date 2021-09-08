@@ -74,7 +74,7 @@ class SummaryMetadataServiceSpec extends MultiFacetItemAwareServiceSpec<SummaryM
 
         DataModelService dataModelService = Stub() {
             get(_) >> dataModel
-            getModelClass() >> dataModel
+            getDomainClass() >> dataModel
             handles('DataModel') >> true
             removeSummaryMetadataFromMultiFacetAware(dataModel.id, _) >> {UUID bmid, SummaryMetadata sm ->
                 dataModel.summaryMetadata.remove(sm)

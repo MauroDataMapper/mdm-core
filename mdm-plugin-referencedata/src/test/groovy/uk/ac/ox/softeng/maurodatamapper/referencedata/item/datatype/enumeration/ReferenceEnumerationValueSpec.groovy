@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
@@ -35,8 +35,8 @@ class ReferenceEnumerationValueSpec extends ModelItemSpec<ReferenceEnumerationVa
     def setup() {
         log.debug('Setting up EnumerationValueSpec unit')
         mockDomains(ReferenceDataModel, ReferenceEnumerationType)
-        dataSet = new ReferenceDataModel(createdByUser: admin, label: 'dataSet', folder: testFolder, authority: testAuthority)
-        referenceEnumerationType = new ReferenceEnumerationType(createdByUser: admin, label: 'et', referenceReferenceDataModel: dataSet)
+        dataSet = new ReferenceDataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'dataSet', folder: testFolder, authority: testAuthority)
+        referenceEnumerationType = new ReferenceEnumerationType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'et', referenceReferenceDataModel: dataSet)
         dataSet.addToReferenceDataTypes(referenceEnumerationType)
         checkAndSave(dataSet)
     }

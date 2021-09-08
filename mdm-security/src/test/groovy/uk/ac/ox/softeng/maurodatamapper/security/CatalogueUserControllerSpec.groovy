@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.security
 
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyService
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.email.EmailService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
@@ -76,7 +77,7 @@ class CatalogueUserControllerSpec extends ResourceControllerSpec<CatalogueUser> 
 
         mockDomain(Edit)
         mockDomain(UserGroup)
-        group = new UserGroup(name: 'testgroup', createdByUser: admin).addToGroupMembers(admin)
+        group = new UserGroup(name: 'testgroup', createdBy: StandardEmailAddress.UNIT_TEST).addToGroupMembers(admin)
         checkAndSave(group)
 
 

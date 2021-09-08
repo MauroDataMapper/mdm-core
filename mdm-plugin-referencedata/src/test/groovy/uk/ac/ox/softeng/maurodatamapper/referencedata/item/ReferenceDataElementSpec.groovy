@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
@@ -39,12 +40,12 @@ class ReferenceDataElementSpec extends ModelItemSpec<ReferenceDataElement> imple
         log.debug('Setting up DataClassSpec unit')
         mockDomains(ReferenceDataModel, ReferenceDataType, ReferencePrimitiveType, ReferenceDataType, ReferenceEnumerationType, ReferenceEnumerationValue, ReferenceDataElement)
 
-        dataSet = new ReferenceDataModel(createdByUser: admin, label: 'dataSet', folder: testFolder, authority: testAuthority)
+        dataSet = new ReferenceDataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'dataSet', folder: testFolder, authority: testAuthority)
 
         checkAndSave(dataSet)
         assert ReferenceDataModel.count() == 1
 
-        referenceDataType = new ReferencePrimitiveType(createdByUser: admin, label: 'datatype')
+        referenceDataType = new ReferencePrimitiveType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'datatype')
         
         dataSet.addToReferenceDataTypes(referenceDataType)
         checkAndSave(dataSet)
@@ -97,7 +98,7 @@ class ReferenceDataElementSpec extends ModelItemSpec<ReferenceDataElement> imple
         checkAndSave(domain)
 
         when: 'adding reference data element with same label to reference data model'
-        dataSet.addToReferenceDataElements(label: domain.label, createdByUser: admin, referenceDataType: referenceDataType)
+        dataSet.addToReferenceDataElements(label: domain.label, createdBy: StandardEmailAddress.UNIT_TEST, referenceDataType: referenceDataType)
         checkAndSave(dataSet)
 
         then: 'dataSet should not be valid'
@@ -108,7 +109,8 @@ class ReferenceDataElementSpec extends ModelItemSpec<ReferenceDataElement> imple
     void 'test unique label naming across reference reference data models'() {
         given:
         setValidDomainValues()
-        ReferenceDataModel referenceDataModel = new ReferenceDataModel(label: 'another model', createdByUser: editor, folder: testFolder, authority: testAuthority)
+        ReferenceDataModel referenceDataModel = new ReferenceDataModel(label: 'another model', createdBy: StandardEmailAddress.UNIT_TEST, folder: testFolder,
+                                                                       authority: testAuthority)
 
         expect: 'domain is currently valid'
         checkAndSave(domain)

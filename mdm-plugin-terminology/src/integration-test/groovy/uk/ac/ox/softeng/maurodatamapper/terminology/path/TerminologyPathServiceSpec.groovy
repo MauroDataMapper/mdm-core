@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.path
 
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.path.Path
@@ -93,33 +94,37 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
     void setupDomainData() {
         log.debug('Setting up TerminologyPathServiceSpec Unit')
 
-        terminology1 = new Terminology(createdByUser: admin, label: 'terminology 1', folder: testFolder, authority: testAuthority)
+        terminology1 = new Terminology(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'terminology 1', folder: testFolder, authority: testAuthority)
         checkAndSave(terminology1)
-        terminology1_term1 = new Term(createdByUser: admin, code: 'c1', definition: 'terminology 1 term 1')
+        terminology1_term1 = new Term(createdBy: StandardEmailAddress.INTEGRATION_TEST, code: 'c1', definition: 'terminology 1 term 1')
         terminology1.addToTerms(terminology1_term1)
         checkAndSave(terminology1)
-        terminology1_term2 = new Term(createdByUser: admin, code: 'c2', definition: 'terminology 1 term 2')
+        terminology1_term2 = new Term(createdBy: StandardEmailAddress.INTEGRATION_TEST, code: 'c2', definition: 'terminology 1 term 2')
         terminology1.addToTerms(terminology1_term2)
         checkAndSave(terminology1)
 
-        terminology2 = new Terminology(createdByUser: admin, label: 'terminology 2', folder: testFolder, authority: testAuthority)
+        terminology2 = new Terminology(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'terminology 2', folder: testFolder, authority: testAuthority)
         checkAndSave(terminology2)
-        terminology2_term1 = new Term(createdByUser: admin, code: 'c3', definition: 'terminology 2 term 1')
+        terminology2_term1 = new Term(createdBy: StandardEmailAddress.INTEGRATION_TEST, code: 'c3', definition: 'terminology 2 term 1')
         terminology2.addToTerms(terminology2_term1)
         checkAndSave(terminology2)
-        terminology2_term2 = new Term(createdByUser: admin, code: 'c4', definition: 'terminology 2 term 2')
+        terminology2_term2 = new Term(createdBy: StandardEmailAddress.INTEGRATION_TEST, code: 'c4', definition: 'terminology 2 term 2')
         terminology2.addToTerms(terminology2_term2)
         checkAndSave(terminology2)
 
-        terminology3main = new Terminology(createdByUser: admin, label: 'terminology 3', description: 'terminology 3 on main', folder: testFolder, authority: testAuthority)
+        terminology3main = new Terminology(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'terminology 3', description: 'terminology 3 on main', folder: testFolder,
+                                           authority: testAuthority)
         checkAndSave(terminology3main)
 
-        terminology3draft = new Terminology(createdByUser: admin, label: 'terminology 3', description: 'terminology 3 on draft', folder: testFolder, authority: testAuthority,
-                                            branchName: 'draft')
+        terminology3draft =
+            new Terminology(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'terminology 3', description: 'terminology 3 on draft', folder: testFolder,
+                            authority: testAuthority,
+                            branchName: 'draft')
         checkAndSave(terminology3draft)
 
         terminology4finalised =
-            new Terminology(createdByUser: admin, label: 'terminology 4', description: 'terminology 4 finalised', folder: testFolder, authority: testAuthority)
+            new Terminology(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'terminology 4', description: 'terminology 4 finalised', folder: testFolder,
+                            authority: testAuthority)
         checkAndSave(terminology4finalised)
         terminology4finalised.finalised = true
         terminology4finalised.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
@@ -128,10 +133,12 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         checkAndSave(terminology4finalised)
 
         terminology4notFinalised =
-            new Terminology(createdByUser: admin, label: 'terminology 4', description: 'terminology 4 not finalised', folder: testFolder, authority: testAuthority)
+            new Terminology(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'terminology 4', description: 'terminology 4 not finalised', folder: testFolder,
+                            authority: testAuthority)
         checkAndSave(terminology4notFinalised)
 
-        terminology5first = new Terminology(createdByUser: admin, label: 'terminology 5', description: 'terminology 5 1.0.0', folder: testFolder, authority: testAuthority)
+        terminology5first = new Terminology(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'terminology 5', description: 'terminology 5 1.0.0', folder: testFolder,
+                                            authority: testAuthority)
         checkAndSave(terminology5first)
         terminology5first.finalised = true
         terminology5first.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
@@ -139,7 +146,8 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         terminology5first.modelVersion = Version.from('1.0.0')
         checkAndSave(terminology5first)
 
-        terminology5second = new Terminology(createdByUser: admin, label: 'terminology 5', description: 'terminology 5 2.0.0', folder: testFolder, authority: testAuthority)
+        terminology5second = new Terminology(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'terminology 5', description: 'terminology 5 2.0.0', folder: testFolder,
+                                             authority: testAuthority)
         checkAndSave(terminology5second)
         terminology5second.finalised = true
         terminology5second.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
@@ -147,14 +155,14 @@ class TerminologyPathServiceSpec extends BaseTerminologyIntegrationSpec {
         terminology5second.modelVersion = Version.from('2.0.0')
         checkAndSave(terminology5second)
 
-        codeSet1 = new CodeSet(createdByUser: admin, label: 'codeset 1', folder: testFolder, authority: testAuthority)
+        codeSet1 = new CodeSet(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'codeset 1', folder: testFolder, authority: testAuthority)
         checkAndSave(codeSet1)
         codeSet1.addToTerms(terminology1_term1)
         checkAndSave(codeSet1)
         codeSet1.addToTerms(terminology1_term2)
         checkAndSave(codeSet1)
 
-        codeSet2 = new CodeSet(createdByUser: admin, label: 'codeset 2', folder: testFolder, authority: testAuthority)
+        codeSet2 = new CodeSet(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'codeset 2', folder: testFolder, authority: testAuthority)
         checkAndSave(codeSet2)
         codeSet2.addToTerms(terminology2_term1)
         checkAndSave(codeSet2)

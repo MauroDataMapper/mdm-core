@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
@@ -47,25 +48,29 @@ class ReferenceDataElementServiceSpec extends CatalogueItemServiceSpec implement
         log.debug('Setting up DataElementServiceSpec Unit')
         mockArtefact(ReferenceDataTypeService)
         mockArtefact(ReferenceSummaryMetadataService)
-        mockDomains(ReferenceDataModel, ReferenceDataType, ReferencePrimitiveType, ReferenceDataType, ReferenceEnumerationType, ReferenceEnumerationValue, ReferenceDataElement)
+        mockDomains(ReferenceDataModel, ReferenceDataType, ReferencePrimitiveType, ReferenceDataType, ReferenceEnumerationType, ReferenceEnumerationValue,
+                    ReferenceDataElement)
 
-        referenceDataModel = new ReferenceDataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder, authority: testAuthority)
+        referenceDataModel = new ReferenceDataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'Unit test model', folder: testFolder, authority: testAuthority)
         checkAndSave(referenceDataModel)
 
-        referenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: admin, label: 'string'))
-        referenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: editor, label: 'integer'))
+        referenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'string'))
+        referenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'integer'))
 
-        ReferenceDataElement element = new ReferenceDataElement(createdByUser: admin, label: 'ele1', referenceDataType: referenceDataModel.findReferenceDataTypeByLabel('string'))
+        ReferenceDataElement element = new ReferenceDataElement(createdBy: StandardEmailAddress.UNIT_TEST, label: 'ele1',
+                                                                referenceDataType: referenceDataModel.findReferenceDataTypeByLabel('string'))
         referenceDataModel.addToReferenceDataElements(element)
 
-        referenceDataModel.addToReferenceDataElements(createdByUser: editor, label: 'elex', referenceDataType: referenceDataModel.findReferenceDataTypeByLabel('string'))
-        referenceDataModel.addToReferenceDataElements(createdByUser: reader1, label: 'element2', description: 'another',
-                                  referenceDataType: referenceDataModel.findReferenceDataTypeByLabel('integer'))
-        referenceDataModel.addToReferenceDataElements(createdByUser: reader1, label: 'element3', referenceDataType: referenceDataModel.findReferenceDataTypeByLabel('integer'),
-                                  maxMultiplicity: 1, minMultiplicity: 0)
+        referenceDataModel
+            .addToReferenceDataElements(createdBy: StandardEmailAddress.UNIT_TEST, label: 'elex', referenceDataType: referenceDataModel.findReferenceDataTypeByLabel('string'))
+        referenceDataModel.addToReferenceDataElements(createdBy: StandardEmailAddress.UNIT_TEST, label: 'element2', description: 'another',
+                                                      referenceDataType: referenceDataModel.findReferenceDataTypeByLabel('integer'))
+        referenceDataModel.addToReferenceDataElements(createdBy: StandardEmailAddress.UNIT_TEST, label: 'element3',
+                                                      referenceDataType: referenceDataModel.findReferenceDataTypeByLabel('integer'),
+                                                      maxMultiplicity: 1, minMultiplicity: 0)
 
-        ReferenceDataElement el2 = new ReferenceDataElement(createdByUser: editor, label: 'another', minMultiplicity: 1, maxMultiplicity: 1,
-                                          referenceDataType: referenceDataModel.findReferenceDataTypeByLabel('integer'))
+        ReferenceDataElement el2 = new ReferenceDataElement(createdBy: StandardEmailAddress.UNIT_TEST, label: 'another', minMultiplicity: 1, maxMultiplicity: 1,
+                                                            referenceDataType: referenceDataModel.findReferenceDataTypeByLabel('integer'))
 
         referenceDataModel.addToReferenceDataElements(el2)
 
@@ -126,8 +131,8 @@ class ReferenceDataElementServiceSpec extends CatalogueItemServiceSpec implement
     void "test save"() {
 
         when:
-        ReferenceDataElement dataElement = new ReferenceDataElement(createdByUser: reader2, label: 'saving test', referenceDataModel: referenceDataModelId,
-                                                  referenceDataType: referenceDataModel.findReferenceDataTypeByLabel('string'))
+        ReferenceDataElement dataElement = new ReferenceDataElement(createdBy: StandardEmailAddress.UNIT_TEST, label: 'saving test', referenceDataModel: referenceDataModelId,
+                                                                    referenceDataType: referenceDataModel.findReferenceDataTypeByLabel('string'))
         service.save(dataElement)
 
         then:
@@ -145,7 +150,7 @@ class ReferenceDataElementServiceSpec extends CatalogueItemServiceSpec implement
 
     void 'test copying ReferenceDataElement from one ReferenceDataModel to another'() {
         given:
-        ReferenceDataModel copyModel = new ReferenceDataModel(createdByUser: admin, label: 'copy', folder: testFolder, authority: testAuthority)
+        ReferenceDataModel copyModel = new ReferenceDataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'copy', folder: testFolder, authority: testAuthority)
         ReferenceDataElement original = service.get(id)
 
         expect:
@@ -182,7 +187,7 @@ class ReferenceDataElementServiceSpec extends CatalogueItemServiceSpec implement
 
     void 'test copying ReferenceDataElement with metadata and classifiers'() {
         given:
-        ReferenceDataModel copyModel = new ReferenceDataModel(createdByUser: admin, label: 'copy', folder: testFolder, authority: testAuthority)
+        ReferenceDataModel copyModel = new ReferenceDataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'copy', folder: testFolder, authority: testAuthority)
         ReferenceDataElement original = service.get(id)
 
         expect:

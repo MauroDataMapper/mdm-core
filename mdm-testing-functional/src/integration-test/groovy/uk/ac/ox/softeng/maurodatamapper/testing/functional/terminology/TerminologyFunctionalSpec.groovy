@@ -191,6 +191,11 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
     }
 
     @Override
+    String getE25ModelPrefix() {
+        'teFunctional Test Model'
+    }
+
+    @Override
     String getEditorIndexJson() {
         '''{
   "count": 2,

@@ -858,24 +858,24 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
         then:
         verifyResponse OK, response
-        responseBody().leftId == rightId
-        responseBody().rightId == leftId
+        responseBody().targetId == rightId
+        responseBody().sourceId == leftId
 
         when:
         GET("$leftId/mergeDiff/$mainId")
 
         then:
         verifyResponse OK, response
-        responseBody().leftId == mainId
-        responseBody().rightId == leftId
+        responseBody().targetId == mainId
+        responseBody().sourceId == leftId
 
         when:
         GET("$rightId/mergeDiff/$mainId")
 
         then:
         verifyResponse OK, response
-        responseBody().leftId == mainId
-        responseBody().rightId == rightId
+        responseBody().targetId == mainId
+        responseBody().sourceId == rightId
 
         cleanup:
         cleanUpData(mainId)
@@ -927,11 +927,11 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         when:
         PUT("$source/mergeInto/$target", [patch:
                                               [
-                                                  leftId : "$target" as String,
-                                                  rightId: "${UUID.randomUUID().toString()}" as String,
-                                                  label  : "Functional Test Model",
-                                                  count  : 0,
-                                                  diffs  : []
+                                                  targetId: target,
+                                                  sourceId: UUID.randomUUID().toString(),
+                                                  label   : "Functional Test Model",
+                                                  count   : 0,
+                                                  patches : []
                                               ]
         ])
 
@@ -942,11 +942,11 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         when:
         PUT("$source/mergeInto/$target", [patch:
                                               [
-                                                  leftId : "${UUID.randomUUID().toString()}" as String,
-                                                  rightId: "$source" as String,
-                                                  label  : "Functional Test Model",
-                                                  count  : 0,
-                                                  diffs  : []
+                                                  targetId: UUID.randomUUID().toString(),
+                                                  sourceId: source,
+                                                  label   : "Functional Test Model",
+                                                  count   : 0,
+                                                  patches : []
                                               ]
         ])
 
@@ -960,26 +960,12 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         cleanUpData(id)
     }
 
-    void 'MD01 : test merging diff into draft model legacy style'() {
+    void 'MD01 : test merging diff of complex models'() {
         given:
         TestMergeData testMergeData = builder.buildComplexCodeSetModelsForMerging(folderId.toString())
 
         when:
         GET("$testMergeData.source/mergeDiff/$testMergeData.target", STRING_ARG)
-
-        then:
-        verifyJsonResponse OK, expectedLegacyMergeDiffJson
-
-        cleanup:
-        builder.cleanupTestMergeData(testMergeData)
-    }
-
-    void 'MD02 : test merging diff into draft model new style'() {
-        given:
-        TestMergeData testMergeData = builder.buildComplexCodeSetModelsForMerging(folderId.toString())
-
-        when:
-        GET("$testMergeData.source/mergeDiff/$testMergeData.target?isLegacy=false", STRING_ARG)
 
         then:
         verifyJsonResponse OK, expectedMergeDiffJson
@@ -988,95 +974,19 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         builder.cleanupTestMergeData(testMergeData)
     }
 
-    void 'MI01: test merging diff into model legacy style'() {
-
+    void 'MI01 : test merging into complex models'() {
         given:
         TestMergeData testMergeData = builder.buildComplexCodeSetModelsForMerging(folderId.toString())
 
         when:
-        def requestBody = [
-            changeNotice: 'Functional Test Merge Change Notice',
-            patch       : [
-                leftId : testMergeData.target,
-                rightId: testMergeData.source,
-                label  : "Functional Test Model",
-                count  : 7,
-                diffs  : [
-                    [
-                        fieldName: "description",
-                        value    : "DescriptionLeft"
-                    ],
-                    [
-                        fieldName: "terms",
-                        deleted  : [
-                            [
-                                id: testMergeData.sourceMap.codeSet.deleteAndModify,
-                            ],
-                            [
-                                id: testMergeData.sourceMap.codeSet.deleteLeftOnly,
-                            ],
-                            [
-                                id: testMergeData.sourceMap.codeSet.deleteLeftOnlyCodeSet,
-                            ]
-                        ],
-                        created  : [
-                            [
-                                id: testMergeData.sourceMap.codeSet.addLeftOnly,
-                            ],
-                            [
-                                id: testMergeData.sourceMap.codeSet.addLeftOnlyCodeSet,
-                            ],
-                            [
-                                id: testMergeData.sourceMap.codeSet.modifyAndDelete,
-                            ]
-                        ]
-                    ]
-                ]
-            ]
-        ]
-
-        PUT("$testMergeData.source/mergeInto/$testMergeData.target", requestBody)
-
-        then:
-        verifyResponse OK, response
-        responseBody().id == testMergeData.target
-        responseBody().description == 'DescriptionLeft'
-
-        when:
-        GET("$testMergeData.target/terms")
-
-        then:
-        responseBody().items.label as Set == ['AAARD: addAndAddReturningDifference', 'ALO: addLeftOnly', 'MAD: modifyAndDelete',
-                                              'MAMRD: modifyAndModifyReturningDifference', 'MLO: modifyLeftOnly', 'ALOCS: addLeftOnlyCodeSet'] as Set
-
-        when: 'List edits for the Target CodeSet'
-        GET("$testMergeData.target/edits", MAP_ARG)
-
-        then: 'The response is OK'
-        verifyResponse OK, response
-
-        and: 'There is a CHANGENOTICE edit'
-        response.body().items.find {
-            it.title == "CHANGENOTICE" && it.description == "Functional Test Merge Change Notice"
-        }
-
-        cleanup:
-        builder.cleanupTestMergeData(testMergeData)
-    }
-
-    void 'MI02 : test merging into into draft model new style'() {
-        given:
-        TestMergeData testMergeData = builder.buildComplexCodeSetModelsForMerging(folderId.toString())
-
-        when:
-        GET("$testMergeData.source/mergeDiff/$testMergeData.target?isLegacy=false")
+        GET("$testMergeData.source/mergeDiff/$testMergeData.target")
 
         then:
         verifyResponse OK, response
 
         when:
         List<Map> patches = responseBody().diffs
-        PUT("$testMergeData.source/mergeInto/$testMergeData.target?isLegacy=false", [
+        PUT("$testMergeData.source/mergeInto/$testMergeData.target", [
             patch: [
                 targetId: responseBody().targetId,
                 sourceId: responseBody().sourceId,
@@ -2351,166 +2261,5 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
     }
   ]
 }'''
-    }
-
-    String getExpectedLegacyMergeDiffJson() {
-        '''{
-  "leftId": "${json-unit.matches:id}",
-  "rightId": "${json-unit.matches:id}",
-  "label": "Functional Test CodeSet 1",
-  "count": 10,
-  "diffs": [
-    {
-      "description": {
-        "left": null,
-        "right": "DescriptionLeft",
-        "isMergeConflict": false
-      }
-    },
-    {
-      "metadata": {
-        "deleted": [
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "namespace": "functional.test",
-              "key": "deleteFromSource",
-              "value": "some other original value"
-            },
-            "isMergeConflict": false
-          }
-        ],
-        "created": [
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "namespace": "functional.test",
-              "key": "addToSourceOnly",
-              "value": "adding to source only"
-            },
-            "isMergeConflict": false
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "namespace": "functional.test",
-              "key": "modifyAndDelete",
-              "value": "source has modified this also"
-            },
-            "isMergeConflict": true,
-            "commonAncestorValue": {
-              "id": "${json-unit.matches:id}",
-              "namespace": "functional.test",
-              "key": "modifyAndDelete",
-              "value": "some other original value 2"
-            }
-          }
-        ],
-        "modified": [
-          {
-            "leftId": "${json-unit.matches:id}",
-            "rightId": "${json-unit.matches:id}",
-            "namespace": "functional.test",
-            "key": "modifyOnSource",
-            "count": 1,
-            "diffs": [
-              {
-                "value": {
-                  "left": "some original value",
-                  "right": "source has modified this",
-                  "isMergeConflict": false
-                }
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "terms": {
-        "deleted": [
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "DLOCS: deleteLeftOnlyCodeSet",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test Terminology 1",
-                  "domainType": "Terminology",
-                  "finalised": true
-                }
-              ]
-            },
-            "isMergeConflict": false
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "DLO: deleteLeftOnly",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test Terminology 1",
-                  "domainType": "Terminology",
-                  "finalised": true
-                }
-              ]
-            },
-            "isMergeConflict": false
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "DAM: deleteAndModify",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test Terminology 1",
-                  "domainType": "Terminology",
-                  "finalised": true
-                }
-              ]
-            },
-            "isMergeConflict": false
-          }
-        ],
-        "created": [
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "ALO: addLeftOnly",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test Terminology 1",
-                  "domainType": "Terminology",
-                  "finalised": true
-                }
-              ]
-            },
-            "isMergeConflict": false
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "ALOCS: addLeftOnlyCodeSet",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test Terminology 1",
-                  "domainType": "Terminology",
-                  "finalised": true
-                }
-              ]
-            },
-            "isMergeConflict": false
-          }
-        ]
-      }
-    }
-  ]
-}
-'''
     }
 }

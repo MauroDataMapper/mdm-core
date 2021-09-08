@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -43,13 +44,13 @@ class DataElementSpec extends ModelItemSpec<DataElement> implements DomainUnitTe
         log.debug('Setting up DataClassSpec unit')
         mockDomains(DataModel, DataClass, DataType, PrimitiveType, ReferenceType, EnumerationType, EnumerationValue, DataElement)
 
-        dataSet = new DataModel(createdByUser: admin, label: 'dataSet', folder: testFolder, authority: testAuthority)
+        dataSet = new DataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'dataSet', folder: testFolder, authority: testAuthority)
 
         checkAndSave(dataSet)
         assert DataModel.count() == 1
 
-        dataType = new PrimitiveType(createdByUser: admin, label: 'datatype')
-        dataClass = new DataClass(createdByUser: admin, label: 'dataClass')
+        dataType = new PrimitiveType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'datatype')
+        dataClass = new DataClass(createdBy: StandardEmailAddress.UNIT_TEST, label: 'dataClass')
         dataSet.addToDataClasses(dataClass)
         dataSet.addToDataTypes(dataType)
         checkAndSave(dataSet)
@@ -112,7 +113,7 @@ class DataElementSpec extends ModelItemSpec<DataElement> implements DomainUnitTe
         checkAndSave(dataClass)
 
         when: 'adding data element with same label to dataclass'
-        dataClass.addToDataElements(label: domain.label, createdByUser: admin, dataType: dataType)
+        dataClass.addToDataElements(label: domain.label, createdBy: StandardEmailAddress.UNIT_TEST, dataType: dataType)
         checkAndSave(dataClass)
 
         then: 'dataclass should not be valid'
@@ -123,11 +124,11 @@ class DataElementSpec extends ModelItemSpec<DataElement> implements DomainUnitTe
     void 'test unique label naming across dataclasses'() {
         given:
         setValidDomainValues()
-        DataClass other = new DataClass(label: 'other', createdByUser: editor)
+        DataClass other = new DataClass(label: 'other', createdBy: StandardEmailAddress.UNIT_TEST)
         dataSet.addToDataClasses(other)
 
         when: 'adding data element with same label to new dataclass'
-        other.addToDataElements(label: domain.label, createdByUser: admin, dataType: dataType)
+        other.addToDataElements(label: domain.label, createdBy: StandardEmailAddress.UNIT_TEST, dataType: dataType)
 
         then: 'should be valid'
         checkAndSave(dataClass)
@@ -135,9 +136,9 @@ class DataElementSpec extends ModelItemSpec<DataElement> implements DomainUnitTe
         checkAndSave(dataSet)
 
         when: 'adding a child dataclass'
-        DataClass child = new DataClass(label: 'child', createdByUser: editor)
+        DataClass child = new DataClass(label: 'child', createdBy: StandardEmailAddress.UNIT_TEST)
         dataClass.addToDataClasses(child)
-        child.addToDataElements(label: domain.label, createdByUser: admin, dataType: dataType)
+        child.addToDataElements(label: domain.label, createdBy: StandardEmailAddress.UNIT_TEST, dataType: dataType)
 
         then: 'should be valid'
         checkAndSave(dataSet)

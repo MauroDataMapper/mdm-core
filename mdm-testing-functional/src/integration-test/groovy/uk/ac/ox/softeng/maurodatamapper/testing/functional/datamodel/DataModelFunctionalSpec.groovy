@@ -222,6 +222,11 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     }
 
     @Override
+    String getE25ModelPrefix() {
+        'dm'
+    }
+
+    @Override
     String getEditorIndexJson() {
         '''{
   "count": 5,

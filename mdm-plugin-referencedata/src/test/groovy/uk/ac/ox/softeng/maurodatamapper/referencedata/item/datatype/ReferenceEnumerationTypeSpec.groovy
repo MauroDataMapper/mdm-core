@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype
 
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.referencedata.test.ReferenceDataTypeSpec
 
@@ -31,8 +32,8 @@ class ReferenceEnumerationTypeSpec extends ReferenceDataTypeSpec<ReferenceEnumer
     def setup() {
         log.debug('Setting up EnumerationTypeSpec unit')
         mockDomain(ReferenceEnumerationValue)
-        ev1 = new ReferenceEnumerationValue(createdByUser: admin, label: 'ev1', key: 'key1', value: 'val1')
-        ev2 = new ReferenceEnumerationValue(createdByUser: admin, label: 'ev2', key: 'key2', value: 'val2')
+        ev1 = new ReferenceEnumerationValue(createdBy: StandardEmailAddress.UNIT_TEST, label: 'ev1', key: 'key1', value: 'val1')
+        ev2 = new ReferenceEnumerationValue(createdBy: StandardEmailAddress.UNIT_TEST, label: 'ev2', key: 'key2', value: 'val2')
     }
 
     @Override
@@ -51,7 +52,7 @@ class ReferenceEnumerationTypeSpec extends ReferenceDataTypeSpec<ReferenceEnumer
     @Override
     ReferenceEnumerationType createValidDomain(String label) {
         ReferenceEnumerationType et = super.createValidDomain(label)
-        et.addToReferenceEnumerationValues(new ReferenceEnumerationValue(createdByUser: admin, label: 'ev3', key: 'key3', value: 'val3'))
+        et.addToReferenceEnumerationValues(new ReferenceEnumerationValue(createdBy: StandardEmailAddress.UNIT_TEST, label: 'ev3', key: 'key3', value: 'val3'))
     }
 
     @Override
@@ -64,7 +65,7 @@ class ReferenceEnumerationTypeSpec extends ReferenceDataTypeSpec<ReferenceEnumer
         setValidDomainValues()
 
         when:
-        domain.addToReferenceEnumerationValues(createdByUser: admin, label: 'ev1', key: 'key1', value: 'val12')
+        domain.addToReferenceEnumerationValues(createdBy: StandardEmailAddress.UNIT_TEST, label: 'ev1', key: 'key1', value: 'val12')
         checkAndSave(domain)
 
         then:
@@ -84,7 +85,7 @@ class ReferenceEnumerationTypeSpec extends ReferenceDataTypeSpec<ReferenceEnumer
         setValidDomainValues()
 
         when:
-        ReferenceEnumerationValue ev = new ReferenceEnumerationValue(createdByUser: admin, label: 'ev1', key: 'key3', value: 'val3', index: 0)
+        ReferenceEnumerationValue ev = new ReferenceEnumerationValue(createdBy: StandardEmailAddress.UNIT_TEST, label: 'ev1', key: 'key3', value: 'val3', index: 0)
         domain.addToReferenceEnumerationValues(ev)
         checkAndSave(domain)
 
@@ -108,7 +109,7 @@ class ReferenceEnumerationTypeSpec extends ReferenceDataTypeSpec<ReferenceEnumer
         setValidDomainValues()
 
         when:
-        ReferenceEnumerationValue ev = new ReferenceEnumerationValue(createdByUser: admin, label: 'ev1', key: 'key3', value: 'val3', index: 1)
+        ReferenceEnumerationValue ev = new ReferenceEnumerationValue(createdBy: StandardEmailAddress.UNIT_TEST, label: 'ev1', key: 'key3', value: 'val3', index: 1)
         domain.addToReferenceEnumerationValues(ev)
         checkAndSave(domain)
 

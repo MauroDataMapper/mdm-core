@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRoleService
@@ -52,7 +52,7 @@ class UserGroupServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
 
         funGroup.addToGroupMembers(reviewer)
 
-        checkAndSave new UserGroup(createdByUser: reviewer, name: 'empty').addToGroupMembers(reviewer)
+        checkAndSave new UserGroup(createdBy: StandardEmailAddress.INTEGRATION_TEST, name: 'empty').addToGroupMembers(reviewer)
 
         id = readers.id
     }

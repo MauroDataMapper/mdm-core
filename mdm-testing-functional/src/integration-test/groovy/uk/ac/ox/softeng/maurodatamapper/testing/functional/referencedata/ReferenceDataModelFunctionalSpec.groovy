@@ -224,6 +224,11 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
     }
 
     @Override
+    String getE25ModelPrefix() {
+        'rdm'
+    }
+
+    @Override
     boolean mergingIsNotAvailable() {
         true
     }

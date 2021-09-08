@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata
 
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
@@ -52,20 +53,20 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         referenceDataModel = buildExampleReferenceDataModel()
         secondReferenceDataModel = buildSecondExampleReferenceDataModel()
 
-        ReferenceDataModel referenceDataModel1 = new ReferenceDataModel(createdByUser: reader1, label: 'test database', folder: testFolder,
+        ReferenceDataModel referenceDataModel1 = new ReferenceDataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'test database', folder: testFolder,
                                                                         authority: testAuthority)
-        ReferenceDataModel referenceDataModel2 = new ReferenceDataModel(createdByUser: reader2, label: 'test form', folder: testFolder,
+        ReferenceDataModel referenceDataModel2 = new ReferenceDataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'test form', folder: testFolder,
                                                                         authority: testAuthority)
-        ReferenceDataModel referenceDataModel3 = new ReferenceDataModel(createdByUser: editor, label: 'test standard', folder: testFolder,
+        ReferenceDataModel referenceDataModel3 = new ReferenceDataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'test standard', folder: testFolder,
                                                                         authority: testAuthority)
 
         checkAndSave(referenceDataModel1)
         checkAndSave(referenceDataModel2)
         checkAndSave(referenceDataModel3)
 
-        ReferenceDataType referenceDataType = new ReferencePrimitiveType(createdByUser: admin, label: 'string')
+        ReferenceDataType referenceDataType = new ReferencePrimitiveType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'string')
         referenceDataModel1.addToReferenceDataTypes(referenceDataType)
-        ReferenceDataElement referenceDataElement = new ReferenceDataElement(label: 'sdmelement', createdByUser: editor,
+        ReferenceDataElement referenceDataElement = new ReferenceDataElement(label: 'sdmelement', createdBy: StandardEmailAddress.INTEGRATION_TEST,
                                                                              referenceDataType: referenceDataType)
         referenceDataModel1.addToReferenceDataElements(referenceDataElement)
 
@@ -166,7 +167,7 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         setupData()
 
         when:
-        ReferenceDataModel referenceDataModel = new ReferenceDataModel(createdByUser: reader2, label: 'saving test', folder: testFolder,
+        ReferenceDataModel referenceDataModel = new ReferenceDataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'saving test', folder: testFolder,
                                                                        authority: testAuthority)
         referenceDataModel = referenceDataModelService.validate(referenceDataModel)
 
@@ -830,7 +831,7 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
     void 'DMSV02 : test validation on invalid simple model'() {
         given:
         setupData()
-        ReferenceDataModel check = new ReferenceDataModel(createdByUser: reader1, folder: testFolder, authority: testAuthority)
+        ReferenceDataModel check = new ReferenceDataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, folder: testFolder, authority: testAuthority)
 
         when:
         ReferenceDataModel invalid = referenceDataModelService.validate(check)
@@ -849,8 +850,9 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
     void 'DMSV03 : test validation on invalid primitive datatype model'() {
         given:
         setupData()
-        ReferenceDataModel check = new ReferenceDataModel(createdByUser: reader1, label: 'test invalid', folder: testFolder, authority: testAuthority)
-        check.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: admin))
+        ReferenceDataModel check = new ReferenceDataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'test invalid', folder: testFolder,
+                                                          authority: testAuthority)
+        check.addToReferenceDataTypes(new ReferencePrimitiveType(createdBy: StandardEmailAddress.INTEGRATION_TEST))
 
         when:
         ReferenceDataModel invalid = referenceDataModelService.validate(check)

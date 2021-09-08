@@ -91,6 +91,8 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
 
     abstract String getModelType()
 
+    abstract String getE25ModelPrefix()
+
     @Override
     void removeValidIdObjectUsingTransaction(String id) {
         log.info('Removing valid id {} using permanent API call', id)
@@ -806,24 +808,24 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
 
         then:
         verifyResponse OK, response
-        responseBody().leftId == rightId
-        responseBody().rightId == leftId
+        responseBody().targetId == rightId
+        responseBody().sourceId == leftId
 
         when:
         GET("$leftId/mergeDiff/$mainId")
 
         then:
         verifyResponse OK, response
-        responseBody().leftId == mainId
-        responseBody().rightId == leftId
+        responseBody().targetId == mainId
+        responseBody().sourceId == leftId
 
         when:
         GET("$rightId/mergeDiff/$mainId")
 
         then:
         verifyResponse OK, response
-        responseBody().leftId == mainId
-        responseBody().rightId == rightId
+        responseBody().targetId == mainId
+        responseBody().sourceId == rightId
 
         cleanup:
         removeValidIdObjectUsingTransaction(mainId)
@@ -949,17 +951,24 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         PUT("$id/newBranchModelVersion", [branchName: 'source'])
         verifyResponse CREATED, response
         String source = responseBody().id
+        String label = responseBody().label
+        String pathToChange = "${getE25ModelPrefix()}:${label}\$source@description"
 
         when:
         def patchJson = [patch: [
-            leftId : "$target" as String,
-            rightId: "$source" as String,
-            label  : "Functional Test Model",
-            count  : 10,
-            diffs  : [
+            targetId: target,
+            sourceId: source,
+            label   : label,
+            count   : 1,
+            patches : [
                 [
-                    fieldName: "description",
-                    value    : "modifiedDescriptionSource"
+                    fieldName          : "description",
+                    path               : pathToChange,
+                    sourceValue        : "modifiedDescriptionSource",
+                    targetValue        : null,
+                    commonAncestorValue: null,
+                    isMergeConflict    : false,
+                    type               : "modification",
                 ]
             ]
         ]
