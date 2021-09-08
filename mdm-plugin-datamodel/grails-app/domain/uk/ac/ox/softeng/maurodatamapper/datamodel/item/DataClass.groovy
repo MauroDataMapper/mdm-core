@@ -105,6 +105,7 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     }
 
     static mapping = {
+        breadcrumbTree fetch: 'join'
         dataElements cascade: 'all-delete-orphan'
         dataClasses cascade: 'all-delete-orphan'
         referenceTypes cascade: 'none'
