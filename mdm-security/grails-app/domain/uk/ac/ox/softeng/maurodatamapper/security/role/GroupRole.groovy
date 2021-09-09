@@ -77,7 +77,7 @@ class GroupRole implements EditHistoryAware, PathAware, SecurableResource, Compa
 
     static search = {
         name searchable: 'yes'
-        path searchable: 'yes', analyzer: 'path'
+        pathString searchable: 'yes', analyzer: 'path'
     }
 
     GroupRole() {
@@ -146,7 +146,7 @@ class GroupRole implements EditHistoryAware, PathAware, SecurableResource, Compa
 
     @Deprecated
     Integer getDepth() {
-        getPath().split('/').size()
+        getPathString().split('/').size()
     }
 
     /**

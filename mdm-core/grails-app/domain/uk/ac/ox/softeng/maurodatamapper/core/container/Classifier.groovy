@@ -144,6 +144,11 @@ class Classifier implements Container {
         false
     }
 
+    @Override
+    Container getParentContainer() {
+        parentClassifier
+    }
+
     static DetachedCriteria<Classifier> by() {
         new DetachedCriteria<Classifier>(Classifier)
     }

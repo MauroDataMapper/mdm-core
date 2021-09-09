@@ -36,8 +36,10 @@ trait Container implements PathAware, InformationAware, SecurableResource, EditH
 
     abstract Boolean getDeleted()
 
+    abstract Container getParentContainer()
+
     @Deprecated
     Integer getDepth() {
-        getPath().split('/').size() - 1
+        getPathString().split('/').size() - 1
     }
 }

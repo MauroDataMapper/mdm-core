@@ -52,7 +52,7 @@ abstract class FolderContainerSpec<K extends Container> extends CreatorAwareSpec
 
         then:
         item.depth == 0
-        item.path == ''
+        item.pathString == ''
 
     }
 
@@ -77,7 +77,7 @@ abstract class FolderContainerSpec<K extends Container> extends CreatorAwareSpec
 
         and:
         item.depth == 0
-        item.path == ''
+        item.pathString == ''
 
         and:
         item2.depth == 1
@@ -89,7 +89,7 @@ abstract class FolderContainerSpec<K extends Container> extends CreatorAwareSpec
 
         then:
         child2.depth == 2
-        child2.path == "/${item.id}/${item2.id}"
+        child2.pathString == "/${item.id}/${item2.id}"
 
     }
 
@@ -188,6 +188,6 @@ abstract class FolderContainerSpec<K extends Container> extends CreatorAwareSpec
     void verifyDomainOtherConstraints(K subDomain) {
         assert subDomain.label == 'test'
         assert subDomain.depth == 0
-        assert subDomain.path == ''
+        assert subDomain.pathString == ''
     }
 }

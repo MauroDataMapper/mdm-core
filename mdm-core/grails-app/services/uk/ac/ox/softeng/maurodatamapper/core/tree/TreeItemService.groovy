@@ -278,8 +278,8 @@ class TreeItemService {
                                    []
             List<ModelItemTreeItem> current = new ArrayList<>()
             current.add(new ModelItemTreeItem(mi, mi.hasChildren(), actions))
-            if (catalogueItem.getPathParent()) {
-                TreeItem parent = recursiveAncestorModelItemTreeItemBuilder(catalogueItem.getPathParent() as CatalogueItem,
+            if (mi.getPathParent()) {
+                TreeItem parent = recursiveAncestorModelItemTreeItemBuilder(mi.getPathParent() as CatalogueItem,
                                                                             userSecurityPolicyManager)
                 parent.addAllToChildren(current)
                 parent.renderChildren = true

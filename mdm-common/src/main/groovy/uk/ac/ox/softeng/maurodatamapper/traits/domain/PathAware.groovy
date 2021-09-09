@@ -35,7 +35,7 @@ trait PathAware {
 
     public static final String UNSET = 'UNSET'
 
-    String path
+    String pathString
     //    Integer depth
 
     private HibernateProxyHandler proxyHandler = new HibernateProxyHandler()
@@ -49,21 +49,21 @@ trait PathAware {
                 // Ensure proxies are unwrapped
                 PathAware parent =proxyHandler.unwrapIfProxy(ge) as PathAware
                 //                depth = parent.depth + 1
-                path = "${parent.getPath()}/${parent.getId() ?: UNSET}"
+                pathString = "${parent.getPathString()}/${parent.getId() ?: UNSET}"
             } else {
                 //                depth = 1
-                path = "/${ge.ident()?.toString() ?: UNSET}"
+                pathString = "/${ge.ident()?.toString() ?: UNSET}"
             }
         } else {
             //            depth = 0
-            path = ''
+            pathString = ''
         }
-        path
+        pathString
     }
 
-    String getPath() {
-        if (!path || path.contains(UNSET)) buildPath()
-        path
+    String getPathString() {
+        if (!pathString || pathString.contains(UNSET)) buildPath()
+        pathString
     }
 
     //    Integer getDepth() {

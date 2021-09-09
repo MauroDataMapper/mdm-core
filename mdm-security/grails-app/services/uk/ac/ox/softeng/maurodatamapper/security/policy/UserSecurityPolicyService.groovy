@@ -527,7 +527,7 @@ class UserSecurityPolicyService {
         // Build parents
         if (container.depth != 0) {
 
-            List<UUID> ids = container.path.split('/').toList().findAll().collect {Utils.toUuid(it)}
+            List<UUID> ids = container.pathString.split('/').toList().findAll().collect {Utils.toUuid(it)}
 
             ContainerService containerService = containerServices.find {it.handles(container.domainType)}
             containerService.getAll(ids).each {alternateContainer ->

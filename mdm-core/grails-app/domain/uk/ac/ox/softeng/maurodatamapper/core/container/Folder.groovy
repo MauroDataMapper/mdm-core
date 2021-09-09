@@ -172,6 +172,11 @@ class Folder implements Container, Diffable<Folder> {
         !childFolders.isEmpty()
     }
 
+    @Override
+    Container getParentContainer() {
+        parentFolder
+    }
+
     static DetachedCriteria<Folder> by() {
         new DetachedCriteria<Folder>(Folder)
     }

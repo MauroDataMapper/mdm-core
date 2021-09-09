@@ -49,7 +49,7 @@ class AnnotationSpec extends CreatorAwareSpec<Annotation> implements DomainUnitT
         item = findById()
 
         then:
-        item.path == ''
+        item.pathString == ''
 
     }
 
@@ -73,10 +73,10 @@ class AnnotationSpec extends CreatorAwareSpec<Annotation> implements DomainUnitT
         item2
 
         and:
-        item.path == ''
+        item.pathString == ''
 
         and:
-        item2.path == "/${item.id}"
+        item2.pathString == "/${item.id}"
         item2.multiFacetAwareItemId
         item2.description == 'child'
 
@@ -85,7 +85,7 @@ class AnnotationSpec extends CreatorAwareSpec<Annotation> implements DomainUnitT
         item2.addToChildAnnotations(child2)
 
         then:
-        child2.path == "/${item.id}/${item2.id}"
+        child2.pathString == "/${item.id}/${item2.id}"
 
     }
 

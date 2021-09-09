@@ -42,7 +42,7 @@ class ContainerTreeItem extends TreeItem {
 
     ContainerTreeItem(Container container, List<String> availableTreeActions) {
         super(container as GormEntity, container.id, container.label, container.domainType, null, availableTreeActions)
-        containerId = container.getPathParent()?.id
+        containerId = container.getParentContainer()?.id
         deleted = container.deleted
         containerType = container.domainType
         renderChildren = true

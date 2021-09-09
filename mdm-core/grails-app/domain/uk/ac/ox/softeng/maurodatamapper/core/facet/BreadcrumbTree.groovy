@@ -193,7 +193,7 @@ class BreadcrumbTree {
                 if (parent != parentTree) {
                     if (parent) parent.removeFromChildren(this)
                     parentTree.addToChildren(this)
-                } else if (pathAware.pathParent.instanceOf(ModelItem) && !parent.matchesPath((pathAware.pathParent as ModelItem).path)) {
+                } else if (pathAware.pathParent.instanceOf(ModelItem) && !parent.matchesPath((pathAware.pathParent as ModelItem).pathString)) {
                     parent.update((pathAware.pathParent as ModelItem))
                 }
             }

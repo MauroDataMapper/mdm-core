@@ -104,7 +104,7 @@ abstract class ContainerService<K extends Container> implements SecurableResourc
     }
 
     List<K> getFullPathDomains(K domain) {
-        List<UUID> ids = domain.path.split('/').findAll().collect {Utils.toUuid(it)}
+        List<UUID> ids = domain.pathString.split('/').findAll().collect {Utils.toUuid(it)}
         List<K> domains = []
         if (ids) domains.addAll(getAll(ids))
         domains.add(domain)

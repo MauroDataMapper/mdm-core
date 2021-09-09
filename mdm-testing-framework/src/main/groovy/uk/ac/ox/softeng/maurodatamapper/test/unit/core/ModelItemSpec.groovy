@@ -89,7 +89,7 @@ abstract class ModelItemSpec<K extends ModelItem> extends CatalogueItemSpec<K> {
         item = findById()
 
         then:
-        item.path == domain.path
+        item.pathString == domain.path
 
     }
 }
