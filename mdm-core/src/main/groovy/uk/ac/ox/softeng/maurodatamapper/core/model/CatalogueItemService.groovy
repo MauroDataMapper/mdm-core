@@ -93,7 +93,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
      */
     abstract List<K> getAll(Collection<UUID> ids)
 
-    boolean isModelItemAnImportedDataClass(ModelItem modelItem, K owningCatalogueItem) {
+    boolean isCatalogueItemImportedIntoCatalogueItem(CatalogueItem catalogueItem, K owningCatalogueItem) {
         false
     }
 
@@ -105,7 +105,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         hasTreeTypeModelItems(catalogueItem, false)
     }
 
-    boolean hasTreeTypeModelItems(K catalogueItem, boolean fullTreeRender, boolean includeImportedDataClasses) {
+    boolean hasTreeTypeModelItems(K catalogueItem, boolean fullTreeRender, boolean includeImportedItems) {
         hasTreeTypeModelItems(catalogueItem, fullTreeRender)
     }
 
@@ -117,7 +117,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         findAllTreeTypeModelItemsIn(catalogueItem, false)
     }
 
-    List<ModelItem> findAllTreeTypeModelItemsIn(K catalogueItem, boolean fullTreeRender, boolean includeImportedDataClasses) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(K catalogueItem, boolean fullTreeRender, boolean includeImportedItems) {
         findAllTreeTypeModelItemsIn(catalogueItem, fullTreeRender)
     }
 

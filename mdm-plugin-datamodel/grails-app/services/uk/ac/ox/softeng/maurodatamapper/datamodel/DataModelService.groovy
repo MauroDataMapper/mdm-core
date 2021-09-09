@@ -667,9 +667,9 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     }
 
     @Override
-    boolean isModelItemAnImportedDataClass(ModelItem modelItem, DataModel owningDataModel) {
-        if (!(modelItem instanceof DataClass)) return false
-        owningDataModel.id && modelItem.model.id != owningDataModel.id
+    boolean isCatalogueItemImportedIntoCatalogueItem(CatalogueItem catalogueItem, DataModel owningDataModel) {
+        if (!(catalogueItem instanceof DataClass)) return false
+        owningDataModel.id && catalogueItem.model.id != owningDataModel.id
     }
 
     @Override

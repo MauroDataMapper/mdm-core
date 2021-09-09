@@ -27,12 +27,12 @@ import org.grails.datastore.gorm.GormEntity
 class ModelItemTreeItem extends TreeItem {
 
     int order
-    boolean importedDataClass
+    boolean imported
 
-    ModelItemTreeItem(ModelItem modelItem, Boolean childrenExist, List<String> availableTreeActions, boolean importedDataClass = false) {
+    ModelItemTreeItem(ModelItem modelItem, Boolean childrenExist, List<String> availableTreeActions, boolean imported = false) {
         super(modelItem as GormEntity, modelItem.id, modelItem.label, modelItem.domainType, childrenExist, availableTreeActions)
         order = modelItem.getOrder()
-        this.importedDataClass = importedDataClass
+        this.imported = imported
     }
 
     @Override

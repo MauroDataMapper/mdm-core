@@ -40,7 +40,7 @@ json {
         ModelItemTreeItem miti = (ModelItemTreeItem) treeItem
         modelId miti.rootId
         if (miti.hasParent()) parentId treeItem.parentId
-        if (miti.isImportedDataClass()) imported miti.importedDataClass
+        if (miti.isImported()) imported miti.imported
     }
 
     if (treeItem.hasChildren() && treeItem.renderChildren) {
