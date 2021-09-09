@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.traits.domain
 
-
 import grails.compiler.GrailsCompileStatic
 import groovy.transform.SelfType
 import org.grails.datastore.gorm.GormEntity
@@ -41,12 +40,8 @@ trait MdmDomain {
     abstract String getDomainType()
 
     // Allow domains to not be "pathed". Also provides compatability
-    String getPathPrefix() {
-        null
-    }
+    abstract String getPathPrefix()
 
     // Allow domains to not be "pathed". Also provides compatability
-    String getPathIdentifier() {
-        null
-    }
+    abstract String getPathIdentifier()
 }

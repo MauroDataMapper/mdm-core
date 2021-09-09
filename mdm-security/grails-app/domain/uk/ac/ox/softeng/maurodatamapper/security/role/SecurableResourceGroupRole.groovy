@@ -94,6 +94,14 @@ class SecurableResourceGroupRole implements EditHistoryAware {
         "${getEditLabel()} : ${idStr}"
     }
 
+    String getPathPrefix() {
+        null
+    }
+
+    String getPathIdentifier() {
+        null
+    }
+
     static DetachedCriteria<SecurableResourceGroupRole> by() {
         new DetachedCriteria<SecurableResourceGroupRole>(SecurableResourceGroupRole)
     }

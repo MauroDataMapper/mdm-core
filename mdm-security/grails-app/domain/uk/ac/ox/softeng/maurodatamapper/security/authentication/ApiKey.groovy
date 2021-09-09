@@ -66,4 +66,12 @@ class ApiKey implements MdmDomain {
     void setExpiresInDays(long days) {
         expiryDate = LocalDate.now().plusDays(days)
     }
+
+    String getPathPrefix() {
+        null
+    }
+
+    String getPathIdentifier() {
+        null
+    }
 }
