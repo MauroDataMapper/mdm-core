@@ -58,10 +58,10 @@ abstract class SecurableResourceInterceptor implements MdmInterceptor {
     boolean checkActionAuthorisationOnSecuredResource(Class<? extends SecurableResource> securableResourceClass, UUID id,
                                                       boolean directCallsToIndexAllowed = false) {
 
-        boolean canRead = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(securableResourceClass, id)
-
         // Allows for direct calls to secured resources but stops indexing on nested secured resources
         if (directCallsToIndexAllowed && isIndex() && !id) return true
+
+        boolean canRead = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(securableResourceClass, id)
 
         // The 3 tiers of writing are deleting, updating/editing and saving/creation
         // We will have to handle certain controls inside the controller
