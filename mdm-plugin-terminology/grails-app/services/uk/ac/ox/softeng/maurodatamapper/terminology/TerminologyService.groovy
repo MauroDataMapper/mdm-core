@@ -591,9 +591,9 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    Terminology propagateDataFromPreviousVersion(Terminology model, Terminology previousVersionModel, User user, UserSecurityPolicyManager userSecurityPolicyManager) {
+    void propagateDataFromPreviousVersion(Terminology model, Terminology previousVersionModel, User user) {
         //todo
-        model
+
     }
 
     @Override

@@ -110,7 +110,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
      * DataModel allows the import of DataType and DataClass
      *
      @Override
-      List<Class>        domainImportableModelItemClasses() {[DataType, DataClass, PrimitiveType, EnumerationType, ReferenceType]}
+      List<Class>          domainImportableModelItemClasses() {[DataType, DataClass, PrimitiveType, EnumerationType, ReferenceType]}
      */
     Long count() {
         DataModel.count()
@@ -828,40 +828,25 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     }
 
     @Override
-    DataModel propagateDataFromPreviousVersion(DataModel model, DataModel previousVersionModel, User user, UserSecurityPolicyManager userSecurityPolicyManager) {
-        model = propagateDataModelCatalogueItems(model, previousVersionModel, user, userSecurityPolicyManager)
-        model = propagateDataModelFacets(model, previousVersionModel, user, userSecurityPolicyManager)
-        model = propagateDataModelSymanticLinks(model, previousVersionModel)
-        model = propagateDataModelProperties(model, previousVersionModel)
-        model
-    }
-
-    DataModel propagateDataModelCatalogueItems(DataModel model, DataModel previousVersionModel, User user, UserSecurityPolicyManager userSecurityPolicyManager) {
-        //copies from previous to model >
-        //catalogueItems
-        //metadata, rules, symantic, copySummaryMetadata
-        //todo, does this overwrite existing info? if so will need to address
-        model = copyCatalogueItemInformation(previousVersionModel, model, user, userSecurityPolicyManager, true)
-        model
-    }
-
-    DataModel propagateDataModelFacets(DataModel model, DataModel previousVersionModel, User user, UserSecurityPolicyManager userSecurityPolicyManager) {
-        //metadata, summary metadata, rules, comments, attachments
+    void propagateDataFromPreviousVersion(DataModel model, DataModel previousVersionModel, User user) {
+        model = super.propagateCatalogueItemInformation(model, previousVersionModel, user) as DataModel
+        model = super.propagateModelItemInformation(model, previousVersionModel, user) as DataModel
 
 
+        propagateDataModelProperties(model, previousVersionModel)
         model
     }
 
     DataModel propagateDataModelProperties(DataModel model, DataModel previousVersionModel) {
-        //where a value is not set, if it exists in previous, copy across
-        model.getProperties().each {
-             key, val ->
-                 if(!val) return
-                 if(previousVersionModel.properties.get(key))
-                 model[(String) key] = previousVersionModel.properties.get(key)
-        }
+
+        //acutally refers to Metadata
+        //comment is Annotations
+        //component is 'content'
+        //ModelItems
         model
     }
+
+
 
     @Override
     CatalogueItem processDeletionPatchOfFacet(MultiFacetItemAware multiFacetItemAware, Model targetModel, Path path) {

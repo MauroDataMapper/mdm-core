@@ -73,7 +73,7 @@ abstract class ModelImporterProviderService<M extends Model, P extends ModelImpo
         // Need to do all the branch management before we finalise the model otherwise the branch work overrides everything
         modelService.checkFinaliseModel(importedModel, params.finalised, params.importAsNewBranchModelVersion)
 
-        importedModel = propagateImportedFromPreviousVersion(currentUser, params, importedModel)
+        modelService.propagateFromPreviousVersion(importedModel, params.propagateFromPreviousVersion, currentUser)
 
         importedModel
     }
@@ -87,12 +87,4 @@ abstract class ModelImporterProviderService<M extends Model, P extends ModelImpo
         importedModel
     }
 
-    M propagateImportedFromPreviousVersion(User currentUser, ModelImporterProviderServiceParameters params, M importedModel) {
-        if (params.propagateFromPreviousVersion) {
-            Model model = modelService.propagateFromPreviousVersion(currentUser, importedModel)
-            return model as M
-        }
-
-        importedModel
-    }
 }

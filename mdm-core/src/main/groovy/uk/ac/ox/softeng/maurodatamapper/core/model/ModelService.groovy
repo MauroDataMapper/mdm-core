@@ -183,8 +183,6 @@ abstract class ModelService<K extends Model>
 
     abstract ModelImporterProviderService<K, ? extends ModelImporterProviderServiceParameters> getJsonModelImporterProviderService()
 
-    abstract K propagateDataFromPreviousVersion(K model, K previousVersionModel, User user, UserSecurityPolicyManager userSecurityPolicyManager)
-
     void deleteModelAndContent(K model) {
         throw new ApiNotYetImplementedException('MSXX', 'deleteModelAndContent')
     }
@@ -873,15 +871,6 @@ abstract class ModelService<K extends Model>
         Version.nextMajorVersion(parentModelVersion)
     }
 
-    K getPreviousVersionModel(K model) {
-        UUID sourceModelId = model.versionLinks.find().targetModelId
-        String domainType = model.versionLinks.find().targetModelDomainType
-        DomainService domainService = getDomainServices().find { it.handles(domainType) }
-        if (!domainService) {
-            throw new ApiInternalException('MSXX', "No domain service to handle modification of [${domainType}]")
-        }
-        domainService.get(sourceModelId)
-    }
 
 
     void checkFinaliseModel(K model, Boolean finalise, Boolean importAsNewBranchModelVersion = false) {
@@ -1065,17 +1054,12 @@ abstract class ModelService<K extends Model>
         Path.from(model)
     }
 
-    K propagateFromPreviousVersion(User user, K model) {
+    void propagateFromPreviousVersion(K model, boolean propagateFromPreviousVersion, User user ) {
         //step one get previous version
-        K previousVersionModel = getPreviousVersionModel(model)
-        DomainService domainService = getDomainServices().find { it.handles(model.domainType) }
-        if (!domainService) {
-            throw new ApiInternalException('MSXX', "No domain service to handle modification of [${model.domainType}]")
-        }
-        //todo can't use the copy methods without USPM but USPM is null here, import from controller?
-        UserSecurityPolicyManager userSecurityPolicyManager = securityPolicyManagerService.retrieveUserSecurityPolicyManager(user.emailAddress)
-        domainService.propagateDataFromPreviousVersion(model, previousVersionModel, user, userSecurityPolicyManager)
+        if(!propagateFromPreviousVersion) return
 
+        K previousVersionModel = findLatestFinalisedModelByLabel(model.label)
+        propagateDataFromPreviousVersion(model, previousVersionModel, user)
     }
 
 }

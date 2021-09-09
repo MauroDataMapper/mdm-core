@@ -276,6 +276,11 @@ class ClassifierService extends ContainerService<Classifier> {
         new PaginatedResultList(allClassifiersInItem.findAll { it.id in readableIds }.toList(), pagination)
     }
 
+    List<Classifier> findAllByCatalogueItem(catalogueItem){
+        if (catalogueItem) return []
+        Collection<Classifier> allClassifiersInItem = catalogueItem.classifiers
+    }
+
     List<Classifier> findAllByParentClassifierId(UUID parentClassifierId, Map pagination = [:]) {
         Classifier.byParentClassifierId(parentClassifierId).list(pagination)
     }

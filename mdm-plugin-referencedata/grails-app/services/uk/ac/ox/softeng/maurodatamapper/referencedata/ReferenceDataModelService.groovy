@@ -688,10 +688,8 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
     }
 
     @Override
-    ReferenceDataModel propagateDataFromPreviousVersion(ReferenceDataModel model, ReferenceDataModel previousVersionModel, User user,
-                                                        UserSecurityPolicyManager userSecurityPolicyManager) {
-        //todo
-        model
+    void propagateDataFromPreviousVersion(ReferenceDataModel model, ReferenceDataModel previousVersionModel, User user) {
+
     }
 
     @Override

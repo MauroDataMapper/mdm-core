@@ -472,9 +472,9 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    CodeSet propagateDataFromPreviousVersion(CodeSet model, CodeSet previousVersionModel, User user, UserSecurityPolicyManager userSecurityPolicyManager) {
+    void propagateDataFromPreviousVersion(CodeSet model, CodeSet previousVersionModel, User user) {
         //todo
-        model
+
     }
 
     @Override

@@ -128,6 +128,9 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
 
     abstract Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType)
 
+    void propagateDataFromPreviousVersion(K catalogueItem, K previousVersionCatalogueItem, User user) {
+    }
+
     void addClassifierToCatalogueItem(UUID catalogueItemId, Classifier classifier) {
         get(catalogueItemId).addToClassifiers(classifier)
     }
@@ -148,11 +151,11 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
             copy.label = original.label
         }
 
-        classifierService.findAllByCatalogueItemId(userSecurityPolicyManager, original.id).each {copy.addToClassifiers(it)}
-        metadataService.findAllByMultiFacetAwareItemId(original.id).each {copy.addToMetadata(it.namespace, it.key, it.value, copier.emailAddress)}
-        ruleService.findAllByMultiFacetAwareItemId(original.id).each {rule ->
+        classifierService.findAllByCatalogueItemId(userSecurityPolicyManager, original.id).each { copy.addToClassifiers(it) }
+        metadataService.findAllByMultiFacetAwareItemId(original.id).each { copy.addToMetadata(it.namespace, it.key, it.value, copier.emailAddress) }
+        ruleService.findAllByMultiFacetAwareItemId(original.id).each { rule ->
             Rule copiedRule = new Rule(name: rule.name, description: rule.description, createdBy: copier.emailAddress)
-            rule.ruleRepresentations.each {ruleRepresentation ->
+            rule.ruleRepresentations.each { ruleRepresentation ->
                 copiedRule.addToRuleRepresentations(language: ruleRepresentation.language,
                                                     representation: ruleRepresentation.representation,
                                                     createdBy: copier.emailAddress)
@@ -160,7 +163,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
             copy.addToRules(copiedRule)
         }
 
-        semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id).each {link ->
+        semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id).each { link ->
             copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
                                     targetMultiFacetAwareItemId: link.targetMultiFacetAwareItemId,
                                     targetMultiFacetAwareItemDomainType: link.targetMultiFacetAwareItemDomainType,
@@ -168,6 +171,88 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         }
 
         copy
+    }
+
+    K propagateCatalogueItemInformation(K catalogueItem, K previousCatalogueItem, User user) {
+        propagateCatalogueItemClassifiers(catalogueItem, previousCatalogueItem, user)
+        propagateCatalogueItemMetaData(catalogueItem, previousCatalogueItem, user)
+        propagateCatalogueItemRules(catalogueItem, previousCatalogueItem, user)
+        propagateCatalogueItemSemanticLinks(catalogueItem, previousCatalogueItem, user)
+
+        catalogueItem
+
+    }
+
+    void propagateCatalogueItemClassifiers(K catalogueItem, K previousCatalogueItem, User user) {
+        //if a classifier does not exists with the same label add it to cataItem
+        previousCatalogueItem.classifiers.each { previous ->
+            if (catalogueItem.classifiers.find { it.label == previous.label }) return
+            previous.createdBy = user.emailAddress
+            catalogueItem.classifiers.add(previous)
+        }
+    }
+
+    void propagateCatalogueItemMetaData(K catalogueItem, K previousCatalogueItem, User user) {
+        metadataService.findAllByMultiFacetAwareItemId(previousCatalogueItem.id).each { previous ->
+            if (catalogueItem.metadata.find { it.key == previous.key }) return
+            catalogueItem.addToMetadata(previous.namespace, previous.key, previous.value, user.emailAddress)
+        }
+
+    }
+
+    void propagateCatalogueItemRules(K catalogueItem, K previousCatalogueItem, User user) {
+        ruleService.findAllByMultiFacetAwareItemId(previousCatalogueItem.id).each { rule ->
+
+            //if rule exists, check and copy missing representations
+            Rule existingRule = catalogueItem.rules.find { it.name == rule.name }
+            if (existingRule) {
+                rule.ruleRepresentations.each { ruleRepresentation ->
+                    if (existingRule.ruleRepresentations.find { it.representation == ruleRepresentation.representation }) return
+                    existingRule.addToRuleRepresentations(language: ruleRepresentation.language,
+                                                          representation: ruleRepresentation.representation,
+                                                          createdBy: user.emailAddress)
+                }
+            }
+
+            //if rule does not exist, copy rule first and then representations
+            Rule copiedRule = new Rule(name: rule.name, description: rule.description, createdBy: user.emailAddress)
+            rule.ruleRepresentations.each { ruleRepresentation ->
+                copiedRule.addToRuleRepresentations(language: ruleRepresentation.language,
+                                                    representation: ruleRepresentation.representation,
+                                                    createdBy: user.emailAddress)
+            }
+            catalogueItem.addToRules(copiedRule)
+        }
+
+    }
+
+    void propagateCatalogueItemSemanticLinks(CatalogueItem catalogueItem, CatalogueItem previousCatalogueItem, User user) {
+
+        //linktype, target, source
+        semanticLinkService.findAllBySourceMultiFacetAwareItemId(previousCatalogueItem.id).each { link ->
+
+            if (catalogueItem.semanticLinks.find { link.compare(it, catalogueItem.label, link, previousCatalogueItem.label) }) return
+
+            catalogueItem.addToSemanticLinks(createdBy: user.emailAddress, linkType: link.linkType,
+                                             targetMultiFacetAwareItemId: link.targetMultiFacetAwareItemId,
+                                             targetMultiFacetAwareItemDomainType: link.targetMultiFacetAwareItemDomainType,
+                                             unconfirmed: true)
+        }
+
+    }
+
+    K propagateModelItemInformation(K model, K previousVersionModel, User user) {
+        //iterate through all modelItems
+        findAllTreeTypeModelItemsIn(previousVersionModel).each {modelItem ->
+
+        }
+        //dataTypes -> enumeration Values,
+        //getChildDataClasses -> contains DataElements
+        //eg, DC [DC [DE] ]
+        //names are only unique by parent (on the same level)
+        //other DMs to implement on, terminologies
+
+        model
     }
 
     void setCatalogueItemRefinesCatalogueItem(CatalogueItem source, CatalogueItem target, User catalogueUser) {
@@ -212,13 +297,13 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
                                               UserSecurityPolicyManager userSecurityPolicyManager) {
         log.debug('Merging Metadata into Catalogue Item')
         // call metadataService version of below
-        fieldPatchData.deleted.each {deletedItemPatchData ->
+        fieldPatchData.deleted.each { deletedItemPatchData ->
             Metadata metadata = metadataService.get(deletedItemPatchData.id)
             metadataService.delete(metadata)
         }
 
         // copy additions from source to target object
-        fieldPatchData.created.each {createdItemPatchData ->
+        fieldPatchData.created.each { createdItemPatchData ->
             Metadata metadata = metadataService.get(createdItemPatchData.id)
             metadataService.copy(metadata, targetCatalogueItem)
         }

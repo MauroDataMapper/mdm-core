@@ -188,6 +188,9 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         DataModel dm = importModel(loadTestFile('simpleDataModel'))
 
         then:
+        //import file with data,
+        //remove for second
+        //compare and contract
         true
     }
 
