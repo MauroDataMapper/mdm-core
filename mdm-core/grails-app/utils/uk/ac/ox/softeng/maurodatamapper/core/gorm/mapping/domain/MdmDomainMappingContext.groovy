@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain
 
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.DynamicHibernateMappingContext
+import uk.ac.ox.softeng.maurodatamapper.hibernate.PathUserType
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -36,7 +37,10 @@ class MdmDomainMappingContext extends DynamicHibernateMappingContext {
     @Override
     Property updateDomainMapping(PersistentEntity entity) {
         updateProperty(entity, 'createdBy', [
-            index  : "${entity.decapitalizedName}_created_by_idx".toString()
+            index: "${entity.decapitalizedName}_created_by_idx".toString()
+        ])
+        updateProperty(entity, 'path', [
+            type: PathUserType
         ])
     }
 }

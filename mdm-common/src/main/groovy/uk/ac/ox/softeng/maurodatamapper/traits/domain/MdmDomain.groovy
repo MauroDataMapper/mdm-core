@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.traits.domain
 
+import uk.ac.ox.softeng.maurodatamapper.path.Path
+
 import grails.compiler.GrailsCompileStatic
 import groovy.transform.SelfType
 import org.grails.datastore.gorm.GormEntity
@@ -34,6 +36,7 @@ trait MdmDomain {
     OffsetDateTime dateCreated
     OffsetDateTime lastUpdated
     String createdBy
+    Path path
 
     abstract UUID getId()
 
@@ -44,4 +47,13 @@ trait MdmDomain {
 
     // Allow domains to not be "pathed". Also provides compatability
     abstract String getPathIdentifier()
+
+    Path getPath() {
+        if (!path) buildPath()
+        path
+    }
+
+    void buildPath() {
+        path = Path.from(pathPrefix, pathIdentifier)
+    }
 }

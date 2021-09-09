@@ -24,5 +24,6 @@ class MdmDomainConstraints {
 
     static constraints = {
         createdBy nullable: false, email: true
+        path nullable: true
     }
 }
