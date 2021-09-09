@@ -290,7 +290,6 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         and:
         ann.multiFacetAwareItemId == item.id
         ann.path == ''
-        ann.depth == 0
     }
 
     void 'CI05 : test adding classifiers'() {

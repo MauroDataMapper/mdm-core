@@ -100,7 +100,7 @@ abstract class ReferenceDataType<D> implements ModelItem<D, ReferenceDataModel>,
     }
 
     @Override
-    GormEntity getPathParent() {
+    ReferenceDataModel getPathParent() {
         referenceDataModel
     }
 

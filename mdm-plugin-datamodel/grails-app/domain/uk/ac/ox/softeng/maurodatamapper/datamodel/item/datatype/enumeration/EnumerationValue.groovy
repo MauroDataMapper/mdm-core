@@ -36,7 +36,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
-import org.grails.datastore.gorm.GormEntity
 import org.springframework.core.Ordered
 
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
@@ -98,7 +97,7 @@ class EnumerationValue implements ModelItem<EnumerationValue, DataModel> {
     }
 
     @Override
-    GormEntity getPathParent() {
+    EnumerationType getPathParent() {
         enumerationType
     }
 

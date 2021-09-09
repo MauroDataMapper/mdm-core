@@ -33,7 +33,6 @@ class TreeItem implements Comparable<TreeItem> {
     UUID id
     String label
     String domainType
-    Integer depth
     String path
 
     UUID parentId
@@ -52,7 +51,6 @@ class TreeItem implements Comparable<TreeItem> {
     protected TreeItem(GormEntity object, UUID id, String label, String domainType, Boolean childrenExist, List<String> availableTreeActions) {
         childSet = [] as HashSet
         renderChildren = false
-        depth = 0
         path = ''
         pathIds = []
 
@@ -64,7 +62,6 @@ class TreeItem implements Comparable<TreeItem> {
 
         if (object.instanceOf(PathAware)) {
             object.buildPath()
-            depth = object.depth
             path = object.path
         }
         determinePathIds()

@@ -38,14 +38,16 @@ class ContainerTreeItem extends TreeItem {
     String modelVersionTag
     String branchName
     boolean versionAware
+    Integer depth
 
     ContainerTreeItem(Container container, List<String> availableTreeActions) {
         super(container as GormEntity, container.id, container.label, container.domainType, null, availableTreeActions)
-        containerId = container.parentId
+        containerId = container.getPathParent()?.id
         deleted = container.deleted
         containerType = container.domainType
         renderChildren = true
         versionAware = false
+        depth = container.depth
         if (Utils.parentClassIsAssignableFromChild(VersionedFolder, container.class)) {
             finalised = container.finalised
             documentationVersion = container.documentationVersion

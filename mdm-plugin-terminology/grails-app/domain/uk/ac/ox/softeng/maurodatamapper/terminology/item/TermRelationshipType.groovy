@@ -84,7 +84,6 @@ class TermRelationshipType implements ModelItem<TermRelationshipType, Terminolog
     TermRelationshipType() {
         parentalRelationship = false
         childRelationship = false
-        depth = 1
     }
 
     @Override
@@ -138,7 +137,7 @@ class TermRelationshipType implements ModelItem<TermRelationshipType, Terminolog
     }
 
     @Override
-    GormEntity getPathParent() {
+    Terminology getPathParent() {
         terminology
     }
 

@@ -20,7 +20,6 @@ package uk.ac.ox.softeng.maurodatamapper.traits.domain
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import grails.compiler.GrailsCompileStatic
 import groovy.transform.SelfType
-import org.grails.datastore.gorm.GormEntity
 import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 
 /**
@@ -30,37 +29,33 @@ import org.grails.orm.hibernate.proxy.HibernateProxyHandler
  * @since 18/09/2017
  */
 @SuppressFBWarnings('BC_IMPOSSIBLE_INSTANCEOF')
-@SelfType(GormEntity)
+@SelfType(MdmDomain)
 @GrailsCompileStatic
 trait PathAware {
 
     public static final String UNSET = 'UNSET'
 
     String path
-    Integer depth
+    //    Integer depth
 
-    private UUID rootId
-    private UUID parentId
     private HibernateProxyHandler proxyHandler = new HibernateProxyHandler()
 
-    abstract UUID getId()
-
-    abstract GormEntity getPathParent()
+    abstract MdmDomain getPathParent()
 
     String buildPath() {
-        GormEntity ge = getPathParent()
+        MdmDomain ge = getPathParent()
         if (ge) {
             if (ge.instanceOf(PathAware)) {
                 // Ensure proxies are unwrapped
                 PathAware parent =proxyHandler.unwrapIfProxy(ge) as PathAware
-                depth = parent.depth + 1
+                //                depth = parent.depth + 1
                 path = "${parent.getPath()}/${parent.getId() ?: UNSET}"
             } else {
-                depth = 1
+                //                depth = 1
                 path = "/${ge.ident()?.toString() ?: UNSET}"
             }
         } else {
-            depth = 0
+            //            depth = 0
             path = ''
         }
         path
@@ -71,26 +66,10 @@ trait PathAware {
         path
     }
 
-    Integer getDepth() {
-        if (!depth) buildPath()
-        depth
-    }
-
-    UUID getRootId() {
-        if (!rootId) {
-            def split = path.split('/').findAll()
-            rootId = split ? UUID.fromString(split[0]) : null
-        }
-        rootId
-    }
-
-    UUID getParentId() {
-        if (!parentId) {
-            def split = path.split('/').findAll()
-            parentId = split ? UUID.fromString(split[-1]) : null
-        }
-        parentId
-    }
+    //    Integer getDepth() {
+    //        if (!depth) buildPath()
+    //        depth
+    //    }
 
     // This does NOT cascade to associations, so this must be implemented in each class if they contain any pathaware associations
     abstract def beforeValidate()

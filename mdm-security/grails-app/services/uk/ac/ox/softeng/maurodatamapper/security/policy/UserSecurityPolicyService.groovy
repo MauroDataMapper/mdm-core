@@ -319,7 +319,7 @@ class UserSecurityPolicyService {
 
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = [] as Set
 
-        GroupRole highestRole = applicationLevelRoles.sort {it.depth}.first()
+        GroupRole highestRole = applicationLevelRoles.sort().first()
         VirtualGroupRole virtualGroupRole = groupRoleService.getFromCache(highestRole.name)
         Set<GroupRole> inheritedUserRoles = virtualGroupRole.allowedRoles
         List<CatalogueUser> users = catalogueUserService.list([:])
@@ -341,7 +341,7 @@ class UserSecurityPolicyService {
 
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = [] as Set
 
-        GroupRole highestRole = applicationLevelRoles.sort {it.depth}.first()
+        GroupRole highestRole = applicationLevelRoles.sort().first()
         VirtualGroupRole virtualGroupRole = groupRoleService.getFromCache(highestRole.name)
         Set<GroupRole> inheritedUserRoles = virtualGroupRole.allowedRoles
         List<UserGroup> userGroups = userGroupService.list([:])

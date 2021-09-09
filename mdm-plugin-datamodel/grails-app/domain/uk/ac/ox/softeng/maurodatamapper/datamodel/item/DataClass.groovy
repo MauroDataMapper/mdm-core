@@ -39,6 +39,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.domain.MultiplicityAwar
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.ParentOwnedLabelCollectionValidator
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
@@ -174,7 +175,7 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     }
 
     @Override
-    GormEntity getPathParent() {
+    MdmDomain getPathParent() {
         parentDataClass ?: dataModel
     }
 

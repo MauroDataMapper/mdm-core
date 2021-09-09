@@ -28,7 +28,6 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.PathAware
 
 import grails.gorm.DetachedCriteria
-import org.grails.datastore.gorm.GormEntity
 
 class GroupRole implements EditHistoryAware, PathAware, SecurableResource, Comparable<GroupRole> {
 
@@ -88,7 +87,7 @@ class GroupRole implements EditHistoryAware, PathAware, SecurableResource, Compa
     }
 
     @Override
-    GormEntity getPathParent() {
+    GroupRole getPathParent() {
         parent
     }
 
@@ -143,6 +142,11 @@ class GroupRole implements EditHistoryAware, PathAware, SecurableResource, Compa
         ident() ?
         "${getEditLabel()} : ${ident()}" :
         "${getEditLabel()} : unsaved"
+    }
+
+    @Deprecated
+    Integer getDepth() {
+        getPath().split('/').size()
     }
 
     /**

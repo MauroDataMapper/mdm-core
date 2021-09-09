@@ -32,7 +32,6 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 
 import grails.gorm.DetachedCriteria
-import org.grails.datastore.gorm.GormEntity
 
 class DataClassComponent implements ModelItem<DataClassComponent, DataModel> {
 
@@ -94,7 +93,7 @@ class DataClassComponent implements ModelItem<DataClassComponent, DataModel> {
     }
 
     @Override
-    GormEntity getPathParent() {
+    DataFlow getPathParent() {
         dataFlow
     }
 

@@ -117,7 +117,6 @@ class DataClassSpec extends ModelItemSpec<DataClass> implements DomainUnitTest<D
 
         then:
         DataClass.count() == 4
-        item2.depth == 1
         item2.path == "/$dataSet.id"
         item2.model.id == dataSet.id
         !item2.parentDataClass
@@ -130,7 +129,6 @@ class DataClassSpec extends ModelItemSpec<DataClass> implements DomainUnitTest<D
         then:
         DataClass.count() == 4
         item2.id == item3.id
-        item3.depth == 2
         item3.path == "/$dataSet.id/${domain.id}"
         item3.model.id == dataSet.id
         item3.parentDataClass.id == item.id
@@ -157,7 +155,6 @@ class DataClassSpec extends ModelItemSpec<DataClass> implements DomainUnitTest<D
         item.dataElements.size() == 2
 
         and:
-        element.depth == 2
         element.path == "/${dataSet.id}/${domain.id}"
         element.model.id == dataSet.id
         element.dataClass.id == item.id

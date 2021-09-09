@@ -80,19 +80,16 @@ class AnnotationServiceSpec extends MultiFacetItemAwareServiceSpec<Annotation, A
 
         and:
         annotationList[0].description == 'editor annotation'
-        annotationList[0].depth == 2
         annotationList[0].path == "/${parent.id}/${nested.id}"
         !annotationList[0].childAnnotations.size()
 
 
         and:
         annotationList[1].description == 'nestedparent'
-        annotationList[1].depth == 1
         annotationList[1].path == "/${parent.id}"
 
         and:
         annotationList[1].childAnnotations.size() == 1
-        annotationList[1].childAnnotations[0].depth == 2
         annotationList[1].childAnnotations[0].path == "/${parent.id}/${id}"
     }
 

@@ -42,14 +42,13 @@ class AnnotationSpec extends CreatorAwareSpec<Annotation> implements DomainUnitT
         checkAndSave(db)
     }
 
-    void 'test depth and path'() {
+    void 'test path'() {
         when:
         setValidDomainValues()
         checkAndSave(domain)
         item = findById()
 
         then:
-        item.depth == 0
         item.path == ''
 
     }
@@ -74,11 +73,9 @@ class AnnotationSpec extends CreatorAwareSpec<Annotation> implements DomainUnitT
         item2
 
         and:
-        item.depth == 0
         item.path == ''
 
         and:
-        item2.depth == 1
         item2.path == "/${item.id}"
         item2.multiFacetAwareItemId
         item2.description == 'child'
@@ -88,7 +85,6 @@ class AnnotationSpec extends CreatorAwareSpec<Annotation> implements DomainUnitT
         item2.addToChildAnnotations(child2)
 
         then:
-        child2.depth == 2
         child2.path == "/${item.id}/${item2.id}"
 
     }

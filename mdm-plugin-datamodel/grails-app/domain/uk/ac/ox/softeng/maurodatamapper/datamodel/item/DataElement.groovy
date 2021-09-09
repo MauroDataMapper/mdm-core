@@ -135,7 +135,7 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
     }
 
     @Override
-    GormEntity getPathParent() {
+    DataClass getPathParent() {
         dataClass
     }
 

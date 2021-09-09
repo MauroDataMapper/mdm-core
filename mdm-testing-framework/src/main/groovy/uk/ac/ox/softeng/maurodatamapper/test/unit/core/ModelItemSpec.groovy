@@ -82,14 +82,13 @@ abstract class ModelItemSpec<K extends ModelItem> extends CatalogueItemSpec<K> {
         check(domain)
     }
 
-    void 'MI02 : test depth and path'() {
+    void 'MI02 : test path'() {
         when:
         setValidDomainValues()
         checkAndSave(domain)
         item = findById()
 
         then:
-        item.depth == domain.depth
         item.path == domain.path
 
     }

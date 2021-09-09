@@ -24,7 +24,6 @@ class ModelItemConstraints extends CatalogueItemConstraints {
 
     static constraints = {
         path nullable: false, blank: true
-        depth nullable: false
         breadcrumbTree nullable: false
     }
 }

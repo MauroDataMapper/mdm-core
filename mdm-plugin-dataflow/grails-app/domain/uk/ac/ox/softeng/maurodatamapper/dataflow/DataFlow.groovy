@@ -34,7 +34,6 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstra
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
-import org.grails.datastore.gorm.GormEntity
 
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
 @Resource(readOnly = false, formats = ['json', 'xml'])
@@ -96,7 +95,7 @@ class DataFlow implements ModelItem<DataFlow, DataModel> {
     }
 
     @Override
-    GormEntity getPathParent() {
+    DataModel getPathParent() {
         target
     }
 

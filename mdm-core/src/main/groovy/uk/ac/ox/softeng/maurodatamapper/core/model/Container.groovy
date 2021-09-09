@@ -20,8 +20,8 @@ package uk.ac.ox.softeng.maurodatamapper.core.model
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.PathAware
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.PathAware
 
 /**
  * This is the base trait for any container of models.
@@ -36,8 +36,8 @@ trait Container implements PathAware, InformationAware, SecurableResource, EditH
 
     abstract Boolean getDeleted()
 
-    //    @Override
-    //    String getPathIdentifier() {
-    //        label
-    //    }
+    @Deprecated
+    Integer getDepth() {
+        getPath().split('/').size() - 1
+    }
 }

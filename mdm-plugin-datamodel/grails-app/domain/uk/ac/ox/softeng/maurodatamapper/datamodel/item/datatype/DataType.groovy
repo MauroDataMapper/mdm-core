@@ -116,7 +116,7 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
     }
 
     @Override
-    GormEntity getPathParent() {
+    DataModel getPathParent() {
         dataModel
     }
 

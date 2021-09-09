@@ -54,6 +54,7 @@ class Term implements ModelItem<Term, Terminology> {
     String definition
     String url
     Boolean isParent
+    Integer depth
 
     static belongsTo = [Terminology, CodeSet]
 
@@ -79,6 +80,7 @@ class Term implements ModelItem<Term, Terminology> {
         url nullable: true, url: true
         isParent nullable: false
         definition nullable: false, blank: false
+        depth nullable: false
     }
 
     static mapping = {
@@ -206,7 +208,7 @@ class Term implements ModelItem<Term, Terminology> {
     }
 
     @Override
-    GormEntity getPathParent() {
+    Terminology getPathParent() {
         terminology
     }
 

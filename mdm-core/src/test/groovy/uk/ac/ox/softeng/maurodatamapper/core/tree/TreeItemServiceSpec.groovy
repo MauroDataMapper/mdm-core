@@ -930,7 +930,6 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         tree.every {it.path == "/${basicModel.id}"}
         tree.every {it.rootId == basicModel.id}
         tree.every {it.parentId == basicModel.id}
-        tree.every {it.depth == 1}
         tree.every {it.order == 0}
         tree.every {!it.renderChildren}
 
@@ -996,7 +995,6 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         tree.every {it.path == "/${basicModel.id}"}
         tree.every {it.rootId == basicModel.id}
         tree.every {it.parentId == basicModel.id}
-        tree.every {it.depth == 1}
         tree.every {it.order == 0}
         tree.every {!it.renderChildren}
 
@@ -1144,7 +1142,6 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         tree[0].path == "/${basicModel.id}/${item2.id}"
         tree[0].rootId == basicModel.id
         tree[0].parentId == item2.id
-        tree[0].depth == 2
         ((ModelItemTreeItem) tree[0]).order == 0
     }
 
@@ -1197,7 +1194,6 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         !tree[0][0].path
         !tree[0][0].rootId
         !tree[0][0].parentId
-        tree[0][0].depth == 0
         ((ModelTreeItem) tree[0][0]).containerId == Folder.findByLabel('catalogue').id
         !((ModelTreeItem) tree[0][0]).deleted
         !((ModelTreeItem) tree[0][0]).finalised
@@ -1216,7 +1212,6 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         tree[0][0][0].path == "/${basicModel.id}"
         tree[0][0][0].rootId == basicModel.id
         tree[0][0][0].parentId == basicModel.id
-        tree[0][0][0].depth == 1
         tree[0][0][0].renderChildren
         ((ModelItemTreeItem) tree[0][0][0]).order == 0
 
@@ -1240,7 +1235,6 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         tree[1][0].domainType == 'Folder'
         tree[1][0].hasChildren()
         tree[1][0].childrenExist
-        tree[1][0].depth == 1
         tree[1][0].path == "/${tree[1].id}"
         tree[1][0].rootId == tree[1].id
         tree[1][0].parentId == tree[1].id
@@ -1261,7 +1255,6 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         tree[1][0][0].path == "/${tree[1].id}/${tree[1][0].id}"
         tree[1][0][0].rootId == tree[1].id
         tree[1][0][0].parentId == tree[1][0].id
-        tree[1][0][0].depth == 2
 
         and:
         tree[1][1].label == 'dm2'
@@ -1322,7 +1315,6 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         tree[0][0].domainType == 'Folder'
         tree[0][0].hasChildren()
         tree[0][0].childrenExist
-        tree[0][0].depth == 1
         tree[0][0].path == "/${tree[0].id}"
         tree[0][0].rootId == tree[0].id
         tree[0][0].parentId == tree[0].id
@@ -1343,7 +1335,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         tree[0][0][0].path == "/${tree[0].id}/${tree[0][0].id}"
         tree[0][0][0].rootId == tree[0].id
         tree[0][0][0].parentId == tree[0][0].id
-        tree[0][0][0].depth == 2
+
     }
 
     void 'S03 : test building search tree 3 for search term [2] domain type basic model'() {
@@ -1441,7 +1433,6 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         !tree[0][0].path
         !tree[0][0].rootId
         !tree[0][0].parentId
-        tree[0][0].depth == 0
         ((ModelTreeItem) tree[0][0]).containerId == Folder.findByLabel('catalogue').id
         !((ModelTreeItem) tree[0][0]).deleted
         !((ModelTreeItem) tree[0][0]).finalised
@@ -1460,7 +1451,6 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         tree[0][0][0].path == "/${basicModel.id}"
         tree[0][0][0].rootId == basicModel.id
         tree[0][0][0].parentId == basicModel.id
-        tree[0][0][0].depth == 1
         tree[0][0][0].renderChildren
         ((ModelItemTreeItem) tree[0][0][0]).order == 0
     }

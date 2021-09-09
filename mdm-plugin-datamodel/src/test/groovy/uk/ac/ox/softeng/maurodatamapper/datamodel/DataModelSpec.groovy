@@ -124,7 +124,6 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
 
         then:
         empty.path == "/${domain.id}"
-        empty.depth == 1
         !empty.parentDataClass
         empty.dataModel.id == domain.id
 
@@ -144,13 +143,11 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
 
         then:
         parentS.path == "/${domain.id}"
-        parentS.depth == 1
         !parentS.parentDataClass
         parentS.dataModel.id == domain.id
 
         and:
         childS.path == "/${domain.id}/$parent.id"
-        childS.depth == 2
         childS.parentDataClass.id == parent.id
         childS.dataModel
         childS.dataModel.id == domain.id

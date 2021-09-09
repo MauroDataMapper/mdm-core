@@ -133,7 +133,7 @@ class DataElementController extends CatalogueItemController<DataElement> {
         if (params.all) removePaginationParameters()
 
         if (!params.dataClassId) {
-            params.sort = params.sort ?: ['dataClass.idx': 'asc', 'depth': 'asc', 'idx': 'asc']
+            params.sort = params.sort ?: ['dataClass.idx': 'asc', 'idx': 'asc']
             return dataElementService.findAllByDataModelId(params.dataModelId, params)
         }
 

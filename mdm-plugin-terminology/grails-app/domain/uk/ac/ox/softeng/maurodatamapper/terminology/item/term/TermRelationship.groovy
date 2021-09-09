@@ -33,7 +33,6 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
-import org.grails.datastore.gorm.GormEntity
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
 class TermRelationship implements ModelItem<TermRelationship, Terminology> {
@@ -107,7 +106,7 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
     }
 
     @Override
-    GormEntity getPathParent() {
+    Term getPathParent() {
         sourceTerm
     }
 
