@@ -83,12 +83,12 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
 
     @Override
     def beforeInsert() {
-        buildPath()
+        buildPathString()
     }
 
     @Override
     def beforeUpdate() {
-        buildPath()
+        buildPathString()
     }
 
     String getEditLabel() {

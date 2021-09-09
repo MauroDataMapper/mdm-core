@@ -209,12 +209,12 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
 
     @Override
     def beforeInsert() {
-        buildPath()
+        buildPathString()
     }
 
     @Override
     def beforeUpdate() {
-        buildPath()
+        buildPathString()
     }
 
     @Override

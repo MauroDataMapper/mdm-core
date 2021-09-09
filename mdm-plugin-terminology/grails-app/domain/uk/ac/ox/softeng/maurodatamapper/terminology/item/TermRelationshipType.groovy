@@ -107,12 +107,12 @@ class TermRelationshipType implements ModelItem<TermRelationshipType, Terminolog
 
     @Override
     def beforeInsert() {
-        buildPath()
+        buildPathString()
     }
 
     @Override
     def beforeUpdate() {
-        buildPath()
+        buildPathString()
     }
 
     String getEditLabel() {

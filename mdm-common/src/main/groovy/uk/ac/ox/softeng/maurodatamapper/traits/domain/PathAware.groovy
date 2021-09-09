@@ -42,7 +42,7 @@ trait PathAware {
 
     abstract MdmDomain getPathParent()
 
-    String buildPath() {
+    String buildPathString() {
         MdmDomain ge = getPathParent()
         if (ge) {
             if (ge.instanceOf(PathAware)) {
@@ -62,7 +62,7 @@ trait PathAware {
     }
 
     String getPathString() {
-        if (!pathString || pathString.contains(UNSET)) buildPath()
+        if (!pathString || pathString.contains(UNSET)) buildPathString()
         pathString
     }
 

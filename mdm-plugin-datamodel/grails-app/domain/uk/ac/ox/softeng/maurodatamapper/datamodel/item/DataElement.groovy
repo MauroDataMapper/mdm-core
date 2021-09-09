@@ -159,12 +159,12 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
 
     @Override
     def beforeInsert() {
-        buildPath()
+        buildPathString()
     }
 
     @Override
     def beforeUpdate() {
-        buildPath()
+        buildPathString()
     }
 
     @Override

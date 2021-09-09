@@ -93,18 +93,18 @@ class GroupRole implements EditHistoryAware, PathAware, SecurableResource, Compa
 
     @Override
     def beforeValidate() {
-        buildPath()
+        buildPathString()
         children.each {it.beforeValidate()}
     }
 
     @Override
     def beforeInsert() {
-        buildPath()
+        buildPathString()
     }
 
     @Override
     def beforeUpdate() {
-        buildPath()
+        buildPathString()
     }
 
     @Override

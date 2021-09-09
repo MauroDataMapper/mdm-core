@@ -143,18 +143,18 @@ class Folder implements Container, Diffable<Folder> {
 
     @Override
     def beforeValidate() {
-        buildPath()
+        buildPathString()
         childFolders.each {it.beforeValidate()}
     }
 
     @Override
     def beforeInsert() {
-        buildPath()
+        buildPathString()
     }
 
     @Override
     def beforeUpdate() {
-        buildPath()
+        buildPathString()
     }
 
     @Override

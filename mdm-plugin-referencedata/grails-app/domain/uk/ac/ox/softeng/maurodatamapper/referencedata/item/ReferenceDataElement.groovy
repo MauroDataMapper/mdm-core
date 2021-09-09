@@ -139,12 +139,12 @@ class ReferenceDataElement implements ModelItem<ReferenceDataElement, ReferenceD
 
     @Override
     def beforeInsert() {
-        buildPath()
+        buildPathString()
     }
 
     @Override
     def beforeUpdate() {
-        buildPath()
+        buildPathString()
     }
 
     @Override

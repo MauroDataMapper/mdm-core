@@ -314,14 +314,14 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
 
     void checkImportedDataTypeAssociations(User importingUser, DataModel dataModel, DataType dataType) {
         dataModel.addToDataTypes(dataType)
-        dataType.buildPath()
+        dataType.buildPathString()
         dataType.createdBy = importingUser.emailAddress
         if (dataType.instanceOf(EnumerationType)) {
             EnumerationType enumerationType = (dataType as EnumerationType)
             enumerationType.fullSortOfChildren(enumerationType.enumerationValues)
             enumerationType.enumerationValues.each { ev ->
                 ev.createdBy = importingUser.emailAddress
-                ev.buildPath()
+                ev.buildPathString()
             }
         }
         checkFacetsAfterImportingCatalogueItem(dataType)

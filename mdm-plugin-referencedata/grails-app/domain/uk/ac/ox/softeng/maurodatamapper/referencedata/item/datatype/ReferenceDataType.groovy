@@ -115,12 +115,12 @@ abstract class ReferenceDataType<D> implements ModelItem<D, ReferenceDataModel>,
 
     @Override
     def beforeInsert() {
-        buildPath()
+        buildPathString()
     }
 
     @Override
     def beforeUpdate() {
-        buildPath()
+        buildPathString()
     }
 
     @Override

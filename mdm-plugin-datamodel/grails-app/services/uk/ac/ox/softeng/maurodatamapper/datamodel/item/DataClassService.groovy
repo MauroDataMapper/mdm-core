@@ -401,7 +401,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
 
     void checkImportedDataClassAssociations(User importingUser, DataModel dataModel, DataClass dataClass, boolean matchDataTypes = false) {
         dataModel.addToDataClasses(dataClass)
-        dataClass.buildPath()
+        dataClass.buildPathString()
         dataClass.createdBy = importingUser.emailAddress
         checkFacetsAfterImportingCatalogueItem(dataClass)
         if (dataClass.dataClasses) {
@@ -414,7 +414,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
             dataClass.fullSortOfChildren(dataClass.dataElements)
             dataClass.dataElements.each { de ->
                 de.createdBy = importingUser.emailAddress
-                de.buildPath()
+                de.buildPathString()
                 dataElementService.checkFacetsAfterImportingCatalogueItem(de)
             }
             if (matchDataTypes) dataElementService.matchUpDataTypes(dataModel, dataClass.dataElements)

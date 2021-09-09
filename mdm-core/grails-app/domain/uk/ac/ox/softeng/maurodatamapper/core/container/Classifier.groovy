@@ -110,18 +110,18 @@ class Classifier implements Container {
 
     @Override
     def beforeValidate() {
-        buildPath()
+        buildPathString()
         childClassifiers.each { it.beforeValidate() }
     }
 
     @Override
     def beforeInsert() {
-        buildPath()
+        buildPathString()
     }
 
     @Override
     def beforeUpdate() {
-        buildPath()
+        buildPathString()
     }
 
     @Override

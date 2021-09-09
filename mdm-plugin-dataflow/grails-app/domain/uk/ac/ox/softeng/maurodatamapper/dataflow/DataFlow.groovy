@@ -107,12 +107,12 @@ class DataFlow implements ModelItem<DataFlow, DataModel> {
 
     @Override
     def beforeInsert() {
-        buildPath()
+        buildPathString()
     }
 
     @Override
     def beforeUpdate() {
-        buildPath()
+        buildPathString()
     }
 
     @Override

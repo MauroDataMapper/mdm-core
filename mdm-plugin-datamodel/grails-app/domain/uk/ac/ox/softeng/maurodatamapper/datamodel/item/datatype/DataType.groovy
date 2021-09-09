@@ -133,12 +133,12 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
 
     @Override
     def beforeInsert() {
-        buildPath()
+        buildPathString()
     }
 
     @Override
     def beforeUpdate() {
-        buildPath()
+        buildPathString()
     }
 
     @Override

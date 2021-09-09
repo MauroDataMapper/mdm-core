@@ -95,7 +95,7 @@ class Annotation implements MultiFacetItemAware, PathAware, InformationAware, Di
     }
 
     def beforeValidate() {
-        buildPath()
+        buildPathString()
         childAnnotations.eachWithIndex { ann, i ->
             if (!ann.label) ann.label = "$label [$i]"
             if (multiFacetAwareItem) {
@@ -110,12 +110,12 @@ class Annotation implements MultiFacetItemAware, PathAware, InformationAware, Di
 
     @Override
     def beforeInsert() {
-        buildPath()
+        buildPathString()
     }
 
     @Override
     def beforeUpdate() {
-        buildPath()
+        buildPathString()
     }
 
     @Override

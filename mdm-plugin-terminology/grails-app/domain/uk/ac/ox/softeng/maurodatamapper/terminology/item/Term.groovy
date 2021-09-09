@@ -241,7 +241,7 @@ class Term implements ModelItem<Term, Terminology> {
     }
 
     @Override
-    String buildPath() {
+    String buildPathString() {
         // no-op
     }
 

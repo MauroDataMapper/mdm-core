@@ -96,12 +96,12 @@ class BasicModelItem implements ModelItem<BasicModelItem, BasicModel>, GormEntit
 
     @Override
     def beforeInsert() {
-        buildPath()
+        buildPathString()
     }
 
     @Override
     def beforeUpdate() {
-        buildPath()
+        buildPathString()
     }
 
     @Override

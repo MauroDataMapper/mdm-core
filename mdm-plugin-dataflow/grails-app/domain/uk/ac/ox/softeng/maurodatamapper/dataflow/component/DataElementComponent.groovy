@@ -103,12 +103,12 @@ class DataElementComponent implements ModelItem<DataElementComponent, DataModel>
 
     @Override
     def beforeInsert() {
-        buildPath()
+        buildPathString()
     }
 
     @Override
     def beforeUpdate() {
-        buildPath()
+        buildPathString()
     }
 
     @Override
