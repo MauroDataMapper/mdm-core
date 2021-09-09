@@ -20,7 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.security.role
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
-import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.HibernateSearch
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
@@ -56,7 +56,7 @@ class GroupRole implements EditHistoryAware, PathAware, SecurableResource, Compa
     static belongsTo = [parent: GroupRole]
 
     static constraints = {
-        CallableConstraints.call(CreatorAwareConstraints, delegate)
+        CallableConstraints.call(MdmDomainConstraints, delegate)
         parent nullable: true
         name blank: false, validator: {val -> if (val.find(/\s/)) ['invalid.grouprole.name.message']}, unique: true
         displayName blank: false

@@ -26,8 +26,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.BreadcrumbTreeM
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.CatalogueItemClassifierAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.CatalogueItemMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.ClassifierAwareMappingContext
-import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.CreatorAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.InformationAwareMappingContext
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.MdmDomainMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.MetadataAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.PathAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.ReferenceFileAwareMappingContext
@@ -147,7 +147,7 @@ This is basically the backend API.
             coreSchemaMappingContext CoreSchemaMappingContext
             informationAwareMappingContext InformationAwareMappingContext
             pathAwareMappingContext PathAwareMappingContext
-            creatorAwareMappingContext CreatorAwareMappingContext
+            creatorAwareMappingContext MdmDomainMappingContext
             classifierAwareMappingContext ClassifierAwareMappingContext
             catalogueItemClassifierAwareMappingContext CatalogueItemClassifierAwareMappingContext
             breadcrumbTreeMappingContext BreadcrumbTreeMappingContext

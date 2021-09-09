@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.security.authentication
 
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
-import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
@@ -40,7 +40,7 @@ class ApiKey implements MdmDomain {
     static belongsTo = [catalogueUser: CatalogueUser]
 
     static constraints = {
-        CallableConstraints.call(CreatorAwareConstraints, delegate)
+        CallableConstraints.call(MdmDomainConstraints, delegate)
         name blank: false, unique: 'catalogueUser'
     }
 

@@ -17,14 +17,14 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security
 
-import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
+import uk.ac.ox.softeng.maurodatamapper.test.unit.MdmDomainSpec
 
 import grails.testing.gorm.DomainUnitTest
 import groovy.util.logging.Slf4j
 import org.spockframework.util.InternalSpockError
 
 @Slf4j
-class CatalogueUserSpec extends CreatorAwareSpec<CatalogueUser> implements DomainUnitTest<CatalogueUser> {
+class CatalogueUserSpec extends MdmDomainSpec<CatalogueUser> implements DomainUnitTest<CatalogueUser> {
 
     @Override
     void setValidDomainOtherValues() {

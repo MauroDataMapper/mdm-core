@@ -18,11 +18,11 @@
 package uk.ac.ox.softeng.maurodatamapper.core.admin
 
 
-import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
+import uk.ac.ox.softeng.maurodatamapper.test.unit.MdmDomainSpec
 
 import grails.testing.gorm.DomainUnitTest
 
-class ApiPropertySpec extends CreatorAwareSpec<ApiProperty> implements DomainUnitTest<ApiProperty> {
+class ApiPropertySpec extends MdmDomainSpec<ApiProperty> implements DomainUnitTest<ApiProperty> {
 
     @Override
     void setValidDomainOtherValues() {

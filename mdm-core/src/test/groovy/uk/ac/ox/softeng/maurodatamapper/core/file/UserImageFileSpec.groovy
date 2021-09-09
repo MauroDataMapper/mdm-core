@@ -17,8 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.file
 
-import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFile
-import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
+
+import uk.ac.ox.softeng.maurodatamapper.test.unit.MdmDomainSpec
 
 import grails.testing.gorm.DomainUnitTest
 import grails.web.mime.MimeType
@@ -27,7 +27,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 
-class UserImageFileSpec extends CreatorAwareSpec<UserImageFile> implements DomainUnitTest<UserImageFile> {
+class UserImageFileSpec extends MdmDomainSpec<UserImageFile> implements DomainUnitTest<UserImageFile> {
 
     void 'test creating actual user image'() {
         given:

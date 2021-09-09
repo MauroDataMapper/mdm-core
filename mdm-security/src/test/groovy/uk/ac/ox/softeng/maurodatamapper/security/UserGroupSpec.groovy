@@ -20,13 +20,13 @@ package uk.ac.ox.softeng.maurodatamapper.security
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.security.test.SecurityUsers
-import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
+import uk.ac.ox.softeng.maurodatamapper.test.unit.MdmDomainSpec
 
 import grails.testing.gorm.DomainUnitTest
 import groovy.util.logging.Slf4j
 
 @Slf4j
-class UserGroupSpec extends CreatorAwareSpec<UserGroup> implements DomainUnitTest<UserGroup>, SecurityUsers {
+class UserGroupSpec extends MdmDomainSpec<UserGroup> implements DomainUnitTest<UserGroup>, SecurityUsers {
 
     def setup() {
         log.debug('Setting up UserGroupSpec')

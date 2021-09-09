@@ -23,13 +23,13 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataType
-import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
+import uk.ac.ox.softeng.maurodatamapper.test.unit.MdmDomainSpec
 
 import grails.testing.gorm.DomainUnitTest
 
 import java.time.OffsetDateTime
 
-class SummaryMetadataReportSpec extends CreatorAwareSpec<SummaryMetadataReport> implements DomainUnitTest<SummaryMetadataReport> {
+class SummaryMetadataReportSpec extends MdmDomainSpec<SummaryMetadataReport> implements DomainUnitTest<SummaryMetadataReport> {
 
     DataModel db
     Folder misc

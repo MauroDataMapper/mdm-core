@@ -20,11 +20,11 @@ package uk.ac.ox.softeng.maurodatamapper.core.container
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
-import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
+import uk.ac.ox.softeng.maurodatamapper.test.unit.MdmDomainSpec
 
 import org.spockframework.util.InternalSpockError
 
-abstract class FolderContainerSpec<K extends Container> extends CreatorAwareSpec<K> {
+abstract class FolderContainerSpec<K extends Container> extends MdmDomainSpec<K> {
 
     abstract Container newChildContainerClass(Map<String, Object> args)
 

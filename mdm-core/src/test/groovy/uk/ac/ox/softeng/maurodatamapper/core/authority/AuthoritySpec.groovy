@@ -18,11 +18,11 @@
 package uk.ac.ox.softeng.maurodatamapper.core.authority
 
 
-import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
+import uk.ac.ox.softeng.maurodatamapper.test.unit.MdmDomainSpec
 
 import grails.testing.gorm.DomainUnitTest
 
-class AuthoritySpec extends CreatorAwareSpec<Authority> implements DomainUnitTest<Authority> {
+class AuthoritySpec extends MdmDomainSpec<Authority> implements DomainUnitTest<Authority> {
 
     @Override
     void setValidDomainOtherValues() {

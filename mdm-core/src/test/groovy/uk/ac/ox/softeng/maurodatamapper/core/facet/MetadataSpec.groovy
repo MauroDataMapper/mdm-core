@@ -20,14 +20,14 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
-import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
+import uk.ac.ox.softeng.maurodatamapper.test.unit.MdmDomainSpec
 
 import grails.testing.gorm.DomainUnitTest
 import org.spockframework.util.InternalSpockError
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
 
-class MetadataSpec extends CreatorAwareSpec<Metadata> implements DomainUnitTest<Metadata> {
+class MetadataSpec extends MdmDomainSpec<Metadata> implements DomainUnitTest<Metadata> {
 
     BasicModel db
     Folder misc

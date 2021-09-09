@@ -18,13 +18,13 @@
 package uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable
 
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
-import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.UniqueValuesValidator
 
 /**
  * @since 17/02/2020
  */
-class CatalogueItemConstraints extends CreatorAwareConstraints {
+class CatalogueItemConstraints extends MdmDomainConstraints {
 
     static constraints = {
         CallableConstraints.call(InformationAwareConstraints, delegate)

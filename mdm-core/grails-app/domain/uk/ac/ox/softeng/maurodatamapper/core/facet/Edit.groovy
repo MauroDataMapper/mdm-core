@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
-import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
@@ -33,7 +33,7 @@ class Edit implements MdmDomain {
     User user
 
     static constraints = {
-        CallableConstraints.call(CreatorAwareConstraints, delegate)
+        CallableConstraints.call(MdmDomainConstraints, delegate)
         resourceDomainType nullable: false, blank: false
         resourceId nullable: false
         title nullable: false

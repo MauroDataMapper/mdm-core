@@ -22,7 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.facet.VersionLinkAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
-import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.databinding.BindUsing
@@ -41,7 +41,7 @@ class VersionLink implements MultiFacetItemAware {
     String targetModelDomainType
 
     static constraints = {
-        CallableConstraints.call(CreatorAwareConstraints, delegate)
+        CallableConstraints.call(MdmDomainConstraints, delegate)
         multiFacetAwareItemId nullable: true, validator: {val, obj ->
             if (!val && !obj.multiFacetAwareItem) return ['default.null.message']
             if (val == obj.targetModelId && obj.multiFacetAwareItemDomainType == obj.targetModelDomainType) {

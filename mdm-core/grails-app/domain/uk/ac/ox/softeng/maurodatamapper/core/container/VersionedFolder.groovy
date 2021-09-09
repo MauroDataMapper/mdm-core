@@ -27,7 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.validator.Versioned
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.VersionLinkAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
-import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
 import uk.ac.ox.softeng.maurodatamapper.hibernate.VersionUserType
 import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 
@@ -43,7 +43,7 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware, 
     ]
 
     static constraints = {
-        CallableConstraints.call(CreatorAwareConstraints, delegate)
+        CallableConstraints.call(MdmDomainConstraints, delegate)
         CallableConstraints.call(InformationAwareConstraints, delegate)
         CallableConstraints.call(VersionAwareConstraints, delegate)
 

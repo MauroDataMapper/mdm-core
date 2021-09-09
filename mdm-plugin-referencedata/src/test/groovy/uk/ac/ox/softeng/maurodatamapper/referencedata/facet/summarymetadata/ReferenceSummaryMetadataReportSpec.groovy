@@ -23,13 +23,13 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataType
-import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
+import uk.ac.ox.softeng.maurodatamapper.test.unit.MdmDomainSpec
 
 import grails.testing.gorm.DomainUnitTest
 
 import java.time.OffsetDateTime
 
-class ReferenceSummaryMetadataReportSpec extends CreatorAwareSpec<ReferenceSummaryMetadataReport> implements DomainUnitTest<ReferenceSummaryMetadataReport> {
+class ReferenceSummaryMetadataReportSpec extends MdmDomainSpec<ReferenceSummaryMetadataReport> implements DomainUnitTest<ReferenceSummaryMetadataReport> {
 
     ReferenceDataModel db
     Folder misc

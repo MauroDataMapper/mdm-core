@@ -20,7 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.security
 import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFile
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
-import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
 import uk.ac.ox.softeng.maurodatamapper.security.authentication.ApiKey
 import uk.ac.ox.softeng.maurodatamapper.security.utils.SecureRandomStringGenerator
 import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityUtils
@@ -65,7 +65,7 @@ class CatalogueUser implements Principal, EditHistoryAware, User {
     ]
 
     static constraints = {
-        CallableConstraints.call(CreatorAwareConstraints, delegate)
+        CallableConstraints.call(MdmDomainConstraints, delegate)
         emailAddress email: true, unique: true, blank: false
         pending nullable: false
         firstName blank: false

@@ -30,7 +30,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
-import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
+import uk.ac.ox.softeng.maurodatamapper.test.unit.MdmDomainSpec
 
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
@@ -42,7 +42,7 @@ import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddre
  * @since 21/09/2017
  */
 @Slf4j
-abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSpec<K> {
+abstract class CatalogueItemSpec<K extends CatalogueItem> extends MdmDomainSpec<K> {
 
     abstract K createValidDomain(String label)
 

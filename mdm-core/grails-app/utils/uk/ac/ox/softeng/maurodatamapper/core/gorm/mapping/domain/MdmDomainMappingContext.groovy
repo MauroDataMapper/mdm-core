@@ -27,7 +27,7 @@ import org.grails.datastore.mapping.model.PersistentEntity
 /**
  * @since 31/10/2019
  */
-class CreatorAwareMappingContext extends DynamicHibernateMappingContext {
+class MdmDomainMappingContext extends DynamicHibernateMappingContext {
     @Override
     boolean handlesDomainClass(Class domainClass) {
         Utils.parentClassIsAssignableFromChild(MdmDomain, domainClass)

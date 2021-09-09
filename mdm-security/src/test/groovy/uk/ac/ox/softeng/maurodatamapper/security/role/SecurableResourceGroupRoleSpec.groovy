@@ -23,14 +23,14 @@ import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.security.test.BasicModel
 import uk.ac.ox.softeng.maurodatamapper.security.test.SecurityUsers
-import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
+import uk.ac.ox.softeng.maurodatamapper.test.unit.MdmDomainSpec
 
 import grails.testing.gorm.DomainUnitTest
 import groovy.util.logging.Slf4j
 import org.spockframework.util.InternalSpockError
 
 @Slf4j
-class SecurableResourceGroupRoleSpec extends CreatorAwareSpec<SecurableResourceGroupRole>
+class SecurableResourceGroupRoleSpec extends MdmDomainSpec<SecurableResourceGroupRole>
     implements DomainUnitTest<SecurableResourceGroupRole>, SecurityUsers {
 
     Folder folder

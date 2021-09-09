@@ -27,7 +27,7 @@ import org.springframework.validation.FieldError
  * @since 26/09/2017
  */
 @Slf4j
-abstract class CreatorAwareSpec<K extends MdmDomain> extends BaseUnitSpec {
+abstract class MdmDomainSpec<K extends MdmDomain> extends BaseUnitSpec {
 
     K item
 

@@ -19,9 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.security.authentication
 
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
-import uk.ac.ox.softeng.maurodatamapper.security.authentication.ApiKey
 import uk.ac.ox.softeng.maurodatamapper.security.test.SecurityUsers
-import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
+import uk.ac.ox.softeng.maurodatamapper.test.unit.MdmDomainSpec
 
 import grails.testing.gorm.DomainUnitTest
 import groovy.util.logging.Slf4j
@@ -29,7 +28,7 @@ import groovy.util.logging.Slf4j
 import java.time.LocalDate
 
 @Slf4j
-class ApiKeySpec extends CreatorAwareSpec<ApiKey> implements DomainUnitTest<ApiKey>, SecurityUsers {
+class ApiKeySpec extends MdmDomainSpec<ApiKey> implements DomainUnitTest<ApiKey>, SecurityUsers {
 
     LocalDate expiry
 

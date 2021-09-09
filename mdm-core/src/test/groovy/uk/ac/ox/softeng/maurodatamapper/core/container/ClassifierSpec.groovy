@@ -17,14 +17,14 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
-import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
-import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
+import uk.ac.ox.softeng.maurodatamapper.test.unit.MdmDomainSpec
 
 import grails.testing.gorm.DomainUnitTest
 
-class ClassifierSpec extends CreatorAwareSpec<Classifier> implements DomainUnitTest<Classifier> {
+class ClassifierSpec extends MdmDomainSpec<Classifier> implements DomainUnitTest<Classifier> {
 
     def setup() {
         mockDomain(Edit)

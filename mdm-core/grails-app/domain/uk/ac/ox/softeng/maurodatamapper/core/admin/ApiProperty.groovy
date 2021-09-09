@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.admin
 
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
-import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.gorm.DetachedCriteria
@@ -33,7 +33,7 @@ class ApiProperty implements MdmDomain {
     String category
 
     static constraints = {
-        CallableConstraints.call(CreatorAwareConstraints, delegate)
+        CallableConstraints.call(MdmDomainConstraints, delegate)
         lastUpdatedBy email: true
         publiclyVisible nullable: false
         key blank: false, unique: true, validator: {val ->
