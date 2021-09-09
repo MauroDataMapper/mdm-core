@@ -17,38 +17,33 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.hibernate
 
-import uk.ac.ox.softeng.maurodatamapper.version.Version
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 
 import org.hibernate.type.descriptor.WrapperOptions
 import org.hibernate.type.descriptor.java.AbstractTypeDescriptor
 
 /**
- * @since 25/01/2018
+ * @since 09/09/2021
  */
-class VersionUserTypeDescriptor extends AbstractTypeDescriptor<Version> {
+class PathUserTypeDescriptor extends AbstractTypeDescriptor<Path> {
 
-    public static final VersionUserTypeDescriptor INSTANCE = new VersionUserTypeDescriptor()
+    public static final PathUserTypeDescriptor INSTANCE = new PathUserTypeDescriptor()
 
-    VersionUserTypeDescriptor() {
-        super(Version)
+    protected PathUserTypeDescriptor() {
+        super(Path)
     }
 
     @Override
-    String toString(Version value) {
-        value.toString()
+    Path fromString(String string) {
+        Path.from(string)
     }
 
     @Override
-    Version fromString(String string) {
-        Version.from(string)
-    }
-
-    @Override
-    <X> X unwrap(Version value, Class<X> type, WrapperOptions options) {
+    <X> X unwrap(Path value, Class<X> type, WrapperOptions options) {
         if (value == null) {
             return null
         }
-        if (Version.isAssignableFrom(type)) {
+        if (Path.isAssignableFrom(type)) {
             return (X) value
         }
         if (String.isAssignableFrom(type)) {
@@ -58,15 +53,15 @@ class VersionUserTypeDescriptor extends AbstractTypeDescriptor<Version> {
     }
 
     @Override
-    <X> Version wrap(X value, WrapperOptions options) {
+    <X> Path wrap(X value, WrapperOptions options) {
         if (value == null) {
             return null
         }
         if (String.isInstance(value)) {
             return fromString((String) value)
         }
-        if (Version.isInstance(value)) {
-            return (Version) value
+        if (Path.isInstance(value)) {
+            return (Path) value
         }
         throw unknownWrap(value.getClass())
     }
