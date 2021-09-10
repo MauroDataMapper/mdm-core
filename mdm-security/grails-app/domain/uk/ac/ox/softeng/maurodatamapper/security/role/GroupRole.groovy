@@ -25,11 +25,12 @@ import uk.ac.ox.softeng.maurodatamapper.hibernate.search.HibernateSearch
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.PathAware
 
 import grails.gorm.DetachedCriteria
 
-class GroupRole implements EditHistoryAware, PathAware, SecurableResource, Comparable<GroupRole> {
+class GroupRole implements MdmDomain, EditHistoryAware, PathAware, SecurableResource, Comparable<GroupRole> {
 
     public static final String APPLICATION_ADMIN_ROLE_NAME = 'application_admin'
     public static final String CONTAINER_ADMIN_ROLE_NAME = 'container_admin'

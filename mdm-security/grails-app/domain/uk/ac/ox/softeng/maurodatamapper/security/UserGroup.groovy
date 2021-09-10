@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstra
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
@@ -30,7 +31,7 @@ import grails.rest.Resource
 import java.security.Principal
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class UserGroup implements EditHistoryAware, SecurableResource, Principal {
+class UserGroup implements MdmDomain, EditHistoryAware, SecurableResource, Principal {
 
     UUID id
     String name

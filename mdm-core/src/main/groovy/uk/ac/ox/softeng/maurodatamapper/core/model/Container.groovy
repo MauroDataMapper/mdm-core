@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.PathAware
 
 /**
@@ -30,7 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.traits.domain.PathAware
  *
  * @since 05/11/2019
  */
-trait Container implements PathAware, InformationAware, SecurableResource, EditHistoryAware, MultiFacetAware {
+trait Container implements PathAware, InformationAware, SecurableResource, EditHistoryAware, MultiFacetAware, MdmDomain {
 
     abstract boolean hasChildren()
 

@@ -19,12 +19,13 @@ package uk.ac.ox.softeng.maurodatamapper.federation
 
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.gorm.DetachedCriteria
 
 import java.time.OffsetDateTime
 
-class SubscribedModel implements SecurableResource, EditHistoryAware {
+class SubscribedModel implements MdmDomain, SecurableResource, EditHistoryAware {
 
     UUID id
 

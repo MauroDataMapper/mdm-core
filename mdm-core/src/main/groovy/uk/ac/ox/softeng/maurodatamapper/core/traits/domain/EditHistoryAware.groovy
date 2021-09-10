@@ -24,14 +24,13 @@ import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.compiler.GrailsCompileStatic
 import groovy.transform.SelfType
-import org.grails.datastore.gorm.GormEntity
 
 /**
  * @since 26/09/2017
  */
-@SelfType(GormEntity)
+@SelfType(MdmDomain)
 @GrailsCompileStatic
-trait EditHistoryAware extends AddsEditHistory implements MdmDomain {
+trait EditHistoryAware extends AddsEditHistory {
 
     void addToEditsTransactionally(EditTitle title, User createdBy, String description) {
         createAndSaveEditInsideNewTransaction title, createdBy, description

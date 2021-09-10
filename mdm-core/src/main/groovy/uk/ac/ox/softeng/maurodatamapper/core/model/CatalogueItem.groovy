@@ -30,6 +30,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.HibernateSearch
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.gorm.DetachedCriteria
 import grails.plugins.hibernate.search.HibernateSearchApi
@@ -42,7 +43,7 @@ import org.grails.datastore.gorm.GormEntity
  */
 @Slf4j
 @SelfType(GormEntity)
-trait CatalogueItem<D extends Diffable> implements InformationAware, EditHistoryAware, Diffable<D>, CatalogueItemClassifierAware, MultiFacetAware {
+trait CatalogueItem<D extends Diffable> implements MdmDomain, InformationAware, EditHistoryAware, Diffable<D>, CatalogueItemClassifierAware, MultiFacetAware {
 
     String aliasesString
     BreadcrumbTree breadcrumbTree

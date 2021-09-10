@@ -23,10 +23,11 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstra
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.gorm.DetachedCriteria
 
-class SecurableResourceGroupRole implements EditHistoryAware {
+class SecurableResourceGroupRole implements MdmDomain, EditHistoryAware {
 
     UUID id
     String securableResourceDomainType

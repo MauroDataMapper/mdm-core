@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.model.file
 
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.compiler.GrailsCompileStatic
 import grails.databinding.BindUsing
@@ -28,7 +29,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 @GrailsCompileStatic
-trait CatalogueFile extends EditHistoryAware {
+trait CatalogueFile implements MdmDomain, EditHistoryAware {
 
     @BindUsing({
         obj, source ->

@@ -22,8 +22,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
-class Authority implements InformationAware, SecurableResource, EditHistoryAware {
+class Authority implements MdmDomain, InformationAware, SecurableResource, EditHistoryAware {
 
     public static final String DEFAULT_NAME_CONFIG_PROPERTY = 'maurodatamapper.authority.name'
     public static final String DEFAULT_URL_CONFIG_PROPERTY = 'maurodatamapper.authority.url'
