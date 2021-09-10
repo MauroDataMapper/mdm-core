@@ -65,6 +65,6 @@ class CodeSetJsonExporterService extends CodeSetExporterProviderService implemen
     @Override
     ByteArrayOutputStream exportCodeSets(User currentUser, List<CodeSet> codeSets) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(codeSets, 'codeSet', version, exportMetadata), fileType)
+        exportModel(new ExportModel(codeSets, 'codeSet', 'codeSets', version, exportMetadata), fileType)
     }
 }

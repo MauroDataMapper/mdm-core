@@ -30,35 +30,22 @@ class ExportModel {
     Namespace xmlNamespace
     Namespace modelXmlNamespace
 
-    private static Map<String, String> pluralModelTypes = [
-        'dataModel'  : 'dataModels',
-        'terminology': 'terminologies',
-        'codeSet'    : 'codeSets'
-    ]
-
     ExportModel(CatalogueItem model, String modelType, String version, ExportMetadata exportMetadata) {
-        this([model], modelType, version, '', exportMetadata)
+        this(model, modelType, version, '', exportMetadata)
     }
 
-    ExportModel(List<CatalogueItem> models, String modelType, String version, ExportMetadata exportMetadata) {
-        this(models, modelType, version, '', exportMetadata)
+    ExportModel(List<CatalogueItem> models, String modelType, String multiModelType, String version, ExportMetadata exportMetadata) {
+        this(models, modelType, multiModelType, version, version, '', exportMetadata)
     }
 
     ExportModel(CatalogueItem model, String modelType, String version, String templatePathFileExtension, ExportMetadata exportMetadata) {
-        this([model], modelType, version, version, templatePathFileExtension, exportMetadata)
+        this([model], modelType, '', version, version, templatePathFileExtension, exportMetadata)
     }
 
-    ExportModel(List<CatalogueItem> models, String modelType, String version, String templatePathFileExtension, ExportMetadata exportMetadata) {
-        this(models, modelType, version, version, templatePathFileExtension, exportMetadata)
-    }
-
-    ExportModel(CatalogueItem model, String modelType, String version, String modelVersion, String templatePathFileExtension, ExportMetadata exportMetadata) {
-        this([model], modelType, version, modelVersion, templatePathFileExtension, exportMetadata)
-    }
-
-    ExportModel(List<CatalogueItem> models, String modelType, String version, String modelVersion, String templatePathFileExtension, ExportMetadata exportMetadata) {
+    ExportModel(List<CatalogueItem> models, String modelType, String multiModelType, String version, String modelVersion, String templatePathFileExtension,
+                ExportMetadata exportMetadata) {
         modelExportMap = [export: models]
-        exportModelType = models.size() > 1 ? pluralModelTypes[modelType] : modelType
+        exportModelType = models.size() > 1 ? multiModelType : modelType
         modelExportTemplatePath = "/${modelType}/export${templatePathFileExtension ? ".$templatePathFileExtension" : ''}"
         this.exportMetadata = exportMetadata
         xmlNamespace = new Namespace("http://maurodatamapper.com/export/${version}", 'xmlns:exp')

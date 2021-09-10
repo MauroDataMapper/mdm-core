@@ -73,6 +73,6 @@ class CodeSetXmlExporterService extends CodeSetExporterProviderService implement
     @Override
     ByteArrayOutputStream exportCodeSets(User currentUser, List<CodeSet> codeSets) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(codeSets, 'codeSet', version, '3.0', 'gml', exportMetadata), fileType)
+        exportModel(new ExportModel(codeSets, 'codeSet', 'codeSets', version, '3.0', 'gml', exportMetadata), fileType)
     }
 }
