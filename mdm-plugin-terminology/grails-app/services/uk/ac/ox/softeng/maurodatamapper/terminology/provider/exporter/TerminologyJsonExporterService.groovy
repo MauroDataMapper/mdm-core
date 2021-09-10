@@ -65,6 +65,6 @@ class TerminologyJsonExporterService extends TerminologyExporterProviderService 
     @Override
     ByteArrayOutputStream exportTerminologies(User currentUser, List<Terminology> terminologies) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(terminologies, 'terminology', version, exportMetadata), fileType)
+        exportModel(new ExportModel(terminologies, 'terminology', 'terminologies', version, exportMetadata), fileType)
     }
 }
