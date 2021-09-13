@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.core.model.file
 
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.compiler.GrailsCompileStatic
 import grails.databinding.BindUsing
@@ -29,7 +28,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 @GrailsCompileStatic
-trait CatalogueFile implements MdmDomain, EditHistoryAware {
+trait CatalogueFile implements EditHistoryAware {
 
     @BindUsing({
         obj, source ->
@@ -81,11 +80,6 @@ trait CatalogueFile implements MdmDomain, EditHistoryAware {
     @Override
     String getEditLabel() {
         "${getClass().simpleName}:${fileName}"
-    }
-
-    @Override
-    String getPathIdentifier() {
-        fileName
     }
 
     static <T extends CatalogueFile> DetachedCriteria<T> withBaseFilter(DetachedCriteria<T> criteria, Map filters) {

@@ -58,6 +58,11 @@ class ReferenceFile implements CatalogueFile, MultiFacetItemAware {
         'rf'
     }
 
+    @Override
+    String getPathIdentifier() {
+        fileName
+    }
+
     def beforeValidate() {
         fileSize = fileContents?.size()
     }

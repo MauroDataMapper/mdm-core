@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 
 import org.grails.datastore.mapping.config.Property
 import org.grails.datastore.mapping.model.PersistentEntity
@@ -39,6 +40,7 @@ abstract class DynamicHibernateMappingContext {
 
     PropertyConfig getPropertyConfig(PersistentEntity entity, String propertyName) {
         PersistentProperty pathProp = entity.getPropertyByName(propertyName)
+        if (!pathProp) throw new ApiInternalException('DHMC', "No ${propertyName} property for ${entity.name}")
         pathProp.mapping.mappedForm as PropertyConfig
     }
 }

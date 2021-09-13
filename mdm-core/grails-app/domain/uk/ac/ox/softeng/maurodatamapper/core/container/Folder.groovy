@@ -209,17 +209,6 @@ class Folder implements Container, Diffable<Folder> {
         Folder.search().list closure
     }
 
-    static List<Folder> findAllWithIdsInPath(List<String> ids) {
-        by()
-            .isNotNull('path')
-            .ne('path', '')
-            .findAll {f ->
-                ids.any {
-                    it in f.path.split('/')
-                }
-            }
-    }
-
     static List<Folder> findAllContainedInFolderId(UUID folderId) {
         luceneList {
             should {

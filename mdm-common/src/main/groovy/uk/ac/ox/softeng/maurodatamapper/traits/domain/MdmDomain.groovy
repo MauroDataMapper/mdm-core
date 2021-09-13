@@ -38,7 +38,7 @@ trait MdmDomain {
     OffsetDateTime dateCreated
     OffsetDateTime lastUpdated
     String createdBy
-    public Path path
+    Path path
 
     abstract UUID getId()
 
