@@ -126,7 +126,9 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware, 
     }
 
     static DetachedCriteria<VersionedFolder> byParentFolderId(UUID id) {
-        by().eq('parentFolder.id', id)
+        id ?
+        by().eq('parentFolder.id', id) :
+        by().isNull('parentFolder')
     }
 
     static DetachedCriteria<VersionedFolder> byParentFolderIdAndLabel(UUID id, String label) {

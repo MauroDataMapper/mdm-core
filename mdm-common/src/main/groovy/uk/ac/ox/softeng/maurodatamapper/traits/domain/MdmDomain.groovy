@@ -64,6 +64,10 @@ trait MdmDomain {
         this.@path
     }
 
+    void setPath(Path path) {
+        this.path = path
+    }
+
     Path buildPath() {
         Path.from(pathPrefix, pathIdentifier)
     }

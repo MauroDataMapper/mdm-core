@@ -27,7 +27,7 @@ interface SecurableResourceService<K> {
 
     boolean handles(String domainType)
 
-    List<K> getAll(Collection<UUID> containerIds)
+    List<K> getAll(Collection<UUID> securableResourceIds)
 
     List<K> list()
 

@@ -182,12 +182,18 @@ class PathService {
         UUID parentId = null
         path.each {node ->
             MdmDomainService domainService = findDomainServiceForPrefix(node.prefix)
-            MdmDomain domain = domainService.findByParentIdAndPathIdentifier(parentId, node.identifier)
-            if (!domain) throw new ApiInternalException('PSXX', "No domain found for path node [${node}]")
+            MdmDomain domain = domainService.findByParentIdAndPathIdentifier(parentId, node.getFullIdentifier())
+            if (!domain) {
+                throw new ApiInternalException('PSXX', "No domain found for path node [${node}] in path [${path}]")
+            }
             ids << domain.id
             parentId = domain.id
         }
         ids
+    }
+
+    List<Path> findAllSecuredPathsForIds(List<UUID> ids) {
+        securableResourceServices.collectMany {it.getAll(ids) ?: []}.collect {SecurableResource sr -> sr.path}
     }
 
     MdmDomainService findDomainServiceForPrefix(String prefix) {

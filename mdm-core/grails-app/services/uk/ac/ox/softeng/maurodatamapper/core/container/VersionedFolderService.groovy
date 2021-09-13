@@ -169,22 +169,27 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     @Override
     VersionedFolder findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
         String[] split = pathIdentifier.split(PathNode.ESCAPED_MODEL_PATH_IDENTIFIER_SEPARATOR)
-        DetachedCriteria criteria = parentId ? VersionedFolder.byParentFolderId(parentId) : VersionedFolder.byNoParentFolder()
-
         String label = split[0]
-        criteria.eq('label', label)
 
+        // A specific identity of the model has been requested so make sure we limit to that
         if (split.size() == 2) {
-            String modelIdentifier = split[1]
+            String identity = split[1]
+            DetachedCriteria criteria = VersionedFolder.byParentFolderId(parentId).eq('label', split[0])
 
-            if (Version.isVersionable(modelIdentifier)) {
-                criteria.eq('modelVersion', Version.from(modelIdentifier))
+            // Try the search by modelVersion or branchName and no modelVersion
+            // This will return the requested model or the latest non-finalised main branch
+            if (Version.isVersionable(identity)) {
+                criteria.eq('modelVersion', Version.from(identity))
             } else {
-                criteria.eq('branchName', modelIdentifier).isNull('modelVersion')
+                // Need to make sure that if the main branch is requested we return the one without a modelVersion
+                criteria.eq('branchName', identity)
+                    .isNull('modelVersion')
             }
+            return criteria.get() as VersionedFolder
         }
 
-        criteria.get()
+        // If no identity part then we can just get the latest model by the label
+        findLatestModelByLabel(label)
     }
 
     @Override
@@ -554,6 +559,9 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         )
     }
 
+    VersionedFolder findLatestModelByLabel(String label) {
+        findCurrentMainBranchByLabel(label) ?: findLatestFinalisedModelByLabel(label)
+    }
 
     VersionedFolder findLatestFinalisedModelByLabel(String label) {
         VersionedFolder.byLabelAndBranchNameAndFinalisedAndLatestModelVersion(label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).get()

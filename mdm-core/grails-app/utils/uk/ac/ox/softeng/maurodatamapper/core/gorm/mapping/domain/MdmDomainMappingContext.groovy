@@ -25,6 +25,8 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import org.grails.datastore.mapping.config.Property
 import org.grails.datastore.mapping.model.PersistentEntity
 
+import javax.persistence.AccessType
+
 /**
  * @since 31/10/2019
  */
@@ -40,7 +42,7 @@ class MdmDomainMappingContext extends DynamicHibernateMappingContext {
             index: "${entity.decapitalizedName}_created_by_idx".toString()
         ])
         updateProperty(entity, 'path', [
-            type: PathUserType
-        ])
+            type: PathUserType,
+        ]).accessType(AccessType.PROPERTY)
     }
 }

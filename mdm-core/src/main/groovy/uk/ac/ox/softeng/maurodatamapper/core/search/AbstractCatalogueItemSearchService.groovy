@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.search
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.ClassifierFilterFilter
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.ClassifiersFilter
@@ -34,10 +35,14 @@ import grails.compiler.GrailsCompileStatic
 import grails.plugins.hibernate.search.HibernateSearchApi
 import groovy.transform.CompileDynamic
 import groovy.util.logging.Slf4j
+import org.springframework.beans.factory.annotation.Autowired
 
 @Slf4j
 @GrailsCompileStatic
 abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
+
+    @Autowired
+    PathService pathService
 
     abstract Set<Class<K>> getDomainsToSearch()
 
@@ -123,9 +128,10 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
     @CompileDynamic
     protected List<K> performLabelSearch(Set<Class<K>> domainsToSearch, List<UUID> owningIds, String searchTerm,
                                          @DelegatesTo(HibernateSearchApi) Closure additional = null) {
+
         domainsToSearch.collect { domain ->
             log.debug('Domain searching {}', domain)
-            domain.luceneLabelSearch(domain, searchTerm, owningIds, [:], additional).results
+            domain.luceneLabelSearch(domain, searchTerm, owningIds, pathService.findAllSecuredPathsForIds(owningIds).collect {it.last()}, [:], additional).results
         }.flatten().findAll() as List<K>
 
     }
@@ -135,7 +141,7 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
                                             @DelegatesTo(HibernateSearchApi) Closure additional = null) {
         domainsToSearch.collect { domain ->
             log.debug('Domain searching {}', domain)
-            domain.luceneStandardSearch(domain, searchTerm, owningIds, [:], additional).results
+            domain.luceneStandardSearch(domain, searchTerm, owningIds, pathService.findAllSecuredPathsForIds(owningIds).collect {it.last()}, [:], additional).results
         }.flatten().findAll() as List<K>
     }
 
@@ -145,7 +151,7 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
                                           @DelegatesTo(HibernateSearchApi) Closure customSearch) {
         domainsToSearch.collect { domain ->
             log.debug('Domain searching {}', domain)
-            domain.luceneCustomSearch(domain, owningIds, [:], additional, customSearch).results
+            domain.luceneCustomSearch(domain, owningIds, pathService.findAllSecuredPathsForIds(owningIds).collect {it.last()}, [:], additional, customSearch).results
         }.flatten().findAll() as List<K>
     }
 }
