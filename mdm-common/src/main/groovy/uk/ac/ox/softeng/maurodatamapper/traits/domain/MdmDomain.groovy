@@ -17,11 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.traits.domain
 
+
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 
 import grails.compiler.GrailsCompileStatic
 import groovy.transform.SelfType
 import org.grails.datastore.gorm.GormEntity
+import org.slf4j.LoggerFactory
 
 import java.time.OffsetDateTime
 
@@ -36,7 +38,7 @@ trait MdmDomain {
     OffsetDateTime dateCreated
     OffsetDateTime lastUpdated
     String createdBy
-    Path path
+    public Path path
 
     abstract UUID getId()
 
@@ -49,11 +51,22 @@ trait MdmDomain {
     abstract String getPathIdentifier()
 
     Path getPath() {
-        if (!path) buildPath()
-        path
+        if (!this.@path) {
+            if (!pathPrefix || !pathIdentifier) {
+                LoggerFactory.getLogger(this.class).info('Cannot build path for {} as no prefix and/or identifier', domainType)
+                return null
+            }
+            Path newPath = buildPath()
+            Path oldPath = this.@path
+            markDirty('path', newPath, oldPath)
+            this.@path = newPath
+        }
+        this.@path
     }
 
-    void buildPath() {
-        path = Path.from(pathPrefix, pathIdentifier)
+    Path buildPath() {
+        Path.from(pathPrefix, pathIdentifier)
     }
+
+
 }

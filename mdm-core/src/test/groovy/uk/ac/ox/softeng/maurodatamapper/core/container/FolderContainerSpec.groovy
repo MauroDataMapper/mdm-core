@@ -20,10 +20,14 @@ package uk.ac.ox.softeng.maurodatamapper.core.container
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.test.unit.MdmDomainSpec
 
+import grails.testing.gorm.DomainUnitTest
+import groovy.transform.SelfType
 import org.spockframework.util.InternalSpockError
 
+@SelfType(DomainUnitTest)
 abstract class FolderContainerSpec<K extends Container> extends MdmDomainSpec<K> {
 
     abstract Container newChildContainerClass(Map<String, Object> args)
@@ -51,8 +55,7 @@ abstract class FolderContainerSpec<K extends Container> extends MdmDomainSpec<K>
         item = findById()
 
         then:
-        item.depth == 0
-        item.pathString == ''
+        item.path == Path.from(domain)
 
     }
 
@@ -76,20 +79,17 @@ abstract class FolderContainerSpec<K extends Container> extends MdmDomainSpec<K>
         item2
 
         and:
-        item.depth == 0
-        item.pathString == ''
+        item.path == Path.from(domain)
 
         and:
-        item2.depth == 1
-        item2.path == "/${item.id}"
+        item2.path == Path.from(domain, child)
 
         when:
         K child2 = newChildContainerClass(label: 'child2', createdBy: admin.emailAddress)
         item2.addToChildFolders(child2)
 
         then:
-        child2.depth == 2
-        child2.pathString == "/${item.id}/${item2.id}"
+        child2.path == Path.from(domain, child, child2)
 
     }
 
@@ -187,7 +187,7 @@ abstract class FolderContainerSpec<K extends Container> extends MdmDomainSpec<K>
     @Override
     void verifyDomainOtherConstraints(K subDomain) {
         assert subDomain.label == 'test'
-        assert subDomain.depth == 0
-        assert subDomain.pathString == ''
+        assert subDomain.path.size() == 1
+        assert subDomain.path == Path.from(subDomain)
     }
 }

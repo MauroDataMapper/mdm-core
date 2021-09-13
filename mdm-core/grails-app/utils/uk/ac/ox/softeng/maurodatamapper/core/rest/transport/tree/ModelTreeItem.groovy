@@ -20,11 +20,12 @@ package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
-import org.grails.datastore.gorm.GormEntity
+import groovy.transform.CompileStatic
 
 /**
  * @since 07/01/2020
  */
+@CompileStatic
 class ModelTreeItem extends TreeItem {
 
     Boolean finalised
@@ -37,12 +38,8 @@ class ModelTreeItem extends TreeItem {
     String modelVersionTag
     String branchName
 
-    ModelTreeItem(Model model, String containerPropertyName, Boolean childrenExist, Boolean isSuperseded, List<String> availableTreeActions) {
-        this(model, model."$containerPropertyName".id as UUID, childrenExist, isSuperseded, availableTreeActions)
-    }
-
     ModelTreeItem(Model model, UUID containerId, Boolean childrenExist, Boolean isSuperseded, List<String> availableTreeActions) {
-        super(model as GormEntity, model.id, model.label, model.domainType, childrenExist, availableTreeActions)
+        super(model, model.label, childrenExist, availableTreeActions)
         this.containerId = containerId
         deleted = model.deleted
         finalised = model.finalised

@@ -22,11 +22,12 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
-import org.grails.datastore.gorm.GormEntity
+import groovy.transform.CompileStatic
 
 /**
  * @since 07/01/2020
  */
+@CompileStatic
 class ContainerTreeItem extends TreeItem {
 
     Boolean deleted
@@ -41,19 +42,19 @@ class ContainerTreeItem extends TreeItem {
     Integer depth
 
     ContainerTreeItem(Container container, List<String> availableTreeActions) {
-        super(container as GormEntity, container.id, container.label, container.domainType, null, availableTreeActions)
+        super(container, container.label, null, availableTreeActions)
         containerId = container.getParentContainer()?.id
         deleted = container.deleted
         containerType = container.domainType
         renderChildren = true
         versionAware = false
-        depth = container.depth
+        depth = path.size() - 1 // Root elements have a depth of 0
         if (Utils.parentClassIsAssignableFromChild(VersionedFolder, container.class)) {
-            finalised = container.finalised
-            documentationVersion = container.documentationVersion
-            modelVersion = container.modelVersion
-            modelVersionTag = container.modelVersionTag
-            branchName = container.branchName
+            finalised = ((VersionedFolder) container).finalised
+            documentationVersion = ((VersionedFolder) container).documentationVersion
+            modelVersion = ((VersionedFolder) container).modelVersion
+            modelVersionTag = ((VersionedFolder) container).modelVersionTag
+            branchName = ((VersionedFolder) container).branchName
             versionAware = true
         }
     }

@@ -28,7 +28,7 @@ class CatalogueItemConstraints extends MdmDomainConstraints {
 
     static constraints = {
         CallableConstraints.call(InformationAwareConstraints, delegate)
-
+        path nullable: false
         aliasesString nullable: true, blank: false
         metadata validator: {val, obj ->
             if (val) new UniqueValuesValidator('namespace:key').isValid(val.groupBy {"${it.namespace}:${it.key}"})

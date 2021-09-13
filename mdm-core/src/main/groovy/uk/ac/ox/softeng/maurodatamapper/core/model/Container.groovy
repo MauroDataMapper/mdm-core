@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.model
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.PathAware
@@ -39,8 +40,8 @@ trait Container implements PathAware, InformationAware, SecurableResource, EditH
 
     abstract Container getParentContainer()
 
-    @Deprecated
-    Integer getDepth() {
-        getPathString().split('/').size() - 1
+    @Override
+    Path buildPath() {
+        parentContainer ? Path.from(parentContainer.path, pathPrefix, pathIdentifier) : Path.from(pathPrefix, pathIdentifier)
     }
 }

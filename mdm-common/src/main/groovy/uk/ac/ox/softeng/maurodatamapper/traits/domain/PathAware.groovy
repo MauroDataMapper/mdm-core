@@ -31,17 +31,21 @@ import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 @SuppressFBWarnings('BC_IMPOSSIBLE_INSTANCEOF')
 @SelfType(MdmDomain)
 @GrailsCompileStatic
+@Deprecated
 trait PathAware {
 
     public static final String UNSET = 'UNSET'
 
+    @Deprecated
     String pathString
     //    Integer depth
 
     private HibernateProxyHandler proxyHandler = new HibernateProxyHandler()
 
+    @Deprecated
     abstract MdmDomain getPathParent()
 
+    @Deprecated
     String buildPathString() {
         MdmDomain ge = getPathParent()
         if (ge) {
@@ -61,6 +65,7 @@ trait PathAware {
         pathString
     }
 
+    @Deprecated
     String getPathString() {
         if (!pathString || pathString.contains(UNSET)) buildPathString()
         pathString

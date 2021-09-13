@@ -23,7 +23,6 @@ package uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable
 class ModelItemConstraints extends CatalogueItemConstraints {
 
     static constraints = {
-        path nullable: false, blank: true
         breadcrumbTree nullable: false
     }
 }

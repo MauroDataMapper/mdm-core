@@ -19,7 +19,6 @@ package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelItemTreeItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelTreeItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.TreeItem
@@ -49,7 +48,7 @@ class TreeItemSpec extends BaseUnitSpec {
     void 'test no children BasicModel tree'() {
 
         when:
-        TreeItem treeItem = new ModelTreeItem(basicModel, 'folder', false, false, [])
+        TreeItem treeItem = new ModelTreeItem(basicModel, basicModel.folder.id, false, false, [])
 
         then:
         basicModel.id
@@ -68,7 +67,7 @@ class TreeItemSpec extends BaseUnitSpec {
         checkAndSave(basicModel)
 
         when:
-        TreeItem treeItem = new ModelTreeItem(basicModel, 'folder', true, false, [])
+        TreeItem treeItem = new ModelTreeItem(basicModel, basicModel.folder.id, true, false, [])
 
         then:
         basicModel.id
@@ -89,7 +88,7 @@ class TreeItemSpec extends BaseUnitSpec {
         !treeItem.hasChildren()
 
         when:
-        treeItem.recursivelyAddToChildren(basicModel.modelItems.collect {new ModelItemTreeItem(it, false, [])})
+        treeItem.recursivelyAddToChildren(basicModel.modelItems.collect {createModelItemTreeItem(it, false)})
 
         then:
         treeItem.id == basicModel.id
@@ -133,7 +132,7 @@ class TreeItemSpec extends BaseUnitSpec {
         checkAndSave(basicModel)
 
         when:
-        TreeItem treeItem = new ModelTreeItem(basicModel, 'folder', true, false, [])
+        TreeItem treeItem = new ModelTreeItem(basicModel, basicModel.folder.id, true, false, [])
 
         then:
         basicModel.id
@@ -155,8 +154,7 @@ class TreeItemSpec extends BaseUnitSpec {
 
         when:
         treeItem.recursivelyAddToChildren(
-            basicModel.getAllModelItems().collect {new ModelItemTreeItem(it as ModelItem, (it as BasicModelItem).hasChildren(), [])})
-        //treeItem.recursivelyAddToChildren(dataClass2.childModelItems.collect {new TreeItem(it as ModelItem, (it as BasicModelItem).hasChildren())})
+            basicModel.getAllModelItems().collect {createModelItemTreeItem(it, (it as BasicModelItem).hasChildren())})
 
         then:
         treeItem.id == basicModel.id
@@ -241,7 +239,7 @@ class TreeItemSpec extends BaseUnitSpec {
         checkAndSave(basicModel)
 
         when:
-        TreeItem treeItem = new ModelTreeItem(basicModel, 'folder', true, false, [])
+        TreeItem treeItem = new ModelTreeItem(basicModel, basicModel.folder.id, true, false, [])
 
         then:
         basicModel.id
@@ -262,7 +260,7 @@ class TreeItemSpec extends BaseUnitSpec {
         !treeItem.hasChildren()
 
         when:
-        treeItem.recursivelyAddToChildren(basicModel.getAllModelItems().collect {new ModelItemTreeItem(it, null, [])})
+        treeItem.recursivelyAddToChildren(basicModel.getAllModelItems().collect {createModelItemTreeItem(it, null)})
 
         then:
         treeItem.id == basicModel.id
@@ -312,5 +310,27 @@ class TreeItemSpec extends BaseUnitSpec {
         dc2dc2dc3.domainType == 'BasicModelItem'
         dc2dc2dc3.children.size() == 2
 
+    }
+
+    ModelItemTreeItem createModelItemTreeItem(BasicModelItem bmi, Boolean childrenExist) {
+        ModelItemTreeItem miti = new ModelItemTreeItem(bmi, childrenExist, [])
+        List<UUID> ids = extractIds([], bmi)
+        ids.removeLast()
+        miti.parentId = ids.last()
+        miti.rootId = ids.first()
+        miti.pathIds = ids
+        miti
+    }
+
+    List<UUID> extractIds(List<UUID> ids, def obj) {
+        if (obj instanceof BasicModelItem) {
+            ids.push(obj.id)
+            return extractIds(ids, obj.pathParent)
+        }
+        if (obj instanceof BasicModel) {
+            ids.push(obj.id)
+            return ids
+        }
+        ids
     }
 }

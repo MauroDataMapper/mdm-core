@@ -37,8 +37,7 @@ class ClassifierSpec extends MdmDomainSpec<Classifier> implements DomainUnitTest
         item = findById()
 
         then:
-        item.depth == 0
-        item.path == ''
+        item.path.toString() == 'cl:test'
 
     }
 
@@ -62,20 +61,17 @@ class ClassifierSpec extends MdmDomainSpec<Classifier> implements DomainUnitTest
         item2
 
         and:
-        item.depth == 0
-        item.path == ''
+        item.path.toString() == 'cl:test'
 
         and:
-        item2.depth == 1
-        item2.path == "/${item.id}"
+        item2.path.toString() == 'cl:test|cl:child'
 
         when:
         Classifier child2 = new Classifier(label: 'child2', createdBy: admin.emailAddress)
         item2.addToChildClassifiers(child2)
 
         then:
-        child2.depth == 2
-        child2.path == "/${item.id}/${item2.id}"
+        child2.path.toString() == 'cl:test|cl:child|cl:child2'
 
     }
 
@@ -135,7 +131,6 @@ class ClassifierSpec extends MdmDomainSpec<Classifier> implements DomainUnitTest
     @Override
     void verifyDomainOtherConstraints(Classifier subDomain) {
         assert subDomain.label == 'test'
-        assert subDomain.depth == 0
-        assert subDomain.path == ''
+        assert subDomain.path.toString() == 'cl:test'
     }
 }

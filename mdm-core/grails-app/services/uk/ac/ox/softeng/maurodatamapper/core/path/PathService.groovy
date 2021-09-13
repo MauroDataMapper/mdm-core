@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.path
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.path.Path
@@ -173,5 +174,26 @@ class PathService {
         if (!rootResource) return null
 
         findResourceByPathFromRootResource(rootResource, path)
+    }
+
+    List<UUID> findAllResourceIdsInPath(Path path) {
+
+        List<UUID> ids = []
+        UUID parentId = null
+        path.each {node ->
+            MdmDomainService domainService = findDomainServiceForPrefix(node.prefix)
+            MdmDomain domain = domainService.findByParentIdAndPathIdentifier(parentId, node.identifier)
+            if (!domain) throw new ApiInternalException('PSXX', "No domain found for path node [${node}]")
+            ids << domain.id
+            parentId = domain.id
+        }
+        ids
+    }
+
+    MdmDomainService findDomainServiceForPrefix(String prefix) {
+        for (MdmDomainService service : domainServices) {
+            if (service.handlesPathPrefix(prefix)) return service
+        }
+        throw new ApiInternalException('PSXX', "No domain service found for prefix [${prefix}]")
     }
 }

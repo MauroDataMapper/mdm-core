@@ -19,18 +19,19 @@ package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 
-import org.grails.datastore.gorm.GormEntity
+import groovy.transform.CompileStatic
 
 /**
  * @since 07/01/2020
  */
+@CompileStatic
 class ModelItemTreeItem extends TreeItem {
 
     int order
     boolean imported
 
     ModelItemTreeItem(ModelItem modelItem, Boolean childrenExist, List<String> availableTreeActions, boolean imported = false) {
-        super(modelItem as GormEntity, modelItem.id, modelItem.label, modelItem.domainType, childrenExist, availableTreeActions)
+        super(modelItem, modelItem.label, childrenExist, availableTreeActions)
         order = modelItem.getOrder()
         this.imported = imported
     }

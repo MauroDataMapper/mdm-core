@@ -129,7 +129,7 @@ class TreeItemController extends RestfulController<TreeItem> implements MdmContr
         Model model = treeItemService.findTreeCapableCatalogueItem(params.modelClass, params.modelId)
         if (!model) return notFound(Model, params.modelId)
 
-        respond(treeItemService.buildFullModelTree(model))
+        respond(treeItemService.buildFullModelTree(model, currentUserSecurityPolicyManager))
     }
 
     def ancestors() {
