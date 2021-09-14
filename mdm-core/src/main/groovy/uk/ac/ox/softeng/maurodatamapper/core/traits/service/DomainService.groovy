@@ -27,6 +27,7 @@ import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 import org.springframework.beans.factory.annotation.Autowired
 
 import java.lang.reflect.ParameterizedType
+import java.lang.reflect.Type
 
 trait DomainService<K extends CreatorAware> {
 
@@ -59,9 +60,10 @@ trait DomainService<K extends CreatorAware> {
     Class<K> getDomainClass() {
         ParameterizedType parameterizedType = this.getClass().getGenericInterfaces().find {it instanceof ParameterizedType}
         if (!parameterizedType) {
-            parameterizedType = this.getClass().getGenericSuperclass()
+            Type superClassType = this.getClass().getGenericSuperclass()
+            parameterizedType = superClassType instanceof ParameterizedType ? superClassType : null
         }
-        (Class<K>) parameterizedType.getActualTypeArguments()[0]
+        (Class<K>) parameterizedType?.getActualTypeArguments()[0]
     }
 
     boolean handles(Class clazz) {
@@ -77,7 +79,8 @@ trait DomainService<K extends CreatorAware> {
     }
 
     boolean handlesPathPrefix(String pathPrefix) {
-        (getDomainClass().getDeclaredConstructor().newInstance() as CreatorAware).pathPrefix == pathPrefix
+        Class<K> domainClass = getDomainClass()
+        domainClass ? (domainClass.getDeclaredConstructor().newInstance() as CreatorAware).pathPrefix == pathPrefix : false
     }
 
     abstract K findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier)
