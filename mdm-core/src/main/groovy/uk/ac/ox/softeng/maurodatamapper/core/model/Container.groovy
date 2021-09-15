@@ -37,10 +37,10 @@ trait Container implements InformationAware, SecurableResource, EditHistoryAware
 
     abstract Boolean getDeleted()
 
-    abstract Container getParentContainer()
+    abstract Container getParent()
 
     @Override
     Path buildPath() {
-        parentContainer ? Path.from(parentContainer.path, pathPrefix, pathIdentifier) : Path.from(pathPrefix, pathIdentifier)
+        parent ? Path.from(parent.path, pathPrefix, pathIdentifier) : Path.from(pathPrefix, pathIdentifier)
     }
 }

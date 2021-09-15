@@ -128,7 +128,7 @@ class Classifier implements Container {
     }
 
     @Override
-    Container getParentContainer() {
+    Container getParent() {
         parentClassifier
     }
 

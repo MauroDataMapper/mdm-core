@@ -156,7 +156,7 @@ class Folder implements Container, Diffable<Folder> {
     }
 
     @Override
-    Container getParentContainer() {
+    Container getParent() {
         parentFolder
     }
 

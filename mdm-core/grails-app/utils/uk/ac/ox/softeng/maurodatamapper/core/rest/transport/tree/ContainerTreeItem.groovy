@@ -43,7 +43,7 @@ class ContainerTreeItem extends TreeItem {
 
     ContainerTreeItem(Container container, List<String> availableTreeActions) {
         super(container, container.label, null, availableTreeActions)
-        containerId = container.getParentContainer()?.id
+        containerId = container.getParent()?.id
         deleted = container.deleted
         containerType = container.domainType
         renderChildren = true

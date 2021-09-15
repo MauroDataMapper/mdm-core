@@ -18,15 +18,16 @@
 package uk.ac.ox.softeng.maurodatamapper.path
 
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.PathAware
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import groovy.transform.CompileDynamic
+import groovy.transform.CompileStatic
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.SimpleType
 
 /**
  * @since 28/08/2020
  */
+@CompileStatic
 class Path {
 
     //Need to escape the vertical bar which we are using as the split delimiter
@@ -134,8 +135,12 @@ class Path {
     Path clone() {
         Path local = this
         new Path().tap {
-            pathNodes = local.pathNodes.collect { it.clone() }
+            pathNodes = local.pathNodes.collect {it.clone()}
         }
+    }
+
+    Path resolve(String prefix, String pathIdentifier) {
+        from(this, prefix, pathIdentifier)
     }
 
     boolean matches(Path otherPath, String modelIdentifierOverride = null) {
@@ -175,6 +180,10 @@ class Path {
         new Path().tap {
             pathNodes << new PathNode(prefix, pathIdentifier, true)
         }
+    }
+
+    static Path from(MdmDomain parent, String prefix, String pathIdentifier) {
+        from(parent.path, prefix, pathIdentifier)
     }
 
     static Path from(Path parentPath, String prefix, String pathIdentifier) {
@@ -251,13 +260,13 @@ class Path {
         from(possiblePath).toString() == possiblePath
     }
 
-    static Path toPathPrefix(MdmDomain domain, String prefix)
-    {
-        List<MdmDomain> objectsInPath  = []
+    @CompileDynamic
+    static Path toPathPrefix(MdmDomain domain, String prefix) {
+        List<MdmDomain> objectsInPath = []
         objectsInPath.push(domain)
 
-        while (objectsInPath.first().getPathPrefix() != prefix && Utils.parentClassIsAssignableFromChild(PathAware, objectsInPath.first().class)) {
-            objectsInPath.push(objectsInPath.first().getPathParent())
+        while (objectsInPath.first().getPathPrefix() != prefix && objectsInPath.first().respondsTo('getParent')) {
+            objectsInPath.push(objectsInPath.first().getParent())
         }
 
         Path.from(objectsInPath)
