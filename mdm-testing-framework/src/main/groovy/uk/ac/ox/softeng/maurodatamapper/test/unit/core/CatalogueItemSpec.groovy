@@ -30,6 +30,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.test.unit.MdmDomainSpec
 
 import grails.web.mime.MimeType
@@ -83,7 +84,7 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends MdmDomainSpec<
     }
 
     int getExpectedConstrainedErrors() {
-        1 // label
+        2 // label, path
     }
 
     void setBasicConstrainedBlank() {
@@ -93,7 +94,7 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends MdmDomainSpec<
     }
 
     int getExpectedConstrainedBlankErrors() {
-        4
+        5
     }
 
     String getExpectedNewlineLabel() {
@@ -104,7 +105,8 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends MdmDomainSpec<
         assert domain.errors.getFieldError('label').code == 'blank'
         assert domain.errors.getFieldError('description').code == 'blank'
         assert domain.errors.getFieldError('aliasesString').code == 'blank'
-        // #4 == breadcrumbtree.label
+        assert domain.errors.getFieldError('path').code == 'nullable' // nullable because label is blank
+        // #5 == breadcrumbtree.label
     }
 
     void 'CI01 : test constrained properties'() {
@@ -127,6 +129,7 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends MdmDomainSpec<
         domain.hasErrors()
         domain.errors.errorCount == expectedConstrainedErrors
         domain.errors.getFieldError('label').code == 'nullable'
+        domain.errors.getFieldError('path').code == 'nullable'
 
         when:
         setBasicConstrainedBlank()
@@ -211,16 +214,18 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends MdmDomainSpec<
         checkAndSave(domain)
 
         when:
-        domain.addToMetadata(namespace: 'http://test.com', key: 'testmd', value: 'a value', createdBy: admin.emailAddress)
+        Metadata md = new Metadata(namespace: 'http://test.com', key: 'testmd', value: 'a value', createdBy: admin.emailAddress)
+        domain.addToMetadata(md)
 
         then:
         checkAndSave(domain)
         domain.count() == 1
         Metadata.count() == 1
+        md.fullPathInsideMultiFacetAwareItem == Path.from(domain.path, 'md', 'http://test.com.testmd')
 
         when:
         item = findById()
-        Metadata md = Metadata.findByNamespaceAndKey('http://test.com', 'testmd')
+        md = Metadata.findByNamespaceAndKey('http://test.com', 'testmd')
 
         then:
         md
@@ -272,16 +277,18 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends MdmDomainSpec<
         checkAndSave(domain)
 
         when:
-        domain.addToAnnotations(createdBy: editor.emailAddress, label: 'test annotation')
+        Annotation ann = new Annotation(createdBy: editor.emailAddress, label: 'test annotation')
+        domain.addToAnnotations(ann)
 
         then:
         checkAndSave(domain)
         domain.count() == 1
         Annotation.count() == 1
+        ann.fullPathInsideMultiFacetAwareItem == Path.from(domain.path, 'ann', 'test annotation')
 
         when:
         item = findById()
-        Annotation ann = Annotation.findByLabel('test annotation')
+        ann = Annotation.findByLabel('test annotation')
 
         then:
         ann
@@ -289,7 +296,7 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends MdmDomainSpec<
 
         and:
         ann.multiFacetAwareItemId == item.id
-        ann.pathString == ''
+        ann.getFullPathInsideMultiFacetAwareItem(domain) == Path.from(domain.path, 'ann', 'test annotation')
     }
 
     void 'CI05 : test adding classifiers'() {

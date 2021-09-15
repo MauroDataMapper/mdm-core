@@ -19,9 +19,6 @@ package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelItemTreeItem
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelTreeItem
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.TreeItem
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModelItem
 import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec
@@ -325,7 +322,7 @@ class TreeItemSpec extends BaseUnitSpec {
     List<UUID> extractIds(List<UUID> ids, def obj) {
         if (obj instanceof BasicModelItem) {
             ids.push(obj.id)
-            return extractIds(ids, obj.pathParent)
+            return extractIds(ids, obj.parent)
         }
         if (obj instanceof BasicModel) {
             ids.push(obj.id)

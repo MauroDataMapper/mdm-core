@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.test.unit.security
 
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
 /**
@@ -35,6 +36,11 @@ class TestUser implements User {
 
     UUID ident() {
         id
+    }
+
+    @Override
+    Path getPath() {
+        Path.from('cu', emailAddress)
     }
 
     @Override

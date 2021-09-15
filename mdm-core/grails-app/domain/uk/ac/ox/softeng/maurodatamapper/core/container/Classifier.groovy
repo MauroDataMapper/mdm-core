@@ -103,25 +103,8 @@ class Classifier implements Container {
         label
     }
 
-    @Override
-    Classifier getPathParent() {
-        parentClassifier
-    }
-
-    @Override
     def beforeValidate() {
-        buildPathString()
         childClassifiers.each { it.beforeValidate() }
-    }
-
-    @Override
-    def beforeInsert() {
-        buildPathString()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPathString()
     }
 
     @Override

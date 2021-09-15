@@ -25,9 +25,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelItemConstraints
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.gorm.DetachedCriteria
 import grails.gorm.annotation.Entity
@@ -41,11 +41,11 @@ class BasicModelItem implements ModelItem<BasicModelItem, BasicModel>, GormEntit
 
     UUID id
     BasicModel model
-    BasicModelItem parent
+    BasicModelItem parentItem
 
     static constraints = {
         CallableConstraints.call(ModelItemConstraints, delegate)
-        parent nullable: true
+        parentItem nullable: true
     }
 
     static belongsTo = [BasicModel, BasicModelItem]
@@ -61,7 +61,7 @@ class BasicModelItem implements ModelItem<BasicModelItem, BasicModel>, GormEntit
     ]
 
     static mappedBy = [
-        childModelItems: 'parent'
+        childModelItems: 'parentItem'
     ]
 
     static mapping = {
@@ -87,26 +87,15 @@ class BasicModelItem implements ModelItem<BasicModelItem, BasicModel>, GormEntit
         null
     }
 
-    @Override
     def beforeValidate() {
         idx = 0
-        if (!model) this.model = parent?.model
+        if (!model) this.model = parentItem?.model
         beforeValidateModelItem()
     }
 
-    @Override
-    def beforeInsert() {
-        buildPathString()
-    }
 
-    @Override
-    def beforeUpdate() {
-        buildPathString()
-    }
-
-    @Override
-    MdmDomain getPathParent() {
-        parent ?: model
+    CatalogueItem getParent() {
+        parentItem ?: model
     }
 
     BasicModelItem addToChildModelItems(Map map) {
@@ -114,7 +103,7 @@ class BasicModelItem implements ModelItem<BasicModelItem, BasicModel>, GormEntit
     }
 
     BasicModelItem addToChildModelItems(BasicModelItem basicModelItem) {
-        basicModelItem.parent = this
+        basicModelItem.parentItem = this
         basicModelItem.model = this.model
         addTo('childModelItems', basicModelItem)
     }

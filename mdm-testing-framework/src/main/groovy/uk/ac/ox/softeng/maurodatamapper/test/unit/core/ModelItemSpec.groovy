@@ -58,8 +58,8 @@ abstract class ModelItemSpec<K extends ModelItem> extends CatalogueItemSpec<K> {
         given:
         setValidDomainValues()
         wipeModel()
-        // Expected field errors >> nullable model, nullable breadcrumbTree.parent
-        int expectedErrors = modelFieldName ? 2 : 1
+        // Expected field errors >> nullable model, nullable breadcrumbTree.parent, nullable path
+        int expectedErrors = modelFieldName ? 3 : 2
         expectedErrors += expectedBaseConstrainedErrorCount
 
         when:
@@ -89,7 +89,7 @@ abstract class ModelItemSpec<K extends ModelItem> extends CatalogueItemSpec<K> {
         item = findById()
 
         then:
-        item.pathString == domain.path
+        item.path == domain.path
 
     }
 }

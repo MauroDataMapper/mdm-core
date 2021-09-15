@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.MultiFacetItemAwareServiceSpec
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 
 import grails.testing.services.ServiceUnitTest
 
@@ -40,7 +41,7 @@ class AnnotationServiceSpec extends MultiFacetItemAwareServiceSpec<Annotation, A
         checkAndSave(testAuthority)
         basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
                                     authority: testAuthority)
-
+        checkAndSave(basicModel)
         basicModel.addToAnnotations(createdBy: admin.emailAddress, label: 'annotation 1')
         parent = new Annotation(createdBy: editor.emailAddress, label: 'parent annotation', description: 'the parent')
         parent.addToChildAnnotations(createdBy: reader1.emailAddress, description: 'reader annotation')
@@ -80,17 +81,17 @@ class AnnotationServiceSpec extends MultiFacetItemAwareServiceSpec<Annotation, A
 
         and:
         annotationList[0].description == 'editor annotation'
-        annotationList[0].pathString == "/${parent.id}/${nested.id}"
+        annotationList[0].path == Path.from(Path.from(parent, nested), 'ann', 'parent annotation [1] [0]')
         !annotationList[0].childAnnotations.size()
 
 
         and:
         annotationList[1].description == 'nestedparent'
-        annotationList[1].pathString == "/${parent.id}"
+        annotationList[1].path == Path.from(parent.path, 'ann', 'parent annotation [1]')
 
         and:
         annotationList[1].childAnnotations.size() == 1
-        annotationList[1].childAnnotations[0].pathString == "/${parent.id}/${id}"
+        annotationList[1].childAnnotations[0].path.toString() == 'ann:parent annotation|ann:parent annotation [1]|ann:parent annotation [1] [0]'
     }
 
     void "test count"() {

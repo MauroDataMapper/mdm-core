@@ -49,7 +49,7 @@ class AnnotationSpec extends MdmDomainSpec<Annotation> implements DomainUnitTest
         item = findById()
 
         then:
-        item.pathString == ''
+        item.path.toString() == 'ann:test'
 
     }
 
@@ -73,10 +73,10 @@ class AnnotationSpec extends MdmDomainSpec<Annotation> implements DomainUnitTest
         item2
 
         and:
-        item.pathString == ''
+        item.path.toString() == 'ann:test'
 
         and:
-        item2.pathString == "/${item.id}"
+        item2.path.toString() == 'ann:test|ann:test [0]'
         item2.multiFacetAwareItemId
         item2.description == 'child'
 
@@ -85,7 +85,8 @@ class AnnotationSpec extends MdmDomainSpec<Annotation> implements DomainUnitTest
         item2.addToChildAnnotations(child2)
 
         then:
-        child2.pathString == "/${item.id}/${item2.id}"
+        item2.validate()
+        child2.path.toString() == 'ann:test|ann:test [0]|ann:test [0] [0]'
 
     }
 

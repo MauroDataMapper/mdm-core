@@ -21,7 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.Breadcrumb
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.PathAware
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 
 import groovy.transform.SelfType
 import groovy.util.logging.Slf4j
@@ -35,11 +35,13 @@ import org.springframework.core.Ordered
  */
 @SelfType(GormEntity)
 @Slf4j
-trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> implements PathAware, Ordered, Comparable<D> {
+trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> implements Ordered, Comparable<D> {
 
     abstract T getModel()
 
     abstract Boolean hasChildren()
+
+    abstract CatalogueItem getParent()
 
     Integer idx
 
@@ -77,16 +79,8 @@ trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> im
     }
 
     @Override
-    String buildPathString() {
-        String path = super.buildPathString()
-        if (breadcrumbTree) {
-            if (!breadcrumbTree.matchesPath(path)) {
-                breadcrumbTree.update(this)
-            }
-        } else {
-            breadcrumbTree = new BreadcrumbTree(this)
-        }
-        path
+    Path buildPath() {
+        parent?.path ? Path.from(parent.path, pathPrefix, pathIdentifier) : null
     }
 
     def beforeValidateModelItem() {
@@ -94,7 +88,13 @@ trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> im
         //If index is null and this is a thing whose siblings are ordered, add this to the end of the list.
         //If this is a thing which is not ordered, then no action will be taken.
         updateIndices(idx)
-        buildPathString()
+        if (breadcrumbTree) {
+            if (!breadcrumbTree.matchesPath(path)) {
+                breadcrumbTree.update(this)
+            }
+        } else {
+            breadcrumbTree = new BreadcrumbTree(this)
+        }
         beforeValidateCatalogueItem()
     }
 

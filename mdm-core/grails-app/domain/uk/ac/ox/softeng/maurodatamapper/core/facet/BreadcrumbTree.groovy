@@ -21,8 +21,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.Breadcrumb
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.PathAware
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
+import uk.ac.ox.softeng.maurodatamapper.hibernate.PathUserType
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 
 import grails.compiler.GrailsCompileStatic
 import grails.gorm.DetachedCriteria
@@ -39,6 +39,7 @@ class BreadcrumbTree {
     Boolean finalised
     Boolean topBreadcrumbTree
     CatalogueItem domainEntity
+    Path path
 
     String treeString
 
@@ -51,16 +52,16 @@ class BreadcrumbTree {
     static constraints = {
         finalised nullable: true
         domainType blank: false
-        label blank: false, nullable: true, validator: { String val, BreadcrumbTree obj ->
+        label blank: false, nullable: true, validator: {String val, BreadcrumbTree obj ->
             if (val) return true
             if (!val && obj.domainEntity && !obj.domainEntity.label) return true
             ['default.null.message']
         }
         treeString blank: true
-        parent nullable: true, validator: { BreadcrumbTree val, BreadcrumbTree obj ->
+        parent nullable: true, validator: {BreadcrumbTree val, BreadcrumbTree obj ->
             obj.topBreadcrumbTree || val ? true : ['default.null.message']
         }
-        domainId nullable: true, unique: true, validator: { UUID val, BreadcrumbTree obj ->
+        domainId nullable: true, unique: true, validator: {UUID val, BreadcrumbTree obj ->
             if (val) return true
             if (!val && obj.domainEntity && !obj.domainEntity.ident()) return true
             ['default.null.message']
@@ -72,11 +73,11 @@ class BreadcrumbTree {
         label type: 'text'
         parent cascade: 'none', cascadeValidate: 'none'
         children cascade: 'all-delete-orphan'
+        path type: PathUserType
     }
 
     static mappedBy = [
         domainEntity: 'none',
-        //        children    : 'parent'
     ]
 
     static transients = ['breadcrumb', 'domainEntity']
@@ -85,23 +86,29 @@ class BreadcrumbTree {
     }
 
     BreadcrumbTree(Model model) {
-        this.domainEntity = model
-        this.domainId = model.id
-        this.label = model.label ?: 'NOT_VALID'
-        this.domainType = model.domainType
+        initialise(model)
         this.finalised = model.finalised
         this.topBreadcrumbTree = true
     }
 
     BreadcrumbTree(ModelItem modelItem) {
-        this.domainEntity = modelItem
-        this.domainId = modelItem.id
-        this.label = modelItem.label ?: 'NOT_VALID'
-        this.domainType = modelItem.domainType
-        this.topBreadcrumbTree = false
-        if (modelItem.pathParent) {
-            BreadcrumbTree parentTree = findOrCreateBreadcrumbTree(modelItem.pathParent as CatalogueItem)
+        initialise(modelItem)
+        if (modelItem.parent) {
+            BreadcrumbTree parentTree = findOrCreateBreadcrumbTree(modelItem.parent)
             parentTree.addToChildren(this)
+        }
+    }
+
+    private initialise(CatalogueItem catalogueItem) {
+        this.domainEntity = catalogueItem
+        this.domainId = catalogueItem.id
+        this.domainType = catalogueItem.domainType
+        this.topBreadcrumbTree = false
+        if (catalogueItem.label) {
+            this.label = catalogueItem.label
+            this.path = catalogueItem.path
+        } else {
+            this.label = 'NOT_VALID'
         }
     }
 
@@ -135,17 +142,17 @@ class BreadcrumbTree {
 
     void updateTree() {
         buildTree()
-        children?.each { it.updateTree() }
+        children?.each {it.updateTree()}
     }
 
     void buildTree() {
         String oldTreeString = treeString
-        String newTreeString = ''
+        StringBuilder newTreeString = new StringBuilder()
         if (parent) {
-            newTreeString += "${parent.getTree()}\n"
+            newTreeString.append(parent.getTree()).append('\n')
         }
-        newTreeString += getBreadcrumb().toString()
-        setTreeString(newTreeString)
+        newTreeString.append(getBreadcrumb().toString())
+        setTreeString(newTreeString.toString())
         log.trace('Updated Tree string for {}:{} from {} ==> {}', domainType, domainId, oldTreeString, treeString)
     }
 
@@ -167,34 +174,23 @@ class BreadcrumbTree {
         breadcrumbs.last() == getBreadcrumb()
     }
 
-    boolean matchesPath(String path) {
-        List<Breadcrumb> breadcrumbs = getBreadcrumbsFromTree(getTree())
-
-        if (!path) return breadcrumbs.size() == 1
-
-        List<UUID> pathIds = path.split('/').findAll().collect { Utils.toUuid(it) }
-        if (pathIds.size() + 1 != breadcrumbs.size()) return false
-
-
-        for (int i = 0; i < pathIds.size(); i++) {
-            if (breadcrumbs[i].id != pathIds[i]) return false
-        }
-        true
+    boolean matchesPath(Path path) {
+        this.path?.matches(path)
     }
 
     void update(CatalogueItem catalogueItem) {
 
-        if (catalogueItem.instanceOf(PathAware)) {
+        if (catalogueItem.instanceOf(ModelItem)) {
 
-            PathAware pathAware = catalogueItem as PathAware
+            ModelItem modelItem = catalogueItem as ModelItem
 
-            if (pathAware.pathParent && pathAware.pathParent.instanceOf(CatalogueItem)) {
-                BreadcrumbTree parentTree = findOrCreateBreadcrumbTree(pathAware.pathParent as CatalogueItem)
+            if (modelItem.parent) {
+                BreadcrumbTree parentTree = findOrCreateBreadcrumbTree(modelItem.parent)
                 if (parent != parentTree) {
                     if (parent) parent.removeFromChildren(this)
                     parentTree.addToChildren(this)
-                } else if (pathAware.pathParent.instanceOf(ModelItem) && !parent.matchesPath((pathAware.pathParent as ModelItem).pathString)) {
-                    parent.update((pathAware.pathParent as ModelItem))
+                } else if (modelItem.parent.instanceOf(ModelItem) && !parent.matchesPath(modelItem.parent.path)) {
+                    parent.update((modelItem.parent as ModelItem))
                 }
             }
         }
@@ -205,27 +201,20 @@ class BreadcrumbTree {
         new Breadcrumb(domainId, domainType, label, finalised)
     }
 
-    static BreadcrumbTree findBreadcrumbTree(CatalogueItem catalogueItem) {
-        if (catalogueItem.breadcrumbTree) return catalogueItem.breadcrumbTree
-        if (catalogueItem.getId()) return BreadcrumbTree.findByCatalogueItem(catalogueItem)
-        null
-    }
-
     static BreadcrumbTree findOrCreateBreadcrumbTree(CatalogueItem catalogueItem) {
-        BreadcrumbTree breadcrumbTree = findBreadcrumbTree(catalogueItem)
-        if (!breadcrumbTree) {
-            if (catalogueItem.instanceOf(Model)) {
-                breadcrumbTree = new BreadcrumbTree(catalogueItem as Model)
-            }
-            if (catalogueItem.instanceOf(ModelItem)) {
-                breadcrumbTree = new BreadcrumbTree(catalogueItem as ModelItem)
-            }
+        if (catalogueItem.breadcrumbTree) return catalogueItem.breadcrumbTree
+
+        if (catalogueItem.instanceOf(Model)) {
+            catalogueItem.breadcrumbTree = new BreadcrumbTree(catalogueItem as Model)
         }
-        breadcrumbTree
+        if (catalogueItem.instanceOf(ModelItem)) {
+            catalogueItem.breadcrumbTree = new BreadcrumbTree(catalogueItem as ModelItem)
+        }
+        catalogueItem.breadcrumbTree
     }
 
     static List<Breadcrumb> getBreadcrumbsFromTree(String treeString) {
-        treeString.split('\n').collect { new Breadcrumb(it) }
+        treeString.split('\n').collect {new Breadcrumb(it)}
     }
 
     static BreadcrumbTree findByCatalogueItem(CatalogueItem catalogueItem) {

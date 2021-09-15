@@ -136,25 +136,8 @@ class Folder implements Container, Diffable<Folder> {
         Folder.countByParentFolder(this)
     }
 
-    @Override
-    Folder getPathParent() {
-        parentFolder
-    }
-
-    @Override
     def beforeValidate() {
-        buildPathString()
         childFolders.each {it.beforeValidate()}
-    }
-
-    @Override
-    def beforeInsert() {
-        buildPathString()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPathString()
     }
 
     @Override
