@@ -29,7 +29,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.ClassifierAware
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.InformationAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.MdmDomainMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.MetadataAwareMappingContext
-import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.PathAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.ReferenceFileAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.RuleAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.SemanticLinkAwareMappingContext
@@ -146,7 +145,6 @@ This is basically the backend API.
              */
             coreSchemaMappingContext CoreSchemaMappingContext
             informationAwareMappingContext InformationAwareMappingContext
-            pathAwareMappingContext PathAwareMappingContext
             creatorAwareMappingContext MdmDomainMappingContext
             classifierAwareMappingContext ClassifierAwareMappingContext
             catalogueItemClassifierAwareMappingContext CatalogueItemClassifierAwareMappingContext
