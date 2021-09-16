@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.model
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
@@ -178,13 +179,14 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         propagateCatalogueItemMetaData(catalogueItem, previousCatalogueItem, user)
         propagateCatalogueItemRules(catalogueItem, previousCatalogueItem, user)
         propagateCatalogueItemSemanticLinks(catalogueItem, previousCatalogueItem, user)
-
+        propagateCatalogueItemAnnotations(catalogueItem, previousCatalogueItem, user)
+        propagateCatalogueItemReferenceFiles(catalogueItem, previousCatalogueItem, user)
         catalogueItem
 
     }
 
     void propagateCatalogueItemClassifiers(K catalogueItem, K previousCatalogueItem, User user) {
-        //if a classifier does not exists with the same label add it to cataItem
+        //if a classifier does not exists with the same label add it to catalogueItem
         previousCatalogueItem.classifiers.each { previous ->
             if (catalogueItem.classifiers.find { it.label == previous.label }) return
             previous.createdBy = user.emailAddress
@@ -201,6 +203,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
     }
 
     void propagateCatalogueItemRules(K catalogueItem, K previousCatalogueItem, User user) {
+
         ruleService.findAllByMultiFacetAwareItemId(previousCatalogueItem.id).each { rule ->
 
             //if rule exists, check and copy missing representations
@@ -228,7 +231,6 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
 
     void propagateCatalogueItemSemanticLinks(CatalogueItem catalogueItem, CatalogueItem previousCatalogueItem, User user) {
 
-        //linktype, target, source
         semanticLinkService.findAllBySourceMultiFacetAwareItemId(previousCatalogueItem.id).each { link ->
 
             if (catalogueItem.semanticLinks.find { link.compare(it, catalogueItem.label, link, previousCatalogueItem.label) }) return
@@ -241,19 +243,32 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
 
     }
 
-    K propagateModelItemInformation(K model, K previousVersionModel, User user) {
-        //iterate through all modelItems
-        findAllTreeTypeModelItemsIn(previousVersionModel).each {modelItem ->
+    void propagateCatalogueItemAnnotations(CatalogueItem catalogueItem, CatalogueItem previousCatalogueItem, User user) {
 
+        previousCatalogueItem.annotations.each { previous ->
+            //if it exists
+            Annotation modelAnnotation = catalogueItem.annotations.find { it.label == previous.label }
+            if (modelAnnotation) {
+                //copy across child annotations
+                previous.childAnnotations.each { previousChild ->
+                    if (modelAnnotation.childAnnotations.find { it.label == previousChild.label }) return
+                    modelAnnotation.childAnnotations.add(new Annotation(label: previousChild.label, description: previousChild.description,
+                                                                        createdBy: previousChild.createdBy, parentAnnotation: modelAnnotation))
+
+                }
+            }
+            //if not copy whole thing
+            catalogueItem.annotations.add(new Annotation(label: previous.label, description: previous.description,
+                                                         createdBy: previous.createdBy, childAnnotations: previous.childAnnotations ))
         }
-        //dataTypes -> enumeration Values,
-        //getChildDataClasses -> contains DataElements
-        //eg, DC [DC [DE] ]
-        //names are only unique by parent (on the same level)
-        //other DMs to implement on, terminologies
-
-        model
     }
+
+    void propagateCatalogueItemReferenceLinks(CatalogueItem catalogueItem, CatalogueItem previousCatalogueItem, User user) {
+
+    }
+
+
+    abstract void propagateModelItemInformation(K model, K previousVersionModel, User user)
 
     void setCatalogueItemRefinesCatalogueItem(CatalogueItem source, CatalogueItem target, User catalogueUser) {
         source.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdBy: catalogueUser.emailAddress, targetMultiFacetAwareItem: target)

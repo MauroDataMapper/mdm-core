@@ -133,6 +133,18 @@ class EnumerationValueService extends ModelItemService<EnumerationValue> impleme
     }
 
     @Override
+    void propagateDataFromPreviousVersion(EnumerationValue model, EnumerationValue previousVersionModel, User user) {n
+        super.propagateCatalogueItemInformation(model, previousVersionModel, user) as EnumerationValue
+        propagateModelItemInformation(model, previousVersionModel, user) as EnumerationValue
+
+    }
+
+    @Override
+    void propagateModelItemInformation(EnumerationValue model, EnumerationValue previousVersionModel, User user) {
+
+    }
+
+    @Override
     List<EnumerationValue> findAllReadableTreeTypeCatalogueItemsBySearchTermAndDomain(UserSecurityPolicyManager userSecurityPolicyManager,
                                                                                       String searchTerm, String domainType) {
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(DataModel)

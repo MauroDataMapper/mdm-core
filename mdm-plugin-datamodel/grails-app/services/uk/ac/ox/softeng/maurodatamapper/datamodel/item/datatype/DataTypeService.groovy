@@ -179,6 +179,23 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     }
 
     @Override
+    void propagateDataFromPreviousVersion(DataType model, DataType previousVersionModel, User user) {
+        super.propagateCatalogueItemInformation(model, previousVersionModel, user) as DataType
+        propagateModelItemInformation(model, previousVersionModel, user) as DataType
+    }
+
+
+
+    @Override
+    void propagateModelItemInformation(DataType model, DataType previousVersionModel, User user) {
+
+        enumerationValueService.propagateDataFromPreviousVersion()
+        //todo copy rest of item information
+
+    }
+
+
+    @Override
     List<DataType> findAllReadableTreeTypeCatalogueItemsBySearchTermAndDomain(UserSecurityPolicyManager userSecurityPolicyManager,
                                                                               String searchTerm, String domainType) {
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(DataModel)
@@ -344,7 +361,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
             }
         } else {
             log.trace('Making best guess for matching reference class as no path nor bound class')
-            DataClass dataClass = dataModel.dataClasses.find {it.label == bindingMap.referenceClass.label}
+            DataClass dataClass = dataModel.dataClasses.find { it.label == bindingMap.referenceClass.label }
             if (dataClass) dataClass.addToReferenceTypes(referenceType)
         }
     }

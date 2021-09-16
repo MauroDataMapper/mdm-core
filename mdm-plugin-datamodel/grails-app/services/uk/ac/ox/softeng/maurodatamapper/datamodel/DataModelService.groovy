@@ -23,7 +23,13 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedExcept
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
+import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -110,7 +116,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
      * DataModel allows the import of DataType and DataClass
      *
      @Override
-      List<Class>          domainImportableModelItemClasses() {[DataType, DataClass, PrimitiveType, EnumerationType, ReferenceType]}
+      List<Class>            domainImportableModelItemClasses() {[DataType, DataClass, PrimitiveType, EnumerationType, ReferenceType]}
      */
     Long count() {
         DataModel.count()
@@ -829,24 +835,47 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
     @Override
     void propagateDataFromPreviousVersion(DataModel model, DataModel previousVersionModel, User user) {
-        model = super.propagateCatalogueItemInformation(model, previousVersionModel, user) as DataModel
-        model = super.propagateModelItemInformation(model, previousVersionModel, user) as DataModel
+        //propagate generic catalogue item information
+        super.propagateCatalogueItemInformation(model, previousVersionModel, user) as DataModel
 
+        //implemented at a service level for each catalogue item and propagates data unique to its domain
+        propagateModelItemInformation(model, previousVersionModel, user) as DataModel
 
-        propagateDataModelProperties(model, previousVersionModel)
-        model
     }
 
-    DataModel propagateDataModelProperties(DataModel model, DataModel previousVersionModel) {
+    @Override
+    void propagateModelItemInformation(DataModel model, DataModel previousVersionModel, User user) {
 
-        //acutally refers to Metadata
+        //actually refers to Metadata
         //comment is Annotations
         //component is 'content'
         //ModelItems
-        model
+
+        //iterate through all modelItems
+        //dataTypes -> enumeration Values,
+        //getChildDataClasses -> contains DataElements
+        //eg, DC [DC [DE] ]
+        //names are only unique by parent (on the same level)
+
+        //other DMs to implement on, terminologies
+
+
+        previousVersionModel.dataTypes.each { dataType ->
+            DataType modelDataType = model.dataTypes.find { it.label == dataType.label }
+            if (modelDataType) dataTypeService.propagateDataFromPreviousVersion(modelDataType, dataType, user)
+            //todo copy rest of item information
+
+        }
+
+        previousVersionModel.getChildDataClasses().each { dataClass ->
+            DataClass modelDataClass = model.dataClasses.find { it.label == dataClass.label }
+            if (modelDataClass) dataClassService.propagateDataFromPreviousVersion(modelDataClass, dataClass, user)
+            //todo copy rest of item information
+        }
+
+
+
     }
-
-
 
     @Override
     CatalogueItem processDeletionPatchOfFacet(MultiFacetItemAware multiFacetItemAware, Model targetModel, Path path) {
