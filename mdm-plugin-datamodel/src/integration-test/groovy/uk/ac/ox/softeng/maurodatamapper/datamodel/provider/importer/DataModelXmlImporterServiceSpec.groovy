@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer
 
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.provider.DataBindDataModelImporterProviderServiceSpec
 
 import grails.gorm.transactions.Rollback
@@ -41,5 +43,36 @@ class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderS
     @Override
     String getImportType() {
         'xml'
+    }
+
+    void 'test import multiple DataModels'() {
+        given:
+        setupData()
+
+        expect:
+        DataModel.count() == 2
+        importerService.canImportMultipleDomains()
+
+        when:
+        List<DataModel> dataModels = importerService.importDataModels(admin, loadTestFile('simpleAndComplexDataModels'))
+
+        then:
+        dataModels
+        dataModels.size() == 2
+
+        when:
+        ObjectDiff simpleDiff = dataModelService.getDiffForModels(dataModelService.get(simpleDataModelId), dataModels[0])
+        ObjectDiff complexDiff = dataModelService.getDiffForModels(dataModelService.get(complexDataModelId), dataModels[1])
+
+        then:
+        simpleDiff.objectsAreIdentical()
+        !complexDiff.objectsAreIdentical() // Expected
+
+        // Rules are not imported/exported and will therefore exist as diffs
+        complexDiff.numberOfDiffs == 4
+        complexDiff.diffs.find {it.fieldName == 'rule'}.deleted.size() == 1
+        complexDiff.diffs.find {it.fieldName == 'dataTypes'}.modified[0].diffs.deleted.size() == 1
+        complexDiff.diffs.find {it.fieldName == 'dataClasses'}.modified[0].diffs.deleted.size() == 1 // DataClass rule missing
+        complexDiff.diffs.find {it.fieldName == 'dataClasses'}.modified[1].diffs.deleted.size() == 1 // DataElement inside DataClass rule missing
     }
 }

@@ -47,7 +47,7 @@ class DataModelXmlImporterService extends DataBindDataModelImporterProviderServi
 
     @Override
     String getVersion() {
-        '3.0'
+        '4.0'
     }
 
     @Override
@@ -81,22 +81,20 @@ class DataModelXmlImporterService extends DataBindDataModelImporterProviderServi
 
         log.debug('Parsing in file content using XmlSlurper')
         GPathResult result = new XmlSlurper().parseText(xml)
+        result = result.children()[0].name() == 'dataModels' ? result.children()[0] : result
 
-        List<DataModel> imported = []
         if (result.name() == 'dataModels') {
             log.debug('Importing DataModel list')
-            List list = convertToList(result as NodeChild)
-            list.each {
-                imported += bindMapToDataModel(currentUser, it as Map)
-            }
-        } else {
-            // Handle single DM map or exportModel being passed to this method
-            Map map = convertToMap(result)
-            log.debug('Importing DataModel map')
-            imported += bindMapToDataModel(currentUser, backwardsCompatibleExtractDataModelMap(result, map))
+            return convertToList(result as NodeChild).collect {bindMapToDataModel(currentUser, it)}
         }
 
-        imported
+        // Handle single DM map or exportModel passed to this method, for backward compatibility
+
+        log.debug('Converting result to Map')
+        Map map = convertToMap(result)
+
+        log.debug('Importing DataModel map')
+        [bindMapToDataModel(currentUser, backwardsCompatibleExtractDataModelMap(result, map))]
     }
 
     Map backwardsCompatibleExtractDataModelMap(GPathResult result, Map map) {
