@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValueService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -82,7 +83,8 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> implement
     }
 
     @Override
-    EnumerationType copy(Model copiedDataModel, EnumerationType original, CatalogueItem nonModelParent, UserSecurityPolicyManager userSecurityPolicyManager) {
+    EnumerationType copy(Model copiedDataModel, EnumerationType original, CatalogueItem nonModelParent,
+                         UserSecurityPolicyManager userSecurityPolicyManager) {
         dataTypeService.copy(copiedDataModel, original, nonModelParent, userSecurityPolicyManager) as EnumerationType
     }
 
@@ -200,5 +202,23 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> implement
     @Override
     List<EnumerationType> findAllByMetadataNamespace(String namespace, Map pagination) {
         EnumerationType.byMetadataNamespace(namespace).list(pagination)
+    }
+
+    @Override
+    void propagateDataFromPreviousVersion(EnumerationType model, EnumerationType previousVersionModel, User user) {
+        super.propagateCatalogueItemInformation(model, previousVersionModel, user)
+        propagateModelItemInformation(model, previousVersionModel, user)
+    }
+
+    @Override
+    void propagateModelItemInformation(EnumerationType model, EnumerationType previousVersionModel, User user) {
+        super.propagateModelItemInformation(model, previousVersionModel, user)
+        previousVersionModel.enumerationValues.each { enumerationValue ->
+            EnumerationValue modelEnumerationValue = model.enumerationValues.find { it.label == enumerationValue.label }
+            if (modelEnumerationValue) return
+            model.addToEnumerationValues(createdByUser: user, label: enumerationValue.label, key: enumerationValue.key, value:
+                enumerationValue.value, idx: enumerationValue.idx)
+
+        }
     }
 }

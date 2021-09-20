@@ -404,11 +404,9 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
         propagateModelItemInformation(model, previousVersionModel, user) as DataElement
     }
 
-
     @Override
     void propagateModelItemInformation(DataElement model, DataElement previousVersionModel, User user) {
-
-
+        super.propagateModelItemInformation(model, previousVersionModel, user)
 
     }
 

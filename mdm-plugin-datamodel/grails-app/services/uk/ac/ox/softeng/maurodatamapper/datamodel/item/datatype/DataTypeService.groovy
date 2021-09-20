@@ -185,11 +185,15 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     }
 
 
-
     @Override
     void propagateModelItemInformation(DataType model, DataType previousVersionModel, User user) {
 
-        enumerationValueService.propagateDataFromPreviousVersion()
+        //if DataType is of type EnumerationType, Go to enumeration type service and copy across Enumeration Values
+        //other data types do not have a nested set of values that need to be checked
+        super.propagateModelItemInformation(model, previousVersionModel, user)
+        if (previousVersionModel.instanceOf(EnumerationType)) {
+            enumerationTypeService.propagateDataFromPreviousVersion(model as EnumerationType, previousVersionModel as EnumerationType, user)
+        }
         //todo copy rest of item information
 
     }
@@ -374,6 +378,17 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     DataType copyDataType(DataModel copiedDataModel, DataType original, User copier, UserSecurityPolicyManager userSecurityPolicyManager,
                           boolean copySummaryMetadata = false, CopyInformation copyInformation = new CopyInformation()) {
 
+        DataType copy = createNewDataTypeFromOriginal(original)
+
+        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata, copyInformation)
+        setCatalogueItemRefinesCatalogueItem(copy, original, copier)
+
+        copiedDataModel.addToDataTypes(copy)
+
+        copy
+    }
+
+    DataType createNewDataTypeFromOriginal(DataType original){
         DataType copy
 
         String domainType = original.domainType
@@ -396,13 +411,8 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
                 break
             default:
                 throw new ApiInternalException('DTSXX', 'DataType domain type is unknown and therefore cannot be copied')
+
         }
-
-        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata, copyInformation)
-        setCatalogueItemRefinesCatalogueItem(copy, original, copier)
-
-        copiedDataModel.addToDataTypes(copy)
-
         copy
     }
 

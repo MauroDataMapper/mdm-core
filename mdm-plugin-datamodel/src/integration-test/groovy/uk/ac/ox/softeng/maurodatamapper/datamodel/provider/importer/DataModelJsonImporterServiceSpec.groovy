@@ -169,29 +169,11 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         !dm.modelVersion
         dm.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         dm.versionLinks.size() == 1
-        dm.versionLinks.find {it.targetModelId == v1.id}
+        dm.versionLinks.find { it.targetModelId == v1.id }
 
         cleanup:
         basicParameters.importAsNewBranchModelVersion = false
 
-    }
-
-    void 'MV02B : test import as newBranchModelVersion with existing finalised model'() {
-        given:
-
-        setupData()
-        basicParameters.finalised = false
-        basicParameters.importAsNewBranchModelVersion = true
-        basicParameters.propagateFromPreviousVersion = true
-
-        when:
-        DataModel dm = importModel(loadTestFile('simpleDataModel'))
-
-        then:
-        //import file with data,
-        //remove for second
-        //compare and contract
-        true
     }
 
     void 'MV03 : test import as newBranchModelVersion with existing non-finalised model'() {
@@ -210,7 +192,7 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         !dm.modelVersion
         dm.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         dm.versionLinks.size() == 1
-        dm.versionLinks.find {it.targetModelId == v1.id}
+        dm.versionLinks.find { it.targetModelId == v1.id }
 
         and:
         v1.finalised
@@ -260,7 +242,7 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         dm.modelVersion == Version.from('2')
         dm.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         dm.versionLinks.size() == 1
-        dm.versionLinks.find {it.targetModelId == v1.id}
+        dm.versionLinks.find { it.targetModelId == v1.id }
 
         cleanup:
         basicParameters.importAsNewBranchModelVersion = false
@@ -285,7 +267,7 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         dm.modelVersion == Version.from('2')
         dm.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         dm.versionLinks.size() == 1
-        dm.versionLinks.find {it.targetModelId == v1.id}
+        dm.versionLinks.find { it.targetModelId == v1.id }
 
         and:
         v1.modelVersion == Version.from('1')
@@ -295,5 +277,61 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         basicParameters.importAsNewBranchModelVersion = false
         basicParameters.finalised = false
 
+    }
+
+    void 'PG01 : test importing a dataModel and propagating existing information from the already present version'() {
+
+        /*
+        imported data is a copy of the complexDataModel with the following alterations:
+        Expect it to propagate information from complex data model where it has been altered or removed.
+
+        expected propagated elements:
+        dataClass: "dataClass with elements"
+        Annotation: "test annotation 1"
+        DataType: "child"
+        DataElement "child"
+        Classifier: "test classifier2"
+        Enumeration key: U value: unknown
+        MetaData: test.com/test
+
+        expected new imported elements:
+        dataClass "propagated DataClass with elements"
+        annotation: importedAnnotation1
+        dataElement: propagated child dataElement
+        DataType: Propagated child dataType
+        Classifier: propagate Classifier
+        Enumeration value key: M value: Maybe
+        metaData: test.com/extra
+         */
+        given:
+
+        setupData()
+        basicParameters.finalised = false
+        basicParameters.importAsNewBranchModelVersion = true
+        basicParameters.propagateFromPreviousVersion = true
+
+        when:
+        DataModel dm = importModel(loadTestFile('propagationImportDataModel'))
+
+        then:
+        dm.metadata.find { it.namespace == "test.com/extra" }
+        dm.metadata.size() == 3
+
+        dm.primitiveTypes.find { it.label == "propagated decimal" }
+        dm.primitiveTypes.size() == 3
+
+        dm.allDataElements.find { it.label == "propagated child dataElement" }
+        dm.allDataElements.find { it.label == "propagated child dataElement" }.dataType.label == "Propagated child dataType"
+        dm.allDataElements.size() == 6
+
+        dm.enumerationTypes.find().enumerationValues.size() == 4
+
+        dm.dataClasses.find{it.label == "propagated dataclass with elements"}
+        dm.dataClasses.find{it.label == "content"}
+        dm.dataClasses.find{it.label == "propagated dataclass with elements"}.dataElements.size() == 2
+
+        dm.referenceTypes.size() == 2
+
+        dm.annotations.size() == 5
     }
 }

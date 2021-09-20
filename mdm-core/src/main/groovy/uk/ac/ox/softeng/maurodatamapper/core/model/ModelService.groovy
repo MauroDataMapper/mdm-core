@@ -69,7 +69,6 @@ import grails.gorm.DetachedCriteria
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormValidateable
 import org.grails.orm.hibernate.proxy.HibernateProxyHandler
-import org.hibernate.metamodel.model.domain.DomainType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 
@@ -871,8 +870,6 @@ abstract class ModelService<K extends Model>
         Version.nextMajorVersion(parentModelVersion)
     }
 
-
-
     void checkFinaliseModel(K model, Boolean finalise, Boolean importAsNewBranchModelVersion = false) {
         if (finalise && (!model.finalised || !model.modelVersion)) {
             // Parameter update will have set the model as finalised, but it wont have set the model version
@@ -1063,4 +1060,3 @@ abstract class ModelService<K extends Model>
     }
 
 }
-

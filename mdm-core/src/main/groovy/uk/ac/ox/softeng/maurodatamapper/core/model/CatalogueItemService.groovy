@@ -180,7 +180,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         propagateCatalogueItemRules(catalogueItem, previousCatalogueItem, user)
         propagateCatalogueItemSemanticLinks(catalogueItem, previousCatalogueItem, user)
         propagateCatalogueItemAnnotations(catalogueItem, previousCatalogueItem, user)
-        propagateCatalogueItemReferenceFiles(catalogueItem, previousCatalogueItem, user)
+        propagateCatalogueItemReferenceLinks(catalogueItem, previousCatalogueItem, user)
         catalogueItem
 
     }
@@ -190,7 +190,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         previousCatalogueItem.classifiers.each { previous ->
             if (catalogueItem.classifiers.find { it.label == previous.label }) return
             previous.createdBy = user.emailAddress
-            catalogueItem.classifiers.add(previous)
+            catalogueItem.addToClassifiers(previous)
         }
     }
 
@@ -258,17 +258,25 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
                 }
             }
             //if not copy whole thing
-            catalogueItem.annotations.add(new Annotation(label: previous.label, description: previous.description,
+            catalogueItem.addToAnnotations(new Annotation(label: previous.label, description: previous.description,
                                                          createdBy: previous.createdBy, childAnnotations: previous.childAnnotations ))
         }
     }
 
     void propagateCatalogueItemReferenceLinks(CatalogueItem catalogueItem, CatalogueItem previousCatalogueItem, User user) {
-
+        previousCatalogueItem.referenceFiles.each { previous ->
+            if (catalogueItem.referenceFiles.find { it.fileName == previous.fileName }) return
+            previous.createdBy = user.emailAddress
+            catalogueItem.addToReferenceFiles(previous)
+        }
     }
 
+    void propagateModelItemInformation(K model, K previousVersionModel, User user){
+        //generic
+        if (!model.label) model.label = previousVersionModel.label
+        if(!model.description) model.description = previousVersionModel.description
 
-    abstract void propagateModelItemInformation(K model, K previousVersionModel, User user)
+    }
 
     void setCatalogueItemRefinesCatalogueItem(CatalogueItem source, CatalogueItem target, User catalogueUser) {
         source.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdBy: catalogueUser.emailAddress, targetMultiFacetAwareItem: target)

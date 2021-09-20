@@ -23,13 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedExcept
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
-import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
-import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -116,7 +110,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
      * DataModel allows the import of DataType and DataClass
      *
      @Override
-      List<Class>            domainImportableModelItemClasses() {[DataType, DataClass, PrimitiveType, EnumerationType, ReferenceType]}
+      List<Class>              domainImportableModelItemClasses() {[DataType, DataClass, PrimitiveType, EnumerationType, ReferenceType]}
      */
     Long count() {
         DataModel.count()
@@ -846,35 +840,19 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     @Override
     void propagateModelItemInformation(DataModel model, DataModel previousVersionModel, User user) {
 
-        //actually refers to Metadata
-        //comment is Annotations
-        //component is 'content'
-        //ModelItems
-
-        //iterate through all modelItems
-        //dataTypes -> enumeration Values,
-        //getChildDataClasses -> contains DataElements
-        //eg, DC [DC [DE] ]
-        //names are only unique by parent (on the same level)
-
-        //other DMs to implement on, terminologies
-
+        super.propagateModelItemInformation(model, previousVersionModel, user)
 
         previousVersionModel.dataTypes.each { dataType ->
             DataType modelDataType = model.dataTypes.find { it.label == dataType.label }
             if (modelDataType) dataTypeService.propagateDataFromPreviousVersion(modelDataType, dataType, user)
-            //todo copy rest of item information
-
+            else model.addToDataTypes(dataType)
         }
 
         previousVersionModel.getChildDataClasses().each { dataClass ->
             DataClass modelDataClass = model.dataClasses.find { it.label == dataClass.label }
             if (modelDataClass) dataClassService.propagateDataFromPreviousVersion(modelDataClass, dataClass, user)
-            //todo copy rest of item information
+            else model.addToDataClasses(dataClass)
         }
-
-
-
     }
 
     @Override
@@ -911,5 +889,4 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         }
         0
     }
-
 }
