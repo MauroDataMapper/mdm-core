@@ -36,7 +36,12 @@ class CodeSetJsonImporterService extends DataBindCodeSetImporterProviderService<
 
     @Override
     String getVersion() {
-        '3.0'
+        '4.0'
+    }
+
+    @Override
+    Boolean canImportMultipleDomains() {
+        true
     }
 
     @Override
@@ -51,5 +56,18 @@ class CodeSetJsonImporterService extends DataBindCodeSetImporterProviderService<
 
         log.debug('Importing CodeSet map')
         bindMapToCodeSet(currentUser, new HashMap(codeSet))
+    }
+
+    @Override
+    List<CodeSet> importCodeSets(User currentUser, byte[] content) {
+        if (!currentUser) throw new ApiUnauthorizedException('JIS01', 'User must be logged in to import model')
+        if (content.size() == 0) throw new ApiBadRequestException('JIS02', 'Cannot import empty content')
+
+        log.debug('Parsing in file content using JsonSlurper')
+        List<Map> codeSets = slurpAndClean(content).codeSets
+        if (!codeSets || codeSets.any {!it}) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as codeSet is not present')
+
+        log.debug('Importing CodeSet map')
+        codeSets.collect {bindMapToCodeSet(currentUser, new HashMap(it))}
     }
 }
