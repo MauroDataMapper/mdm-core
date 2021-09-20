@@ -245,19 +245,4 @@ abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBind
             terminology.terms.any {it.code == "CTT${i}" && it.definition == "Complex Test Term ${i}"}
         }
     }
-
-    void 'I08 : test that trying to import multiple terminologies fails'() {
-        given:
-        setupData()
-
-        expect:
-        !importerService.canImportMultipleDomains()
-
-        when:
-        importerService.importTerminologies(admin, loadTestFile('simpleImport'))
-
-        then:
-        ApiBadRequestException exception = thrown(ApiBadRequestException)
-        exception.message.contains('cannot import multiple Terminologies')
-    }
 }

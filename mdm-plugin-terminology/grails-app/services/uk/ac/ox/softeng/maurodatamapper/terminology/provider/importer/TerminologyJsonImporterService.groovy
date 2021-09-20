@@ -36,7 +36,12 @@ class TerminologyJsonImporterService extends DataBindTerminologyImporterProvider
 
     @Override
     String getVersion() {
-        '3.0'
+        '4.0'
+    }
+
+    @Override
+    Boolean canImportMultipleDomains() {
+        true
     }
 
     @Override
@@ -51,5 +56,18 @@ class TerminologyJsonImporterService extends DataBindTerminologyImporterProvider
 
         log.debug('Importing Terminology map')
         bindMapToTerminology(currentUser, new HashMap(terminology))
+    }
+
+    @Override
+    List<Terminology> importTerminologies(User currentUser, byte[] content) {
+        if (!currentUser) throw new ApiUnauthorizedException('JIS01', 'User must be logged in to import model')
+        if (content.size() == 0) throw new ApiBadRequestException('JIS02', 'Cannot import empty content')
+
+        log.debug('Parsing in file content using JsonSlurper')
+        List<Map> terminologies = slurpAndClean(content).terminologies
+        if (!terminologies || terminologies.any {!it}) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as terminology is not present')
+
+        log.debug('Importing list of Terminology maps')
+        terminologies.collect {bindMapToTerminology(currentUser, new HashMap(it))}
     }
 }
