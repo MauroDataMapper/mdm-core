@@ -42,7 +42,7 @@ class DataModelXmlExporterService extends DataModelExporterProviderService imple
 
     @Override
     String getVersion() {
-        '3.2'
+        '4.0'
     }
 
     @Override
