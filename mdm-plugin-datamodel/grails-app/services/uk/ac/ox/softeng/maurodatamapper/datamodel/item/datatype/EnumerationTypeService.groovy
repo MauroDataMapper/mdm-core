@@ -205,12 +205,6 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> implement
     }
 
     @Override
-    void propagateDataFromPreviousVersion(EnumerationType model, EnumerationType previousVersionModel, User user) {
-        super.propagateCatalogueItemInformation(model, previousVersionModel, user)
-        propagateModelItemInformation(model, previousVersionModel, user)
-    }
-
-    @Override
     void propagateModelItemInformation(EnumerationType model, EnumerationType previousVersionModel, User user) {
         super.propagateModelItemInformation(model, previousVersionModel, user)
         previousVersionModel.enumerationValues.each { enumerationValue ->

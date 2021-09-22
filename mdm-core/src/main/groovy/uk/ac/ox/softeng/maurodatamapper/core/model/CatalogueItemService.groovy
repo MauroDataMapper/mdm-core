@@ -130,6 +130,11 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
     abstract Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType)
 
     void propagateDataFromPreviousVersion(K catalogueItem, K previousVersionCatalogueItem, User user) {
+        //propagate generic catalogue item information
+        propagateCatalogueItemInformation(catalogueItem, previousVersionCatalogueItem, user)
+
+        //implemented at a service level for each catalogue item and propagates data unique to its domain
+        propagateModelItemInformation(catalogueItem, previousVersionCatalogueItem, user)
     }
 
     void addClassifierToCatalogueItem(UUID catalogueItemId, Classifier classifier) {

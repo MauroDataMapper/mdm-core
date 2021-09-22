@@ -92,7 +92,8 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
                 // Imported into model is okay
                 if (obj.model.importedDataTypes.any {it.id == val.id}) return true
                 //propagated is okay, check if one with the same label already exists
-                if (findByLabel(val.label)) return true
+                //qualifier needed to prevent call ambiguity
+                if (this.findByLabel(val.label)) return true
                 ['invalid.dataelement.datatype.model']
             }
         }

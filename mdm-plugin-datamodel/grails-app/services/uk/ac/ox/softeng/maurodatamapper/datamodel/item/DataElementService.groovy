@@ -399,12 +399,6 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     }
 
     @Override
-    void propagateDataFromPreviousVersion(DataElement model, DataElement previousVersionModel, User user) {
-        super.propagateCatalogueItemInformation(model, previousVersionModel, user) as DataElement
-        propagateModelItemInformation(model, previousVersionModel, user) as DataElement
-    }
-
-    @Override
     void propagateModelItemInformation(DataElement model, DataElement previousVersionModel, User user) {
         super.propagateModelItemInformation(model, previousVersionModel, user)
 

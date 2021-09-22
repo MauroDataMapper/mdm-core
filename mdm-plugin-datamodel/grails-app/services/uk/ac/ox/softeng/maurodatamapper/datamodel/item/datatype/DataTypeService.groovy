@@ -179,13 +179,6 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     }
 
     @Override
-    void propagateDataFromPreviousVersion(DataType model, DataType previousVersionModel, User user) {
-        super.propagateCatalogueItemInformation(model, previousVersionModel, user) as DataType
-        propagateModelItemInformation(model, previousVersionModel, user) as DataType
-    }
-
-
-    @Override
     void propagateModelItemInformation(DataType model, DataType previousVersionModel, User user) {
 
         //if DataType is of type EnumerationType, Go to enumeration type service and copy across Enumeration Values
@@ -194,9 +187,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         if (previousVersionModel.instanceOf(EnumerationType)) {
             enumerationTypeService.propagateDataFromPreviousVersion(model as EnumerationType, previousVersionModel as EnumerationType, user)
         }
-        //todo copy rest of item information
-
-    }
+      }
 
 
     @Override

@@ -591,10 +591,10 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    void propagateDataFromPreviousVersion(Terminology model, Terminology previousVersionModel, User user) {
-        //todo
+    void propagateModelItemInformation(Terminology model, Terminology previousVersionModel, User user) {
 
     }
+
 
     @Override
     boolean useParentIdForSearching(UUID parentId) {

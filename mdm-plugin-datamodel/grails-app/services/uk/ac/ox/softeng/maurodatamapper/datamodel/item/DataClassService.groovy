@@ -861,13 +861,6 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     }
 
     @Override
-    void propagateDataFromPreviousVersion(DataClass model, DataClass previousVersionModel, User user) {
-        super.propagateCatalogueItemInformation(model, previousVersionModel, user) as DataClass
-        propagateModelItemInformation(model, previousVersionModel, user) as DataClass
-
-    }
-
-    @Override
     void propagateModelItemInformation(DataClass model, DataClass previousVersionModel, User user) {
         super.propagateModelItemInformation(model, previousVersionModel, user)
         previousVersionModel.dataElements.each { dataElement ->

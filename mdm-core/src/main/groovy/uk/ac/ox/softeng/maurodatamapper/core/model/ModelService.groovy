@@ -1058,5 +1058,4 @@ abstract class ModelService<K extends Model>
         K previousVersionModel = findLatestFinalisedModelByLabel(model.label)
         propagateDataFromPreviousVersion(model, previousVersionModel, user)
     }
-
 }

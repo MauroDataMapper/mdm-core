@@ -828,18 +828,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     }
 
     @Override
-    void propagateDataFromPreviousVersion(DataModel model, DataModel previousVersionModel, User user) {
-        //propagate generic catalogue item information
-        super.propagateCatalogueItemInformation(model, previousVersionModel, user) as DataModel
-
-        //implemented at a service level for each catalogue item and propagates data unique to its domain
-        propagateModelItemInformation(model, previousVersionModel, user) as DataModel
-
-    }
-
-    @Override
     void propagateModelItemInformation(DataModel model, DataModel previousVersionModel, User user) {
-
         super.propagateModelItemInformation(model, previousVersionModel, user)
 
         previousVersionModel.dataTypes.each { dataType ->
