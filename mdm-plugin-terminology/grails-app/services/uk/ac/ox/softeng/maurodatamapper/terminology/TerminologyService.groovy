@@ -23,7 +23,13 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedExcept
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
+import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
@@ -592,44 +598,61 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     void propagateModelItemInformation(Terminology model, Terminology previousVersionModel, User user) {
+        //terminology structure
 
+        //  terms                : Term a
+        // term has many TermRelationshiponshipType a
+        //  termRelationshipTypes: TermRelati
+        super.propagateModelItemInformation(model, previousVersionModel, user)
+
+        previousVersionModel.terms.each { term ->
+            Term modelTerm = model.terms.find { it.label == term.label }
+            if (modelTerm) termService.propagateDataFromPreviousVersion(modelTerm, term, user)
+            else model.addToTerms(term)
+        }
+        previousVersionModel.termRelationshipTypes.each { termRelationshipType ->
+            TermRelationshipType modelTermRelationshipType = model.termRelationshipTypes.find { it.label == termRelationshipType.label }
+            if (modelTermRelationshipType) termRelationshipTypeService.propagateDataFromPreviousVersion(modelTermRelationshipType, termRelationshipType, user)
+            else model.addToTermRelationshipTypes(termRelationshipType)
+        }
     }
 
 
-    @Override
-    boolean useParentIdForSearching(UUID parentId) {
-        if (!parentId || codeSetService.get(parentId)) {
-            log.debug('Accessing terminology from context of CodeSet will ignore parentId')
-            return false
-        }
-        true
+@Override
+boolean useParentIdForSearching(UUID parentId) {
+    if (!parentId || codeSetService.get(parentId)) {
+        log.debug('Accessing terminology from context of CodeSet will ignore parentId')
+        return false
     }
+    true
+}
 
-    @Override
-    int getSortResultForFieldPatchPath(Path leftPath, Path rightPath) {
-        if (leftPath.any {it.prefix == 'cs'}) {
-            if (rightPath.any {it.prefix == 'cs'}) return 0
-            return 1
-        }
-        if (rightPath.any {it.prefix == 'cs'}) return -1
-        PathNode leftLastNode = leftPath.last()
-        PathNode rightLastNode = rightPath.last()
-        if (leftLastNode.prefix == 'tm') {
-            if (rightLastNode.prefix == 'tm') return 0
-            if (rightLastNode.prefix in ['trt', 'tr']) return -1
-            return 0
-        }
-        if (leftLastNode.prefix == 'trt') {
-            if (rightLastNode.prefix == 'tm') return 1
-            if (rightLastNode.prefix == 'trt') return 0
-            if (rightLastNode.prefix == 'tr') return -1
-            return 0
-        }
-        if (leftLastNode.prefix == 'tr') {
-            if (rightLastNode.prefix in ['trt', 'tr']) return 1
-            if (rightLastNode.prefix == 'tr') return 0
-            return 0
-        }
-        0
+@Override
+int getSortResultForFieldPatchPath(Path leftPath, Path rightPath) {
+    if (leftPath.any { it.prefix == 'cs' }) {
+        if (rightPath.any { it.prefix == 'cs' }) return 0
+        return 1
     }
+    if (rightPath.any { it.prefix == 'cs' }) return -1
+    PathNode leftLastNode = leftPath.last()
+    PathNode rightLastNode = rightPath.last()
+    if (leftLastNode.prefix == 'tm') {
+        if (rightLastNode.prefix == 'tm') return 0
+        if (rightLastNode.prefix in ['trt', 'tr']) return -1
+        return 0
+    }
+    if (leftLastNode.prefix == 'trt') {
+        if (rightLastNode.prefix == 'tm') return 1
+        if (rightLastNode.prefix == 'trt') return 0
+        if (rightLastNode.prefix == 'tr') return -1
+        return 0
+    }
+    if (leftLastNode.prefix == 'tr') {
+        if (rightLastNode.prefix in ['trt', 'tr']) return 1
+        if (rightLastNode.prefix == 'tr') return 0
+        return 0
+    }
+    0
+}
+
 }

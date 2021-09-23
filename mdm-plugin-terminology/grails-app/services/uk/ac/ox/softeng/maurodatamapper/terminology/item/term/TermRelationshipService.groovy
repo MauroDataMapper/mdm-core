@@ -221,4 +221,8 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
             TermRelationship.byTerminologyIdAndPathIdentifierFields(parentId, split[0], split[1], split[2]).get()
         }
     }
+    @Override
+   void propagateModelItemInformation(TermRelationship model, TermRelationship previousModel, User user){
+        super.propagateModelItemInformation(model, previousModel, user)
+    }
 }

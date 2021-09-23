@@ -18,6 +18,13 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FileParameter
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
@@ -27,6 +34,7 @@ import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
+
 import groovy.util.logging.Slf4j
 
 /**
@@ -279,29 +287,66 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
 
     }
 
-    void 'PG01 : test importing a dataModel and propagating existing information from the already present version'() {
+    void 'PG01 test propagatingCatalogueItemElements'() {
 
+        given:
+        setupData()
+        basicParameters.finalised = false
+        basicParameters.importAsNewBranchModelVersion = true
+        basicParameters.propagateFromPreviousVersion = true
+
+        dataModel = DataModel.findById(complexDataModelId)
+
+        Annotation testAnnotation = new Annotation(label: 'propagationTest', description: 'propagationTest', createdBy: admin.emailAddress)
+        Classifier testClassifier = new Classifier(label: 'propagationTest', createdBy: admin.emailAddress)
+        Metadata testMetadata = new Metadata(namespace: 'propagationTest', key: 'key', value: 'value', createdBy: admin.emailAddress)
+        Rule testRule = new Rule(name: 'propagationTest', createdBy: admin.emailAddress).addToRuleRepresentations(language: 'e', representation:
+            'a+b', createdBy: admin.emailAddress)
+        SemanticLink testSemanticLink = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdByUser: admin,
+                                                         targetMultiFacetAwareItem: dataModel.dataClasses.first())
+        ReferenceFile testReferenceFile = new ReferenceFile(fileName: 'propagationTest', fileType: 'text', fileContents: 'hello'.bytes, fileSize:
+            'hello'.bytes.size(), createdBy: admin.emailAddress)
+
+        dataModel.addToAnnotations(testAnnotation)
+        dataModel.addToClassifiers(testClassifier)
+        dataModel.addToMetadata(testMetadata)
+        dataModel.addToRules(testRule)
+        dataModel.addToSemanticLinks(testSemanticLink)
+        dataModel.addToReferenceFiles(testReferenceFile)
+
+        dataModelService.saveModelNewContentOnly(dataModel)
+
+        when:
+        DataModel dm = importModel(loadTestFile('complexDataModel'))
+
+        then:
+        dm.annotations.find { it.label == testAnnotation.label }
+        dm.classifiers.find { it.label == testClassifier.label }
+        dm.metadata.find { it.namespace == testMetadata.namespace }
+        dm.rules.find { it.name == testRule.name }
+        dm.semanticLinks.find { it.targetMultiFacetAwareItemId == testSemanticLink.targetMultiFacetAwareItemId }
+        dm.semanticLinks.find { it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType }
+        dm.referenceFiles.find { it.fileName == testReferenceFile.fileName }
+
+
+    }
+
+    void 'PG01 : test importing a dataModel and propagating existing information from the already present version'() {
         /*
         imported data is a copy of the complexDataModel with the following alterations:
         Expect it to propagate information from complex data model where it has been altered or removed.
 
         expected propagated elements:
         dataClass: "dataClass with elements"
-        Annotation: "test annotation 1"
         DataType: "child"
         DataElement "child"
-        Classifier: "test classifier2"
         Enumeration key: U value: unknown
-        MetaData: test.com/test
 
         expected new imported elements:
         dataClass "propagated DataClass with elements"
-        annotation: importedAnnotation1
         dataElement: propagated child dataElement
         DataType: Propagated child dataType
-        Classifier: propagate Classifier
         Enumeration value key: M value: Maybe
-        metaData: test.com/extra
          */
         given:
 
@@ -314,9 +359,6 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         DataModel dm = importModel(loadTestFile('propagationImportDataModel'))
 
         then:
-        dm.metadata.find { it.namespace == "test.com/extra" }
-        dm.metadata.size() == 3
-
         dm.primitiveTypes.find { it.label == "propagated decimal" }
         dm.primitiveTypes.size() == 3
 
@@ -326,12 +368,10 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
 
         dm.enumerationTypes.find().enumerationValues.size() == 4
 
-        dm.dataClasses.find{it.label == "propagated dataclass with elements"}
-        dm.dataClasses.find{it.label == "content"}
-        dm.dataClasses.find{it.label == "propagated dataclass with elements"}.dataElements.size() == 2
+        dm.dataClasses.find { it.label == "propagated dataclass with elements" }
+        dm.dataClasses.find { it.label == "content" }
+        dm.dataClasses.find { it.label == "propagated dataclass with elements" }.dataElements.size() == 2
 
         dm.referenceTypes.size() == 2
-
-        dm.annotations.size() == 5
     }
 }

@@ -63,8 +63,8 @@ class JsonTerminologyImporterServiceSpec extends DataBindTerminologyImporterProv
         terminology.terms.size() == 2
 
         when:
-        Term a = terminology.terms.find {it.code == 'A'}
-        Term b = terminology.terms.find {it.code == 'B'}
+        Term a = terminology.terms.find { it.code == 'A' }
+        Term b = terminology.terms.find { it.code == 'B' }
 
         then:
         a
@@ -83,5 +83,18 @@ class JsonTerminologyImporterServiceSpec extends DataBindTerminologyImporterProv
         and:
         b.sourceTermRelationships.size() == 1
         b.targetTermRelationships.size() == 0
+    }
+
+    void 'PG01 test importing a Terminology and propagating existing information'() {
+        setupData()
+        basicParameters.finalised = false
+        basicParameters.importAsNewBranchModelVersion = true
+        basicParameters.propagateFromPreviousVersion = true
+
+        when:
+        Terminology terminology =  importerService.importTerminology(admin, loadTestFile('propagationImportTerminology'))
+
+        then:
+        true
     }
 }

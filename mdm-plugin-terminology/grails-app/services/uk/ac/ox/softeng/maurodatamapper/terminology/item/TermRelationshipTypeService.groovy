@@ -94,7 +94,8 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
     }
 
     @Override
-    TermRelationshipType copy(Model copiedTerminology, TermRelationshipType original, CatalogueItem nonModelParent, UserSecurityPolicyManager userSecurityPolicyManager) {
+    TermRelationshipType copy(Model copiedTerminology, TermRelationshipType original, CatalogueItem nonModelParent,
+                              UserSecurityPolicyManager userSecurityPolicyManager) {
         copyTermRelationshipType(copiedTerminology as Terminology, original, userSecurityPolicyManager.user)
     }
 
@@ -193,5 +194,15 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
     @Override
     TermRelationshipType findByParentIdAndLabel(UUID parentId, String label) {
         TermRelationshipType.byTerminologyId(parentId).eq('label', label).get()
+    }
+
+    @Override
+    void propagateModelItemInformation(TermRelationshipType model, TermRelationshipType previousVersionModel, User user) {
+        super.propagateModelItemInformation(model, previousVersionModel, user)
+        previousVersionModel.termRelationships.each { termRelationship ->
+            TermRelationship modelTermRelationship = model.termRelationships.find { it.label == termRelationship.label }
+            if (modelTermRelationship) termRelationshipService.propagateDataFromPreviousVersion(modelTermRelationship, termRelationship, user)
+            else model.addToTermRelationships(termRelationship)
+        }
     }
 }

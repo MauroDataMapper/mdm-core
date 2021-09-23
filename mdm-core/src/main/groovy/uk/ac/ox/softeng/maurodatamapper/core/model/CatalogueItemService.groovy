@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFileService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.RuleService
@@ -185,7 +186,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         propagateCatalogueItemRules(catalogueItem, previousCatalogueItem, user)
         propagateCatalogueItemSemanticLinks(catalogueItem, previousCatalogueItem, user)
         propagateCatalogueItemAnnotations(catalogueItem, previousCatalogueItem, user)
-        propagateCatalogueItemReferenceLinks(catalogueItem, previousCatalogueItem, user)
+        propagateCatalogueItemReferenceFiles(catalogueItem, previousCatalogueItem, user)
         catalogueItem
 
     }
@@ -264,22 +265,26 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
             }
             //if not copy whole thing
             catalogueItem.addToAnnotations(new Annotation(label: previous.label, description: previous.description,
-                                                         createdBy: previous.createdBy, childAnnotations: previous.childAnnotations ))
+                                                          createdBy: previous.createdBy, childAnnotations: previous.childAnnotations))
         }
     }
 
-    void propagateCatalogueItemReferenceLinks(CatalogueItem catalogueItem, CatalogueItem previousCatalogueItem, User user) {
+    void propagateCatalogueItemReferenceFiles(CatalogueItem catalogueItem, CatalogueItem previousCatalogueItem, User user) {
         previousCatalogueItem.referenceFiles.each { previous ->
             if (catalogueItem.referenceFiles.find { it.fileName == previous.fileName }) return
             previous.createdBy = user.emailAddress
-            catalogueItem.addToReferenceFiles(previous)
+            catalogueItem.
+                addToReferenceFiles(new ReferenceFile(fileName: previous.fileName, fileType: previous.fileType, fileContents: previous.fileContents,
+                                                      fileSize: previous.fileSize, createdBy: user.emailAddress))
+            //currently a bug where MultiFacetAwareItemId is null on save as it takes it from the datamodel but the dataModel and reference file
+            // are saved at the same time so the result is null.
         }
     }
 
-    void propagateModelItemInformation(K model, K previousVersionModel, User user){
+    void propagateModelItemInformation(K model, K previousVersionModel, User user) {
         //generic
         if (!model.label) model.label = previousVersionModel.label
-        if(!model.description) model.description = previousVersionModel.description
+        if (!model.description) model.description = previousVersionModel.description
 
     }
 
