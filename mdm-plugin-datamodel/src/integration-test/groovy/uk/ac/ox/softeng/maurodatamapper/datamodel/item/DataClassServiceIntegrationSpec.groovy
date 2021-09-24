@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -377,6 +378,34 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         and:
         copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
+    }
+
+    void 'test metadata saved at parent'()
+    {
+        given:
+        setupData()
+
+        DataModel copyModel = new DataModel(label: 'test', createdByUser: editor, folder: testFolder, authority: testAuthority)
+
+
+        DataClass top = new DataClass(createdByUser: reader1, label: 'Top', minMultiplicity: 1, maxMultiplicity: 1)
+
+        Metadata metadata = new Metadata(namespace: 'Test', key: 'key', value: '1')
+
+        copyModel.addToDataClasses(top)
+        top.addToMetadata(metadata)
+
+        DataClass middle = new DataClass(createdByUser: reader1, label: 'Middle', minMultiplicity: 1, maxMultiplicity: 1)
+        top.addToDataClasses(middle)
+        copyModel.addToDataClasses(middle)
+
+        when:
+        dataModelService.validate(copyModel)
+        dataModelService.saveModelWithContent(copyModel)
+
+        then:
+        DataModel dm = DataModel.get(copyModel.id)
+        dm.dataClasses[0].metadata.size() == 1
     }
 
     void 'test copying complex dataclass'() {

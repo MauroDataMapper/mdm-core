@@ -114,7 +114,7 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         referenceTypes cascade: 'none'
         summaryMetadata cascade: 'all-delete-orphan'
         dataModel index: 'data_class_data_model_idx' //, cascade: 'none', cascadeValidate: 'none'
-        parentDataClass index: 'data_class_parent_data_class_idx', cascade: 'save-update'
+        parentDataClass index: 'data_class_parent_data_class_idx'//, cascade: 'save-update'
         extendedDataClasses cascade: 'none', cascadeValidate: 'none', joinTable: [
             name  : 'join_dataclass_to_extended_data_class',
             key   : 'dataclass_id',
