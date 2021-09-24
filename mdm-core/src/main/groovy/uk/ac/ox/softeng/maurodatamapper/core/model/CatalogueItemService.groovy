@@ -276,13 +276,11 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
             catalogueItem.
                 addToReferenceFiles(new ReferenceFile(fileName: previous.fileName, fileType: previous.fileType, fileContents: previous.fileContents,
                                                       fileSize: previous.fileSize, createdBy: user.emailAddress))
-            //currently a bug where MultiFacetAwareItemId is null on save as it takes it from the datamodel but the dataModel and reference file
-            // are saved at the same time so the result is null.
+
         }
     }
 
     void propagateModelItemInformation(K model, K previousVersionModel, User user) {
-        //generic
         if (!model.label) model.label = previousVersionModel.label
         if (!model.description) model.description = previousVersionModel.description
 

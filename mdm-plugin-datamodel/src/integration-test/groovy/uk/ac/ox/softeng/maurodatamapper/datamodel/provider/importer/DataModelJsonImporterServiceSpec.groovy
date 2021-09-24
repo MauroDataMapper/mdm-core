@@ -361,13 +361,10 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         then:
         dm.primitiveTypes.find { it.label == "propagated decimal" }
         dm.primitiveTypes.size() == 3
-
         dm.allDataElements.find { it.label == "propagated child dataElement" }
         dm.allDataElements.find { it.label == "propagated child dataElement" }.dataType.label == "Propagated child dataType"
         dm.allDataElements.size() == 6
-
         dm.enumerationTypes.find().enumerationValues.size() == 4
-
         dm.dataClasses.find { it.label == "propagated dataclass with elements" }
         dm.dataClasses.find { it.label == "content" }
         dm.dataClasses.find { it.label == "propagated dataclass with elements" }.dataElements.size() == 2
