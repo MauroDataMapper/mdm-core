@@ -29,6 +29,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwa
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FileParameter
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.provider.DataBindDataModelImporterProviderServiceSpec
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
@@ -303,7 +304,7 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         Rule testRule = new Rule(name: 'propagationTest', createdBy: admin.emailAddress).addToRuleRepresentations(language: 'e', representation:
             'a+b', createdBy: admin.emailAddress)
         SemanticLink testSemanticLink = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdByUser: admin,
-                                                         targetMultiFacetAwareItem: dataModel.dataClasses.first())
+                                                         targetMultiFacetAwareItem: DataClass.findByLabel('parent'))
         ReferenceFile testReferenceFile = new ReferenceFile(fileName: 'propagationTest', fileType: 'text', fileContents: 'hello'.bytes, fileSize:
             'hello'.bytes.size(), createdBy: admin.emailAddress)
 

@@ -17,10 +17,17 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
-import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.TerminologyJsonImporterService
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
 import uk.ac.ox.softeng.maurodatamapper.terminology.test.provider.DataBindTerminologyImporterProviderServiceSpec
 import uk.ac.ox.softeng.maurodatamapper.test.json.JsonComparer
 
@@ -34,7 +41,8 @@ import groovy.util.logging.Slf4j
 @Integration
 @Rollback
 @Slf4j
-class JsonTerminologyImporterServiceSpec extends DataBindTerminologyImporterProviderServiceSpec<TerminologyJsonImporterService> implements JsonComparer {
+class JsonTerminologyImporterServiceSpec extends DataBindTerminologyImporterProviderServiceSpec<TerminologyJsonImporterService>
+    implements JsonComparer {
 
     TerminologyJsonImporterService terminologyJsonImporterService
 
@@ -85,16 +93,74 @@ class JsonTerminologyImporterServiceSpec extends DataBindTerminologyImporterProv
         b.targetTermRelationships.size() == 0
     }
 
+    void 'PG01 test propagatingCatalogueItemElements'() {
+
+        given:
+        setupData()
+        basicParameters.finalised = false
+        basicParameters.importAsNewBranchModelVersion = true
+        basicParameters.propagateFromPreviousVersion = true
+
+        Terminology terminology = Terminology.findById(complexTerminologyId)
+
+        Annotation testAnnotation = new Annotation(label: 'propagationTest', description: 'propagationTest', createdBy: admin.emailAddress)
+        Classifier testClassifier = new Classifier(label: 'propagationTest', createdBy: admin.emailAddress)
+        Metadata testMetadata = new Metadata(namespace: 'propagationTest', key: 'key', value: 'value', createdBy: admin.emailAddress)
+        Rule testRule = new Rule(name: 'propagationTest', createdBy: admin.emailAddress).addToRuleRepresentations(language: 'e', representation:
+            'a+b', createdBy: admin.emailAddress)
+        SemanticLink testSemanticLink = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdByUser: admin,
+                                                         targetMultiFacetAwareItem: Term.findByCode('STT01'))
+        ReferenceFile testReferenceFile = new ReferenceFile(fileName: 'propagationTest', fileType: 'text', fileContents: 'hello'.bytes, fileSize:
+            'hello'.bytes.size(), createdBy: admin.emailAddress)
+
+        terminology.addToAnnotations(testAnnotation)
+        terminology.addToClassifiers(testClassifier)
+        terminology.addToMetadata(testMetadata)
+        terminology.addToRules(testRule)
+        terminology.addToSemanticLinks(testSemanticLink)
+        terminology.addToReferenceFiles(testReferenceFile)
+
+        terminologyService.saveModelNewContentOnly(terminology)
+
+        when:
+        Terminology term = importAndSave(loadTestFile('complexTerminology'))
+
+        then:
+        term.annotations.find { it.label == testAnnotation.label }
+        term.classifiers.find { it.label == testClassifier.label }
+        term.metadata.find { it.namespace == testMetadata.namespace }
+        term.rules.find { it.name == testRule.name }
+        term.semanticLinks.find { it.targetMultiFacetAwareItemId == testSemanticLink.targetMultiFacetAwareItemId }
+        term.semanticLinks.find { it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType }
+        term.referenceFiles.find { it.fileName == testReferenceFile.fileName }
+
+    }
+
     void 'PG01 test importing a Terminology and propagating existing information'() {
+
+        //propagateTerminology does not contain information present in the ComplexTerminology json
+        // the missing data should be propagated across
+
         setupData()
         basicParameters.finalised = false
         basicParameters.importAsNewBranchModelVersion = true
         basicParameters.propagateFromPreviousVersion = true
 
         when:
-        Terminology terminology =  importerService.importTerminology(admin, loadTestFile('propagationImportTerminology'))
+        Terminology terminology = importAndSave(loadTestFile('propagateTerminology'))
 
         then:
-        true
+        terminology.terms.find { it.label == "CTT98: Complex Test Term 98" }
+        terminology.terms.find { it.label == "CTT99: Complex Test Term 99" }
+        terminology.terms.find { it.label == "CTT100: Complex Test Term 100" }
+        terminology.termRelationshipTypes.find { it.label == "narrowerThan" }
+        terminology.termRelationshipTypes.find { it.label == "narrowerThan" }.termRelationships.size() == 8
+
+        TermRelationshipType trt = terminology.termRelationshipTypes.find { it.label == "is-a-part-of" }
+        trt.termRelationships.find { it.sourceTerm.label == "CTT97" && it.targetTerm.label == "CTT90" }
+        trt.termRelationships.find { it.sourceTerm.label == "CTT98" && it.targetTerm.label == "CTT90" }
+        trt.termRelationships.find { it.sourceTerm.label == "CTT99" && it.targetTerm.label == "CTT90" }
+        trt.termRelationships.find { it.sourceTerm.label == "CTT`100`" && it.targetTerm.label == "CTT90" }
+
     }
 }

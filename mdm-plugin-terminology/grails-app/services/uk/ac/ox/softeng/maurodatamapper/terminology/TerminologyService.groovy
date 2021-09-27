@@ -598,11 +598,6 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     void propagateModelItemInformation(Terminology model, Terminology previousVersionModel, User user) {
-        //terminology structure
-
-        //  terms                : Term a
-        // term has many TermRelationshiponshipType a
-        //  termRelationshipTypes: TermRelati
         super.propagateModelItemInformation(model, previousVersionModel, user)
 
         previousVersionModel.terms.each { term ->

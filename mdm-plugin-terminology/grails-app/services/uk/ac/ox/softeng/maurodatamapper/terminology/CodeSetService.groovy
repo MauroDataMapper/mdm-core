@@ -472,12 +472,6 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    void propagateDataFromPreviousVersion(CodeSet model, CodeSet previousVersionModel, User user) {
-        //todo
-
-    }
-
-    @Override
     List<CodeSet> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
         CodeSet.byMetadataNamespaceAndKey(namespace, key).list(pagination)
     }
