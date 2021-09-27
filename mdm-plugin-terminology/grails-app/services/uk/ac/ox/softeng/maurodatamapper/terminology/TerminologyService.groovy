@@ -190,7 +190,35 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     Terminology saveModelNewContentOnly(Terminology model) {
-        save(failOnError: true, validate: false, flush: true, model)
+        long start = System.currentTimeMillis()
+        Collection<Term> terms = []
+        Collection<TermRelationshipType> termRelationshipTypes = []
+
+        if (model.classifiers) {
+            log.trace('Saving {} classifiers')
+            classifierService.saveAll(model.classifiers)
+        }
+
+        if (model.termRelationshipTypes) {
+            termRelationshipTypes.addAll model.termRelationshipTypes.findAll { !it.id }
+        }
+
+        if (model.terms) {
+            terms.addAll model.terms.findAll { !it.id }
+        }
+
+        if (model.breadcrumbTree.children) {
+            model.breadcrumbTree.children.each { it.skipValidation(true) }
+        }
+
+        save(model)
+
+        sessionFactory.currentSession.flush()
+
+        saveContent(terms, termRelationshipTypes)
+        log.debug('Complete save of Terminology complete in {}', Utils.timeTaken(start))
+        // Return the clean stored version of the datamodel, as we've messed with it so much this is much more stable
+        get(model.id)
     }
 
     void saveContent(Collection<Term> terms,
