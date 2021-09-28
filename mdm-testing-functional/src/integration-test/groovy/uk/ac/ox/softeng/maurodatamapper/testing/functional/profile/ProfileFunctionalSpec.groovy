@@ -545,7 +545,6 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         cleanupDataModelId(id)
     }
 
-    @PendingFeature(reason = "Pending implementation of editableAfterFinalised Profile Field property in branch feature/mc-9620")
     void 'N07 : test saving editable profile on finalised model (as editor)'() {
         given:
         String id = getDataModelId()
@@ -607,7 +606,6 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         cleanupDataModelId(id)
     }
 
-    @PendingFeature(reason = "Pending implementation of editableAfterFinalised Profile Field property in branch feature/mc-9620")
     void 'N08 : test editing editable profile on finalised model'() {
         given:
         String id = getDataModelId()
