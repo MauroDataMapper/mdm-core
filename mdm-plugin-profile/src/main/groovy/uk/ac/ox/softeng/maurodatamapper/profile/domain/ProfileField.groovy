@@ -35,6 +35,7 @@ class ProfileField implements Validateable {
 
     Boolean derived
     Boolean uneditable
+    Boolean editableAfterFinalised
     String derivedFrom
 
     static constraints = {
@@ -59,6 +60,9 @@ class ProfileField implements Validateable {
     ProfileField() {
         this.derived = false
         this.uneditable = false
+        this.editableAfterFinalised = true
+        this.minMultiplicity = 0
+        this.maxMultiplicity = 1
     }
 
     void setDataType(ProfileFieldDataType type) {

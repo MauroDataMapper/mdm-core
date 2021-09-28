@@ -26,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 
+import grails.converters.JSON
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
@@ -111,6 +112,12 @@ class ProfileController implements ResourcelessMdmController {
             return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
 
+        if (multiFacetAware.hasProperty('finalised')) {
+            log.debug("multiFacetAware.finalised={}", multiFacetAware.finalised)
+        } else {
+            log.debug('multiFacetAware.finalised does not exist')
+        }
+
         ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName,
                                                                                                   params.profileVersion)
         if (!profileProviderService) {
@@ -149,6 +156,12 @@ class ProfileController implements ResourcelessMdmController {
         log.debug("Validating profile")
         MultiFacetAware multiFacetAware = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
 
+        if (multiFacetAware.hasProperty('finalised')) {
+            log.debug("multiFacetAware.finalised={}", multiFacetAware.finalised)
+        } else {
+            log.debug('multiFacetAware.finalised does not exist')
+        }
+
         if (!multiFacetAware) {
             return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
@@ -159,6 +172,7 @@ class ProfileController implements ResourcelessMdmController {
         }
 
         Profile submittedInstance = profileProviderService.getNewProfile()
+        log.debug("Blank profile: {}", submittedInstance as JSON)
         bindData(submittedInstance, request)
 
         Profile validatedInstance = profileService.validateProfile(profileProviderService, submittedInstance)
