@@ -19,10 +19,15 @@ package uk.ac.ox.softeng.maurodatamapper.testing.functional.profile
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.profile.DerivedFieldProfileService
 import uk.ac.ox.softeng.maurodatamapper.profile.PostFinalisedEditableProfileService
+import uk.ac.ox.softeng.maurodatamapper.profile.ProfileSpecificationFieldProfileService
 import uk.ac.ox.softeng.maurodatamapper.profile.ProfileSpecificationProfileService
+import uk.ac.ox.softeng.maurodatamapper.profile.provider.DynamicJsonProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -42,6 +47,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
     ProfileSpecificationProfileService profileSpecificationProfileService
     PostFinalisedEditableProfileService postFinalisedEditableProfileService
     DerivedFieldProfileService derivedFieldProfileService
+    ProfileSpecificationFieldProfileService profileSpecificationFieldProfileService
 
     @Transactional
     String getTestFolderId() {
@@ -91,14 +97,15 @@ class ProfileFunctionalSpec extends FunctionalSpec {
     "allowsExtraMetadataKeys": false,
     "knownMetadataKeys": [
       "metadataNamespace",
-      "domainsApplicable"
+      "domainsApplicable",
+      "notEditableAfterFinalisedField"
     ],
     "providerType": "Profile",
     "metadataNamespace": "uk.ac.ox.softeng.maurodatamapper.profile.editable",
     "domains": [
       "DataModel"
     ],
-    "editableAfterFinalisation": true
+    "editableAfterFinalised": true
   },
   {
     "name": "ProfileSpecificationProfileService",
@@ -109,14 +116,14 @@ class ProfileFunctionalSpec extends FunctionalSpec {
     "knownMetadataKeys": [
       "metadataNamespace",
       "domainsApplicable",
-      "editableAfterFinalisation"
+      "editableAfterFinalised"
     ],
     "providerType": "Profile",
     "metadataNamespace": "uk.ac.ox.softeng.maurodatamapper.profile",
     "domains": [
       "DataModel"
     ],
-    "editableAfterFinalisation": false
+    "editableAfterFinalised": false
   },
   {
     "name": "ProfileSpecificationFieldProfileService",
@@ -128,14 +135,14 @@ class ProfileFunctionalSpec extends FunctionalSpec {
       "metadataPropertyName",
       "defaultValue",
       "regularExpression",
-      "editedAfterFinalisation"
+      "editableAfterFinalised"
     ],
     "providerType": "Profile",
     "metadataNamespace": "uk.ac.ox.softeng.maurodatamapper.profile.dataelement",
     "domains": [
       "DataElement"
     ],
-    "editableAfterFinalisation": false
+    "editableAfterFinalised": false
   },
    {
     "name": "DerivedFieldProfileService",
@@ -154,7 +161,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
     "domains": [
       "DataModel"
     ],
-    "editableAfterFinalisation": false
+    "editableAfterFinalised": false
   }
 ]'''
     }
@@ -189,6 +196,8 @@ class ProfileFunctionalSpec extends FunctionalSpec {
 
         when:
         loginReader()
+        log.debug("profileSpecificationProfileService.namespace={}", profileSpecificationProfileService.namespace)
+        log.debug("profileSpecificationProfileService.name={}", profileSpecificationProfileService.name)
         POST("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${id}/validate", profileMap)
 
         then:
@@ -246,6 +255,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         POST("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${id}", profileMap)
 
         then:
+        log.debug("response.body={}", response.body)
         verifyResponse(OK, response)
         responseBody().sections.first().fields.find {it.metadataPropertyName == namespaceFieldMap.metadataPropertyName}.currentValue == namespaceFieldMap.currentValue
         responseBody().sections.first().fields.find {it.metadataPropertyName == domainsFieldMap.metadataPropertyName}.currentValue == domainsFieldMap.currentValue
@@ -555,13 +565,18 @@ class ProfileFunctionalSpec extends FunctionalSpec {
             currentValue        : 'DataModel',
             metadataPropertyName: "domainsApplicable",
         ]
+        Map notEditableAfterFinalisationFieldMap = [
+            currentValue        : 'value after finalisation',
+            metadataPropertyName: "notEditableAfterFinalisedField",
+        ]
         Map profileMap = [
             sections  : [
                 [
                     description: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
                     fields     : [
                         namespaceFieldMap,
-                        domainsFieldMap
+                        domainsFieldMap,
+                        notEditableAfterFinalisationFieldMap
                     ],
                     name       : 'Profile Specification'
                 ]
@@ -580,8 +595,12 @@ class ProfileFunctionalSpec extends FunctionalSpec {
 
         then:
         verifyResponse(OK, response)
+        log.debug("response.body={}", response.body)
         responseBody().sections.first().fields.find {it.metadataPropertyName == namespaceFieldMap.metadataPropertyName}.currentValue == namespaceFieldMap.currentValue
         responseBody().sections.first().fields.find {it.metadataPropertyName == domainsFieldMap.metadataPropertyName}.currentValue == domainsFieldMap.currentValue
+        !responseBody().sections.first().fields.find {it.metadataPropertyName == notEditableAfterFinalisationFieldMap.metadataPropertyName}.currentValue
+        !responseBody().sections.first().fields.find {it.metadataPropertyName == notEditableAfterFinalisationFieldMap.metadataPropertyName}.editableAfterFinalised
+
 
         when:
         HttpResponse<List<Map>> localResponse = GET("dataModels/${id}/profiles/used", Argument.listOf(Map))
@@ -608,13 +627,18 @@ class ProfileFunctionalSpec extends FunctionalSpec {
             currentValue        : 'DataModel',
             metadataPropertyName: "domainsApplicable",
         ]
+        Map notEditableAfterFinalisationFieldMap = [
+            currentValue        : 'value before finalisation',
+            metadataPropertyName: "notEditableAfterFinalisedField",
+        ]
         Map profileMap = [
             sections  : [
                 [
                     description: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
                     fields     : [
                         namespaceFieldMap,
-                        domainsFieldMap
+                        domainsFieldMap,
+                        notEditableAfterFinalisationFieldMap
                     ],
                     name       : 'Profile Specification'
                 ]
@@ -633,12 +657,14 @@ class ProfileFunctionalSpec extends FunctionalSpec {
 
         when:
         namespaceFieldMap.currentValue = 'functional.test.profile.adjusted'
+        notEditableAfterFinalisationFieldMap.currentValue = 'value set after finalisation'
         profileMap = [
             sections  : [
                 [
                     description: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
                     fields     : [
                         namespaceFieldMap,
+                        notEditableAfterFinalisationFieldMap
                     ],
                     name       : 'Profile Specification'
                 ]
@@ -657,6 +683,9 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         verifyResponse(OK, response)
         responseBody().sections.first().fields.find {it.metadataPropertyName == namespaceFieldMap.metadataPropertyName}.currentValue == 'functional.test.profile.adjusted'
         responseBody().sections.first().fields.find {it.metadataPropertyName == domainsFieldMap.metadataPropertyName}.currentValue == domainsFieldMap.currentValue
+        responseBody().sections.first().fields.find {it.metadataPropertyName == notEditableAfterFinalisationFieldMap.metadataPropertyName}.currentValue ==
+        'value before finalisation'
+        !responseBody().sections.first().fields.find {it.metadataPropertyName == notEditableAfterFinalisationFieldMap.metadataPropertyName}.editableAfterFinalised
 
         when:
         domainsFieldMap.currentValue = ''
@@ -683,6 +712,9 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         then:
         responseBody().sections.first().fields.find {it.metadataPropertyName == namespaceFieldMap.metadataPropertyName}.currentValue == 'functional.test.profile.adjusted'
         responseBody().sections.first().fields.find {it.metadataPropertyName == domainsFieldMap.metadataPropertyName}.currentValue == ''
+        responseBody().sections.first().fields.find {it.metadataPropertyName == notEditableAfterFinalisationFieldMap.metadataPropertyName}.currentValue ==
+        'value before finalisation'
+        !responseBody().sections.first().fields.find {it.metadataPropertyName == notEditableAfterFinalisationFieldMap.metadataPropertyName}.editableAfterFinalised
 
         cleanup:
         cleanupDataModelId(id)
@@ -753,6 +785,159 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         cleanupDataModelId(id)
     }
 
+    void 'N10 : test saving a dynamic profile (as editor)'() {
+        given:
+        loginEditor()
+
+        POST("folders/${getTestFolderId()}/dataModels?defaultDataTypeProvider=ProfileSpecificationDataTypeProvider", [label: "Dynamic Profile Model"])
+        log.debug("response.body={}", response.body)
+        verifyResponse(CREATED, response)
+        String dynamicProfileModelId = responseBody().id
+
+        POST("dataModels/$dynamicProfileModelId/dataClasses", [label: 'Profile Section Class'])
+        verifyResponse(CREATED, response)
+        String dataClassId = responseBody().id
+
+        GET("dataModels/$dynamicProfileModelId/dataTypes")
+        verifyResponse(OK, response)
+        Map<String, String> dataTypes = (responseBody().items as List<Map>).collectEntries {
+            [it.label, it.id]
+        }
+
+        POST("dataModels/$dynamicProfileModelId/dataClasses/$dataClassId/dataElements", [
+            label          : 'Dynamic Profile Elem (Optional)',
+            dataType       : dataTypes.string,
+            maxMultiplicity: 1,
+            minMultiplicity: 0
+        ])
+        verifyResponse(CREATED, response)
+
+        POST("dataModels/$dynamicProfileModelId/dataClasses/$dataClassId/dataElements", [
+            label          : 'Dynamic Profile Elem (Mandatory)',
+            dataType       : dataTypes.string,
+            maxMultiplicity: 1,
+            minMultiplicity: 1
+        ])
+        verifyResponse(CREATED, response)
+
+        POST("dataModels/$dynamicProfileModelId/dataClasses/$dataClassId/dataElements", [
+            label   : 'Dynamic Profile Elem (Default Optional)',
+            dataType: dataTypes.string
+        ])
+        verifyResponse(CREATED, response)
+
+        POST("dataModels/$dynamicProfileModelId/dataClasses/$dataClassId/dataElements", [
+            label   : 'Dynamic Profile Elem (not EAF)',
+            dataType: dataTypes.int
+        ])
+        verifyResponse(CREATED, response)
+        log.debug("create elem response.body={}", response.body)
+        String notEAFElemId = responseBody().id
+        log.debug("notEAFElemId={}", notEAFElemId)
+        log.debug("endpoint URL=dataElements/$notEAFElemId/profile/${profileSpecificationFieldProfileService.namespace}/${profileSpecificationFieldProfileService.name}")
+        POST("dataElements/$notEAFElemId/profile/${profileSpecificationFieldProfileService.namespace}/${profileSpecificationFieldProfileService.name}", [
+            sections  : [
+                [
+                    name  : 'Profile Specification',
+                    fields: [
+                        [
+                            currentValue        : 'functional.test.profile',
+                            metadataPropertyName: 'metadataPropertyName',
+                        ],
+                        [
+                            currentValue        : false,
+                            metadataPropertyName: 'editableAfterFinalised',
+                        ]
+                    ]
+                ]
+            ],
+            id        : notEAFElemId,
+            label     : 'Dynamic Profile Elem (not EAF)',
+            domainType: 'DataElement',
+            namespace : profileSpecificationFieldProfileService.namespace,
+            name      : profileSpecificationFieldProfileService.name
+        ])
+        log.debug("profile elem profile response.body={}", response.body)
+        verifyResponse(OK, response)
+
+        Map namespaceFieldMap = [
+            currentValue        : 'functional.test.profile',
+            metadataPropertyName: 'metadataNamespace',
+        ]
+        Map domainsFieldMap = [
+            currentValue        : '',
+            metadataPropertyName: 'domainsApplicable',
+        ]
+        Map editableAfterFinalisedFieldMap = [
+            currentValue        : 'true',
+            metadataPropertyName: 'editableAfterFinalised',
+        ]
+        POST("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${dynamicProfileModelId}", [
+            sections  : [
+                [
+                    description: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
+                    fields     : [
+                        namespaceFieldMap,
+                        domainsFieldMap,
+                        editableAfterFinalisedFieldMap
+                    ],
+                    name       : 'Profile Specification'
+                ]
+            ],
+            id        : dynamicProfileModelId,
+            label     : 'Dynamic Profile Model',
+            domainType: 'DataModel'
+        ])
+        log.debug("add dynamic profile response.body={}", response.body)
+        verifyResponse(OK, response)
+
+        String simpleModelId = getDataModelId()
+
+        Map dynamicProfileMap = [
+            id        : simpleModelId,
+            domainType: 'DataModel',
+            namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
+            name      : 'Dynamic+Profile+Model',
+            sections  : [
+                [
+                    name  : 'Profile Section Class',
+                    fields: [
+                        [
+                            fieldName   : 'Dynamic Profile Elem (Optional)',
+                            currentValue: 'abc'
+                        ],
+                        [
+                            fieldName   : 'Dynamic Profile Elem (Mandatory)',
+                            currentValue: 'def'
+                        ],
+                        [
+                            fieldName   : 'Dynamic Profile Elem (Default Optional)',
+                            currentValue: ''
+                        ],
+                        [
+                            fieldName           : 'Dynamic Profile Elem (not EAF)',
+                            metadataPropertyName: 'functional.test.profile',
+                            currentValue        : '123'
+                        ]
+                    ]
+                ]
+            ]
+        ]
+
+        when:
+        loginEditor()
+        POST("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model", dynamicProfileMap)
+        log.debug("response.body={}", response.body)
+
+        then:
+        verifyResponse(OK, response)
+
+
+        //cleanup:
+        //DELETE("dataModels/$dynamicProfileModelId?permanent=true")
+
+    }
+
     String getExpectedSavedProfile() {
         '''{
   "sections": [
@@ -772,6 +957,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "derived": false,
           "derivedFrom": null,
           "uneditable": false,
+          "editableAfterFinalised": true,
           "currentValue": "functional.test.profile"
         },
         {
@@ -787,11 +973,12 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "derived": false,
           "derivedFrom": null,
           "uneditable": false,
+          "editableAfterFinalised": true,
           "currentValue": "DataModel"
         },
         {
           "fieldName": "Can be edited after finalisation",
-          "metadataPropertyName": "editableAfterFinalisation",
+          "metadataPropertyName": "editableAfterFinalised",
           "description": "Defines if the profile can be edited after the model has been finalised. This defaults to false.",
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
@@ -801,6 +988,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "derived": false,
           "derivedFrom": null,
           "uneditable": false,
+          "editableAfterFinalised": true,
           "currentValue": ""
         }
       ]
@@ -831,6 +1019,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "derived": true,
           "derivedFrom": "label",
           "uneditable": true,
+          "editableAfterFinalised": true,
           "currentValue": "profile functional model"
         },
         {
@@ -845,6 +1034,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "derived": false,
           "derivedFrom": null,
           "uneditable": true,
+          "editableAfterFinalised": true,
           "currentValue": ""
         },
         {
@@ -859,6 +1049,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "derived": false,
           "derivedFrom": null,
           "uneditable": true,
+          "editableAfterFinalised": true,
           "currentValue": ""
         },
         {
@@ -873,6 +1064,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "derived": false,
           "derivedFrom": null,
           "uneditable": false,
+          "editableAfterFinalised": true,
           "currentValue": "functional.test.profile"
         }
       ]

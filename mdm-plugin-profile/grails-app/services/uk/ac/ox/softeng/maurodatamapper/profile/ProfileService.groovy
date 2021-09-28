@@ -143,7 +143,7 @@ class ProfileService {
 
         getAllProfileProviderServices().findAll {
             (usedNamespaces.contains(it.getMetadataNamespace()) &&
-             it.profileApplicableForDomains().contains(multiFacetAwareItem.domainType))
+             (it.profileApplicableForDomains().contains(multiFacetAwareItem.domainType) || it.profileApplicableForDomains().size() == 0))
         }
     }
 

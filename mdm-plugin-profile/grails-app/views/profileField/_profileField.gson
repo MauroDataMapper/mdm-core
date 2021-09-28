@@ -16,5 +16,6 @@ json {
     derived profileField.derived
     derivedFrom profileField.derivedFrom
     uneditable profileField.uneditable
+    editableAfterFinalised profileField.editableAfterFinalised
     currentValue profileField.currentValue ?: ''
 }

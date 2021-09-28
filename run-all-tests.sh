@@ -71,7 +71,8 @@ function integrationTest(){
   :mdm-security:integrationTest \
   :mdm-plugin-dataflow:integrationTest \
   :mdm-plugin-referencedata:integrationTest \
-  :mdm-plugin-federation:integrationTest
+  :mdm-plugin-federation:integrationTest \
+  :mdm-plugin-profile:integrationTest
 }
 
 function functionalTest(){
@@ -100,6 +101,7 @@ function e2eTest(){
   ./gradlew --build-cache -Dgradle.test.package=dataflow :mdm-testing-functional:integrationTest
   ./gradlew --build-cache -Dgradle.test.package=referencedata :mdm-testing-functional:integrationTest
   ./gradlew --build-cache -Dgradle.test.package=federation :mdm-testing-functional:integrationTest
+  ./gradlew --build-cache -Dgradle.test.package=profile :mdm-testing-functional:integrationTest
 }
 
 function initialReport(){

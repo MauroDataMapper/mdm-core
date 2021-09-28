@@ -43,7 +43,7 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
         this.dataModelId = dataModel.id
         this.dataModelLabel = dataModel.label
         this.dataModelDescription = dataModel.description
-        this.dataModelVersion = dataModel.modelVersionTag?:dataModel.modelVersion?:dataModel.branchName
+        this.dataModelVersion = dataModel.modelVersionTag ?: dataModel.modelVersion ?: dataModel.branchName
     }
 
     @Override
@@ -73,6 +73,12 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
             }
         }
         jsonProfile
+    }
+
+    @Override
+    JsonProfile getNewProfile() {
+        log.debug("Creating new profile from Data Model {}", getProfileDataModel())
+        createProfileFromEntity(getProfileDataModel())
     }
 
     @Override
@@ -140,7 +146,7 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
     Boolean canBeEditedAfterFinalisation() {
         Metadata md = getProfileDataModel().metadata.find {md ->
             md.namespace == "uk.ac.ox.softeng.maurodatamapper.profile" &&
-            md.key == "editableAfterFinalisation"
+            md.key == "editableAfterFinalised"
         }
         md ? md.value.toBoolean() : false
     }
@@ -179,8 +185,8 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
                             it.namespace == "uk.ac.ox.softeng.maurodatamapper.profile.dataelement" &&
                             it.key == "metadataPropertyName"
                         }?.value,
-                        maxMultiplicity: dataElement.maxMultiplicity,
-                        minMultiplicity: dataElement.minMultiplicity,
+                        maxMultiplicity: dataElement.maxMultiplicity ?: 1,
+                        minMultiplicity: dataElement.minMultiplicity ?: 0,
                         dataType: (dataElement.dataType instanceof EnumerationType) ? 'enumeration' : dataElement.dataType.label,
                         regularExpression: dataElement.metadata.find {
                             it.namespace == "uk.ac.ox.softeng.maurodatamapper.profile.dataelement" &&
@@ -188,7 +194,14 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
                         }?.value,
                         allowedValues: (dataElement.dataType instanceof EnumerationType) ?
                                        ((EnumerationType) dataElement.dataType).enumerationValues.collect {it.key} : [],
-                        currentValue: ""
+                        currentValue: "",
+                        editableAfterFinalised: {
+                            Metadata md = dataElement.metadata.find {
+                                it.namespace == "uk.ac.ox.softeng.maurodatamapper.profile.dataelement" &&
+                                it.key == "editableAfterFinalised"
+                            }
+                            md ? md.value.toBoolean() : true
+                        }()
                     )
                 }
             )
