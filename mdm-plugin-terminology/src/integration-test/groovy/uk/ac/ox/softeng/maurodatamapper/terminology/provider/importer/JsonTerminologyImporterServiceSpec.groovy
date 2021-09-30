@@ -35,6 +35,9 @@ import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getDEVELOPMENT
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getDEVELOPMENT
+
 /**
  * @since 17/09/2020
  */
@@ -101,7 +104,7 @@ class JsonTerminologyImporterServiceSpec extends DataBindTerminologyImporterProv
         basicParameters.importAsNewBranchModelVersion = true
         basicParameters.propagateFromPreviousVersion = true
 
-        Terminology terminology = Terminology.findById(complexTerminologyId)
+        Terminology terminology = Terminology.findById(simpleTerminologyId)
 
         Annotation testAnnotation = new Annotation(label: 'propagationTest', description: 'propagationTest', createdBy: admin.emailAddress)
         Classifier testClassifier = new Classifier(label: 'propagationTest', createdBy: admin.emailAddress)
@@ -120,10 +123,11 @@ class JsonTerminologyImporterServiceSpec extends DataBindTerminologyImporterProv
         terminology.addToSemanticLinks(testSemanticLink)
         terminology.addToReferenceFiles(testReferenceFile)
 
-        terminologyService.saveModelNewContentOnly(terminology)
+        checkAndSave(testClassifier)
+        checkAndSave(terminology)
 
         when:
-        Terminology term = importAndSave(loadTestFile('complexTerminology'))
+        Terminology term = importAndSave(loadTestFile('simpleTerminology'))
 
         then:
         term.annotations.find { it.label == testAnnotation.label }
@@ -136,7 +140,7 @@ class JsonTerminologyImporterServiceSpec extends DataBindTerminologyImporterProv
 
     }
 
-    void 'PG01 test importing a Terminology and propagating existing information'() {
+    void 'PG02 test importing a Terminology and propagating existing information'() {
 
         //propagateTerminology does not contain information present in the ComplexTerminology json
         // the missing data should be propagated across
@@ -146,21 +150,38 @@ class JsonTerminologyImporterServiceSpec extends DataBindTerminologyImporterProv
         basicParameters.importAsNewBranchModelVersion = true
         basicParameters.propagateFromPreviousVersion = true
 
+        Term term1 = new Term(createdBy: DEVELOPMENT, code: 'PPG01', definition: 'propagationTestTerm 1')
+        Term term2 = new Term(createdBy: DEVELOPMENT, code: 'PPG02', definition: 'propagationTestTerm 02')
+        Term term3 = new Term(createdBy: DEVELOPMENT, code: 'PPG03', definition: 'propagationTestTerm 03')
+        simpleTerminology.addToTerms(term1)
+            .addToTerms(term2)
+            .addToTerms(term3)
+
+        TermRelationshipType broaderThan = new TermRelationshipType(createdBy: DEVELOPMENT, label: 'broaderThan', displayLabel: 'Broader Than',
+                                                                    parentalRelationship: true)
+        TermRelationshipType narrowerThan = new TermRelationshipType(createdBy: DEVELOPMENT, label: 'narrowerThan', displayLabel: 'Narrower Than')
+
+        simpleTerminology.addToTermRelationshipTypes(broaderThan)
+            .addToTermRelationshipTypes(narrowerThan)
+
+        TermRelationship relationshipNarrow = new TermRelationship(createdBy: DEVELOPMENT, sourceTerm: term1, targetTerm: term2, relationshipType:
+            narrowerThan)
+        TermRelationship relationshipBroader = new TermRelationship(createdBy: DEVELOPMENT, sourceTerm: term1, targetTerm: term3,
+                                                                    relationshipType: broaderThan)
+        term1.addToSourceTermRelationships(relationshipNarrow)
+        term2.addToTargetTermRelationships(relationshipNarrow)
+
+        term1.addToSourceTermRelationships(relationshipBroader)
+        term3.addToTargetTermRelationships(relationshipBroader)
+
+        checkAndSave(simpleTerminology)
+
         when:
-        Terminology terminology = importAndSave(loadTestFile('propagateTerminology'))
+        Terminology terminology = importAndSave(loadTestFile('simpleTerminology'))
 
         then:
-        terminology.terms.find { it.label == "CTT98: Complex Test Term 98" }
-        terminology.terms.find { it.label == "CTT99: Complex Test Term 99" }
-        terminology.terms.find { it.label == "CTT100: Complex Test Term 100" }
-        terminology.termRelationshipTypes.find { it.label == "narrowerThan" }
-        terminology.termRelationshipTypes.find { it.label == "narrowerThan" }.termRelationships.size() == 8
-
-        TermRelationshipType trt = terminology.termRelationshipTypes.find { it.label == "is-a-part-of" }
-        trt.termRelationships.find { it.sourceTerm.label == "CTT97" && it.targetTerm.label == "CTT90" }
-        trt.termRelationships.find { it.sourceTerm.label == "CTT98" && it.targetTerm.label == "CTT90" }
-        trt.termRelationships.find { it.sourceTerm.label == "CTT99" && it.targetTerm.label == "CTT90" }
-        trt.termRelationships.find { it.sourceTerm.label == "CTT`100`" && it.targetTerm.label == "CTT90" }
+        terminology.terms.size() == 5
+        terminology.terms.count { it.code.matches('PPG(.*)') } == 3
 
     }
 }

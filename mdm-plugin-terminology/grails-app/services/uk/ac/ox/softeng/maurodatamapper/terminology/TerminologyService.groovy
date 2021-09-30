@@ -23,13 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedExcept
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
-import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
-import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
@@ -190,35 +184,7 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     Terminology saveModelNewContentOnly(Terminology model) {
-        long start = System.currentTimeMillis()
-        Collection<Term> terms = []
-        Collection<TermRelationshipType> termRelationshipTypes = []
-
-        if (model.classifiers) {
-            log.trace('Saving {} classifiers')
-            classifierService.saveAll(model.classifiers)
-        }
-
-        if (model.termRelationshipTypes) {
-            termRelationshipTypes.addAll model.termRelationshipTypes.findAll { !it.id }
-        }
-
-        if (model.terms) {
-            terms.addAll model.terms.findAll { !it.id }
-        }
-
-        if (model.breadcrumbTree.children) {
-            model.breadcrumbTree.children.each { it.skipValidation(true) }
-        }
-
-        save(model)
-
-        sessionFactory.currentSession.flush()
-
-        saveContent(terms, termRelationshipTypes)
-        log.debug('Complete save of Terminology complete in {}', Utils.timeTaken(start))
-        // Return the clean stored version of the datamodel, as we've messed with it so much this is much more stable
-        get(model.id)
+        save(failOnError: true, validate: false, flush: true, model)
     }
 
     void saveContent(Collection<Term> terms,

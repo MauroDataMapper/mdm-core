@@ -19,9 +19,16 @@ package uk.ac.ox.softeng.maurodatamapper.terminology.provider
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
+import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
+import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.CodeSetJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.CodeSetJsonImporterService
@@ -143,6 +150,20 @@ class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         log.info('Confirming imported model')
 
         confirmCodeSet(codeSet)
+        codeSet
+    }
+
+    CodeSet importModel(byte[] bytes) {
+        CodeSet imported = codeSetImporterService.importCodeSet(admin, bytes)
+        assert imported
+        imported.folder = testFolder
+        log.info('Checking imported model')
+        codeSetImporterService.checkImport(admin, imported, basicParameters)
+        check(imported)
+        assert codeSetService.saveModelWithContent(imported)
+        sessionFactory.currentSession.flush()
+
+        CodeSet codeSet = codeSetService.get(imported.id)
         codeSet
     }
 
@@ -557,4 +578,52 @@ class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         ApiBadRequestException exception = thrown(ApiBadRequestException)
         exception.errorCode == 'CSS01'
     }
+
+
+    void 'PG01 test propagatingCatalogueItemElements'() {
+
+        given:
+        setupData()
+        basicParameters.finalised = false
+        basicParameters.importAsNewBranchModelVersion = true
+        basicParameters.propagateFromPreviousVersion = true
+
+        CodeSet codeSet = CodeSet.findById(simpleCodeSetId)
+
+        Annotation testAnnotation = new Annotation(label: 'propagationTest', description: 'propagationTest', createdBy: admin.emailAddress)
+        Classifier testClassifier = new Classifier(label: 'propagationTest', createdBy: admin.emailAddress)
+        Metadata testMetadata = new Metadata(namespace: 'propagationTest', key: 'key', value: 'value', createdBy: admin.emailAddress)
+        Rule testRule = new Rule(name: 'propagationTest', createdBy: admin.emailAddress).addToRuleRepresentations(language: 'e', representation:
+            'a+b', createdBy: admin.emailAddress)
+        SemanticLink testSemanticLink = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdByUser: admin,
+                                                         targetMultiFacetAwareItem: Term.findByCode('STT01'))
+        ReferenceFile testReferenceFile = new ReferenceFile(fileName: 'propagationTest', fileType: 'text', fileContents: 'hello'.bytes, fileSize:
+            'hello'.bytes.size(), createdBy: admin.emailAddress)
+
+        codeSet.addToAnnotations(testAnnotation)
+        codeSet.addToClassifiers(testClassifier)
+        codeSet.addToMetadata(testMetadata)
+        codeSet.addToRules(testRule)
+        codeSet.addToSemanticLinks(testSemanticLink)
+        codeSet.addToReferenceFiles(testReferenceFile)
+
+        codeSetService.saveModelNewContentOnly()
+
+        checkAndSave(testClassifier)
+        checkAndSave(codeSet)
+
+        when:
+        CodeSet cs = importModel(loadTestFile('propagatedBootstrappedSimpleCodeSet'))
+
+        then:
+        cs.annotations.find { it.label == testAnnotation.label }
+        cs.classifiers.find { it.label == testClassifier.label }
+        cs.metadata.find { it.namespace == testMetadata.namespace }
+        cs.rules.find { it.name == testRule.name }
+        cs.semanticLinks.find { it.targetMultiFacetAwareItemId == testSemanticLink.targetMultiFacetAwareItemId }
+        cs.semanticLinks.find { it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType }
+        cs.referenceFiles.find { it.fileName == testReferenceFile.fileName }
+
+    }
+
 }

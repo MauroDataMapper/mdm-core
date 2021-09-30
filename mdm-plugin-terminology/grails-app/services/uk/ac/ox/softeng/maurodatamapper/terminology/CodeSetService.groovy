@@ -516,14 +516,14 @@ class CodeSetService extends ModelService<CodeSet> {
         List<Term> terms = new ArrayList<>(copiedModel.terms)
         Path copiedCodeSetPath = getFullPathForModel(copiedModel)
         Path originalCodeSetPath = getFullPathForModel(originalModel)
-        terms.each {term ->
+        terms.each { term ->
 
             Terminology terminology = term.terminology
             Path fullContextTerminologyPath = getFullPathForModel(terminology)
             Path termPath = Path.from(terminology, term)
             // Need to check if the CS is inside the same VF as the terminology
-            PathNode terminologyVersionedFolderPathNode = fullContextTerminologyPath.find {it.prefix == 'vf'}
-            if (terminologyVersionedFolderPathNode && originalCodeSetPath.any {it == terminologyVersionedFolderPathNode}) {
+            PathNode terminologyVersionedFolderPathNode = fullContextTerminologyPath.find { it.prefix == 'vf' }
+            if (terminologyVersionedFolderPathNode && originalCodeSetPath.any { it == terminologyVersionedFolderPathNode }) {
                 log.debug('Original codeset is inside the same context path as terminology for term [{}]', termPath)
                 Term branchedTerm = pathService.findResourceByPathFromRootResource(copiedModel, termPath,
                                                                                    copiedCodeSetPath.last().modelIdentifier) as Term
@@ -536,5 +536,16 @@ class CodeSetService extends ModelService<CodeSet> {
             }
         }
         save(copiedModel, flush: false, validate: false)
+    }
+
+    @Override
+    void propagateModelItemInformation(CodeSet model, CodeSet previousVersionModel, User user) {
+        super.propagateModelItemInformation(model, previousVersionModel, user)
+
+        previousVersionModel.terms.each { term ->
+            Term modelTerm = model.terms.find { it.label == term.label }
+            if (modelTerm) termService.propagateDataFromPreviousVersion(modelTerm, term, user)
+            else model.addToTerms(term)
+        }
     }
 }

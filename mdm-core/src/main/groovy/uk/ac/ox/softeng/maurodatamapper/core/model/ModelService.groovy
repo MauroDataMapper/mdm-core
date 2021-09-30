@@ -1056,7 +1056,8 @@ abstract class ModelService<K extends Model>
         if(!propagateFromPreviousVersion) return
 
         K previousVersionModel = findLatestFinalisedModelByLabel(model.label)
-        propagateDataFromPreviousVersion(model, previousVersionModel, user)
+        if (previousVersionModel) propagateDataFromPreviousVersion(model, previousVersionModel, user)
 
+        else throw new ApiBadRequestException('MSXX', 'Requested Model propagation has no predecessor')
     }
 }
