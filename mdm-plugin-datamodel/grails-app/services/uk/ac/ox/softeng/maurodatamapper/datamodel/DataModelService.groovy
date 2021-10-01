@@ -111,7 +111,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
      * DataModel allows the import of DataType and DataClass
      *
      @Override
-      List<Class>              domainImportableModelItemClasses() {[DataType, DataClass, PrimitiveType, EnumerationType, ReferenceType]}
+      List<Class>                domainImportableModelItemClasses() {[DataType, DataClass, PrimitiveType, EnumerationType, ReferenceType]}
      */
     Long count() {
         DataModel.count()
@@ -834,14 +834,26 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
         previousVersionModel.dataTypes.each { dataType ->
             DataType modelDataType = model.dataTypes.find { it.label == dataType.label }
-            if (modelDataType) dataTypeService.propagateDataFromPreviousVersion(modelDataType, dataType, user)
-            else model.addToDataTypes(dataType)
+            if (modelDataType) {
+                dataTypeService.propagateDataFromPreviousVersion(modelDataType, dataType, user)
+                return
+            }
+            modelDataType = dataTypeService.createNewDataTypeFromOriginal(dataType)
+            modelDataType.createdBy = user.emailAddress
+            dataTypeService.propagateDataFromPreviousVersion(modelDataType, dataType, user)
+            model.addToDataTypes(modelDataType)
         }
 
         previousVersionModel.getChildDataClasses().each { dataClass ->
             DataClass modelDataClass = model.dataClasses.find { it.label == dataClass.label }
-            if (modelDataClass) dataClassService.propagateDataFromPreviousVersion(modelDataClass, dataClass, user)
-            else model.addToDataClasses(dataClass)
+            if (modelDataClass) {
+                dataClassService.propagateDataFromPreviousVersion(modelDataClass, dataClass, user)
+                return
+            }
+            modelDataClass = new DataClass(label: dataClass.label, description: dataClass.description, createdBy: user
+                .emailAddress, minMultiplicity: dataClass.minMultiplicity, maxMultiplicity: dataClass.maxMultiplicity)
+            dataClassService.propagateDataFromPreviousVersion(modelDataClass, dataClass, user)
+            model.addToDataClasses(modelDataClass)
         }
     }
 

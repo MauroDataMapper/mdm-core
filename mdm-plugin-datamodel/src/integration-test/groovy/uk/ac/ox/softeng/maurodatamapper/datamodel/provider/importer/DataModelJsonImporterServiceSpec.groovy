@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
@@ -30,6 +31,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FilePar
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.provider.DataBindDataModelImporterProviderServiceSpec
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
@@ -37,6 +42,8 @@ import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 
 import groovy.util.logging.Slf4j
+
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getDEVELOPMENT
 
 /**
  * @since 15/11/2017
@@ -332,7 +339,7 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
 
     }
 
-    void 'PG01 : test importing a dataModel and propagating existing information from the already present version'() {
+    void 'PG02 : test importing a dataModel and propagating existing information from the already present version'() {
         /*
         imported data is a copy of the complexDataModel with the following alterations:
         Expect it to propagate information from complex data model where it has been altered or removed.
@@ -356,20 +363,34 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         basicParameters.importAsNewBranchModelVersion = true
         basicParameters.propagateFromPreviousVersion = true
 
+        DataModel dataModel = DataModel.get(simpleDataModelId)
+        DataClass dataClass = new DataClass(createdByUser: editor, label: 'propagation parent', dataModel: dataModel, minMultiplicity: 0,
+                                            maxMultiplicity: 1)
+        DataClass dataClassChild = new DataClass(createdByUser: editor, label: 'propagation child', dataModel: dataModel, minMultiplicity: 0,
+                                            maxMultiplicity: 1)
+        dataModel.addToDataClasses(dataClass)
+        dataClass.addToDataClasses(dataClassChild)
+
+        DataType dataType = new PrimitiveType(createdBy: DEVELOPMENT, label: 'integer')
+        dataModel.addToDataTypes(dataType)
+        EnumerationType enumType = new EnumerationType(createdBy: DEVELOPMENT, label: 'yesnounknown')
+            .addToEnumerationValues(key: 'Y', value: 'Yes', idx: 0)
+            .addToEnumerationValues(key: 'N', value: 'No', idx: 1)
+            .addToEnumerationValues(key: 'U', value: 'Unknown', idx: 2)
+        dataModel.addToEnumerationTypes(enumType)
+        ReferenceType refType = new ReferenceType(createdBy: DEVELOPMENT, label: 'child', referenceClass: dataClassChild)
+        dataModel.addToReferenceTypes(refType)
+
+        dataClass.addToDataElements(label: 'Propagation Test DataElement', createdBy: editor.emailAddress,
+                                    dataModel: dataModel, dataClass: dataClass, dataType: dataType)
+
+        checkAndSave(dataModel)
+
         when:
-        DataModel dm = importModel(loadTestFile('propagationImportDataModel'))
+        DataModel dm = importModel(loadTestFile('simpleDataModel'))
 
         then:
-        dm.primitiveTypes.find { it.label == "propagated decimal" }
-        dm.primitiveTypes.size() == 3
-        dm.allDataElements.find { it.label == "propagated child dataElement" }
-        dm.allDataElements.find { it.label == "propagated child dataElement" }.dataType.label == "Propagated child dataType"
-        dm.allDataElements.size() == 6
-        dm.enumerationTypes.find().enumerationValues.size() == 4
-        dm.dataClasses.find { it.label == "propagated dataclass with elements" }
-        dm.dataClasses.find { it.label == "content" }
-        dm.dataClasses.find { it.label == "propagated dataclass with elements" }.dataElements.size() == 2
+        dm.dataClasses.find{it.label == dataClass.label}
 
-        dm.referenceTypes.size() == 2
     }
 }

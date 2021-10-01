@@ -596,52 +596,72 @@ class TerminologyService extends ModelService<Terminology> {
 
         previousVersionModel.terms.each { term ->
             Term modelTerm = model.terms.find { it.label == term.label }
-            if (modelTerm) termService.propagateDataFromPreviousVersion(modelTerm, term, user)
-            else model.addToTerms(term)
+            if (modelTerm) {
+                termService.propagateDataFromPreviousVersion(modelTerm, term, user)
+                return
+            }
+            modelTerm = new Term(label: term.label, description: term.description,
+                                 createdBy: user.emailAddress, code: term.code,
+                                 definition: term.definition,
+                                 url: term.url,
+                                 isParent: term.isParent,
+                                 depth: term.depth)
+            termService.propagateDataFromPreviousVersion(modelTerm, term, user)
+            model.addToTerms(term)
         }
         previousVersionModel.termRelationshipTypes.each { termRelationshipType ->
             TermRelationshipType modelTermRelationshipType = model.termRelationshipTypes.find { it.label == termRelationshipType.label }
-            if (modelTermRelationshipType) termRelationshipTypeService.propagateDataFromPreviousVersion(modelTermRelationshipType, termRelationshipType, user)
-            else model.addToTermRelationshipTypes(termRelationshipType)
+            if (modelTermRelationshipType) {
+                termRelationshipTypeService.propagateDataFromPreviousVersion(modelTermRelationshipType, termRelationshipType, user)
+                return
+            }
+            modelTermRelationshipType =
+                new TermRelationshipType(createdBy: user.emailAddress, label: termRelationshipType.label,
+                                         description: termRelationshipType.description,
+                                         displayLabel: termRelationshipType.displayLabel,
+                                         parentalRelationship: termRelationshipType.parentalRelationship,
+                                         childRelationship: termRelationshipType.childRelationship)
+            termRelationshipTypeService.propagateDataFromPreviousVersion(modelTermRelationshipType, termRelationshipType, user)
+            model.addToTermRelationshipTypes(modelTermRelationshipType)
         }
     }
 
 
-@Override
-boolean useParentIdForSearching(UUID parentId) {
-    if (!parentId || codeSetService.get(parentId)) {
-        log.debug('Accessing terminology from context of CodeSet will ignore parentId')
-        return false
+    @Override
+    boolean useParentIdForSearching(UUID parentId) {
+        if (!parentId || codeSetService.get(parentId)) {
+            log.debug('Accessing terminology from context of CodeSet will ignore parentId')
+            return false
+        }
+        true
     }
-    true
-}
 
-@Override
-int getSortResultForFieldPatchPath(Path leftPath, Path rightPath) {
-    if (leftPath.any { it.prefix == 'cs' }) {
-        if (rightPath.any { it.prefix == 'cs' }) return 0
-        return 1
+    @Override
+    int getSortResultForFieldPatchPath(Path leftPath, Path rightPath) {
+        if (leftPath.any { it.prefix == 'cs' }) {
+            if (rightPath.any { it.prefix == 'cs' }) return 0
+            return 1
+        }
+        if (rightPath.any { it.prefix == 'cs' }) return -1
+        PathNode leftLastNode = leftPath.last()
+        PathNode rightLastNode = rightPath.last()
+        if (leftLastNode.prefix == 'tm') {
+            if (rightLastNode.prefix == 'tm') return 0
+            if (rightLastNode.prefix in ['trt', 'tr']) return -1
+            return 0
+        }
+        if (leftLastNode.prefix == 'trt') {
+            if (rightLastNode.prefix == 'tm') return 1
+            if (rightLastNode.prefix == 'trt') return 0
+            if (rightLastNode.prefix == 'tr') return -1
+            return 0
+        }
+        if (leftLastNode.prefix == 'tr') {
+            if (rightLastNode.prefix in ['trt', 'tr']) return 1
+            if (rightLastNode.prefix == 'tr') return 0
+            return 0
+        }
+        0
     }
-    if (rightPath.any { it.prefix == 'cs' }) return -1
-    PathNode leftLastNode = leftPath.last()
-    PathNode rightLastNode = rightPath.last()
-    if (leftLastNode.prefix == 'tm') {
-        if (rightLastNode.prefix == 'tm') return 0
-        if (rightLastNode.prefix in ['trt', 'tr']) return -1
-        return 0
-    }
-    if (leftLastNode.prefix == 'trt') {
-        if (rightLastNode.prefix == 'tm') return 1
-        if (rightLastNode.prefix == 'trt') return 0
-        if (rightLastNode.prefix == 'tr') return -1
-        return 0
-    }
-    if (leftLastNode.prefix == 'tr') {
-        if (rightLastNode.prefix in ['trt', 'tr']) return 1
-        if (rightLastNode.prefix == 'tr') return 0
-        return 0
-    }
-    0
-}
 
 }

@@ -180,12 +180,27 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
 
     @Override
     void propagateModelItemInformation(DataType model, DataType previousVersionModel, User user) {
-
-        //if DataType is of type EnumerationType, Go to enumeration type service and copy across Enumeration Values
-        //other data types do not have a nested set of values that need to be checked
         super.propagateModelItemInformation(model, previousVersionModel, user)
+
+        previousVersionModel.dataElements.each { dataElement ->
+            DataElement modelDataElement = model.dataElements.find { it.label == dataElement.label }
+            if (modelDataElement) {
+                dataElementService.propagateDataFromPreviousVersion(modelDataElement, dataElement, user)
+                return
+            }
+            DataElement newDataElement = new DataElement(label: dataElement.label, createdBy: user.emailAddress, dataClass: dataElement.dataClass,
+                                                         dataType: model, createdByUser: user)
+            dataElementService.propagateDataFromPreviousVersion(newDataElement, dataElement, user)
+            model.addToDataElements(newDataElement)
+        }
+        //if DataType is of type EnumerationType, Go to enumeration type service and copy across Enumeration Values
         if (previousVersionModel.instanceOf(EnumerationType)) {
             enumerationTypeService.propagateDataFromPreviousVersion(model as EnumerationType, previousVersionModel as EnumerationType, user)
+        }
+        if (previousVersionModel.instanceOf(ReferenceType)) {
+            ReferenceType previousReferenceType = previousVersionModel as ReferenceType
+            ReferenceType referenceModel = model as ReferenceType
+            referenceModel.setReferenceClass(dataClassService.findByLabel(previousReferenceType.referenceClass.label))
         }
       }
 

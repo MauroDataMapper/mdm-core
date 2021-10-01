@@ -398,12 +398,6 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
         copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, false, copyInformation)
     }
 
-    @Override
-    void propagateModelItemInformation(DataElement model, DataElement previousVersionModel, User user) {
-        super.propagateModelItemInformation(model, previousVersionModel, user)
-
-    }
-
     DataElementSimilarityResult findAllSimilarDataElementsInDataModel(DataModel dataModelToSearch, DataElement dataElementToCompare, maxResults = 5) {
 
         EntityManager entityManager = sessionFactory.createEntityManager()

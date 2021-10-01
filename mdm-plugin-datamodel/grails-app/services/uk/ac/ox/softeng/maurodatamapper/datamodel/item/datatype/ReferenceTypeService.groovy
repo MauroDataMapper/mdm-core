@@ -190,6 +190,7 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> implements Su
         dataType as ReferenceType
     }
 
+
     @Override
     PersistentEntity getPersistentEntity() {
         grailsApplication.mappingContext.getPersistentEntity(DataType.name)

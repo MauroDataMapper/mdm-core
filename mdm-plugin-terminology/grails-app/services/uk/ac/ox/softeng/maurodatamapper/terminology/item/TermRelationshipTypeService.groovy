@@ -201,8 +201,13 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
         super.propagateModelItemInformation(model, previousVersionModel, user)
         previousVersionModel.termRelationships.each { termRelationship ->
             TermRelationship modelTermRelationship = model.termRelationships.find { it.label == termRelationship.label }
-            if (modelTermRelationship) termRelationshipService.propagateDataFromPreviousVersion(modelTermRelationship, termRelationship, user)
-            else model.addToTermRelationships(termRelationship)
+            if (modelTermRelationship) {
+                termRelationshipService.propagateDataFromPreviousVersion(modelTermRelationship, termRelationship, user)
+                return
+            }
+            modelTermRelationship = termRelationshipService.copyTermRelationship(previousVersionModel.terminology, termRelationship, user)
+            termRelationshipService.propagateDataFromPreviousVersion(modelTermRelationship, termRelationship, user)
+            model.addToTermRelationships(termRelationship)
         }
     }
 }

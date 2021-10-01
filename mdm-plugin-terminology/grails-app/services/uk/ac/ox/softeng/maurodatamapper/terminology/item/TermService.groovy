@@ -487,15 +487,21 @@ class TermService extends ModelItemService<Term> {
     void propagateModelItemInformation(Term model, Term previousVersionModel, User user) {
         super.propagateModelItemInformation(model, previousVersionModel, user)
         previousVersionModel.sourceTermRelationships.each { sourceTermRelationShip ->
-            TermRelationship modelTermRelationship = model.sourceTermRelationships.find { it.label == sourceTermRelationShip.label }
-            if (modelTermRelationship) termRelationshipService.propagateDataFromPreviousVersion(modelTermRelationship, sourceTermRelationShip, user)
-            else model.addToSourceTermRelationships(sourceTermRelationShip)
+            model.addToSourceTermRelationships(propagateTermRelationship(model, previousVersionModel, sourceTermRelationShip, user))
         }
-
         previousVersionModel.targetTermRelationships.each { targetTermRelationShip ->
-            TermRelationship modelTermRelationship = model.sourceTermRelationships.find { it.label == targetTermRelationShip.label }
-            if (modelTermRelationship) termRelationshipService.propagateDataFromPreviousVersion(modelTermRelationship, targetTermRelationShip, user)
-            else model.addToSourceTermRelationships(targetTermRelationShip)
+            model.addToSourceTermRelationships(propagateTermRelationship(model, previousVersionModel, targetTermRelationShip, user))
         }
+    }
+
+    TermRelationship propagateTermRelationship(Term model, Term previousVersionModel, TermRelationship termRelationShip, User user) {
+        TermRelationship modelTermRelationship = model.sourceTermRelationships.find { it.label == termRelationShip.label }
+        if (modelTermRelationship) {
+            termRelationshipService.propagateDataFromPreviousVersion(modelTermRelationship, termRelationShip, user)
+            return modelTermRelationship
+        }
+        modelTermRelationship = termRelationshipService.copyTermRelationship(previousVersionModel.terminology, termRelationShip, user)
+        termRelationshipService.propagateDataFromPreviousVersion(modelTermRelationship, termRelationShip, user)
+        modelTermRelationship
     }
 }

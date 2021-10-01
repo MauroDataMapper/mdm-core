@@ -865,8 +865,10 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         super.propagateModelItemInformation(model, previousVersionModel, user)
         previousVersionModel.dataElements.each { dataElement ->
             DataElement modelDataElement = model.dataElements.find { it.label == dataElement.label }
-            if (modelDataElement) return
-
+            if (modelDataElement) {
+                dataElementService.propagateDataFromPreviousVersion(newDataElement, dataElement, user)
+                return
+            }
             DataElement newDataElement = new DataElement(label: dataElement.label, createdBy: user.emailAddress, dataClass: dataElement.dataClass,
                                                          dataType: dataElement.dataType)
             dataElementService.propagateDataFromPreviousVersion(newDataElement, dataElement, user)
