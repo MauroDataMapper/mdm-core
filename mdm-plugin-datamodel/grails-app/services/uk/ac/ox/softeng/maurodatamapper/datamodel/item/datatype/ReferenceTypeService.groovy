@@ -105,7 +105,8 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> implements Su
     }
 
     @Override
-    ReferenceType copy(Model copiedDataModel, ReferenceType original, CatalogueItem nonModelParent, UserSecurityPolicyManager userSecurityPolicyManager) {
+    ReferenceType copy(Model copiedDataModel, ReferenceType original, CatalogueItem nonModelParent,
+                       UserSecurityPolicyManager userSecurityPolicyManager) {
         dataTypeService.copy(copiedDataModel, original, nonModelParent, userSecurityPolicyManager) as ReferenceType
     }
 
@@ -205,5 +206,14 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> implements Su
     @Override
     List<ReferenceType> findAllByMetadataNamespace(String namespace, Map pagination) {
         ReferenceType.byMetadataNamespace(namespace).list(pagination)
+    }
+
+    @Override
+    void propagateModelItemInformation(ReferenceType model, ReferenceType previousVersionModel, User user) {
+        super.propagateModelItemInformation(model, previousVersionModel, user)
+        DataClass referenceClass = model.dataModel.getDataClasses().find { it.label == previousVersionModel.referenceClass.label }
+        if (referenceClass) {
+            model.setReferenceClass(referenceClass)
+        }
     }
 }

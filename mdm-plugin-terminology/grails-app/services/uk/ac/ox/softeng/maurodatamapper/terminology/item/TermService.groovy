@@ -486,22 +486,6 @@ class TermService extends ModelItemService<Term> {
     @Override
     void propagateModelItemInformation(Term model, Term previousVersionModel, User user) {
         super.propagateModelItemInformation(model, previousVersionModel, user)
-        previousVersionModel.sourceTermRelationships.each { sourceTermRelationShip ->
-            model.addToSourceTermRelationships(propagateTermRelationship(model, previousVersionModel, sourceTermRelationShip, user))
-        }
-        previousVersionModel.targetTermRelationships.each { targetTermRelationShip ->
-            model.addToSourceTermRelationships(propagateTermRelationship(model, previousVersionModel, targetTermRelationShip, user))
-        }
     }
 
-    TermRelationship propagateTermRelationship(Term model, Term previousVersionModel, TermRelationship termRelationShip, User user) {
-        TermRelationship modelTermRelationship = model.sourceTermRelationships.find { it.label == termRelationShip.label }
-        if (modelTermRelationship) {
-            termRelationshipService.propagateDataFromPreviousVersion(modelTermRelationship, termRelationShip, user)
-            return modelTermRelationship
-        }
-        modelTermRelationship = termRelationshipService.copyTermRelationship(previousVersionModel.terminology, termRelationShip, user)
-        termRelationshipService.propagateDataFromPreviousVersion(modelTermRelationship, termRelationShip, user)
-        modelTermRelationship
-    }
 }

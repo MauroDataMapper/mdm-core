@@ -218,5 +218,6 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> implement
             enumerationValueService.propagateModelItemInformation(modelEnumerationValue, enumerationValue, user)
             model.addToEnumerationValues(modelEnumerationValue)
         }
+        model.dataModel.addToEnumerationTypes(model)
     }
 }

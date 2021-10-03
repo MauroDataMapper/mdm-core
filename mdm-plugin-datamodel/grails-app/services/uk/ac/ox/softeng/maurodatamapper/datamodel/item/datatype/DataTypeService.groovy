@@ -180,29 +180,25 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
 
     @Override
     void propagateModelItemInformation(DataType model, DataType previousVersionModel, User user) {
+
         super.propagateModelItemInformation(model, previousVersionModel, user)
 
-        previousVersionModel.dataElements.each { dataElement ->
-            DataElement modelDataElement = model.dataElements.find { it.label == dataElement.label }
-            if (modelDataElement) {
-                dataElementService.propagateDataFromPreviousVersion(modelDataElement, dataElement, user)
-                return
-            }
-            DataElement newDataElement = new DataElement(label: dataElement.label, createdBy: user.emailAddress, dataClass: dataElement.dataClass,
-                                                         dataType: model, createdByUser: user)
-            dataElementService.propagateDataFromPreviousVersion(newDataElement, dataElement, user)
-            model.addToDataElements(newDataElement)
-        }
-        //if DataType is of type EnumerationType, Go to enumeration type service and copy across Enumeration Values
         if (previousVersionModel.instanceOf(EnumerationType)) {
             enumerationTypeService.propagateDataFromPreviousVersion(model as EnumerationType, previousVersionModel as EnumerationType, user)
         }
+
         if (previousVersionModel.instanceOf(ReferenceType)) {
-            ReferenceType previousReferenceType = previousVersionModel as ReferenceType
-            ReferenceType referenceModel = model as ReferenceType
-            referenceModel.setReferenceClass(dataClassService.findByLabel(previousReferenceType.referenceClass.label))
+            referenceTypeService.propagateDataFromPreviousVersion(model as ReferenceType, previousVersionModel as ReferenceType, user)
         }
-      }
+
+        if (previousVersionModel.instanceOf(PrimitiveType)){
+            primitiveTypeService.propagateDataFromPreviousVersion(model as PrimitiveType, previousVersionModel as PrimitiveType, user)
+        }
+
+        if (previousVersionModel.instanceOf(ModelDataType)){
+            modelDataTypeService.propagateDataFromPreviousVersion(model as ModelDataType, previousVersionModel as ModelDataType, user)
+        }
+    }
 
 
     @Override
@@ -394,7 +390,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         copy
     }
 
-    DataType createNewDataTypeFromOriginal(DataType original){
+    DataType createNewDataTypeFromOriginal(DataType original) {
         DataType copy
 
         String domainType = original.domainType

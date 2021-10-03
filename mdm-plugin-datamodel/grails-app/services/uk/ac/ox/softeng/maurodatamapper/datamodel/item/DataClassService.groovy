@@ -863,17 +863,38 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     @Override
     void propagateModelItemInformation(DataClass model, DataClass previousVersionModel, User user) {
         super.propagateModelItemInformation(model, previousVersionModel, user)
+
+        previousVersionModel.dataClasses.each {childDataClass ->
+            DataClass modelChildDataClass = model.dataClasses.find { it.label == childDataClass.label }
+            if(!modelChildDataClass){
+                modelChildDataClass = new DataClass(label: childDataClass.label, description: childDataClass.description, createdBy: user
+                    .emailAddress, minMultiplicity: childDataClass.minMultiplicity, maxMultiplicity: childDataClass.maxMultiplicity, dataModel:
+                                                        model.dataModel)
+                propagateDataFromPreviousVersion(modelChildDataClass, childDataClass, user)
+            }
+            model.addToDataClasses(modelChildDataClass)
+        }
+
         previousVersionModel.dataElements.each { dataElement ->
             DataElement modelDataElement = model.dataElements.find { it.label == dataElement.label }
             if (modelDataElement) {
-                dataElementService.propagateDataFromPreviousVersion(newDataElement, dataElement, user)
+                dataElementService.propagateDataFromPreviousVersion(modelDataElement, dataElement, user)
                 return
             }
             DataElement newDataElement = new DataElement(label: dataElement.label, createdBy: user.emailAddress, dataClass: dataElement.dataClass,
-                                                         dataType: dataElement.dataType)
+                                                         dataType: model.dataModel.dataTypes.find{it.label == dataElement.dataType.label})
             dataElementService.propagateDataFromPreviousVersion(newDataElement, dataElement, user)
             model.addToDataElements(newDataElement)
-
         }
+
+        previousVersionModel.referenceTypes.each { refType ->
+            ReferenceType referenceType = model.dataModel.referenceTypes.find { it.label == refType.label }
+            if (!referenceType) {
+                referenceType = new ReferenceType(createdBy: user.emailAddress, label: refType.label, dataModel: model.dataModel)
+                referenceTypeService.propagateDataFromPreviousVersion(referenceType, refType, user)
+            }
+            model.addToReferenceTypes(referenceType)
+        }
+
     }
 }

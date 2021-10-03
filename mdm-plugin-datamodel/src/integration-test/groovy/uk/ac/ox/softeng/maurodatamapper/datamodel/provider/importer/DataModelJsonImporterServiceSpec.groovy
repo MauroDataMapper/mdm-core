@@ -378,7 +378,7 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
             .addToEnumerationValues(key: 'N', value: 'No', idx: 1)
             .addToEnumerationValues(key: 'U', value: 'Unknown', idx: 2)
         dataModel.addToEnumerationTypes(enumType)
-        ReferenceType refType = new ReferenceType(createdBy: DEVELOPMENT, label: 'child', referenceClass: dataClassChild)
+        ReferenceType refType = new ReferenceType(createdBy: DEVELOPMENT, label: 'child', referenceClass: dataClass)
         dataModel.addToReferenceTypes(refType)
 
         dataClass.addToDataElements(label: 'Propagation Test DataElement', createdBy: editor.emailAddress,

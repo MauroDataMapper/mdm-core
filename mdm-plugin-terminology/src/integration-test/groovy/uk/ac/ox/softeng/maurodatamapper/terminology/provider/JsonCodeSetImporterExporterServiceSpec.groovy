@@ -30,6 +30,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.CodeSetJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.CodeSetJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters
@@ -49,6 +51,14 @@ import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getDEVELOPMENT
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getDEVELOPMENT
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getDEVELOPMENT
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getDEVELOPMENT
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getDEVELOPMENT
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getDEVELOPMENT
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getDEVELOPMENT
 
 /**
  * @since 17/09/2020
@@ -607,12 +617,11 @@ class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         codeSet.addToSemanticLinks(testSemanticLink)
         codeSet.addToReferenceFiles(testReferenceFile)
 
-        codeSetService.saveModelNewContentOnly()
-
         checkAndSave(testClassifier)
         checkAndSave(codeSet)
 
         when:
+        //propagatedBootstrappedSimpleCodeSet is simply not finalised
         CodeSet cs = importModel(loadTestFile('propagatedBootstrappedSimpleCodeSet'))
 
         then:
@@ -623,6 +632,35 @@ class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         cs.semanticLinks.find { it.targetMultiFacetAwareItemId == testSemanticLink.targetMultiFacetAwareItemId }
         cs.semanticLinks.find { it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType }
         cs.referenceFiles.find { it.fileName == testReferenceFile.fileName }
+
+    }
+
+    void 'PG02 test importing a CodeSet and propagating existing information'() {
+
+        //propagateTerminology does not contain information present in the ComplexTerminology json
+        // the missing data should be propagated across
+
+        setupData()
+        basicParameters.finalised = false
+        basicParameters.importAsNewBranchModelVersion = true
+        basicParameters.propagateFromPreviousVersion = true
+
+        Term term1 = new Term(createdBy: DEVELOPMENT, code: 'PPG01', definition: 'propagationTestTerm 01')
+        Term term2 = new Term(createdBy: DEVELOPMENT, code: 'PPG02', definition: 'propagationTestTerm 02')
+        Term term3 = new Term(createdBy: DEVELOPMENT, code: 'PPG03', definition: 'propagationTestTerm 03')
+
+        simpleCodeSet.addToTerms(term1)
+            .addToTerms(term2)
+            .addToTerms(term3)
+
+        checkAndSave(simpleCodeSet)
+
+        when:
+        CodeSet codeSet = importModel(loadTestFile('propagatedBootstrappedSimpleCodeSet'))
+
+        then:
+        codeSet.terms.size() == 5
+        codeSet.terms.count { it.code.matches('PPG(.*)') } == 3
 
     }
 

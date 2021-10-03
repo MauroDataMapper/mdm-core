@@ -168,4 +168,10 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> implements Su
     List<ModelDataType> findAllByMetadataNamespace(String namespace, Map pagination) {
         ModelDataType.byMetadataNamespace(namespace).list(pagination)
     }
+
+    @Override
+    void propagateModelItemInformation(ModelDataType model, ModelDataType previousVersionModel, User user) {
+        super.propagateModelItemInformation(model, previousVersionModel, user)
+        model.dataModel.addToModelDataTypes(model)
+    }
 }

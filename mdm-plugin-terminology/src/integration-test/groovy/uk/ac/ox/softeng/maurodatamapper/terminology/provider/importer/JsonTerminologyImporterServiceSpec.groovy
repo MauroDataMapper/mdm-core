@@ -166,13 +166,13 @@ class JsonTerminologyImporterServiceSpec extends DataBindTerminologyImporterProv
 
         TermRelationship relationshipNarrow = new TermRelationship(createdBy: DEVELOPMENT, sourceTerm: term1, targetTerm: term2, relationshipType:
             narrowerThan)
-        TermRelationship relationshipBroader = new TermRelationship(createdBy: DEVELOPMENT, sourceTerm: term1, targetTerm: term3,
+        TermRelationship relationshipBroader = new TermRelationship(createdBy: DEVELOPMENT, sourceTerm: term3, targetTerm: term1,
                                                                     relationshipType: broaderThan)
         term1.addToSourceTermRelationships(relationshipNarrow)
         term2.addToTargetTermRelationships(relationshipNarrow)
 
-        term1.addToSourceTermRelationships(relationshipBroader)
-        term3.addToTargetTermRelationships(relationshipBroader)
+        term3.addToSourceTermRelationships(relationshipBroader)
+        term1.addToTargetTermRelationships(relationshipBroader)
 
         checkAndSave(simpleTerminology)
 
@@ -182,6 +182,11 @@ class JsonTerminologyImporterServiceSpec extends DataBindTerminologyImporterProv
         then:
         terminology.terms.size() == 5
         terminology.terms.count { it.code.matches('PPG(.*)') } == 3
-
+        Term testTerm1 = terminology.terms.find { it.label == term1.label }
+        testTerm1.sourceTermRelationships.find{it.relationshipType == relationshipNarrow.relationshipType}
+        Term testTerm2 = terminology.terms.find { it.label == term2.label }
+        testTerm2.targetTermRelationships.find{it.relationshipType == relationshipNarrow.relationshipType}
+        terminology.termRelationshipTypes.find { it.label == broaderThan.label }
+        terminology.termRelationshipTypes.find { it.label == narrowerThan.label }
     }
 }

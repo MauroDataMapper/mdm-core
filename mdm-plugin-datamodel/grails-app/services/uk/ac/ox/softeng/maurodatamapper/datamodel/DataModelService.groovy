@@ -840,21 +840,23 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             }
             modelDataType = dataTypeService.createNewDataTypeFromOriginal(dataType)
             modelDataType.createdBy = user.emailAddress
+            modelDataType.dataModel = model
             dataTypeService.propagateDataFromPreviousVersion(modelDataType, dataType, user)
-            model.addToDataTypes(modelDataType)
         }
 
         previousVersionModel.getChildDataClasses().each { dataClass ->
             DataClass modelDataClass = model.dataClasses.find { it.label == dataClass.label }
             if (modelDataClass) {
                 dataClassService.propagateDataFromPreviousVersion(modelDataClass, dataClass, user)
+                model.addToDataClasses(modelDataClass)
                 return
             }
             modelDataClass = new DataClass(label: dataClass.label, description: dataClass.description, createdBy: user
-                .emailAddress, minMultiplicity: dataClass.minMultiplicity, maxMultiplicity: dataClass.maxMultiplicity)
+                .emailAddress, minMultiplicity: dataClass.minMultiplicity, maxMultiplicity: dataClass.maxMultiplicity,  dataModel: model)
             dataClassService.propagateDataFromPreviousVersion(modelDataClass, dataClass, user)
             model.addToDataClasses(modelDataClass)
         }
+
     }
 
     @Override

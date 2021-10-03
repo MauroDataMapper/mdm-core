@@ -606,9 +606,11 @@ class TerminologyService extends ModelService<Terminology> {
                                  url: term.url,
                                  isParent: term.isParent,
                                  depth: term.depth)
+            modelTerm.terminology = model
             termService.propagateDataFromPreviousVersion(modelTerm, term, user)
-            model.addToTerms(term)
+            model.addToTerms(modelTerm)
         }
+
         previousVersionModel.termRelationshipTypes.each { termRelationshipType ->
             TermRelationshipType modelTermRelationshipType = model.termRelationshipTypes.find { it.label == termRelationshipType.label }
             if (modelTermRelationshipType) {
@@ -620,7 +622,7 @@ class TerminologyService extends ModelService<Terminology> {
                                          description: termRelationshipType.description,
                                          displayLabel: termRelationshipType.displayLabel,
                                          parentalRelationship: termRelationshipType.parentalRelationship,
-                                         childRelationship: termRelationshipType.childRelationship)
+                                         childRelationship: termRelationshipType.childRelationship, terminology: model)
             termRelationshipTypeService.propagateDataFromPreviousVersion(modelTermRelationshipType, termRelationshipType, user)
             model.addToTermRelationshipTypes(modelTermRelationshipType)
         }
