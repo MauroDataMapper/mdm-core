@@ -194,7 +194,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         then:
         verifyResponse(UNPROCESSABLE_ENTITY, response)
         responseBody().total == 1
-        responseBody().errors.first().message == 'Value cannot be null'
+        responseBody().errors.first().message == 'This field cannot be empty'
         responseBody().errors.first().fieldName == 'Metadata namespace'
         responseBody().errors.first().metadataPropertyName == 'metadataNamespace'
 
