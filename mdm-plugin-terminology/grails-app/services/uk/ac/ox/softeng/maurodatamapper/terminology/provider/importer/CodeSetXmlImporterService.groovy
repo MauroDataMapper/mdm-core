@@ -26,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.
 
 import groovy.util.logging.Slf4j
 import groovy.util.slurpersupport.GPathResult
+import groovy.util.slurpersupport.NodeChild
 
 import java.nio.charset.Charset
 
@@ -39,12 +40,12 @@ class CodeSetXmlImporterService extends DataBindCodeSetImporterProviderService<C
 
     @Override
     String getVersion() {
-        '3.0'
+        '4.0'
     }
 
     @Override
     Boolean canImportMultipleDomains() {
-        false
+        true
     }
 
     @Override
@@ -62,5 +63,19 @@ class CodeSetXmlImporterService extends DataBindCodeSetImporterProviderService<C
 
         log.debug('Importing CodeSet map')
         bindMapToCodeSet(currentUser, map.codeSet as Map)
+    }
+
+    @Override
+    List<CodeSet> importCodeSets(User currentUser, byte[] content) {
+        if (!currentUser) throw new ApiUnauthorizedException('XTIS01', 'User must be logged in to import model')
+        if (content.size() == 0) throw new ApiBadRequestException('XTIS02', 'Cannot import empty content')
+
+        String xml = new String(content, Charset.defaultCharset())
+
+        log.debug('Parsing in file content using XmlSlurper')
+        GPathResult codeSets = new XmlSlurper().parseText(xml).children().find {it.name() == 'codeSets'}
+
+        log.debug('Importing CodeSet list')
+        convertToList(codeSets as NodeChild).collect {bindMapToCodeSet(currentUser, it)}
     }
 }

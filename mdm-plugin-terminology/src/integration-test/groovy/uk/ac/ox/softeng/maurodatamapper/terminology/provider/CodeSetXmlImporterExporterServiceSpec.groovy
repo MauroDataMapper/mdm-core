@@ -173,21 +173,6 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         exception.errorCode == 'CSEP01'
     }
 
-    void 'test that trying to import multiple codeSets fails'() {
-        given:
-        setupData()
-
-        expect:
-        !codeSetImporterService.canImportMultipleDomains()
-
-        when:
-        codeSetImporterService.importCodeSets(admin, loadTestFile('codeSetSimple'))
-
-        then:
-        ApiBadRequestException exception = thrown(ApiBadRequestException)
-        exception.message.contains('cannot import multiple CodeSets')
-    }
-
     void 'test exporting and reimporting the simple bootstrapped codeset'() {
         given:
         setupData()
@@ -564,6 +549,36 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         then:
         ApiBadRequestException exception = thrown(ApiBadRequestException)
         exception.errorCode == 'CSS01'
+    }
+
+    void 'test import multiple CodeSets'() {
+        given:
+        setupData()
+
+        expect:
+        CodeSet.count() == 2
+        codeSetImporterService.canImportMultipleDomains()
+
+        when:
+        List<CodeSet> codeSets = codeSetImporterService.importCodeSets(admin, loadTestFile('simpleAndComplexCodeSets'))
+
+        then:
+        codeSets
+        codeSets.size() == 2
+
+        when:
+        ObjectDiff simpleDiff = codeSetService.getDiffForModels(simpleCodeSet, codeSets[0])
+        ObjectDiff complexDiff = codeSetService.getDiffForModels(complexCodeSet, codeSets[1])
+
+        then:
+        !simpleDiff.objectsAreIdentical() // Expected diff failure on dateFinalised
+        !complexDiff.objectsAreIdentical()
+
+        simpleDiff.numberOfDiffs == 1
+        simpleDiff.diffs.find {it.fieldName == 'dateFinalised'}
+
+        complexDiff.numberOfDiffs == 1
+        complexDiff.diffs.find {it.fieldName == 'dateFinalised'}
     }
 
     void 'test export multiple CodeSets'() {
