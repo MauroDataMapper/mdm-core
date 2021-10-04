@@ -14,6 +14,7 @@
         <xs:element ref="mdmt:terminology" />
         <xs:element ref="mdmt:terminologies" />
         <xs:element ref="mdmc:codeSet" />
+        <xs:element ref="mdmc:codeSets" />
       </xs:choice>
       <xs:element name="exportMetadata" type="exp:exportMetadata" />
     </xs:sequence>
