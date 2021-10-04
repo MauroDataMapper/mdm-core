@@ -595,7 +595,6 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
                 throw new ApiNotYetImplementedException('MSXX', 'Model permission copying')
             }
             log.warn('Permission copying is not yet implemented')
-
         }
 
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
@@ -655,7 +654,6 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         }
     }
 
-
     Map<UUID, Long> obtainChildKnowledge(List<DataModel> parents) {
         if (!parents) return [:]
         DetachedCriteria<DataClass> criteria = new DetachedCriteria<DataClass>(DataClass)
@@ -669,13 +667,20 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     }
 
     @Override
-    boolean hasTreeTypeModelItems(DataModel dataModel, boolean fullTreeRender) {
-        dataClassService.countByDataModelId(dataModel.id) || (dataModel.dataTypes && fullTreeRender)
+    boolean isCatalogueItemImportedIntoCatalogueItem(CatalogueItem catalogueItem, DataModel owningDataModel) {
+        if (!(catalogueItem instanceof DataClass)) return false
+        owningDataModel.id && catalogueItem.model.id != owningDataModel.id
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(DataModel catalogueItem, boolean fullTreeRender = false) {
-        (dataClassService.findAllWhereRootDataClassOfDataModelId(catalogueItem.id) +
+    boolean hasTreeTypeModelItems(DataModel dataModel, boolean fullTreeRender, boolean includeImportedDataClasses) {
+        dataModel.dataClasses || (includeImportedDataClasses ? dataModel.importedDataClasses : false) || (dataModel.dataTypes && fullTreeRender)
+    }
+
+    @Override
+    List<ModelItem> findAllTreeTypeModelItemsIn(DataModel catalogueItem, boolean fullTreeRender, boolean includeImportedDataClasses) {
+        ((includeImportedDataClasses ? dataClassService.findAllWhereRootDataClassOfDataModelIdIncludingImported(catalogueItem.id)
+                                     : dataClassService.findAllWhereRootDataClassOfDataModelId(catalogueItem.id)) +
          (fullTreeRender ? DataType.byDataModelId(catalogueItem.id).list() : []) as List<ModelItem>)
     }
 

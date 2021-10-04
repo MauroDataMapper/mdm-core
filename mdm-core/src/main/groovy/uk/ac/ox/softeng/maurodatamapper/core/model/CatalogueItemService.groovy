@@ -93,20 +93,28 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
      */
     abstract List<K> getAll(Collection<UUID> ids)
 
-    boolean hasTreeTypeModelItems(K catalogueItem, boolean fullTreeRender) {
+    boolean isCatalogueItemImportedIntoCatalogueItem(CatalogueItem catalogueItem, K owningCatalogueItem) {
         false
     }
 
-    boolean hasTreeTypeModelItems(K catalogueItem) {
-        hasTreeTypeModelItems(catalogueItem, false)
+    boolean hasTreeTypeModelItems(K catalogueItem, boolean fullTreeRender) {
+        hasTreeTypeModelItems(catalogueItem, fullTreeRender, false)
     }
 
-    List<ModelItem> findAllTreeTypeModelItemsIn(K catalogueItem, boolean fullTreeRender) {
-        []
+    boolean hasTreeTypeModelItems(K catalogueItem, boolean fullTreeRender, boolean includeImportedItems) {
+        false
     }
 
     List<ModelItem> findAllTreeTypeModelItemsIn(K catalogueItem) {
         findAllTreeTypeModelItemsIn(catalogueItem, false)
+    }
+
+    List<ModelItem> findAllTreeTypeModelItemsIn(K catalogueItem, boolean fullTreeRender) {
+        findAllTreeTypeModelItemsIn(catalogueItem, fullTreeRender, false)
+    }
+
+    List<ModelItem> findAllTreeTypeModelItemsIn(K catalogueItem, boolean fullTreeRender, boolean includeImportedItems) {
+        []
     }
 
     abstract K findByIdJoinClassifiers(UUID id)
@@ -215,7 +223,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
             metadataService.copy(metadata, targetCatalogueItem)
         }
         // for modifications, recursively call this method
-        fieldPatchData.modified.each { modifiedObjectPatchData ->
+        fieldPatchData.modified.each {modifiedObjectPatchData ->
             metadataService.mergeLegacyMetadataIntoCatalogueItem(targetCatalogueItem, modifiedObjectPatchData)
         }
     }

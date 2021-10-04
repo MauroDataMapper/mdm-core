@@ -12,7 +12,7 @@ json {
     domainType treeItem.domainType
     label treeItem.label
     hasChildren treeItem.hasChildren()
-   availableActions treeItem.availableActions
+    availableActions treeItem.availableActions
 
     if (treeItem instanceof ContainerTreeItem) {
         ContainerTreeItem cti = (ContainerTreeItem) treeItem
@@ -40,6 +40,7 @@ json {
         ModelItemTreeItem miti = (ModelItemTreeItem) treeItem
         modelId miti.rootId
         if (miti.hasParent()) parentId treeItem.parentId
+        if (miti.isImported()) imported miti.imported
     }
 
     if (treeItem.hasChildren() && treeItem.renderChildren) {
