@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter
 
-import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.TerminologyJsonExporterService
+import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.TerminologyJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.terminology.test.provider.DataBindTerminologyImportAndDefaultExporterServiceSpec
 import uk.ac.ox.softeng.maurodatamapper.test.json.JsonComparer
@@ -70,5 +70,20 @@ class TerminologyJsonExporterServiceSpec extends DataBindTerminologyImportAndDef
 
         String expectedJson = replaceContentWithMatchers(Files.readString(expectedPath))
         verifyJson(expectedJson, exportedModel)
+    }
+
+    void 'test export multiple Terminologies'() {
+        given:
+        setupData()
+
+        expect:
+        Terminology.count() == 2
+        exporterService.canExportMultipleDomains()
+
+        when:
+        String exported = exportModels([simpleTerminologyId, complexTerminologyId])
+
+        then:
+        validateExportedModels('simpleAndComplexTerminologies', exported.replace(/Mauro Data Mapper/, 'Test Authority'))
     }
 }
