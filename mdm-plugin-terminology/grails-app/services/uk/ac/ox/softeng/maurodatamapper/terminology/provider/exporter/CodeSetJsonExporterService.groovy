@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportMetadata
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportModel
@@ -54,13 +53,18 @@ class CodeSetJsonExporterService extends CodeSetExporterProviderService implemen
     }
 
     @Override
+    Boolean canExportMultipleDomains() {
+        true
+    }
+
+    @Override
     ByteArrayOutputStream exportCodeSet(User currentUser, CodeSet codeSet) throws ApiException {
-        ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(codeSet, 'codeSet', version, exportMetadata), fileType)
+        exportCodeSets(currentUser, [codeSet])
     }
 
     @Override
     ByteArrayOutputStream exportCodeSets(User currentUser, List<CodeSet> codeSets) throws ApiException {
-        throw new ApiBadRequestException('CSES01', "${getName()} cannot export multiple CodeSets")
+        ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
+        exportModel(new ExportModel(codeSets, 'codeSet', version, exportMetadata), fileType)
     }
 }

@@ -117,6 +117,10 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         verifyJson(expectedJson, exportedModel)
     }
 
+    void validateExportedModels(String testName, String exportedModels) {
+        validateExportedModel(testName, exportedModels)
+    }
+
     @OnceBefore
     void setupResourcesPath() {
         resourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', importType)
@@ -141,6 +145,10 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
     String exportModel(UUID codeSetId) {
         ByteArrayOutputStream byteArrayOutputStream = codeSetExporterService.exportDomain(admin, codeSetId)
         new String(byteArrayOutputStream.toByteArray(), Charset.defaultCharset())
+    }
+
+    String exportModels(List<UUID> codeSetIds) {
+        new String(codeSetExporterService.exportDomains(admin, codeSetIds).toByteArray(), Charset.defaultCharset())
     }
 
     CodeSet importAndConfirm(byte[] bytes) {
@@ -633,5 +641,20 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
 
         cleanup:
         cleanupParameters()
+    }
+
+    void 'test export multiple CodeSets'() {
+        given:
+        setupData()
+
+        expect:
+        CodeSet.count() == 2
+        codeSetExporterService.canExportMultipleDomains()
+
+        when:
+        String exported = exportModels([simpleCodeSetId, complexCodeSetId])
+
+        then:
+        validateExportedModels('simpleAndComplexCodeSets', exported.replace(/Mauro Data Mapper/, 'Test Authority'))
     }
 }
