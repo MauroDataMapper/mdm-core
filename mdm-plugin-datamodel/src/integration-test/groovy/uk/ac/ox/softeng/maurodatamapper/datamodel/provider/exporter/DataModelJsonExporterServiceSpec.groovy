@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter
 
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.provider.DataBindImportAndDefaultExporterServiceSpec
 import uk.ac.ox.softeng.maurodatamapper.test.json.JsonComparer
@@ -69,5 +70,20 @@ class DataModelJsonExporterServiceSpec extends DataBindImportAndDefaultExporterS
 
         String expectedJson = replaceContentWithMatchers(Files.readString(expectedPath))
         verifyJson(expectedJson, exportedModel)
+    }
+
+    void 'test export multiple DataModels'() {
+        given:
+        setupData()
+
+        expect:
+        DataModel.count() == 2
+        exporterService.canExportMultipleDomains()
+
+        when:
+        String exported = exportModels([simpleDataModelId, complexDataModelId])
+
+        then:
+        validateExportedModels('simpleAndComplexDataModels', exported.replace(/Mauro Data Mapper/, 'Test Authority'))
     }
 }
