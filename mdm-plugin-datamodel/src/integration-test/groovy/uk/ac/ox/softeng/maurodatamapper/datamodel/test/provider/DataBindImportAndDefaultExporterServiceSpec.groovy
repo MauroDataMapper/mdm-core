@@ -63,6 +63,10 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
 
     abstract void validateExportedModel(String testName, String exportedModel)
 
+    void validateExportedModels(String testName, String exportedModels) {
+        validateExportedModel(testName, exportedModels)
+    }
+
     DataModel importAndConfirm(byte[] bytes) {
         def imported = importerService.importDataModel(admin, bytes)
 
@@ -85,6 +89,10 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
     String exportModel(UUID dataModelId) {
         ByteArrayOutputStream byteArrayOutputStream = exporterService.exportDomain(admin, dataModelId)
         new String(byteArrayOutputStream.toByteArray(), Charset.defaultCharset())
+    }
+
+    String exportModels(List<UUID> dataModelIds) {
+        new String(exporterService.exportDomains(admin, dataModelIds).toByteArray(), Charset.defaultCharset())
     }
 
     String importAndExport(byte[] bytes) {

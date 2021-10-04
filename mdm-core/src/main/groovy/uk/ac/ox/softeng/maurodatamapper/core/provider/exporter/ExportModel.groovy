@@ -23,36 +23,52 @@ import groovy.xml.Namespace
 
 class ExportModel {
 
-    Namespace xmlNamespace
-    Map modelExportMap
-    ExportMetadata exportMetadata
-    String modelExportTemplatePath
+    Map<String, List> modelExportMap
     String exportModelType
+    String modelExportTemplatePath
+    ExportMetadata exportMetadata
+    Namespace xmlNamespace
     Namespace modelXmlNamespace
 
+    private static Map<String, String> pluralModelTypes = [
+        'dataModel'  : 'dataModels',
+        'terminology': 'terminologies',
+        'codeSet'    : 'codeSets'
+    ]
+
     ExportModel(CatalogueItem model, String modelType, String version, ExportMetadata exportMetadata) {
-        this(model, modelType, version, '', exportMetadata)
+        this([model], modelType, version, '', exportMetadata)
+    }
+
+    ExportModel(List<CatalogueItem> models, String modelType, String version, ExportMetadata exportMetadata) {
+        this(models, modelType, version, '', exportMetadata)
     }
 
     ExportModel(CatalogueItem model, String modelType, String version, String templatePathFileExtension, ExportMetadata exportMetadata) {
-        this(model, modelType, version, version, templatePathFileExtension, exportMetadata)
+        this([model], modelType, version, version, templatePathFileExtension, exportMetadata)
     }
 
-    ExportModel(CatalogueItem model, String modelType, String version, String modelVersion, String templatePathFileExtension,
-                ExportMetadata exportMetadata) {
+    ExportModel(List<CatalogueItem> models, String modelType, String version, String templatePathFileExtension, ExportMetadata exportMetadata) {
+        this(models, modelType, version, version, templatePathFileExtension, exportMetadata)
+    }
+
+    ExportModel(CatalogueItem model, String modelType, String version, String modelVersion, String templatePathFileExtension, ExportMetadata exportMetadata) {
+        this([model], modelType, version, modelVersion, templatePathFileExtension, exportMetadata)
+    }
+
+    ExportModel(List<CatalogueItem> models, String modelType, String version, String modelVersion, String templatePathFileExtension, ExportMetadata exportMetadata) {
+        modelExportMap = [export: models]
+        exportModelType = models.size() > 1 ? pluralModelTypes[modelType] : modelType
+        modelExportTemplatePath = "/${modelType}/export${templatePathFileExtension ? ".$templatePathFileExtension" : ''}"
         this.exportMetadata = exportMetadata
-        this.exportModelType = modelType
-        this.xmlNamespace = new Namespace("http://maurodatamapper.com/export/${version}", 'xmlns:exp')
-        this.modelXmlNamespace = new Namespace("http://maurodatamapper.com/$exportModelType/$modelVersion", 'xmlns:mdm')
-        this.modelExportTemplatePath = "/$exportModelType/export${templatePathFileExtension ? ".$templatePathFileExtension" : ''}"
-        this.modelExportMap = [export: model]
-        this.modelExportMap[exportModelType] = model
+        xmlNamespace = new Namespace("http://maurodatamapper.com/export/${version}", 'xmlns:exp')
+        modelXmlNamespace = new Namespace("http://maurodatamapper.com/${modelType}/${modelVersion}", 'xmlns:mdm')
     }
 
-    Map getXmlNamespaces() {
-        Map ns = [:]
-        ns[xmlNamespace.prefix] = xmlNamespace.uri
-        ns[modelXmlNamespace.prefix] = modelXmlNamespace.uri
-        ns
+    Map<String, String> getXmlNamespaces() {
+        [
+            (xmlNamespace.prefix)     : xmlNamespace.uri,
+            (modelXmlNamespace.prefix): modelXmlNamespace.uri
+        ]
     }
 }
