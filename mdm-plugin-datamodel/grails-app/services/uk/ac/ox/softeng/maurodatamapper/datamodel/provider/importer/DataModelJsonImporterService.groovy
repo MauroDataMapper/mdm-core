@@ -36,7 +36,12 @@ class DataModelJsonImporterService extends DataBindDataModelImporterProviderServ
 
     @Override
     String getVersion() {
-        '2.0'
+        '3.0'
+    }
+
+    @Override
+    Boolean canImportMultipleDomains() {
+        true
     }
 
     @Override
@@ -51,5 +56,18 @@ class DataModelJsonImporterService extends DataBindDataModelImporterProviderServ
 
         log.debug('Importing DataModel map')
         bindMapToDataModel(currentUser, new HashMap(dataModel))
+    }
+
+    @Override
+    List<DataModel> importDataModels(User currentUser, byte[] content) {
+        if (!currentUser) throw new ApiUnauthorizedException('JIS01', 'User must be logged in to import model')
+        if (content.size() == 0) throw new ApiBadRequestException('JIS02', 'Cannot import empty content')
+
+        log.debug('Parsing in file content using JsonSlurper')
+        List<Map> dataModels = slurpAndClean(content).dataModels
+        if (!dataModels || dataModels.any {!it}) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as dataModel is not present')
+
+        log.debug('Importing list of DataModel maps')
+        dataModels.collect {bindMapToDataModel(currentUser, new HashMap(it))}
     }
 }
