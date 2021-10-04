@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportMetadata
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportModel
@@ -57,13 +56,18 @@ class DataModelXmlExporterService extends DataModelExporterProviderService imple
     }
 
     @Override
+    Boolean canExportMultipleDomains() {
+        true
+    }
+
+    @Override
     ByteArrayOutputStream exportDataModel(User currentUser, DataModel dataModel) throws ApiException {
-        ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(dataModel, 'dataModel', version, 'gml', exportMetadata), fileType)
+        exportDataModels(currentUser, [dataModel])
     }
 
     @Override
     ByteArrayOutputStream exportDataModels(User currentUser, List<DataModel> dataModels) throws ApiException {
-        throw new ApiBadRequestException('XES01', "${getName()} cannot export multiple DataModels")
+        ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
+        exportModel(new ExportModel(dataModels, 'dataModel', version, '3.2', 'gml', exportMetadata), fileType)
     }
 }
