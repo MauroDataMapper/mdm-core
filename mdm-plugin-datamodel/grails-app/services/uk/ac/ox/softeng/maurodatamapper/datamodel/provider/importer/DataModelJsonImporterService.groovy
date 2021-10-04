@@ -64,7 +64,8 @@ class DataModelJsonImporterService extends DataBindDataModelImporterProviderServ
         if (content.size() == 0) throw new ApiBadRequestException('JIS02', 'Cannot import empty content')
 
         log.debug('Parsing in file content using JsonSlurper')
-        List<Map> dataModels = slurpAndClean(content).dataModels
+        Object jsonContent = slurpAndClean(content)
+        List<Map> dataModels = jsonContent.dataModels ?: [jsonContent.dataModel]
         if (!dataModels || dataModels.any {!it}) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as dataModel is not present')
 
         log.debug('Importing list of DataModel maps')

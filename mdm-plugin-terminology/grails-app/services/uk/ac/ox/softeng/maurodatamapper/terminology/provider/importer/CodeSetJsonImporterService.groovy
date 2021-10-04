@@ -64,7 +64,8 @@ class CodeSetJsonImporterService extends DataBindCodeSetImporterProviderService<
         if (content.size() == 0) throw new ApiBadRequestException('JIS02', 'Cannot import empty content')
 
         log.debug('Parsing in file content using JsonSlurper')
-        List<Map> codeSets = slurpAndClean(content).codeSets
+        Object jsonContent = slurpAndClean(content)
+        List<Map> codeSets = jsonContent.codeSets ?: [jsonContent.codeSet]
         if (!codeSets || codeSets.any {!it}) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as codeSet is not present')
 
         log.debug('Importing CodeSet map')

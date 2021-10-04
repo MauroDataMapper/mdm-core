@@ -73,9 +73,26 @@ class CodeSetXmlImporterService extends DataBindCodeSetImporterProviderService<C
         String xml = new String(content, Charset.defaultCharset())
 
         log.debug('Parsing in file content using XmlSlurper')
-        GPathResult codeSets = new XmlSlurper().parseText(xml).children().find {it.name() == 'codeSets'}
+        GPathResult result = new XmlSlurper().parseText(xml)
+        result = result.children()[0].name() == 'codeSets' ? result.children()[0] : result
 
-        log.debug('Importing CodeSet list')
-        convertToList(codeSets as NodeChild).collect {bindMapToCodeSet(currentUser, it)}
+        if (result.name() == 'codeSets') {
+            log.debug('Importing CodeSet list')
+            return convertToList(result as NodeChild).collect {bindMapToCodeSet(currentUser, it)}
+        }
+
+        // Handle single CodeSet map or exportModel passed to this method, for backwards compatibility
+
+        log.debug('Converting result to Map')
+        Map map = convertToMap(result)
+
+        log.debug('Importing CodeSet map')
+        [bindMapToCodeSet(currentUser, backwardsCompatibleExtractCodeSetMap(result, map))]
+    }
+
+    private Map backwardsCompatibleExtractCodeSetMap(GPathResult result, Map map) {
+        if (result.name() == 'exportModel') return map.codeSet as Map
+        if (result.name() == 'codeSet') return map
+        throw new ApiBadRequestException('XIS03', 'Cannot import XML as codeSet is not present')
     }
 }

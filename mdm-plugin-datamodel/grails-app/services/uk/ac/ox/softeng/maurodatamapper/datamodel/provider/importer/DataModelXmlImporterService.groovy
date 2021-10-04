@@ -88,23 +88,13 @@ class DataModelXmlImporterService extends DataBindDataModelImporterProviderServi
             return convertToList(result as NodeChild).collect {bindMapToDataModel(currentUser, it)}
         }
 
-        // Handle single DM map or exportModel passed to this method, for backward compatibility
+        // Handle single DataModel map or exportModel passed to this method, for backwards compatibility
 
         log.debug('Converting result to Map')
         Map map = convertToMap(result)
 
         log.debug('Importing DataModel map')
         [bindMapToDataModel(currentUser, backwardsCompatibleExtractDataModelMap(result, map))]
-    }
-
-    Map backwardsCompatibleExtractDataModelMap(GPathResult result, Map map) {
-        switch (result.name()) {
-            case 'exportModel':
-                return map.dataModel as Map
-            case 'dataModel':
-                return map
-        }
-        throw new ApiBadRequestException('XIS03', 'Cannot import XML as dataModel is not present')
     }
 
     List convertToList(NodeChild nodeChild) {
@@ -123,5 +113,11 @@ class DataModelXmlImporterService extends DataBindDataModelImporterProviderServi
             return ex.getMessage()
         }
         null
+    }
+
+    private Map backwardsCompatibleExtractDataModelMap(GPathResult result, Map map) {
+        if (result.name() == 'exportModel') return map.dataModel as Map
+        if (result.name() == 'dataModel') return map
+        throw new ApiBadRequestException('XIS03', 'Cannot import XML as dataModel is not present')
     }
 }
