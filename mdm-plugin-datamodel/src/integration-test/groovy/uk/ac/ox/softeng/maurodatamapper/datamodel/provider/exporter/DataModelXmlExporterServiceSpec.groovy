@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter
 
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelXmlImporterService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.provider.DataBindImportAndDefaultExporterServiceSpec
 import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlValidator
@@ -104,7 +105,23 @@ class DataModelXmlExporterServiceSpec extends DataBindImportAndDefaultExporterSe
             'IncEmptyDataClassAndAnnotation',
             'IncDataClassWithChild',
             'IncDataClassWithDataElement',
-            'IncDataClassWithChildAndSingleReferenceDataType'
+            'IncDataClassWithChildAndSingleReferenceDataType',
+            'SimpleAndComplexDataModels'
         ]
+    }
+
+    void 'test export multiple DataModels'() {
+        given:
+        setupData()
+
+        expect:
+        DataModel.count() == 2
+        exporterService.canExportMultipleDomains()
+
+        when:
+        String exported = exportModels([simpleDataModelId, complexDataModelId])
+
+        then:
+        validateExportedModels('SimpleAndComplexDataModels', exported.replace(/Mauro Data Mapper/, 'Test Authority'))
     }
 }
