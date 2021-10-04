@@ -61,6 +61,10 @@ abstract class DataBindTerminologyImportAndDefaultExporterServiceSpec<I extends 
 
     abstract void validateExportedModel(String testName, String exportedModel)
 
+    void validateExportedModels(String testName, String exportedModels) {
+        validateExportedModel(testName, exportedModels)
+    }
+
     Terminology importAndConfirm(byte[] bytes) {
         def imported = importerService.importTerminology(admin, bytes)
 
@@ -83,6 +87,10 @@ abstract class DataBindTerminologyImportAndDefaultExporterServiceSpec<I extends 
     String exportModel(UUID dataModelId) {
         ByteArrayOutputStream byteArrayOutputStream = exporterService.exportDomain(admin, dataModelId)
         new String(byteArrayOutputStream.toByteArray(), Charset.defaultCharset())
+    }
+
+    String exportModels(List<UUID> terminologyIds) {
+        new String(exporterService.exportDomains(admin, terminologyIds).toByteArray(), Charset.defaultCharset())
     }
 
     String importAndExport(byte[] bytes) {
