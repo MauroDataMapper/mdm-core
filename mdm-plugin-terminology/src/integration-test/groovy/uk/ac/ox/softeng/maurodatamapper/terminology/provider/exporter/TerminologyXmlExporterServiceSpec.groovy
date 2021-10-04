@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter
 
-import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.TerminologyXmlExporterService
+import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.TerminologyXmlImporterService
 import uk.ac.ox.softeng.maurodatamapper.terminology.test.provider.DataBindTerminologyImportAndDefaultExporterServiceSpec
 import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlValidator
@@ -92,7 +92,23 @@ class TerminologyXmlExporterServiceSpec extends DataBindTerminologyImportAndDefa
             'terminologyWithAliases',
             'terminologyWithMetadata',
             'terminologyWithAnnotations',
-            'complexImport'
+            'complexImport',
+            'simpleAndComplexTerminologies'
         ]
+    }
+
+    void 'test export multiple Terminologies'() {
+        given:
+        setupData()
+
+        expect:
+        Terminology.count() == 2
+        exporterService.canExportMultipleDomains()
+
+        when:
+        String exported = exportModels([simpleTerminologyId, complexTerminologyId])
+
+        then:
+        validateExportedModels('SimpleAndComplexTerminologies', exported.replace(/Mauro Data Mapper/, 'Test Authority'))
     }
 }
