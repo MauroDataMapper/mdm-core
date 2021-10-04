@@ -64,7 +64,8 @@ class TerminologyJsonImporterService extends DataBindTerminologyImporterProvider
         if (content.size() == 0) throw new ApiBadRequestException('JIS02', 'Cannot import empty content')
 
         log.debug('Parsing in file content using JsonSlurper')
-        List<Map> terminologies = slurpAndClean(content).terminologies
+        Object jsonContent = slurpAndClean(content)
+        List<Map> terminologies = jsonContent.terminologies ?: [jsonContent.terminology]
         if (!terminologies || terminologies.any {!it}) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as terminology is not present')
 
         log.debug('Importing list of Terminology maps')

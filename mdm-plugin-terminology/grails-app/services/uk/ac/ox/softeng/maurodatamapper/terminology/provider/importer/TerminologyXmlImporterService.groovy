@@ -73,20 +73,26 @@ class TerminologyXmlImporterService extends DataBindTerminologyImporterProviderS
         String xml = new String(content, Charset.defaultCharset())
 
         log.debug('Parsing in file content using XmlSlurper')
-        GPathResult terminologies = new XmlSlurper().parseText(xml).children().find {it.name() == 'terminologies'}
+        GPathResult result = new XmlSlurper().parseText(xml)
+        result = result.children()[0].name() == 'terminologies' ? result.children()[0] : result
 
-        log.debug('Importing Terminology list')
-        convertToList(terminologies as NodeChild).collect {bindMapToTerminology(currentUser, it)}
+        if (result.name() == 'terminologies') {
+            log.debug('Importing Terminology list')
+            return convertToList(result as NodeChild).collect {bindMapToTerminology(currentUser, it)}
+        }
+
+        // Handle single Terminology map or exportModel passed to this method, for backwards compatibility
+
+        log.debug('Converting result to Map')
+        Map map = convertToMap(result)
+
+        log.debug('Importing Terminology map')
+        [bindMapToTerminology(currentUser, backwardsCompatibleExtractTerminologyMap(result, map))]
     }
 
-    Map backwardsCompatibleExtractTerminologyMap(GPathResult result, Map map) {
-        log.debug("backwardsCompatibleExtractTerminologyMap")
-        switch (result.name()) {
-            case 'exportModel':
-                return map.terminology as Map
-            case 'terminology':
-                return map
-        }
+    private Map backwardsCompatibleExtractTerminologyMap(GPathResult result, Map map) {
+        if (result.name() == 'exportModel') return map.terminology as Map
+        if (result.name() == 'terminology') return map
         throw new ApiBadRequestException('XIS03', 'Cannot import XML as terminology is not present')
     }
 }
