@@ -17,8 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer
 
-
-import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.TerminologyXmlImporterService
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.test.provider.DataBindTerminologyImporterProviderServiceSpec
 
 import grails.gorm.transactions.Rollback
@@ -44,5 +44,34 @@ class TerminologyXmlImporterServiceSpec extends DataBindTerminologyImporterProvi
         'xml'
     }
 
+    void 'test import multiple Terminologies'() {
+        given:
+        setupData()
 
+        expect:
+        Terminology.count() == 2
+        importerService.canImportMultipleDomains()
+
+        when:
+        List<Terminology> terminologies = importerService.importTerminologies(admin, loadTestFile('simpleAndComplexTerminologies'))
+
+        then:
+        terminologies
+        terminologies.size() == 2
+
+        when:
+        ObjectDiff simpleDiff = terminologyService.getDiffForModels(simpleTerminology, terminologies[0])
+        ObjectDiff complexDiff = terminologyService.getDiffForModels(complexTerminology, terminologies[1])
+
+        then:
+        simpleDiff.objectsAreIdentical()
+        !complexDiff.objectsAreIdentical() // Expected
+
+        // Rules are not imported/exported and will therefore exist as diffs
+        complexDiff.numberOfDiffs == 4
+        complexDiff.diffs.find {it.fieldName == 'rule'}.deleted.size() == 1
+        complexDiff.diffs.find {it.fieldName == 'terms'}.modified[0].diffs.deleted.size() == 1
+        complexDiff.diffs.find {it.fieldName == 'termRelationships'}.modified[0].diffs.deleted.size() == 1
+        complexDiff.diffs.find {it.fieldName == 'termRelationshipTypes'}.modified[0].diffs.deleted.size() == 1
+    }
 }
