@@ -88,7 +88,8 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
         parent.addToReferenceTypes(refType)
         dataModel.addToDataTypes(refType)
 
-        DataElement el1 = new DataElement(createdBy: StandardEmailAddress.UNIT_TEST, label: 'parentel', minMultiplicity: 1, maxMultiplicity: 1, dataType: refType)
+        DataElement el1 = new DataElement(createdBy: StandardEmailAddress.UNIT_TEST, label: 'parentel', minMultiplicity: 1, maxMultiplicity: 1)
+        refType.addToDataElements(el1)
         parent.addToDataElements(el1)
 
         ReferenceType refType2 = new ReferenceType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'dataclass')
@@ -103,8 +104,9 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
         refType.addToDataElements(el3)
         added.addToDataElements(el3)
 
-        added.addToDataElements(new DataElement(createdBy: StandardEmailAddress.UNIT_TEST, label: 'varcharel', minMultiplicity: 1, maxMultiplicity: 1,
-                                                dataType: primitiveType))
+        DataElement el4 = new DataElement(createdBy: StandardEmailAddress.UNIT_TEST, label: 'varcharel', minMultiplicity: 1, maxMultiplicity: 1)
+        primitiveType.addToDataElements(el4)
+        added.addToDataElements(el4)
 
         checkAndSave(dataModel)
 
@@ -156,7 +158,7 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
         DataElement.findByLabel('varcharel')
 
         when:
-        service.delete(pt)
+        service.delete(pt, true)
 
         then:
         DataType.count() == 7

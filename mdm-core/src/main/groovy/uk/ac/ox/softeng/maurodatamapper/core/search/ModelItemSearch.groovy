@@ -26,6 +26,5 @@ class ModelItemSearch {
 
     static search = {
         CallableSearch.call(StandardSearch, delegate)
-        path searchable: 'yes', analyzer: 'path'
     }
 }

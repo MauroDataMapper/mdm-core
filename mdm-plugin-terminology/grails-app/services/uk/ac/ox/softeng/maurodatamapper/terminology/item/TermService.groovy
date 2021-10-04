@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelItemTreeItem
+import uk.ac.ox.softeng.maurodatamapper.core.tree.TreeItemService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
@@ -46,6 +47,7 @@ class TermService extends ModelItemService<Term> {
     TermRelationshipService termRelationshipService
     MessageSource messageSource
     TerminologyService terminologyService
+    TreeItemService treeItemService
 
     private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
 
@@ -344,11 +346,11 @@ class TermService extends ModelItemService<Term> {
             int depth = term.depth
             log.debug('Term provided, building tree at depth {}', depth)
             List<Term> terms = findAllTreeTypeModelItemsIn(term) as List<Term>
-            tree = terms.collect { t -> new ModelItemTreeItem(t, t.hasChildren(), []) }.toSet()
+            tree = terms.collect {t -> treeItemService.createModelItemTreeItem(t, t.hasChildren(), [])}.toSet()
         } else {
             log.debug('No term provided so providing top level tree')
             List<Term> terms = terminologyService.findAllTreeTypeModelItemsIn(terminology) as List<Term>
-            tree = terms.collect { t -> new ModelItemTreeItem(t, t.hasChildren(), []) }.toSet()
+            tree = terms.collect {t -> treeItemService.createModelItemTreeItem(t, t.hasChildren(), [])}.toSet()
         }
 
         List<ModelItemTreeItem> sortedTree = tree.sort()

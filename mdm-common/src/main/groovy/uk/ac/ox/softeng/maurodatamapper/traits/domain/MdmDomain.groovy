@@ -51,16 +51,7 @@ trait MdmDomain {
     abstract String getPathIdentifier()
 
     Path getPath() {
-        if (!this.@path) {
-            if (!pathPrefix || !pathIdentifier) {
-                LoggerFactory.getLogger(this.class).info('Cannot build path for {} as no prefix and/or identifier', domainType)
-                return null
-            }
-            Path newPath = buildPath()
-            Path oldPath = this.@path
-            markDirty('path', newPath, oldPath)
-            this.@path = newPath
-        }
+        checkPath()
         this.@path
     }
 
@@ -72,5 +63,25 @@ trait MdmDomain {
         Path.from(pathPrefix, pathIdentifier)
     }
 
+    void checkPath() {
+        if (!this.@path) {
+            if (!pathPrefix || !pathIdentifier) {
+                LoggerFactory.getLogger(this.class).info('Cannot build path for {} as no prefix and/or identifier', domainType)
+                return
+            }
+            setBuiltPath(buildPath())
+        } else {
+            Path builtPath = buildPath()
+            if (!this.@path.matches(builtPath)) {
+                setBuiltPath(builtPath)
+            }
+        }
+    }
 
+    private void setBuiltPath(Path builtPath) {
+        Path newPath = buildPath()
+        Path oldPath = this.@path
+        markDirty('path', newPath, oldPath)
+        this.@path = newPath
+    }
 }

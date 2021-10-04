@@ -26,11 +26,10 @@ import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearc
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.PathAware
 
 import grails.gorm.DetachedCriteria
 
-class GroupRole implements MdmDomain, EditHistoryAware, PathAware, SecurableResource, Comparable<GroupRole> {
+class GroupRole implements MdmDomain, EditHistoryAware, SecurableResource, Comparable<GroupRole> {
 
     public static final String APPLICATION_ADMIN_ROLE_NAME = 'application_admin'
     public static final String CONTAINER_ADMIN_ROLE_NAME = 'container_admin'
@@ -78,7 +77,7 @@ class GroupRole implements MdmDomain, EditHistoryAware, PathAware, SecurableReso
 
     static search = {
         name searchable: 'yes'
-        pathString searchable: 'yes', analyzer: 'path'
+        path searchable: 'yes', analyzer: 'path'
     }
 
     GroupRole() {
@@ -87,25 +86,13 @@ class GroupRole implements MdmDomain, EditHistoryAware, PathAware, SecurableReso
         userGroups = []
     }
 
-    @Override
-    GroupRole getPathParent() {
+    GroupRole getParent() {
         parent
     }
 
     @Override
     def beforeValidate() {
-        buildPathString()
         children.each {it.beforeValidate()}
-    }
-
-    @Override
-    def beforeInsert() {
-        buildPathString()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPathString()
     }
 
     @Override
@@ -147,7 +134,7 @@ class GroupRole implements MdmDomain, EditHistoryAware, PathAware, SecurableReso
 
     @Deprecated
     Integer getDepth() {
-        getPathString().split('/').size()
+        path.size() - 1
     }
 
     /**

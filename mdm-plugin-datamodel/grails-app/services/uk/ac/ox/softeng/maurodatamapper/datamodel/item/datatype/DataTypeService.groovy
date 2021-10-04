@@ -314,14 +314,14 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
 
     void checkImportedDataTypeAssociations(User importingUser, DataModel dataModel, DataType dataType) {
         dataModel.addToDataTypes(dataType)
-        dataType.buildPathString()
+        dataType.checkPath()
         dataType.createdBy = importingUser.emailAddress
         if (dataType.instanceOf(EnumerationType)) {
             EnumerationType enumerationType = (dataType as EnumerationType)
             enumerationType.fullSortOfChildren(enumerationType.enumerationValues)
             enumerationType.enumerationValues.each { ev ->
                 ev.createdBy = importingUser.emailAddress
-                ev.buildPathString()
+                ev.checkPath()
             }
         }
         checkFacetsAfterImportingCatalogueItem(dataType)
@@ -471,11 +471,11 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         dataModel
     }
 
-    private def <T extends DataType> T mergeDataTypes(List<T> dataTypes) {
+    def <T extends DataType> T mergeDataTypes(List<T> dataTypes) {
         mergeDataTypes(dataTypes.first(), dataTypes)
     }
 
-    private def <T extends DataType> T mergeDataTypes(T keep, List<T> dataTypes) {
+    def <T extends DataType> T mergeDataTypes(T keep, List<T> dataTypes) {
         for (int i = 1; i < dataTypes.size(); i++) {
             mergeDataTypes(keep, dataTypes[i])
             delete(dataTypes[i])
@@ -483,7 +483,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         keep
     }
 
-    private void mergeDataTypes(DataType keep, DataType replace) {
+    void mergeDataTypes(DataType keep, DataType replace) {
         replace.dataElements?.each { de ->
             keep.addToDataElements(de)
         }

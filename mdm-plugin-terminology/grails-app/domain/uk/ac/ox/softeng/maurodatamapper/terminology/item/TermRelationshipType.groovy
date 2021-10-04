@@ -137,7 +137,7 @@ class TermRelationshipType implements ModelItem<TermRelationshipType, Terminolog
     }
 
     @Override
-    Terminology getPathParent() {
+    Terminology getParent() {
         terminology
     }
 

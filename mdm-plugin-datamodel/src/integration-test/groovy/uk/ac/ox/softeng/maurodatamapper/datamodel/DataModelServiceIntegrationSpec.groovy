@@ -1647,10 +1647,12 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 1
+        invalid.errors.errorCount == 3
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 1
+        invalid.errors.fieldErrorCount == 3
         invalid.errors.getFieldError('label')
+        invalid.errors.getFieldError('path')
+        invalid.errors.getFieldError('breadcrumbTree.path')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -1668,9 +1670,9 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 1
+        invalid.errors.errorCount == 3
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 1
+        invalid.errors.fieldErrorCount == 3
         invalid.errors.getFieldError('primitiveTypes[0].label')
 
         cleanup:
@@ -1689,9 +1691,9 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 1
+        invalid.errors.errorCount == 3
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 1
+        invalid.errors.fieldErrorCount == 3
         invalid.errors.getFieldError('dataClasses[0].label')
 
         cleanup:
@@ -1712,9 +1714,9 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 2
+        invalid.errors.errorCount == 4
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 2
+        invalid.errors.fieldErrorCount == 4
         invalid.errors.getFieldError('dataClasses[0].dataElements[0].label')
 
         cleanup:
@@ -1758,9 +1760,9 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 1
+        invalid.errors.errorCount == 3
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 1
+        invalid.errors.fieldErrorCount == 3
         invalid.errors.fieldErrors.any {it.field == 'dataClasses[0].label'}
 
         cleanup:
@@ -1782,9 +1784,9 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 1
+        invalid.errors.errorCount == 3
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 1
+        invalid.errors.fieldErrorCount == 3
         invalid.errors.getFieldError('dataClasses[0].dataClasses[0].label')
 
         cleanup:
@@ -1834,9 +1836,9 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 1
+        invalid.errors.errorCount == 3
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 1
+        invalid.errors.fieldErrorCount == 3
         invalid.errors.getFieldError('dataClasses[0].dataClasses[0].dataClasses[0].label')
 
         cleanup:

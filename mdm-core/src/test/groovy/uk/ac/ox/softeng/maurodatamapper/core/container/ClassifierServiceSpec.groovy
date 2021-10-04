@@ -70,11 +70,11 @@ class ClassifierServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Clas
 
         and:
         classifierList[0].label == 'nestedparent'
-        classifierList[0].path == Path.from("cl:nestedparent")
+        classifierList[0].path == Path.from(parent, 'cl', 'nestedparent')
 
         and:
         classifierList[0].childClassifiers.size() == 1
-        classifierList[0].childClassifiers[0].path == Path.from('cl:nestedparent|cl:editor classifier')
+        classifierList[0].childClassifiers[0].path == Path.from('cl:parent classifier|cl:nestedparent|cl:editor classifier')
 
 
         and:

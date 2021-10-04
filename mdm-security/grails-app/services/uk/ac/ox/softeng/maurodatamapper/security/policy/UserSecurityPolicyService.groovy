@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
+import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUserService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
@@ -57,6 +58,7 @@ class UserSecurityPolicyService {
     CatalogueUserService catalogueUserService
     UserGroupService userGroupService
     FolderService folderService
+    PathService pathService
 
     @Autowired(required = false)
     List<SecurableResourceService> securableResourceServices = []
@@ -525,9 +527,9 @@ class UserSecurityPolicyService {
         }.toSet()
 
         // Build parents
-        if (container.depth != 0) {
+        if (container.path.size() != 1) {
 
-            List<UUID> ids = container.pathString.split('/').toList().findAll().collect {Utils.toUuid(it)}
+            List<UUID> ids = pathService.findAllResourceIdsInPath(container.path)
 
             ContainerService containerService = containerServices.find {it.handles(container.domainType)}
             containerService.getAll(ids).each {alternateContainer ->

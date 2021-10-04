@@ -104,7 +104,7 @@ class Classifier implements Container {
     }
 
     def beforeValidate() {
-        childClassifiers.each { it.beforeValidate() }
+        childClassifiers.each {it.beforeValidate()}
     }
 
     @Override
@@ -140,8 +140,16 @@ class Classifier implements Container {
         by().eq('label', label)
     }
 
+    static DetachedCriteria<Classifier> byNoParentClassifier() {
+        by().isNull('parentClassifier')
+    }
+
     static DetachedCriteria<Classifier> byParentClassifierId(UUID id) {
-        by().eq('parentClassifier.id', id)
+        id ? by().eq('parentClassifier.id', id) : by().isNull('parentClassifier')
+    }
+
+    static DetachedCriteria<Classifier> byParentClassifierIdAndLabel(UUID id, String label) {
+        byParentClassifierId(id).eq('label', label)
     }
 
     static List<Classifier> luceneList(@DelegatesTo(HibernateSearchApi) Closure closure) {

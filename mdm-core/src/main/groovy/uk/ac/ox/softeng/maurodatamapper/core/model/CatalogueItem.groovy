@@ -67,6 +67,7 @@ trait CatalogueItem<D extends Diffable> implements MdmDomain, InformationAware, 
     }
 
     void beforeValidateCatalogueItem() {
+        checkPath() // get path to ensure its built
         metadata?.each {
             it.multiFacetAwareItem = this
             if (!it.createdBy) it.createdBy = createdBy

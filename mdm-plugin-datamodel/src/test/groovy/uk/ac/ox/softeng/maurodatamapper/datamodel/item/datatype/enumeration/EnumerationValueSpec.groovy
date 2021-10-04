@@ -98,7 +98,7 @@ class EnumerationValueSpec extends ModelItemSpec<EnumerationValue> implements Do
 
     @Override
     int getExpectedConstrainedErrors() {
-        2
+        3 // key, label, path
     }
 
     @Override
@@ -110,7 +110,7 @@ class EnumerationValueSpec extends ModelItemSpec<EnumerationValue> implements Do
 
     @Override
     int getExpectedConstrainedBlankErrors() {
-        6
+        7
     }
 
     @Override

@@ -95,7 +95,7 @@ class DataFlow implements ModelItem<DataFlow, DataModel> {
     }
 
     @Override
-    DataModel getPathParent() {
+    DataModel getParent() {
         target
     }
 

@@ -119,6 +119,8 @@ class BreadcrumbTree {
             markDirty('domainId', domainEntity.id, getOriginalValue('domainId'))
             label = domainEntity.label
             markDirty('label', domainEntity.label, getOriginalValue('label'))
+            path = domainEntity.path
+            markDirty('path', domainEntity.path, getOriginalValue('path'))
         }
         checkTree()
         // After checking the tree, if its changed (or we havent been saved before) then we will need to update all the children

@@ -66,7 +66,11 @@ class SummaryMetadataReport implements MdmDomain {
 
     @Override
     String getPathIdentifier() {
-        reportDate.withOffsetSameInstant(ZoneOffset.UTC).format(PATH_FORMATTER)
+        getUTCReportDate()?.format(PATH_FORMATTER)
+    }
+
+    OffsetDateTime getUTCReportDate() {
+        reportDate?.withOffsetSameInstant(ZoneOffset.UTC)
     }
 
     String getEditLabel() {

@@ -98,7 +98,7 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
 
         if (removeOwningIds) {
             // Remove null entries and any which have an owning id, as we only want those inside the owners
-            items = items.findAll { !(it.id in owningIds) }
+            items = items.findAll {!(it.id in owningIds)}
         }
 
         PaginatedHibernateSearchResult<K> results = PaginatedHibernateSearchResult.paginateFullResultSet(items, pagination)
@@ -107,12 +107,12 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
         results
     }
 
-    protected List<K> performSearch(List<UUID> owningIds,
-                                    String searchTerm,
-                                    Boolean labelOnly,
-                                    Set<Class<K>> filteredDomainsToSearch,
-                                    @DelegatesTo(HibernateSearchApi) Closure additional,
-                                    @DelegatesTo(HibernateSearchApi) Closure customSearch) {
+    List<K> performSearch(List<UUID> owningIds,
+                          String searchTerm,
+                          Boolean labelOnly,
+                          Set<Class<K>> filteredDomainsToSearch,
+                          @DelegatesTo(HibernateSearchApi) Closure additional,
+                          @DelegatesTo(HibernateSearchApi) Closure customSearch) {
         if (customSearch) {
             log.debug('Performing lucene custom search')
             return performCustomSearch(filteredDomainsToSearch, owningIds, additional, customSearch)

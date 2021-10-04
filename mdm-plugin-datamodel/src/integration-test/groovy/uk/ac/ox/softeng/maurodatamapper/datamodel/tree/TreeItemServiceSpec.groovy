@@ -698,7 +698,7 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
         setupData()
 
         when:
-        ModelTreeItem modelTreeItem = treeItemService.buildFullModelTree(complexDataModel)
+        ModelTreeItem modelTreeItem = treeItemService.buildFullModelTree(complexDataModel, PublicAccessSecurityPolicyManager.instance)
 
         then:
         modelTreeItem

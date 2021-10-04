@@ -135,11 +135,10 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
     }
 
     @Override
-    DataClass getPathParent() {
+    DataClass getParent() {
         dataClass
     }
 
-    @Override
     def beforeValidate() {
         long st = System.currentTimeMillis()
         beforeValidateModelItem()
@@ -155,16 +154,6 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
             dataType.beforeValidate()
         }
         log.trace('DE before validate {} took {}', this.label, Utils.timeTaken(st))
-    }
-
-    @Override
-    def beforeInsert() {
-        buildPathString()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPathString()
     }
 
     @Override

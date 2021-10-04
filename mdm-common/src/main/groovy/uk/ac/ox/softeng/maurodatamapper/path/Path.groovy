@@ -144,6 +144,7 @@ class Path {
     }
 
     boolean matches(Path otherPath, String modelIdentifierOverride = null) {
+        if (!otherPath) return false
         if (size() != otherPath.size()) return false
         for (i in 0..<size()) {
             if (!this[i].matches(otherPath[i], modelIdentifierOverride)) return false

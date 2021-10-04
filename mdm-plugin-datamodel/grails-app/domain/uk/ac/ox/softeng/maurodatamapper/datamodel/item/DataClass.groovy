@@ -39,7 +39,6 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.domain.MultiplicityAwar
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.ParentOwnedLabelCollectionValidator
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
@@ -175,7 +174,7 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     }
 
     @Override
-    MdmDomain getPathParent() {
+    CatalogueItem getParent() {
         parentDataClass ?: dataModel
     }
 
@@ -189,7 +188,6 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         }
     }
 
-    @Override
     def beforeValidate() {
         long st = System.currentTimeMillis()
         dataModel = dataModel ?: parentDataClass?.getModel()
@@ -205,16 +203,6 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
             if (dataClasses) fullSortOfChildren(dataClasses)
         }
         log.trace('DC before validate {} took {}', this.label, Utils.timeTaken(st))
-    }
-
-    @Override
-    def beforeInsert() {
-        buildPathString()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPathString()
     }
 
     @Override
@@ -240,10 +228,6 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     String getDiffIdentifier(String context) {
         if (!parentDataClass) return this.pathIdentifier
         "${parentDataClass.getDiffIdentifier(context)}/${this.pathIdentifier}"
-    }
-
-    CatalogueItem getParent() {
-        parentDataClass ?: dataModel
     }
 
     /**

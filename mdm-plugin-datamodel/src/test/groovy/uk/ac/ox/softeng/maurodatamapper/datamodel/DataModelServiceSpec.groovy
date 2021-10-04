@@ -204,9 +204,10 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
     void 'DMSV01 : test validation on valid model'() {
         given:
         DataModel check = complexDataModel
+        service.validate(check)
 
         expect:
-        !service.validate(check).hasErrors()
+        !check.hasErrors()
     }
 
     void 'DMSV02 : test validation on invalid simple model'() {
@@ -218,10 +219,11 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 1
+        invalid.errors.errorCount == 2
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 1
+        invalid.errors.fieldErrorCount == 2
         invalid.errors.getFieldError('label')
+        invalid.errors.getFieldError('path')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -258,10 +260,11 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 1
+        invalid.errors.errorCount == 2
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 1
+        invalid.errors.fieldErrorCount == 2
         invalid.errors.getFieldError('dataClasses[0].label')
+        invalid.errors.getFieldError('dataClasses[0].path')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -324,10 +327,11 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 1
+        invalid.errors.errorCount == 2
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 1
+        invalid.errors.fieldErrorCount == 2
         invalid.errors.fieldErrors.any { it.field == 'dataClasses[0].label' }
+        invalid.errors.fieldErrors.any {it.field == 'dataClasses[0].path'}
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)

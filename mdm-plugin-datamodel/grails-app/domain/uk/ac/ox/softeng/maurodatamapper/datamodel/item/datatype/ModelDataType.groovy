@@ -57,13 +57,11 @@ class ModelDataType extends DataType<ModelDataType> {
         Model thisResourceModel = getModelResource(this)
         Model otherResourceModel = getModelResource(otherDataType)
         if (thisResourceModel && otherResourceModel) {
-            Path thisResourcePath = Path.from(thisResourceModel)
-            Path otherResourcePath = Path.from(otherResourceModel)
-            if (!thisResourcePath.matches(otherResourcePath, thisResourcePath.last().modelIdentifier)) {
+            if (!thisResourceModel.getPath().matches(otherResourceModel.getPath(), thisResourceModel.getPath().last().modelIdentifier)) {
                 diff.
                     appendString('modelResourcePath',
-                                 makeFullyQualifiedPath(thisResourceModel).toString(),
-                                 makeFullyQualifiedPath(otherResourceModel).toString())
+                                 thisResourceModel.getPath().toString(),
+                                 otherResourceModel.getPath().toString())
             }
         }
         diff
@@ -96,28 +94,6 @@ class ModelDataType extends DataType<ModelDataType> {
             metadata {
                 eq 'namespace', metadataNamespace
             }
-        }
-    }
-
-    /**
-     * Make a full qualified path by recursing up through parents. Firstly look at the folder
-     * to which the Model belongs, then any hierarchy of parent folders.
-     * @param model
-     * @return Path of the model, including all parents
-     */
-    static Path makeFullyQualifiedPath(Model model) {
-        List<MdmDomain> nodes = []
-        nodes << model
-        nodes << model.folder
-        folderParents(nodes, model.folder)
-
-        return Path.from(nodes.reverse())
-    }
-
-    static folderParents(List<MdmDomain> nodes, Folder folder) {
-        if (folder.parentFolder) {
-            nodes << folder.parentFolder
-            folderParents(nodes, folder.parentFolder)
         }
     }
 }

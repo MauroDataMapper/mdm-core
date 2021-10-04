@@ -100,7 +100,7 @@ abstract class ReferenceDataType<D> implements ModelItem<D, ReferenceDataModel>,
     }
 
     @Override
-    ReferenceDataModel getPathParent() {
+    ReferenceDataModel getParent() {
         referenceDataModel
     }
 

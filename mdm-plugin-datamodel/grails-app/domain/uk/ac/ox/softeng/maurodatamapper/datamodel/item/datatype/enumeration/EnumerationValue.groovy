@@ -97,25 +97,14 @@ class EnumerationValue implements ModelItem<EnumerationValue, DataModel> {
     }
 
     @Override
-    EnumerationType getPathParent() {
+    EnumerationType getParent() {
         enumerationType
     }
 
-    @Override
     def beforeValidate() {
         label = key
         description = value
         beforeValidateModelItem()
-    }
-
-    @Override
-    def beforeInsert() {
-        buildPathString()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPathString()
     }
 
     @Override

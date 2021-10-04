@@ -119,7 +119,7 @@ class ReferenceDataElement implements ModelItem<ReferenceDataElement, ReferenceD
     }
 
     @Override
-    ReferenceDataModel getPathParent() {
+    ReferenceDataModel getParent() {
         referenceDataModel
     }
 

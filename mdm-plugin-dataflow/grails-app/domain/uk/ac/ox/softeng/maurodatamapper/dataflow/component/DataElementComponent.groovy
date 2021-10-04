@@ -92,7 +92,7 @@ class DataElementComponent implements ModelItem<DataElementComponent, DataModel>
     }
 
     @Override
-    DataClassComponent getPathParent() {
+    DataClassComponent getParent() {
         dataClassComponent
     }
 

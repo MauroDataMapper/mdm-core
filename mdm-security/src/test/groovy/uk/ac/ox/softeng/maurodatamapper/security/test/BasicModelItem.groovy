@@ -25,9 +25,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelItemConstraints
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.gorm.DetachedCriteria
 import grails.gorm.annotation.Entity
@@ -105,7 +105,7 @@ class BasicModelItem implements ModelItem<BasicModelItem, BasicModel>, GormEntit
     }
 
     @Override
-    MdmDomain getPathParent() {
+    CatalogueItem getParent() {
         parent ?: model
     }
 

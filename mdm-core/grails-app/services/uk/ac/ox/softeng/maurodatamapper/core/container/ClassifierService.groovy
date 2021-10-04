@@ -89,27 +89,23 @@ class ClassifierService extends ContainerService<Classifier> {
 
     @Override
     Classifier findDomainByLabel(String label) {
-        return null
+        Classifier.byNoParentClassifier().eq('label', label).get()
     }
 
     @Override
     Classifier findByParentIdAndLabel(UUID parentId, String label) {
-        return null
+        Classifier.byParentClassifierIdAndLabel(parentId, label.trim()).get()
     }
 
     @Override
-    List<Classifier> findAllByParentId(UUID parentId) {
-        return null
-    }
-
-    @Override
-    List<Classifier> findAllByParentId(UUID parentId, Map pagination) {
-        return null
+    List<Classifier> findAllByParentId(UUID parentId, Map pagination = [:]) {
+        Classifier.byParentClassifierId(parentId).list(pagination)
     }
 
     @Override
     DetachedCriteria<Classifier> getCriteriaByParent(Classifier domain) {
-        return null
+        if (domain.parentClassifier) return Classifier.byParentClassifierId(domain.parentClassifier.id)
+        return Classifier.byNoParentClassifier()
     }
 
     @Override

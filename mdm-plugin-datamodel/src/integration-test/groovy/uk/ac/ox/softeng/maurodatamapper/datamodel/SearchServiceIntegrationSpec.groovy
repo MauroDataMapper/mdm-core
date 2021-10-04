@@ -55,7 +55,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         simpleDataModelId = buildSimpleDataModel().id
     }
 
-    void 'test performStandardSearch on simple DataModel'() {
+    void 'S1 - test performStandardSearch on simple DataModel'() {
 
         given:
         setupData()
@@ -75,7 +75,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         modelItems.size() == 0
     }
 
-    void 'test performLabelSearch on simple DataModel'() {
+    void 'S2 - test performLabelSearch on simple DataModel'() {
 
         given:
         setupData()
@@ -95,7 +95,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         modelItems.size() == 0
     }
 
-    void 'test performStandardSearch domain restricted on simple DataModel'() {
+    void 'S3 - test performStandardSearch domain restricted on simple DataModel'() {
 
         given:
         setupData()
@@ -133,7 +133,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         modelItems.size() == 1
     }
 
-    void 'test performLabelSearch  domain restricted label search on simple DataModel'() {
+    void 'S4 - test performLabelSearch  domain restricted label search on simple DataModel'() {
 
         given:
         setupData()
@@ -174,7 +174,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         modelItems.size() == 0
     }
 
-    void 'test perform x search on simple DataModel looking for metadata entry'() {
+    void 'S5 - test perform x search on simple DataModel looking for metadata entry'() {
 
         given:
         setupData()
@@ -193,7 +193,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         modelItems.size() == 0
     }
 
-    void 'test findAllByDataModelIdByLuceneSearch on complex DataModel with no pagination'() {
+    void 'S6 - test findAllByDataModelIdByLuceneSearch on complex DataModel with no pagination'() {
 
         given:
         setupData()
@@ -246,7 +246,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         result.results[0].domainType == 'EnumerationValue'
     }
 
-    void 'test findAllByDataModelIdByLuceneSearch on complex DataModel with pagination'() {
+    void 'S7 - test findAllByDataModelIdByLuceneSearch on complex DataModel with pagination'() {
 
         given:
         setupData()
@@ -292,7 +292,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         result.results[1].label == 'element2'
     }
 
-    void 'test findAllByDataModelIdByLuceneSearch on complex DataModel with domain filtering'() {
+    void 'S8 - test findAllByDataModelIdByLuceneSearch on complex DataModel with domain filtering'() {
 
         given:
         setupData()
@@ -343,7 +343,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         result.results.any { it.label == 'child' && it.domainType == 'ReferenceType' }
     }
 
-    void 'test findAllByDataModelIdByLuceneSearch on complex DataModel label search only'() {
+    void 'S9 - test findAllByDataModelIdByLuceneSearch on complex DataModel label search only'() {
 
         given:
         setupData()

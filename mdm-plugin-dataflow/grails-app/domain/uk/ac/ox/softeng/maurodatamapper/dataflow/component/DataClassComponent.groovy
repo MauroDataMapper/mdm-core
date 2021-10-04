@@ -93,7 +93,7 @@ class DataClassComponent implements ModelItem<DataClassComponent, DataModel> {
     }
 
     @Override
-    DataFlow getPathParent() {
+    DataFlow getParent() {
         dataFlow
     }
 

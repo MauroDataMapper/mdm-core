@@ -163,18 +163,7 @@ class Term implements ModelItem<Term, Terminology> {
         label = code && definition && code == definition ? "${code}".toString() :
                 code && definition ? "${code}: ${definition}".toString() :
                 null
-        buildTermPath()
         beforeValidateModelItem()
-    }
-
-    @Override
-    def beforeInsert() {
-        buildTermPath()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildTermPath()
     }
 
     @Override
@@ -208,7 +197,7 @@ class Term implements ModelItem<Term, Terminology> {
     }
 
     @Override
-    Terminology getPathParent() {
+    Terminology getParent() {
         terminology
     }
 
@@ -238,11 +227,6 @@ class Term implements ModelItem<Term, Terminology> {
             breadcrumbTree = new BreadcrumbTree(this)
         }
         path
-    }
-
-    @Override
-    String buildPathString() {
-        // no-op
     }
 
     Term addToSourceTermRelationships(Map args) {

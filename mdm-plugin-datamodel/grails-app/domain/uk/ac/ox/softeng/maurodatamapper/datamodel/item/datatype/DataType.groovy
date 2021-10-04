@@ -116,11 +116,10 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
     }
 
     @Override
-    DataModel getPathParent() {
+    DataModel getParent() {
         dataModel
     }
 
-    @Override
     def beforeValidate() {
         long st = System.currentTimeMillis()
         beforeValidateModelItem()
@@ -129,16 +128,6 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
             it.multiFacetAwareItem = this
         }
         if (domainType != ENUMERATION_DOMAIN_TYPE) log.trace('DT before validate {} took {}', this.label, Utils.timeTaken(st))
-    }
-
-    @Override
-    def beforeInsert() {
-        buildPathString()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPathString()
     }
 
     @Override

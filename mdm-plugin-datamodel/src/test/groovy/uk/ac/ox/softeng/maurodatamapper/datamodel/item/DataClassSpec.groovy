@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.test.unit.core.ModelItemSpec
 
 import grails.testing.gorm.DomainUnitTest
@@ -117,7 +118,7 @@ class DataClassSpec extends ModelItemSpec<DataClass> implements DomainUnitTest<D
 
         then:
         DataClass.count() == 4
-        item2.path == "/$dataSet.id"
+        item2.path == Path.from(dataSet).resolve('dc', 'child3')
         item2.model.id == dataSet.id
         !item2.parentDataClass
 
@@ -129,7 +130,7 @@ class DataClassSpec extends ModelItemSpec<DataClass> implements DomainUnitTest<D
         then:
         DataClass.count() == 4
         item2.id == item3.id
-        item3.path == "/$dataSet.id/${domain.id}"
+        item3.path == Path.from(dataSet).resolve('dc', 'test').resolve('dc', 'child3')
         item3.model.id == dataSet.id
         item3.parentDataClass.id == item.id
     }
@@ -155,7 +156,7 @@ class DataClassSpec extends ModelItemSpec<DataClass> implements DomainUnitTest<D
         item.dataElements.size() == 2
 
         and:
-        element.path == "/${dataSet.id}/${domain.id}"
+        element.path == Path.from(dataSet, domain).resolve('de', 'element1')
         element.model.id == dataSet.id
         element.dataClass.id == item.id
     }
@@ -174,7 +175,7 @@ class DataClassSpec extends ModelItemSpec<DataClass> implements DomainUnitTest<D
 
         then: 'datamodel should not be valid'
         thrown(InternalSpockError)
-        dataSet.errors.fieldErrors.any { it.field.contains('label') && it.code.contains('unique') }
+        dataSet.errors.fieldErrors.any {it.field.contains('label') && it.code.contains('unique')}
     }
 
     void 'test unique label naming for direct child dataclasses of 2 datamodels'() {
@@ -221,6 +222,6 @@ class DataClassSpec extends ModelItemSpec<DataClass> implements DomainUnitTest<D
 
         then:
         thrown(InternalSpockError)
-        domain.errors.fieldErrors.any { it.field.contains('label') && it.code.contains('unique') }
+        domain.errors.fieldErrors.any {it.field.contains('label') && it.code.contains('unique')}
     }
 }

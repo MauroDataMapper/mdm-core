@@ -95,7 +95,7 @@ class ReferenceEnumerationValue implements ModelItem<ReferenceEnumerationValue, 
     }
 
     @Override
-    ReferenceEnumerationType getPathParent() {
+    ReferenceEnumerationType getParent() {
         referenceEnumerationType
     }
 

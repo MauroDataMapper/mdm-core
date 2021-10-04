@@ -67,7 +67,9 @@ class PathNode {
     }
 
     void parseIdentifier(String fullIdentifier, boolean isLast) {
-        String parsed = URLDecoder.decode(fullIdentifier, Charset.defaultCharset())
+        String parsed = safeUrlDecode(fullIdentifier)
+        if (!parsed) return
+
         if (isLast) {
             parsed.find(/^(.+?)${ATTRIBUTE_PATH_IDENTIFIER_SEPARATOR}(.+?)$/) {full, subIdentifier, attr ->
                 attribute = attr
@@ -192,5 +194,13 @@ class PathNode {
 
     PathNode clone() {
         new PathNode(this.prefix, this.identifier, this.modelIdentifier, this.attribute)
+    }
+
+    static safeUrlDecode(String value) {
+        try {
+            URLDecoder.decode(value, Charset.defaultCharset())
+        } catch (IllegalArgumentException | NullPointerException ignored) {
+            value
+        }
     }
 }
