@@ -142,9 +142,6 @@ class JsonTerminologyImporterServiceSpec extends DataBindTerminologyImporterProv
 
     void 'PG02 test importing a Terminology and propagating existing information'() {
 
-        //propagateTerminology does not contain information present in the ComplexTerminology json
-        // the missing data should be propagated across
-
         setupData()
         basicParameters.finalised = false
         basicParameters.importAsNewBranchModelVersion = true

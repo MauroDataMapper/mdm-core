@@ -205,9 +205,9 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
                 termRelationshipService.propagateDataFromPreviousVersion(modelTermRelationship, termRelationship, user)
                 return
             }
-            modelTermRelationship = termRelationshipService.copyTermRelationship(previousVersionModel.terminology, termRelationship, user)
+            modelTermRelationship = termRelationshipService.copyTermRelationship(model.terminology, termRelationship, user)
             termRelationshipService.propagateDataFromPreviousVersion(modelTermRelationship, termRelationship, user)
-            model.addToTermRelationships(termRelationship)
+            model.addToTermRelationships(modelTermRelationship)
         }
     }
 }

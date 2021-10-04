@@ -487,5 +487,4 @@ class TermService extends ModelItemService<Term> {
     void propagateModelItemInformation(Term model, Term previousVersionModel, User user) {
         super.propagateModelItemInformation(model, previousVersionModel, user)
     }
-
 }
