@@ -26,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.
 
 import groovy.util.logging.Slf4j
 import groovy.util.slurpersupport.GPathResult
+import groovy.util.slurpersupport.NodeChild
 
 import java.nio.charset.Charset
 
@@ -39,12 +40,12 @@ class TerminologyXmlImporterService extends DataBindTerminologyImporterProviderS
 
     @Override
     String getVersion() {
-        '3.0'
+        '4.0'
     }
 
     @Override
     Boolean canImportMultipleDomains() {
-        false
+        true
     }
 
     @Override
@@ -62,6 +63,20 @@ class TerminologyXmlImporterService extends DataBindTerminologyImporterProviderS
 
         log.debug('Importing Terminology map')
         bindMapToTerminology(currentUser, backwardsCompatibleExtractTerminologyMap(result, map))
+    }
+
+    @Override
+    List<Terminology> importTerminologies(User currentUser, byte[] content) {
+        if (!currentUser) throw new ApiUnauthorizedException('XTIS01', 'User must be logged in to import model')
+        if (content.size() == 0) throw new ApiBadRequestException('XTIS02', 'Cannot import empty content')
+
+        String xml = new String(content, Charset.defaultCharset())
+
+        log.debug('Parsing in file content using XmlSlurper')
+        GPathResult terminologies = new XmlSlurper().parseText(xml).children().find {it.name() == 'terminologies'}
+
+        log.debug('Importing Terminology list')
+        convertToList(terminologies as NodeChild).collect {bindMapToTerminology(currentUser, it)}
     }
 
     Map backwardsCompatibleExtractTerminologyMap(GPathResult result, Map map) {
