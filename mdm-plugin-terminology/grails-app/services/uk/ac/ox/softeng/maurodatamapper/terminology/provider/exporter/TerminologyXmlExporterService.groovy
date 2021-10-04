@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportMetadata
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportModel
@@ -57,18 +56,23 @@ class TerminologyXmlExporterService extends TerminologyExporterProviderService i
     }
 
     @Override
+    Boolean canExportMultipleDomains() {
+        true
+    }
+
+    @Override
     String getExportViewPath() {
         '/exportModel/exportTerminology'
     }
 
     @Override
     ByteArrayOutputStream exportTerminology(User currentUser, Terminology terminology) throws ApiException {
-        ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(terminology, 'terminology', version, 'gml', exportMetadata), fileType)
+        exportTerminologies(currentUser, [terminology])
     }
 
     @Override
     ByteArrayOutputStream exportTerminologies(User currentUser, List<Terminology> terminologies) throws ApiException {
-        throw new ApiBadRequestException('XES01', "${getName()} cannot export multiple Terminologies")
+        ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
+        exportModel(new ExportModel(terminologies, 'terminology', version, 'gml', exportMetadata), fileType)
     }
 }
