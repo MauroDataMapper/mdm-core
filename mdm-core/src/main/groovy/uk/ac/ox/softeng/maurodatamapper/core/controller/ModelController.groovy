@@ -621,9 +621,9 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(Folder, importerProviderServiceParameters.folderId)) {
             if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Folder, importerProviderServiceParameters.folderId)) {
-                return forbiddenDueToPermissions()
+                return notFound(Folder, importerProviderServiceParameters.folderId)
             }
-            return notFound(Folder, importerProviderServiceParameters.folderId)
+            return forbiddenDueToPermissions()
         }
         Folder folder = folderService.get(importerProviderServiceParameters.folderId)
 
