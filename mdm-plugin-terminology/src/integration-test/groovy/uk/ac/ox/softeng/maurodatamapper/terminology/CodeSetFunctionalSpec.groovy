@@ -1528,7 +1528,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         verifyJsonResponse OK, '''[
             {
                 "name": "CodeSetJsonExporterService",
-                "version": "3.0",
+                "version": "4.0",
                 "displayName": "JSON CodeSet Exporter",
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
                 "allowsExtraMetadataKeys": true,
@@ -1536,11 +1536,11 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
                 "providerType": "CodeSetExporter",
                 "fileExtension": "json",
                 "fileType": "text/json",
-                "canExportMultipleDomains": false
+                "canExportMultipleDomains": true
             },
             {
                 "name": "CodeSetXmlExporterService",
-                "version": "3.1",
+                "version": "4.0",
                 "displayName": "XML CodeSet Exporter",
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
                 "allowsExtraMetadataKeys": true,
@@ -1548,7 +1548,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
                 "providerType": "CodeSetExporter",
                 "fileExtension": "xml",
                 "fileType": "text/xml",
-                "canExportMultipleDomains": false
+                "canExportMultipleDomains": true
             }
         ]'''
     }
@@ -1561,7 +1561,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         verifyJsonResponse OK, '''[
             {
                 "name": "CodeSetXmlImporterService",
-                "version": "3.0",
+                "version": "4.0",
                 "displayName": "XML CodeSet Importer",
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
                 "allowsExtraMetadataKeys": true,
@@ -1570,11 +1570,11 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
                 ],
                 "providerType": "CodeSetImporter",
                 "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters",
-                "canImportMultipleDomains": false
+                "canImportMultipleDomains": true
             },
             {
                 "name": "CodeSetJsonImporterService",
-                "version": "3.0",
+                "version": "4.0",
                 "displayName": "JSON CodeSet Importer",
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
                 "allowsExtraMetadataKeys": true,
@@ -1583,7 +1583,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
                 ],
                 "providerType": "CodeSetImporter",
                 "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters",
-                "canImportMultipleDomains": false
+                "canImportMultipleDomains": true
             }
         ]'''
     }
@@ -1593,7 +1593,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         String id = createNewItem(validJson)
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0", STRING_ARG)
 
         then:
         verifyJsonResponse OK, '''{
@@ -1615,7 +1615,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
                 "exporter": {
                     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
                     "name": "CodeSetJsonExporterService",
-                    "version": "3.0"
+                    "version": "4.0"
                 }
             }
         }'''
@@ -1628,7 +1628,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         given:
         String id = createNewItem(validJson)
 
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
 
@@ -1636,7 +1636,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         exportedJsonString
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/4.0', [
             finalised                      : false,
             modelName                      : 'Functional Test Import',
             folderId                       : folderId.toString(),
@@ -1672,37 +1672,51 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         cleanUpData(id)
     }
 
-    void 'EX03: test export multiple CodeSets (json only exports first id)'() {
+    void 'EX03: test export multiple CodeSets'() {
         given:
         String id = createNewItem(validJson)
         String id2 = createNewItem([label: 'Functional Test Model 2'])
 
         when:
-        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/3.0',
+        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0',
              [codeSetIds: [id, id2]], STRING_ARG
         )
 
         then:
         verifyJsonResponse OK, '''{
-            "codeSet": {
-                "id": "${json-unit.matches:id}",
-                "label": "Functional Test Model",
-                "lastUpdated": "${json-unit.matches:offsetDateTime}",
-                "documentationVersion": "1.0.0",
-                "finalised": false,
-                "authority": {
+            "codeSets": [
+                {
                     "id": "${json-unit.matches:id}",
-                    "url": "http://localhost",
-                    "label": "Test Authority"
+                    "label": "Functional Test Model",
+                    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                    "documentationVersion": "1.0.0",
+                    "finalised": false,
+                    "authority": {
+                        "id": "${json-unit.matches:id}",
+                        "url": "http://localhost",
+                        "label": "Test Authority"
+                    }
+                },
+                {
+                    "id": "${json-unit.matches:id}",
+                    "label": "Functional Test Model 2",
+                    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                    "documentationVersion": "1.0.0",
+                    "finalised": false,
+                    "authority": {
+                        "id": "${json-unit.matches:id}",
+                        "url": "http://localhost",
+                        "label": "Test Authority"
+                    }
                 }
-            },
+            ],
             "exportMetadata": {
                 "exportedBy": "Unlogged User",
                 "exportedOn": "${json-unit.matches:offsetDateTime}",
                 "exporter": {
                     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
                     "name": "CodeSetJsonExporterService",
-                    "version": "3.0"
+                    "version": "4.0"
                 }
             }
         }'''
@@ -1720,7 +1734,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
             modelVersion: Version.from('1.0.0')
         ])
 
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
 
@@ -1728,7 +1742,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         exportedJsonString
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/4.0', [
             finalised                      : true,
             terminologyName                : 'Functional Test Model',
             folderId                       : folderId.toString(),
@@ -1767,7 +1781,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
     void 'EX04: test export simple CodeSet'() {
         given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/4.0', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1787,7 +1801,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         id
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0", STRING_ARG)
 
         then:
         verifyJsonResponse OK, expected
@@ -1799,7 +1813,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
     void 'IM04: test importing and exporting a CodeSet with unknown terms'() {
 
         when: 'importing a codeset which references unknown'
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/4.0', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1816,7 +1830,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
     void 'IM05: test importing and exporting a CodeSet with terms'() {
         given: 'The Simple Test Terminology is imported as a pre-requisite'
-        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/3.0', [
+        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
             finalised                      : true,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1830,7 +1844,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         def tid = responseBody().id
 
         when: 'importing a codeset which references the terms already imported'
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/4.0', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1852,7 +1866,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         id
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0", STRING_ARG)
 
         then:
         verifyJsonResponse OK, expected

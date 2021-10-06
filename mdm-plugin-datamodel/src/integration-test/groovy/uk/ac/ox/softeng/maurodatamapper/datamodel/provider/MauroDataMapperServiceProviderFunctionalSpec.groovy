@@ -60,7 +60,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
     "providerType": "DataModelExporter",
     "fileExtension": "json",
     "fileType": "text/json",
-    "canExportMultipleDomains": false
+    "canExportMultipleDomains": true
   },
   {
     "name": "DataModelXmlExporterService",
@@ -74,7 +74,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
     "providerType": "DataModelExporter",
     "fileExtension": "xml",
     "fileType": "text/xml",
-    "canExportMultipleDomains": false
+    "canExportMultipleDomains": true
   }
 ]''')
     }
@@ -117,7 +117,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
     ],
     "providerType": "DataModelImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters",
-    "canImportMultipleDomains": false
+    "canImportMultipleDomains": true
   },
   {
     "name": "DataModelXmlImporterService",
