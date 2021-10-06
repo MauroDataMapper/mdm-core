@@ -112,12 +112,6 @@ class ProfileController implements ResourcelessMdmController {
             return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
 
-        if (multiFacetAware.hasProperty('finalised')) {
-            log.debug("multiFacetAware.finalised={}", multiFacetAware.finalised)
-        } else {
-            log.debug('multiFacetAware.finalised does not exist')
-        }
-
         ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName,
                                                                                                   params.profileVersion)
         if (!profileProviderService) {
@@ -155,12 +149,6 @@ class ProfileController implements ResourcelessMdmController {
     def validate() {
         log.debug("Validating profile")
         MultiFacetAware multiFacetAware = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
-
-        if (multiFacetAware.hasProperty('finalised')) {
-            log.debug("multiFacetAware.finalised={}", multiFacetAware.finalised)
-        } else {
-            log.debug('multiFacetAware.finalised does not exist')
-        }
 
         if (!multiFacetAware) {
             return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
