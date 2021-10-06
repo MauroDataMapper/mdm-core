@@ -57,15 +57,7 @@ class FederationClient {
     private String contextPath
 
     FederationClient(String hostUrl, ApplicationContext applicationContext) {
-        this(hostUrl, 'api',
-             applicationContext.getBean(HttpClientConfiguration),
-             applicationContext.getBean(NettyClientSslBuilder),
-             applicationContext.getBean(MediaTypeCodecRegistry)
-        )
-    }
-
-    FederationClient(String hostUrl, String contextPath, ApplicationContext applicationContext) {
-        this(hostUrl, contextPath,
+        this(hostUrl,
              applicationContext.getBean(HttpClientConfiguration),
              applicationContext.getBean(NettyClientSslBuilder),
              applicationContext.getBean(MediaTypeCodecRegistry)
@@ -76,7 +68,7 @@ class FederationClient {
                      HttpClientConfiguration httpClientConfiguration,
                      NettyClientSslBuilder nettyClientSslBuilder,
                      MediaTypeCodecRegistry mediaTypeCodecRegistry) {
-        this(hostUrl, 'api',
+        this(hostUrl,
              httpClientConfiguration,
              new DefaultThreadFactory(MultithreadEventLoopGroup),
              nettyClientSslBuilder,
@@ -84,29 +76,25 @@ class FederationClient {
         )
     }
 
-    FederationClient(String hostUrl, String contextPath,
-                     HttpClientConfiguration httpClientConfiguration,
-                     NettyClientSslBuilder nettyClientSslBuilder,
-                     MediaTypeCodecRegistry mediaTypeCodecRegistry) {
-        this(hostUrl, contextPath,
-             httpClientConfiguration,
-             new DefaultThreadFactory(MultithreadEventLoopGroup),
-             nettyClientSslBuilder,
-             mediaTypeCodecRegistry
-        )
-    }
-
-    FederationClient(String hostUrl, String contextPath,
-                     HttpClientConfiguration httpClientConfiguration,
-                     ThreadFactory threadFactory,
-                     NettyClientSslBuilder nettyClientSslBuilder,
-                     MediaTypeCodecRegistry mediaTypeCodecRegistry) {
+    private FederationClient(String hostUrl,
+                             HttpClientConfiguration httpClientConfiguration,
+                             ThreadFactory threadFactory,
+                             NettyClientSslBuilder nettyClientSslBuilder,
+                             MediaTypeCodecRegistry mediaTypeCodecRegistry) {
         this.hostUrl = hostUrl
-        this.contextPath = contextPath
+        // The http client resolves using URI.resolve which ignores anything in the url path,
+        // therefore we need to make sure its part of the context path.
+        URI hostUri = hostUrl.toURI()
+        if (hostUri.path && !hostUri.path.endsWith('api')) {
+            String path = hostUri.path.endsWith('/') ? hostUri.path : "${hostUri.path}/"
+            this.contextPath = "${path}api"
+        } else {
+            this.contextPath = 'api'
+        }
         httpClientConfiguration.setReadTimeout(Duration.ofMinutes(5))
         client = new DefaultHttpClient(LoadBalancer.fixed(hostUrl.toURL()),
                                        httpClientConfiguration,
-                                       contextPath,
+                                       this.contextPath,
                                        threadFactory,
                                        nettyClientSslBuilder,
                                        mediaTypeCodecRegistry,
