@@ -51,7 +51,7 @@ abstract class ModelImporterProviderService<M extends Model, P extends ModelImpo
     List<M> importDomains(User currentUser, ModelImporterProviderServiceParameters params) {
         List<M> models = importModels(currentUser, params as P)
         models?.collect {
-            M updated = updateImportedModelFromParameters(it, params as P, true)
+            M updated = updateImportedModelFromParameters(it, params as P, models?.size() > 1)
             checkImport(currentUser, updated, params as P)
         }
         models
