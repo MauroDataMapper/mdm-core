@@ -62,7 +62,6 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
     @Override
     void storeProfileInEntity(MultiFacetAware entity, JsonProfile jsonProfile, String userEmailAddress) {
         JsonProfile emptyJsonProfile = getNewProfile()
-        Boolean entityFinalised = entity.hasProperty('finalised') ? entity.finalised : false
         emptyJsonProfile.sections.each {section ->
             ProfileSection submittedSection = jsonProfile.sections.find {it.name == section.name}
             if (submittedSection) {
@@ -70,7 +69,7 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
                     ProfileField submittedField = findFieldInSubmittedSection(submittedSection, section.name, field.getUniqueKey(section.name))
                     if (submittedField) {
                         // Dont allow derived or uneditable fields to be set
-                        if (!field.derived && !field.uneditable && (!entityFinalised || field.editableAfterFinalised)) {
+                        if (!field.derived && !field.uneditable) {
                             String newValue = submittedField.currentValue ?: ''
                             String key = field.getUniqueKey(submittedSection.name)
                             storeFieldInEntity(entity, newValue, key, userEmailAddress)
