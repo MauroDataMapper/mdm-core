@@ -89,6 +89,39 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         parameters.hasProperty('importFile').type == FileParameter
     }
 
+    void 'IXX : test import with grandchild DC with facet'() {
+        setupData()
+
+        expect:
+        DataModel.count() == 2
+
+        when:
+        DataModel dm = importModel(loadTestFile('incDataClassWithChildrenAndMetadata'))
+
+        then:
+        dm.dataClasses.find {it.label == 'parent'}.metadata.size() == 1
+        dm.dataClasses.find {it.label == 'content'}.metadata.size() == 1
+
+        when:
+        Metadata md = dm.dataClasses.find {it.label == 'parent'}.metadata[0]
+
+        then:
+        md.namespace == 'ox.softeng.maurodatamapper.dataloaders.cancer.audits'
+        md.key == 'SCTSImport'
+        md.value == '0.1'
+        md.multiFacetAwareItemId == dm.dataClasses.find {it.label == 'parent'}.id
+
+        when:
+        md = dm.dataClasses.find {it.label == 'content'}.metadata[0]
+
+        then:
+        md.namespace == 'ox.softeng.maurodatamapper.dataloaders.cancer.audits'
+        md.key == 'SCTSImport'
+        md.value == '0.1'
+        md.multiFacetAwareItemId == dm.dataClasses.find {it.label == 'content'}.id
+
+    }
+
     void 'F01 : test import as finalised'() {
         given:
         setupData()
