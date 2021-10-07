@@ -58,8 +58,8 @@ class ReferenceDataValueController extends EditLoggingController<ReferenceDataVa
         params.sortBy = 'rowNumber'
 
         //Paginate the distinct rowNumber selection or selection of values
-        params.max = params.max ?: searchParams.max ?: 10
-        params.offset = params.offset ?: searchParams.offset ?: 0
+        params.max = params.max ? Integer.parseInt(params.max) : searchParams.max ?: 10
+        params.offset = params.offset ? Integer.parseInt(params.offset) : searchParams.offset ?: 0
 
         String searchTerm = params.search ?: searchParams.searchTerm ?: ""
 
