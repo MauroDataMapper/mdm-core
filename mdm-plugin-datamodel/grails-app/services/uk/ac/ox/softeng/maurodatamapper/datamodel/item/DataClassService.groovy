@@ -21,8 +21,6 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
-import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
@@ -247,7 +245,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
             classifierService.saveAll(classifiers)
         }
 
-       Collection<DataClass> alreadySaved = dataClasses.findAll {it.ident() && it.isDirty()}
+        Collection<DataClass> alreadySaved = dataClasses.findAll {it.ident() && it.isDirty()}
         Collection<DataClass> notSaved = dataClasses.findAll {!it.ident()}
 
         Collection<DataElement> dataElements = []
@@ -485,12 +483,12 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     }
 
     void moveDataClassToParent(DataClass dataClass, CatalogueItem parent) {
-            dataClass.parentDataClass?.removeFromDataClasses(dataClass)
-            parent.addToDataClasses(dataClass)
+        dataClass.parentDataClass?.removeFromDataClasses(dataClass)
+        parent.addToDataClasses(dataClass)
     }
 
     DataClass createDataClass(String label, String description, User createdBy, Integer minMultiplicity = 1,
-                                      Integer maxMultiplicity = 1) {
+                              Integer maxMultiplicity = 1) {
         new DataClass(label: label, description: description, createdBy: createdBy.emailAddress, minMultiplicity: minMultiplicity,
                       maxMultiplicity: maxMultiplicity)
     }
