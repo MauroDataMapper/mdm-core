@@ -234,4 +234,11 @@ class SemanticLinkService implements MultiFacetItemAwareService<SemanticLink> {
         findAllBySourceOrTargetMultiFacetAwareItemId(multiFacetAwareItemId, paginate)
     }
 
+    boolean areLinksIdenticalBetweenSameSourceLabelAndTargetItem(SemanticLink a, String sourceALabel, SemanticLink b, String sourceBLabel) {
+        //compares the linktype, target and source to decide if a two SemanticLinks are the same
+        if (a.linkType != b.linkType) return false
+        if (sourceALabel != sourceBLabel) return false
+        if (a.targetMultiFacetAwareItemId != b.targetMultiFacetAwareItemId) return false
+        true
+    }
 }

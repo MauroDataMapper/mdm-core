@@ -36,7 +36,6 @@ class Rule implements MultiFacetItemAware, Diffable<Rule> {
 
     String name
     String description
-    Set ruleRepresentations
 
     static hasMany = [
         ruleRepresentations: RuleRepresentation

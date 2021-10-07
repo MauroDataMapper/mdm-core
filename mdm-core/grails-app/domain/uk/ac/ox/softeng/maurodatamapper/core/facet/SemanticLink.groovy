@@ -93,16 +93,6 @@ class SemanticLink implements MultiFacetItemAware {
         targetMultiFacetAwareItemId = multiFacetAware.id
     }
 
-    boolean compare (SemanticLink a, String sourceALabel, SemanticLink b, String sourceBLabel){
-        //compares the linktype, target and source to decide if a two SemanticLinks are the same
-        boolean linkType = (a.linkType == b.linkType)
-        boolean target = (a.targetMultiFacetAwareItemId == b.targetMultiFacetAwareItemId)
-        boolean source = (sourceALabel == sourceBLabel)
-
-        //if all are true, return true
-        linkType && target && source
-    }
-
     static DetachedCriteria<SemanticLink> by() {
         new DetachedCriteria<SemanticLink>(SemanticLink)
     }
