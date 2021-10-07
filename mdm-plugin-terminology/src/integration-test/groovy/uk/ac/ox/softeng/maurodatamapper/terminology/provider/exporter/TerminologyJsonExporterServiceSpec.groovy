@@ -37,7 +37,7 @@ import java.nio.file.Path
 @Integration
 @Rollback
 @Slf4j
-class JsonTerminologyExporterServiceSpec
+class TerminologyJsonExporterServiceSpec
     extends DataBindTerminologyImportAndDefaultExporterServiceSpec<TerminologyJsonImporterService, TerminologyJsonExporterService>
     implements JsonComparer {
 

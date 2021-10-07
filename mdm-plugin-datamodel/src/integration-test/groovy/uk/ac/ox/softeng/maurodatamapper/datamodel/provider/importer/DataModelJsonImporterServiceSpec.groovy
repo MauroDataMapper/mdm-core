@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
-import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
@@ -40,7 +39,6 @@ import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
-
 import groovy.util.logging.Slf4j
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getDEVELOPMENT
@@ -218,7 +216,7 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         !dm.modelVersion
         dm.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         dm.versionLinks.size() == 1
-        dm.versionLinks.find { it.targetModelId == v1.id }
+        dm.versionLinks.find {it.targetModelId == v1.id}
 
         cleanup:
         basicParameters.importAsNewBranchModelVersion = false
@@ -241,7 +239,7 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         !dm.modelVersion
         dm.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         dm.versionLinks.size() == 1
-        dm.versionLinks.find { it.targetModelId == v1.id }
+        dm.versionLinks.find {it.targetModelId == v1.id}
 
         and:
         v1.finalised
@@ -291,7 +289,7 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         dm.modelVersion == Version.from('2')
         dm.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         dm.versionLinks.size() == 1
-        dm.versionLinks.find { it.targetModelId == v1.id }
+        dm.versionLinks.find {it.targetModelId == v1.id}
 
         cleanup:
         basicParameters.importAsNewBranchModelVersion = false
@@ -316,7 +314,7 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         dm.modelVersion == Version.from('2')
         dm.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         dm.versionLinks.size() == 1
-        dm.versionLinks.find { it.targetModelId == v1.id }
+        dm.versionLinks.find {it.targetModelId == v1.id}
 
         and:
         v1.modelVersion == Version.from('1')
@@ -328,7 +326,7 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
 
     }
 
-    void 'PG01 test propagatingCatalogueItemElements'() {
+    void 'PG01 : test propagatingCatalogueItemElements'() {
 
         given:
         setupData()
@@ -339,7 +337,7 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         dataModel = DataModel.findById(complexDataModelId)
 
         Annotation testAnnotation = new Annotation(label: 'propagationTest', description: 'propagationTest', createdBy: admin.emailAddress)
-        Classifier testClassifier = new Classifier(label: 'propagationTest', createdBy: admin.emailAddress)
+        Classifier testClassifier = new Classifier(label: 'propagationTest', createdBy: admin.emailAddress).save()
         Metadata testMetadata = new Metadata(namespace: 'propagationTest', key: 'key', value: 'value', createdBy: admin.emailAddress)
         Rule testRule = new Rule(name: 'propagationTest', createdBy: admin.emailAddress).addToRuleRepresentations(language: 'e', representation:
             'a+b', createdBy: admin.emailAddress)
@@ -355,52 +353,40 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         dataModel.addToSemanticLinks(testSemanticLink)
         dataModel.addToReferenceFiles(testReferenceFile)
 
-        dataModelService.saveModelNewContentOnly(dataModel)
+        checkAndSave(dataModel)
 
         when:
         DataModel dm = importModel(loadTestFile('complexDataModel'))
 
         then:
-        dm.annotations.find { it.label == testAnnotation.label }
-        dm.classifiers.find { it.label == testClassifier.label }
-        dm.metadata.find { it.namespace == testMetadata.namespace }
-        dm.rules.find { it.name == testRule.name }
-        dm.semanticLinks.find { it.targetMultiFacetAwareItemId == testSemanticLink.targetMultiFacetAwareItemId }
-        dm.semanticLinks.find { it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType }
-        dm.referenceFiles.find { it.fileName == testReferenceFile.fileName }
+        dm.annotations.find {it.label == testAnnotation.label}
+        dm.classifiers.find {it.label == testClassifier.label}
+        dm.metadata.find {it.namespace == testMetadata.namespace}
+        dm.rules.find {it.name == testRule.name}
+        dm.semanticLinks.find {it.targetMultiFacetAwareItemId == testSemanticLink.targetMultiFacetAwareItemId}
+        dm.semanticLinks.find {it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType}
+        dm.referenceFiles.find {it.fileName == testReferenceFile.fileName}
 
 
     }
 
-    void 'PG02 : test importing a dataModel and propagating existing information from the already present version'() {
+    void 'PG02 : test importing a dataModel making sure model items arent propagated'() {
         /*
         imported data is a copy of the complexDataModel with the following alterations:
-        Expect it to propagate information from complex data model where it has been altered or removed.
-
-        expected propagated elements:
-        dataClass: "dataClass with elements"
-        DataType: "child"
-        DataElement "child"
-        Enumeration key: U value: unknown
-
-        expected new imported elements:
-        dataClass "propagated DataClass with elements"
-        dataElement: propagated child dataElement
-        DataType: Propagated child dataType
-        Enumeration value key: M value: Maybe
+       Expect it to not propagate content
          */
         given:
-
         setupData()
         basicParameters.finalised = false
         basicParameters.importAsNewBranchModelVersion = true
         basicParameters.propagateFromPreviousVersion = true
 
         DataModel dataModel = DataModel.get(simpleDataModelId)
+        dataModel.description = 'Some interesting thing we should preserve'
         DataClass dataClass = new DataClass(createdByUser: editor, label: 'propagation parent', dataModel: dataModel, minMultiplicity: 0,
                                             maxMultiplicity: 1)
         DataClass dataClassChild = new DataClass(createdByUser: editor, label: 'propagation child', dataModel: dataModel, minMultiplicity: 0,
-                                            maxMultiplicity: 1)
+                                                 maxMultiplicity: 1)
         dataModel.addToDataClasses(dataClass)
         dataClass.addToDataClasses(dataClassChild)
 
@@ -423,7 +409,73 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         DataModel dm = importModel(loadTestFile('simpleDataModel'))
 
         then:
-        dm.dataClasses.find{it.label == dataClass.label}
+        !dm.dataClasses.find {it.label == dataClass.label}
+        dm.description == 'Some interesting thing we should preserve'
+    }
 
+    void 'PG03 : test propagating child content'() {
+
+        given:
+        setupData()
+        basicParameters.finalised = false
+        basicParameters.importAsNewBranchModelVersion = true
+        basicParameters.propagateFromPreviousVersion = true
+
+        dataModel = DataModel.findById(complexDataModelId)
+        DataClass dataClass = dataModel.dataClasses.find {it.label == 'parent'}
+
+        Annotation testAnnotation = new Annotation(label: 'propagationTest', description: 'propagationTest', createdBy: admin.emailAddress)
+        Classifier testClassifier = new Classifier(label: 'propagationTest', createdBy: admin.emailAddress).save()
+        Metadata testMetadata = new Metadata(namespace: 'propagationTest', key: 'key', value: 'value', createdBy: admin.emailAddress)
+        Rule testRule = new Rule(name: 'propagationTest', createdBy: admin.emailAddress).addToRuleRepresentations(language: 'e', representation:
+            'a+b', createdBy: admin.emailAddress)
+        SemanticLink testSemanticLink = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdByUser: admin,
+                                                         targetMultiFacetAwareItem: DataClass.findByLabel('child'))
+        ReferenceFile testReferenceFile = new ReferenceFile(fileName: 'propagationTest', fileType: 'text', fileContents: 'hello'.bytes, fileSize:
+            'hello'.bytes.size(), createdBy: admin.emailAddress)
+
+        dataClass.addToAnnotations(testAnnotation)
+        dataClass.addToClassifiers(testClassifier)
+        dataClass.addToMetadata(testMetadata)
+        dataClass.addToRules(testRule)
+        dataClass.addToSemanticLinks(testSemanticLink)
+        dataClass.addToReferenceFiles(testReferenceFile)
+
+        checkAndSave(dataClass)
+
+        dataClass = dataModel.dataClasses.find {it.label == 'child'}
+        dataClass.description = 'Some interesting thing we should preserve'
+
+        checkAndSave(dataClass)
+
+        dataClass = dataModel.dataClasses.find {it.label == 'content'}
+        dataClass.description = 'Some interesting thing we should lose'
+
+        checkAndSave(dataClass)
+
+        when:
+        DataModel dm = importModel(loadTestFile('complexDataModel'))
+        dataClass = dm.dataClasses.find {it.label == 'parent'}
+
+        then:
+        dataClass.metadata.find {it.namespace == testMetadata.namespace}
+        dataClass.annotations.find {it.label == testAnnotation.label}
+        dataClass.classifiers.find {it.label == testClassifier.label}
+        dataClass.rules.find {it.name == testRule.name}
+        dataClass.semanticLinks.find {it.targetMultiFacetAwareItemId == testSemanticLink.targetMultiFacetAwareItemId}
+        dataClass.semanticLinks.find {it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType}
+        dataClass.referenceFiles.find {it.fileName == testReferenceFile.fileName}
+
+        when:
+        dataClass = dm.dataClasses.find {it.label == 'child'}
+
+        then:
+        dataClass.description == 'Some interesting thing we should preserve'
+
+        when:
+        dataClass = dm.dataClasses.find {it.label == 'content'}
+
+        then: 'description is not overwritten as it was included in the import'
+        dataClass.description == 'A dataclass with elements'
     }
 }

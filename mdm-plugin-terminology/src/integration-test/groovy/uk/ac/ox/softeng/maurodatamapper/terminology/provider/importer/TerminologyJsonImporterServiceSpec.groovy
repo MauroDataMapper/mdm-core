@@ -26,8 +26,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
-import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
-import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
 import uk.ac.ox.softeng.maurodatamapper.terminology.test.provider.DataBindTerminologyImporterProviderServiceSpec
 import uk.ac.ox.softeng.maurodatamapper.test.json.JsonComparer
 
@@ -35,16 +33,13 @@ import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 
-import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getDEVELOPMENT
-import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getDEVELOPMENT
-
 /**
  * @since 17/09/2020
  */
 @Integration
 @Rollback
 @Slf4j
-class JsonTerminologyImporterServiceSpec extends DataBindTerminologyImporterProviderServiceSpec<TerminologyJsonImporterService>
+class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProviderServiceSpec<TerminologyJsonImporterService>
     implements JsonComparer {
 
     TerminologyJsonImporterService terminologyJsonImporterService
@@ -140,50 +135,69 @@ class JsonTerminologyImporterServiceSpec extends DataBindTerminologyImporterProv
 
     }
 
-    void 'PG02 test importing a Terminology and propagating existing information'() {
+    void 'PG02 : test propagating child content'() {
 
+        given:
         setupData()
         basicParameters.finalised = false
         basicParameters.importAsNewBranchModelVersion = true
         basicParameters.propagateFromPreviousVersion = true
 
-        Term term1 = new Term(createdBy: DEVELOPMENT, code: 'PPG01', definition: 'propagationTestTerm 1')
-        Term term2 = new Term(createdBy: DEVELOPMENT, code: 'PPG02', definition: 'propagationTestTerm 02')
-        Term term3 = new Term(createdBy: DEVELOPMENT, code: 'PPG03', definition: 'propagationTestTerm 03')
-        simpleTerminology.addToTerms(term1)
-            .addToTerms(term2)
-            .addToTerms(term3)
+        Terminology terminology = Terminology.findById(complexTerminologyId)
+        Term term = terminology.terms.find {it.code == 'CTT1'}
 
-        TermRelationshipType broaderThan = new TermRelationshipType(createdBy: DEVELOPMENT, label: 'broaderThan', displayLabel: 'Broader Than',
-                                                                    parentalRelationship: true)
-        TermRelationshipType narrowerThan = new TermRelationshipType(createdBy: DEVELOPMENT, label: 'narrowerThan', displayLabel: 'Narrower Than')
+        Annotation testAnnotation = new Annotation(label: 'propagationTest', description: 'propagationTest', createdBy: admin.emailAddress)
+        Classifier testClassifier = new Classifier(label: 'propagationTest', createdBy: admin.emailAddress).save()
+        Metadata testMetadata = new Metadata(namespace: 'propagationTest', key: 'key', value: 'value', createdBy: admin.emailAddress)
+        Rule testRule = new Rule(name: 'propagationTest', createdBy: admin.emailAddress).addToRuleRepresentations(language: 'e', representation:
+            'a+b', createdBy: admin.emailAddress)
+        SemanticLink testSemanticLink = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdByUser: admin,
+                                                         targetMultiFacetAwareItem: Term.findByCode('STT01'))
+        ReferenceFile testReferenceFile = new ReferenceFile(fileName: 'propagationTest', fileType: 'text', fileContents: 'hello'.bytes, fileSize:
+            'hello'.bytes.size(), createdBy: admin.emailAddress)
 
-        simpleTerminology.addToTermRelationshipTypes(broaderThan)
-            .addToTermRelationshipTypes(narrowerThan)
+        term.addToAnnotations(testAnnotation)
+        term.addToClassifiers(testClassifier)
+        term.addToMetadata(testMetadata)
+        term.addToRules(testRule)
+        term.addToSemanticLinks(testSemanticLink)
+        term.addToReferenceFiles(testReferenceFile)
 
-        TermRelationship relationshipNarrow = new TermRelationship(createdBy: DEVELOPMENT, sourceTerm: term1, targetTerm: term2, relationshipType:
-            narrowerThan)
-        TermRelationship relationshipBroader = new TermRelationship(createdBy: DEVELOPMENT, sourceTerm: term3, targetTerm: term1,
-                                                                    relationshipType: broaderThan)
-        term1.addToSourceTermRelationships(relationshipNarrow)
-        term2.addToTargetTermRelationships(relationshipNarrow)
+        checkAndSave(term)
 
-        term3.addToSourceTermRelationships(relationshipBroader)
-        term1.addToTargetTermRelationships(relationshipBroader)
+        term = terminology.terms.find {it.code == 'CTT2'}
+        term.description = 'Some interesting thing we should preserve'
 
-        checkAndSave(simpleTerminology)
+        checkAndSave(term)
+
+        term = terminology.terms.find {it.code == 'CTT101'}
+        term.description = 'Some interesting thing we should lose'
+
+        checkAndSave(term)
 
         when:
-        Terminology terminology = importAndSave(loadTestFile('simpleTerminology'))
+        Terminology tm = importAndSave(loadTestFile('complexTerminology'))
+        term = tm.terms.find {it.code == 'CTT1'}
 
         then:
-        terminology.terms.size() == 5
-        terminology.terms.count { it.code.matches('PPG(.*)') } == 3
-        Term testTerm1 = terminology.terms.find { it.label == term1.label }
-        testTerm1.sourceTermRelationships.find{it.relationshipType == relationshipNarrow.relationshipType}
-        Term testTerm2 = terminology.terms.find { it.label == term2.label }
-        testTerm2.targetTermRelationships.find{it.relationshipType == relationshipNarrow.relationshipType}
-        terminology.termRelationshipTypes.find { it.label == broaderThan.label }
-        terminology.termRelationshipTypes.find { it.label == narrowerThan.label }
+        term.metadata.find {it.namespace == testMetadata.namespace}
+        term.annotations.find {it.label == testAnnotation.label}
+        term.classifiers.find {it.label == testClassifier.label}
+        term.rules.find {it.name == testRule.name}
+        term.semanticLinks.find {it.targetMultiFacetAwareItemId == testSemanticLink.targetMultiFacetAwareItemId}
+        term.semanticLinks.find {it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType}
+        term.referenceFiles.find {it.fileName == testReferenceFile.fileName}
+
+        when:
+        term = tm.terms.find {it.code == 'CTT2'}
+
+        then:
+        term.description == 'Some interesting thing we should preserve'
+
+        when:
+        term = tm.terms.find {it.code == 'CTT101'}
+
+        then: 'description is not overwritten as it was included in the import'
+        term.description == 'Example of truncated term label when code and definition are the same'
     }
 }

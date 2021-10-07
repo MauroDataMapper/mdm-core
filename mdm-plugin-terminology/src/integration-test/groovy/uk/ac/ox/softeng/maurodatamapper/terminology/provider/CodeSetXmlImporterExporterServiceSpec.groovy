@@ -19,24 +19,15 @@ package uk.ac.ox.softeng.maurodatamapper.terminology.provider
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
-import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
-import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
-import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
-import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
-import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
-import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
-import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.CodeSetJsonExporterService
-import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.CodeSetJsonImporterService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.CodeSetXmlExporterService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.CodeSetXmlImporterService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.terminology.test.BaseCodeSetIntegrationSpec
-import uk.ac.ox.softeng.maurodatamapper.test.json.JsonComparer
+import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlValidator
 
 import com.google.common.base.CaseFormat
 import grails.gorm.transactions.Rollback
@@ -52,21 +43,13 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 
-import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getDEVELOPMENT
-import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getDEVELOPMENT
-import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getDEVELOPMENT
-import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getDEVELOPMENT
-import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getDEVELOPMENT
-import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getDEVELOPMENT
-import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getDEVELOPMENT
-
 /**
- * @since 17/09/2020
+ * @since 18/09/2020
  */
 @Integration
 @Rollback
 @Slf4j
-class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec implements JsonComparer {
+class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec implements XmlValidator {
 
     @Shared
     Path resourcesPath
@@ -77,9 +60,8 @@ class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
     @Shared
     UUID simpleCodeSetId
 
-    CodeSetJsonImporterService codeSetJsonImporterService
-    CodeSetJsonExporterService codeSetJsonExporterService
-
+    CodeSetXmlImporterService codeSetXmlImporterService
+    CodeSetXmlExporterService codeSetXmlExporterService
 
     @Shared
     CodeSetFileImporterProviderServiceParameters basicParameters
@@ -93,29 +75,29 @@ class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
     }
 
     String getImportType() {
-        'json'
+        'xml'
     }
 
-    CodeSetJsonImporterService getCodeSetImporterService() {
-        codeSetJsonImporterService
+    CodeSetXmlImporterService getCodeSetImporterService() {
+        codeSetXmlImporterService
     }
 
-    CodeSetJsonExporterService getCodeSetExporterService() {
-        codeSetJsonExporterService
+    CodeSetXmlExporterService getCodeSetExporterService() {
+        codeSetXmlExporterService
     }
 
     void validateExportedModel(String testName, String exportedModel) {
         assert exportedModel, 'There must be an exported model string'
 
-        Path expectedPath = resourcesPath.resolve("${CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, testName)}.${importType}")
+        Path expectedPath = resourcesPath.resolve("${CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, testName)}.xml")
         if (!Files.exists(expectedPath)) {
-            Files.write(expectedPath, exportedModel.bytes)
+            Files.writeString(expectedPath, (prettyPrint(exportedModel)))
             Assert.fail("Expected export file ${expectedPath} does not exist")
         }
-
-        String expectedJson = replaceContentWithMatchers(Files.readString(expectedPath))
-        verifyJson(expectedJson, exportedModel)
+        validateAndCompareXml(Files.readString(expectedPath), exportedModel.replace(/Mauro Data Mapper/, 'Test Authority'), 'export',
+                              codeSetXmlExporterService.version)
     }
+
 
     @OnceBefore
     void setupResourcesPath() {
@@ -160,20 +142,6 @@ class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         log.info('Confirming imported model')
 
         confirmCodeSet(codeSet)
-        codeSet
-    }
-
-    CodeSet importModel(byte[] bytes) {
-        CodeSet imported = codeSetImporterService.importCodeSet(admin, bytes)
-        assert imported
-        imported.folder = testFolder
-        log.info('Checking imported model')
-        codeSetImporterService.checkImport(admin, imported, basicParameters)
-        check(imported)
-        assert codeSetService.saveModelWithContent(imported)
-        sessionFactory.currentSession.flush()
-
-        CodeSet codeSet = codeSetService.get(imported.id)
         codeSet
     }
 
@@ -588,80 +556,4 @@ class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         ApiBadRequestException exception = thrown(ApiBadRequestException)
         exception.errorCode == 'CSS01'
     }
-
-
-    void 'PG01 test propagatingCatalogueItemElements'() {
-
-        given:
-        setupData()
-        basicParameters.finalised = false
-        basicParameters.importAsNewBranchModelVersion = true
-        basicParameters.propagateFromPreviousVersion = true
-
-        CodeSet codeSet = CodeSet.findById(simpleCodeSetId)
-
-        Annotation testAnnotation = new Annotation(label: 'propagationTest', description: 'propagationTest', createdBy: admin.emailAddress)
-        Classifier testClassifier = new Classifier(label: 'propagationTest', createdBy: admin.emailAddress)
-        Metadata testMetadata = new Metadata(namespace: 'propagationTest', key: 'key', value: 'value', createdBy: admin.emailAddress)
-        Rule testRule = new Rule(name: 'propagationTest', createdBy: admin.emailAddress).addToRuleRepresentations(language: 'e', representation:
-            'a+b', createdBy: admin.emailAddress)
-        SemanticLink testSemanticLink = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdByUser: admin,
-                                                         targetMultiFacetAwareItem: Term.findByCode('STT01'))
-        ReferenceFile testReferenceFile = new ReferenceFile(fileName: 'propagationTest', fileType: 'text', fileContents: 'hello'.bytes, fileSize:
-            'hello'.bytes.size(), createdBy: admin.emailAddress)
-
-        codeSet.addToAnnotations(testAnnotation)
-        codeSet.addToClassifiers(testClassifier)
-        codeSet.addToMetadata(testMetadata)
-        codeSet.addToRules(testRule)
-        codeSet.addToSemanticLinks(testSemanticLink)
-        codeSet.addToReferenceFiles(testReferenceFile)
-
-        checkAndSave(testClassifier)
-        checkAndSave(codeSet)
-
-        when:
-        //propagatedBootstrappedSimpleCodeSet is simply not finalised
-        CodeSet cs = importModel(loadTestFile('propagatedBootstrappedSimpleCodeSet'))
-
-        then:
-        cs.annotations.find { it.label == testAnnotation.label }
-        cs.classifiers.find { it.label == testClassifier.label }
-        cs.metadata.find { it.namespace == testMetadata.namespace }
-        cs.rules.find { it.name == testRule.name }
-        cs.semanticLinks.find { it.targetMultiFacetAwareItemId == testSemanticLink.targetMultiFacetAwareItemId }
-        cs.semanticLinks.find { it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType }
-        cs.referenceFiles.find { it.fileName == testReferenceFile.fileName }
-
-    }
-
-    void 'PG02 test importing a CodeSet and propagating existing information'() {
-
-        //propagateTerminology does not contain information present in the ComplexTerminology json
-        // the missing data should be propagated across
-
-        setupData()
-        basicParameters.finalised = false
-        basicParameters.importAsNewBranchModelVersion = true
-        basicParameters.propagateFromPreviousVersion = true
-
-        Term term1 = new Term(createdBy: DEVELOPMENT, code: 'PPG01', definition: 'propagationTestTerm 01')
-        Term term2 = new Term(createdBy: DEVELOPMENT, code: 'PPG02', definition: 'propagationTestTerm 02')
-        Term term3 = new Term(createdBy: DEVELOPMENT, code: 'PPG03', definition: 'propagationTestTerm 03')
-
-        simpleCodeSet.addToTerms(term1)
-            .addToTerms(term2)
-            .addToTerms(term3)
-
-        checkAndSave(simpleCodeSet)
-
-        when:
-        CodeSet codeSet = importModel(loadTestFile('propagatedBootstrappedSimpleCodeSet'))
-
-        then:
-        codeSet.terms.size() == 5
-        codeSet.terms.count { it.code.matches('PPG(.*)') } == 3
-
-    }
-
 }
