@@ -23,7 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.core.GrailsApplication
 import grails.core.GrailsClass
-import org.grails.orm.hibernate.proxy.HibernateProxyHandler
+import grails.core.support.proxy.ProxyHandler
 import org.springframework.beans.factory.annotation.Autowired
 
 import java.lang.reflect.ParameterizedType
@@ -34,7 +34,8 @@ trait DomainService<K extends CreatorAware> {
     @Autowired
     GrailsApplication grailsApplication
 
-    final static HibernateProxyHandler HIBERNATE_PROXY_HANDLER = new HibernateProxyHandler()
+    @Autowired
+    ProxyHandler proxyHandler
 
     abstract K get(Serializable id)
 
@@ -54,7 +55,7 @@ trait DomainService<K extends CreatorAware> {
     }
 
     K unwrapIfProxy(def ge) {
-        HIBERNATE_PROXY_HANDLER.unwrapIfProxy(ge) as K
+        proxyHandler.unwrapIfProxy(ge) as K
     }
 
     Class<K> getDomainClass() {
