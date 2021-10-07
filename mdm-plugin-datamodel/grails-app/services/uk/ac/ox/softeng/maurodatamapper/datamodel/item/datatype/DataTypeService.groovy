@@ -179,27 +179,11 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     }
 
     @Override
-    void propagateModelItemInformation(DataType model, DataType previousVersionModel, User user) {
-
-        super.propagateModelItemInformation(model, previousVersionModel, user)
-
-        if (previousVersionModel.instanceOf(EnumerationType)) {
-            enumerationTypeService.propagateDataFromPreviousVersion(model as EnumerationType, previousVersionModel as EnumerationType, user)
-        }
-
-        if (previousVersionModel.instanceOf(ReferenceType)) {
-            referenceTypeService.propagateDataFromPreviousVersion(model as ReferenceType, previousVersionModel as ReferenceType, user)
-        }
-
-        if (previousVersionModel.instanceOf(PrimitiveType)){
-            primitiveTypeService.propagateDataFromPreviousVersion(model as PrimitiveType, previousVersionModel as PrimitiveType, user)
-        }
-
-        if (previousVersionModel.instanceOf(ModelDataType)){
-            modelDataTypeService.propagateDataFromPreviousVersion(model as ModelDataType, previousVersionModel as ModelDataType, user)
+    void propagateContentsInformation(DataType catalogueItem, DataType previousVersionCatalogueItem) {
+        if (previousVersionCatalogueItem.instanceOf(EnumerationType)) {
+            enumerationTypeService.propagateContentsInformation(catalogueItem as EnumerationType, previousVersionCatalogueItem as EnumerationType)
         }
     }
-
 
     @Override
     List<DataType> findAllReadableTreeTypeCatalogueItemsBySearchTermAndDomain(UserSecurityPolicyManager userSecurityPolicyManager,
@@ -367,7 +351,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
             }
         } else {
             log.trace('Making best guess for matching reference class as no path nor bound class')
-            DataClass dataClass = dataModel.dataClasses.find { it.label == bindingMap.referenceClass.label }
+            DataClass dataClass = dataModel.dataClasses.find {it.label == bindingMap.referenceClass.label}
             if (dataClass) dataClass.addToReferenceTypes(referenceType)
         }
     }

@@ -474,7 +474,7 @@ abstract class ModelService<K extends Model>
         log.debug('Merging patch data into {}', targetModel.id)
         if (isLegacy) return mergeLegacyObjectPatchDataIntoModel(objectPatchData, targetModel, userSecurityPolicyManager)
 
-        getSortedFieldPatchDataForMerging(objectPatchData).each { fieldPatch ->
+        getSortedFieldPatchDataForMerging(objectPatchData).each {fieldPatch ->
             switch (fieldPatch.type) {
                 case 'creation':
                     return processCreationPatchIntoModel(fieldPatch, targetModel, sourceModel, userSecurityPolicyManager)
@@ -494,7 +494,7 @@ abstract class ModelService<K extends Model>
           We can process modifications in any order
           Process creations before deletions, that way any deletions will automatically take care of any links to potentially created objects
            */
-        objectPatchData.patches.sort { l, r ->
+        objectPatchData.patches.sort {l, r ->
             switch (l.type) {
                 case 'modification':
                     if (r.type == 'modification') return 0
@@ -562,7 +562,7 @@ abstract class ModelService<K extends Model>
         String fieldName = modificationPatch.fieldName
         log.debug('Modifying [{}] in [{}]', fieldName, modificationPatch)
         domain."${fieldName}" = modificationPatch.sourceValue
-        DomainService domainService = getDomainServices().find { it.handles(domain.class) }
+        DomainService domainService = getDomainServices().find {it.handles(domain.class)}
         if (!domainService) throw new ApiInternalException('MSXX', "No domain service to handle modification of [${domain.domainType}]")
 
         if (!domain.validate())
@@ -571,14 +571,14 @@ abstract class ModelService<K extends Model>
     }
 
     void processDeletionPatchOfModelItem(ModelItem modelItem, Model targetModel) {
-        ModelItemService modelItemService = modelItemServices.find { it.handles(modelItem.class) }
+        ModelItemService modelItemService = modelItemServices.find {it.handles(modelItem.class)}
         if (!modelItemService) throw new ApiInternalException('MSXX', "No domain service to handle deletion of [${modelItem.domainType}]")
         log.debug('Deleting ModelItem from Model')
         modelItemService.delete(modelItem)
     }
 
     CatalogueItem processDeletionPatchOfFacet(MultiFacetItemAware multiFacetItemAware, Model targetModel, Path path) {
-        MultiFacetItemAwareService multiFacetItemAwareService = multiFacetItemAwareServices.find { it.handles(multiFacetItemAware.class) }
+        MultiFacetItemAwareService multiFacetItemAwareService = multiFacetItemAwareServices.find {it.handles(multiFacetItemAware.class)}
         if (!multiFacetItemAwareService) throw new ApiInternalException('MSXX',
                                                                         "No domain service to handle deletion of [${multiFacetItemAware.domainType}]")
         log.debug('Deleting Facet from path [{}]', path)
@@ -610,7 +610,7 @@ abstract class ModelService<K extends Model>
 
     void processCreationPatchOfModelItem(ModelItem modelItemToCopy, Model targetModel, Path parentPathToCopyTo,
                                          UserSecurityPolicyManager userSecurityPolicyManager, boolean flush = false) {
-        ModelItemService modelItemService = modelItemServices.find { it.handles(modelItemToCopy.class) }
+        ModelItemService modelItemService = modelItemServices.find {it.handles(modelItemToCopy.class)}
         if (!modelItemService) throw new ApiInternalException('MSXX', "No domain service to handle creation of [${modelItemToCopy.domainType}]")
         log.debug('Creating ModelItem into Model at [{}]', parentPathToCopyTo)
         CatalogueItem parentToCopyInto = pathService.findResourceByPathFromRootResource(targetModel, parentPathToCopyTo) as CatalogueItem
@@ -624,7 +624,7 @@ abstract class ModelService<K extends Model>
     }
 
     void processCreationPatchOfFacet(MultiFacetItemAware multiFacetItemAwareToCopy, Model targetModel, Path parentPathToCopyTo) {
-        MultiFacetItemAwareService multiFacetItemAwareService = multiFacetItemAwareServices.find { it.handles(multiFacetItemAwareToCopy.class) }
+        MultiFacetItemAwareService multiFacetItemAwareService = multiFacetItemAwareServices.find {it.handles(multiFacetItemAwareToCopy.class)}
         if (!multiFacetItemAwareService) {
             throw new ApiInternalException('MSXX',
                                            "No domain service to handle creation of [${multiFacetItemAwareToCopy.domainType}]")
@@ -645,7 +645,7 @@ abstract class ModelService<K extends Model>
     K mergeLegacyObjectPatchDataIntoModel(ObjectPatchData objectPatchData, K targetModel, UserSecurityPolicyManager userSecurityPolicyManager) {
 
         log.debug('Merging legacy {} diffs into model {}', objectPatchData.getDiffsWithContent().size(), targetModel.label)
-        objectPatchData.getDiffsWithContent().each { mergeFieldDiff ->
+        objectPatchData.getDiffsWithContent().each {mergeFieldDiff ->
             log.debug('{}', mergeFieldDiff.summary)
 
             if (mergeFieldDiff.isFieldChange()) {
@@ -653,7 +653,7 @@ abstract class ModelService<K extends Model>
             } else if (mergeFieldDiff.isMetadataChange()) {
                 mergeLegacyMetadataIntoCatalogueItem(mergeFieldDiff, targetModel, userSecurityPolicyManager)
             } else {
-                ModelItemService modelItemService = modelItemServices.find { it.handles(mergeFieldDiff.fieldName) }
+                ModelItemService modelItemService = modelItemServices.find {it.handles(mergeFieldDiff.fieldName)}
                 if (modelItemService) {
                     modelItemService.processLegacyFieldPatchData(mergeFieldDiff, targetModel, userSecurityPolicyManager)
                 } else {
@@ -678,7 +678,7 @@ abstract class ModelService<K extends Model>
         if (versionLinkType == VersionLinkType.NEW_FORK_OF) return includeForks ? versionTreeModelList : []
 
         List<VersionLink> versionLinks = versionLinkService.findAllByTargetModelId(instance.id)
-        versionLinks.each { link ->
+        versionLinks.each {link ->
             K linkedModel = get(link.multiFacetAwareItemId)
             versionTreeModelList.
                 addAll(buildModelVersionTree(linkedModel, link.linkType, rootVersionTreeModel, includeForks, branchesOnly, userSecurityPolicyManager))
@@ -771,7 +771,7 @@ abstract class ModelService<K extends Model>
         ObjectDiff<K> caDiffTarget = commonAncestor.diff(targetModel, 'none')
 
         // Remove the branchname as  diff as we know its a diff and for merging we dont want it
-        Predicate branchNamePredicate = [test: { FieldDiff fieldDiff ->
+        Predicate branchNamePredicate = [test: {FieldDiff fieldDiff ->
             fieldDiff.fieldName == 'branchName'
         },] as Predicate
 
@@ -1051,13 +1051,12 @@ abstract class ModelService<K extends Model>
         Path.from(model)
     }
 
-    void propagateFromPreviousVersion(K model, boolean propagateFromPreviousVersion, User user ) {
+    void propagateFromPreviousVersion(K model, boolean propagateFromPreviousVersion) {
         //step one get previous version
-        if(!propagateFromPreviousVersion) return
+        if (!propagateFromPreviousVersion) return
 
         K previousVersionModel = findLatestFinalisedModelByLabel(model.label)
-        if (previousVersionModel) propagateDataFromPreviousVersion(model, previousVersionModel, user)
-
-        else throw new ApiBadRequestException('MSXX', 'Requested Model propagation has no predecessor')
+        if (previousVersionModel) propagateDataFromPreviousVersion(model, previousVersionModel)
+        else log.warn('Requested propagation from previous vresion but no predecessor exists')
     }
 }

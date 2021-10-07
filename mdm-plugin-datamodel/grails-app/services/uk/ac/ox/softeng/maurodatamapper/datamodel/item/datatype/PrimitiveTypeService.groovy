@@ -169,10 +169,4 @@ class PrimitiveTypeService extends ModelItemService<PrimitiveType> implements Su
     List<PrimitiveType> findAllByMetadataNamespace(String namespace, Map pagination) {
         PrimitiveType.byMetadataNamespace(namespace).list(pagination)
     }
-
-    @Override
-    void propagateModelItemInformation(PrimitiveType model, PrimitiveType previousVersionModel, User user) {
-        super.propagateModelItemInformation(model, previousVersionModel, user)
-        model.dataModel.addToPrimitiveTypes(model)
-    }
 }

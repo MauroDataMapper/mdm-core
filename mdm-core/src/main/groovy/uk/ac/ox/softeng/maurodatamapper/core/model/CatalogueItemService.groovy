@@ -23,7 +23,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFileService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.RuleService
@@ -130,14 +129,6 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
 
     abstract Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType)
 
-    void propagateDataFromPreviousVersion(K catalogueItem, K previousVersionCatalogueItem, User user) {
-        //propagate generic catalogue item information
-        propagateCatalogueItemInformation(catalogueItem, previousVersionCatalogueItem, user)
-
-        //implemented at a service level for each catalogue item and propagates data unique to its domain
-        propagateModelItemInformation(catalogueItem, previousVersionCatalogueItem, user)
-    }
-
     void addClassifierToCatalogueItem(UUID catalogueItemId, Classifier classifier) {
         get(catalogueItemId).addToClassifiers(classifier)
     }
@@ -158,11 +149,11 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
             copy.label = original.label
         }
 
-        classifierService.findAllByCatalogueItemId(userSecurityPolicyManager, original.id).each { copy.addToClassifiers(it) }
-        metadataService.findAllByMultiFacetAwareItemId(original.id).each { copy.addToMetadata(it.namespace, it.key, it.value, copier.emailAddress) }
-        ruleService.findAllByMultiFacetAwareItemId(original.id).each { rule ->
+        classifierService.findAllByCatalogueItemId(userSecurityPolicyManager, original.id).each {copy.addToClassifiers(it)}
+        metadataService.findAllByMultiFacetAwareItemId(original.id).each {copy.addToMetadata(it.namespace, it.key, it.value, copier.emailAddress)}
+        ruleService.findAllByMultiFacetAwareItemId(original.id).each {rule ->
             Rule copiedRule = new Rule(name: rule.name, description: rule.description, createdBy: copier.emailAddress)
-            rule.ruleRepresentations.each { ruleRepresentation ->
+            rule.ruleRepresentations.each {ruleRepresentation ->
                 copiedRule.addToRuleRepresentations(language: ruleRepresentation.language,
                                                     representation: ruleRepresentation.representation,
                                                     createdBy: copier.emailAddress)
@@ -170,7 +161,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
             copy.addToRules(copiedRule)
         }
 
-        semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id).each { link ->
+        semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id).each {link ->
             copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
                                     targetMultiFacetAwareItemId: link.targetMultiFacetAwareItemId,
                                     targetMultiFacetAwareItemDomainType: link.targetMultiFacetAwareItemDomainType,
@@ -180,110 +171,118 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         copy
     }
 
-    K propagateCatalogueItemInformation(K catalogueItem, K previousCatalogueItem, User user) {
-        propagateCatalogueItemClassifiers(catalogueItem, previousCatalogueItem, user)
-        propagateCatalogueItemMetaData(catalogueItem, previousCatalogueItem, user)
-        propagateCatalogueItemRules(catalogueItem, previousCatalogueItem, user)
-        propagateCatalogueItemSemanticLinks(catalogueItem, previousCatalogueItem, user)
-        propagateCatalogueItemAnnotations(catalogueItem, previousCatalogueItem, user)
-        propagateCatalogueItemReferenceFiles(catalogueItem, previousCatalogueItem, user)
-        catalogueItem
+    void propagateDataFromPreviousVersion(K catalogueItem, K previousVersionCatalogueItem) {
+        K previousVersion = unwrapIfProxy(previousVersionCatalogueItem)
+        if (!catalogueItem.description) catalogueItem.description = previousVersion.description
 
+        //propagate generic facet information
+        propagateFacetInformation(catalogueItem, previousVersion)
+
+        propagateContentsInformation(catalogueItem, previousVersion)
     }
 
-    void propagateCatalogueItemClassifiers(K catalogueItem, K previousCatalogueItem, User user) {
+    K propagateFacetInformation(K catalogueItem, K previousCatalogueItem) {
+        propagateCatalogueItemClassifiers(catalogueItem, previousCatalogueItem)
+        propagateCatalogueItemMetadata(catalogueItem, previousCatalogueItem)
+        propagateCatalogueItemRules(catalogueItem, previousCatalogueItem)
+        propagateCatalogueItemSemanticLinks(catalogueItem, previousCatalogueItem)
+        propagateCatalogueItemAnnotations(catalogueItem, previousCatalogueItem)
+        propagateCatalogueItemReferenceFiles(catalogueItem, previousCatalogueItem)
+        catalogueItem
+    }
+
+    void propagateCatalogueItemClassifiers(K catalogueItem, K previousCatalogueItem) {
         //if a classifier does not exists with the same label add it to catalogueItem
-        previousCatalogueItem.classifiers.each { previous ->
-            if (catalogueItem.classifiers.find { it.label == previous.label }) return
-            previous.createdBy = user.emailAddress
+        previousCatalogueItem.classifiers.each {previous ->
+            if (catalogueItem.classifiers.any {it.label == previous.label}) return
             catalogueItem.addToClassifiers(previous)
         }
     }
 
-    void propagateCatalogueItemMetaData(K catalogueItem, K previousCatalogueItem, User user) {
-        metadataService.findAllByMultiFacetAwareItemId(previousCatalogueItem.id).each { previous ->
-            if (catalogueItem.metadata.find { it.key == previous.key }) return
-            catalogueItem.addToMetadata(previous.namespace, previous.key, previous.value, user.emailAddress)
+    void propagateCatalogueItemMetadata(K catalogueItem, K previousCatalogueItem) {
+        metadataService.findAllByMultiFacetAwareItemId(previousCatalogueItem.id).each {previous ->
+            if (catalogueItem.metadata.any {it.key == previous.key}) return
+            catalogueItem.addToMetadata(previous.namespace, previous.key, previous.value, previous.createdBy)
         }
 
     }
 
-    void propagateCatalogueItemRules(K catalogueItem, K previousCatalogueItem, User user) {
+    void propagateCatalogueItemRules(K catalogueItem, K previousCatalogueItem) {
 
-        ruleService.findAllByMultiFacetAwareItemId(previousCatalogueItem.id).each { rule ->
+        ruleService.findAllByMultiFacetAwareItemId(previousCatalogueItem.id).each {previousRule ->
 
             //if rule exists, check and copy missing representations
-            Rule existingRule = catalogueItem.rules.find { it.name == rule.name }
+            Rule existingRule = catalogueItem.rules.find {it.name == previousRule.name}
             if (existingRule) {
-                rule.ruleRepresentations.each { ruleRepresentation ->
-                    if (existingRule.ruleRepresentations.find { it.representation == ruleRepresentation.representation }) return
-                    existingRule.addToRuleRepresentations(language: ruleRepresentation.language,
-                                                          representation: ruleRepresentation.representation,
-                                                          createdBy: user.emailAddress)
+                previousRule.ruleRepresentations.each {previousRuleRepresentation ->
+                    if (existingRule.ruleRepresentations.any {it.representation == previousRuleRepresentation.representation}) return
+                    existingRule.addToRuleRepresentations(language: previousRuleRepresentation.language,
+                                                          representation: previousRuleRepresentation.representation,
+                                                          createdBy: previousRuleRepresentation.createdBy)
                 }
-            }
+            } else {
 
-            //if rule does not exist, copy rule first and then representations
-            Rule copiedRule = new Rule(name: rule.name, description: rule.description, createdBy: user.emailAddress)
-            rule.ruleRepresentations.each { ruleRepresentation ->
-                copiedRule.addToRuleRepresentations(language: ruleRepresentation.language,
-                                                    representation: ruleRepresentation.representation,
-                                                    createdBy: user.emailAddress)
+                //if rule does not exist, copy rule first and then representations
+                Rule copiedRule = new Rule(name: previousRule.name, description: previousRule.description, createdBy: previousRule.createdBy)
+                previousRule.ruleRepresentations.each {ruleRepresentation ->
+                    copiedRule.addToRuleRepresentations(language: ruleRepresentation.language,
+                                                        representation: ruleRepresentation.representation,
+                                                        createdBy: ruleRepresentation.createdBy)
+                }
+                catalogueItem.addToRules(copiedRule)
             }
-            catalogueItem.addToRules(copiedRule)
         }
 
     }
 
-    void propagateCatalogueItemSemanticLinks(CatalogueItem catalogueItem, CatalogueItem previousCatalogueItem, User user) {
+    void propagateCatalogueItemSemanticLinks(CatalogueItem catalogueItem, CatalogueItem previousCatalogueItem) {
 
-        semanticLinkService.findAllBySourceMultiFacetAwareItemId(previousCatalogueItem.id).each { link ->
+        semanticLinkService.findAllBySourceMultiFacetAwareItemId(previousCatalogueItem.id).each {previousLink ->
 
-            if (catalogueItem.semanticLinks.find { link.compare(it, catalogueItem.label, link, previousCatalogueItem.label) }) return
+            if (catalogueItem.semanticLinks.any {
+                semanticLinkService.areLinksIdenticalBetweenSameSourceLabelAndTargetItem(it, catalogueItem.label, previousLink, previousCatalogueItem.label)
+            }) return
 
-            catalogueItem.addToSemanticLinks(createdBy: user.emailAddress, linkType: link.linkType,
-                                             targetMultiFacetAwareItemId: link.targetMultiFacetAwareItemId,
-                                             targetMultiFacetAwareItemDomainType: link.targetMultiFacetAwareItemDomainType,
+            catalogueItem.addToSemanticLinks(createdBy: previousLink.createdBy, linkType: previousLink.linkType,
+                                             targetMultiFacetAwareItemId: previousLink.targetMultiFacetAwareItemId,
+                                             targetMultiFacetAwareItemDomainType: previousLink.targetMultiFacetAwareItemDomainType,
                                              unconfirmed: true)
         }
 
     }
 
-    void propagateCatalogueItemAnnotations(CatalogueItem catalogueItem, CatalogueItem previousCatalogueItem, User user) {
+    void propagateCatalogueItemAnnotations(CatalogueItem catalogueItem, CatalogueItem previousCatalogueItem) {
 
-        previousCatalogueItem.annotations.each { previous ->
+        previousCatalogueItem.annotations.each {previous ->
             //if it exists
-            Annotation modelAnnotation = catalogueItem.annotations.find { it.label == previous.label }
+            Annotation modelAnnotation = catalogueItem.annotations.find {it.label == previous.label}
             if (modelAnnotation) {
                 //copy across child annotations
-                previous.childAnnotations.each { previousChild ->
-                    if (modelAnnotation.childAnnotations.find { it.label == previousChild.label }) return
-                    modelAnnotation.childAnnotations.add(new Annotation(label: previousChild.label, description: previousChild.description,
-                                                                        createdBy: previousChild.createdBy, parentAnnotation: modelAnnotation))
+                previous.childAnnotations.each {previousChild ->
+                    if (modelAnnotation.childAnnotations.any {it.label == previousChild.label}) return
+                    modelAnnotation.addToChildAnnotations(label: previousChild.label, description: previousChild.description,
+                                                          createdBy: previousChild.createdBy, parentAnnotation: modelAnnotation)
 
                 }
+            } else {
+                //if not copy whole thing
+                catalogueItem.addToAnnotations(label: previous.label, description: previous.description,
+                                               createdBy: previous.createdBy, childAnnotations: previous.childAnnotations)
             }
-            //if not copy whole thing
-            catalogueItem.addToAnnotations(new Annotation(label: previous.label, description: previous.description,
-                                                          createdBy: previous.createdBy, childAnnotations: previous.childAnnotations))
         }
     }
 
-    void propagateCatalogueItemReferenceFiles(CatalogueItem catalogueItem, CatalogueItem previousCatalogueItem, User user) {
-        previousCatalogueItem.referenceFiles.each { previous ->
-            if (catalogueItem.referenceFiles.find { it.fileName == previous.fileName }) return
-            previous.createdBy = user.emailAddress
-            catalogueItem.
-                addToReferenceFiles(new ReferenceFile(fileName: previous.fileName, fileType: previous.fileType, fileContents: previous.fileContents,
-                                                      fileSize: previous.fileSize, createdBy: user.emailAddress))
+    void propagateCatalogueItemReferenceFiles(CatalogueItem catalogueItem, CatalogueItem previousCatalogueItem) {
+        previousCatalogueItem.referenceFiles.each {previous ->
+            if (catalogueItem.referenceFiles.any {it.fileName == previous.fileName}) return
+            catalogueItem.addToReferenceFiles(fileName: previous.fileName, fileType: previous.fileType, fileContents: previous.fileContents,
+                                              fileSize: previous.fileSize, createdBy: previous.createdBy)
 
         }
     }
 
-    void propagateModelItemInformation(K model, K previousVersionModel, User user) {
-        if (!model.label) model.label = previousVersionModel.label
-        if (!model.description) model.description = previousVersionModel.description
-
+    void propagateContentsInformation(K catalogueItem, K previousVersionCatalogueItem) {
+        // default no-op
     }
 
     void setCatalogueItemRefinesCatalogueItem(CatalogueItem source, CatalogueItem target, User catalogueUser) {
@@ -328,13 +327,13 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
                                               UserSecurityPolicyManager userSecurityPolicyManager) {
         log.debug('Merging Metadata into Catalogue Item')
         // call metadataService version of below
-        fieldPatchData.deleted.each { deletedItemPatchData ->
+        fieldPatchData.deleted.each {deletedItemPatchData ->
             Metadata metadata = metadataService.get(deletedItemPatchData.id)
             metadataService.delete(metadata)
         }
 
         // copy additions from source to target object
-        fieldPatchData.created.each { createdItemPatchData ->
+        fieldPatchData.created.each {createdItemPatchData ->
             Metadata metadata = metadataService.get(createdItemPatchData.id)
             metadataService.copy(metadata, targetCatalogueItem)
         }

@@ -537,15 +537,4 @@ class CodeSetService extends ModelService<CodeSet> {
         }
         save(copiedModel, flush: false, validate: false)
     }
-
-    @Override
-    void propagateModelItemInformation(CodeSet model, CodeSet previousVersionModel, User user) {
-        super.propagateModelItemInformation(model, previousVersionModel, user)
-
-        previousVersionModel.terms.each { term ->
-            Term modelTerm = model.terms.find { it.label == term.label }
-            if (modelTerm) termService.propagateDataFromPreviousVersion(modelTerm, term, user)
-            else model.addToTerms(term)
-        }
-    }
 }

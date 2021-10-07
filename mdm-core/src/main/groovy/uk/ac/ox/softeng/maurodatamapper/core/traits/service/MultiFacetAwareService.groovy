@@ -146,7 +146,7 @@ trait MultiFacetAwareService<K extends MultiFacetAware> {
             multiFacetAware.referenceFiles.each {
                 if (!it.isDirty()) it.trackChanges()
                 it.beforeValidate()
-                if (!it.multiFacetAwareItemId) it.multiFacetAwareItemId = multiFacetAware.id
+                it.multiFacetAwareItemId = multiFacetAware.id
             }
             ReferenceFile.saveAll(multiFacetAware.referenceFiles)
         }

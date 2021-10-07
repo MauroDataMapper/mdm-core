@@ -205,19 +205,12 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> implement
     }
 
     @Override
-    void propagateModelItemInformation(EnumerationType model, EnumerationType previousVersionModel, User user) {
-        super.propagateModelItemInformation(model, previousVersionModel, user)
-        previousVersionModel.enumerationValues.each { enumerationValue ->
-            EnumerationValue modelEnumerationValue = model.enumerationValues.find { it.label == enumerationValue.label }
-            if (modelEnumerationValue){
-                enumerationValueService.propagateModelItemInformation(modelEnumerationValue, enumerationValue, user)
-                return
+    void propagateContentsInformation(EnumerationType catalogueItem, EnumerationType previousVersionCatalogueItem) {
+        previousVersionCatalogueItem.enumerationValues.each {previousEnumerationValue ->
+            EnumerationValue enumerationValue = catalogueItem.enumerationValues.find {it.label == previousEnumerationValue.label}
+            if (enumerationValue) {
+                enumerationValueService.propagateDataFromPreviousVersion(enumerationValue, previousEnumerationValue)
             }
-            modelEnumerationValue = new EnumerationValue(createdByUser: user, label: enumerationValue.label, key: enumerationValue.key, value:
-                enumerationValue.value, idx: enumerationValue.idx)
-            enumerationValueService.propagateModelItemInformation(modelEnumerationValue, enumerationValue, user)
-            model.addToEnumerationValues(modelEnumerationValue)
         }
-        model.dataModel.addToEnumerationTypes(model)
     }
 }

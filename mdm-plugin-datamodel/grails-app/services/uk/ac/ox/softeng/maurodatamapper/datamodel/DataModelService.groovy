@@ -24,7 +24,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -829,34 +828,21 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     }
 
     @Override
-    void propagateModelItemInformation(DataModel model, DataModel previousVersionModel, User user) {
-        super.propagateModelItemInformation(model, previousVersionModel, user)
+    void propagateContentsInformation(DataModel catalogueItem, DataModel previousVersionCatalogueItem) {
 
-        previousVersionModel.dataTypes.each { dataType ->
-            DataType modelDataType = model.dataTypes.find { it.label == dataType.label }
-            if (modelDataType) {
-                dataTypeService.propagateDataFromPreviousVersion(modelDataType, dataType, user)
-                return
+        previousVersionCatalogueItem.dataTypes.each {previousDataType ->
+            DataType dataType = catalogueItem.dataTypes.find {it.label == previousDataType.label}
+            if (dataType) {
+                dataTypeService.propagateDataFromPreviousVersion(dataType, previousDataType)
             }
-            modelDataType = dataTypeService.createNewDataTypeFromOriginal(dataType)
-            modelDataType.createdBy = user.emailAddress
-            modelDataType.dataModel = model
-            dataTypeService.propagateDataFromPreviousVersion(modelDataType, dataType, user)
         }
 
-        previousVersionModel.getChildDataClasses().each { dataClass ->
-            DataClass modelDataClass = model.dataClasses.find { it.label == dataClass.label }
-            if (modelDataClass) {
-                dataClassService.propagateDataFromPreviousVersion(modelDataClass, dataClass, user)
-                model.addToDataClasses(modelDataClass)
-                return
+        previousVersionCatalogueItem.childDataClasses.each {previousDataClass ->
+            DataClass dataClass = catalogueItem.childDataClasses.find {it.label == previousDataClass.label}
+            if (dataClass) {
+                dataClassService.propagateDataFromPreviousVersion(dataClass, previousDataClass)
             }
-            modelDataClass = new DataClass(label: dataClass.label, description: dataClass.description, createdBy: user
-                .emailAddress, minMultiplicity: dataClass.minMultiplicity, maxMultiplicity: dataClass.maxMultiplicity,  dataModel: model)
-            dataClassService.propagateDataFromPreviousVersion(modelDataClass, dataClass, user)
-            model.addToDataClasses(modelDataClass)
         }
-
     }
 
     @Override

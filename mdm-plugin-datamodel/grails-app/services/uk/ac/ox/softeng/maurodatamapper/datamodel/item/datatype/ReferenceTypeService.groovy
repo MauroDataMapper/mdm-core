@@ -207,13 +207,4 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> implements Su
     List<ReferenceType> findAllByMetadataNamespace(String namespace, Map pagination) {
         ReferenceType.byMetadataNamespace(namespace).list(pagination)
     }
-
-    @Override
-    void propagateModelItemInformation(ReferenceType model, ReferenceType previousVersionModel, User user) {
-        super.propagateModelItemInformation(model, previousVersionModel, user)
-        DataClass referenceClass = model.dataModel.getDataClasses().find { it.label == previousVersionModel.referenceClass.label }
-        if (referenceClass) {
-            model.setReferenceClass(referenceClass)
-        }
-    }
 }

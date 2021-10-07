@@ -143,7 +143,7 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
 
             log.trace('Removing {} TermRelationshipTypes', termRelationshipTypeIds.size())
             sessionFactory.currentSession
-                .createSQLQuery('delete from terminology.term_relationship_type where terminology_id = :id')
+                .createSQLQuery('DELETE FROM terminology.term_relationship_type WHERE terminology_id = :id')
                 .setParameter('id', modelId)
                 .executeUpdate()
 
@@ -167,7 +167,7 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
     @Override
     List<TermRelationshipType> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
         TermRelationshipType.byClassifierId(classifier.id).list().
-            findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.model.id) }
+            findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.model.id)}
     }
 
     @Override
@@ -197,17 +197,12 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
     }
 
     @Override
-    void propagateModelItemInformation(TermRelationshipType model, TermRelationshipType previousVersionModel, User user) {
-        super.propagateModelItemInformation(model, previousVersionModel, user)
-        previousVersionModel.termRelationships.each { termRelationship ->
-            TermRelationship modelTermRelationship = model.termRelationships.find { it.label == termRelationship.label }
-            if (modelTermRelationship) {
-                termRelationshipService.propagateDataFromPreviousVersion(modelTermRelationship, termRelationship, user)
-                return
+    void propagateContentsInformation(TermRelationshipType catalogueItem, TermRelationshipType previousVersionCatalogueItem) {
+        previousVersionCatalogueItem.termRelationships.each {previousTermRelationship ->
+            TermRelationship termRelationship = catalogueItem.termRelationships.find {it.label == previousTermRelationship.label}
+            if (termRelationship) {
+                termRelationshipService.propagateDataFromPreviousVersion(termRelationship, previousTermRelationship)
             }
-            modelTermRelationship = termRelationshipService.copyTermRelationship(model.terminology, termRelationship, user)
-            termRelationshipService.propagateDataFromPreviousVersion(modelTermRelationship, termRelationship, user)
-            model.addToTermRelationships(modelTermRelationship)
         }
     }
 }

@@ -149,7 +149,7 @@ class ModelImporterProviderServiceParameters implements ImporterProviderServiceP
 
     @ImportParameterConfig(
         displayName = 'Propagate From Previous Version',
-        description = 'Propagate descriptions and facets from the last version',
+        description = 'Propagate descriptions and facets from the last version. Default: false.',
         order = 1
     )
     Boolean propagateFromPreviousVersion = false

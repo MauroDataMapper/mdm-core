@@ -591,43 +591,21 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    void propagateModelItemInformation(Terminology model, Terminology previousVersionModel, User user) {
-        super.propagateModelItemInformation(model, previousVersionModel, user)
-
-        previousVersionModel.terms.each { term ->
-            Term modelTerm = model.terms.find { it.label == term.label }
-            if (modelTerm) {
-                termService.propagateDataFromPreviousVersion(modelTerm, term, user)
-                return
+    void propagateContentsInformation(Terminology catalogueItem, Terminology previousVersionCatalogueItem) {
+        previousVersionCatalogueItem.terms.each {previousTerm ->
+            Term term = catalogueItem.terms.find {it.label == previousTerm.label}
+            if (term) {
+                termService.propagateDataFromPreviousVersion(term, previousTerm)
             }
-            modelTerm = new Term(label: term.label, description: term.description,
-                                 createdBy: user.emailAddress, code: term.code,
-                                 definition: term.definition,
-                                 url: term.url,
-                                 isParent: term.isParent,
-                                 depth: term.depth)
-            modelTerm.terminology = model
-            termService.propagateDataFromPreviousVersion(modelTerm, term, user)
-            model.addToTerms(modelTerm)
         }
 
-        previousVersionModel.termRelationshipTypes.each { termRelationshipType ->
-            TermRelationshipType modelTermRelationshipType = model.termRelationshipTypes.find { it.label == termRelationshipType.label }
-            if (modelTermRelationshipType) {
-                termRelationshipTypeService.propagateDataFromPreviousVersion(modelTermRelationshipType, termRelationshipType, user)
-                return
+        previousVersionCatalogueItem.termRelationshipTypes.each {previousTermRelationshipType ->
+            TermRelationshipType termRelationshipType = catalogueItem.termRelationshipTypes.find {it.label == previousTermRelationshipType.label}
+            if (termRelationshipType) {
+                termRelationshipTypeService.propagateDataFromPreviousVersion(termRelationshipType, previousTermRelationshipType)
             }
-            modelTermRelationshipType =
-                new TermRelationshipType(createdBy: user.emailAddress, label: termRelationshipType.label,
-                                         description: termRelationshipType.description,
-                                         displayLabel: termRelationshipType.displayLabel,
-                                         parentalRelationship: termRelationshipType.parentalRelationship,
-                                         childRelationship: termRelationshipType.childRelationship, terminology: model)
-            termRelationshipTypeService.propagateDataFromPreviousVersion(modelTermRelationshipType, termRelationshipType, user)
-            model.addToTermRelationshipTypes(modelTermRelationshipType)
         }
     }
-
 
     @Override
     boolean useParentIdForSearching(UUID parentId) {
@@ -640,11 +618,11 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     int getSortResultForFieldPatchPath(Path leftPath, Path rightPath) {
-        if (leftPath.any { it.prefix == 'cs' }) {
-            if (rightPath.any { it.prefix == 'cs' }) return 0
+        if (leftPath.any {it.prefix == 'cs'}) {
+            if (rightPath.any {it.prefix == 'cs'}) return 0
             return 1
         }
-        if (rightPath.any { it.prefix == 'cs' }) return -1
+        if (rightPath.any {it.prefix == 'cs'}) return -1
         PathNode leftLastNode = leftPath.last()
         PathNode rightLastNode = rightPath.last()
         if (leftLastNode.prefix == 'tm') {

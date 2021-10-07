@@ -482,9 +482,4 @@ class TermService extends ModelItemService<Term> {
     List<Term> findAllByMetadataNamespace(String namespace, Map pagination) {
         Term.byMetadataNamespace(namespace).list(pagination)
     }
-
-    @Override
-    void propagateModelItemInformation(Term model, Term previousVersionModel, User user) {
-        super.propagateModelItemInformation(model, previousVersionModel, user)
-    }
 }
