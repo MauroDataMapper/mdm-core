@@ -2769,6 +2769,18 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         then:
         verifyJsonResponse OK, new String(loadTestFile('expectedSearchValuesRow6AsRows'))
 
+        when:
+        GET("${id}/referenceDataValues/search?asRows=true&max=10&offset=0", STRING_ARG)
+
+        then:
+        verifyResponse OK, jsonCapableResponse
+
+        when:
+        POST("${id}/referenceDataValues/search?asRows=true&max=10&offset=0", [:])
+
+        then:
+        verifyResponse OK, response
+
         cleanup:
         cleanUpData(id)
     }
