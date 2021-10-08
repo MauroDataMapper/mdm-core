@@ -271,6 +271,8 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
                     dc.dataElements?.clear()
                     dc.referenceTypes?.clear()
 
+                    dc.parentDataClass?.attach()
+
                     batch.add dc
                     count++
                     if (count % DataClass.BATCH_SIZE == 0) {
@@ -480,19 +482,13 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         findCommonParent(leftDataClass.getParent() as DataClass, rightDataClass.getParent() as DataClass)
     }
 
-    private void moveDataClassToParent(DataClass dataClass, CatalogueItem parent) {
-        if (parent.instanceOf(DataModel)) {
-            dataClass.parentDataClass?.removeFromDataClasses(dataClass)
-            parent.addToDataClasses(dataClass)
-        } else if (parent.instanceOf(DataClass)) {
-            dataClass.parentDataClass?.removeFromDataClasses(dataClass)
-            parent.addToChildDataClasses(dataClass)
-            parent.getDataModel().addToDataClasses(dataClass)
-        }
+    void moveDataClassToParent(DataClass dataClass, CatalogueItem parent) {
+        dataClass.parentDataClass?.removeFromDataClasses(dataClass)
+        parent.addToDataClasses(dataClass)
     }
 
-    private DataClass createDataClass(String label, String description, User createdBy, Integer minMultiplicity = 1,
-                                      Integer maxMultiplicity = 1) {
+    DataClass createDataClass(String label, String description, User createdBy, Integer minMultiplicity = 1,
+                              Integer maxMultiplicity = 1) {
         new DataClass(label: label, description: description, createdBy: createdBy.emailAddress, minMultiplicity: minMultiplicity,
                       maxMultiplicity: maxMultiplicity)
     }

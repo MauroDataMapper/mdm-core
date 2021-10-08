@@ -339,6 +339,8 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         dataElementService.saveAll(dataElements)
         log.trace('Saved {} dataElements in {}', dataElements.size(), Utils.timeTaken(subStart))
 
+
+
         log.trace('Content save of DataModel complete in {}', Utils.timeTaken(start))
     }
 
