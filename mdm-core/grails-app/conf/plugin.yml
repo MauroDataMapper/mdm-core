@@ -24,10 +24,10 @@ maurodatamapper:
 ---
 simplejavamail:
     smtp:
-        username: username@gmail.com
-        password: password
-        host: smtp.gmail.com
-        port: 587
+        username: ''
+        password: ''
+        host: ''
+        port: ''
     transportstrategy: SMTP_TLS
     javaxmail.debug: false
 ---
