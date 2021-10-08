@@ -79,7 +79,7 @@ class BootStrap {
 
         sessionService.initialiseToContext()
         loadApiProperties(tmpDir)
-        configureEmailers(grailsApplication.config)
+        configureEmailProviderServices(grailsApplication.config)
         loadDefaultAuthority()
 
         log.info("Using lucene index directory of: {}", grailsApplication.config.hibernate.search.default.indexBase)
@@ -112,10 +112,12 @@ class BootStrap {
         apiPropertyService.loadDefaultPropertiesIntoDatabase(bootstrapUser)
         apiPropertyService.loadLegacyPropertiesFromDefaultsFileIntoDatabase(path, bootstrapUser)
 
-        // Override the email from address with whatever is set to actually send emails
-        apiPropertyService.findAndUpdateByApiPropertyEnum(ApiPropertyEnum.EMAIL_FROM_ADDRESS,
-                                                          grailsApplication?.config?.simplejavamail?.smtp?.username,
-                                                          bootstrapUser)
+        // Override the email from address with either the config set variable or the simplejavamail username
+        if (!apiPropertyService.findByKey(ApiPropertyEnum.EMAIL_FROM_ADDRESS.key)) {
+            String fromEmailAddressToUse = grailsApplication?.config?.maurodatamapper?.email?.from?.address ?: grailsApplication?.config?.simplejavamail?.smtp?.username
+            apiPropertyService.findAndUpdateByApiPropertyEnum(ApiPropertyEnum.EMAIL_FROM_ADDRESS,
+                                                              fromEmailAddressToUse, bootstrapUser)
+        }
         // Check for site url and set if provided by config
         // We do not override any site url which has already been set
         apiPropertyService.checkAndSetSiteUrl(grailsApplication?.config?.grails?.serverURL,
@@ -123,7 +125,7 @@ class BootStrap {
                                               bootstrapUser)
     }
 
-    boolean configureEmailers(Config config) {
+    boolean configureEmailProviderServices(Config config) {
         log.info('Configuring emailers')
         Set<EmailProviderService> emailers = mauroDataMapperServiceProviderService.getEmailProviderServices()
         if (!emailers) {
@@ -138,10 +140,14 @@ class BootStrap {
         emailers.every {emailer ->
             log.debug('Configuring emailer: {}/{}', emailer.namespace, emailer.name)
             try {
-                return emailer.configure(config)
+                boolean configured = emailer.configure(config)
+                if (configured) emailer.testConnection()
+                emailer.enabled = true
+                true
             } catch (Exception e) {
-                log.error("Cannot configure email plugin ${emailer.name}", e)
-                return false
+                log.error("Cannot enable email plugin ${emailer.name}: ${e.message}")
+                emailer.enabled = false
+                false
             }
         }
     }

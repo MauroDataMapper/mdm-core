@@ -35,7 +35,7 @@ class BasicEmailProviderServiceSpec extends MdmSpecification implements JsonComp
 
     void 'Confirm service info'() {
         expect:
-        basicEmailProviderService.version == '1.0'
+        basicEmailProviderService.version == '2.0'
         basicEmailProviderService.providerType == 'EmailProvider'
         basicEmailProviderService.name == 'BasicEmailProviderService'
         basicEmailProviderService.displayName == 'Basic Email Provider'

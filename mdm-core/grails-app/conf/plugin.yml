@@ -21,6 +21,9 @@ maurodatamapper:
         public: false
     bootstrap:
         authority: true
+    email:
+        from:
+            address: ''
 ---
 simplejavamail:
     smtp:
