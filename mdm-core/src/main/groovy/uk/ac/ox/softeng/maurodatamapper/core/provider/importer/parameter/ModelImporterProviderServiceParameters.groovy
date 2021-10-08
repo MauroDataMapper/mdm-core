@@ -92,6 +92,17 @@ class ModelImporterProviderServiceParameters implements ImporterProviderServiceP
     Boolean importAsNewBranchModelVersion = false
 
     @ImportParameterConfig(
+        displayName = 'Propagate From Previous Version',
+        description = 'Propagate descriptions and facets from the last version. Default: false.',
+        order = 1,
+        group = @ImportGroupConfig(
+            name = 'Model',
+            order = 0
+        )
+    )
+    Boolean propagateFromPreviousVersion = false
+
+    @ImportParameterConfig(
         optional = true,
         displayName = 'New Branch Name',
         description = [
@@ -147,10 +158,5 @@ class ModelImporterProviderServiceParameters implements ImporterProviderServiceP
     )
     Boolean useDefaultAuthority = true
 
-    @ImportParameterConfig(
-        displayName = 'Propagate From Previous Version',
-        description = 'Propagate descriptions and facets from the last version. Default: false.',
-        order = 1
-    )
-    Boolean propagateFromPreviousVersion = false
+
 }

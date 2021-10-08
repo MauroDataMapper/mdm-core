@@ -35,6 +35,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
+import grails.core.support.proxy.DefaultProxyHandler
 import grails.testing.services.ServiceUnitTest
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
@@ -66,8 +67,11 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
 
         mockDomains(BasicModel, BasicModelItem)
 
+
         folderService = Spy(FolderService)
         classifierService = Spy(ClassifierService)
+        folderService.proxyHandler = new DefaultProxyHandler()
+        classifierService.proxyHandler = new DefaultProxyHandler()
         service.containerServices = [folderService, classifierService]
         service.modelItemServices = []
         service.modelServices = []
