@@ -9,7 +9,7 @@ model {
 json {
     metadataNamespace profileProviderService.metadataNamespace
     domains profileProviderService.profileApplicableForDomains()
-    editableAfterFinalised profileProviderService.canBeEditedAfterFinalisation()
+    editableAfterFinalisation profileProviderService.canBeEditedAfterFinalisation()
 
     if(profileProviderService.definingDataModel) {
         dataModel {

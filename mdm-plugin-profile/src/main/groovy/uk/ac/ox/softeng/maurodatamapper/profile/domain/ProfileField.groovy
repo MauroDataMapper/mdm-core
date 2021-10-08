@@ -35,7 +35,7 @@ class ProfileField implements Validateable {
 
     Boolean derived
     Boolean uneditable
-    Boolean editableAfterFinalised
+    Boolean editableAfterFinalisation
     String derivedFrom
 
     static constraints = {
@@ -51,7 +51,7 @@ class ProfileField implements Validateable {
                 if (obj.regularExpression && !val.matches(obj.regularExpression)) return ['doesnt.match.message', obj.regularExpression, obj.fieldName,
                                                                                           obj.metadataPropertyName]
                 String typeError = obj.dataType.validateString(val)
-                if (typeError) return ['typeMismatch', typeError, obj.fieldName]
+                if (typeError) return ['typeMismatch', typeError, obj.fieldName] // @josephcr is this the wrong way round?
             }
         }
     }
@@ -60,7 +60,7 @@ class ProfileField implements Validateable {
     ProfileField() {
         this.derived = false
         this.uneditable = false
-        this.editableAfterFinalised = true
+        this.editableAfterFinalisation = true
         this.minMultiplicity = 0
         this.maxMultiplicity = 1
     }

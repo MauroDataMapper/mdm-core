@@ -101,7 +101,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
     "domains": [
       "DataModel"
     ],
-    "editableAfterFinalised": true
+    "editableAfterFinalisation": true
   },
   {
     "name": "ProfileSpecificationProfileService",
@@ -112,14 +112,14 @@ class ProfileFunctionalSpec extends FunctionalSpec {
     "knownMetadataKeys": [
       "metadataNamespace",
       "domainsApplicable",
-      "editableAfterFinalised"
+      "editableAfterFinalisation"
     ],
     "providerType": "Profile",
     "metadataNamespace": "uk.ac.ox.softeng.maurodatamapper.profile",
     "domains": [
       "DataModel"
     ],
-    "editableAfterFinalised": false
+    "editableAfterFinalisation": false
   },
   {
     "name": "ProfileSpecificationFieldProfileService",
@@ -131,14 +131,14 @@ class ProfileFunctionalSpec extends FunctionalSpec {
       "metadataPropertyName",
       "defaultValue",
       "regularExpression",
-      "editableAfterFinalised"
+      "editableAfterFinalisation"
     ],
     "providerType": "Profile",
     "metadataNamespace": "uk.ac.ox.softeng.maurodatamapper.profile.dataelement",
     "domains": [
       "DataElement"
     ],
-    "editableAfterFinalised": false
+    "editableAfterFinalisation": false
   },
    {
     "name": "DerivedFieldProfileService",
@@ -157,7 +157,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
     "domains": [
       "DataModel"
     ],
-    "editableAfterFinalised": false
+    "editableAfterFinalisation": false
   }
 ]'''
     }
@@ -591,7 +591,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         responseBody().sections.first().fields.find {it.metadataPropertyName == namespaceFieldMap.metadataPropertyName}.currentValue == namespaceFieldMap.currentValue
         responseBody().sections.first().fields.find {it.metadataPropertyName == domainsFieldMap.metadataPropertyName}.currentValue == domainsFieldMap.currentValue
         !responseBody().sections.first().fields.find {it.metadataPropertyName == notEditableAfterFinalisationFieldMap.metadataPropertyName}.currentValue
-        !responseBody().sections.first().fields.find {it.metadataPropertyName == notEditableAfterFinalisationFieldMap.metadataPropertyName}.editableAfterFinalised
+        !responseBody().sections.first().fields.find {it.metadataPropertyName == notEditableAfterFinalisationFieldMap.metadataPropertyName}.editableAfterFinalisation
 
         when:
         HttpResponse<List<Map>> localResponse = GET("dataModels/${id}/profiles/used", Argument.listOf(Map))
@@ -676,7 +676,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         responseBody().sections.first().fields.find {it.metadataPropertyName == domainsFieldMap.metadataPropertyName}.currentValue == domainsFieldMap.currentValue
         responseBody().sections.first().fields.find {it.metadataPropertyName == notEditableAfterFinalisationFieldMap.metadataPropertyName}.currentValue ==
         'value before finalisation'
-        !responseBody().sections.first().fields.find {it.metadataPropertyName == notEditableAfterFinalisationFieldMap.metadataPropertyName}.editableAfterFinalised
+        !responseBody().sections.first().fields.find {it.metadataPropertyName == notEditableAfterFinalisationFieldMap.metadataPropertyName}.editableAfterFinalisation
 
         when:
         domainsFieldMap.currentValue = ''
@@ -705,7 +705,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         responseBody().sections.first().fields.find {it.metadataPropertyName == domainsFieldMap.metadataPropertyName}.currentValue == ''
         responseBody().sections.first().fields.find {it.metadataPropertyName == notEditableAfterFinalisationFieldMap.metadataPropertyName}.currentValue ==
         'value before finalisation'
-        !responseBody().sections.first().fields.find {it.metadataPropertyName == notEditableAfterFinalisationFieldMap.metadataPropertyName}.editableAfterFinalised
+        !responseBody().sections.first().fields.find {it.metadataPropertyName == notEditableAfterFinalisationFieldMap.metadataPropertyName}.editableAfterFinalisation
 
         cleanup:
         cleanupDataModelId(id)
@@ -919,7 +919,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "derived": false,
           "derivedFrom": null,
           "uneditable": false,
-          "editableAfterFinalised": true,
+          "editableAfterFinalisation": true,
           "currentValue": "abc"
         },
         {
@@ -934,7 +934,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "derived": false,
           "derivedFrom": null,
           "uneditable": false,
-          "editableAfterFinalised": true,
+          "editableAfterFinalisation": true,
           "currentValue": "def"
         },
         {
@@ -949,7 +949,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "derived": false,
           "derivedFrom": null,
           "uneditable": false,
-          "editableAfterFinalised": true,
+          "editableAfterFinalisation": true,
           "currentValue": ""
         }
       ]
@@ -1100,7 +1100,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "derived": false,
           "derivedFrom": null,
           "uneditable": false,
-          "editableAfterFinalised": true,
+          "editableAfterFinalisation": true,
           "currentValue": "functional.test.profile"
         },
         {
@@ -1116,12 +1116,12 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "derived": false,
           "derivedFrom": null,
           "uneditable": false,
-          "editableAfterFinalised": true,
+          "editableAfterFinalisation": true,
           "currentValue": "DataModel"
         },
         {
           "fieldName": "Can be edited after finalisation",
-          "metadataPropertyName": "editableAfterFinalised",
+          "metadataPropertyName": "editableAfterFinalisation",
           "description": "Defines if the profile can be edited after the model has been finalised. This defaults to false.",
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
@@ -1131,7 +1131,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "derived": false,
           "derivedFrom": null,
           "uneditable": false,
-          "editableAfterFinalised": true,
+          "editableAfterFinalisation": true,
           "currentValue": ""
         }
       ]
@@ -1162,7 +1162,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "derived": true,
           "derivedFrom": "label",
           "uneditable": true,
-          "editableAfterFinalised": true,
+          "editableAfterFinalisation": true,
           "currentValue": "profile functional model"
         },
         {
@@ -1177,7 +1177,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "derived": false,
           "derivedFrom": null,
           "uneditable": true,
-          "editableAfterFinalised": true,
+          "editableAfterFinalisation": true,
           "currentValue": ""
         },
         {
@@ -1192,7 +1192,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "derived": false,
           "derivedFrom": null,
           "uneditable": true,
-          "editableAfterFinalised": true,
+          "editableAfterFinalisation": true,
           "currentValue": ""
         },
         {
@@ -1207,7 +1207,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "derived": false,
           "derivedFrom": null,
           "uneditable": false,
-          "editableAfterFinalised": true,
+          "editableAfterFinalisation": true,
           "currentValue": "functional.test.profile"
         }
       ]

@@ -21,7 +21,7 @@
       },
       {
         "fieldName": "Can be edited after finalisation",
-        "metadataPropertyName": "editableAfterFinalised",
+        "metadataPropertyName": "editableAfterFinalisation",
         "description": "Defines if the profile can be edited after the model has been finalised. This defaults to false.",
         "minMultiplicity": 0,
         "maxMultiplicity": 1,

@@ -146,7 +146,7 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
     Boolean canBeEditedAfterFinalisation() {
         Metadata md = getProfileDataModel().metadata.find {md ->
             md.namespace == "uk.ac.ox.softeng.maurodatamapper.profile" &&
-            md.key == "editableAfterFinalised"
+            md.key == "editableAfterFinalisation"
         }
         md ? md.value.toBoolean() : false
     }
@@ -195,10 +195,10 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
                         allowedValues: (dataElement.dataType instanceof EnumerationType) ?
                                        ((EnumerationType) dataElement.dataType).enumerationValues.collect {it.key} : [],
                         currentValue: '',
-                        editableAfterFinalised: {
+                        editableAfterFinalisation: {
                             Metadata md = dataElement.metadata.find {
                                 it.namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.dataelement' &&
-                                it.key == 'editableAfterFinalised'
+                                it.key == 'editableAfterFinalisation'
                             }
                             md ? md.value.toBoolean() : true
                         }()

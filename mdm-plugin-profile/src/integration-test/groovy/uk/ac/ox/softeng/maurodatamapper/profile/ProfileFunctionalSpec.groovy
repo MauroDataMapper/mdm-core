@@ -106,11 +106,11 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
     "displayName":"Profile Specification Profile (Data Model)",
     "namespace":"uk.ac.ox.softeng.maurodatamapper.profile",
     "allowsExtraMetadataKeys":false,
-    "knownMetadataKeys": ["metadataNamespace","domainsApplicable","editableAfterFinalised"],
+    "knownMetadataKeys": ["metadataNamespace","domainsApplicable","editableAfterFinalisation"],
     "providerType":"Profile",
     "metadataNamespace":"uk.ac.ox.softeng.maurodatamapper.profile",
     "domains":["DataModel"],
-    "editableAfterFinalised": false
+    "editableAfterFinalisation": false
 }, 
 {
     "name":"ProfileSpecificationFieldProfileService",
@@ -118,11 +118,11 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
     "displayName":"Profile Specification Profile (Data Element)",
     "namespace":"uk.ac.ox.softeng.maurodatamapper.profile",
     "allowsExtraMetadataKeys":false,
-    "knownMetadataKeys":["metadataPropertyName","defaultValue","regularExpression","editableAfterFinalised"],
+    "knownMetadataKeys":["metadataPropertyName","defaultValue","regularExpression","editableAfterFinalisation"],
     "providerType":"Profile",
     "metadataNamespace":"uk.ac.ox.softeng.maurodatamapper.profile.dataelement",
     "domains":["DataElement"],
-    "editableAfterFinalised": false
+    "editableAfterFinalisation": false
 }]'''
     }
 
@@ -717,7 +717,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
           "derived": false,
           "derivedFrom": null,
           "uneditable": false,
-          "editableAfterFinalised": true,
+          "editableAfterFinalisation": true,
           "currentValue": "abc"
         },
         {
@@ -732,7 +732,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
           "derived": false,
           "derivedFrom": null,
           "uneditable": false,
-          "editableAfterFinalised": true,
+          "editableAfterFinalisation": true,
           "currentValue": "def"
         },
         {
@@ -747,7 +747,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
           "derived": false,
           "derivedFrom": null,
           "uneditable": false,
-          "editableAfterFinalised": true,
+          "editableAfterFinalisation": true,
           "currentValue": ""
         }
       ]
@@ -901,7 +901,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
           "derived": false,
           "derivedFrom": null,
           "uneditable": false,
-          "editableAfterFinalised": true,
+          "editableAfterFinalisation": true,
           "currentValue": "functional.test.profile"
         },
         {
@@ -917,12 +917,12 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
           "derived": false,
           "derivedFrom": null,
           "uneditable": false,
-          "editableAfterFinalised": true,
+          "editableAfterFinalisation": true,
           "currentValue": "DataModel"
         },
         {
           "fieldName": "Can be edited after finalisation",
-          "metadataPropertyName": "editableAfterFinalised",
+          "metadataPropertyName": "editableAfterFinalisation",
           "description": "Defines if the profile can be edited after the model has been finalised. This defaults to false.",
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
@@ -932,7 +932,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
           "derived": false,
           "derivedFrom": null,
           "uneditable": false,
-          "editableAfterFinalised": true,
+          "editableAfterFinalisation": true,
           "currentValue": ""
         }
       ]

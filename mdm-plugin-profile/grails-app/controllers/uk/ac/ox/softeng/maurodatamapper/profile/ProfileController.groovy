@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
@@ -26,7 +25,6 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 
-import grails.converters.JSON
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
@@ -160,7 +158,6 @@ class ProfileController implements ResourcelessMdmController {
         }
 
         Profile submittedInstance = profileProviderService.getNewProfile()
-        log.debug("Blank profile: {}", submittedInstance as JSON)
         bindData(submittedInstance, request)
 
         Profile validatedInstance = profileService.validateProfile(profileProviderService, submittedInstance)
