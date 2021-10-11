@@ -30,10 +30,11 @@
       {
         "fieldName": "May be edited after finalisation",
         "metadataPropertyName": "editableAfterFinalisation",
-        "description": "Determines whether this field may be edited after the owning model has been finalised",
+        "description": "If the owning model is editable after finalisation, determines whether this field may be edited after the owning model has been finalised",
         "minMultiplicity": 1,
         "maxMultiplicity": 1,
-        "dataType": "Boolean"
+        "dataType": "Boolean",
+        "currentValue": "true"
       }
     ]
   }

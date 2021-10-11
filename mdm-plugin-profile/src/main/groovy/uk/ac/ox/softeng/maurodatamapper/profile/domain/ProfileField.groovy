@@ -28,6 +28,7 @@ class ProfileField implements Validateable {
     Integer minMultiplicity
     List<String> allowedValues
     String regularExpression
+    String defaultValue
 
     ProfileFieldDataType dataType
 
@@ -44,6 +45,7 @@ class ProfileField implements Validateable {
         description nullable: true, blank: false
         regularExpression nullable: true, blank: false
         derivedFrom nullable: true, blank: false
+        defaultValue nullable: true, blank: false
         currentValue nullable: true, validator: {val, obj ->
             if (!val && !obj.derived && !obj.uneditable && obj.minMultiplicity > 0) return ['null.message', obj.fieldName, obj.metadataPropertyName]
             if (val) {

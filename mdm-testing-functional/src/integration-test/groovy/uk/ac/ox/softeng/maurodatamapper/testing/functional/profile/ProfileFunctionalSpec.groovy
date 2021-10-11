@@ -919,6 +919,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "derived": false,
           "derivedFrom": null,
           "uneditable": false,
+          "defaultValue":null,
           "editableAfterFinalisation": true,
           "currentValue": "abc"
         },
@@ -934,6 +935,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "derived": false,
           "derivedFrom": null,
           "uneditable": false,
+          "defaultValue":null,
           "editableAfterFinalisation": true,
           "currentValue": "def"
         },
@@ -949,6 +951,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "derived": false,
           "derivedFrom": null,
           "uneditable": false,
+          "defaultValue":null,
           "editableAfterFinalisation": true,
           "currentValue": ""
         }
@@ -1100,6 +1103,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "derived": false,
           "derivedFrom": null,
           "uneditable": false,
+          "defaultValue":null,
           "editableAfterFinalisation": true,
           "currentValue": "functional.test.profile"
         },
@@ -1116,6 +1120,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "derived": false,
           "derivedFrom": null,
           "uneditable": false,
+          "defaultValue":null,
           "editableAfterFinalisation": true,
           "currentValue": "DataModel"
         },
@@ -1131,6 +1136,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "derived": false,
           "derivedFrom": null,
           "uneditable": false,
+          "defaultValue":null,
           "editableAfterFinalisation": true,
           "currentValue": ""
         }
@@ -1162,6 +1168,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "derived": true,
           "derivedFrom": "label",
           "uneditable": true,
+          "defaultValue":null,
           "editableAfterFinalisation": true,
           "currentValue": "profile functional model"
         },
@@ -1177,6 +1184,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "derived": false,
           "derivedFrom": null,
           "uneditable": true,
+          "defaultValue":null,
           "editableAfterFinalisation": true,
           "currentValue": ""
         },
@@ -1192,6 +1200,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "derived": false,
           "derivedFrom": null,
           "uneditable": true,
+          "defaultValue":null,
           "editableAfterFinalisation": true,
           "currentValue": ""
         },
@@ -1207,6 +1216,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
           "derived": false,
           "derivedFrom": null,
           "uneditable": false,
+          "defaultValue":null,
           "editableAfterFinalisation": true,
           "currentValue": "functional.test.profile"
         }

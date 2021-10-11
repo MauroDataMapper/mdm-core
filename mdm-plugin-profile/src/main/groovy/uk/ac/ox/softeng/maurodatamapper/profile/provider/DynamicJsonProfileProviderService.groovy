@@ -194,6 +194,10 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
                         }?.value,
                         allowedValues: (dataElement.dataType instanceof EnumerationType) ?
                                        ((EnumerationType) dataElement.dataType).enumerationValues.collect {it.key} : [],
+                        defaultValue: dataElement.metadata.find {
+                            it.namespace == "uk.ac.ox.softeng.maurodatamapper.profile.dataelement" &&
+                            it.key == "defaultValue"
+                        }?.value,
                         currentValue: '',
                         editableAfterFinalisation: {
                             Metadata md = dataElement.metadata.find {
