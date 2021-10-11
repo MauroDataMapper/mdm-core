@@ -38,6 +38,7 @@ esac
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
+USAGE="${USAGE:-false}"
 UNIT="${UNIT:-false}"
 INTEGRATION="${INTEGRATION:-false}"
 FUNCTIONAL="${FUNCTIONAL:-false}"
