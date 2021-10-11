@@ -53,7 +53,7 @@ class ProfileField implements Validateable {
                 if (obj.regularExpression && !val.matches(obj.regularExpression)) return ['doesnt.match.message', obj.regularExpression, obj.fieldName,
                                                                                           obj.metadataPropertyName]
                 String typeError = obj.dataType.validateString(val)
-                if (typeError) return ['typeMismatch', typeError, obj.fieldName] // @josephcr is this the wrong way round?
+                if (typeError) return ['typeMismatch', typeError, obj.fieldName, obj.metadataPropertyName]
             }
         }
     }

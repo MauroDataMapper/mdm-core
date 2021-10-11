@@ -909,7 +909,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
       "fields": [
         {
           "fieldName": "Dynamic Profile Elem (Optional)",
-          "metadataPropertyName": null,
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Optional)",
           "description": null,
           "maxMultiplicity": 1,
           "minMultiplicity": 0,
@@ -925,7 +925,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         },
         {
           "fieldName": "Dynamic Profile Elem (Mandatory)",
-          "metadataPropertyName": null,
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Mandatory)",
           "description": null,
           "maxMultiplicity": 1,
           "minMultiplicity": 1,
@@ -941,7 +941,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         },
         {
           "fieldName": "Dynamic Profile Elem (Default Optional)",
-          "metadataPropertyName": null,
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Default Optional)",
           "description": null,
           "maxMultiplicity": 1,
           "minMultiplicity": 0,

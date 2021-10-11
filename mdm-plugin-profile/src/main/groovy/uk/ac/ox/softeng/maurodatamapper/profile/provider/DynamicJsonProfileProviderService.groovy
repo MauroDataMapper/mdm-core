@@ -178,7 +178,7 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
                 name: dataClass.label,
                 description: dataClass.description,
                 fields: dataClass.dataElements.sort {it.order}.collect {dataElement ->
-                    new ProfileField(
+                    ProfileField profileField = new ProfileField(
                         fieldName: dataElement.label,
                         description: dataElement.description,
                         metadataPropertyName: dataElement.metadata.find {
@@ -207,6 +207,8 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
                             md ? md.value.toBoolean() : true
                         }()
                     )
+                    if (!profileField.metadataPropertyName) profileField.metadataPropertyName = profileField.getUniqueKey(dataClass.label)
+                    profileField
                 }
             )
         }

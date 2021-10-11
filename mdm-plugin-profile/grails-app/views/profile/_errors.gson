@@ -25,8 +25,5 @@ json {
     }
     fieldTotal allErrors
         .findAll {it instanceof FieldError}
-        .countBy {((FieldError) it).field.find(/(sections\[\d+\]\.fields\[\d+\])\..*/) {match, fieldName -> fieldName}}.count({it.key})
-
-    fieldList allErrors
-        .findAll {it instanceof FieldError}.collect{ ((FieldError) it).arguments.toString()}.join('; ') // @josephcr WIP
+        .countBy {((FieldError) it).arguments.last()}.count({it.key})
 }
