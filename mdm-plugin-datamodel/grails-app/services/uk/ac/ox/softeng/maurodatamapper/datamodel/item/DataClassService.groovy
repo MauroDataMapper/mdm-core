@@ -858,4 +858,21 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     boolean isDataClassBeingUsedAsImport(DataClass dataClass) {
         DataClass.byImportedDataClassId(dataClass.id).count() || DataModel.byImportedDataClassId(dataClass.id).count()
     }
+
+    @Override
+    void propagateContentsInformation(DataClass catalogueItem, DataClass previousVersionCatalogueItem) {
+        previousVersionCatalogueItem.dataClasses.each {previousChildDataClass ->
+            DataClass childDataClass = catalogueItem.dataClasses.find {it.label == previousChildDataClass.label}
+            if (childDataClass) {
+                propagateDataFromPreviousVersion(childDataClass, previousChildDataClass)
+            }
+        }
+
+        previousVersionCatalogueItem.dataElements.each {previousDataElement ->
+            DataElement dataElement = catalogueItem.dataElements.find {it.label == previousDataElement.label}
+            if (dataElement) {
+                dataElementService.propagateDataFromPreviousVersion(dataElement, previousDataElement)
+            }
+        }
+    }
 }

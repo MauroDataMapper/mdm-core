@@ -591,6 +591,23 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
+    void propagateContentsInformation(Terminology catalogueItem, Terminology previousVersionCatalogueItem) {
+        previousVersionCatalogueItem.terms.each {previousTerm ->
+            Term term = catalogueItem.terms.find {it.label == previousTerm.label}
+            if (term) {
+                termService.propagateDataFromPreviousVersion(term, previousTerm)
+            }
+        }
+
+        previousVersionCatalogueItem.termRelationshipTypes.each {previousTermRelationshipType ->
+            TermRelationshipType termRelationshipType = catalogueItem.termRelationshipTypes.find {it.label == previousTermRelationshipType.label}
+            if (termRelationshipType) {
+                termRelationshipTypeService.propagateDataFromPreviousVersion(termRelationshipType, previousTermRelationshipType)
+            }
+        }
+    }
+
+    @Override
     boolean useParentIdForSearching(UUID parentId) {
         if (!parentId || codeSetService.get(parentId)) {
             log.debug('Accessing terminology from context of CodeSet will ignore parentId')
@@ -626,4 +643,5 @@ class TerminologyService extends ModelService<Terminology> {
         }
         0
     }
+
 }

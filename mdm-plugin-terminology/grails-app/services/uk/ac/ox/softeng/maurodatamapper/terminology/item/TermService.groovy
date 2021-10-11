@@ -127,14 +127,14 @@ class TermService extends ModelItemService<Term> {
 
     Collection<TermRelationship> saveAllAndGetTermRelationships(Collection<Term> terms) {
 
-        List<Classifier> classifiers = terms.collectMany {it.classifiers ?: []} as List<Classifier>
+        List<Classifier> classifiers = terms.collectMany { it.classifiers ?: [] } as List<Classifier>
         if (classifiers) {
             log.trace('Saving {} classifiers')
             classifierService.saveAll(classifiers)
         }
 
-        Collection<Term> alreadySaved = terms.findAll {it.ident() && it.isDirty()}
-        Collection<Term> notSaved = terms.findAll {!it.ident()}
+        Collection<Term> alreadySaved = terms.findAll { it.ident() && it.isDirty() }
+        Collection<Term> notSaved = terms.findAll { !it.ident() }
 
         Collection<TermRelationship> termRelationships = []
 
@@ -148,7 +148,7 @@ class TermService extends ModelItemService<Term> {
             List batch = []
             int count = 0
 
-            notSaved.each {t ->
+            notSaved.each { t ->
 
                 termRelationships.addAll(t.sourceTermRelationships ?: [])
                 termRelationships.addAll(t.targetTermRelationships ?: [])
@@ -229,7 +229,8 @@ class TermService extends ModelItemService<Term> {
 
     Term copyTerm(Term original, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
         if (!original) throw new ApiInternalException('DCSXX', 'Cannot copy non-existent Term')
-        Term copy = new Term(createdBy: copier.emailAddress, code: original.code, definition: original.definition, url: original.url, isParent: original.isParent,
+        Term copy = new Term(createdBy: copier.emailAddress, code: original.code, definition: original.definition, url: original.url,
+                             isParent: original.isParent,
                              depth: original.depth)
         copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
@@ -260,7 +261,7 @@ class TermService extends ModelItemService<Term> {
 
     @Override
     List<Term> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        Term.byClassifierId(classifier.id).list().findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.model.id)}
+        Term.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.model.id) }
     }
 
     @Override
@@ -297,10 +298,10 @@ class TermService extends ModelItemService<Term> {
         if (term.isDirty('depth')) return term.depth
         if (isRootTerm(term, inMemory)) return 1
 
-        TermRelationship relationship = term.targetTermRelationships.find {it.sourceIsParentToTarget()}
+        TermRelationship relationship = term.targetTermRelationships.find { it.sourceIsParentToTarget() }
         if (relationship) return 1 + calculateTermDepth(relationship.sourceTerm, inMemory)
 
-        relationship = term.sourceTermRelationships.find {it.sourceIsChildOfTarget()}
+        relationship = term.sourceTermRelationships.find { it.sourceIsChildOfTarget() }
         if (relationship) return 1 + calculateTermDepth(relationship.targetTerm, inMemory)
 
         Integer.MAX_VALUE
@@ -312,22 +313,22 @@ class TermService extends ModelItemService<Term> {
 
     Boolean isParentTerm(Term term, boolean inMemory) {
         inMemory ?
-        term.targetTermRelationships.any {it.relationshipType.childRelationship} ||
-        term.sourceTermRelationships.any {it.relationshipType.parentalRelationship} :
+        term.targetTermRelationships.any { it.relationshipType.childRelationship } ||
+        term.sourceTermRelationships.any { it.relationshipType.parentalRelationship } :
         termRelationshipService.countByTermIdIsParent(term.id)
     }
 
     Boolean isChildTerm(Term term, boolean inMemory) {
         inMemory ?
-        term.targetTermRelationships.any {it.relationshipType.parentalRelationship} ||
-        term.sourceTermRelationships.any {it.relationshipType.childRelationship} :
+        term.targetTermRelationships.any { it.relationshipType.parentalRelationship } ||
+        term.sourceTermRelationships.any { it.relationshipType.childRelationship } :
         termRelationshipService.countByTermIdIsChild(term.id)
     }
 
     Boolean hasNoHierarchy(Term term, boolean inMemory) {
         inMemory ?
-        term.targetTermRelationships.every {!it.relationshipType.childRelationship && !it.relationshipType.parentalRelationship} &&
-        term.sourceTermRelationships.every {!it.relationshipType.childRelationship && !it.relationshipType.parentalRelationship} :
+        term.targetTermRelationships.every { !it.relationshipType.childRelationship && !it.relationshipType.parentalRelationship } &&
+        term.sourceTermRelationships.every { !it.relationshipType.childRelationship && !it.relationshipType.parentalRelationship } :
         termRelationshipService.countByTermIdHasHierarchy(term.id) == 0
     }
 
@@ -341,11 +342,11 @@ class TermService extends ModelItemService<Term> {
             int depth = term.depth
             log.debug('Term provided, building tree at depth {}', depth)
             List<Term> terms = findAllTreeTypeModelItemsIn(term) as List<Term>
-            tree = terms.collect {t -> new ModelItemTreeItem(t, t.hasChildren(), [])}.toSet()
+            tree = terms.collect { t -> new ModelItemTreeItem(t, t.hasChildren(), []) }.toSet()
         } else {
             log.debug('No term provided so providing top level tree')
             List<Term> terms = terminologyService.findAllTreeTypeModelItemsIn(terminology) as List<Term>
-            tree = terms.collect {t -> new ModelItemTreeItem(t, t.hasChildren(), [])}.toSet()
+            tree = terms.collect { t -> new ModelItemTreeItem(t, t.hasChildren(), []) }.toSet()
         }
 
         List<ModelItemTreeItem> sortedTree = tree.sort()
@@ -359,7 +360,7 @@ class TermService extends ModelItemService<Term> {
         Set<Term> sourceAsParentTerms = TermRelationship.bySourceTermIdAndParental(term.id)
             .join('targetTerm')
             .list()
-            .collect {it.targetTerm}.toSet()
+            .collect { it.targetTerm }.toSet()
 
         if (sourceAsParentTerms.size() > 100) {
             log.warn('Too many terms found to provide a stable tree {}', sourceAsParentTerms.size())
@@ -372,7 +373,7 @@ class TermService extends ModelItemService<Term> {
         Set<Term> sourceAsChildTerms = TermRelationship.byTargetTermIdAndChild(term.id)
             .join('sourceTerm')
             .list()
-            .collect {it.sourceTerm}.toSet()
+            .collect { it.sourceTerm }.toSet()
 
         if (sourceAsChildTerms.size() + treeTerms.size() > 100) {
             log.warn('Too many terms found to provide a stable tree {}', sourceAsChildTerms.size())
@@ -390,7 +391,7 @@ class TermService extends ModelItemService<Term> {
 
     Collection<Term> updateChildKnowledge(Collection<Term> terms) {
         List<TermRelationship> childKnowledge = obtainChildKnowledge(terms)
-        terms.each {it.isParent = hasChild(it, childKnowledge)}
+        terms.each { it.isParent = hasChild(it, childKnowledge) }
         terms
     }
 
@@ -399,7 +400,7 @@ class TermService extends ModelItemService<Term> {
     }
 
     private Boolean hasParentToRelationship(Term parent, Term child) {
-        parent.sourceTermRelationships.any {it.sourceIsParentToTarget() && it.targetTerm == child}
+        parent.sourceTermRelationships.any { it.sourceIsParentToTarget() && it.targetTerm == child }
     }
 
     private boolean hasChild(Term parent, List<TermRelationship> knowledge) {
@@ -431,7 +432,7 @@ class TermService extends ModelItemService<Term> {
      */
 
     private Term findTerm(Terminology terminology, String label) {
-        terminology.terms.find {it.label == label.trim()}
+        terminology.terms.find { it.label == label.trim() }
     }
 
     /*
@@ -441,7 +442,7 @@ class TermService extends ModelItemService<Term> {
      */
 
     private Term findTerm(CodeSet codeSet, String label) {
-        codeSet.terms.find {it.label == label.trim()}
+        codeSet.terms.find { it.label == label.trim() }
     }
 
     /*

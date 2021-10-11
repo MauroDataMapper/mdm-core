@@ -179,6 +179,13 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     }
 
     @Override
+    void propagateContentsInformation(DataType catalogueItem, DataType previousVersionCatalogueItem) {
+        if (previousVersionCatalogueItem.instanceOf(EnumerationType)) {
+            enumerationTypeService.propagateContentsInformation(catalogueItem as EnumerationType, previousVersionCatalogueItem as EnumerationType)
+        }
+    }
+
+    @Override
     List<DataType> findAllReadableTreeTypeCatalogueItemsBySearchTermAndDomain(UserSecurityPolicyManager userSecurityPolicyManager,
                                                                               String searchTerm, String domainType) {
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(DataModel)
@@ -357,6 +364,17 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     DataType copyDataType(DataModel copiedDataModel, DataType original, User copier, UserSecurityPolicyManager userSecurityPolicyManager,
                           boolean copySummaryMetadata = false, CopyInformation copyInformation = new CopyInformation()) {
 
+        DataType copy = createNewDataTypeFromOriginal(original)
+
+        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata, copyInformation)
+        setCatalogueItemRefinesCatalogueItem(copy, original, copier)
+
+        copiedDataModel.addToDataTypes(copy)
+
+        copy
+    }
+
+    DataType createNewDataTypeFromOriginal(DataType original) {
         DataType copy
 
         String domainType = original.domainType
@@ -379,13 +397,8 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
                 break
             default:
                 throw new ApiInternalException('DTSXX', 'DataType domain type is unknown and therefore cannot be copied')
+
         }
-
-        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata, copyInformation)
-        setCatalogueItemRefinesCatalogueItem(copy, original, copier)
-
-        copiedDataModel.addToDataTypes(copy)
-
         copy
     }
 

@@ -516,14 +516,14 @@ class CodeSetService extends ModelService<CodeSet> {
         List<Term> terms = new ArrayList<>(copiedModel.terms)
         Path copiedCodeSetPath = getFullPathForModel(copiedModel)
         Path originalCodeSetPath = getFullPathForModel(originalModel)
-        terms.each {term ->
+        terms.each { term ->
 
             Terminology terminology = term.terminology
             Path fullContextTerminologyPath = getFullPathForModel(terminology)
             Path termPath = Path.from(terminology, term)
             // Need to check if the CS is inside the same VF as the terminology
-            PathNode terminologyVersionedFolderPathNode = fullContextTerminologyPath.find {it.prefix == 'vf'}
-            if (terminologyVersionedFolderPathNode && originalCodeSetPath.any {it == terminologyVersionedFolderPathNode}) {
+            PathNode terminologyVersionedFolderPathNode = fullContextTerminologyPath.find { it.prefix == 'vf' }
+            if (terminologyVersionedFolderPathNode && originalCodeSetPath.any { it == terminologyVersionedFolderPathNode }) {
                 log.debug('Original codeset is inside the same context path as terminology for term [{}]', termPath)
                 Term branchedTerm = pathService.findResourceByPathFromRootResource(copiedModel, termPath,
                                                                                    copiedCodeSetPath.last().modelIdentifier) as Term
