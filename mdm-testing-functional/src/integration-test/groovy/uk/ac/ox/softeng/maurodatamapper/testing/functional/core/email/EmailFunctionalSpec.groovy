@@ -125,12 +125,12 @@ class EmailFunctionalSpec extends FunctionalSpec {
   {
     "successfullySent": false,
     "subject": "Mauro Data Mapper Registration",
-    "failureReason": "${json-unit.any-string}",
-    "dateTimeSent": "${json-unit.matches:offsetDateTime}",
-    "sentToEmailAddress": "${json-unit.any-string}",
+    "failureReason": "No email provider service configured",
+    "dateTimeSent": null,
+    "sentToEmailAddress": "user@functional-test.com",
     "id": "${json-unit.matches:id}",
     "body": "${json-unit.any-string}",
-    "emailServiceUsed": "Basic Email Provider"
+    "emailServiceUsed": null
   }
 ]
 }'''

@@ -65,7 +65,8 @@ class MauroDataMapperServiceProviderService extends MauroDataMapperProviderServi
     }
 
     EmailProviderService getEmailProvider() {
-        emailProviderServices.sort {it.order}.first()
+        List<EmailProviderService> enabled = emailProviderServices.findAll {it.enabled}.sort {it.order}
+        enabled ? enabled.first() : null
     }
 
     Set<String> getProviderTypes() {

@@ -17,6 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.provider.email
 
+import uk.ac.ox.softeng.maurodatamapper.core.email.SendEmailTask
+
+import groovy.util.logging.Slf4j
 import org.simplejavamail.MailException
 import org.simplejavamail.email.Email
 import org.simplejavamail.email.EmailBuilder
@@ -27,49 +30,12 @@ import org.simplejavamail.util.ConfigLoader
 
 import javax.mail.Message
 
+@Slf4j
 class BasicEmailProviderService extends EmailProviderService {
 
     Map allProps
     Properties simpleMailProps
 
-    @Override
-    boolean configure(Map properties) {
-        allProps = properties
-        simpleMailProps = new Properties()
-        for (ConfigLoader.Property p : ConfigLoader.Property.values()) {
-            if (properties[p.key()]) {
-                simpleMailProps.setProperty(p.key(), properties[p.key()] as String)
-            }
-        }
-        ConfigLoader.loadProperties(simpleMailProps, false)
-        true
-    }
-
-    @Override
-    def sendEmail(String fromName, String fromAddress, Map<String, String> to, Map<String, String> cc,
-                  String subject, String body) {
-
-        log.info('Sending email to {}', to)
-        Email email = EmailBuilder.startingBlank()
-            .from(fromName, fromAddress)
-            .withSubject(subject)
-            .appendText(body)
-            .to(to.collect {new Recipient(it.key, it.value, Message.RecipientType.TO)})
-            .cc(cc.collect {new Recipient(it.key, it.value, Message.RecipientType.CC)})
-            .buildEmail()
-
-        try {
-            Mailer m = MailerBuilder.buildMailer()
-            log.debug('{}', m.getSession().getProperties())
-            m.sendMail(email)
-            log.debug('Email sent successfully!')
-            return true
-        } catch (MailException e) {
-            String failureReason = extractFullFailureReason(e)
-            log.error('Email sending failed: {}', failureReason)
-            return failureReason
-        }
-    }
 
     @Override
     int getOrder() {
@@ -78,12 +44,85 @@ class BasicEmailProviderService extends EmailProviderService {
 
     @Override
     String getVersion() {
-        '1.0'
+        '2.0'
     }
 
     @Override
     String getDisplayName() {
         'Basic Email Provider'
+    }
+
+    @Override
+    boolean configure(Map properties) {
+        allProps = properties
+        simpleMailProps = new Properties()
+        for (ConfigLoader.Property p : ConfigLoader.Property.values()) {
+            if (properties[p.key()]) {
+                log.trace('Setting email property {}', p.key())
+                simpleMailProps.setProperty(p.key(), properties[p.key()] as String)
+            }
+        }
+        ConfigLoader.loadProperties(simpleMailProps, false)
+        true
+    }
+
+    @Override
+    void testConnection() {
+        buildMailer().testConnection()
+    }
+
+    @Override
+    String sendEmail(SendEmailTask sendEmailTask) {
+
+        log.info('Sending email to {}', sendEmailTask.to)
+        try {
+            Email email = buildEmail(sendEmailTask)
+            log.debug('Email built')
+            buildMailer().sendMail(email)
+            log.debug('Email sent successfully')
+            return null
+        } catch (MailException e) {
+            String failureReason = extractFullFailureReason(e)
+            log.error('Email sending failed: {}', failureReason)
+            return failureReason
+        } catch (IllegalArgumentException e) {
+            log.error('Email sending failed: {}', e.message)
+            return e.message
+        }
+    }
+
+    @Override
+    String validateEmail(SendEmailTask sendEmailTask) {
+        log.info('Validating email to {}', sendEmailTask.to)
+        try {
+            Email email = buildEmail(sendEmailTask)
+            buildMailer().validate(email)
+            log.debug('Email validated successfully')
+            return null
+        } catch (MailException e) {
+            String failureReason = extractFullFailureReason(e)
+            log.error('Email validation failed: {}', failureReason)
+            return failureReason
+        } catch (IllegalArgumentException e) {
+            log.error('Email validation failed: {}', e.message)
+            return e.message
+        }
+    }
+
+    Email buildEmail(SendEmailTask sendEmailTask) {
+        EmailBuilder.startingBlank()
+            .from(sendEmailTask.fromName, sendEmailTask.fromAddress)
+            .withSubject(sendEmailTask.subject)
+            .appendText(sendEmailTask.body)
+            .to(sendEmailTask.to.collect {new Recipient(it.key, it.value, Message.RecipientType.TO)})
+            .cc(sendEmailTask.cc.collect {new Recipient(it.key, it.value, Message.RecipientType.CC)})
+            .buildEmail()
+    }
+
+    Mailer buildMailer() {
+        Mailer mailer = MailerBuilder.buildMailer()
+        log.debug('{}', mailer.getSession().getProperties())
+        mailer
     }
 
     String extractFullFailureReason(Throwable throwable) {

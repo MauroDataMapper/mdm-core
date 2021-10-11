@@ -33,7 +33,7 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> {
 
     @Override
     def checkResourceCount() {
-        assert apiPropertyService.count() == 16
+        assert apiPropertyService.count() == 15
     }
 
     @Override
@@ -66,7 +66,7 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> {
 
     void verifyR1EmptyIndexResponse() {
         verifyResponse(HttpStatus.OK, response)
-        assert responseBody().count == 16
+        assert responseBody().count == 15
 
         ApiPropertyEnum.values()
             .findAll {!(it in [ApiPropertyEnum.SITE_URL, ApiPropertyEnum.EMAIL_FROM_ADDRESS])}
@@ -80,9 +80,9 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> {
 
     void verifyR3IndexResponse(String expectedId) {
         verifyResponse(HttpStatus.OK, response)
-        assert responseBody().count == 17
-        assert responseBody().items.size() == 17
-        assert responseBody().items.any{it.id == expectedId}
+        assert responseBody().count == 16
+        assert responseBody().items.size() == 16
+        assert responseBody().items.any {it.id == expectedId}
     }
 
     @Override

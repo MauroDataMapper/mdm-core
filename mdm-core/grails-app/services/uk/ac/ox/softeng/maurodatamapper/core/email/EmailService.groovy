@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.email
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiProperty
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyService
@@ -30,8 +29,8 @@ import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.apache.commons.text.StringSubstitutor
 
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 @Slf4j
 class EmailService {
@@ -39,38 +38,18 @@ class EmailService {
     MauroDataMapperServiceProviderService mauroDataMapperServiceProviderService
     ApiPropertyService apiPropertyService
 
+    ExecutorService executorService
+
+    EmailService() {
+        executorService = Executors.newFixedThreadPool(5)
+    }
+
     List<Email> list(Map pagination = [:]) {
         Email.withFilter(pagination).list(pagination)
     }
 
-    EmailProviderService getEmailer() {
+    EmailProviderService getEmailProviderService() {
         mauroDataMapperServiceProviderService.getEmailProvider()
-    }
-
-    @Transactional
-    String sendEmail(String fromName, String fromAddress, Map<String, String> to, Map<String, String> cc, String subject, String messageBody) {
-        if (emailer != null) {
-            Email email = new Email(sentToEmailAddress: to.values().first(), subject: subject, body: messageBody,
-                                    emailServiceUsed: emailer.getDisplayName(),
-                                    dateTimeSent: OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC),
-                                    successfullySent: false).save(flush: true)
-
-            log.info('Sending an email with emailer "{}"', emailer.getDisplayName())
-
-            def emailResult = emailer.sendEmail(fromName, fromAddress, to, cc, subject, messageBody)
-
-            if (emailResult instanceof String) {
-                email.successfullySent = false
-                email.failureReason = emailResult
-            } else {
-                email.successfullySent = true
-            }
-
-            email.save(flush: true)
-            return email.failureReason
-        }
-        log.info('No emailer configured.  Would have sent message with content: {}', messageBody)
-        'No emailer configured'
     }
 
     Map<String, String> buildUserPropertiesMap(User user, InformationAware informationAwareItem, String baseUrl, String passwordResetLink) {
@@ -115,34 +94,42 @@ class EmailService {
                          User user,
                          InformationAware informationAwareItem, String passwordResetLink) {
 
-        Thread thread = new Thread(new Runnable() {
+        Map<String, String> propertiesMap = buildUserPropertiesMap(user, informationAwareItem, baseUrl, passwordResetLink)
 
-            @Override
-            void run() {
-                log.debug('Sending email')
-                Map<String, String> to = [:]
-                to["${user.getFirstName()} ${user.getLastName()}".toString()] = user.getEmailAddress()
-                Map<String, String> propertiesMap = buildUserPropertiesMap(user, informationAwareItem, baseUrl, passwordResetLink)
-                try {
-                    String messageBody = getApiPropertyAndSubstitute(bodyProperty, propertiesMap)
-                    String messageSubject = getApiPropertyAndSubstitute(subjectProperty, propertiesMap)
-                    String fromName = getApiPropertyAndSubstitute(ApiPropertyEnum.EMAIL_FROM_NAME, propertiesMap)
-                    String fromAddress = getApiPropertyAndSubstitute(ApiPropertyEnum.EMAIL_FROM_ADDRESS, propertiesMap)
-                    String result = sendEmail(fromName, fromAddress, to, [:], messageSubject, messageBody)
-                    if (result) log.warn('Email was not sent: [{}]', result)
-                    else log.debug('Email sent successfully')
-                } catch (ApiException apiException) {
-                    log.error('Could not send email', apiException)
-                } catch (IllegalStateException illegalStateException) {
-                    // Only going to happen in the event the application shuts down before the email is saved
-                    // However as we daemonise the process of sending the email this is possible.
-                    log.warn("Possible failure to send email due to IllegalStateException: ${illegalStateException.message}")
-                }
-            }
-        })
+        SendEmailTask task = new SendEmailTask(this)
+            .using(getEmailProviderService())
+            .from(getApiPropertyAndSubstitute(ApiPropertyEnum.EMAIL_FROM_NAME, propertiesMap), getApiPropertyAndSubstitute(ApiPropertyEnum.EMAIL_FROM_ADDRESS, propertiesMap))
+            .to("${user.getFirstName()} ${user.getLastName()}", user.getEmailAddress())
+            .subject(getApiPropertyAndSubstitute(subjectProperty, propertiesMap))
+            .body(getApiPropertyAndSubstitute(bodyProperty, propertiesMap))
 
-        thread.start()
+        executorService.submit(task)
     }
+
+    @Transactional
+    void sendEmail(SendEmailTask sendEmailTask) {
+
+        Email email = sendEmailTask.asEmail().save(flush: true)
+
+        if (sendEmailTask.hasEmailProviderService()) {
+
+            if (sendEmailTask.isValid()) {
+
+                log.info('Sending an email with email provider service "{}"', emailProviderService.getDisplayName())
+
+                sendEmailTask.result = emailProviderService.sendEmail(sendEmailTask)
+
+                log.debug('Email sent with response [{}]', sendEmailTask.result)
+            }
+        } else {
+            sendEmailTask.result = 'No email provider service configured'
+        }
+
+        email.failureReason = sendEmailTask.result
+        email.successfullySent = sendEmailTask.wasSuccessfullySent()
+        email.save(flush: true)
+    }
+
 
     String getApiPropertyAndSubstitute(ApiPropertyEnum key,
                                        Map<String, String> propertiesMap) {
@@ -153,4 +140,5 @@ class EmailService {
         }
         null
     }
+
 }
