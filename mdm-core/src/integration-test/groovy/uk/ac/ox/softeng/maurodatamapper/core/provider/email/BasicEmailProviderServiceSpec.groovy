@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.provider.email
 
+import uk.ac.ox.softeng.maurodatamapper.core.email.EmailService
+import uk.ac.ox.softeng.maurodatamapper.core.email.SendEmailTask
 import uk.ac.ox.softeng.maurodatamapper.test.MdmSpecification
 import uk.ac.ox.softeng.maurodatamapper.test.json.JsonComparer
 
@@ -31,6 +33,7 @@ class BasicEmailProviderServiceSpec extends MdmSpecification implements JsonComp
 
     MessageSource messageSource
 
+    EmailService emailService
     BasicEmailProviderService basicEmailProviderService
 
     void 'Confirm service info'() {
@@ -43,13 +46,18 @@ class BasicEmailProviderServiceSpec extends MdmSpecification implements JsonComp
     }
 
     void "Test sending email, will fail without credentials"() {
+        given:
+        SendEmailTask task = new SendEmailTask(emailService)
+            .to('Ollie', 'ollie.freeman@gmail.com')
+            .from('MDM', 'mdm@mdm.com')
+            .subject('Test')
+            .body('Hello')
 
         when:
-        def res = basicEmailProviderService.sendEmail('MDM', 'mdm@mdm.com', ['Ollie': 'ollie.freeman@gmail.com'], [:], 'Test', 'Hello')
+        String res = basicEmailProviderService.sendEmail(task)
 
         then:
-        res instanceof String
-        res.contains('error')
+        res == 'smtp host address not given and not configured in config file'
     }
 
 }

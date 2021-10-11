@@ -55,13 +55,14 @@ class MauroDataMapperServiceProviderServiceSpec extends MdmSpecification {
         then: 'we have 1 default email plugin'
         results.size() == 1
 
-        and:
-        results[0] == mauroDataMapperServiceProviderService.emailProvider
+        and: 'no enabled emailer as no properties set'
+        !results[0].enabled
+        !mauroDataMapperServiceProviderService.emailProvider
 
         and:
         mauroDataMapperServiceProviderService.findEmailProvider('uk.ac.ox.softeng.maurodatamapper.core.provider.email',
                                                                 'BasicEmailProviderService',
-                                                                '1.0')
+                                                                '2.0')
     }
 
     void 'test dataLoaders'() {
