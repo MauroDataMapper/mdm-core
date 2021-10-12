@@ -3,7 +3,6 @@ buildscript {
         mavenLocal()
         maven {url "https://jenkins.cs.ox.ac.uk/artifactory/plugins-snapshot"}
         maven {url "https://jenkins.cs.ox.ac.uk/artifactory/plugins-release"}
-        mavenCentral()
 
     }
     dependencies {
@@ -29,7 +28,7 @@ repositories {
 dependencyManagement {
     imports {
         mavenBom("org.grails:grails-bom:$grailsVersion")
-        mavenBom("org.springframework.boot:spring-boot-dependencies:$springBootVersion")
+//        mavenBom("org.springframework.boot:spring-boot-dependencies:$springBootVersion")
     }
     applyMavenExclusions false
 }

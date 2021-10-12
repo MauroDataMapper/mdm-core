@@ -21,12 +21,12 @@ import uk.ac.ox.softeng.maurodatamapper.core.email.SendEmailTask
 
 import groovy.util.logging.Slf4j
 import org.simplejavamail.MailException
-import org.simplejavamail.email.Email
+import org.simplejavamail.api.email.Email
+import org.simplejavamail.api.email.Recipient
+import org.simplejavamail.api.mailer.Mailer
+import org.simplejavamail.config.ConfigLoader
 import org.simplejavamail.email.EmailBuilder
-import org.simplejavamail.email.Recipient
-import org.simplejavamail.mailer.Mailer
 import org.simplejavamail.mailer.MailerBuilder
-import org.simplejavamail.util.ConfigLoader
 
 import javax.mail.Message
 

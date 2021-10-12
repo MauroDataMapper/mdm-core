@@ -1,28 +1,26 @@
 dependencies {
 
-    compile project(':mdm-common')
+    implementation project(':mdm-common')
 
-    compile group: 'org.apache.commons', name: 'commons-text', version: commonsTextVersion
-    compile group: 'org.apache.commons', name: 'commons-csv', version: commonsCsvVersion
-    compile group: 'org.simplejavamail', name: 'simple-java-mail', version: javaMailVersion
-    compile group: 'com.google.guava', name: 'guava', version: guavaVersion
-    compile group: 'commons-beanutils', name: 'commons-beanutils', version: commonsBeanutilsVersion
+    implementation group: 'org.apache.commons', name: 'commons-text', version: commonsTextVersion
+    implementation group: 'org.apache.commons', name: 'commons-csv', version: commonsCsvVersion
+    implementation group: 'org.simplejavamail', name: 'simple-java-mail', version: javaMailVersion
+    implementation group: 'com.google.guava', name: 'guava', version: guavaVersion
+    implementation group: 'commons-beanutils', name: 'commons-beanutils', version: commonsBeanutilsVersion
 
-    compile "org.grails.plugins:hibernate-search:$hibernateSearchVersion", {
-        exclude group: 'org.hibernate', module: 'hibernate-ehcache'
-    }
+    implementation "org.grails.plugins:hibernate-search:$hibernateSearchVersion"
 
-    runtime "io.methvin:directory-watcher", {
+    runtimeOnly "io.methvin:directory-watcher", {
         exclude group: 'com.google.guava', module: 'guava'
     }
 
     // Postgres database
-    compile group: 'org.flywaydb', name: 'flyway-core'
-    runtime "org.hibernate:hibernate-jcache"
-    runtime group: 'org.ehcache', name: 'ehcache'
-    runtime group: 'org.postgresql', name: 'postgresql'
+    implementation group: 'org.flywaydb', name: 'flyway-core'
+    runtimeOnly "org.hibernate:hibernate-jcache"
+    runtimeOnly group: 'org.ehcache', name: 'ehcache'
+    runtimeOnly group: 'org.postgresql', name: 'postgresql'
 
-    testImplementation project(':mdm-testing-framework')
+    //    testImplementation project(':mdm-testing-framework')
 
     implementation group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: spotbugsAnnotationVersion
 }

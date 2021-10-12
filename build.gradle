@@ -9,7 +9,6 @@ buildscript {
         mavenLocal()
         maven {url 'https://jenkins.cs.ox.ac.uk/artifactory/plugins-snapshot'}
         maven {url 'https://jenkins.cs.ox.ac.uk/artifactory/plugins-release'}
-        mavenCentral()
 
     }
     dependencies {
@@ -31,9 +30,8 @@ buildscript {
 }
 
 plugins {
-    id 'maven'
-    id "com.jfrog.artifactory" version "4.15.2"
     id 'maven-publish'
+    id "com.jfrog.artifactory" version "4.24.20"
     id "org.sonarqube" version "3.1.1"
 }
 
@@ -91,23 +89,6 @@ logger.quiet(
     "Available processors ${Runtime.runtime.availableProcessors()}. Max Unit Test Parallel Forks " +
     "${Runtime.runtime.availableProcessors().intdiv(2) ?: 1}")
 
-/*
-Task to archive up all reports that exist in the project and sub-project
- */
-task reportsArchive(type: Tar) {
-    archiveClassifier = 'reports'
-    if (System.getenv('TRAVIS')) {
-        archiveVersion = System.getenv('TRAVIS_JOB_NUMBER')
-    }
-    from("$buildDir/reports") {
-        into "reports/ROOT"
-    }
-
-    doLast {
-        println archiveFileName.get()
-    }
-}
-
 task rootTestReport(type: TestReport) {
     group = 'reporting'
     destinationDir = file("${buildDir}/reports/tests")
@@ -132,8 +113,8 @@ task rootTestReport(type: TestReport) {
     }
 }
 
-tasks.register('outputRuntimeArgs'){
-    doLast{
+tasks.register('outputRuntimeArgs') {
+    doLast {
         RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean()
         List<String> arguments = runtimeMxBean.getInputArguments()
 
@@ -178,23 +159,16 @@ subprojects {
         ])
     }
 
-    String pName = project.name
-    rootProject.tasks.reportsArchive {
-        from("$buildDir/reports") {
-            into "reports/$pName"
-        }
-        from("$buildDir/logs") {
-            into "logs/$pName"
-        }
-    }
-
     tasks.register("bomProperties") {
         group = 'Introspection'
         description = 'Print properties from all BOMs'
         doLast {
             if (project.hasProperty('dependencyManagement')) {
                 Map imported = dependencyManagement.importedProperties
-                logger.quiet 'Project :: {}\n  {}', project.name, imported.collect {k, v -> "$k:$v"}.sort().join('\n  ')
+                logger.quiet 'Project :: {}\n  {}', project.name, imported.collect {k, v ->
+                    def projProp = project.hasProperty(k) ? project.getProperty(k) : null
+                    "$k,$v,${projProp ?: ''}"
+                }.sort().join('\n  ')
             }
         }
     }
@@ -209,11 +183,12 @@ subprojects {
     }
 
     afterEvaluate {
-        def addtlJvmArgs = [ '-Xmx8g','-XX:+UseG1GC','-XX:+UseStringDeduplication','-XX:+UseCompressedOops','-Dfile.encoding=UTF-8']
+        def addtlJvmArgs = ['-Xmx8g', '-XX:+UseG1GC', '-XX:+UseStringDeduplication', '-XX:+UseCompressedOops', '-Dfile.encoding=UTF-8']
         // Make sure bootRun runs with the required arguments
         project.tasks.findByName('bootRun')?.jvmArgs(addtlJvmArgs)
 
         project.tasks.withType(Test) {testTask ->
+            useJUnitPlatform()
             ignoreFailures = System.getenv().containsKey('JENKINS')
             jvmArgs(addtlJvmArgs)
 
@@ -231,7 +206,7 @@ afterEvaluate {
     Massive hack to solve parallel task running for assetCompile task
     Make sure that each task mustRunAfter another assetCompile task, this ensures none of them can run at the same time
     We have to allow for project dependencies so make sure thats accounted for manually
-     */
+     *
     List<Task> assetCompileTasks = it.getTasksByName('assetCompile', true).toList().sort{it.path}
 
     Task coreTask = assetCompileTasks.find {it.path.startsWith(':mdm-core')}
@@ -239,7 +214,8 @@ afterEvaluate {
 
     assetCompileTasks.remove(coreTask)
     assetCompileTasks.remove(dataModelTask)
-    dataModelTask.mustRunAfter coreTask
+
+//    dataModelTask.mustRunAfter coreTask
     assetCompileTasks.each{
         it.mustRunAfter coreTask, dataModelTask
     }
@@ -247,29 +223,7 @@ afterEvaluate {
     for (int i = 1; i < assetCompileTasks.size(); i++) {
         assetCompileTasks[i].mustRunAfter assetCompileTasks[i-1]
     }
-}
-
-// Custom publishing to allow us to push the reports up to artifactory from travis
-if (project.hasProperty('artifactory_user') && project.hasProperty('artifactory_apiKey')) {
-    publishing {
-        repositories {
-            maven {
-                url = "${project.artifactory_contextUrl}/build-reports"
-                credentials {
-                    username = "${project.artifactory_user}"
-                    password = "${project.artifactory_apiKey}"
-                }
-            }
-        }
-        publications {
-            reports(MavenPublication) {
-                if (System.getenv('TRAVIS')) {
-                    version = System.getenv('TRAVIS_JOB_NUMBER')
-                }
-                artifact tasks.reportsArchive
-            }
-        }
-    }
+     */
 }
 
 Set<Project> collectProjectDependencies(Project project) {

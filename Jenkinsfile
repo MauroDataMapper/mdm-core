@@ -6,7 +6,7 @@ pipeline {
     }
 
     tools {
-        jdk 'jdk-12'
+        jdk 'jdk-17'
     }
 
     options {
