@@ -57,4 +57,8 @@ abstract class BaseCodeSetIntegrationSpec extends BaseIntegrationSpec {
         complexCodeSet = BootstrapModels.buildAndSaveComplexCodeSet(messageSource, folder, terminologyService, testAuthority)
         simpleTerminology = Terminology.findByLabel(BootstrapModels.SIMPLE_TERMINOLOGY_NAME)
     }
+
+    static String replaceWithTestAuthority(String exported) {
+        exported.replace(/Mauro Data Mapper/, 'Test Authority')
+    }
 }

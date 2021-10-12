@@ -54,12 +54,14 @@ abstract class TerminologyExporterProviderService extends ExporterProviderServic
     @Override
     ByteArrayOutputStream exportDomains(User currentUser, List<UUID> domainIds) throws ApiException {
         List<Terminology> terminologies = []
-        domainIds.each {
+        List<UUID> cannotExport = []
+        domainIds?.unique()?.each {
             Terminology terminology = terminologyService.get(it)
-            if (!terminology) {
-                getLogger().warn('Cannot find terminology id [{}] to export', it)
-            } else terminologies += terminology
+            if (terminology) terminologies << terminology
+            else cannotExport << it
         }
+        if (!terminologies) throw new ApiInternalException('TEEP01', "Cannot find Terminology IDs [${cannotExport}] to export")
+        if (cannotExport) log.warn('Cannot find Terminology IDs [{}] to export', cannotExport)
         exportTerminologies(currentUser, terminologies)
     }
 
