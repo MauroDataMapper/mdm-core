@@ -15,28 +15,29 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.search
+package uk.ac.ox.softeng.maurodatamapper.hibernate.search
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate.IdPathSecureFilterFactory
 
 import grails.plugins.hibernate.search.HibernateSearchApi
 import groovy.util.logging.Slf4j
 import org.apache.lucene.search.BooleanQuery
 import org.grails.datastore.mapping.reflect.ClassPropertyFetcher
-import org.hibernate.search.exception.SearchException
+import org.hibernate.search.util.common.SearchException
 
 /**
  * @since 19/03/2020
  */
 @Slf4j
-class Lucene {
+class HibernateSearch {
 
     @SuppressWarnings('UnnecessaryQualifiedReference')
-    static <T> PaginatedLuceneResult<T> securedPaginatedList(Class<T> clazz,
-                                                             List<UUID> allowedIds,
-                                                             Map pagination,
-                                                             @DelegatesTo(HibernateSearchApi) Closure... closures) {
-        if (!allowedIds) return new PaginatedLuceneResult<T>([], 0)
+    static <T> PaginatedHibernateSearchResult<T> securedPaginatedList(Class<T> clazz,
+                                                                      List<UUID> allowedIds,
+                                                                      Map pagination,
+                                                                      @DelegatesTo(HibernateSearchApi) Closure... closures) {
+        if (!allowedIds) return new PaginatedHibernateSearchResult<T>([], 0)
         paginatedList(clazz, pagination) {
 
             for (Closure closure : closures.findAll()) {
@@ -45,12 +46,12 @@ class Lucene {
                 closure.call()
             }
 
-            filter "idPathSecured", [allowedIds: allowedIds]
+            filter IdPathSecureFilterFactory.createFilterPredicate(searchPredicateFactory, allowedIds)
         }
     }
 
     @SuppressWarnings('UnnecessaryQualifiedReference')
-    static <T> PaginatedLuceneResult<T> paginatedList(Class<T> clazz, Map pagination, @DelegatesTo(HibernateSearchApi) Closure closure) {
+    static <T> PaginatedHibernateSearchResult<T> paginatedList(Class<T> clazz, Map pagination, @DelegatesTo(HibernateSearchApi) Closure closure) {
 
         if (!ClassPropertyFetcher.forClass(clazz).isReadableProperty('search')) {
             throw new ApiInternalException('L01', "Class ${clazz} is not configured for lucene searching")
@@ -61,7 +62,7 @@ class Lucene {
         String sortKey = pagination.sort
         String order = pagination.order ?: 'asc'
 
-        Closure paginatedClosure = {
+        Closure paginatedClosure = HibernateSearchApi.defineSearchQuery {
             closure.setResolveStrategy(Closure.DELEGATE_FIRST)
             closure.setDelegate(delegate)
             closure.call()
@@ -73,13 +74,13 @@ class Lucene {
         }
 
         try {
-            return new PaginatedLuceneResult<>(clazz.search().list(paginatedClosure), clazz.search().count(paginatedClosure))
+            return new PaginatedHibernateSearchResult<>(clazz.search().list(paginatedClosure), clazz.search().count(paginatedClosure))
         } catch (SearchException ex) {
             handleSearchException(clazz, closure, ex)
         }
     }
 
-    static <T> PaginatedLuceneResult<T> handleSearchException(Class<T> clazz, Closure closure, SearchException ex) {
+    static <T> PaginatedHibernateSearchResult<T> handleSearchException(Class<T> clazz, Closure closure, SearchException ex) {
         if (isTooManyClausesException(ex)) {
             log.warn('Initial search failed with {} exception and message [{}]', ex.class, ex.message)
             String defaultQueries = Integer.toString(BooleanQuery.getMaxClauseCount());
@@ -88,7 +89,7 @@ class Lucene {
             log.info('Too many clauses for query set to {}, increasing org.apache.lucene.maxClauseCount to {}', oldQueries, newQueries)
             System.setProperty("org.apache.lucene.maxClauseCount", Integer.toString(newQueries))
             BooleanQuery.setMaxClauseCount(newQueries)
-            return paginatedList(clazz, [:], closure) as PaginatedLuceneResult<T>
+            return paginatedList(clazz, [:], closure) as PaginatedHibernateSearchResult<T>
         } else {
             log.error('Search failed for unhandled reason', ex)
             throw ex
@@ -102,6 +103,7 @@ class Lucene {
         return isTooManyClausesException(throwable.cause)
     }
 
+    @Deprecated
     static Closure defineAdditionalLuceneQuery(@DelegatesTo(HibernateSearchApi) closure) {
         closure
     }

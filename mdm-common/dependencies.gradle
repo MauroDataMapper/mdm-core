@@ -20,18 +20,16 @@ dependencies {
     api group: 'io.micronaut', name: 'micronaut-http'
 
     //mathpere/grails-hibernate-search-plugin
-    implementation "org.grails.plugins:hibernate-search:$hibernateSearchVersion", {
-        exclude group: 'org.hibernate', module: 'hibernate-ehcache'
-    }
+    implementation "org.grails.plugins:hibernate-search:$hibernateSearchVersion"
     implementation('org.hibernate:hibernate-core'){
         version{
             strictly project.ext['hibernate.version']
         }
     }
-    api group: 'org.hibernate', name: 'hibernate-search-orm', version: hibernateSearchOrmVersion, {
-        exclude group: 'org.hibernate', module: 'hibernate-core'
-    }
-    api 'org.apache.lucene:lucene-analyzers-common'
+    api group: 'org.hibernate.search', name: 'hibernate-search-mapper-orm', version: hibernateSearchOrmVersion
+    api group: 'org.hibernate.search', name: 'hibernate-search-backend-lucene', version: hibernateSearchOrmVersion
+    api group: 'org.hibernate.search', name: 'hibernate-search-v5migrationhelper-orm', version:hibernateSearchOrmVersion
+//    api 'org.apache.lucene:lucene-analyzers-common'
 
     constraints {
         api("org.apache.lucene:lucene-analyzers-common:$luceneVersion") {
