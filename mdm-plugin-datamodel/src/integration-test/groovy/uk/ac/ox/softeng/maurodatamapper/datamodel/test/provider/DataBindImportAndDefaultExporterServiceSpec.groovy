@@ -101,6 +101,10 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
         exportModel(dm.id)
     }
 
+    static String replaceWithTestAuthority(String exported) {
+        exported.replace(/Mauro Data Mapper/, 'Test Authority')
+    }
+
     void 'test empty data import export'() {
         given:
         setupData()

@@ -54,12 +54,14 @@ abstract class CodeSetExporterProviderService extends ExporterProviderService {
     @Override
     ByteArrayOutputStream exportDomains(User currentUser, List<UUID> domainIds) throws ApiException {
         List<CodeSet> codeSets = []
-        domainIds.each {
+        List<UUID> cannotExport = []
+        domainIds?.unique()?.each {
             CodeSet codeSet = codeSetService.get(it)
-            if (!codeSet) {
-                getLogger().warn('Cannot find codeSet id [{}] to export', it)
-            } else codeSets += codeSet
+            if (codeSet) codeSets << codeSet
+            else cannotExport << it
         }
+        if (!codeSets) throw new ApiInternalException('CSEP01', "Cannot find CodeSet IDs [${cannotExport}] to export")
+        if (cannotExport) log.warn('Cannot find CodeSet IDs [{}] to export', cannotExport)
         exportCodeSets(currentUser, codeSets)
     }
 

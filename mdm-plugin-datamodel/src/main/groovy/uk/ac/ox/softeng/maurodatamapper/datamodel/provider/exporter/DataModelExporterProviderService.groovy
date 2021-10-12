@@ -57,13 +57,13 @@ abstract class DataModelExporterProviderService extends ExporterProviderService 
     ByteArrayOutputStream exportDomains(User currentUser, List<UUID> domainIds) throws ApiException {
         List<DataModel> dataModels = []
         List<UUID> cannotExport = []
-        domainIds.each {
+        domainIds?.unique()?.each {
             DataModel dataModel = dataModelService.get(it)
-            if (!dataModel) {
-                cannotExport.add it
-            } else dataModels.add dataModel
+            if (dataModel) dataModels << dataModel
+            else cannotExport << it
         }
-        log.warn('Cannot find model ids [{}] to export', cannotExport)
+        if (!dataModels) throw new ApiInternalException('DMEP01', "Cannot find DataModel IDs [${cannotExport}] to export")
+        if (cannotExport) log.warn('Cannot find DataModel IDs [{}] to export', cannotExport)
         exportDataModels(currentUser, dataModels)
     }
 

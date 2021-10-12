@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.TerminologyXmlImporterService
 import uk.ac.ox.softeng.maurodatamapper.terminology.test.provider.DataBindTerminologyImportAndDefaultExporterServiceSpec
@@ -42,6 +43,10 @@ import static org.junit.Assert.assertTrue
 @Slf4j
 class TerminologyXmlExporterServiceSpec extends DataBindTerminologyImportAndDefaultExporterServiceSpec<TerminologyXmlImporterService, TerminologyXmlExporterService>
     implements XmlValidator {
+
+    private static final String NO_TERMINOLOGY_IDS_TO_EXPORT_CODE = 'TEEP01'
+    private static final String SIMPLE_TERMINOLOGY_FILENAME = 'simpleTerminology'
+    private static final String SIMPLE_AND_COMPLEX_TERMINOLOGIES_FILENAME = 'simpleAndComplexTerminologies'
 
     TerminologyXmlImporterService terminologyXmlImporterService
     TerminologyXmlExporterService terminologyXmlExporterService
@@ -93,22 +98,121 @@ class TerminologyXmlExporterServiceSpec extends DataBindTerminologyImportAndDefa
             'terminologyWithMetadata',
             'terminologyWithAnnotations',
             'complexImport',
+            'simpleTerminology',
+            'complexTerminology',
             'simpleAndComplexTerminologies'
         ]
     }
 
-    void 'test export multiple Terminologies'() {
+    void 'test multi-export invalid Terminologies'() {
+        expect:
+        exporterService.canExportMultipleDomains()
+
+        when: 'given null'
+        exportModels(null)
+
+        then:
+        ApiInternalException exception = thrown(ApiInternalException)
+        exception.errorCode == NO_TERMINOLOGY_IDS_TO_EXPORT_CODE
+
+        when: 'given an empty list'
+        exportModels([])
+
+        then:
+        exception = thrown(ApiInternalException)
+        exception.errorCode == NO_TERMINOLOGY_IDS_TO_EXPORT_CODE
+
+        when: 'given a null model'
+        String exported = exportModels([null])
+
+        then:
+        exception = thrown(ApiInternalException)
+        exception.errorCode == NO_TERMINOLOGY_IDS_TO_EXPORT_CODE
+
+        when: 'given a single invalid model'
+        exported = exportModels([UUID.randomUUID()])
+
+        then:
+        exception = thrown(ApiInternalException)
+        exception.errorCode == NO_TERMINOLOGY_IDS_TO_EXPORT_CODE
+
+        when: 'given multiple invalid models'
+        exported = exportModels([UUID.randomUUID(), UUID.randomUUID()])
+
+        then:
+        exception = thrown(ApiInternalException)
+        exception.errorCode == NO_TERMINOLOGY_IDS_TO_EXPORT_CODE
+    }
+
+    void 'test multi-export single Terminology'() {
         given:
         setupData()
+        Terminology.count() == 2
 
         expect:
+        exporterService.canExportMultipleDomains()
+
+        when:
+        String exported = exportModels([simpleTerminologyId])
+
+        then:
+        validateExportedModels(SIMPLE_TERMINOLOGY_FILENAME, replaceWithTestAuthority(exported))
+    }
+
+    void 'test multi-export multiple Terminologies'() {
+        given:
+        setupData()
         Terminology.count() == 2
+
+        expect:
         exporterService.canExportMultipleDomains()
 
         when:
         String exported = exportModels([simpleTerminologyId, complexTerminologyId])
 
         then:
-        validateExportedModels('SimpleAndComplexTerminologies', exported.replace(/Mauro Data Mapper/, 'Test Authority'))
+        validateExportedModels(SIMPLE_AND_COMPLEX_TERMINOLOGIES_FILENAME, replaceWithTestAuthority(exported))
+    }
+
+    void 'test multi-export Terminologies with invalid models'() {
+        given:
+        setupData()
+        Terminology.count() == 2
+
+        expect:
+        exporterService.canExportMultipleDomains()
+
+        when:
+        String exported = exportModels([UUID.randomUUID(), simpleTerminologyId])
+
+        then:
+        validateExportedModels(SIMPLE_TERMINOLOGY_FILENAME, replaceWithTestAuthority(exported))
+
+        when:
+        exported = exportModels([UUID.randomUUID(), simpleTerminologyId, UUID.randomUUID(), complexTerminologyId])
+
+        then:
+        validateExportedModels(SIMPLE_AND_COMPLEX_TERMINOLOGIES_FILENAME, replaceWithTestAuthority(exported))
+    }
+
+    void 'test multi-export Terminologies with duplicates'() {
+        given:
+        setupData()
+        Terminology.count() == 2
+
+        expect:
+        exporterService.canExportMultipleDomains()
+
+        when:
+        String exported = exportModels([simpleTerminologyId, simpleTerminologyId])
+
+        then:
+        validateExportedModels(SIMPLE_TERMINOLOGY_FILENAME, replaceWithTestAuthority(exported))
+
+        when:
+        exported = exportModels([simpleTerminologyId, complexTerminologyId, complexTerminologyId, simpleTerminologyId])
+
+        then:
+        validateExportedModels(SIMPLE_AND_COMPLEX_TERMINOLOGIES_FILENAME, replaceWithTestAuthority(exported))
     }
 }
