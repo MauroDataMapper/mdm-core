@@ -277,7 +277,7 @@ class SubscribedModelService {
         List<Map<String, Object>> exporters = subscribedCatalogueService.getAvailableExportersForResourceType(subscribedCatalogue, urlModelType)
 
         //Find a json exporter
-        Map exporterMap = exporters.find {it.fileType == 'text/json'}
+        Map exporterMap = exporters.find {it.name == 'DataModelJsonExporterService'}
 
         //Can't use DataBindingUtils because of a clash with grails 'version' property
         if (!exporterMap) {

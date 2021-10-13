@@ -634,8 +634,9 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
   "count": 2,
   "items": [
     {
-      "modelId": null,
+      "modelId": "${json-unit.matches:id}",
       "title": "Simple Test CodeSet 1.0.0",
+      "label": "Simple Test CodeSet 1.0.0",
       "modelType": "CodeSet",
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "dateCreated": "${json-unit.matches:offsetDateTime}",
@@ -643,8 +644,9 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
       "author": "Test Bootstrap"
     },
     {
-      "modelId": null,
+      "modelId": "${json-unit.matches:id}",
       "title": "Finalised Example Test DataModel 1.0.0",
+      "label": "Finalised Example Test DataModel 1.0.0",
       "modelType": "DataModel",
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "dateCreated": "${json-unit.matches:offsetDateTime}",
