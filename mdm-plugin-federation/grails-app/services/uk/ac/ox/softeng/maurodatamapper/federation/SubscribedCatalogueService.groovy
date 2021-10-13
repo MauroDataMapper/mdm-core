@@ -119,7 +119,7 @@ class SubscribedCatalogueService implements XmlImportMapping {
 
         (subscribedCatalogueModels.publishedModels as List<Map<String, String>>).collect {pm ->
             new PublishedModel().tap {
-                modelId = Utils.toUuid(pm.id)
+                modelId = Utils.toUuid(pm.modelId)
                 title = pm.title
                 modelType = pm.modelType
                 lastUpdated = OffsetDateTime.parse(pm.lastUpdated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
