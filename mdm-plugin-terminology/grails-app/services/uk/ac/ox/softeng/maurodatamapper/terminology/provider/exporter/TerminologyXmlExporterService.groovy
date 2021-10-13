@@ -37,8 +37,13 @@ class TerminologyXmlExporterService extends TerminologyExporterProviderService i
     MarkupViewTemplateEngine templateEngine
 
     @Override
-    String getFileExtension() {
-        'xml'
+    String getDisplayName() {
+        'XML Terminology Exporter'
+    }
+
+    @Override
+    String getVersion() {
+        '3.1'
     }
 
     @Override
@@ -47,13 +52,13 @@ class TerminologyXmlExporterService extends TerminologyExporterProviderService i
     }
 
     @Override
-    String getDisplayName() {
-        'XML Terminology Exporter'
+    String getFileExtension() {
+        'xml'
     }
 
     @Override
-    String getVersion() {
-        '3.1'
+    String getExportViewPath() {
+        '/exportModel/exportTerminology'
     }
 
     @Override
@@ -66,9 +71,4 @@ class TerminologyXmlExporterService extends TerminologyExporterProviderService i
     ByteArrayOutputStream exportTerminologies(User currentUser, List<Terminology> terminologies) throws ApiException {
         throw new ApiBadRequestException('XES01', "${getName()} cannot export multiple Terminologies")
     }
-
-    @Override
-    String getExportViewPath() {
-        '/exportModel/exportTerminology'
-    }    
 }

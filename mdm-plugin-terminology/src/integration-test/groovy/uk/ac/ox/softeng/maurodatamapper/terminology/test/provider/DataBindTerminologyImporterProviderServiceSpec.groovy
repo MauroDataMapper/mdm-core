@@ -37,8 +37,6 @@ import spock.lang.Shared
 @SuppressWarnings('DuplicatedCode')
 abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBindTerminologyImporterProviderService> extends BaseImportExportTerminologySpec {
 
-    abstract K getImporterService()
-
     @Shared
     TerminologyImporterProviderServiceParameters basicParameters
 
@@ -49,6 +47,8 @@ abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBind
             finalised = false
         }
     }
+
+    abstract K getImporterService()
 
     Terminology importAndSave(byte[] bytes) {
         log.trace('Importing:\n {}', new String(bytes))

@@ -42,17 +42,17 @@ import static org.junit.Assert.assertTrue
 class DataModelXmlExporterServiceSpec extends DataBindImportAndDefaultExporterServiceSpec<DataModelXmlImporterService, DataModelXmlExporterService>
     implements XmlValidator {
 
-    DataModelXmlExporterService dataModelXmlExporterService
     DataModelXmlImporterService dataModelXmlImporterService
-
-    @Override
-    DataModelXmlExporterService getExporterService() {
-        dataModelXmlExporterService
-    }
+    DataModelXmlExporterService dataModelXmlExporterService
 
     @Override
     DataModelXmlImporterService getImporterService() {
         dataModelXmlImporterService
+    }
+
+    @Override
+    DataModelXmlExporterService getExporterService() {
+        dataModelXmlExporterService
     }
 
     @Override

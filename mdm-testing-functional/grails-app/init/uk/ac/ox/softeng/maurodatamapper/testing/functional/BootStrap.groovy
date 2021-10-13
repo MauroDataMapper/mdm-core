@@ -171,11 +171,11 @@ class BootStrap implements SecurityDefinition {
                 Folder.withNewTransaction {
                     folder = Folder.findByLabel('Functional Test Folder')
                     Authority authority = authorityService.getDefaultAuthority()
-                    DataModelBootstrapModels.buildAndSaveComplexDataModel(messageSource, folder, authority)
                     DataModelBootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder, authority)
+                    DataModelBootstrapModels.buildAndSaveComplexDataModel(messageSource, folder, authority)
                     DataModelBootstrapModels.buildAndSaveFinalisedSimpleDataModel(messageSource, folder, authority)
-                    TerminologyBootstrapModels.buildAndSaveComplexTerminology(messageSource, folder, terminologyService, authority)
                     TerminologyBootstrapModels.buildAndSaveSimpleTerminology(messageSource, folder, authority)
+                    TerminologyBootstrapModels.buildAndSaveComplexTerminology(messageSource, folder, terminologyService, authority)
                     TerminologyBootstrapModels.buildAndSaveSimpleCodeSet(messageSource, folder, authority)
                     TerminologyBootstrapModels.buildAndSaveUnfinalisedCodeSet(messageSource, folder, authority)
                     DataFlowBootstrapModels.buildAndSaveSourceDataModel(messageSource, folder, authority)

@@ -67,38 +67,6 @@ class BootstrapModels {
         terminology
     }
 
-    static CodeSet buildAndSaveSimpleCodeSet(MessageSource messageSource, Folder folder, Authority authority) {
-
-        CodeSet codeSet = new CodeSet(createdBy: DEVELOPMENT, label: SIMPLE_CODESET_NAME, folder: folder,
-                                      author: 'Test Bootstrap', organisation: 'Oxford BRC', authority: authority)
-
-        Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier',
-                                                             readableByAuthenticatedUsers: true)
-
-        checkAndSave(messageSource, classifier)
-        codeSet.addToClassifiers(classifier)
-        checkAndSave(messageSource, codeSet)
-
-        Terminology simpleTestTerminology = Terminology.findByLabel(SIMPLE_TERMINOLOGY_NAME)
-
-        if (!simpleTestTerminology) {
-            simpleTestTerminology = buildAndSaveSimpleTerminology(messageSource, folder, authority)
-        }
-
-        simpleTestTerminology.terms.each {
-            codeSet.addToTerms(it)
-        }
-
-        codeSet.finalised = true
-        //Truncate the dateFinalised to milliseconds to avoid a Diff failure when test exporting and reimporting a CodeSet
-        codeSet.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.MILLIS)
-        codeSet.modelVersion = Version.from('1.0.0')
-
-        checkAndSave(messageSource, codeSet)
-
-        codeSet
-    }
-
     static Terminology buildAndSaveComplexTerminology(MessageSource messageSource, Folder folder, TerminologyService terminologyService,
                                                       Authority authority) {
         Terminology terminology = new Terminology(createdBy: DEVELOPMENT, label: COMPLEX_TERMINOLOGY_NAME, folder: folder,
@@ -199,6 +167,38 @@ class BootstrapModels {
         checkAndSave(messageSource, terminology)
 
         terminology
+    }
+
+    static CodeSet buildAndSaveSimpleCodeSet(MessageSource messageSource, Folder folder, Authority authority) {
+
+        CodeSet codeSet = new CodeSet(createdBy: DEVELOPMENT, label: SIMPLE_CODESET_NAME, folder: folder,
+                                      author: 'Test Bootstrap', organisation: 'Oxford BRC', authority: authority)
+
+        Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier',
+                                                             readableByAuthenticatedUsers: true)
+
+        checkAndSave(messageSource, classifier)
+        codeSet.addToClassifiers(classifier)
+        checkAndSave(messageSource, codeSet)
+
+        Terminology simpleTestTerminology = Terminology.findByLabel(SIMPLE_TERMINOLOGY_NAME)
+
+        if (!simpleTestTerminology) {
+            simpleTestTerminology = buildAndSaveSimpleTerminology(messageSource, folder, authority)
+        }
+
+        simpleTestTerminology.terms.each {
+            codeSet.addToTerms(it)
+        }
+
+        codeSet.finalised = true
+        //Truncate the dateFinalised to milliseconds to avoid a Diff failure when test exporting and reimporting a CodeSet
+        codeSet.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.MILLIS)
+        codeSet.modelVersion = Version.from('1.0.0')
+
+        checkAndSave(messageSource, codeSet)
+
+        codeSet
     }
 
     static CodeSet buildAndSaveUnfinalisedCodeSet(MessageSource messageSource, Folder folder, Authority authority) {

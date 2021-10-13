@@ -55,10 +55,10 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
     Path resourcesPath
 
     @Shared
-    UUID simpleTerminologyId
+    UUID simpleCodeSetId
 
     @Shared
-    UUID simpleCodeSetId
+    UUID simpleTerminologyId
 
     CodeSetXmlImporterService codeSetXmlImporterService
     CodeSetXmlExporterService codeSetXmlExporterService
@@ -74,16 +74,16 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         }
     }
 
-    String getImportType() {
-        'xml'
-    }
-
     CodeSetXmlImporterService getCodeSetImporterService() {
         codeSetXmlImporterService
     }
 
     CodeSetXmlExporterService getCodeSetExporterService() {
         codeSetXmlExporterService
+    }
+
+    String getImportType() {
+        'xml'
     }
 
     void validateExportedModel(String testName, String exportedModel) {
@@ -108,8 +108,8 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
     void setupDomainData() {
         log.debug('Setting up CodeSetServiceSpec unit')
 
-        simpleTerminologyId = simpleTerminology.id
         simpleCodeSetId = simpleCodeSet.id
+        simpleTerminologyId = simpleTerminology.id
     }
 
     byte[] loadTestFile(String filename) {

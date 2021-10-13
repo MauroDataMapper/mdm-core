@@ -37,8 +37,13 @@ class CodeSetXmlExporterService extends CodeSetExporterProviderService implement
     MarkupViewTemplateEngine templateEngine
 
     @Override
-    String getFileExtension() {
-        'xml'
+    String getDisplayName() {
+        'XML CodeSet Exporter'
+    }
+
+    @Override
+    String getVersion() {
+        '3.1'
     }
 
     @Override
@@ -47,13 +52,13 @@ class CodeSetXmlExporterService extends CodeSetExporterProviderService implement
     }
 
     @Override
-    String getDisplayName() {
-        'XML CodeSet Exporter'
+    String getFileExtension() {
+        'xml'
     }
 
     @Override
-    String getVersion() {
-        '3.1'
+    String getExportViewPath() {
+        '/exportModel/exportCodeSet'
     }
 
     @Override
@@ -65,10 +70,5 @@ class CodeSetXmlExporterService extends CodeSetExporterProviderService implement
     @Override
     ByteArrayOutputStream exportCodeSets(User currentUser, List<CodeSet> codeSets) throws ApiException {
         throw new ApiBadRequestException('XES01', "${getName()} cannot export multiple CodeSets")
-    }
-
-    @Override
-    String getExportViewPath() {
-        '/exportModel/exportCodeSet'
     }
 }

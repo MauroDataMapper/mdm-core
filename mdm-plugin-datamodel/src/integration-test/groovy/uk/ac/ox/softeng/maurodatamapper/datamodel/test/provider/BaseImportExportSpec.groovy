@@ -37,17 +37,17 @@ import java.nio.file.Paths
 @Slf4j
 abstract class BaseImportExportSpec extends BaseDataModelIntegrationSpec {
 
+    public static final String COMPLETE_DATAMODEL_EXPORT_FILENAME = 'export_cancer_audits'
+    public static final String DATAMODEL_WITH_DATATYPES_FILENAME = 'export_with_datatypes_only'
+
     @Shared
     Path resourcesPath
 
     @Shared
-    UUID complexDataModelId
-
-    @Shared
     UUID simpleDataModelId
 
-    public static final String DATAMODEL_WITH_DATATYPES_FILENAME = 'export_with_datatypes_only'
-    public static final String COMPLETE_DATAMODEL_EXPORT_FILENAME = 'export_cancer_audits'
+    @Shared
+    UUID complexDataModelId
 
     abstract ImporterProviderService getImporterService()
 
@@ -63,8 +63,8 @@ abstract class BaseImportExportSpec extends BaseDataModelIntegrationSpec {
     void setupDomainData() {
         log.debug('Setting up DataModelServiceSpec unit')
 
-        complexDataModelId = buildComplexDataModel().id
         simpleDataModelId = buildSimpleDataModel().id
+        complexDataModelId = buildComplexDataModel().id
     }
 
     byte[] loadTestFile(String filename) {

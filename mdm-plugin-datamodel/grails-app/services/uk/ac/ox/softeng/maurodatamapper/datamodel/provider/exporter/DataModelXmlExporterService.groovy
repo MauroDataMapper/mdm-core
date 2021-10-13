@@ -37,8 +37,13 @@ class DataModelXmlExporterService extends DataModelExporterProviderService imple
     MarkupViewTemplateEngine templateEngine
 
     @Override
-    String getFileExtension() {
-        'xml'
+    String getDisplayName() {
+        'XML DataModel Exporter'
+    }
+
+    @Override
+    String getVersion() {
+        '3.2'
     }
 
     @Override
@@ -47,13 +52,8 @@ class DataModelXmlExporterService extends DataModelExporterProviderService imple
     }
 
     @Override
-    String getDisplayName() {
-        'XML DataModel Exporter'
-    }
-
-    @Override
-    String getVersion() {
-        '3.2'
+    String getFileExtension() {
+        'xml'
     }
 
     @Override

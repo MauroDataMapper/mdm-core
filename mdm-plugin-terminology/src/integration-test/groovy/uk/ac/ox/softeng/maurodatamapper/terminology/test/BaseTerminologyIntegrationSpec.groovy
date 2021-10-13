@@ -32,10 +32,10 @@ import groovy.util.logging.Slf4j
 @Slf4j
 abstract class BaseTerminologyIntegrationSpec extends BaseIntegrationSpec {
 
+    Authority testAuthority
     TerminologyService terminologyService
     Terminology simpleTerminology
     Terminology complexTerminology
-    Authority testAuthority
 
     Folder getTestFolder() {
         folder
