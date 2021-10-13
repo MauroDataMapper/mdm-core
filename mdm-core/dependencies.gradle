@@ -3,6 +3,7 @@ dependencies {
     compile project(':mdm-common')
 
     compile group: 'org.apache.commons', name: 'commons-text', version: commonsTextVersion
+    compile group: 'org.apache.commons', name: 'commons-csv', version: commonsCsvVersion
     compile group: 'org.simplejavamail', name: 'simple-java-mail', version: javaMailVersion
     compile group: 'com.google.guava', name: 'guava', version: guavaVersion
     compile group: 'commons-beanutils', name: 'commons-beanutils', version: commonsBeanutilsVersion
