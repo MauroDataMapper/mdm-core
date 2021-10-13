@@ -2508,7 +2508,69 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
-    void 'E02 : test export multiple DataModels'() {
+    void 'E02 : test export simple DataModel'() {
+        given:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('simpleDataModel').toList()
+            ]
+        ])
+
+        verifyResponse CREATED, response
+        def id = response.body().items[0].id
+        String expected = new String(loadTestFile('simpleDataModel'))
+            .replaceFirst('"exportedBy": "Admin User",', '"exportedBy": "Unlogged User",')
+
+        expect:
+        id
+
+        when:
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.0", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, expected
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'E03 : test export complex DataModel'() {
+        given:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('complexDataModel').toList()
+            ]
+        ])
+
+        verifyResponse CREATED, response
+        def id = response.body().items[0].id
+        String expected = new String(loadTestFile('complexDataModel'))
+            .replaceFirst('"exportedBy": "Admin User",', '"exportedBy": "Unlogged User",')
+
+        expect:
+        id
+
+        when:
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.0", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, expected
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'E04 : test export multiple DataModels'() {
         given:
         String id = createNewItem(validJson)
         String id2 = createNewItem([label: 'Functional Test Model 2'])
@@ -2799,6 +2861,97 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
+    void 'I05 : test import DataModel with classifiers'() {
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.0', [
+            finalised                      : true,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('fullModelWithClassifiers').toList()
+            ]
+        ])
+        verifyResponse CREATED, response
+        def id = response.body().items[0].id
+
+        then:
+        id
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'I06 : test importing simple test DataModel'() {
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.0', [
+            finalised                      : true,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('simpleDataModel').toList()
+            ]
+        ])
+        verifyResponse CREATED, response
+        def id = response.body().items[0].id
+
+        then:
+        id
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'I07 : test importing complex test DataModel'() {
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.0', [
+            finalised                      : true,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('complexDataModel').toList()
+            ]
+        ])
+        verifyResponse CREATED, response
+        def id = response.body().items[0].id
+
+        then:
+        id
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'I08 : test importing 2 DataModel'() {
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelXmlImporterService/4.0', [
+            finalised                      : true,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.XML.name,
+                fileContents: loadTestFile('multiModels', 'xml').toList()
+            ]
+        ])
+        verifyResponse CREATED, response
+        def id = response.body().items[0].id
+        def id2 = response.body().items[1].id
+
+        then:
+        id
+        id2
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(id2)
+    }
+
     void 'test delete multiple models'() {
         given:
         def idstoDelete = []
@@ -2866,159 +3019,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         then:
         verifyResponse NO_CONTENT, response
-    }
-
-    void 'I05 : test importing simple test DataModel'() {
-        when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.0', [
-            finalised                      : true,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('simpleDataModel').toList()
-            ]
-        ])
-        verifyResponse CREATED, response
-        def id = response.body().items[0].id
-
-        then:
-        id
-
-        cleanup:
-        cleanUpData(id)
-    }
-
-    void 'I06 : test importing complex test DataModel'() {
-        when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.0', [
-            finalised                      : true,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('complexDataModel').toList()
-            ]
-        ])
-        verifyResponse CREATED, response
-        def id = response.body().items[0].id
-
-        then:
-        id
-
-        cleanup:
-        cleanUpData(id)
-    }
-
-    void 'I07 : test importing DataModel with classifiers'() {
-        when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.0', [
-            finalised                      : true,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('fullModelWithClassifiers').toList()
-            ]
-        ])
-        verifyResponse CREATED, response
-        def id = response.body().items[0].id
-
-        then:
-        id
-
-        cleanup:
-        cleanUpData(id)
-    }
-
-    void 'I08 : test importing 2 DataModel'() {
-        when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelXmlImporterService/4.0', [
-            finalised                      : true,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.XML.name,
-                fileContents: loadTestFile('multiModels', 'xml').toList()
-            ]
-        ])
-        verifyResponse CREATED, response
-        def id = response.body().items[0].id
-        def id2 = response.body().items[1].id
-
-        then:
-        id
-        id2
-
-        cleanup:
-        cleanUpData(id)
-        cleanUpData(id2)
-    }
-
-    void 'E03 : test export simple DataModel'() {
-        given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.0', [
-            finalised                      : false,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('simpleDataModel').toList()
-            ]
-        ])
-
-        verifyResponse CREATED, response
-        def id = response.body().items[0].id
-        String expected = new String(loadTestFile('simpleDataModel'))
-            .replaceFirst('"exportedBy": "Admin User",', '"exportedBy": "Unlogged User",')
-
-        expect:
-        id
-
-        when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.0", STRING_ARG)
-
-        then:
-        verifyJsonResponse OK, expected
-
-        cleanup:
-        cleanUpData(id)
-    }
-
-    void 'E04 : test export complex DataModel'() {
-        given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.0', [
-            finalised                      : false,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('complexDataModel').toList()
-            ]
-        ])
-
-        verifyResponse CREATED, response
-        def id = response.body().items[0].id
-        String expected = new String(loadTestFile('complexDataModel'))
-            .replaceFirst('"exportedBy": "Admin User",', '"exportedBy": "Unlogged User",')
-
-        expect:
-        id
-
-        when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.0", STRING_ARG)
-
-        then:
-        verifyJsonResponse OK, expected
-
-        cleanup:
-        cleanUpData(id)
     }
 
     void 'H01 : test getting simple DataModel hierarchy'() {
