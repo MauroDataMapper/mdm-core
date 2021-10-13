@@ -532,7 +532,6 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
         removeValidIdObject(id)
     }
 
-    @PendingFeature(reason = 'no 2nd model to diff against')
     void 'L32 : test diffing 2 CodeSets (as not logged in)'() {
 
         when: 'not logged in'
@@ -542,7 +541,6 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
         verifyNotFound response, getComplexCodeSetId()
     }
 
-    @PendingFeature(reason = 'no 2nd model to diff against')
     void 'N32 : test diffing 2 CodeSets (as authenticated/no access)'() {
         when:
         loginAuthenticated()
@@ -552,7 +550,6 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
         verifyNotFound response, getComplexCodeSetId()
     }
 
-    @PendingFeature(reason = 'no 2nd model to diff against')
     void 'R32A : test diffing 2 CodeSets (as reader of LH model)'() {
         given:
         String id = getValidId()
@@ -571,7 +568,6 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
         removeValidIdObject(id)
     }
 
-    @PendingFeature(reason = 'no 2nd model to diff against')
     void 'R32B : test diffing 2 CodeSets (as reader of RH model)'() {
         given:
         String id = getValidId()
@@ -590,7 +586,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
         removeValidIdObject(id)
     }
 
-    @PendingFeature(reason = 'no 2nd model to diff against')
+    @PendingFeature(reason = 'Need to update expected diff JSON')
     void 'R32C : test diffing 2 CodeSets (as reader of both models)'() {
         when:
         loginReader()
