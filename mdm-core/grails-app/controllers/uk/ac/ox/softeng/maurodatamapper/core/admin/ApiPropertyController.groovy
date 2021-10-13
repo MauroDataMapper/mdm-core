@@ -28,7 +28,7 @@ class ApiPropertyController extends EditLoggingController<ApiProperty> {
 
     ApiPropertyService apiPropertyService
 
-    static responseFormats = ['json', 'xml']
+    static responseFormats = ['json', 'xml', 'csv']
 
     ApiPropertyController() {
         super(ApiProperty)

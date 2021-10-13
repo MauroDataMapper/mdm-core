@@ -131,4 +131,27 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> {
         assert response.status() == HttpStatus.NO_CONTENT
 
     }
+
+    def 'check index and show endpoints for CSV'(){
+        when:
+        GET('?format=csv', STRING_ARG)
+
+        then:
+        verifyResponse(HttpStatus.OK, jsonCapableResponse)
+        String csv = jsonCapableResponse.body().toString()
+        String[] lines = csv.split("\r\n")
+        assert lines.size() == 17 //header + 16 rows
+        assert lines[0] == "ID,Key,Value,Category,Publicly Visible,Last Updated By,Created By,Last Updated"
+        String id = lines[1].split(",")[0]
+
+        when:
+        GET("${id}?format=csv", STRING_ARG)
+
+        then:
+        verifyResponse(HttpStatus.OK, jsonCapableResponse)
+        String csv2 = jsonCapableResponse.body().toString()
+        String[] lines2 = csv2.split("\r\n")
+        assert lines2.size() == 2 //header + 1 rows
+        assert lines2[0] == "ID,Key,Value,Category,Publicly Visible,Last Updated By,Created By,Last Updated"
+    }
 }
