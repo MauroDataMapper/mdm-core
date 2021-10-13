@@ -34,11 +34,11 @@ import groovy.util.logging.Slf4j
 @Slf4j
 abstract class BaseCodeSetIntegrationSpec extends BaseIntegrationSpec {
 
-    CodeSet simpleCodeSet
-    CodeSetService codeSetService
-    AdminService adminService
-    Terminology simpleTerminology
     Authority testAuthority
+    AdminService adminService
+    CodeSetService codeSetService
+    CodeSet simpleCodeSet
+    Terminology simpleTerminology
 
     Folder getTestFolder() {
         folder

@@ -34,8 +34,13 @@ class DataModelJsonExporterService extends DataModelExporterProviderService impl
     JsonViewTemplateEngine templateEngine
 
     @Override
-    String getFileExtension() {
-        'json'
+    String getDisplayName() {
+        'JSON DataModel Exporter'
+    }
+
+    @Override
+    String getVersion() {
+        '2.0'
     }
 
     @Override
@@ -44,13 +49,8 @@ class DataModelJsonExporterService extends DataModelExporterProviderService impl
     }
 
     @Override
-    String getDisplayName() {
-        'JSON DataModel Exporter'
-    }
-
-    @Override
-    String getVersion() {
-        '2.0'
+    String getFileExtension() {
+        'json'
     }
 
     @Override

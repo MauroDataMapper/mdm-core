@@ -44,11 +44,11 @@ class BootStrap {
                 Folder.withNewTransaction {
                     Folder folder = Folder.findByLabel('Development Folder')
                     Authority authority = authorityService.getDefaultAuthority()
-                    if (Terminology.countByLabel(BootstrapModels.COMPLEX_TERMINOLOGY_NAME) == 0) {
-                        BootstrapModels.buildAndSaveComplexTerminology(messageSource, folder, terminologyService, authority)
-                    }
                     if (Terminology.countByLabel(BootstrapModels.SIMPLE_TERMINOLOGY_NAME) == 0) {
                         BootstrapModels.buildAndSaveSimpleTerminology(messageSource, folder, authority)
+                    }
+                    if (Terminology.countByLabel(BootstrapModels.COMPLEX_TERMINOLOGY_NAME) == 0) {
+                        BootstrapModels.buildAndSaveComplexTerminology(messageSource, folder, terminologyService, authority)
                     }
                     if (CodeSet.countByLabel(BootstrapModels.SIMPLE_CODESET_NAME) == 0) {
                         BootstrapModels.buildAndSaveSimpleCodeSet(messageSource, folder, authority)

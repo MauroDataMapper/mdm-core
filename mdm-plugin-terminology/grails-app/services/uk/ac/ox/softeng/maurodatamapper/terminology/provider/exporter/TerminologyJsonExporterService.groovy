@@ -34,8 +34,13 @@ class TerminologyJsonExporterService extends TerminologyExporterProviderService 
     JsonViewTemplateEngine templateEngine
 
     @Override
-    String getFileExtension() {
-        'json'
+    String getDisplayName() {
+        'JSON Terminology Exporter'
+    }
+
+    @Override
+    String getVersion() {
+        '3.0'
     }
 
     @Override
@@ -44,13 +49,8 @@ class TerminologyJsonExporterService extends TerminologyExporterProviderService 
     }
 
     @Override
-    String getDisplayName() {
-        'JSON Terminology Exporter'
-    }
-
-    @Override
-    String getVersion() {
-        '3.0'
+    String getFileExtension() {
+        'json'
     }
 
     @Override

@@ -32,15 +32,13 @@ import groovy.util.logging.Slf4j
 @Slf4j
 abstract class BaseDataModelIntegrationSpec extends BaseIntegrationSpec {
 
+    Authority testAuthority
     AdminService adminService
-
     DataModel dataModel
 
     Folder getTestFolder() {
         folder
     }
-
-    Authority testAuthority
 
     @Override
     void preDomainDataSetup() {

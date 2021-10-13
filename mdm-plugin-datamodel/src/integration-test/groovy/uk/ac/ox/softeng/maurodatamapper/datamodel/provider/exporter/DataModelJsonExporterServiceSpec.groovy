@@ -48,13 +48,13 @@ class DataModelJsonExporterServiceSpec extends DataBindImportAndDefaultExporterS
     }
 
     @Override
-    String getImportType() {
-        'json'
+    DataModelJsonExporterService getExporterService() {
+        dataModelJsonExporterService
     }
 
     @Override
-    DataModelJsonExporterService getExporterService() {
-        dataModelJsonExporterService
+    String getImportType() {
+        'json'
     }
 
     @Override

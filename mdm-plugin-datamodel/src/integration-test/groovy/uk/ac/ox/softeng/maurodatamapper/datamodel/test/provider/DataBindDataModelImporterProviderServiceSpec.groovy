@@ -47,8 +47,6 @@ import spock.lang.Shared
 @SuppressWarnings('DuplicatedCode')
 abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDataModelImporterProviderService> extends BaseImportExportSpec {
 
-    abstract K getImporterService()
-
     @Autowired
     DataModelService dataModelService
 
@@ -62,6 +60,8 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
             finalised = false
         }
     }
+
+    abstract K getImporterService()
 
     DataModel importModel(byte[] bytes) {
         log.trace('Importing:\n {}', new String(bytes))

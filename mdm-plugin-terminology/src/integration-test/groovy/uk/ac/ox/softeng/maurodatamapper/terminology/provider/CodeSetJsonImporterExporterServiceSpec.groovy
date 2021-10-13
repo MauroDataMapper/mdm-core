@@ -61,16 +61,16 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
     Path resourcesPath
 
     @Shared
+    UUID simpleCodeSetId
+
+    @Shared
     UUID simpleTerminologyId
 
     @Shared
-    UUID simpleCodeSetId
+    CodeSetFileImporterProviderServiceParameters basicParameters
 
     CodeSetJsonImporterService codeSetJsonImporterService
     CodeSetJsonExporterService codeSetJsonExporterService
-
-    @Shared
-    CodeSetFileImporterProviderServiceParameters basicParameters
 
     def setupSpec() {
         basicParameters = new CodeSetFileImporterProviderServiceParameters().tap {
@@ -80,16 +80,16 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         }
     }
 
-    String getImportType() {
-        'json'
-    }
-
     CodeSetJsonImporterService getCodeSetImporterService() {
         codeSetJsonImporterService
     }
 
     CodeSetJsonExporterService getCodeSetExporterService() {
         codeSetJsonExporterService
+    }
+
+    String getImportType() {
+        'json'
     }
 
     void validateExportedModel(String testName, String exportedModel) {
@@ -115,8 +115,8 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
     void setupDomainData() {
         log.debug('Setting up CodeSetServiceSpec unit')
 
-        simpleTerminologyId = simpleTerminology.id
         simpleCodeSetId = simpleCodeSet.id
+        simpleTerminologyId = simpleTerminology.id
     }
 
     byte[] loadTestFile(String filename) {

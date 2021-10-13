@@ -40,10 +40,10 @@ abstract class BaseImportExportTerminologySpec extends BaseTerminologyIntegratio
     Path resourcesPath
 
     @Shared
-    UUID complexTerminologyId
+    UUID simpleTerminologyId
 
     @Shared
-    UUID simpleTerminologyId
+    UUID complexTerminologyId
 
     abstract TerminologyImporterProviderService getImporterService()
 
@@ -59,8 +59,8 @@ abstract class BaseImportExportTerminologySpec extends BaseTerminologyIntegratio
     void setupDomainData() {
         log.debug('Setting up TerminologyServiceSpec unit')
 
-        complexTerminologyId = complexTerminology.id
         simpleTerminologyId = simpleTerminology.id
+        complexTerminologyId = complexTerminology.id
     }
 
     byte[] loadTestFile(String filename) {

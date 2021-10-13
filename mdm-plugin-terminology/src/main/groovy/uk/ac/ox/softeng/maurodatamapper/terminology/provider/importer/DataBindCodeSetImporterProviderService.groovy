@@ -47,19 +47,19 @@ abstract class DataBindCodeSetImporterProviderService<T extends CodeSetFileImpor
     }
 
     @Override
-    List<CodeSet> importModels(User currentUser, CodeSetFileImporterProviderServiceParameters params) {
-        if (!currentUser) throw new ApiUnauthorizedException('FBIP01', 'User must be logged in to import model')
-        if (params.importFile.fileContents.size() == 0) throw new ApiBadRequestException('FBIP02', 'Cannot import empty file')
-        log.info('Importing {} as {}', params.importFile.fileName, currentUser.emailAddress)
-        importCodeSets(currentUser, params.importFile.fileContents)
-    }
-
-    @Override
     CodeSet importModel(User currentUser, CodeSetFileImporterProviderServiceParameters params) {
         if (!currentUser) throw new ApiUnauthorizedException('FBIP01', 'User must be logged in to import model')
         if (params.importFile.fileContents.size() == 0) throw new ApiBadRequestException('FBIP02', 'Cannot import empty file')
         log.info('Importing {} as {}', params.importFile.fileName, currentUser.emailAddress)
         importCodeSet(currentUser, params.importFile.fileContents)
+    }
+
+    @Override
+    List<CodeSet> importModels(User currentUser, CodeSetFileImporterProviderServiceParameters params) {
+        if (!currentUser) throw new ApiUnauthorizedException('FBIP01', 'User must be logged in to import model')
+        if (params.importFile.fileContents.size() == 0) throw new ApiBadRequestException('FBIP02', 'Cannot import empty file')
+        log.info('Importing {} as {}', params.importFile.fileName, currentUser.emailAddress)
+        importCodeSets(currentUser, params.importFile.fileContents)
     }
 
     CodeSet bindMapToCodeSet(User currentUser, Map codeSetMap) {

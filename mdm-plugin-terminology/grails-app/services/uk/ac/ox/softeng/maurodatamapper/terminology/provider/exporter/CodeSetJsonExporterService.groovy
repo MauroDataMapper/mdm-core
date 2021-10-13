@@ -34,8 +34,13 @@ class CodeSetJsonExporterService extends CodeSetExporterProviderService implemen
     JsonViewTemplateEngine templateEngine
 
     @Override
-    String getFileExtension() {
-        'json'
+    String getDisplayName() {
+        'JSON CodeSet Exporter'
+    }
+
+    @Override
+    String getVersion() {
+        '3.0'
     }
 
     @Override
@@ -44,13 +49,8 @@ class CodeSetJsonExporterService extends CodeSetExporterProviderService implemen
     }
 
     @Override
-    String getDisplayName() {
-        'JSON CodeSet Exporter'
-    }
-
-    @Override
-    String getVersion() {
-        '3.0'
+    String getFileExtension() {
+        'json'
     }
 
     @Override
