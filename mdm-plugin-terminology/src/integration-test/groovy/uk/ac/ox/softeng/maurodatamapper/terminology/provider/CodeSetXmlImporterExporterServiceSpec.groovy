@@ -98,7 +98,6 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
                               codeSetXmlExporterService.version)
     }
 
-
     @OnceBefore
     void setupResourcesPath() {
         resourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', importType)
@@ -144,7 +143,6 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         confirmCodeSet(codeSet)
         codeSet
     }
-
 
     void confirmCodeSet(codeSet) {
         assert codeSet
@@ -210,7 +208,6 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         then:
         diff.objectsAreIdentical()
     }
-
 
     void 'test empty data import'() {
         given:

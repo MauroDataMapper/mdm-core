@@ -584,7 +584,6 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         cleanup:
         cleanupIds(id)
-
     }
 
     void 'I02 :  Test importing non-finalised model into a sub level VF (as admin)'() {
@@ -636,7 +635,6 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         cleanup:
         cleanupIds(id)
-
     }
 
     void 'F01 : Test finalising Model (as reader)'() {
@@ -1413,7 +1411,6 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         verifyResponse(OK, response)
         responseBody().count == 1
 
-
         when:
         String branchedCodeSetId = responseBody().items.first().id
         GET("codeSets/$branchedCodeSetId/terms", MAP_ARG, true)
@@ -1727,7 +1724,6 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         verifyResponse OK, response
         responseBody().id == data.v1
         responseBody().label == validJson.label
-
 
         when:
         GET("$data.anotherFork/commonAncestor/$data.anotherBranch")
@@ -2055,7 +2051,6 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         cleanupModelVersionTree(data)
     }
 
-
     void 'DI01 : test diffing 2 versioned folders (as not logged in)'() {
 
         given:
@@ -2161,7 +2156,6 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         cleanup:
         builder.cleanupTestMergeData(mergeData)
     }
-
 
     void 'MD01 : test finding merge difference of two versioned folders (as not logged in)'() {
         given:
@@ -2299,7 +2293,6 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         cleanup:
         builder.cleanupTestMergeData(mergeData)
     }
-
 
     void 'MI04 : test merging diff with no patch data'() {
         given:
@@ -2567,7 +2560,6 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
             Assert.assertEquals("${t.code} has correct terminology", targetTerminologyMap.terminologyId, t.model)
         }
 
-
         when:
         GET("codeSets/$targetCodeSetMap.codeSetId/metadata", MAP_ARG, true)
 
@@ -2754,7 +2746,6 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         responseBody().items.each {t ->
             Assert.assertEquals("${t.code} has correct terminology", targetTerminologyMap.terminologyId, t.model)
         }
-
 
         when:
         GET("codeSets/$targetCodeSetMap.codeSetId/metadata", MAP_ARG, true)

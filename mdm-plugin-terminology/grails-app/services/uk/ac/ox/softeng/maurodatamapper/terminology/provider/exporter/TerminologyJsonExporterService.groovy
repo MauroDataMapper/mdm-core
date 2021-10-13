@@ -56,11 +56,11 @@ class TerminologyJsonExporterService extends TerminologyExporterProviderService 
     @Override
     ByteArrayOutputStream exportTerminology(User currentUser, Terminology terminology) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel new ExportModel(terminology, 'terminology', version, exportMetadata), fileType
+        exportModel(new ExportModel(terminology, 'terminology', version, exportMetadata), fileType)
     }
 
     @Override
-    ByteArrayOutputStream exportTerminologies(User currentUser, List<Terminology> terminology) throws ApiException {
+    ByteArrayOutputStream exportTerminologies(User currentUser, List<Terminology> terminologies) throws ApiException {
         throw new ApiBadRequestException('TES01', "${getName()} cannot export multiple Terminologies")
     }
 }

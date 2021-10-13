@@ -334,7 +334,6 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
     "canImportMultipleDomains": false
   }
 ]'''
-
     }
 
     void 'L30 : test changing folder from CodeSet context (as not logged in)'() {

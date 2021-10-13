@@ -75,9 +75,7 @@ abstract class DataBindTerminologyImportAndDefaultExporterServiceSpec<I extends 
         assert terminologyService.count() == 3
 
         Terminology tm = Terminology.listOrderByDateCreated().last()
-
         log.info('Confirming imported model')
-
         confirmTerminology(tm)
         tm
     }
@@ -103,7 +101,6 @@ abstract class DataBindTerminologyImportAndDefaultExporterServiceSpec<I extends 
         then:
         ApiInternalException exception = thrown(ApiInternalException)
         exception.errorCode == 'TEEP01'
-
     }
 
     @Unroll
@@ -193,5 +190,4 @@ abstract class DataBindTerminologyImportAndDefaultExporterServiceSpec<I extends 
         then:
         diff.objectsAreIdentical()
     }
-
 }

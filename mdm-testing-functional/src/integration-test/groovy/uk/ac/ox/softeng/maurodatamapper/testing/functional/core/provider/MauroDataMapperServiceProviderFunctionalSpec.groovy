@@ -61,7 +61,6 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
         then: 'The response is Unauth'
         verifyForbidden response
 
-
         where:
         method | endpoint
         'GET'  | 'exporters'

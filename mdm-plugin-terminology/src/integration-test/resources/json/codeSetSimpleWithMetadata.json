@@ -25,7 +25,7 @@
         "value": "mdv2",
         "lastUpdated": "${json-unit.matches:offsetDateTime}"
       }
-    ],    
+    ],
     "author": "Test Author",
     "organisation": "Test Organisation",
     "documentationVersion": "1.0.0",

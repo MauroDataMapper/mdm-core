@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
@@ -170,7 +169,6 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         ]
     }
 
-
     @Override
     Map getValidUpdateJson() {
         [
@@ -223,7 +221,6 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         response.status() == OK
         responseBody().count == 0
         responseBody().items.size() == 0
-
     }
 
     void 'Test getting all content of a DataClass'() {
@@ -438,13 +435,11 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         responseBody().id != id
         responseBody().label == validJson.label
 
-
         when: 'trying to copy and rename non-existent object'
         POST("${getResourcePath(otherDataModelId)}/$dataModelId/${UUID.randomUUID()}", getValidCopyLabel(), MAP_ARG, true)
 
         then:
         response.status() == NOT_FOUND
-
     }
 
     @Rollback
@@ -485,16 +480,16 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
 
         then:
         verifyResponse(OK, response)
-        responseBody().items.any {it.label == 'Functional Test DataElement 3' }
-        responseBody().items.any {it.label == 'Functional Test DataElement 4' }
+        responseBody().items.any {it.label == 'Functional Test DataElement 3'}
+        responseBody().items.any {it.label == 'Functional Test DataElement 4'}
 
         when:
         GET("dataModels/$otherDataModelId/dataTypes", MAP_ARG, true)
 
         then:
         verifyResponse(OK, response)
-        responseBody().items.any {it.label == 'wobble' }
-        responseBody().items.any {it.label == 'string' }
+        responseBody().items.any {it.label == 'wobble'}
+        responseBody().items.any {it.label == 'string'}
     }
 
     @Rollback
@@ -549,7 +544,6 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         sessionFactory.currentSession.flush()
         DELETE("dataModels/${importedId}?permanent=true", MAP_ARG, true)
         assert response.status() == HttpStatus.NO_CONTENT
-
     }
 
     @Rollback
@@ -626,7 +620,6 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         responseBody().items[2].id == child3Id
         responseBody().items[2].parentDataClass == bId
 
-
         when: 'All items are listed'
         GET('')
 
@@ -659,7 +652,6 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         responseBody().items[1].label == 'content'
         responseBody().items[2].label == 'emptyclass'
 
-
         when: 'All children of parent are listed'
         GET("${bId}/dataClasses")
 
@@ -685,7 +677,6 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         ])
         verifyResponse CREATED, response
         String internalExtendableId = responseBody().id
-
 
         // Get a DC which we will not be able to extend
         POST(getResourcePath(otherDataModelId), validJson, MAP_ARG, true)

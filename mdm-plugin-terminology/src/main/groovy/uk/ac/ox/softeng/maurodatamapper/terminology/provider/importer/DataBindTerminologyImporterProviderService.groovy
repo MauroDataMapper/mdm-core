@@ -30,8 +30,7 @@ import groovy.util.logging.Slf4j
 import org.springframework.core.GenericTypeResolver
 
 @Slf4j
-abstract class DataBindTerminologyImporterProviderService<T extends TerminologyFileImporterProviderServiceParameters> extends
-    TerminologyImporterProviderService<T> {
+abstract class DataBindTerminologyImporterProviderService<T extends TerminologyFileImporterProviderServiceParameters> extends TerminologyImporterProviderService<T> {
 
     abstract Terminology importTerminology(User currentUser, byte[] content)
 

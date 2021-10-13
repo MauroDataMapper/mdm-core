@@ -37,26 +37,28 @@ import java.nio.file.Path
 @Integration
 @Rollback
 @Slf4j
-class TerminologyJsonExporterServiceSpec
-    extends DataBindTerminologyImportAndDefaultExporterServiceSpec<TerminologyJsonImporterService, TerminologyJsonExporterService>
+class TerminologyJsonExporterServiceSpec extends DataBindTerminologyImportAndDefaultExporterServiceSpec<TerminologyJsonImporterService, TerminologyJsonExporterService>
     implements JsonComparer {
-
 
     TerminologyJsonImporterService terminologyJsonImporterService
     TerminologyJsonExporterService terminologyJsonExporterService
 
+    @Override
     String getImportType() {
         'json'
     }
 
+    @Override
     TerminologyJsonImporterService getImporterService() {
         terminologyJsonImporterService
     }
 
+    @Override
     TerminologyJsonExporterService getExporterService() {
         terminologyJsonExporterService
     }
 
+    @Override
     void validateExportedModel(String testName, String exportedModel) {
         assert exportedModel, 'There must be an exported model string'
 

@@ -325,9 +325,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         then:
         verifyResponse OK, response
         response.getBody(String).get() == '["Data Asset","Data Standard"]'
-
     }
-
 
     void 'Test getting available DataModel default datatype providers'() {
         when: 'not logged in'
@@ -530,7 +528,6 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     "canImportMultipleDomains": true
   }
 ]'''
-
     }
 
     void 'L30 : test getting DataModel hierarchy (as not logged in)'() {
@@ -1338,7 +1335,6 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         cleanup:
         removeValidIdObject(id)
     }
-
 
     void 'L33 : test diffing 2 DataModels (as not logged in)'() {
 
@@ -2523,7 +2519,6 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         addReaderShare(data.finalisedId)
         data
     }
-
 
     /*
             void 'test deleting multiple models'() {

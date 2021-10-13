@@ -34,7 +34,7 @@
         <mdm:label>test classifier import 2</mdm:label>
         <mdm:lastUpdated>2020-04-12T16:48:47.48489Z</mdm:lastUpdated>
       </mdm:classifier>
-    </mdm:classifiers>    
+    </mdm:classifiers>
     <mdm:type>Data Standard</mdm:type>
     <mdm:documentationVersion>1.0.0</mdm:documentationVersion>
     <mdm:finalised>false</mdm:finalised>

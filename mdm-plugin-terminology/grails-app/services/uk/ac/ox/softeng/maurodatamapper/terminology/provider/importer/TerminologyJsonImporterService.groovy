@@ -27,8 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.
 import groovy.util.logging.Slf4j
 
 @Slf4j
-class TerminologyJsonImporterService extends DataBindTerminologyImporterProviderService<TerminologyFileImporterProviderServiceParameters> 
-    implements JsonImportMapping {
+class TerminologyJsonImporterService extends DataBindTerminologyImporterProviderService<TerminologyFileImporterProviderServiceParameters> implements JsonImportMapping {
 
     @Override
     String getDisplayName() {
@@ -51,6 +50,6 @@ class TerminologyJsonImporterService extends DataBindTerminologyImporterProvider
         if (!terminology) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as terminology is not present')
 
         log.debug('Importing Terminology map')
-        bindMapToTerminology currentUser, new HashMap(terminology)
+        bindMapToTerminology(currentUser, new HashMap(terminology))
     }
 }

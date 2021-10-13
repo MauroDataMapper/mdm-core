@@ -39,8 +39,7 @@ import groovy.util.logging.Slf4j
 @Integration
 @Rollback
 @Slf4j
-class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProviderServiceSpec<TerminologyJsonImporterService>
-    implements JsonComparer {
+class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProviderServiceSpec<TerminologyJsonImporterService> implements JsonComparer {
 
     TerminologyJsonImporterService terminologyJsonImporterService
 
@@ -69,8 +68,8 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
         terminology.terms.size() == 2
 
         when:
-        Term a = terminology.terms.find { it.code == 'A' }
-        Term b = terminology.terms.find { it.code == 'B' }
+        Term a = terminology.terms.find {it.code == 'A'}
+        Term b = terminology.terms.find {it.code == 'B'}
 
         then:
         a
@@ -125,14 +124,13 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
         Terminology term = importAndSave(loadTestFile('simpleTerminology'))
 
         then:
-        term.annotations.find { it.label == testAnnotation.label }
-        term.classifiers.find { it.label == testClassifier.label }
-        term.metadata.find { it.namespace == testMetadata.namespace }
-        term.rules.find { it.name == testRule.name }
-        term.semanticLinks.find { it.targetMultiFacetAwareItemId == testSemanticLink.targetMultiFacetAwareItemId }
-        term.semanticLinks.find { it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType }
-        term.referenceFiles.find { it.fileName == testReferenceFile.fileName }
-
+        term.annotations.find {it.label == testAnnotation.label}
+        term.classifiers.find {it.label == testClassifier.label}
+        term.metadata.find {it.namespace == testMetadata.namespace}
+        term.rules.find {it.name == testRule.name}
+        term.semanticLinks.find {it.targetMultiFacetAwareItemId == testSemanticLink.targetMultiFacetAwareItemId}
+        term.semanticLinks.find {it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType}
+        term.referenceFiles.find {it.fileName == testReferenceFile.fileName}
     }
 
     void 'PG02 : test propagating child content'() {

@@ -7,7 +7,7 @@
         <mdm:aliases>
             <mdm:alias>Alias 1</mdm:alias>
             <mdm:alias>Alias 2</mdm:alias>
-        </mdm:aliases>        
+        </mdm:aliases>
         <mdm:author>Test Author</mdm:author>
         <mdm:organisation>Test Organisation</mdm:organisation>
         <mdm:documentationVersion>1.0.0</mdm:documentationVersion>

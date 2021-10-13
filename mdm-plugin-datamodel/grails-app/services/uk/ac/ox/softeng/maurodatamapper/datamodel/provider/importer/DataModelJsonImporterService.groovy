@@ -27,8 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 import groovy.util.logging.Slf4j
 
 @Slf4j
-class DataModelJsonImporterService extends DataBindDataModelImporterProviderService<DataModelFileImporterProviderServiceParameters>
-    implements JsonImportMapping {
+class DataModelJsonImporterService extends DataBindDataModelImporterProviderService<DataModelFileImporterProviderServiceParameters> implements JsonImportMapping {
 
     @Override
     String getDisplayName() {
@@ -51,6 +50,6 @@ class DataModelJsonImporterService extends DataBindDataModelImporterProviderServ
         if (!dataModel) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as dataModel is not present')
 
         log.debug('Importing DataModel map')
-        bindMapToDataModel currentUser, new HashMap(dataModel)
+        bindMapToDataModel(currentUser, new HashMap(dataModel))
     }
 }

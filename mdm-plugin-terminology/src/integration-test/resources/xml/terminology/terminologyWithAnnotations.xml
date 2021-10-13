@@ -12,7 +12,7 @@
                 <mdm:label>test annotation 1 label</mdm:label>
                 <mdm:description>test annotation 1 description</mdm:description>
             </mdm:annotation>
-        </mdm:annotations>        
+        </mdm:annotations>
         <mdm:author>Test Author</mdm:author>
         <mdm:organisation>Test Organisation</mdm:organisation>
         <mdm:documentationVersion>1.0.0</mdm:documentationVersion>

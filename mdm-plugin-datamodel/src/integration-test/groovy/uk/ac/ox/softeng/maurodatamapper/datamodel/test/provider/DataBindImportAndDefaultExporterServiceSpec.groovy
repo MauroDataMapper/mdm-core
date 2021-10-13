@@ -77,9 +77,7 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
         assert dataModelService.count() == 3
 
         DataModel dm = DataModel.listOrderByDateCreated().last()
-
         log.info('Confirming imported model')
-
         confirmDataModel(dm)
         dm
     }
@@ -105,7 +103,6 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
         then:
         ApiInternalException exception = thrown(ApiInternalException)
         exception.errorCode == 'DMEP01'
-
     }
 
     @Unroll
@@ -150,7 +147,6 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
         String exported
 
         expect:
-
         DataModel.count() == 2
 
         when:
@@ -159,8 +155,8 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
 
         if (test) {
             String xml = Files.readString(testFilePath)
-                .replaceAll(/"lastUpdated": "\$\{json-unit\.matches:offsetDateTime}"/, '')
-                .replaceAll(/"id": "\$\{json-unit.ignore}",/, '')
+                              .replaceAll(/"lastUpdated": "\$\{json-unit\.matches:offsetDateTime}"/, '')
+                              .replaceAll(/"id": "\$\{json-unit.ignore}",/, '')
             exported = importAndExport(xml.bytes)
         } else log.info('{} does not exist, skipping', testFilePath)
 
@@ -177,7 +173,6 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
             '3.1',
             '3.2'
         ]
-
     }
 
     @Unroll
@@ -195,8 +190,8 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
 
         if (test) {
             String xml = Files.readString(testFilePath)
-                .replaceAll(/"lastUpdated": "\$\{json-unit\.matches:offsetDateTime}"/, '')
-                .replaceAll(/"id": "\$\{json-unit.ignore}",/, '')
+                              .replaceAll(/"lastUpdated": "\$\{json-unit\.matches:offsetDateTime}"/, '')
+                              .replaceAll(/"id": "\$\{json-unit.ignore}",/, '')
             exported = importAndExport(xml.bytes)
         } else log.info('{} does not exist, skipping', testFilePath)
 
@@ -281,5 +276,4 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
         then:
         diff.objectsAreIdentical()
     }
-
 }

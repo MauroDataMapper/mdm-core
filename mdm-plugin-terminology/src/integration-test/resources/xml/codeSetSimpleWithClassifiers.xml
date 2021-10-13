@@ -15,7 +15,7 @@
                 <mdm:label>test classifier import 2</mdm:label>
                 <mdm:lastUpdated>2020-08-20T15:37:19.94Z</mdm:lastUpdated>
             </mdm:classifier>
-        </mdm:classifiers>        
+        </mdm:classifiers>
         <mdm:author>Test Author</mdm:author>
         <mdm:organisation>Test Organisation</mdm:organisation>
         <mdm:documentationVersion>1.0.0</mdm:documentationVersion>
