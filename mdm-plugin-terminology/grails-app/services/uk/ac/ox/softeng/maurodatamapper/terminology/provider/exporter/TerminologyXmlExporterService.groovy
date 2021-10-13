@@ -59,7 +59,7 @@ class TerminologyXmlExporterService extends TerminologyExporterProviderService i
     @Override
     ByteArrayOutputStream exportTerminology(User currentUser, Terminology terminology) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel new ExportModel(terminology, 'terminology', version, 'gml', exportMetadata), fileType
+        exportModel(new ExportModel(terminology, 'terminology', version, 'gml', exportMetadata), fileType)
     }
 
     @Override

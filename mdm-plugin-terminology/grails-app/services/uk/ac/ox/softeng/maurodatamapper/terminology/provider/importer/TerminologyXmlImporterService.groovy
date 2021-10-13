@@ -61,7 +61,7 @@ class TerminologyXmlImporterService extends DataBindTerminologyImporterProviderS
         Map map = convertToMap(result)
 
         log.debug('Importing Terminology map')
-        bindMapToTerminology currentUser, backwardsCompatibleExtractTerminologyMap(result, map)
+        bindMapToTerminology(currentUser, backwardsCompatibleExtractTerminologyMap(result, map))
     }
 
     Map backwardsCompatibleExtractTerminologyMap(GPathResult result, Map map) {

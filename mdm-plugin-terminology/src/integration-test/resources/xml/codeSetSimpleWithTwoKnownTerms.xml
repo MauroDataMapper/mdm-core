@@ -17,7 +17,7 @@
         <mdm:termPaths>
             <mdm:termPath>te:Simple Test Terminology|tm:STT01: Simple Test Term 01</mdm:termPath>
             <mdm:termPath>te:Simple Test Terminology|tm:STT02: Simple Test Term 02</mdm:termPath>
-        </mdm:termPaths>        
+        </mdm:termPaths>
     </mdm:codeSet>
     <exp:exportMetadata>
       <exp:exportedBy>Admin User</exp:exportedBy>

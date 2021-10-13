@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
@@ -113,8 +112,6 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         folder = new Folder(label: 'Functional Test Folder', createdBy: StandardEmailAddress.FUNCTIONAL_TEST)
         folder.save(flush: true)
         folderId = folder.id
-
-
 
         assert folderId
         movingFolderId = new Folder(label: 'Functional Test Folder 2', createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true).id
@@ -293,7 +290,6 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         then:
         verifyJsonResponse CREATED, getExpectedShowJson()
             .replaceFirst(/"label": "Functional Test Model",/, '"label": "Functional Test CodeSet reader",')
-
 
         when:
         GET("$id/semanticLinks", STRING_ARG)
@@ -677,7 +673,6 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         cleanUpData()
     }
 
-
     void 'VB03 : test creating a main branch model version when one already exists'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
@@ -800,7 +795,6 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         cleanUpData(latestDraftId)
         cleanUpData(id)
     }
-
 
     void 'VB07 : test finding latest model version of a Model<T> (as editor)'() {
         /*
@@ -1041,7 +1035,6 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
             ]
         ]
 
-
         PUT("$testMergeData.source/mergeInto/$testMergeData.target", requestBody)
 
         then:
@@ -1070,7 +1063,6 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         cleanup:
         builder.cleanupTestMergeData(testMergeData)
     }
-
 
     void 'MI02 : test merging into into draft model new style'() {
         given:
@@ -1837,7 +1829,6 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         verifyResponse CREATED, response
         def tid = responseBody().id
 
-
         when: 'importing a codeset which references the terms already imported'
         POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/3.0', [
             finalised                      : false,
@@ -1856,7 +1847,6 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
         String expected = new String(loadTestFile('codeSetFunctionalTest')).replaceFirst('"exportedBy": "Admin User",',
                                                                                          '"exportedBy": "Unlogged User",')
-
 
         expect:
         id
@@ -1955,7 +1945,6 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         verifyResponse(OK, response)
         PUT("$id/terms/${term2Id}", [:])
         verifyResponse(OK, response)
-
 
         [terminologyId: terminologyId,
          term1Id      : term1Id,
@@ -2214,5 +2203,4 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 }
 '''
     }
-
 }

@@ -35,7 +35,7 @@ class BootStrap {
 
     AuthorityService authorityService
 
-    def init = { servletContext ->
+    def init = {servletContext ->
 
         log.debug('Main bootstrap complete')
 

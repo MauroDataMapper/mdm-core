@@ -69,7 +69,6 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
     CodeSetJsonImporterService codeSetJsonImporterService
     CodeSetJsonExporterService codeSetJsonExporterService
 
-
     @Shared
     CodeSetFileImporterProviderServiceParameters basicParameters
 
@@ -166,7 +165,6 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         codeSet
     }
 
-
     void confirmCodeSet(codeSet) {
         assert codeSet
         assert codeSet.createdBy == admin.emailAddress
@@ -231,7 +229,6 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         then:
         diff.objectsAreIdentical()
     }
-
 
     void 'test empty data import'() {
         given:
@@ -578,7 +575,6 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         exception.errorCode == 'CSS01'
     }
 
-
     void 'PG01 test propagatingCatalogueItemElements'() {
 
         given:
@@ -614,13 +610,12 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         CodeSet cs = importModel(loadTestFile('propagatedBootstrappedSimpleCodeSet'))
 
         then:
-        cs.annotations.find { it.label == testAnnotation.label }
-        cs.classifiers.find { it.label == testClassifier.label }
-        cs.metadata.find { it.namespace == testMetadata.namespace }
-        cs.rules.find { it.name == testRule.name }
-        cs.semanticLinks.find { it.targetMultiFacetAwareItemId == testSemanticLink.targetMultiFacetAwareItemId }
-        cs.semanticLinks.find { it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType }
-        cs.referenceFiles.find { it.fileName == testReferenceFile.fileName }
-
+        cs.annotations.find {it.label == testAnnotation.label}
+        cs.classifiers.find {it.label == testClassifier.label}
+        cs.metadata.find {it.namespace == testMetadata.namespace}
+        cs.rules.find {it.name == testRule.name}
+        cs.semanticLinks.find {it.targetMultiFacetAwareItemId == testSemanticLink.targetMultiFacetAwareItemId}
+        cs.semanticLinks.find {it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType}
+        cs.referenceFiles.find {it.fileName == testReferenceFile.fileName}
     }
 }

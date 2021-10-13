@@ -276,7 +276,6 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         verifyJsonResponse CREATED, getExpectedShowJson()
             .replaceFirst(/"label": "Functional Test Model",/, '"label": "Functional Test Terminology reader",')
 
-
         when:
         GET("$id/semanticLinks", STRING_ARG)
 
@@ -564,7 +563,6 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         cleanUpData()
     }
 
-
     void 'VB02 : test creating a main branch model version finalising and then creating another main branch of a DataModel'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
@@ -848,7 +846,6 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         verifyResponse(OK, response)
         List<String> branchedTermIds = responseBody().items.collect {it.id}
         !branchedTermIds.any {it in finalisedTermIds}
-
 
         when:
         Map<String, String> terms = responseBody().items.collectEntries {[it.code, it.id]}
@@ -1204,7 +1201,6 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
             ]
         ]
 
-
         PUT("$mergeData.source/mergeInto/$mergeData.target", requestBody)
 
         then:
@@ -1293,7 +1289,6 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         builder.cleanupTestMergeData mergeData
     }
 
-
     void 'MI04 : test merging into into draft model new style'() {
         given:
         TestMergeData mergeData = builder.buildComplexTerminologyModelsForMerging(folderId.toString())
@@ -1319,7 +1314,6 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         verifyResponse OK, response
         responseBody().id == mergeData.target
         responseBody().description == 'DescriptionLeft'
-
 
         when:
         GET("$mergeData.target/terms")
@@ -1814,7 +1808,6 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         String expected = new String(loadTestFile('simpleTerminology')).replaceFirst('"exportedBy": "Admin User",',
                                                                                      '"exportedBy": "Unlogged User",')
 
-
         expect:
         id
 
@@ -1827,7 +1820,6 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         cleanup:
         cleanUpData(id)
     }
-
 
     void 'IM04: test importing simple test Terminology'() {
         when:

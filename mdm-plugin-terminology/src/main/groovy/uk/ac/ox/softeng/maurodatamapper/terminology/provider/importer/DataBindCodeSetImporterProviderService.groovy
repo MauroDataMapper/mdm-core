@@ -28,8 +28,7 @@ import groovy.util.logging.Slf4j
 import org.springframework.core.GenericTypeResolver
 
 @Slf4j
-abstract class DataBindCodeSetImporterProviderService<T extends CodeSetFileImporterProviderServiceParameters> extends
-    CodeSetImporterProviderService<T> {
+abstract class DataBindCodeSetImporterProviderService<T extends CodeSetFileImporterProviderServiceParameters> extends CodeSetImporterProviderService<T> {
 
     abstract CodeSet importCodeSet(User currentUser, byte[] content)
 

@@ -16,7 +16,7 @@
         </mdm:authority>
         <mdm:termPaths>
             <mdm:termPath>te:Simple Unknown Terminology|tm:STT01: Simple Test Term 01</mdm:termPath>
-        </mdm:termPaths>        
+        </mdm:termPaths>
     </mdm:codeSet>
     <exp:exportMetadata>
       <exp:exportedBy>Admin User</exp:exportedBy>

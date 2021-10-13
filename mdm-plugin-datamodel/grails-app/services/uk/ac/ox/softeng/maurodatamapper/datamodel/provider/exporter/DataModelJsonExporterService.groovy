@@ -56,11 +56,11 @@ class DataModelJsonExporterService extends DataModelExporterProviderService impl
     @Override
     ByteArrayOutputStream exportDataModel(User currentUser, DataModel dataModel) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel new ExportModel(dataModel, 'dataModel', version, exportMetadata), fileType
+        exportModel(new ExportModel(dataModel, 'dataModel', version, exportMetadata), fileType)
     }
 
     @Override
-    ByteArrayOutputStream exportDataModels(User currentUser, List<DataModel> dataModel) throws ApiException {
+    ByteArrayOutputStream exportDataModels(User currentUser, List<DataModel> dataModels) throws ApiException {
         throw new ApiBadRequestException('JES01', "${getName()} cannot export multiple DataModels")
     }
 }

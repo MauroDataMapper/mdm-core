@@ -124,7 +124,6 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         md.key == 'SCTSImport'
         md.value == '0.1'
         md.multiFacetAwareItemId == dm.dataClasses.find {it.label == 'content'}.id
-
     }
 
     void 'F01 : test import as finalised'() {
@@ -146,7 +145,6 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
 
         cleanup:
         basicParameters.finalised = false
-
     }
 
     void 'F02 : test import as finalised when already imported as finalised'() {
@@ -164,7 +162,6 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
 
         cleanup:
         basicParameters.finalised = false
-
     }
 
     void 'F03 : test import as finalised when already imported as not finalised'() {
@@ -247,7 +244,6 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
 
         cleanup:
         basicParameters.importAsNewBranchModelVersion = false
-
     }
 
     void 'MV02 : test import as newBranchModelVersion with existing finalised model'() {
@@ -272,7 +268,6 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
 
         cleanup:
         basicParameters.importAsNewBranchModelVersion = false
-
     }
 
     void 'MV03 : test import as newBranchModelVersion with existing non-finalised model'() {
@@ -299,7 +294,6 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
 
         cleanup:
         basicParameters.importAsNewBranchModelVersion = false
-
     }
 
     void 'MV04 : test import as finalised and newBranchModelVersion with no existing model'() {
@@ -321,7 +315,6 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         cleanup:
         basicParameters.finalised = false
         basicParameters.importAsNewBranchModelVersion = false
-
     }
 
     void 'MV05 : test import as finalised and newBranchModelVersion with existing finalised model'() {
@@ -346,7 +339,6 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         cleanup:
         basicParameters.importAsNewBranchModelVersion = false
         basicParameters.finalised = false
-
     }
 
     void 'MV06 : test import as finalised and newBranchModelVersion with existing non-finalised model'() {
@@ -375,7 +367,6 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         cleanup:
         basicParameters.importAsNewBranchModelVersion = false
         basicParameters.finalised = false
-
     }
 
     void 'PG01 : test propagatingCatalogueItemElements'() {

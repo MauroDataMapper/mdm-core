@@ -353,7 +353,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
             it.title == "CHANGENOTICE" && it.description == "Functional Test Change Notice"
         }
 
-
         cleanup:
         cleanUpData(id)
     }
@@ -406,7 +405,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         then:
         verifyJsonResponse CREATED, getExpectedShowJson()
             .replaceFirst(/"label": "Functional Test Model",/, '"label": "Functional Test DataModel reader",')
-
 
         when:
         GET("$id/semanticLinks", STRING_ARG)
@@ -752,7 +750,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanup:
         cleanUpData()
     }
-
 
     void 'VB02 : test creating a main branch model version finalising and then creating another main branch of a DataModel'() {
         given: 'finalised model is created'
@@ -1198,7 +1195,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         PUT(source, [aliases: ['not main branch', 'mergeInto']])
         verifyResponse OK, response
 
-
         when:
         GET("$source/mergeDiff/$target?isLegacy=false", STRING_ARG)
         log.warn('{}', jsonResponseBody())
@@ -1438,7 +1434,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                 ]
             ]
         ]
-
 
         PUT("$mergeData.source/mergeInto/$mergeData.target", requestBody)
 
@@ -1742,7 +1737,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                 ]
             ]
         ]
-
 
         PUT("$source/mergeInto/$target", requestBody)
 
@@ -2166,7 +2160,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse CREATED, response
         String source = responseBody().id
         PUT(source, [aliases: ['not main branch', 'mergeInto']])
-
 
         when:
         GET("$source/mergeDiff/$target?isLegacy=false")
@@ -2695,7 +2688,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanup:
         cleanUpData(id)
     }
-
 
     void 'I04 : test import basic DataModel as new main branch model version with another branch version that exists'() {
         given:
@@ -3791,7 +3783,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(simpleDataModelId)
     }
 
-
     void 'test searching for label "emptyclass" in complex model'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/2.0', [
@@ -3986,13 +3977,11 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse CREATED, response
         String importableId = responseBody().id
 
-
         when: 'importing importable id'
         PUT("$id/dataTypes/$finalisedId/$importableId", [:])
 
         then:
         verifyResponse OK, response
-
 
         when: 'removing non-existent'
         DELETE("$id/dataTypes/$finalisedId/${UUID.randomUUID()}", [:])
@@ -4213,7 +4202,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         DataClass dataClass = DataClass.byDataModelId(Utils.toUuid(simpleDataModelId)).eq('label', 'simple').find()
         assert dataClass
 
-
         POST("${simpleDataModelId}/dataTypes", [
             domainType: 'PrimitiveType',
             label     : 'string'
@@ -4244,7 +4232,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse CREATED, response
     }
 
-
     void 'LS01 : test get link suggestions for a model with no data elements in the target'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/2.0', [
@@ -4272,7 +4259,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         ])
         verifyResponse CREATED, response
         String simpleDataModelId = response.body().items[0].id
-
 
         expect:
         complexDataModelId
@@ -4987,7 +4973,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
   ]
 }'''
     }
-
 
     String getExpectedMergeDiffJson() {
         '''{

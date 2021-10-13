@@ -27,8 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.
 import groovy.util.logging.Slf4j
 
 @Slf4j
-class CodeSetJsonImporterService extends DataBindCodeSetImporterProviderService<CodeSetFileImporterProviderServiceParameters> 
-    implements JsonImportMapping {
+class CodeSetJsonImporterService extends DataBindCodeSetImporterProviderService<CodeSetFileImporterProviderServiceParameters> implements JsonImportMapping {
 
     @Override
     String getDisplayName() {
@@ -51,6 +50,6 @@ class CodeSetJsonImporterService extends DataBindCodeSetImporterProviderService<
         if (!codeSet) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as codeSet is not present')
 
         log.debug('Importing CodeSet map')
-        bindMapToCodeSet currentUser, new HashMap(codeSet)
+        bindMapToCodeSet(currentUser, new HashMap(codeSet))
     }
 }

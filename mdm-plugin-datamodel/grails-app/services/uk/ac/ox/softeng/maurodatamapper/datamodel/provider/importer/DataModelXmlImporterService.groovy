@@ -30,14 +30,13 @@ import groovy.util.slurpersupport.GPathResult
 import groovy.util.slurpersupport.NodeChild
 import org.springframework.core.io.Resource
 
-import java.nio.charset.Charset
 import javax.xml.XMLConstants
 import javax.xml.transform.stream.StreamSource
 import javax.xml.validation.SchemaFactory
+import java.nio.charset.Charset
 
 @Slf4j
-class DataModelXmlImporterService extends DataBindDataModelImporterProviderService<DataModelFileImporterProviderServiceParameters> 
-    implements XmlImportMapping {
+class DataModelXmlImporterService extends DataBindDataModelImporterProviderService<DataModelFileImporterProviderServiceParameters> implements XmlImportMapping {
 
     AssetResourceLocator assetResourceLocator
 
@@ -70,7 +69,7 @@ class DataModelXmlImporterService extends DataBindDataModelImporterProviderServi
         Map map = convertToMap(result)
 
         log.debug('Importing DataModel map')
-        bindMapToDataModel currentUser, backwardsCompatibleExtractDataModelMap(result, map)
+        bindMapToDataModel(currentUser, backwardsCompatibleExtractDataModelMap(result, map))
     }
 
     @Override
@@ -94,7 +93,7 @@ class DataModelXmlImporterService extends DataBindDataModelImporterProviderServi
             // Handle single DM map or exportModel being passed to this method
             Map map = convertToMap(result)
             log.debug('Importing DataModel map')
-            imported += bindMapToDataModel currentUser, backwardsCompatibleExtractDataModelMap(result, map)
+            imported += bindMapToDataModel(currentUser, backwardsCompatibleExtractDataModelMap(result, map))
         }
 
         imported
@@ -115,7 +114,6 @@ class DataModelXmlImporterService extends DataBindDataModelImporterProviderServi
     }
 
     String validateXml(String xml) {
-
         Resource xsdResource = assetResourceLocator.findAssetForURI("dataModel_${version}.xsd")
 
         def factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)

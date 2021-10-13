@@ -26,7 +26,7 @@
                 <mdm:value>mdv1</mdm:value>
                 <mdm:lastUpdated>2020-08-20T15:37:20.985Z</mdm:lastUpdated>
             </mdm:metadata>
-        </mdm:metadata>          
+        </mdm:metadata>
         <mdm:author>Test Author</mdm:author>
         <mdm:organisation>Test Organisation</mdm:organisation>
         <mdm:documentationVersion>1.0.0</mdm:documentationVersion>

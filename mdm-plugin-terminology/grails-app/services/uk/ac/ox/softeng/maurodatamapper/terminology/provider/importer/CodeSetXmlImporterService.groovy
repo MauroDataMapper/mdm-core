@@ -61,6 +61,6 @@ class CodeSetXmlImporterService extends DataBindCodeSetImporterProviderService<C
         Map map = convertToMap(result)
 
         log.debug('Importing CodeSet map')
-        bindMapToCodeSet currentUser, map.codeSet as Map
+        bindMapToCodeSet(currentUser, map.codeSet as Map)
     }
 }

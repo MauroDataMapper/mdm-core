@@ -34,7 +34,7 @@ import spock.lang.Shared
  */
 @Rollback
 @Slf4j
-@SuppressWarnings("DuplicatedCode")
+@SuppressWarnings('DuplicatedCode')
 abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBindTerminologyImporterProviderService> extends BaseImportExportTerminologySpec {
 
     abstract K getImporterService()
@@ -82,7 +82,6 @@ abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBind
 
         then:
         thrown(ApiBadRequestException)
-
     }
 
     @Ignore
@@ -116,7 +115,6 @@ abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBind
         b
         b.definition == 'Simple Test Term 02'
         b.depth == 1
-
     }
 
     void 'I03 : test inc classifiers import'() {
@@ -134,11 +132,9 @@ abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBind
         !terminology.metadata
         terminology.classifiers.size() == 2
         !terminology.termRelationshipTypes
-
     }
 
     void 'I04 : test importing aliases'() {
-
         given:
         setupData()
 
@@ -227,7 +223,6 @@ abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBind
 
         when:
         Terminology terminology = importAndConfirm(loadTestFile('complexImport'))
-
 
         then:
         terminology.annotations.size() == 2

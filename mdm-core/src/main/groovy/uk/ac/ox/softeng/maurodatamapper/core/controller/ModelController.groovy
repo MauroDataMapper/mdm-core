@@ -662,7 +662,6 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         log.info('Multi-Model Import complete')
 
         respond loadedModels, status: CREATED, view: 'index'
-
     }
 
     def modelVersionTree() {
@@ -722,7 +721,6 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
     void serviceDeleteResource(T resource) {
         throw new ApiNotYetImplementedException('MC01', 'serviceDeleteResource')
     }
-
 
     @Override
     protected void serviceInsertResource(T resource) {

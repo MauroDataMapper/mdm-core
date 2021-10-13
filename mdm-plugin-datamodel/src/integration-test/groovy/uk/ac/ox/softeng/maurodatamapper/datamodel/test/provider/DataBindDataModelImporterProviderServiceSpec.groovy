@@ -21,10 +21,6 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
-import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
-import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FileParameter
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
@@ -48,7 +44,7 @@ import spock.lang.Shared
  */
 @Rollback
 @Slf4j
-@SuppressWarnings("DuplicatedCode")
+@SuppressWarnings('DuplicatedCode')
 abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDataModelImporterProviderService> extends BaseImportExportSpec {
 
     abstract K getImporterService()
@@ -104,7 +100,6 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
 
         then:
         thrown(ApiBadRequestException)
-
     }
 
     void 'I02 : test simple data import'() {
@@ -123,7 +118,6 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         !dm.classifiers
         !dm.dataTypes
         !dm.dataClasses
-
     }
 
     void 'I03 : test inc classifiers import'() {
@@ -142,11 +136,9 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         dm.classifiers.size() == 2
         !dm.dataTypes
         !dm.dataClasses
-
     }
 
     void 'I04 : test importing aliases'() {
-
         given:
         setupData()
 
@@ -246,7 +238,6 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         (dataType as PrimitiveType).units == 'mg'
         !dataType.annotations
         !dataType.metadata
-
     }
 
     void 'I07a : test inc single primitive type with newline data import'() {
@@ -276,7 +267,6 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         (dataType as PrimitiveType).units == 'mg'
         !dataType.annotations
         !dataType.metadata
-
     }
 
     void 'I08 : test inc single primitive type with metadata data import'() {
@@ -316,7 +306,6 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         md.key == 'SCTSImport'
         md.value == '0.1'
         md.multiFacetAwareItemId == dataType.id
-
     }
 
     void 'I09 : test inc single primitive type with annotation data import'() {
@@ -355,7 +344,6 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         ann.description == 'http://www.datadictionary.nhs.uk/data_dictionary/attributes/a/at/attended_or_did_not_attend_de.asp?shownav=1'
         ann.label == 'Link to NHS Data Dictionary element'
         ann.multiFacetAwareItemId == dataType.id
-
     }
 
     void 'I10 : test inc single enumeration type data import'() {
@@ -403,7 +391,6 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         !val2.metadata
         !val1.annotations
         !val2.annotations
-
     }
 
     void 'I11 : test inc single enumeration type with metadata data import'() {
@@ -494,7 +481,6 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         and:
         dataClass.breadcrumbTree.domainId == dataClass.id
         dataClass.breadcrumbTree.parent.domainId == dm.id
-
     }
 
     void 'I13 : test inc single empty dataclass with metadata data import'() {
@@ -541,7 +527,6 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         md.key == 'SCTSImport'
         md.value == '0.1'
         md.multiFacetAwareItemId == dataClass.id
-
     }
 
     void 'I14 : test inc single empty dataclass with annotation data import'() {
@@ -587,7 +572,6 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         ann.description == 'http://www.datadictionary.nhs.uk/data_dictionary/attributes/a/at/attended_or_did_not_attend_de.asp?shownav=1'
         ann.label == 'Link to NHS Data Dictionary element'
         ann.multiFacetAwareItemId == dataClass.id
-
     }
 
     void 'I15 : test inc single dataclass with empty child dataclass data import'() {
@@ -640,7 +624,6 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         child.breadcrumbTree.domainId == child.id
         child.breadcrumbTree.parent.domainId == dataClass.id
         child.breadcrumbTree.parent.parent.domainId == dm.id
-
     }
 
     void 'I16 : test inc single dataclass with data element type data import'() {
@@ -713,7 +696,6 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         dataElement.breadcrumbTree.domainId == dataElement.id
         dataElement.breadcrumbTree.parent.domainId == dataClass.id
         dataElement.breadcrumbTree.parent.parent.domainId == dm.id
-
     }
 
     void 'I17 : test inc dataclass with data element and reference datatype data import'() {
@@ -797,7 +779,6 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         dataElement.breadcrumbTree.domainId == dataElement.id
         dataElement.breadcrumbTree.parent.domainId == dataClass.id
         dataElement.breadcrumbTree.parent.parent.domainId == dm.id
-
     }
 
     void 'I18 : test load datamodel with datatypes'() {
