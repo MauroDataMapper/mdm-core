@@ -50,6 +50,15 @@ abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBind
 
     abstract K getImporterService()
 
+    void cleanupParameters() {
+        basicParameters.tap {
+            importAsNewBranchModelVersion = false
+            importAsNewDocumentationVersion = false
+            finalised = false
+            propagateFromPreviousVersion = false
+        }
+    }
+
     Terminology importAndSave(byte[] bytes) {
         log.trace('Importing:\n {}', new String(bytes))
 

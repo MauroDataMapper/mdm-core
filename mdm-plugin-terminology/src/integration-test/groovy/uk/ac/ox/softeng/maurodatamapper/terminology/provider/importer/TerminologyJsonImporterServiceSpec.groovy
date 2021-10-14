@@ -131,6 +131,9 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
         term.semanticLinks.find {it.targetMultiFacetAwareItemId == testSemanticLink.targetMultiFacetAwareItemId}
         term.semanticLinks.find {it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType}
         term.referenceFiles.find {it.fileName == testReferenceFile.fileName}
+
+        cleanup:
+        cleanupParameters()
     }
 
     void 'PG02 : test propagating child content'() {
@@ -197,5 +200,8 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
 
         then: 'description is not overwritten as it was included in the import'
         term.description == 'Example of truncated term label when code and definition are the same'
+
+        cleanup:
+        cleanupParameters()
     }
 }
