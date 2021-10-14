@@ -63,6 +63,15 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
 
     abstract K getImporterService()
 
+    void cleanupParameters() {
+        basicParameters.tap {
+            importAsNewBranchModelVersion = false
+            importAsNewDocumentationVersion = false
+            finalised = false
+            propagateFromPreviousVersion = false
+        }
+    }
+
     DataModel importModel(byte[] bytes) {
         log.trace('Importing:\n {}', new String(bytes))
         basicParameters.importFile = new FileParameter(fileContents: bytes)

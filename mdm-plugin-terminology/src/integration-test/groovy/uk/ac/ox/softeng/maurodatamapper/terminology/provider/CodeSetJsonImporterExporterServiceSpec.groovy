@@ -92,6 +92,15 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         'json'
     }
 
+    void cleanupParameters() {
+        basicParameters.tap {
+            importAsNewBranchModelVersion = false
+            importAsNewDocumentationVersion = false
+            finalised = false
+            propagateFromPreviousVersion = false
+        }
+    }
+
     void validateExportedModel(String testName, String exportedModel) {
         assert exportedModel, 'There must be an exported model string'
 
@@ -617,5 +626,8 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         cs.semanticLinks.find {it.targetMultiFacetAwareItemId == testSemanticLink.targetMultiFacetAwareItemId}
         cs.semanticLinks.find {it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType}
         cs.referenceFiles.find {it.fileName == testReferenceFile.fileName}
+
+        cleanup:
+        cleanupParameters()
     }
 }

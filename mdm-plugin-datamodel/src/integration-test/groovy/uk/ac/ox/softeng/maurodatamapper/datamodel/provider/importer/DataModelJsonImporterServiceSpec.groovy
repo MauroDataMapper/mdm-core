@@ -487,6 +487,8 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         SummaryMetadata foundDataTypeSummaryMetadata = dt.summaryMetadata.find {it.label == dataTypeSummaryMetadata.label}
         foundDataTypeSummaryMetadata.summaryMetadataReports.size() == 1
 
+        cleanup:
+        cleanupParameters()
     }
 
     void 'PG02 : test importing a dataModel making sure model items arent propagated'() {
@@ -530,6 +532,9 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         then:
         !dm.dataClasses.find {it.label == dataClass.label}
         dm.description == 'Some interesting thing we should preserve'
+
+        cleanup:
+        cleanupParameters()
     }
 
     void 'PG03 : test propagating child content'() {
@@ -596,5 +601,8 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
 
         then: 'description is not overwritten as it was included in the import'
         dataClass.description == 'A dataclass with elements'
+
+        cleanup:
+        cleanupParameters()
     }
 }
