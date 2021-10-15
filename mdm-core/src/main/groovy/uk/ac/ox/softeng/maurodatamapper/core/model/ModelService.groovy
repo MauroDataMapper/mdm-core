@@ -42,6 +42,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
@@ -1058,5 +1059,10 @@ abstract class ModelService<K extends Model>
         K previousVersionModel = findLatestFinalisedModelByLabel(model.label)
         if (previousVersionModel) propagateDataFromPreviousVersion(model, previousVersionModel)
         else log.warn('Requested propagation from previous vresion but no predecessor exists')
+    }
+
+    @Override
+    boolean isMultiFacetAwareFinalised(K multiFacetAwareItem) {
+        multiFacetAwareItem.finalised
     }
 }

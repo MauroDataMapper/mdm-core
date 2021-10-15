@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFileService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.RuleService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
@@ -133,5 +134,10 @@ abstract class ContainerService<K extends Container> implements SecurableResourc
         }
 
         domain.label = "${defaultLabel} (${++lastNum})"
+    }
+
+    @Override
+    boolean isMultiFacetAwareFinalised(K multiFacetAwareItem) {
+        false
     }
 }

@@ -74,9 +74,8 @@ class ProfileService {
     }
 
     MultiFacetAware storeProfile(ProfileProviderService profileProviderService, MultiFacetAware multiFacetAwareItem, Profile profileToStore, User user) {
-        profileProviderService.storeProfileInEntity(multiFacetAwareItem, profileToStore, user)
-        MultiFacetAwareService service = multiFacetAwareServices.find {it.handles(multiFacetAwareItem.domainType)}
-        if (!service) throw new ApiBadRequestException('CIAS02', "Facet retrieval for catalogue item [${multiFacetAwareItem.domainType}] with no supporting service")
+        MultiFacetAwareService service = findServiceForMultiFacetAwareDomainType(multiFacetAwareItem.domainType)
+        profileProviderService.storeProfileInEntity(multiFacetAwareItem, profileToStore, user, service.isMultiFacetAwareFinalised(multiFacetAwareItem))
         service.save(flush: true, validate: false, multiFacetAwareItem)
     }
 
@@ -126,10 +125,18 @@ class ProfileService {
         new PaginatedResultList<>(profiles, pagination)
     }
 
-    MultiFacetAware findMultiFacetAwareItemByDomainTypeAndId(String domainType, UUID multiFacetAwareItemId) {
+    MultiFacetAwareService findServiceForMultiFacetAwareDomainType(String domainType) {
         MultiFacetAwareService service = multiFacetAwareServices.find {it.handles(domainType)}
-        if (!service) throw new ApiBadRequestException('CIAS02', "Facet retrieval for catalogue item [${domainType}] with no supporting service")
-        service.get(multiFacetAwareItemId)
+        if (!service) throw new ApiBadRequestException('PS01', "No supporting service for ${domainType}")
+        return service
+    }
+
+    MultiFacetAware findMultiFacetAwareItemByDomainTypeAndId(String domainType, UUID multiFacetAwareItemId) {
+        findServiceForMultiFacetAwareDomainType(domainType).get(multiFacetAwareItemId)
+    }
+
+    boolean isMultiFacetAwareFinalised(MultiFacetAware multiFacetAwareItem) {
+        findServiceForMultiFacetAwareDomainType(multiFacetAwareItem.domainType).isMultiFacetAwareFinalised(multiFacetAwareItem)
     }
 
     Set<String> getUsedNamespaces(MultiFacetAware multiFacetAwareItem) {

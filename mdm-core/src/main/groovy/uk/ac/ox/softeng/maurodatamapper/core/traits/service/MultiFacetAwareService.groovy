@@ -66,6 +66,8 @@ trait MultiFacetAwareService<K extends MultiFacetAware> {
 
     abstract List<K> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination = [:])
 
+    abstract boolean isMultiFacetAwareFinalised (K multiFacetAwareItem)
+
     void removeMetadataFromMultiFacetAware(UUID multiFacetAwareId, Metadata metadata) {
         removeFacetFromDomain(multiFacetAwareId, metadata.id, 'metadata')
     }

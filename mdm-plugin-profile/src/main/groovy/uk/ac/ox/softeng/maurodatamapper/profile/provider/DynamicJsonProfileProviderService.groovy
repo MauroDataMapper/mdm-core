@@ -77,8 +77,7 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
 
     @Override
     JsonProfile getNewProfile() {
-        log.debug("Creating new profile from Data Model {}", getProfileDataModel())
-        createProfileFromEntity(getProfileDataModel())
+        new JsonProfile(getSections())
     }
 
     @Override

@@ -1043,4 +1043,9 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     static String getModelIdentifier(VersionedFolder versionedFolder) {
         Path.from(versionedFolder).first().getModelIdentifier()
     }
+
+    @Override
+    boolean isMultiFacetAwareFinalised(VersionedFolder multiFacetAwareItem) {
+        multiFacetAwareItem.finalised
+    }
 }
