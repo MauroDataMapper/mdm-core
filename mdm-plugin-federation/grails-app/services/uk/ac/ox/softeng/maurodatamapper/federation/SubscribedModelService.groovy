@@ -28,9 +28,14 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FileParameter
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
+import uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter.DataFlowJsonExporterService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter.DataModelJsonExporterService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.ReferenceDataJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.CodeSetJsonExporterService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.TerminologyJsonExporterService
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
@@ -50,6 +55,21 @@ class SubscribedModelService {
 
     @Autowired(required = false)
     SecurityPolicyManagerService securityPolicyManagerService
+
+    @Autowired(required = false)
+    DataModelJsonExporterService dataModelJsonExporterService
+
+    @Autowired(required = false)
+    ReferenceDataJsonExporterService referenceDataJsonExporterService
+
+    @Autowired(required = false)
+    CodeSetJsonExporterService codeSetJsonExporterService
+
+    @Autowired(required = false)
+    TerminologyJsonExporterService terminologyJsonExporterService
+
+    @Autowired(required = false)
+    DataFlowJsonExporterService dataFlowJsonExporterService
 
     SubscribedModel get(Serializable id) {
         SubscribedModel.get(id)
@@ -277,7 +297,12 @@ class SubscribedModelService {
         List<Map<String, Object>> exporters = subscribedCatalogueService.getAvailableExportersForResourceType(subscribedCatalogue, urlModelType)
 
         //Find a json exporter
-        Map exporterMap = exporters.find {it.name == 'DataModelJsonExporterService'}
+        Map exporterMap =
+            exporters
+                .find {
+                    it.name in [dataModelJsonExporterService.name, referenceDataJsonExporterService.name, codeSetJsonExporterService.name, terminologyJsonExporterService
+                        .name, dataFlowJsonExporterService.name].findAll {it}
+                }
 
         //Can't use DataBindingUtils because of a clash with grails 'version' property
         if (!exporterMap) {

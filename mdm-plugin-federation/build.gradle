@@ -131,6 +131,10 @@ grailsPublish {
 grails {
     plugins {
         compile project(':mdm-core')
+        compile project(':mdm-plugin-datamodel')
+        compile project(':mdm-plugin-referencedata')
+        compile project(':mdm-plugin-terminology')
+        compile project(':mdm-plugin-dataflow')
     }
 }
 
