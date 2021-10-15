@@ -387,7 +387,6 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         DataModel copyModel = new DataModel(label: 'test', createdByUser: editor, folder: testFolder, authority: testAuthority)
 
-
         DataClass top = new DataClass(createdByUser: reader1, label: 'Top', minMultiplicity: 1, maxMultiplicity: 1)
 
         Metadata metadata = new Metadata(namespace: 'Test', key: 'key', value: '1')
@@ -405,7 +404,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         DataModel dm = DataModel.get(copyModel.id)
-        dm.dataClasses[0].metadata.size() == 1
+        dm.dataClasses.find {it.label == 'Top'}.metadata.size() == 1
     }
 
     void 'test copying complex dataclass'() {
