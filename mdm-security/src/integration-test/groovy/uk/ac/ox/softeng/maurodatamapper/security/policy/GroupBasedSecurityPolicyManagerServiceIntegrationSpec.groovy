@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security.policy
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
@@ -40,6 +40,7 @@ class GroupBasedSecurityPolicyManagerServiceIntegrationSpec extends BaseIntegrat
     GroupRole editorRole
     Folder folder2
     UserGroup appAdmins
+    Classifier classifier
 
     GroupBasedSecurityPolicyManagerService groupBasedSecurityPolicyManagerService
     GroupRoleService groupRoleService
@@ -68,6 +69,9 @@ class GroupBasedSecurityPolicyManagerServiceIntegrationSpec extends BaseIntegrat
         folder2 = new Folder(label: 'catalogue_2', createdBy: userEmailAddresses.integrationTest)
         checkAndSave(folder2)
 
+        classifier = new Classifier(label: 'classifier', createdBy: userEmailAddresses.integrationTest)
+        checkAndSave(classifier)
+
         checkAndSave(new SecurableResourceGroupRole(securableResource: folder,
                                                     userGroup: editors,
                                                     groupRole: groupRoleService.getFromCache(GroupRole.EDITOR_ROLE_NAME).groupRole,
@@ -85,7 +89,12 @@ class GroupBasedSecurityPolicyManagerServiceIntegrationSpec extends BaseIntegrat
                                                     groupRole: groupRoleService.getFromCache(GroupRole.AUTHOR_ROLE_NAME).groupRole,
                                                     createdBy: userEmailAddresses.integrationTest))
 
-        assert SecurableResourceGroupRole.count() == 4
+        checkAndSave(new SecurableResourceGroupRole(securableResource: classifier,
+                                                    userGroup: editors,
+                                                    groupRole: groupRoleService.getFromCache(GroupRole.EDITOR_ROLE_NAME).groupRole,
+                                                    createdBy: userEmailAddresses.integrationTest))
+
+        assert SecurableResourceGroupRole.count() == 5
     }
 
     void 'T01 : test building user security policy manager for editor'() {
@@ -105,8 +114,8 @@ class GroupBasedSecurityPolicyManagerServiceIntegrationSpec extends BaseIntegrat
         policy.user.id == editor.id
         policy.userGroups.size() == 1
         policy.applicationPermittedRoles.size() == 0
-        policy.securableResourceGroupRoles.size() == 2
-        policy.virtualSecurableResourceGroupRoles.size() == 10
+        policy.securableResourceGroupRoles.size() == 3
+        policy.virtualSecurableResourceGroupRoles.size() == 14
 
         when:
         Set<VirtualSecurableResourceGroupRole> folderRoles = policy.virtualSecurableResourceGroupRoles.findAll {it.domainId == folder.id}
@@ -151,7 +160,7 @@ class GroupBasedSecurityPolicyManagerServiceIntegrationSpec extends BaseIntegrat
         policy.userGroups.size() == 4
         policy.applicationPermittedRoles.size() == 5
         policy.securableResourceGroupRoles.size() == 1
-        policy.virtualSecurableResourceGroupRoles.size() == 93
+        policy.virtualSecurableResourceGroupRoles.size() == 99
 
         when:
         Set<VirtualSecurableResourceGroupRole> folderRoles = policy.virtualSecurableResourceGroupRoles.findAll {it.domainId == folder.id}
@@ -209,7 +218,7 @@ class GroupBasedSecurityPolicyManagerServiceIntegrationSpec extends BaseIntegrat
         policy.userGroups.size() == 4
         policy.applicationPermittedRoles.size() == 5
         policy.securableResourceGroupRoles.size() == 1
-        policy.virtualSecurableResourceGroupRoles.size() == 93
+        policy.virtualSecurableResourceGroupRoles.size() == 99
 
         when:
         Set<VirtualSecurableResourceGroupRole> folderRoles = policy.virtualSecurableResourceGroupRoles.findAll {it.domainId == folder.id}
@@ -254,5 +263,39 @@ class GroupBasedSecurityPolicyManagerServiceIntegrationSpec extends BaseIntegrat
         and:
         // 6 groups
         groupRoles.size() == 30
+    }
+
+    void 'T04 : test building user security policy manager for editor and classifier'() {
+        // The Editor is in the editor user group and this has an editor role on classifier
+        // Therefore, editor should have the editor and below roles on classifier
+        // and can edit a classifier
+        given:
+        setupData()
+
+        when:
+        def policy = groupBasedSecurityPolicyManagerService.buildUserSecurityPolicyManager(editor)
+
+        then:
+        policy
+
+        and:
+        policy.user.id == editor.id
+        policy.userGroups.size() == 1
+        policy.applicationPermittedRoles.size() == 0
+        policy.securableResourceGroupRoles.size() == 3
+        policy.virtualSecurableResourceGroupRoles.size() == 14
+
+        and:
+        policy.userCanEditSecuredResourceId(classifier.class, classifier.id) == true
+
+        when:
+        Set<VirtualSecurableResourceGroupRole> classifierRoles = policy.virtualSecurableResourceGroupRoles.findAll {it.domainId == classifier.id}
+
+        then:
+        classifierRoles.size() == 4
+        classifierRoles.any {it.groupRole.name == 'editor'}
+        classifierRoles.any {it.groupRole.name == 'reader'}
+        classifierRoles.any {it.groupRole.name == 'author'}
+        classifierRoles.any {it.groupRole.name == 'reviewer'}
     }
 }

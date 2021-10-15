@@ -398,8 +398,8 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         if (Utils.parentClassIsAssignableFromChild(Container, securableResourceClass)) {
             // If no id then its a top level container and therefore anyone who's logged in can create
             if (!id) return isAuthenticated()
-            if (action in [SAVE_ACTION, SOFT_DELETE_ACTION, SAVE_IGNORE_FINALISE]) {
-                // Editors can save new folders and models and SOFT DELETE
+            if (action in [SAVE_ACTION, UPDATE_ACTION, SOFT_DELETE_ACTION, SAVE_IGNORE_FINALISE]) {
+                    // Editors can save new folders and models and SOFT DELETE
                 return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
             }
             return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, CONTAINER_ADMIN_ROLE_NAME)
