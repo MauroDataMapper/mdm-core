@@ -36,7 +36,7 @@ class OffsetDateTimeBridge implements StringBridge {
     @Override
     String objectToString(Object object) {
         if (object instanceof OffsetDateTime) {
-            return ((OffsetDateTime) object).format(dtf)
+            return ((OffsetDateTime) object).toLocalDate().format(dtf)
         }
         logger.error('Bridge set up to convert object of type {} but it is not an OffsetDateTime', object.getClass())
         return null
