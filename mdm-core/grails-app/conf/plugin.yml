@@ -101,10 +101,18 @@ hibernate:
         batch_size: 30
     order_inserts: true
     order_updates: true
-
+grails:
+    plugins:
+        hibernatesearch:
+            rebuildOnStart: true
 environments:
     development:
         grails:
             views:
                 markup:
                     cacheTemplates: false
+    production:
+        grails:
+            plugins:
+                hibernatesearch:
+                    rebuildOnStart: false
