@@ -46,4 +46,15 @@ class MetadataController extends FacetController<Metadata> {
         metadataService.validate(instance)
         super.validateResource(instance, view)
     }
+
+    @Override
+    protected Metadata updateResource(Metadata resource) {
+        List<String> dirtyPropertyNames = resource.getDirtyPropertyNames()
+        metadataService.updateMultiFacetAwareItemIndex(resource)
+        resource.save flush: true, validate: false
+        getFacetService().addUpdatedEditToMultiFacetAwareItem(currentUser, resource,
+                                                              params[getOwnerDomainTypeField()],
+                                                              params[getOwnerIdField()],
+                                                              dirtyPropertyNames)
+    }
 }

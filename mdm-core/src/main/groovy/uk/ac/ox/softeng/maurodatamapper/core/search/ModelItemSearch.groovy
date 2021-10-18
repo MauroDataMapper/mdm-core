@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.core.search
 
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
-import uk.ac.ox.softeng.maurodatamapper.search.PathTokenizerAnalyzer
 
 /**
  * @since 05/03/2020
@@ -27,6 +26,6 @@ class ModelItemSearch {
 
     static search = {
         CallableSearch.call(StandardSearch, delegate)
-        path index: 'yes', analyzer: PathTokenizerAnalyzer
+        path searchable: 'yes', analyzer: 'path'
     }
 }

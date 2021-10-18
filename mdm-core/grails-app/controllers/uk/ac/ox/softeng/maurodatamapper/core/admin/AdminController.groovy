@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.admin
 
-import uk.ac.ox.softeng.maurodatamapper.core.hibernate.search.LuceneIndexingService
+import uk.ac.ox.softeng.maurodatamapper.core.hibernate.search.HibernateSearchIndexingService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.LuceneIndexParameters
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.ResourcelessMdmController
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -29,13 +29,13 @@ import static org.springframework.http.HttpStatus.OK
 class AdminController implements ResourcelessMdmController {
 
     AdminService adminService
-    LuceneIndexingService luceneIndexingService
+    HibernateSearchIndexingService hibernateSearchIndexingService
 
     static responseFormats = ['json', 'xml']
 
     def rebuildLuceneIndexes(LuceneIndexParameters indexParameters) {
         long start = System.currentTimeMillis()
-        luceneIndexingService.rebuildLuceneIndexes(indexParameters)
+        hibernateSearchIndexingService.rebuildLuceneIndexes(indexParameters)
         long end = System.currentTimeMillis()
 
         Map info = [

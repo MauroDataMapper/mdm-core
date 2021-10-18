@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.test.integration
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.hibernate.search.LuceneIndexingService
+import uk.ac.ox.softeng.maurodatamapper.core.hibernate.search.HibernateSearchIndexingService
 import uk.ac.ox.softeng.maurodatamapper.test.MdmSpecification
 import uk.ac.ox.softeng.maurodatamapper.test.unit.security.IdSecuredUserSecurityPolicyManager
 
@@ -41,7 +41,7 @@ abstract class BaseIntegrationSpec extends MdmSpecification {
     SessionFactory sessionFactory
 
     @Autowired
-    LuceneIndexingService luceneIndexingService
+    HibernateSearchIndexingService hibernateSearchIndexingService
 
     UUID id
 
@@ -52,7 +52,7 @@ abstract class BaseIntegrationSpec extends MdmSpecification {
     void setupData() {
 
         // Remove any indexes which currently exist from previous tests
-        luceneIndexingService.purgeAllIndexes()
+        hibernateSearchIndexingService.purgeAllIndexes()
 
         preDomainDataSetup()
 
@@ -61,7 +61,7 @@ abstract class BaseIntegrationSpec extends MdmSpecification {
         postDomainDataSetup()
 
         // Flush all the new data indexes to the files
-        luceneIndexingService.flushIndexes()
+        hibernateSearchIndexingService.flushIndexes()
 
         // This log marker allows us to ignore all the inserts and DB queries in the logs prior,
         // thus allowing analysis of the SQL actioned for each test

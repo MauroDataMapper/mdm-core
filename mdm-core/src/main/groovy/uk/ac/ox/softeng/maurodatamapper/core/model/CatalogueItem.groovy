@@ -28,8 +28,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.container.CatalogueItemClassi
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
-import uk.ac.ox.softeng.maurodatamapper.search.Lucene
-import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.HibernateSearch
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 
 import grails.gorm.DetachedCriteria
 import grails.plugins.hibernate.search.HibernateSearchApi
@@ -112,11 +112,11 @@ trait CatalogueItem<D extends Diffable> implements InformationAware, EditHistory
         criteria
     }
 
-    static <T extends CatalogueItem> PaginatedLuceneResult<T> luceneStandardSearch(Class<T> clazz, String searchTerm, List<UUID> allowedIds,
-                                                                                   Map pagination,
-                                                                                   @DelegatesTo(HibernateSearchApi) Closure additional = null) {
+    static <T extends CatalogueItem> PaginatedHibernateSearchResult<T> luceneStandardSearch(Class<T> clazz, String searchTerm, List<UUID> allowedIds,
+                                                                                            Map pagination,
+                                                                                            @DelegatesTo(HibernateSearchApi) Closure additional = null) {
 
-        Lucene.securedPaginatedList(clazz, allowedIds, pagination) {
+        HibernateSearch.securedPaginatedList(clazz, allowedIds, pagination) {
             if (searchTerm) {
                 simpleQueryString(searchTerm, 'label', 'description', 'aliasesString', 'metadata.key', 'metadata.value')
             }
@@ -128,22 +128,22 @@ trait CatalogueItem<D extends Diffable> implements InformationAware, EditHistory
         }
     }
 
-    static <T extends CatalogueItem> PaginatedLuceneResult<T> luceneCustomSearch(Class<T> clazz, List<UUID> allowedIds,
-                                                                                 Map pagination,
-                                                                                 @DelegatesTo(HibernateSearchApi) Closure... customSearches) {
-        Lucene.securedPaginatedList(clazz, allowedIds, pagination, customSearches)
+    static <T extends CatalogueItem> PaginatedHibernateSearchResult<T> luceneCustomSearch(Class<T> clazz, List<UUID> allowedIds,
+                                                                                          Map pagination,
+                                                                                          @DelegatesTo(HibernateSearchApi) Closure... customSearches) {
+        HibernateSearch.securedPaginatedList(clazz, allowedIds, pagination, customSearches)
     }
 
-    static <T extends CatalogueItem> PaginatedLuceneResult<T> luceneLabelSearch(Class<T> clazz, String searchTerm,
-                                                                                List<UUID> allowedIds,
-                                                                                @DelegatesTo(HibernateSearchApi) Closure additional) {
+    static <T extends CatalogueItem> PaginatedHibernateSearchResult<T> luceneLabelSearch(Class<T> clazz, String searchTerm,
+                                                                                         List<UUID> allowedIds,
+                                                                                         @DelegatesTo(HibernateSearchApi) Closure additional) {
         luceneLabelSearch(clazz, searchTerm, allowedIds, [:], additional)
     }
 
-    static <T extends CatalogueItem> PaginatedLuceneResult<T> luceneLabelSearch(Class<T> clazz, String searchTerm, List<UUID> allowedIds,
-                                                                                Map pagination = [:],
-                                                                                @DelegatesTo(HibernateSearchApi) Closure additional = null) {
-        Lucene.securedPaginatedList(clazz, allowedIds, pagination, additional) {
+    static <T extends CatalogueItem> PaginatedHibernateSearchResult<T> luceneLabelSearch(Class<T> clazz, String searchTerm, List<UUID> allowedIds,
+                                                                                         Map pagination = [:],
+                                                                                         @DelegatesTo(HibernateSearchApi) Closure additional = null) {
+        HibernateSearch.securedPaginatedList(clazz, allowedIds, pagination, additional) {
             simpleQueryString searchTerm, 'label'
         }
     }

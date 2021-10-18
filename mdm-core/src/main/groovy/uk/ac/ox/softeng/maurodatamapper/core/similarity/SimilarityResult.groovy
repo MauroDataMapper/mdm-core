@@ -21,33 +21,59 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.SimpleType
+import org.hibernate.search.engine.search.query.SearchResult
+
+import java.time.Duration
 
 abstract class SimilarityResult<K extends CatalogueItem> {
 
     K source
 
-    // Use an ArrayList to keep the results in the correct order
-    ArrayList<SimilarityPair<K>> results
+    SearchResult<SimilarityPair<K>> searchResult
 
-    SimilarityResult(K source) {
+    SimilarityResult(K source, SearchResult<SimilarityPair<K>> searchResult) {
         this.source = source
-        results = new ArrayList<>()
+        this.searchResult = searchResult
     }
 
-    void add(K target, Float f) {
-        results.add(new SimilarityPair(target, f))
+    List<SimilarityPair<K>> getAllResults() {
+        searchResult.hits()
     }
 
-    int size() {
-        results.size()
+    List<SimilarityPair<K>> getSimilarResults() {
+        searchResult.hits().findAll {it.score > 0}
     }
 
-    def each(@DelegatesTo(List) @ClosureParams(value = SimpleType, options = 'uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityPair')
-                 Closure closure) {
-        results.each(closure)
+    int hits() {
+        searchResult.total().hitCount()
     }
+
+    int totalSimilar() {
+        similarResults.size()
+    }
+
+    Duration took() {
+        searchResult.took()
+    }
+
+    def each(@DelegatesTo(List) @ClosureParams(value = SimpleType, options = 'uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityPair') Closure closure) {
+        getAllResults().each(closure)
+    }
+
+    def find(@DelegatesTo(List) @ClosureParams(value = SimpleType, options = 'uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityPair') Closure closure) {
+        getAllResults().find(closure)
+    }
+
+    def any(@DelegatesTo(List) @ClosureParams(value = SimpleType, options = 'uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityPair') Closure closure) {
+        getAllResults().any(closure)
+    }
+
 
     SimilarityPair<K> first() {
-        results.first()
+        getSimilarResults().first()
+    }
+
+    String toString() {
+        "Similarity Result for ${source.label}\n  ${allResults.join('\n  ')}"
     }
 }

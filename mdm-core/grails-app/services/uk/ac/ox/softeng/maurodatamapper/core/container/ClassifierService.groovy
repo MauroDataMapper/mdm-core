@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
+import uk.ac.ox.softeng.maurodatamapper.core.hibernate.search.HibernateSearchIndexingService
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
@@ -38,6 +39,8 @@ class ClassifierService extends ContainerService<Classifier> {
 
     @Autowired(required = false)
     List<CatalogueItemService> catalogueItemServices
+
+    HibernateSearchIndexingService hibernateSearchIndexingService
 
     @Override
     boolean handles(Class clazz) {
@@ -325,13 +328,19 @@ class ClassifierService extends ContainerService<Classifier> {
     List<CatalogueItem> findAllReadableCatalogueItemsByClassifierId(UserSecurityPolicyManager userSecurityPolicyManager,
                                                                     UUID classifierId, Map pagination = [:]) {
         Classifier classifier = get(classifierId)
-        catalogueItemServices.collect { service ->
+        catalogueItemServices.collect {service ->
             service.findAllReadableByClassifier(userSecurityPolicyManager, classifier)
         }.findAll().flatten()
     }
 
+    void updateClassifierCatalogueItemsIndex(Classifier classifier) {
+        catalogueItemServices.each {service ->
+            hibernateSearchIndexingService.addEntitiesToIndexingPlan(service.findAllByClassifier(classifier))
+        }
+    }
+
     private void cleanoutClassifier(Classifier classifier) {
-        classifier.childClassifiers.each { cleanoutClassifier(it) }
-        catalogueItemServices.each { it.removeAllFromClassifier(classifier) }
+        classifier.childClassifiers.each {cleanoutClassifier(it)}
+        catalogueItemServices.each {it.removeAllFromClassifier(classifier)}
     }
 }

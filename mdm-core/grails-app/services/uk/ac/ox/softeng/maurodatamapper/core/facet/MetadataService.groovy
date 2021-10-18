@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
+import uk.ac.ox.softeng.maurodatamapper.core.hibernate.search.HibernateSearchIndexingService
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MetadataAware
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
@@ -40,6 +41,7 @@ class MetadataService implements MultiFacetItemAwareService<Metadata> {
 
     SessionFactory sessionFactory
     MauroDataMapperServiceProviderService mauroDataMapperServiceProviderService
+    HibernateSearchIndexingService hibernateSearchIndexingService
 
     Metadata get(Serializable id) {
         Metadata.get(id)
@@ -77,8 +79,16 @@ class MetadataService implements MultiFacetItemAwareService<Metadata> {
         if (!metadata) return
         MultiFacetAwareService multiFacetAwareItemService = findServiceForMultiFacetAwareDomainType(metadata.multiFacetAwareItemDomainType)
         multiFacetAwareItemService?.save(metadata.multiFacetAwareItem)
+        updateMultiFacetAwareItemIndex(metadata)
     }
 
+
+    void updateMultiFacetAwareItemIndex(Metadata metadata) {
+        if (!metadata.multiFacetAwareItem) {
+            metadata.multiFacetAwareItem = findMultiFacetAwareItemByDomainTypeAndId(metadata.multiFacetAwareItemDomainType, metadata.multiFacetAwareItemId)
+        }
+        hibernateSearchIndexingService.addEntityToIndexingPlan(metadata.multiFacetAwareItem)
+    }
 
     @Override
     void addFacetToDomain(Metadata facet, String domainType, UUID domainId) {

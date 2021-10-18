@@ -96,6 +96,7 @@ class ClassifierController extends EditLoggingController<Classifier> {
 
     @Override
     protected Classifier saveResource(Classifier resource) {
+        classifierService.updateClassifierCatalogueItemsIndex(resource)
         Classifier classifier = super.saveResource(resource) as Classifier
 
         if (params.catalogueItemId) {
@@ -122,6 +123,7 @@ class ClassifierController extends EditLoggingController<Classifier> {
     @Override
     protected Classifier updateResource(Classifier resource) {
         Set<String> changedProperties = resource.getDirtyPropertyNames()
+        classifierService.updateClassifierCatalogueItemsIndex(resource)
         Classifier classifier = super.updateResource(resource) as Classifier
         if (securityPolicyManagerService) {
             currentUserSecurityPolicyManager = securityPolicyManagerService.updateSecurityForSecurableResource(classifier,

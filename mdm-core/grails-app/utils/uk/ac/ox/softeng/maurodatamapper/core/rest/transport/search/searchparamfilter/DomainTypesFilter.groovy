@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter
 
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
-import uk.ac.ox.softeng.maurodatamapper.search.Lucene
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.HibernateSearch
 
 class DomainTypesFilter implements SearchParamFilter {
 
@@ -27,7 +27,7 @@ class DomainTypesFilter implements SearchParamFilter {
     }
 
     Closure getClosure(SearchParams searchParams) {
-        Lucene.defineAdditionalLuceneQuery {
+        HibernateSearch.defineAdditionalLuceneQuery {
             should {
                 searchParams.domainTypes.each {dt ->
                     keyword 'domainType', dt

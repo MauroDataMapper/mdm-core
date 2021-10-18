@@ -122,6 +122,8 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
 
     abstract void removeAllFromClassifier(Classifier classifier)
 
+    abstract List<K> findAllByClassifier(Classifier classifier)
+
     abstract List<K> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier)
 
     abstract List<K> findAllReadableTreeTypeCatalogueItemsBySearchTermAndDomain(UserSecurityPolicyManager userSecurityPolicyManager,

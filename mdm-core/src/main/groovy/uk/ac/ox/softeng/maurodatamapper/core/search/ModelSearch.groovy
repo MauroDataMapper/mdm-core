@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.search
 
-import uk.ac.ox.softeng.maurodatamapper.core.search.StandardSearch
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
 
 /**
@@ -27,6 +26,6 @@ class ModelSearch {
 
     static search = {
         CallableSearch.call(StandardSearch, delegate)
-        modelType index: 'yes'
+        modelType searchable: 'yes', analyze: false
     }
 }

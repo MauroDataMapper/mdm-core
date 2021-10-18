@@ -60,8 +60,8 @@ class Rule implements MultiFacetItemAware, Diffable<Rule> {
     }
 
     static search = {
-        name index: 'yes'
-        description index: 'yes'
+        name searchable: 'yes'
+        description searchable: 'yes'
     }
 
     static transients = ['multiFacetAwareItem']
