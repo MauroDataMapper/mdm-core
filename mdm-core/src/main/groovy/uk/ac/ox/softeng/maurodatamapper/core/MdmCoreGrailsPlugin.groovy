@@ -107,14 +107,18 @@ This is basically the backend API.
     ]
 
     Closure doWithSpring() {
-        { ->
+        {->
             // Dynamically update the Flyway Schemas
             mdmFlywayMigationStrategy MdmFlywayMigationStrategy
 
+            boolean rebuildIndexes = grailsApplication.config.getProperty('grails.plugins.hibernatesearch.rebuildOnStart', Boolean, false)
+            if (rebuildIndexes) log.warn('Rebuilding search indexes')
             /*
              * Load in the Lucene analysers used by the hibernate search functionality
              */
             grailsApplication.config.grails.plugins.hibernatesearch = {
+                // Rebuild dev and test indexes on each restart
+                rebuildIndexOnStart rebuildIndexes
 
                 analyzer(name: 'wordDelimiter', tokenizer: WhitespaceTokenizerFactory) {
                     filter WordDelimiterFilterFactory
