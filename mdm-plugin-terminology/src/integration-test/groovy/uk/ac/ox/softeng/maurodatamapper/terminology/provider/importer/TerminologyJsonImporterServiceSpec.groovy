@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
@@ -41,6 +42,9 @@ import groovy.util.logging.Slf4j
 @Rollback
 @Slf4j
 class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProviderServiceSpec<TerminologyJsonImporterService> implements JsonComparer {
+
+    private static final String CANNOT_IMPORT_EMPTY_CONTENT_CODE = 'JIS02'
+    private static final String CANNOT_IMPORT_JSON_CODE = 'JIS03'
 
     TerminologyJsonImporterService terminologyJsonImporterService
 
@@ -206,34 +210,246 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
         cleanupParameters()
     }
 
-    void 'test import multiple Terminologies'() {
+    void 'test multi-import invalid Terminology content'() {
+        expect:
+        importerService.canImportMultipleDomains()
+
+        when: 'given empty content'
+        importModels(''.bytes)
+
+        then:
+        ApiBadRequestException exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_EMPTY_CONTENT_CODE
+
+        when: 'given an empty JSON map'
+        importModels('{}'.bytes)
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_JSON_CODE
+
+        when: 'given neither models list or model map (backwards compatibility)'
+        importModels(loadTestFile('exportMetadataOnly'))
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_JSON_CODE
+
+        when: 'given an empty model map (backwards compatibility)'
+        importModels(loadTestFile('emptyTerminology'))
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_JSON_CODE
+
+        when: 'given an empty models list'
+        importModels(loadTestFile('emptyTerminologyList'))
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_JSON_CODE
+    }
+
+    void 'test multi-import invalid Terminologies'() {
         given:
         setupData()
 
         expect:
+        importerService.canImportMultipleDomains()
+
+        when: 'given an invalid model map (backwards compatibility)'
+        importModels(loadTestFile('invalidTerminology'))
+
+        then:
+        ApiBadRequestException exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_JSON_CODE
+
+        when: 'given a single invalid model'
+        importModels(loadTestFile('invalidTerminologyInList'))
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_JSON_CODE
+
+        when: 'given multiple invalid models'
+        importModels(loadTestFile('invalidTerminologies'))
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_JSON_CODE
+
+        // when: 'not given export metadata'
+        // importModels(loadTestFile('noExportMetadata'))
+        //
+        // then:
+        // exception = thrown(ApiBadRequestException)
+        // exception.errorCode == 'TODO'
+    }
+
+    void 'test multi-import single Terminology (backwards compatibility)'() {
+        given:
+        setupData()
         Terminology.count() == 2
+        List<Terminology> terminologies = clearExpectedDiffsFromModels([simpleTerminologyId])
+        basicParameters.importAsNewBranchModelVersion = true // Needed to import the same models
+
+        expect:
         importerService.canImportMultipleDomains()
 
         when:
-        List<Terminology> terminologies = importerService.importTerminologies(admin, loadTestFile('simpleAndComplexTerminologies'))
+        List<Terminology> imported = importModels(loadTestFile('simpleTerminology'))
 
         then:
-        terminologies
-        terminologies.size() == 2
+        imported
+        imported.size() == 1
 
         when:
-        ObjectDiff simpleDiff = terminologyService.getDiffForModels(simpleTerminology, terminologies[0])
-        ObjectDiff complexDiff = terminologyService.getDiffForModels(complexTerminology, terminologies[1])
+        ObjectDiff simpleDiff = terminologyService.getDiffForModels(terminologies.pop(), imported.pop())
 
         then:
         simpleDiff.objectsAreIdentical()
-        !complexDiff.objectsAreIdentical() // Expected
 
-        // Rules are not imported/exported and will therefore exist as diffs
-        complexDiff.numberOfDiffs == 4
-        complexDiff.diffs.find {it.fieldName == 'rule'}.deleted.size() == 1
-        complexDiff.diffs.find {it.fieldName == 'terms'}.modified[0].diffs.deleted.size() == 1
-        complexDiff.diffs.find {it.fieldName == 'termRelationships'}.modified[0].diffs.deleted.size() == 1
-        complexDiff.diffs.find {it.fieldName == 'termRelationshipTypes'}.modified[0].diffs.deleted.size() == 1
+        cleanup:
+        basicParameters.importAsNewBranchModelVersion = false
+    }
+
+    void 'test multi-import single Terminology'() {
+        given:
+        setupData()
+        Terminology.count() == 2
+        List<Terminology> terminologies = clearExpectedDiffsFromModels([simpleTerminologyId])
+        basicParameters.importAsNewBranchModelVersion = true // Needed to import the same models
+
+        expect:
+        importerService.canImportMultipleDomains()
+
+        when:
+        List<Terminology> imported = importModels(loadTestFile('simpleTerminologyInList'))
+
+        then:
+        imported
+        imported.size() == 1
+
+        when:
+        ObjectDiff simpleDiff = terminologyService.getDiffForModels(terminologies.pop(), imported.pop())
+
+        then:
+        simpleDiff.objectsAreIdentical()
+
+        cleanup:
+        basicParameters.importAsNewBranchModelVersion = false
+    }
+
+    void 'test multi-import multiple Terminologies'() {
+        given:
+        setupData()
+        Terminology.count() == 2
+        List<Terminology> terminologies = clearExpectedDiffsFromModels([simpleTerminologyId, complexTerminologyId])
+        basicParameters.importAsNewBranchModelVersion = true // Needed to import the same models
+
+        expect:
+        importerService.canImportMultipleDomains()
+
+        when:
+        List<Terminology> imported = importModels(loadTestFile('simpleAndComplexTerminologies'))
+
+        then:
+        imported
+        imported.size() == 2
+
+        when:
+        ObjectDiff simpleDiff = terminologyService.getDiffForModels(terminologies[0], imported[0])
+        ObjectDiff complexDiff = terminologyService.getDiffForModels(terminologies[1], imported[1])
+
+        then:
+        simpleDiff.objectsAreIdentical()
+        complexDiff.objectsAreIdentical()
+
+        cleanup:
+        basicParameters.importAsNewBranchModelVersion = false
+    }
+
+    void 'test multi-import Terminologies with invalid models'() {
+        given:
+        setupData()
+        Terminology.count() == 2
+        List<Terminology> terminologies = clearExpectedDiffsFromModels([simpleTerminologyId, complexTerminologyId])
+        basicParameters.importAsNewBranchModelVersion = true // Needed to import the same models
+
+        expect:
+        importerService.canImportMultipleDomains()
+
+        when:
+        List<Terminology> imported = importModels(loadTestFile('simpleAndInvalidTerminologies'))
+
+        then:
+        imported
+        imported.size() == 1
+
+        when:
+        ObjectDiff simpleDiff = terminologyService.getDiffForModels(terminologies[0], imported.pop())
+
+        then:
+        simpleDiff.objectsAreIdentical()
+
+        when:
+        imported = importModels(loadTestFile('simpleComplexAndInvalidTerminologies'))
+
+        then:
+        imported
+        imported.size() == 2
+
+        when:
+        simpleDiff = terminologyService.getDiffForModels(terminologies[0], imported[0])
+        ObjectDiff complexDiff = terminologyService.getDiffForModels(terminologies[1], imported[1])
+
+        then:
+        simpleDiff.objectsAreIdentical()
+        complexDiff.objectsAreIdentical()
+
+        cleanup:
+        basicParameters.importAsNewBranchModelVersion = false
+    }
+
+    void 'test multi-import Terminologies with duplicates'() {
+        given:
+        setupData()
+        Terminology.count() == 2
+        List<Terminology> dataModels = clearExpectedDiffsFromModels([simpleTerminologyId, complexTerminologyId])
+        basicParameters.importAsNewBranchModelVersion = true // Needed to import the same models
+
+        expect:
+        importerService.canImportMultipleDomains()
+
+        when:
+        List<Terminology> imported = importModels(loadTestFile('simpleDuplicateTerminologies'))
+
+        then:
+        imported
+        imported.size() == 1
+
+        when:
+        ObjectDiff simpleDiff = terminologyService.getDiffForModels(dataModels[0], imported.pop())
+
+        then:
+        simpleDiff.objectsAreIdentical()
+
+        when:
+        imported = importModels(loadTestFile('simpleAndComplexDuplicateTerminologies'))
+
+        then:
+        imported
+        imported.size() == 2
+
+        when:
+        simpleDiff = terminologyService.getDiffForModels(dataModels[0], imported[0])
+        ObjectDiff complexDiff = terminologyService.getDiffForModels(dataModels[1], imported[1])
+
+        then:
+        simpleDiff.objectsAreIdentical()
+        complexDiff.objectsAreIdentical()
+
+        cleanup:
+        basicParameters.importAsNewBranchModelVersion = false
     }
 }

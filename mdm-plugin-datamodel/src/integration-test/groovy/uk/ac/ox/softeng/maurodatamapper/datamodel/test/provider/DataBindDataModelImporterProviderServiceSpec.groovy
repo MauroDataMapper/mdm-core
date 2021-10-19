@@ -85,6 +85,21 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         dataModelService.get(imported.id)
     }
 
+    List<DataModel> importModels(byte[] bytes) {
+        log.trace('Importing:\n {}', new String(bytes))
+        basicParameters.importFile = new FileParameter(fileContents: bytes)
+
+        List<DataModel> imported = importerService.importDomains(admin, basicParameters) as List<DataModel>
+        imported.each {
+            it.folder = testFolder
+            check(it)
+            dataModelService.saveModelWithContent(it)
+        }
+        sessionFactory.currentSession.flush()
+        log.debug('DataModels saved')
+        imported.collect {dataModelService.get(it.id)}
+    }
+
     DataModel importAndConfirm(byte[] bytes) {
         DataModel dm = importModel(bytes)
         assert dataModelService.count() == 3
@@ -97,6 +112,19 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         //assert dataModelService.count() == 3
         //confirmDataModel(dm)
         dm
+    }
+
+    List<DataModel> clearExpectedDiffsFromModels(List<UUID> modelIds) {
+        // Rules are not imported/exported and will therefore exist as diffs
+        Closure<Boolean> removeRule = {it.rules?.removeIf {rule -> rule.name == 'Bootstrapped Functional Test Rule'}}
+        modelIds.collect {
+            DataModel dataModel = dataModelService.get(it)
+            removeRule(dataModel)
+            ['dataClasses', 'allDataElements', 'dataTypes'].each {
+                dataModel.getProperty(it)?.each(removeRule)
+            }
+            dataModel
+        }
     }
 
     void 'I01 : test empty data import'() {

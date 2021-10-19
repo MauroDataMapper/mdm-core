@@ -59,6 +59,9 @@ import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddre
 @Slf4j
 class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProviderServiceSpec<DataModelJsonImporterService> {
 
+    private static final String CANNOT_IMPORT_EMPTY_FILE_CODE = 'FBIP02'
+    private static final String CANNOT_IMPORT_JSON_CODE = 'JIS03'
+
     DataModelJsonImporterService dataModelJsonImporterService
 
     @Override
@@ -592,34 +595,246 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         cleanupParameters()
     }
 
-    void 'test import multiple DataModels'() {
+    void 'test multi-import invalid DataModel content'() {
+        expect:
+        importerService.canImportMultipleDomains()
+
+        when: 'given empty content'
+        importModels(''.bytes)
+
+        then:
+        ApiBadRequestException exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_EMPTY_FILE_CODE
+
+        when: 'given an empty JSON map'
+        importModels('{}'.bytes)
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_JSON_CODE
+
+        when: 'given neither models list or model map (backwards compatibility)'
+        importModels(loadTestFile('exportMetadataOnly'))
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_JSON_CODE
+
+        when: 'given an empty model map (backwards compatibility)'
+        importModels(loadTestFile('emptyDataModel'))
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_JSON_CODE
+
+        when: 'given an empty models list'
+        importModels(loadTestFile('emptyDataModelList'))
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_JSON_CODE
+    }
+
+    void 'test multi-import invalid DataModels'() {
         given:
         setupData()
 
         expect:
+        importerService.canImportMultipleDomains()
+
+        when: 'given an invalid model map (backwards compatibility)'
+        importModels(loadTestFile('invalidDataModel'))
+
+        then:
+        ApiBadRequestException exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_JSON_CODE
+
+        when: 'given a single invalid model'
+        importModels(loadTestFile('invalidDataModelInList'))
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_JSON_CODE
+
+        when: 'given multiple invalid models'
+        importModels(loadTestFile('invalidDataModels'))
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_JSON_CODE
+
+        // when: 'not given export metadata'
+        // importModels(loadTestFile('noExportMetadata'))
+        //
+        // then:
+        // exception = thrown(ApiBadRequestException)
+        // exception.errorCode == 'TODO'
+    }
+
+    void 'test multi-import single DataModel (backwards compatibility)'() {
+        given:
+        setupData()
         DataModel.count() == 2
+        List<DataModel> dataModels = clearExpectedDiffsFromModels([simpleDataModelId])
+        basicParameters.importAsNewBranchModelVersion = true // Needed to import the same models
+
+        expect:
         importerService.canImportMultipleDomains()
 
         when:
-        List<DataModel> dataModels = importerService.importDataModels(admin, loadTestFile('simpleAndComplexDataModels'))
+        List<DataModel> imported = importModels(loadTestFile('simpleDataModel'))
 
         then:
-        dataModels
-        dataModels.size() == 2
+        imported
+        imported.size() == 1
 
         when:
-        ObjectDiff simpleDiff = dataModelService.getDiffForModels(dataModelService.get(simpleDataModelId), dataModels[0])
-        ObjectDiff complexDiff = dataModelService.getDiffForModels(dataModelService.get(complexDataModelId), dataModels[1])
+        ObjectDiff simpleDiff = dataModelService.getDiffForModels(dataModels.pop(), imported.pop())
 
         then:
         simpleDiff.objectsAreIdentical()
-        !complexDiff.objectsAreIdentical() // Expected
 
-        // Rules are not imported/exported and will therefore exist as diffs
-        complexDiff.numberOfDiffs == 4
-        complexDiff.diffs.find {it.fieldName == 'rule'}.deleted.size() == 1
-        complexDiff.diffs.find {it.fieldName == 'dataTypes'}.modified[0].diffs.deleted.size() == 1
-        complexDiff.diffs.find {it.fieldName == 'dataClasses'}.modified[0].diffs.deleted.size() == 1 // DataClass rule missing
-        complexDiff.diffs.find {it.fieldName == 'dataClasses'}.modified[1].diffs.deleted.size() == 1 // DataElement inside DataClass rule missing
+        cleanup:
+        basicParameters.importAsNewBranchModelVersion = false
+    }
+
+    void 'test multi-import single DataModel'() {
+        given:
+        setupData()
+        DataModel.count() == 2
+        List<DataModel> dataModels = clearExpectedDiffsFromModels([simpleDataModelId])
+        basicParameters.importAsNewBranchModelVersion = true // Needed to import the same models
+
+        expect:
+        importerService.canImportMultipleDomains()
+
+        when:
+        List<DataModel> imported = importModels(loadTestFile('simpleDataModelInList'))
+
+        then:
+        imported
+        imported.size() == 1
+
+        when:
+        ObjectDiff simpleDiff = dataModelService.getDiffForModels(dataModels.pop(), imported.pop())
+
+        then:
+        simpleDiff.objectsAreIdentical()
+
+        cleanup:
+        basicParameters.importAsNewBranchModelVersion = false
+    }
+
+    void 'test multi-import multiple DataModels'() {
+        given:
+        setupData()
+        DataModel.count() == 2
+        List<DataModel> dataModels = clearExpectedDiffsFromModels([simpleDataModelId, complexDataModelId])
+        basicParameters.importAsNewBranchModelVersion = true // Needed to import the same models
+
+        expect:
+        importerService.canImportMultipleDomains()
+
+        when:
+        List<DataModel> imported = importModels(loadTestFile('simpleAndComplexDataModels'))
+
+        then:
+        imported
+        imported.size() == 2
+
+        when:
+        ObjectDiff simpleDiff = dataModelService.getDiffForModels(dataModels[0], imported[0])
+        ObjectDiff complexDiff = dataModelService.getDiffForModels(dataModels[1], imported[1])
+
+        then:
+        simpleDiff.objectsAreIdentical()
+        complexDiff.objectsAreIdentical()
+
+        cleanup:
+        basicParameters.importAsNewBranchModelVersion = false
+    }
+
+    void 'test multi-import DataModels with invalid models'() {
+        given:
+        setupData()
+        DataModel.count() == 2
+        List<DataModel> dataModels = clearExpectedDiffsFromModels([simpleDataModelId, complexDataModelId])
+        basicParameters.importAsNewBranchModelVersion = true // Needed to import the same models
+
+        expect:
+        importerService.canImportMultipleDomains()
+
+        when:
+        List<DataModel> imported = importModels(loadTestFile('simpleAndInvalidDataModels'))
+
+        then:
+        imported
+        imported.size() == 1
+
+        when:
+        ObjectDiff simpleDiff = dataModelService.getDiffForModels(dataModels[0], imported.pop())
+
+        then:
+        simpleDiff.objectsAreIdentical()
+
+        when:
+        imported = importModels(loadTestFile('simpleComplexAndInvalidDataModels'))
+
+        then:
+        imported
+        imported.size() == 2
+
+        when:
+        simpleDiff = dataModelService.getDiffForModels(dataModels[0], imported[0])
+        ObjectDiff complexDiff = dataModelService.getDiffForModels(dataModels[1], imported[1])
+
+        then:
+        simpleDiff.objectsAreIdentical()
+        complexDiff.objectsAreIdentical()
+
+        cleanup:
+        basicParameters.importAsNewBranchModelVersion = false
+    }
+
+    void 'test multi-import DataModels with duplicates'() {
+        given:
+        setupData()
+        DataModel.count() == 2
+        List<DataModel> dataModels = clearExpectedDiffsFromModels([simpleDataModelId, complexDataModelId])
+        basicParameters.importAsNewBranchModelVersion = true // Needed to import the same models
+
+        expect:
+        importerService.canImportMultipleDomains()
+
+        when:
+        List<DataModel> imported = importModels(loadTestFile('simpleDuplicateDataModels'))
+
+        then:
+        imported
+        imported.size() == 1
+
+        when:
+        ObjectDiff simpleDiff = dataModelService.getDiffForModels(dataModels[0], imported.pop())
+
+        then:
+        simpleDiff.objectsAreIdentical()
+
+        when:
+        imported = importModels(loadTestFile('simpleAndComplexDuplicateDataModels'))
+
+        then:
+        imported
+        imported.size() == 2
+
+        when:
+        simpleDiff = dataModelService.getDiffForModels(dataModels[0], imported[0])
+        ObjectDiff complexDiff = dataModelService.getDiffForModels(dataModels[1], imported[1])
+
+        then:
+        simpleDiff.objectsAreIdentical()
+        complexDiff.objectsAreIdentical()
+
+        cleanup:
+        basicParameters.importAsNewBranchModelVersion = false
     }
 }

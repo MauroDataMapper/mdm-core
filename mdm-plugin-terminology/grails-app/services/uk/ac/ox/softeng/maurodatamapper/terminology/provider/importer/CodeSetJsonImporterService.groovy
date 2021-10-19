@@ -65,10 +65,13 @@ class CodeSetJsonImporterService extends DataBindCodeSetImporterProviderService<
 
         log.debug('Parsing in file content using JsonSlurper')
         Object jsonContent = slurpAndClean(content)
-        List<Map> codeSets = jsonContent.codeSets ?: [jsonContent.codeSet]
-        if (!codeSets || codeSets.any {!it}) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as codeSet is not present')
+        List<Map> jsonMaps = jsonContent.codeSets?.unique() ?: [jsonContent.codeSet]
+
+        List<Map> codeSetMaps = jsonMaps.findAll {it}
+        if (!codeSetMaps) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as codeSet(s) is not present')
+        if (codeSetMaps.size() < jsonMaps.size()) log.warn('Cannot import certain JSON as codeSet(s) is not present')
 
         log.debug('Importing CodeSet map')
-        codeSets.collect {bindMapToCodeSet(currentUser, new HashMap(it))}
+        codeSetMaps.collect {bindMapToCodeSet(currentUser, new HashMap(it))}
     }
 }

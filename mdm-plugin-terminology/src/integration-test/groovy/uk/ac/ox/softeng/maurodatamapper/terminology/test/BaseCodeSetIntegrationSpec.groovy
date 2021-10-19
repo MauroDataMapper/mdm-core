@@ -21,7 +21,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.admin.AdminService
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
-import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSetService
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.TerminologyService
 import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels
@@ -37,7 +36,6 @@ abstract class BaseCodeSetIntegrationSpec extends BaseIntegrationSpec {
 
     Authority testAuthority
     AdminService adminService
-    CodeSetService codeSetService
     TerminologyService terminologyService
     CodeSet simpleCodeSet
     CodeSet complexCodeSet

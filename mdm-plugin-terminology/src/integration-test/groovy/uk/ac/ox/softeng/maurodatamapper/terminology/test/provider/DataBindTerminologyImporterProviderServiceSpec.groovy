@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.terminology.test.provider
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FileParameter
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.DataBindTerminologyImporterProviderService
@@ -75,10 +76,39 @@ abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBind
         terminologyService.get(imported.id)
     }
 
+    List<Terminology> importModels(byte[] bytes) {
+        log.trace('Importing:\n {}', new String(bytes))
+
+        List<Terminology> imported = importerService.importTerminologies(admin, bytes)
+        imported.each {
+            it.folder = testFolder
+            log.debug('Check and save imported model')
+            importerService.checkImport(admin, it, basicParameters)
+            check(it)
+            terminologyService.saveModelWithContent(it)
+        }
+        sessionFactory.currentSession.flush()
+        log.debug('Terminologies saved')
+        imported.collect {terminologyService.get(it.id)}
+    }
+
     Terminology importAndConfirm(byte[] bytes) {
         Terminology tm = importAndSave(bytes)
         confirmTerminology(tm)
         tm
+    }
+
+    List<Terminology> clearExpectedDiffsFromModels(List<UUID> modelIds) {
+        // Rules are not imported/exported and will therefore exist as diffs
+        Closure<Boolean> removeRule = {it.rules?.removeIf {rule -> rule.name == 'Bootstrapped Functional Test Rule'}}
+        modelIds.collect {
+            Terminology terminology = terminologyService.get(it)
+            removeRule(terminology)
+            ['terms', 'allTermRelationships', 'termRelationshipTypes'].each {
+                terminology.getProperty(it)?.each(removeRule)
+            }
+            terminology
+        }
     }
 
     void 'I01 : test empty data import'() {

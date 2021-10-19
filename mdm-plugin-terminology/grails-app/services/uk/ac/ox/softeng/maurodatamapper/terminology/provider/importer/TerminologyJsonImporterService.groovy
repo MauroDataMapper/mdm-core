@@ -65,10 +65,13 @@ class TerminologyJsonImporterService extends DataBindTerminologyImporterProvider
 
         log.debug('Parsing in file content using JsonSlurper')
         Object jsonContent = slurpAndClean(content)
-        List<Map> terminologies = jsonContent.terminologies ?: [jsonContent.terminology]
-        if (!terminologies || terminologies.any {!it}) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as terminology is not present')
+        List<Map> jsonMaps = jsonContent.terminologies?.unique() ?: [jsonContent.terminology]
+
+        List<Map> terminologyMaps = jsonMaps.findAll {it}
+        if (!terminologyMaps) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as terminology/ies is not present')
+        if (terminologyMaps.size() < jsonMaps.size()) log.warn('Cannot import certain JSON as terminology/ies is not present')
 
         log.debug('Importing list of Terminology maps')
-        terminologies.collect {bindMapToTerminology(currentUser, new HashMap(it))}
+        terminologyMaps.collect {bindMapToTerminology(currentUser, new HashMap(it))}
     }
 }

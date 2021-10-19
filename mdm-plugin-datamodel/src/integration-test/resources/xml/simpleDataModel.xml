@@ -18,8 +18,8 @@
     SPDX-License-Identifier: Apache-2.0
 
 -->
-<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/4.0">
-  <mdm:dataModel xmlns:mdm="http://maurodatamapper.com/dataModel/3.2">
+<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/4.0" xmlns:mdm="http://maurodatamapper.com/dataModel/3.2">
+  <mdm:dataModel>
     <mdm:id>4e321c7d-9299-452b-b4cc-456c666f1cec</mdm:id>
     <mdm:label>Simple Test DataModel</mdm:label>
     <mdm:lastUpdated>2020-04-13T13:11:39.233648Z</mdm:lastUpdated>
