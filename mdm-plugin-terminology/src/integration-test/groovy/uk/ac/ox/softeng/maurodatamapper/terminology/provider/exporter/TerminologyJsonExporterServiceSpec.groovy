@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.TerminologyJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.terminology.test.provider.DataBindTerminologyImportAndDefaultExporterServiceSpec
@@ -85,35 +85,35 @@ class TerminologyJsonExporterServiceSpec extends DataBindTerminologyImportAndDef
         exportModels(null)
 
         then:
-        ApiInternalException exception = thrown(ApiInternalException)
+        ApiBadRequestException exception = thrown(ApiBadRequestException)
         exception.errorCode == NO_TERMINOLOGY_IDS_TO_EXPORT_CODE
 
         when: 'given an empty list'
         exportModels([])
 
         then:
-        exception = thrown(ApiInternalException)
+        exception = thrown(ApiBadRequestException)
         exception.errorCode == NO_TERMINOLOGY_IDS_TO_EXPORT_CODE
 
         when: 'given a null model'
-        String exported = exportModels([null])
+        exportModels([null])
 
         then:
-        exception = thrown(ApiInternalException)
+        exception = thrown(ApiBadRequestException)
         exception.errorCode == NO_TERMINOLOGY_IDS_TO_EXPORT_CODE
 
         when: 'given a single invalid model'
-        exported = exportModels([UUID.randomUUID()])
+        exportModels([UUID.randomUUID()])
 
         then:
-        exception = thrown(ApiInternalException)
+        exception = thrown(ApiBadRequestException)
         exception.errorCode == NO_TERMINOLOGY_IDS_TO_EXPORT_CODE
 
         when: 'given multiple invalid models'
-        exported = exportModels([UUID.randomUUID(), UUID.randomUUID()])
+        exportModels([UUID.randomUUID(), UUID.randomUUID()])
 
         then:
-        exception = thrown(ApiInternalException)
+        exception = thrown(ApiBadRequestException)
         exception.errorCode == NO_TERMINOLOGY_IDS_TO_EXPORT_CODE
     }
 
