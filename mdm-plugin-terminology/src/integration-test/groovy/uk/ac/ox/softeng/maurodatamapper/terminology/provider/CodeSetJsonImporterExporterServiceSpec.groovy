@@ -932,35 +932,35 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         exportModels(null)
 
         then:
-        ApiInternalException exception = thrown(ApiInternalException)
+        ApiBadRequestException exception = thrown(ApiBadRequestException)
         exception.errorCode == NO_CODESET_IDS_TO_EXPORT_CODE
 
         when: 'given an empty list'
         exportModels([])
 
         then:
-        exception = thrown(ApiInternalException)
+        exception = thrown(ApiBadRequestException)
         exception.errorCode == NO_CODESET_IDS_TO_EXPORT_CODE
 
         when: 'given a null model'
-        String exported = exportModels([null])
+        exportModels([null])
 
         then:
-        exception = thrown(ApiInternalException)
+        exception = thrown(ApiBadRequestException)
         exception.errorCode == NO_CODESET_IDS_TO_EXPORT_CODE
 
         when: 'given a single invalid model'
-        exported = exportModels([UUID.randomUUID()])
+        exportModels([UUID.randomUUID()])
 
         then:
-        exception = thrown(ApiInternalException)
+        exception = thrown(ApiBadRequestException)
         exception.errorCode == NO_CODESET_IDS_TO_EXPORT_CODE
 
         when: 'given multiple invalid models'
-        exported = exportModels([UUID.randomUUID(), UUID.randomUUID()])
+        exportModels([UUID.randomUUID(), UUID.randomUUID()])
 
         then:
-        exception = thrown(ApiInternalException)
+        exception = thrown(ApiBadRequestException)
         exception.errorCode == NO_CODESET_IDS_TO_EXPORT_CODE
     }
 

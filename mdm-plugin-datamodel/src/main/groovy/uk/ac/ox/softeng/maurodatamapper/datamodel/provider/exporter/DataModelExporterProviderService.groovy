@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.provider.ProviderType
@@ -62,7 +63,7 @@ abstract class DataModelExporterProviderService extends ExporterProviderService 
             if (dataModel) dataModels << dataModel
             else cannotExport << it
         }
-        if (!dataModels) throw new ApiInternalException('DMEP01', "Cannot find DataModel IDs [${cannotExport}] to export")
+        if (!dataModels) throw new ApiBadRequestException('DMEP01', "Cannot find DataModel IDs [${cannotExport}] to export")
         if (cannotExport) log.warn('Cannot find DataModel IDs [{}] to export', cannotExport)
         exportDataModels(currentUser, dataModels)
     }

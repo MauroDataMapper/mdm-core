@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.provider.ProviderType
@@ -60,7 +61,7 @@ abstract class CodeSetExporterProviderService extends ExporterProviderService {
             if (codeSet) codeSets << codeSet
             else cannotExport << it
         }
-        if (!codeSets) throw new ApiInternalException('CSEP01', "Cannot find CodeSet IDs [${cannotExport}] to export")
+        if (!codeSets) throw new ApiBadRequestException('CSEP01', "Cannot find CodeSet IDs [${cannotExport}] to export")
         if (cannotExport) log.warn('Cannot find CodeSet IDs [{}] to export', cannotExport)
         exportCodeSets(currentUser, codeSets)
     }
