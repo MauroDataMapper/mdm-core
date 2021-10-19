@@ -35,7 +35,6 @@ import spock.lang.PendingFeature
 @Slf4j
 class TerminologyXmlImporterServiceSpec extends DataBindTerminologyImporterProviderServiceSpec<TerminologyXmlImporterService> {
 
-    private static final String CANNOT_IMPORT_EMPTY_CONTENT_CODE = 'XTIS02'
     private static final String NO_TERMINOLOGY_TO_IMPORT_CODE = 'FBIP03'
 
     TerminologyXmlImporterService terminologyXmlImporterService

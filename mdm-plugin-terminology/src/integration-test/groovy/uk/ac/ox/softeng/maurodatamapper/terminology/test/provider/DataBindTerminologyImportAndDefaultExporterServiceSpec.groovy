@@ -20,15 +20,11 @@ package uk.ac.ox.softeng.maurodatamapper.terminology.test.provider
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
-import uk.ac.ox.softeng.maurodatamapper.terminology.TerminologyService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.TerminologyExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.DataBindTerminologyImporterProviderService
-import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyImporterProviderServiceParameters
 
 import grails.gorm.transactions.Rollback
 import groovy.util.logging.Slf4j
-import org.springframework.beans.factory.annotation.Autowired
-import spock.lang.Shared
 import spock.lang.Unroll
 
 import java.nio.charset.Charset
@@ -39,21 +35,9 @@ import java.nio.charset.Charset
 @Rollback
 @Slf4j
 abstract class DataBindTerminologyImportAndDefaultExporterServiceSpec<I extends DataBindTerminologyImporterProviderService, E extends TerminologyExporterProviderService>
-    extends BaseImportExportTerminologySpec {
+    extends BaseTerminologyImportExportSpec {
 
-    @Autowired
-    TerminologyService terminologyService
-
-    @Shared
-    TerminologyImporterProviderServiceParameters basicParameters
-
-    def setupSpec() {
-        basicParameters = new TerminologyImporterProviderServiceParameters().tap {
-            importAsNewBranchModelVersion = false
-            importAsNewDocumentationVersion = false
-            finalised = false
-        }
-    }
+    static final String NO_TERMINOLOGY_IDS_TO_EXPORT_CODE = 'TEEP01'
 
     abstract I getImporterService()
 
@@ -65,28 +49,8 @@ abstract class DataBindTerminologyImportAndDefaultExporterServiceSpec<I extends 
         validateExportedModel(testName, exportedModels)
     }
 
-    Terminology importAndConfirm(byte[] bytes) {
-        def imported = importerService.importTerminology(admin, bytes)
-
-        assert imported
-        imported.folder = testFolder
-        log.info('Checking imported model')
-        importerService.checkImport(admin, imported, basicParameters)
-        check(imported)
-        log.info('Saving imported model')
-        assert terminologyService.saveModelWithContent(imported)
-        sessionFactory.currentSession.flush()
-        assert terminologyService.count() == 3
-
-        Terminology tm = Terminology.listOrderByDateCreated().last()
-        log.info('Confirming imported model')
-        confirmTerminology(tm)
-        tm
-    }
-
-    String exportModel(UUID dataModelId) {
-        ByteArrayOutputStream byteArrayOutputStream = exporterService.exportDomain(admin, dataModelId)
-        new String(byteArrayOutputStream.toByteArray(), Charset.defaultCharset())
+    String exportModel(UUID terminologyId) {
+        new String(exporterService.exportDomain(admin, terminologyId).toByteArray(), Charset.defaultCharset())
     }
 
     String exportModels(List<UUID> terminologyIds) {
@@ -97,10 +61,6 @@ abstract class DataBindTerminologyImportAndDefaultExporterServiceSpec<I extends 
         Terminology tm = importAndConfirm(bytes)
         assert tm, 'Must have a datamodel imported to be able to export'
         exportModel(tm.id)
-    }
-
-    static String replaceWithTestAuthority(String exported) {
-        exported.replace(/Mauro Data Mapper/, 'Test Authority')
     }
 
     void 'E01 : test empty data import export'() {

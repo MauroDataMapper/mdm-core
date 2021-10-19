@@ -23,7 +23,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FileParameter
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
@@ -32,58 +31,20 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataBindDataModelImporterProviderService
-import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters
 
 import grails.gorm.transactions.Rollback
 import groovy.util.logging.Slf4j
-import org.springframework.beans.factory.annotation.Autowired
-import spock.lang.Shared
 
 /**
  * @since 15/11/2017
  */
 @Rollback
 @Slf4j
-@SuppressWarnings('DuplicatedCode')
-abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDataModelImporterProviderService> extends BaseImportExportSpec {
+abstract class DataBindDataModelImporterProviderServiceSpec<I extends DataBindDataModelImporterProviderService> extends BaseDataModelImportExportSpec {
 
-    @Autowired
-    DataModelService dataModelService
+    static final String CANNOT_IMPORT_EMPTY_FILE_CODE = 'FBIP02'
 
-    @Shared
-    DataModelFileImporterProviderServiceParameters basicParameters
-
-    def setupSpec() {
-        basicParameters = new DataModelFileImporterProviderServiceParameters().tap {
-            importAsNewBranchModelVersion = false
-            importAsNewDocumentationVersion = false
-            finalised = false
-        }
-    }
-
-    abstract K getImporterService()
-
-    void cleanupParameters() {
-        basicParameters.tap {
-            importAsNewBranchModelVersion = false
-            importAsNewDocumentationVersion = false
-            finalised = false
-            propagateFromPreviousVersion = false
-        }
-    }
-
-    DataModel importModel(byte[] bytes) {
-        log.trace('Importing:\n {}', new String(bytes))
-        basicParameters.importFile = new FileParameter(fileContents: bytes)
-
-        DataModel imported = importerService.importDomain(admin, basicParameters) as DataModel
-        imported.folder = testFolder
-        check(imported)
-        dataModelService.saveModelWithContent(imported)
-        sessionFactory.currentSession.flush()
-        log.debug('DataModel saved')
-        dataModelService.get(imported.id)
-    }
+    abstract I getImporterService()
 
     List<DataModel> importModels(byte[] bytes) {
         log.trace('Importing:\n {}', new String(bytes))
@@ -91,27 +52,20 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
 
         List<DataModel> imported = importerService.importDomains(admin, basicParameters) as List<DataModel>
         imported.each {
+            assert it
             it.folder = testFolder
+
+            log.info('Checking imported model')
             check(it)
-            dataModelService.saveModelWithContent(it)
+
+            log.info('Saving imported model')
+            assert dataModelService.saveModelWithContent(it)
+            log.debug('DataModel saved')
         }
         sessionFactory.currentSession.flush()
         log.debug('DataModels saved')
+
         imported.collect { dataModelService.get(it.id) }
-    }
-
-    DataModel importAndConfirm(byte[] bytes) {
-        DataModel dm = importModel(bytes)
-        assert dataModelService.count() == 3
-        confirmDataModel(dm)
-        dm
-    }
-
-    DataModel importNoConfirm(byte[] bytes) {
-        DataModel dm = importModel(bytes)
-        //assert dataModelService.count() == 3
-        //confirmDataModel(dm)
-        dm
     }
 
     List<DataModel> clearExpectedDiffsFromModels(List<UUID> modelIds) {

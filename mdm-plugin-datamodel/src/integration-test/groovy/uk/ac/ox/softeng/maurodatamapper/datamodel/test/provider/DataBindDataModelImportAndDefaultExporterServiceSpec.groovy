@@ -19,16 +19,12 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.test.provider
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
-import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter.DataModelExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataBindDataModelImporterProviderService
-import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelImporterProviderServiceParameters
 
 import grails.gorm.transactions.Rollback
 import groovy.util.logging.Slf4j
-import org.springframework.beans.factory.annotation.Autowired
-import spock.lang.Shared
 import spock.lang.Unroll
 
 import java.nio.charset.Charset
@@ -40,22 +36,10 @@ import java.nio.file.Path
  */
 @Rollback
 @Slf4j
-abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDataModelImporterProviderService, E extends ExporterProviderService>
-    extends BaseImportExportSpec {
+abstract class DataBindDataModelImportAndDefaultExporterServiceSpec<I extends DataBindDataModelImporterProviderService, E extends DataModelExporterProviderService>
+    extends BaseDataModelImportExportSpec {
 
-    @Autowired
-    DataModelService dataModelService
-
-    @Shared
-    DataModelImporterProviderServiceParameters basicParameters
-
-    def setupSpec() {
-        basicParameters = new DataModelImporterProviderServiceParameters().tap {
-            importAsNewBranchModelVersion = false
-            importAsNewDocumentationVersion = false
-            finalised = false
-        }
-    }
+    static final String NO_DATAMODEL_IDS_TO_EXPORT_CODE = 'DMEP01'
 
     abstract I getImporterService()
 
@@ -67,28 +51,8 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
         validateExportedModel(testName, exportedModels)
     }
 
-    DataModel importAndConfirm(byte[] bytes) {
-        def imported = importerService.importDataModel(admin, bytes)
-
-        assert imported
-        imported.folder = testFolder
-        log.info('Checking imported model')
-        importerService.checkImport(admin, imported, basicParameters)
-        check(imported)
-        log.info('Saving imported model')
-        assert dataModelService.saveModelWithContent(imported)
-        sessionFactory.currentSession.flush()
-        assert dataModelService.count() == 3
-
-        DataModel dm = DataModel.listOrderByDateCreated().last()
-        log.info('Confirming imported model')
-        confirmDataModel(dm)
-        dm
-    }
-
     String exportModel(UUID dataModelId) {
-        ByteArrayOutputStream byteArrayOutputStream = exporterService.exportDomain(admin, dataModelId)
-        new String(byteArrayOutputStream.toByteArray(), Charset.defaultCharset())
+        new String(exporterService.exportDomain(admin, dataModelId).toByteArray(), Charset.defaultCharset())
     }
 
     String exportModels(List<UUID> dataModelIds) {
@@ -99,10 +63,6 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
         DataModel dm = importAndConfirm(bytes)
         assert dm, 'Must have a datamodel imported to be able to export'
         exportModel(dm.id)
-    }
-
-    static String replaceWithTestAuthority(String exported) {
-        exported.replace(/Mauro Data Mapper/, 'Test Authority')
     }
 
     void 'test empty data import export'() {

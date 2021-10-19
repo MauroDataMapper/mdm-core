@@ -20,7 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelJsonImporterService
-import uk.ac.ox.softeng.maurodatamapper.datamodel.test.provider.DataBindImportAndDefaultExporterServiceSpec
+import uk.ac.ox.softeng.maurodatamapper.datamodel.test.provider.DataBindDataModelImportAndDefaultExporterServiceSpec
 import uk.ac.ox.softeng.maurodatamapper.test.json.JsonComparer
 
 import com.google.common.base.CaseFormat
@@ -38,10 +38,8 @@ import java.nio.file.Path
 @Integration
 @Rollback
 @Slf4j
-class DataModelJsonExporterServiceSpec extends DataBindImportAndDefaultExporterServiceSpec<DataModelJsonImporterService, DataModelJsonExporterService>
+class DataModelJsonExporterServiceSpec extends DataBindDataModelImportAndDefaultExporterServiceSpec<DataModelJsonImporterService, DataModelJsonExporterService>
     implements JsonComparer {
-
-    private static final String NO_DATAMODEL_IDS_TO_EXPORT_CODE = 'DMEP01'
 
     DataModelJsonImporterService dataModelJsonImporterService
     DataModelJsonExporterService dataModelJsonExporterService
@@ -72,7 +70,7 @@ class DataModelJsonExporterServiceSpec extends DataBindImportAndDefaultExporterS
         }
 
         String expectedJson = replaceContentWithMatchers(Files.readString(expectedPath))
-        verifyJson(expectedJson, exportedModel)
+        verifyJson(expectedJson, exportedModel.replace(/Mauro Data Mapper/, 'Test Authority'))
     }
 
     void 'test multi-export invalid DataModels'() {
@@ -127,7 +125,7 @@ class DataModelJsonExporterServiceSpec extends DataBindImportAndDefaultExporterS
         String exported = exportModels([simpleDataModelId])
 
         then:
-        validateExportedModels('simpleDataModelInList', replaceWithTestAuthority(exported))
+        validateExportedModels('simpleDataModelInList', exported)
     }
 
     void 'test multi-export multiple DataModels'() {
@@ -142,7 +140,7 @@ class DataModelJsonExporterServiceSpec extends DataBindImportAndDefaultExporterS
         String exported = exportModels([simpleDataModelId, complexDataModelId])
 
         then:
-        validateExportedModels('simpleAndComplexDataModels', replaceWithTestAuthority(exported))
+        validateExportedModels('simpleAndComplexDataModels', exported)
     }
 
     void 'test multi-export DataModels with invalid models'() {
@@ -157,13 +155,13 @@ class DataModelJsonExporterServiceSpec extends DataBindImportAndDefaultExporterS
         String exported = exportModels([UUID.randomUUID(), simpleDataModelId])
 
         then:
-        validateExportedModels('simpleDataModelInList', replaceWithTestAuthority(exported))
+        validateExportedModels('simpleDataModelInList', exported)
 
         when:
         exported = exportModels([UUID.randomUUID(), simpleDataModelId, UUID.randomUUID(), complexDataModelId])
 
         then:
-        validateExportedModels('simpleAndComplexDataModels', replaceWithTestAuthority(exported))
+        validateExportedModels('simpleAndComplexDataModels', exported)
     }
 
     void 'test multi-export DataModels with duplicates'() {
@@ -178,12 +176,12 @@ class DataModelJsonExporterServiceSpec extends DataBindImportAndDefaultExporterS
         String exported = exportModels([simpleDataModelId, simpleDataModelId])
 
         then:
-        validateExportedModels('simpleDataModelInList', replaceWithTestAuthority(exported))
+        validateExportedModels('simpleDataModelInList', exported)
 
         when:
         exported = exportModels([simpleDataModelId, complexDataModelId, complexDataModelId, simpleDataModelId])
 
         then:
-        validateExportedModels('simpleAndComplexDataModels', replaceWithTestAuthority(exported))
+        validateExportedModels('simpleAndComplexDataModels', exported)
     }
 }

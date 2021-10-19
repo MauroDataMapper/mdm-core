@@ -41,15 +41,8 @@ import java.nio.file.Path
 class TerminologyJsonExporterServiceSpec extends DataBindTerminologyImportAndDefaultExporterServiceSpec<TerminologyJsonImporterService, TerminologyJsonExporterService>
     implements JsonComparer {
 
-    private static final String NO_TERMINOLOGY_IDS_TO_EXPORT_CODE = 'TEEP01'
-
     TerminologyJsonImporterService terminologyJsonImporterService
     TerminologyJsonExporterService terminologyJsonExporterService
-
-    @Override
-    String getImportType() {
-        'json'
-    }
 
     @Override
     TerminologyJsonImporterService getImporterService() {
@@ -59,6 +52,11 @@ class TerminologyJsonExporterServiceSpec extends DataBindTerminologyImportAndDef
     @Override
     TerminologyJsonExporterService getExporterService() {
         terminologyJsonExporterService
+    }
+
+    @Override
+    String getImportType() {
+        'json'
     }
 
     @Override
@@ -72,7 +70,7 @@ class TerminologyJsonExporterServiceSpec extends DataBindTerminologyImportAndDef
         }
 
         String expectedJson = replaceContentWithMatchers(Files.readString(expectedPath))
-        verifyJson(expectedJson, exportedModel)
+        verifyJson(expectedJson, exportedModel.replace(/Mauro Data Mapper/, 'Test Authority'))
     }
 
     void 'test multi-export invalid Terminologies'() {
@@ -127,7 +125,7 @@ class TerminologyJsonExporterServiceSpec extends DataBindTerminologyImportAndDef
         String exported = exportModels([simpleTerminologyId])
 
         then:
-        validateExportedModels('simpleTerminologyInList', replaceWithTestAuthority(exported))
+        validateExportedModels('simpleTerminologyInList', exported)
     }
 
     void 'test multi-export multiple Terminologies'() {
@@ -142,7 +140,7 @@ class TerminologyJsonExporterServiceSpec extends DataBindTerminologyImportAndDef
         String exported = exportModels([simpleTerminologyId, complexTerminologyId])
 
         then:
-        validateExportedModels('simpleAndComplexTerminologies', replaceWithTestAuthority(exported))
+        validateExportedModels('simpleAndComplexTerminologies', exported)
     }
 
     void 'test multi-export Terminologies with invalid models'() {
@@ -157,13 +155,13 @@ class TerminologyJsonExporterServiceSpec extends DataBindTerminologyImportAndDef
         String exported = exportModels([UUID.randomUUID(), simpleTerminologyId])
 
         then:
-        validateExportedModels('simpleTerminologyInList', replaceWithTestAuthority(exported))
+        validateExportedModels('simpleTerminologyInList', exported)
 
         when:
         exported = exportModels([UUID.randomUUID(), simpleTerminologyId, UUID.randomUUID(), complexTerminologyId])
 
         then:
-        validateExportedModels('simpleAndComplexTerminologies', replaceWithTestAuthority(exported))
+        validateExportedModels('simpleAndComplexTerminologies', exported)
     }
 
     void 'test multi-export Terminologies with duplicates'() {
@@ -178,12 +176,12 @@ class TerminologyJsonExporterServiceSpec extends DataBindTerminologyImportAndDef
         String exported = exportModels([simpleTerminologyId, simpleTerminologyId])
 
         then:
-        validateExportedModels('simpleTerminologyInList', replaceWithTestAuthority(exported))
+        validateExportedModels('simpleTerminologyInList', exported)
 
         when:
         exported = exportModels([simpleTerminologyId, complexTerminologyId, complexTerminologyId, simpleTerminologyId])
 
         then:
-        validateExportedModels('simpleAndComplexTerminologies', replaceWithTestAuthority(exported))
+        validateExportedModels('simpleAndComplexTerminologies', exported)
     }
 }

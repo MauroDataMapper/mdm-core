@@ -20,7 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelXmlImporterService
-import uk.ac.ox.softeng.maurodatamapper.datamodel.test.provider.DataBindImportAndDefaultExporterServiceSpec
+import uk.ac.ox.softeng.maurodatamapper.datamodel.test.provider.DataBindDataModelImportAndDefaultExporterServiceSpec
 import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlValidator
 
 import com.google.common.base.CaseFormat
@@ -41,10 +41,8 @@ import static org.junit.Assert.assertTrue
 @Integration
 @Rollback
 @Slf4j
-class DataModelXmlExporterServiceSpec extends DataBindImportAndDefaultExporterServiceSpec<DataModelXmlImporterService, DataModelXmlExporterService>
+class DataModelXmlExporterServiceSpec extends DataBindDataModelImportAndDefaultExporterServiceSpec<DataModelXmlImporterService, DataModelXmlExporterService>
     implements XmlValidator {
-
-    private static final String NO_DATAMODEL_IDS_TO_EXPORT_CODE = 'DMEP01'
 
     DataModelXmlImporterService dataModelXmlImporterService
     DataModelXmlExporterService dataModelXmlExporterService
@@ -68,12 +66,13 @@ class DataModelXmlExporterServiceSpec extends DataBindImportAndDefaultExporterSe
     void validateExportedModel(String testName, String exportedModel) {
         assert exportedModel, 'There must be an exported model string'
 
-        Path expectedPath = resourcesPath.resolve("${CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, testName)}.xml")
+        Path expectedPath = resourcesPath.resolve("${CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, testName)}.${importType}")
         if (!Files.exists(expectedPath)) {
             Files.writeString(expectedPath, (prettyPrint(exportedModel)))
             Assert.fail("Expected export file ${expectedPath} does not exist")
         }
-        validateAndCompareXml(Files.readString(expectedPath), exportedModel, 'export', exporterService.version)
+
+        validateAndCompareXml(Files.readString(expectedPath), exportedModel.replace(/Mauro Data Mapper/, 'Test Authority'), 'export', exporterService.version)
     }
 
     @Unroll
@@ -167,7 +166,7 @@ class DataModelXmlExporterServiceSpec extends DataBindImportAndDefaultExporterSe
         String exported = exportModels([simpleDataModelId])
 
         then:
-        validateExportedModels('simpleDataModelInList', replaceWithTestAuthority(exported))
+        validateExportedModels('simpleDataModelInList', exported)
     }
 
     void 'test multi-export multiple DataModels'() {
@@ -182,7 +181,7 @@ class DataModelXmlExporterServiceSpec extends DataBindImportAndDefaultExporterSe
         String exported = exportModels([simpleDataModelId, complexDataModelId])
 
         then:
-        validateExportedModels('simpleAndComplexDataModels', replaceWithTestAuthority(exported))
+        validateExportedModels('simpleAndComplexDataModels', exported)
     }
 
     void 'test multi-export DataModels with invalid models'() {
@@ -197,13 +196,13 @@ class DataModelXmlExporterServiceSpec extends DataBindImportAndDefaultExporterSe
         String exported = exportModels([UUID.randomUUID(), simpleDataModelId])
 
         then:
-        validateExportedModels('simpleDataModelInList', replaceWithTestAuthority(exported))
+        validateExportedModels('simpleDataModelInList', exported)
 
         when:
         exported = exportModels([UUID.randomUUID(), simpleDataModelId, UUID.randomUUID(), complexDataModelId])
 
         then:
-        validateExportedModels('simpleAndComplexDataModels', replaceWithTestAuthority(exported))
+        validateExportedModels('simpleAndComplexDataModels', exported)
     }
 
     void 'test multi-export DataModels with duplicates'() {
@@ -218,12 +217,12 @@ class DataModelXmlExporterServiceSpec extends DataBindImportAndDefaultExporterSe
         String exported = exportModels([simpleDataModelId, simpleDataModelId])
 
         then:
-        validateExportedModels('simpleDataModelInList', replaceWithTestAuthority(exported))
+        validateExportedModels('simpleDataModelInList', exported)
 
         when:
         exported = exportModels([simpleDataModelId, complexDataModelId, complexDataModelId, simpleDataModelId])
 
         then:
-        validateExportedModels('simpleAndComplexDataModels', replaceWithTestAuthority(exported))
+        validateExportedModels('simpleAndComplexDataModels', exported)
     }
 }

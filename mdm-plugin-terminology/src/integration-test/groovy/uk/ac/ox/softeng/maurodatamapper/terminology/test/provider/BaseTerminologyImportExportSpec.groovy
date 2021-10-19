@@ -17,13 +17,17 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.test.provider
 
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FileParameter
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
-import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.TerminologyImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.terminology.TerminologyService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.DataBindTerminologyImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.terminology.test.BaseTerminologyIntegrationSpec
 
 import grails.testing.spock.OnceBefore
 import grails.util.BuildSettings
 import groovy.util.logging.Slf4j
+import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Shared
 
 import java.nio.file.Files
@@ -34,7 +38,10 @@ import java.nio.file.Paths
  * @since 20/11/2017
  */
 @Slf4j
-abstract class BaseImportExportTerminologySpec extends BaseTerminologyIntegrationSpec {
+abstract class BaseTerminologyImportExportSpec extends BaseTerminologyIntegrationSpec {
+
+    @Autowired
+    TerminologyService terminologyService
 
     @Shared
     Path resourcesPath
@@ -45,9 +52,30 @@ abstract class BaseImportExportTerminologySpec extends BaseTerminologyIntegratio
     @Shared
     UUID complexTerminologyId
 
-    abstract TerminologyImporterProviderService getImporterService()
+    @Shared
+    TerminologyFileImporterProviderServiceParameters basicParameters
+
+    def setupSpec() {
+        basicParameters = new TerminologyFileImporterProviderServiceParameters().tap {
+            importAsNewBranchModelVersion = false
+            importAsNewDocumentationVersion = false
+            finalised = false
+        }
+    }
+
+    abstract DataBindTerminologyImporterProviderService getImporterService()
 
     abstract String getImportType()
+
+    void cleanupParameters() {
+        basicParameters.tap {
+            importAsNewBranchModelVersion = false
+            importAsNewDocumentationVersion = false
+            finalised = false
+            propagateFromPreviousVersion = false
+            importFile = null
+        }
+    }
 
     @OnceBefore
     void setupResourcesPath() {
@@ -69,7 +97,27 @@ abstract class BaseImportExportTerminologySpec extends BaseTerminologyIntegratio
         Files.readAllBytes(testFilePath)
     }
 
-    void confirmTerminology(Terminology terminology) {
+    Terminology importModel(byte[] bytes) {
+        log.trace('Importing:\n {}', new String(bytes))
+        basicParameters.importFile = new FileParameter(fileContents: bytes)
+
+        Terminology imported = importerService.importDomain(admin, basicParameters) as Terminology
+        assert imported
+        imported.folder = testFolder
+
+        log.info('Checking imported model')
+        check(imported)
+
+        log.info('Saving imported model')
+        assert terminologyService.saveModelWithContent(imported)
+        sessionFactory.currentSession.flush()
+        // assert terminologyService.count() == 3
+        log.debug('Terminology saved')
+
+        terminologyService.get(imported.id)
+    }
+
+    Terminology confirmTerminology(Terminology terminology) {
         assert terminology
         assert terminology.label == 'Imported Test Terminology'
         assert terminology.modelType == 'Terminology'
@@ -84,5 +132,13 @@ abstract class BaseImportExportTerminologySpec extends BaseTerminologyIntegratio
         assert terminology.breadcrumbTree
         assert terminology.breadcrumbTree.domainId == terminology.id
         assert terminology.breadcrumbTree.label == terminology.label
+        terminology
+    }
+
+    Terminology importAndConfirm(byte[] bytes) {
+        importModel(bytes)
+        Terminology tm = Terminology.listOrderByDateCreated().last()
+        log.info('Confirming imported model')
+        confirmTerminology(tm)
     }
 }

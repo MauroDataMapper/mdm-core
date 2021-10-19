@@ -44,33 +44,35 @@ import static org.junit.Assert.assertTrue
 class TerminologyXmlExporterServiceSpec extends DataBindTerminologyImportAndDefaultExporterServiceSpec<TerminologyXmlImporterService, TerminologyXmlExporterService>
     implements XmlValidator {
 
-    private static final String NO_TERMINOLOGY_IDS_TO_EXPORT_CODE = 'TEEP01'
-
     TerminologyXmlImporterService terminologyXmlImporterService
     TerminologyXmlExporterService terminologyXmlExporterService
 
-    String getImportType() {
-        'xml'
-    }
-
+    @Override
     TerminologyXmlImporterService getImporterService() {
         terminologyXmlImporterService
     }
 
+    @Override
     TerminologyXmlExporterService getExporterService() {
         terminologyXmlExporterService
+    }
+
+    @Override
+    String getImportType() {
+        'xml'
     }
 
     @Override
     void validateExportedModel(String testName, String exportedModel) {
         assert exportedModel, 'There must be an exported model string'
 
-        Path expectedPath = resourcesPath.resolve("${CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, testName)}.xml")
+        Path expectedPath = resourcesPath.resolve("${CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, testName)}.${importType}")
         if (!Files.exists(expectedPath)) {
             Files.writeString(expectedPath, (prettyPrint(exportedModel)))
             Assert.fail("Expected export file ${expectedPath} does not exist")
         }
-        validateAndCompareXml(Files.readString(expectedPath), exportedModel, 'export', exporterService.version)
+
+        validateAndCompareXml(Files.readString(expectedPath), exportedModel.replace(/Mauro Data Mapper/, 'Test Authority'), 'export', exporterService.version)
     }
 
     @Unroll
@@ -154,7 +156,7 @@ class TerminologyXmlExporterServiceSpec extends DataBindTerminologyImportAndDefa
         String exported = exportModels([simpleTerminologyId])
 
         then:
-        validateExportedModels('simpleTerminologyInList', replaceWithTestAuthority(exported))
+        validateExportedModels('simpleTerminologyInList', exported)
     }
 
     void 'test multi-export multiple Terminologies'() {
@@ -169,7 +171,7 @@ class TerminologyXmlExporterServiceSpec extends DataBindTerminologyImportAndDefa
         String exported = exportModels([simpleTerminologyId, complexTerminologyId])
 
         then:
-        validateExportedModels('simpleAndComplexTerminologies', replaceWithTestAuthority(exported))
+        validateExportedModels('simpleAndComplexTerminologies', exported)
     }
 
     void 'test multi-export Terminologies with invalid models'() {
@@ -184,13 +186,13 @@ class TerminologyXmlExporterServiceSpec extends DataBindTerminologyImportAndDefa
         String exported = exportModels([UUID.randomUUID(), simpleTerminologyId])
 
         then:
-        validateExportedModels('simpleTerminologyInList', replaceWithTestAuthority(exported))
+        validateExportedModels('simpleTerminologyInList', exported)
 
         when:
         exported = exportModels([UUID.randomUUID(), simpleTerminologyId, UUID.randomUUID(), complexTerminologyId])
 
         then:
-        validateExportedModels('simpleAndComplexTerminologies', replaceWithTestAuthority(exported))
+        validateExportedModels('simpleAndComplexTerminologies', exported)
     }
 
     void 'test multi-export Terminologies with duplicates'() {
@@ -205,12 +207,12 @@ class TerminologyXmlExporterServiceSpec extends DataBindTerminologyImportAndDefa
         String exported = exportModels([simpleTerminologyId, simpleTerminologyId])
 
         then:
-        validateExportedModels('simpleTerminologyInList', replaceWithTestAuthority(exported))
+        validateExportedModels('simpleTerminologyInList', exported)
 
         when:
         exported = exportModels([simpleTerminologyId, complexTerminologyId, complexTerminologyId, simpleTerminologyId])
 
         then:
-        validateExportedModels('simpleAndComplexTerminologies', replaceWithTestAuthority(exported))
+        validateExportedModels('simpleAndComplexTerminologies', exported)
     }
 }

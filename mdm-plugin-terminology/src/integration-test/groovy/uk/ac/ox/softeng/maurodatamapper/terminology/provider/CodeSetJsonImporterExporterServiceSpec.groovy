@@ -28,31 +28,22 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
-import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSetService
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.CodeSetJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.CodeSetJsonImporterService
-import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters
-import uk.ac.ox.softeng.maurodatamapper.terminology.test.BaseCodeSetIntegrationSpec
+import uk.ac.ox.softeng.maurodatamapper.terminology.test.BaseCodeSetImportExportAndIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.test.json.JsonComparer
-import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import com.google.common.base.CaseFormat
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
-import grails.util.BuildSettings
 import groovy.util.logging.Slf4j
 import org.junit.Assert
-import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.PendingFeature
-import spock.lang.Shared
 
-import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 
 /**
  * @since 17/09/2020
@@ -60,62 +51,31 @@ import java.nio.file.Paths
 @Integration
 @Rollback
 @Slf4j
-class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec implements JsonComparer {
+class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetImportExportAndIntegrationSpec<CodeSetJsonImporterService, CodeSetJsonExporterService>
+    implements JsonComparer {
 
     private static final String CANNOT_IMPORT_EMPTY_CONTENT_CODE = 'JIS02'
     private static final String CANNOT_IMPORT_JSON_CODE = 'JIS03'
-    private static final String NO_CODESET_IDS_TO_EXPORT_CODE = 'CSEP01'
-
-    @Autowired
-    CodeSetService codeSetService
-
-    @Shared
-    Path resourcesPath
-
-    @Shared
-    UUID simpleCodeSetId
-
-    @Shared
-    UUID complexCodeSetId
-
-    @Shared
-    UUID simpleTerminologyId
-
-    @Shared
-    CodeSetFileImporterProviderServiceParameters basicParameters
 
     CodeSetJsonImporterService codeSetJsonImporterService
     CodeSetJsonExporterService codeSetJsonExporterService
 
-    def setupSpec() {
-        basicParameters = new CodeSetFileImporterProviderServiceParameters().tap {
-            importAsNewBranchModelVersion = false
-            importAsNewDocumentationVersion = false
-            finalised = false
-        }
-    }
-
+    @Override
     CodeSetJsonImporterService getImporterService() {
         codeSetJsonImporterService
     }
 
+    @Override
     CodeSetJsonExporterService getExporterService() {
         codeSetJsonExporterService
     }
 
+    @Override
     String getImportType() {
         'json'
     }
 
-    void cleanupParameters() {
-        basicParameters.tap {
-            importAsNewBranchModelVersion = false
-            importAsNewDocumentationVersion = false
-            finalised = false
-            propagateFromPreviousVersion = false
-        }
-    }
-
+    @Override
     void validateExportedModel(String testName, String exportedModel) {
         assert exportedModel, 'There must be an exported model string'
 
@@ -126,108 +86,7 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         }
 
         String expectedJson = replaceContentWithMatchers(Files.readString(expectedPath))
-        verifyJson(expectedJson, exportedModel)
-    }
-
-    void validateExportedModels(String testName, String exportedModels) {
-        validateExportedModel(testName, exportedModels)
-    }
-
-    @OnceBefore
-    void setupResourcesPath() {
-        resourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', importType)
-        assert getImporterService()
-    }
-
-    @Override
-    void setupDomainData() {
-        log.debug('Setting up CodeSetServiceSpec unit')
-
-        simpleCodeSetId = simpleCodeSet.id
-        complexCodeSetId = complexCodeSet.id
-        simpleTerminologyId = simpleTerminology.id
-    }
-
-    byte[] loadTestFile(String filename) {
-        Path testFilePath = resourcesPath.resolve("${filename}.${importType}").toAbsolutePath()
-        assert Files.exists(testFilePath)
-        Files.readAllBytes(testFilePath)
-    }
-
-    String exportModel(UUID codeSetId) {
-        ByteArrayOutputStream byteArrayOutputStream = exporterService.exportDomain(admin, codeSetId)
-        new String(byteArrayOutputStream.toByteArray(), Charset.defaultCharset())
-    }
-
-    String exportModels(List<UUID> codeSetIds) {
-        new String(exporterService.exportDomains(admin, codeSetIds).toByteArray(), Charset.defaultCharset())
-    }
-
-    CodeSet importAndConfirm(byte[] bytes) {
-        CodeSet imported = importerService.importCodeSet(admin, bytes)
-
-        assert imported
-        imported.folder = testFolder
-        log.info('Checking imported model')
-        importerService.checkImport(admin, imported, basicParameters)
-        check(imported)
-        log.info('Saving imported model')
-        assert codeSetService.saveModelWithContent(imported)
-        sessionFactory.currentSession.flush()
-        assert codeSetService.count() == 3
-
-        CodeSet codeSet = codeSetService.get(imported.id)
-
-        log.info('Confirming imported model')
-
-        confirmCodeSet(codeSet)
-        codeSet
-    }
-
-    CodeSet importModel(byte[] bytes) {
-        CodeSet imported = importerService.importCodeSet(admin, bytes)
-        assert imported
-        imported.folder = testFolder
-        log.info('Checking imported model')
-        importerService.checkImport(admin, imported, basicParameters)
-        check(imported)
-        assert codeSetService.saveModelWithContent(imported)
-        sessionFactory.currentSession.flush()
-
-        CodeSet codeSet = codeSetService.get(imported.id)
-        codeSet
-    }
-
-    List<CodeSet> importModels(byte[] bytes) {
-        List<CodeSet> imported = importerService.importCodeSets(admin, bytes)
-        imported.each {
-            it.folder = testFolder
-            importerService.checkImport(admin, it, basicParameters)
-            check(it)
-            assert codeSetService.saveModelWithContent(it)
-        }
-        sessionFactory.currentSession.flush()
-        imported.collect { codeSetService.get(it.id) }
-    }
-
-    void confirmCodeSet(codeSet) {
-        assert codeSet
-        assert codeSet.createdBy == admin.emailAddress
-    }
-
-    CodeSet clearExpectedDiffsFromImport(CodeSet codeSet) {
-        codeSet.tap {
-            finalised = true
-            modelVersion = new Version(major: 1, minor: 0, patch: 0)
-        }
-    }
-
-    List<CodeSet> clearExpectedDiffsFromModels(List<UUID> modelIds) {
-        modelIds.collect {
-            codeSetService.get(it).tap {
-                dateFinalised = null
-            }
-        }
+        verifyJson(expectedJson, exportedModel.replace(/Mauro Data Mapper/, 'Test Authority'))
     }
 
     void 'test that trying to export when specifying a null codeSetId fails with an exception'() {
@@ -974,7 +833,7 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         String exported = exportModels([simpleCodeSetId])
 
         then:
-        validateExportedModels('simpleCodeSetInList', replaceWithTestAuthority(exported))
+        validateExportedModels('simpleCodeSetInList', exported)
     }
 
     void 'test multi-export multiple CodeSets'() {
@@ -989,7 +848,7 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         String exported = exportModels([simpleCodeSetId, complexCodeSetId])
 
         then:
-        validateExportedModels('simpleAndComplexCodeSets', replaceWithTestAuthority(exported))
+        validateExportedModels('simpleAndComplexCodeSets', exported)
     }
 
     void 'test multi-export CodeSets with invalid models'() {
@@ -1004,13 +863,13 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         String exported = exportModels([UUID.randomUUID(), simpleCodeSetId])
 
         then:
-        validateExportedModels('simpleCodeSetInList', replaceWithTestAuthority(exported))
+        validateExportedModels('simpleCodeSetInList', exported)
 
         when:
         exported = exportModels([UUID.randomUUID(), simpleCodeSetId, UUID.randomUUID(), complexCodeSetId])
 
         then:
-        validateExportedModels('simpleAndComplexCodeSets', replaceWithTestAuthority(exported))
+        validateExportedModels('simpleAndComplexCodeSets', exported)
     }
 
     void 'test multi-export CodeSets with duplicates'() {
@@ -1025,12 +884,12 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         String exported = exportModels([simpleCodeSetId, simpleCodeSetId])
 
         then:
-        validateExportedModels('simpleCodeSetInList', replaceWithTestAuthority(exported))
+        validateExportedModels('simpleCodeSetInList', exported)
 
         when:
         exported = exportModels([simpleCodeSetId, complexCodeSetId, complexCodeSetId, simpleCodeSetId])
 
         then:
-        validateExportedModels('simpleAndComplexCodeSets', replaceWithTestAuthority(exported))
+        validateExportedModels('simpleAndComplexCodeSets', exported)
     }
 }

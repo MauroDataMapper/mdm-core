@@ -43,7 +43,6 @@ import groovy.util.logging.Slf4j
 @Slf4j
 class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProviderServiceSpec<TerminologyJsonImporterService> implements JsonComparer {
 
-    private static final String CANNOT_IMPORT_EMPTY_CONTENT_CODE = 'JIS02'
     private static final String CANNOT_IMPORT_JSON_CODE = 'JIS03'
 
     TerminologyJsonImporterService terminologyJsonImporterService
@@ -66,7 +65,7 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
         Terminology.count() == 2
 
         when:
-        Terminology terminology = importAndSave(loadTestFile('trimmingIssue'))
+        Terminology terminology = importModel(loadTestFile('trimmingIssue'))
 
         then:
         terminology.termRelationshipTypes.size() == 1
@@ -126,7 +125,7 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
         checkAndSave(terminology)
 
         when:
-        Terminology term = importAndSave(loadTestFile('simpleTerminology'))
+        Terminology term = importModel(loadTestFile('simpleTerminology'))
 
         then:
         term.annotations.find { it.label == testAnnotation.label }
@@ -182,7 +181,7 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
         checkAndSave(term)
 
         when:
-        Terminology tm = importAndSave(loadTestFile('complexTerminology'))
+        Terminology tm = importModel(loadTestFile('complexTerminology'))
         term = tm.terms.find { it.code == 'CTT1' }
 
         then:

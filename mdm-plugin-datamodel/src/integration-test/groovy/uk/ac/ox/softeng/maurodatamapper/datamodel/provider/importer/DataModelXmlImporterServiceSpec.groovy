@@ -35,7 +35,6 @@ import spock.lang.PendingFeature
 @Slf4j
 class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderServiceSpec<DataModelXmlImporterService> {
 
-    private static final String CANNOT_IMPORT_EMPTY_FILE_CODE = 'FBIP02'
     private static final String NO_DATAMODEL_TO_IMPORT_CODE = 'FBIP03'
 
     DataModelXmlImporterService dataModelXmlImporterService

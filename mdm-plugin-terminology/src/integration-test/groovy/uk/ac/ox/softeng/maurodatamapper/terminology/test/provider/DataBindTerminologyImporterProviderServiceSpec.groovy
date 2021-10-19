@@ -19,82 +19,46 @@ package uk.ac.ox.softeng.maurodatamapper.terminology.test.provider
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FileParameter
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.DataBindTerminologyImporterProviderService
-import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyImporterProviderServiceParameters
 
 import grails.gorm.transactions.Rollback
 import groovy.util.logging.Slf4j
 import spock.lang.Ignore
-import spock.lang.Shared
 
 /**
  * @since 15/11/2017
  */
 @Rollback
 @Slf4j
-@SuppressWarnings('DuplicatedCode')
-abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBindTerminologyImporterProviderService> extends BaseImportExportTerminologySpec {
+abstract class DataBindTerminologyImporterProviderServiceSpec<I extends DataBindTerminologyImporterProviderService> extends BaseTerminologyImportExportSpec {
 
-    @Shared
-    TerminologyImporterProviderServiceParameters basicParameters
+    static final String CANNOT_IMPORT_EMPTY_CONTENT_CODE = 'FBIP02'
 
-    def setupSpec() {
-        basicParameters = new TerminologyImporterProviderServiceParameters().tap {
-            importAsNewBranchModelVersion = false
-            importAsNewDocumentationVersion = false
-            finalised = false
-        }
-    }
-
-    abstract K getImporterService()
-
-    void cleanupParameters() {
-        basicParameters.tap {
-            importAsNewBranchModelVersion = false
-            importAsNewDocumentationVersion = false
-            finalised = false
-            propagateFromPreviousVersion = false
-        }
-    }
-
-    Terminology importAndSave(byte[] bytes) {
-        log.trace('Importing:\n {}', new String(bytes))
-
-        Terminology imported = importerService.importTerminology(admin, bytes)
-        assert imported
-        imported.folder = testFolder
-        log.debug('Check and save imported model')
-        importerService.checkImport(admin, imported, basicParameters)
-        check(imported)
-        terminologyService.saveModelWithContent(imported)
-        sessionFactory.currentSession.flush()
-        assert terminologyService.count() == 3
-        log.debug('Terminology saved')
-        terminologyService.get(imported.id)
-    }
+    abstract I getImporterService()
 
     List<Terminology> importModels(byte[] bytes) {
         log.trace('Importing:\n {}', new String(bytes))
+        basicParameters.importFile = new FileParameter(fileContents: bytes)
 
-        List<Terminology> imported = importerService.importTerminologies(admin, bytes)
+        List<Terminology> imported = importerService.importDomains(admin, basicParameters) as List<Terminology>
         imported.each {
+            assert it
             it.folder = testFolder
-            log.debug('Check and save imported model')
-            importerService.checkImport(admin, it, basicParameters)
+
+            log.info('Checking imported model')
             check(it)
-            terminologyService.saveModelWithContent(it)
+
+            log.info('Saving imported model')
+            assert terminologyService.saveModelWithContent(it)
+            log.debug('Terminology saved')
         }
         sessionFactory.currentSession.flush()
         log.debug('Terminologies saved')
-        imported.collect { terminologyService.get(it.id) }
-    }
 
-    Terminology importAndConfirm(byte[] bytes) {
-        Terminology tm = importAndSave(bytes)
-        confirmTerminology(tm)
-        tm
+        imported.collect { terminologyService.get(it.id) }
     }
 
     List<Terminology> clearExpectedDiffsFromModels(List<UUID> modelIds) {

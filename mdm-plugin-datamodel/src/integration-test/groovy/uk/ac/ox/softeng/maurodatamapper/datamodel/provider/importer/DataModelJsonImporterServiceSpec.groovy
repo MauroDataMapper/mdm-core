@@ -59,7 +59,6 @@ import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddre
 @Slf4j
 class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProviderServiceSpec<DataModelJsonImporterService> {
 
-    private static final String CANNOT_IMPORT_EMPTY_FILE_CODE = 'FBIP02'
     private static final String CANNOT_IMPORT_JSON_CODE = 'JIS03'
 
     DataModelJsonImporterService dataModelJsonImporterService

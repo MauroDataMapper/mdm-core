@@ -17,14 +17,18 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.test.provider
 
-import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FileParameter
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataBindDataModelImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.BaseDataModelIntegrationSpec
 
 import grails.testing.spock.OnceBefore
 import grails.util.BuildSettings
 import groovy.util.logging.Slf4j
+import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Shared
 
 import java.nio.file.Files
@@ -35,10 +39,13 @@ import java.nio.file.Paths
  * @since 20/11/2017
  */
 @Slf4j
-abstract class BaseImportExportSpec extends BaseDataModelIntegrationSpec {
+abstract class BaseDataModelImportExportSpec extends BaseDataModelIntegrationSpec {
 
-    public static final String COMPLETE_DATAMODEL_EXPORT_FILENAME = 'export_cancer_audits'
-    public static final String DATAMODEL_WITH_DATATYPES_FILENAME = 'export_with_datatypes_only'
+    static final String COMPLETE_DATAMODEL_EXPORT_FILENAME = 'export_cancer_audits'
+    static final String DATAMODEL_WITH_DATATYPES_FILENAME = 'export_with_datatypes_only'
+
+    @Autowired
+    DataModelService dataModelService
 
     @Shared
     Path resourcesPath
@@ -49,9 +56,30 @@ abstract class BaseImportExportSpec extends BaseDataModelIntegrationSpec {
     @Shared
     UUID complexDataModelId
 
-    abstract ImporterProviderService getImporterService()
+    @Shared
+    DataModelFileImporterProviderServiceParameters basicParameters
+
+    def setupSpec() {
+        basicParameters = new DataModelFileImporterProviderServiceParameters().tap {
+            importAsNewBranchModelVersion = false
+            importAsNewDocumentationVersion = false
+            finalised = false
+        }
+    }
+
+    abstract DataBindDataModelImporterProviderService getImporterService()
 
     abstract String getImportType()
+
+    void cleanupParameters() {
+        basicParameters.tap {
+            importAsNewBranchModelVersion = false
+            importAsNewDocumentationVersion = false
+            finalised = false
+            propagateFromPreviousVersion = false
+            importFile = null
+        }
+    }
 
     @OnceBefore
     void setupResourcesPath() {
@@ -73,7 +101,27 @@ abstract class BaseImportExportSpec extends BaseDataModelIntegrationSpec {
         Files.readAllBytes(testFilePath)
     }
 
-    void confirmDataModel(DataModel dataModel) {
+    DataModel importModel(byte[] bytes) {
+        log.trace('Importing:\n {}', new String(bytes))
+        basicParameters.importFile = new FileParameter(fileContents: bytes)
+
+        DataModel imported = importerService.importDomain(admin, basicParameters) as DataModel
+        assert imported
+        imported.folder = testFolder
+
+        log.info('Checking imported model')
+        check(imported)
+
+        log.info('Saving imported model')
+        assert dataModelService.saveModelWithContent(imported)
+        sessionFactory.currentSession.flush()
+        // assert dataModelService.count() == 3
+        log.debug('DataModel saved')
+
+        dataModelService.get(imported.id)
+    }
+
+    DataModel confirmDataModel(DataModel dataModel) {
         assert dataModel
         assert dataModel.label == 'National Minimum Data Set for Thoracic Surgery and Lung Cancer Surgery'
         assert dataModel.modelType == DataModelType.DATA_STANDARD.label
@@ -84,5 +132,13 @@ abstract class BaseImportExportSpec extends BaseDataModelIntegrationSpec {
         assert dataModel.breadcrumbTree
         assert dataModel.breadcrumbTree.domainId == dataModel.id
         assert dataModel.breadcrumbTree.label == dataModel.label
+        dataModel
+    }
+
+    DataModel importAndConfirm(byte[] bytes) {
+        importModel(bytes)
+        DataModel dm = DataModel.listOrderByDateCreated().last()
+        log.info('Confirming imported model')
+        confirmDataModel(dm)
     }
 }
