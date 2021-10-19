@@ -1100,10 +1100,10 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         GET("${testMergeData.target}/metadata")
 
         then:
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyOnSource'}.value == 'source has modified this'
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyAndDelete'}.value == 'source has modified this also'
-        !responseBody().items.find {it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource'}
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'addToSourceOnly'}
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyOnSource' }.value == 'source has modified this'
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyAndDelete' }.value == 'source has modified this also'
+        !responseBody().items.find { it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource' }
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'addToSourceOnly' }
 
         cleanup:
         builder.cleanupTestMergeData(testMergeData)
@@ -1195,7 +1195,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
     void 'test delete multiple models'() {
         given:
         def idstoDelete = []
-        (1..4).each {n ->
+        (1..4).each { n ->
             idstoDelete << createNewItem([
                 folder: folderId,
                 label : UUID.randomUUID().toString()
@@ -2199,8 +2199,8 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         then:
         verifyResponse OK, response
         responseBody().count == 2
-        responseBody().items.any {it.id == data.codeSet1Id}
-        responseBody().items.any {it.id == data.codeSet4Id}
+        responseBody().items.any { it.id == data.codeSet1Id }
+        responseBody().items.any { it.id == data.codeSet4Id }
 
         when: 'term has a codeset'
         GET("terminologies/${data.terminologyId}/terms/${data.term2Id}/codeSets", MAP_ARG, true)
@@ -2208,7 +2208,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         then:
         verifyResponse OK, response
         responseBody().count == 1
-        responseBody().items.any {it.id == data.codeSet1Id}
+        responseBody().items.any { it.id == data.codeSet1Id }
 
         when: 'term has no codesets'
         GET("terminologies/${data.terminologyId}/terms/${data.term3Id}/codeSets", MAP_ARG, true)

@@ -66,9 +66,9 @@ class FeedFunctionalSpec extends FunctionalSpec {
         then:
         GPathResult feed = verifyBaseAtomResponse(xmlResponse, true, 'localhost')
         feed.entry.size() == 3
-        verifyEntry(feed.entry.find {it.title == 'Simple Test CodeSet 1.0.0'}, 'CodeSet',
+        verifyEntry(feed.entry.find { it.title == 'Simple Test CodeSet 1.0.0' }, 'CodeSet',
                     "http://localhost:$serverPort", 'codeSets')
-        verifyEntry(feed.entry.find {it.title == 'Finalised Example Test DataModel 1.0.0'}, 'DataModel',
+        verifyEntry(feed.entry.find { it.title == 'Finalised Example Test DataModel 1.0.0' }, 'DataModel',
                     "http://localhost:$serverPort", 'dataModels')
     }
 
@@ -88,17 +88,17 @@ class FeedFunctionalSpec extends FunctionalSpec {
         GPathResult feed = verifyBaseAtomResponse(xmlResponse, true, 'www.mauro-data-mapper.com', '/cdw')
 
         when:
-        def selfLink = feed.link.find {it.@rel == 'self'}
+        def selfLink = feed.link.find { it.@rel == 'self' }
 
         then:
         selfLink
         selfLink.@href == 'https://www.mauro-data-mapper.com/cdw/api/feeds/all'
 
         and:
-        verifyEntry(feed.entry.find {it.title == 'Simple Test CodeSet 1.0.0'}, 'CodeSet',
+        verifyEntry(feed.entry.find { it.title == 'Simple Test CodeSet 1.0.0' }, 'CodeSet',
                     'https://www.mauro-data-mapper.com/cdw',
                     'codeSets')
-        verifyEntry(feed.entry.find {it.title == 'Finalised Example Test DataModel 1.0.0'}, 'DataModel',
+        verifyEntry(feed.entry.find { it.title == 'Finalised Example Test DataModel 1.0.0' }, 'DataModel',
                     'https://www.mauro-data-mapper.com/cdw',
                     'dataModels')
     }
@@ -138,11 +138,10 @@ class FeedFunctionalSpec extends FunctionalSpec {
         assert entry.category.@term == category
         assert entry.link.size() == 2
 
-        def selfLink = entry.link.find {it.@rel == 'self'}
+        def selfLink = entry.link.find { it.@rel == 'self' }
         assert selfLink.@href ==~ /$linkBaseUrl\/api\/${modelEndpoint}\/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
 
-        def altLink = entry.link.find {it.@rel == 'alternate'}
+        def altLink = entry.link.find { it.@rel == 'alternate' }
         assert altLink.@href ==~ /$linkBaseUrl\/api\/${modelEndpoint}\/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
-
     }
 }

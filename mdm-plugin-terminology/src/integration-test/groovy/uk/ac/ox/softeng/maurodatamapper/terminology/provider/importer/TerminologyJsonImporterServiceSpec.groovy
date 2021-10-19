@@ -73,8 +73,8 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
         terminology.terms.size() == 2
 
         when:
-        Term a = terminology.terms.find {it.code == 'A'}
-        Term b = terminology.terms.find {it.code == 'B'}
+        Term a = terminology.terms.find { it.code == 'A' }
+        Term b = terminology.terms.find { it.code == 'B' }
 
         then:
         a
@@ -129,13 +129,13 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
         Terminology term = importAndSave(loadTestFile('simpleTerminology'))
 
         then:
-        term.annotations.find {it.label == testAnnotation.label}
-        term.classifiers.find {it.label == testClassifier.label}
-        term.metadata.find {it.namespace == testMetadata.namespace}
-        term.rules.find {it.name == testRule.name}
-        term.semanticLinks.find {it.targetMultiFacetAwareItemId == testSemanticLink.targetMultiFacetAwareItemId}
-        term.semanticLinks.find {it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType}
-        term.referenceFiles.find {it.fileName == testReferenceFile.fileName}
+        term.annotations.find { it.label == testAnnotation.label }
+        term.classifiers.find { it.label == testClassifier.label }
+        term.metadata.find { it.namespace == testMetadata.namespace }
+        term.rules.find { it.name == testRule.name }
+        term.semanticLinks.find { it.targetMultiFacetAwareItemId == testSemanticLink.targetMultiFacetAwareItemId }
+        term.semanticLinks.find { it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType }
+        term.referenceFiles.find { it.fileName == testReferenceFile.fileName }
 
         cleanup:
         cleanupParameters()
@@ -150,7 +150,7 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
         basicParameters.propagateFromPreviousVersion = true
 
         Terminology terminology = Terminology.findById(complexTerminologyId)
-        Term term = terminology.terms.find {it.code == 'CTT1'}
+        Term term = terminology.terms.find { it.code == 'CTT1' }
 
         Annotation testAnnotation = new Annotation(label: 'propagationTest', description: 'propagationTest', createdBy: admin.emailAddress)
         Classifier testClassifier = new Classifier(label: 'propagationTest', createdBy: admin.emailAddress).save()
@@ -171,37 +171,37 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
 
         checkAndSave(term)
 
-        term = terminology.terms.find {it.code == 'CTT2'}
+        term = terminology.terms.find { it.code == 'CTT2' }
         term.description = 'Some interesting thing we should preserve'
 
         checkAndSave(term)
 
-        term = terminology.terms.find {it.code == 'CTT101'}
+        term = terminology.terms.find { it.code == 'CTT101' }
         term.description = 'Some interesting thing we should lose'
 
         checkAndSave(term)
 
         when:
         Terminology tm = importAndSave(loadTestFile('complexTerminology'))
-        term = tm.terms.find {it.code == 'CTT1'}
+        term = tm.terms.find { it.code == 'CTT1' }
 
         then:
-        term.metadata.find {it.namespace == testMetadata.namespace}
-        term.annotations.find {it.label == testAnnotation.label}
-        term.classifiers.find {it.label == testClassifier.label}
-        term.rules.find {it.name == testRule.name}
-        term.semanticLinks.find {it.targetMultiFacetAwareItemId == testSemanticLink.targetMultiFacetAwareItemId}
-        term.semanticLinks.find {it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType}
-        term.referenceFiles.find {it.fileName == testReferenceFile.fileName}
+        term.metadata.find { it.namespace == testMetadata.namespace }
+        term.annotations.find { it.label == testAnnotation.label }
+        term.classifiers.find { it.label == testClassifier.label }
+        term.rules.find { it.name == testRule.name }
+        term.semanticLinks.find { it.targetMultiFacetAwareItemId == testSemanticLink.targetMultiFacetAwareItemId }
+        term.semanticLinks.find { it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType }
+        term.referenceFiles.find { it.fileName == testReferenceFile.fileName }
 
         when:
-        term = tm.terms.find {it.code == 'CTT2'}
+        term = tm.terms.find { it.code == 'CTT2' }
 
         then:
         term.description == 'Some interesting thing we should preserve'
 
         when:
-        term = tm.terms.find {it.code == 'CTT101'}
+        term = tm.terms.find { it.code == 'CTT101' }
 
         then: 'description is not overwritten as it was included in the import'
         term.description == 'Example of truncated term label when code and definition are the same'

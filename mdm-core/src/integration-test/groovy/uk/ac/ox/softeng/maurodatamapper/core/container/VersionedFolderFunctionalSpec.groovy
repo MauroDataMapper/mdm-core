@@ -153,7 +153,7 @@ class VersionedFolderFunctionalSpec extends ResourceFunctionalSpec<VersionedFold
 
         cleanup:
 
-        createdIds.each {id ->
+        createdIds.each { id ->
             DELETE(getDeleteEndpoint(id))
             assert response.status() == HttpStatus.NO_CONTENT
         }

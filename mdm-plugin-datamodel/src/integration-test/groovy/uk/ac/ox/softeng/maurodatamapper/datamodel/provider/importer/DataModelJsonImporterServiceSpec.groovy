@@ -93,26 +93,26 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         DataModel dm = importModel(loadTestFile('incDataClassWithChildrenAndMetadata'))
 
         then:
-        dm.dataClasses.find {it.label == 'parent'}.metadata.size() == 1
-        dm.dataClasses.find {it.label == 'content'}.metadata.size() == 1
+        dm.dataClasses.find { it.label == 'parent' }.metadata.size() == 1
+        dm.dataClasses.find { it.label == 'content' }.metadata.size() == 1
 
         when:
-        Metadata md = dm.dataClasses.find {it.label == 'parent'}.metadata[0]
+        Metadata md = dm.dataClasses.find { it.label == 'parent' }.metadata[0]
 
         then:
         md.namespace == 'ox.softeng.maurodatamapper.dataloaders.cancer.audits'
         md.key == 'SCTSImport'
         md.value == '0.1'
-        md.multiFacetAwareItemId == dm.dataClasses.find {it.label == 'parent'}.id
+        md.multiFacetAwareItemId == dm.dataClasses.find { it.label == 'parent' }.id
 
         when:
-        md = dm.dataClasses.find {it.label == 'content'}.metadata[0]
+        md = dm.dataClasses.find { it.label == 'content' }.metadata[0]
 
         then:
         md.namespace == 'ox.softeng.maurodatamapper.dataloaders.cancer.audits'
         md.key == 'SCTSImport'
         md.value == '0.1'
-        md.multiFacetAwareItemId == dm.dataClasses.find {it.label == 'content'}.id
+        md.multiFacetAwareItemId == dm.dataClasses.find { it.label == 'content' }.id
     }
 
     void 'F01 : test import as finalised'() {
@@ -253,7 +253,7 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         !dm.modelVersion
         dm.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         dm.versionLinks.size() == 1
-        dm.versionLinks.find {it.targetModelId == v1.id}
+        dm.versionLinks.find { it.targetModelId == v1.id }
 
         cleanup:
         basicParameters.importAsNewBranchModelVersion = false
@@ -275,7 +275,7 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         !dm.modelVersion
         dm.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         dm.versionLinks.size() == 1
-        dm.versionLinks.find {it.targetModelId == v1.id}
+        dm.versionLinks.find { it.targetModelId == v1.id }
 
         and:
         v1.finalised
@@ -323,7 +323,7 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         dm.modelVersion == Version.from('2')
         dm.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         dm.versionLinks.size() == 1
-        dm.versionLinks.find {it.targetModelId == v1.id}
+        dm.versionLinks.find { it.targetModelId == v1.id }
 
         cleanup:
         basicParameters.importAsNewBranchModelVersion = false
@@ -347,7 +347,7 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         dm.modelVersion == Version.from('2')
         dm.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         dm.versionLinks.size() == 1
-        dm.versionLinks.find {it.targetModelId == v1.id}
+        dm.versionLinks.find { it.targetModelId == v1.id }
 
         and:
         v1.modelVersion == Version.from('1')
@@ -519,7 +519,7 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         DataModel dm = importModel(loadTestFile('simpleDataModel'))
 
         then:
-        !dm.dataClasses.find {it.label == dataClass.label}
+        !dm.dataClasses.find { it.label == dataClass.label }
         dm.description == 'Some interesting thing we should preserve'
 
         cleanup:
@@ -535,7 +535,7 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         basicParameters.propagateFromPreviousVersion = true
 
         dataModel = DataModel.findById(complexDataModelId)
-        DataClass dataClass = dataModel.dataClasses.find {it.label == 'parent'}
+        DataClass dataClass = dataModel.dataClasses.find { it.label == 'parent' }
 
         Annotation testAnnotation = new Annotation(label: 'propagationTest', description: 'propagationTest', createdBy: admin.emailAddress)
         Classifier testClassifier = new Classifier(label: 'propagationTest', createdBy: admin.emailAddress).save()
@@ -556,37 +556,37 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
 
         checkAndSave(dataClass)
 
-        dataClass = dataModel.dataClasses.find {it.label == 'child'}
+        dataClass = dataModel.dataClasses.find { it.label == 'child' }
         dataClass.description = 'Some interesting thing we should preserve'
 
         checkAndSave(dataClass)
 
-        dataClass = dataModel.dataClasses.find {it.label == 'content'}
+        dataClass = dataModel.dataClasses.find { it.label == 'content' }
         dataClass.description = 'Some interesting thing we should lose'
 
         checkAndSave(dataClass)
 
         when:
         DataModel dm = importModel(loadTestFile('complexDataModel'))
-        dataClass = dm.dataClasses.find {it.label == 'parent'}
+        dataClass = dm.dataClasses.find { it.label == 'parent' }
 
         then:
-        dataClass.metadata.find {it.namespace == testMetadata.namespace}
-        dataClass.annotations.find {it.label == testAnnotation.label}
-        dataClass.classifiers.find {it.label == testClassifier.label}
-        dataClass.rules.find {it.name == testRule.name}
-        dataClass.semanticLinks.find {it.targetMultiFacetAwareItemId == testSemanticLink.targetMultiFacetAwareItemId}
-        dataClass.semanticLinks.find {it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType}
-        dataClass.referenceFiles.find {it.fileName == testReferenceFile.fileName}
+        dataClass.metadata.find { it.namespace == testMetadata.namespace }
+        dataClass.annotations.find { it.label == testAnnotation.label }
+        dataClass.classifiers.find { it.label == testClassifier.label }
+        dataClass.rules.find { it.name == testRule.name }
+        dataClass.semanticLinks.find { it.targetMultiFacetAwareItemId == testSemanticLink.targetMultiFacetAwareItemId }
+        dataClass.semanticLinks.find { it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType }
+        dataClass.referenceFiles.find { it.fileName == testReferenceFile.fileName }
 
         when:
-        dataClass = dm.dataClasses.find {it.label == 'child'}
+        dataClass = dm.dataClasses.find { it.label == 'child' }
 
         then:
         dataClass.description == 'Some interesting thing we should preserve'
 
         when:
-        dataClass = dm.dataClasses.find {it.label == 'content'}
+        dataClass = dm.dataClasses.find { it.label == 'content' }
 
         then: 'description is not overwritten as it was included in the import'
         dataClass.description == 'A dataclass with elements'

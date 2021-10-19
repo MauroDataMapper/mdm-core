@@ -48,7 +48,6 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         'folders'
     }
 
-
     @Transactional
     String getFolderId() {
         Folder.findByLabel('Functional Test Folder').id.toString()
@@ -323,7 +322,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         verifyResponse(OK, localResponse)
 
         when:
-        Map vfTree = localResponse.body().find {it.id == vfId}
+        Map vfTree = localResponse.body().find { it.id == vfId }
 
         then: 'Both items have no option to create a VF'
         vfTree

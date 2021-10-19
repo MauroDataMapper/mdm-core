@@ -78,7 +78,7 @@ class TerminologyXmlImporterService extends DataBindTerminologyImporterProviderS
 
         if (result.name() == 'terminologies') {
             log.debug('Importing Terminology list')
-            return convertToList(result as NodeChild).collect {bindMapToTerminology(currentUser, it)}
+            return convertToList(result as NodeChild).collect { bindMapToTerminology(currentUser, it) }
         }
 
         // Handle single Terminology map or exportModel passed to this method, for backwards compatibility

@@ -178,7 +178,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
             assert codeSetService.saveModelWithContent(it)
         }
         sessionFactory.currentSession.flush()
-        imported.collect {codeSetService.get(it.id)}
+        imported.collect { codeSetService.get(it.id) }
     }
 
     void confirmCodeSet(codeSet) {

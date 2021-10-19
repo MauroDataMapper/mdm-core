@@ -78,7 +78,7 @@ abstract class DataBindTerminologyImporterProviderService<T extends TerminologyF
     }
 
     void bindTermRelationships(Terminology terminology, List<Map<String, String>> termRelationships) {
-        termRelationships.each {tr ->
+        termRelationships.each { tr ->
             String sourceCode = tr.sourceTerm?.trim()
             String targetCode = tr.targetTerm?.trim()
             String relationshipType = tr.relationshipType?.trim()
