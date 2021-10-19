@@ -1589,25 +1589,40 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         cleanUpData(id)
     }
 
-    void 'EX03 : test export simple CodeSet'() {
+    void 'EX03A : test export simple CodeSet JSON'() {
         given:
+        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importAsNewBranchModelVersion  : true, // Needed to import models
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('simpleTerminologyForCodeSet').toList()
+            ]
+        ], MAP_ARG, true)
+        String expected = new String(loadTestFile('simpleCodeSet')).replace(/Admin User/, 'Unlogged User')
+
+        expect:
+        verifyResponse CREATED, response
+        String terminologyId = response.body().items[0].id
+
+        when:
         POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/4.0', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
             importFile                     : [
-                fileName    : 'FT Import',
                 fileType    : MimeType.JSON_API.name,
                 fileContents: loadTestFile('simpleCodeSet').toList()
             ]
         ])
 
+        then:
         verifyResponse CREATED, response
-        def id = response.body().items[0].id
-        String expected = new String(loadTestFile('simpleCodeSet')).replaceFirst('"exportedBy": "Admin User",',
-                                                                                 '"exportedBy": "Unlogged User",')
+        String id = response.body().items[0].id
 
-        expect:
+        and:
         id
 
         when:
@@ -1618,17 +1633,161 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
         cleanup:
         cleanUpData(id)
+        DELETE("terminologies/${terminologyId}?permanent=true")
     }
 
-    void 'EX04 : test export multiple CodeSets'() {
+    @PendingFeature(reason = 'No means to verify expected XML')
+    void 'EX03B : test export simple CodeSet XML'() {
+        given:
+        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyXmlImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importAsNewBranchModelVersion  : true, // Needed to import models
+            importFile                     : [
+                fileType    : MimeType.XML.name,
+                fileContents: loadTestFile('simpleTerminologyForCodeSet', 'xml').toList()
+            ]
+        ], MAP_ARG, true)
+        String expected = new String(loadTestFile('simpleCodeSet', 'xml')).replace(/Admin User/, 'Unlogged User')
+
+        expect:
+        verifyResponse CREATED, response
+        String terminologyId = response.body().items[0].id
+
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetXmlImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.XML.name,
+                fileContents: loadTestFile('simpleCodeSet', 'xml').toList()
+            ]
+        ])
+
+        then:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+
+        and:
+        id
+
+        when:
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetXmlExporterService/4.0", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, expected
+
+        cleanup:
+        cleanUpData(id)
+        DELETE("terminologies/${terminologyId}?permanent=true")
+    }
+
+    @PendingFeature(reason = 'Text ${json-unit.matches:offsetDateTime} could not be parsed at index 0}')
+    void 'EX04A : test export complex CodeSet JSON'() {
+        given:
+        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importAsNewBranchModelVersion  : true, // Needed to import models
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('complexTerminologyForCodeSet').toList()
+            ]
+        ], MAP_ARG, true)
+        String expected = new String(loadTestFile('complexCodeSet')).replace(/Admin User/, 'Unlogged User')
+
+        expect:
+        verifyResponse CREATED, response
+        String terminologyId = response.body().items[0].id
+
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('complexCodeSet').toList()
+            ]
+        ])
+
+        then:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+
+        and:
+        id
+
+        when:
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, expected
+
+        cleanup:
+        cleanUpData(id)
+        DELETE("terminologies/${terminologyId}?permanent=true")
+    }
+
+    @PendingFeature(reason = 'No means to verify expected XML')
+    void 'EX04B : test export complex CodeSet XML'() {
+        given:
+        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyXmlImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importAsNewBranchModelVersion  : true, // Needed to import models
+            importFile                     : [
+                fileType    : MimeType.XML.name,
+                fileContents: loadTestFile('complexTerminologyForCodeSet', 'xml').toList()
+            ]
+        ], MAP_ARG, true)
+        String expected = new String(loadTestFile('complexCodeSet', 'xml')).replace(/Admin User/, 'Unlogged User')
+
+        expect:
+        verifyResponse CREATED, response
+        String terminologyId = response.body().items[0].id
+
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetXmlImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.XML.name,
+                fileContents: loadTestFile('complexCodeSet', 'xml').toList()
+            ]
+        ])
+
+        then:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+
+        and:
+        id
+
+        when:
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetXmlExporterService/4.0", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, expected
+
+        cleanup:
+        cleanUpData(id)
+        DELETE("terminologies/${terminologyId}?permanent=true")
+    }
+
+    void 'EX05 : test export multiple CodeSets'() {
         given:
         String id = createNewItem(validJson)
         String id2 = createNewItem([label: 'Functional Test Model 2'])
 
         when:
         POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0',
-             [codeSetIds: [id, id2]], STRING_ARG
-        )
+             [codeSetIds: [id, id2]], STRING_ARG)
 
         then:
         verifyJsonResponse OK, '''{
@@ -1672,6 +1831,140 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         cleanup:
         cleanUpData(id)
         cleanUpData(id2)
+    }
+
+    @PendingFeature(reason = 'Text ${json-unit.matches:offsetDateTime} could not be parsed at index 0}')
+    void 'EX05A : test export multiple CodeSets JSON'() {
+        given:
+        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importAsNewBranchModelVersion  : true, // Needed to import models
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('simpleTerminologyForCodeSet').toList()
+            ]
+        ], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String simpleTerminologyId = response.body().items[0].id
+
+        and:
+        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importAsNewBranchModelVersion  : true, // Needed to import models
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('complexTerminologyForCodeSet').toList()
+            ]
+        ], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String complexTerminologyId = response.body().items[0].id
+
+        and:
+        String expected = new String(loadTestFile('simpleAndComplexCodeSets')).replace(/Admin User/, 'Unlogged User')
+
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('simpleAndComplexCodeSets').toList()
+            ]
+        ])
+
+        then:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+        String id2 = response.body().items[1].id
+
+        and:
+        id
+        id2
+
+        when:
+        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0',
+             [codeSetIds: [id, id2]], STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, expected
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(id2)
+        DELETE("terminologies/${simpleTerminologyId}?permanent=true")
+        DELETE("terminologies/${complexTerminologyId}?permanent=true")
+    }
+
+    @PendingFeature(reason = 'No means to verify expected XML')
+    void 'EX05B : test export multiple CodeSets XML'() {
+        given:
+        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyXmlImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importAsNewBranchModelVersion  : true, // Needed to import models
+            importFile                     : [
+                fileType    : MimeType.XML.name,
+                fileContents: loadTestFile('simpleTerminologyForCodeSet', 'xml').toList()
+            ]
+        ], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String simpleTerminologyId = response.body().items[0].id
+
+        and:
+        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyXmlImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importAsNewBranchModelVersion  : true, // Needed to import models
+            importFile                     : [
+                fileType    : MimeType.XML.name,
+                fileContents: loadTestFile('complexTerminologyForCodeSet', 'xml').toList()
+            ]
+        ], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String complexTerminologyId = response.body().items[0].id
+
+        and:
+        String expected = new String(loadTestFile('simpleAndComplexCodeSets', 'xml')).replace(/Admin User/, 'Unlogged User')
+
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetXmlImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.XML.name,
+                fileContents: loadTestFile('simpleAndComplexCodeSets', 'xml').toList()
+            ]
+        ])
+
+        then:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+        String id2 = response.body().items[1].id
+
+        and:
+        id
+        id2
+
+        when:
+        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetXmlExporterService/4.0',
+             [codeSetIds: [id, id2]], STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, expected
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(id2)
+        DELETE("terminologies/${simpleTerminologyId}?permanent=true")
+        DELETE("terminologies/${complexTerminologyId}?permanent=true")
     }
 
     void 'IM01 : test getting CodeSet importers'() {
@@ -1837,7 +2130,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
             importFile                     : [
                 fileName    : 'FT Import',
                 fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('simpleTerminologyForCodeSet').toList()
+                fileContents: loadTestFile('simpleTerminologyForCodeSetIM05').toList()
             ]
         ], MAP_ARG, true)
         verifyResponse CREATED, response
@@ -1874,6 +2167,278 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         cleanup:
         cleanUpData(id)
         DELETE("terminologies/${tid}?permanent=true")
+    }
+
+    void 'IM06A : test import simple CodeSet JSON'() {
+        given:
+        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importAsNewBranchModelVersion  : true, // Needed to import models
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('simpleTerminologyForCodeSet').toList()
+            ]
+        ], MAP_ARG, true)
+
+        expect:
+        verifyResponse CREATED, response
+        String terminologyId = response.body().items[0].id
+
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('simpleCodeSet').toList()
+            ]
+        ])
+
+        then:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+
+        and:
+        id
+
+        cleanup:
+        cleanUpData(id)
+        DELETE("terminologies/${terminologyId}?permanent=true")
+    }
+
+    void 'IM06B : test import simple CodeSet XML'() {
+        given:
+        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyXmlImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importAsNewBranchModelVersion  : true, // Needed to import models
+            importFile                     : [
+                fileType    : MimeType.XML.name,
+                fileContents: loadTestFile('simpleTerminologyForCodeSet', 'xml').toList()
+            ]
+        ], MAP_ARG, true)
+
+        expect:
+        verifyResponse CREATED, response
+        String terminologyId = response.body().items[0].id
+
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetXmlImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.XML.name,
+                fileContents: loadTestFile('bootstrappedSimpleCodeSet', 'xml').toList()
+            ]
+        ])
+
+        then:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+
+        and:
+        id
+
+        cleanup:
+        cleanUpData(id)
+        DELETE("terminologies/${terminologyId}?permanent=true")
+    }
+
+    void 'IM07A : test import complex CodeSet JSON'() {
+        given:
+        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importAsNewBranchModelVersion  : true, // Needed to import models
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('complexTerminologyForCodeSet').toList()
+            ]
+        ], MAP_ARG, true)
+
+        expect:
+        verifyResponse CREATED, response
+        String terminologyId = response.body().items[0].id
+
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('complexCodeSet').toList()
+            ]
+        ])
+
+        then:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+
+        and:
+        id
+
+        cleanup:
+        cleanUpData(id)
+        DELETE("terminologies/${terminologyId}?permanent=true")
+    }
+
+    void 'IM07B : test import complex CodeSet XML'() {
+        given:
+        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyXmlImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importAsNewBranchModelVersion  : true, // Needed to import models
+            importFile                     : [
+                fileType    : MimeType.XML.name,
+                fileContents: loadTestFile('complexTerminologyForCodeSet', 'xml').toList()
+            ]
+        ], MAP_ARG, true)
+
+        expect:
+        verifyResponse CREATED, response
+        String terminologyId = response.body().items[0].id
+
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetXmlImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.XML.name,
+                fileContents: loadTestFile('complexCodeSet', 'xml').toList()
+            ]
+        ])
+
+        then:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+
+        and:
+        id
+
+        cleanup:
+        cleanUpData(id)
+        DELETE("terminologies/${terminologyId}?permanent=true")
+    }
+
+    void 'IM08A : test import multiple CodeSets JSON'() {
+        given:
+        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importAsNewBranchModelVersion  : true, // Needed to import models
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('simpleTerminologyForCodeSet').toList()
+            ]
+        ], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String simpleTerminologyId = response.body().items[0].id
+
+        and:
+        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importAsNewBranchModelVersion  : true, // Needed to import models
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('complexTerminologyForCodeSet').toList()
+            ]
+        ], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String complexTerminologyId = response.body().items[0].id
+
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('simpleAndComplexCodeSets').toList()
+            ]
+        ])
+
+        then:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+        String id2 = response.body().items[1].id
+
+        and:
+        id
+        id2
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(id2)
+        DELETE("terminologies/${simpleTerminologyId}?permanent=true")
+        DELETE("terminologies/${complexTerminologyId}?permanent=true")
+    }
+
+    void 'IM08B : test import multiple CodeSets XML'() {
+        given:
+        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyXmlImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importAsNewBranchModelVersion  : true, // Needed to import models
+            importFile                     : [
+                fileType    : MimeType.XML.name,
+                fileContents: loadTestFile('simpleTerminologyForCodeSet', 'xml').toList()
+            ]
+        ], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String simpleTerminologyId = response.body().items[0].id
+
+        and:
+        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyXmlImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importAsNewBranchModelVersion  : true, // Needed to import models
+            importFile                     : [
+                fileType    : MimeType.XML.name,
+                fileContents: loadTestFile('complexTerminologyForCodeSet', 'xml').toList()
+            ]
+        ], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String complexTerminologyId = response.body().items[0].id
+
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetXmlImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.XML.name,
+                fileContents: loadTestFile('simpleAndComplexCodeSets', 'xml').toList()
+            ]
+        ])
+
+        then:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+        String id2 = response.body().items[1].id
+
+        and:
+        id
+        id2
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(id2)
+        DELETE("terminologies/${simpleTerminologyId}?permanent=true")
+        DELETE("terminologies/${complexTerminologyId}?permanent=true")
     }
 
     void 'CT01 : test getting the CodeSet(s) that a Term belongs to'() {
