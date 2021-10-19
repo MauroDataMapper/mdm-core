@@ -1466,14 +1466,51 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         removeValidIdObject(id)
     }
 
+    void 'E34 : test export a single DataModel (as editor)'() {
+        given:
+        String id = getValidId()
+
+        when:
+        loginEditor()
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.0", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "dataModel": {
+    "id": "${json-unit.matches:id}",
+    "label": "Functional Test DataModel",
+    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+    "type": "Data Standard",
+    "documentationVersion": "1.0.0",
+    "finalised": false,
+    "authority": {
+      "id": "${json-unit.matches:id}",
+      "url": "http://localhost",
+      "label": "Mauro Data Mapper"
+    }
+  },
+  "exportMetadata": {
+    "exportedBy": "editor User",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
+      "name": "DataModelJsonExporterService",
+      "version": "3.0"
+    }
+  }
+}'''
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
     void 'L35 : test export multiple DataModels (as not logged in)'() {
         given:
         String id = getValidId()
 
         when:
         POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.0',
-             [dataModelIds: [id, getSimpleDataModelId()]]
-        )
+             [dataModelIds: [id, getSimpleDataModelId()]])
 
         then:
         verifyNotFound response, id
@@ -1488,8 +1525,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
         when:
         POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.0',
-             [dataModelIds: [id, getSimpleDataModelId()]]
-        )
+             [dataModelIds: [id, getSimpleDataModelId()]])
 
         then:
         verifyNotFound response, id
@@ -1505,8 +1541,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         when:
         loginReader()
         POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.0',
-             [dataModelIds: [id, getSimpleDataModelId()]], STRING_ARG
-        )
+             [dataModelIds: [id, getSimpleDataModelId()]], STRING_ARG)
 
         then:
         verifyJsonResponse OK, '''{
@@ -1586,6 +1621,106 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
   ],
   "exportMetadata": {
     "exportedBy": "reader User",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
+      "name": "DataModelJsonExporterService",
+      "version": "3.0"
+    }
+  }
+}'''
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'E35 : test export multiple DataModels (as editor)'() {
+        given:
+        String id = getValidId()
+
+        when:
+        loginEditor()
+        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.0',
+             [dataModelIds: [id, getSimpleDataModelId()]], STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "dataModels": [
+    {
+      "id": "${json-unit.matches:id}",
+      "label": "Functional Test DataModel",
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "type": "Data Standard",
+      "documentationVersion": "1.0.0",
+      "finalised": false,
+      "authority": {
+        "id": "${json-unit.matches:id}",
+        "url": "http://localhost",
+        "label": "Mauro Data Mapper"
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "label": "Simple Test DataModel",
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "type": "Data Standard",
+      "documentationVersion": "1.0.0",
+      "finalised": false,
+      "authority": {
+        "id": "${json-unit.matches:id}",
+        "url": "http://localhost",
+        "label": "Mauro Data Mapper"
+      },
+      "childDataClasses": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "simple",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "metadata": [
+            {
+              "id": "${json-unit.matches:id}",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "namespace": "test.com/simple",
+              "key": "mdk1",
+              "value": "mdv1"
+            }
+          ]
+        }
+      ],
+      "classifiers": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "test classifier simple",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+        }
+      ],
+      "metadata": [
+        {
+          "id": "${json-unit.matches:id}",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "namespace": "test.com",
+          "key": "mdk2",
+          "value": "mdv2"
+        },
+        {
+          "id": "${json-unit.matches:id}",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "namespace": "test.com/simple",
+          "key": "mdk1",
+          "value": "mdv1"
+        },
+        {
+          "id": "${json-unit.matches:id}",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "namespace": "test.com/simple",
+          "key": "mdk2",
+          "value": "mdv2"
+        }
+      ]
+    }
+  ],
+  "exportMetadata": {
+    "exportedBy": "editor User",
     "exportedOn": "${json-unit.matches:offsetDateTime}",
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
@@ -1840,6 +1975,142 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         removeValidIdObjectUsingTransaction(id)
         removeValidIdObject(newId, NOT_FOUND)
         removeValidIdObject(id, NOT_FOUND)
+    }
+
+    void 'L37 : test import multiple DataModels (as not logged in)'() {
+        given:
+        loginReader()
+        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.0',
+             [dataModelIds: [getSimpleDataModelId(), getComplexDataModelId()]], STRING_ARG)
+
+        expect:
+        verifyResponse OK, jsonCapableResponse
+        String exportedJsonString = jsonCapableResponse.body()
+        logout()
+
+        and:
+        exportedJsonString
+
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.0', [
+            finalised                      : false,
+            folderId                       : testFolderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: exportedJsonString.bytes.toList()
+            ]
+        ])
+
+        then:
+        verifyForbidden response
+    }
+
+    void 'N37 : test import multiple DataModels (as authenticated/no access)'() {
+        given:
+        loginReader()
+        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.0',
+             [dataModelIds: [getSimpleDataModelId(), getComplexDataModelId()]], STRING_ARG)
+
+        expect:
+        verifyResponse OK, jsonCapableResponse
+        String exportedJsonString = jsonCapableResponse.body()
+        logout()
+
+        and:
+        exportedJsonString
+
+        when:
+        loginAuthenticated()
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.0', [
+            finalised                      : false,
+            folderId                       : testFolderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: exportedJsonString.bytes.toList()
+            ]
+        ])
+
+        then:
+        verifyNotFound response, testFolderId
+    }
+
+    void 'R37 : test import multiple DataModels (as reader)'() {
+        given:
+        loginReader()
+        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.0',
+             [dataModelIds: [getSimpleDataModelId(), getComplexDataModelId()]], STRING_ARG)
+
+        expect:
+        verifyResponse OK, jsonCapableResponse
+        String exportedJsonString = jsonCapableResponse.body()
+        logout()
+
+        and:
+        exportedJsonString
+
+        when:
+        loginReader()
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.0', [
+            finalised                      : false,
+            folderId                       : testFolderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: exportedJsonString.bytes.toList()
+            ]
+        ])
+
+        then:
+        verifyForbidden response
+    }
+
+    void 'E37 : test import multiple DataModels (as editor)'() {
+        given:
+        loginReader()
+        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.0',
+             [dataModelIds: [getSimpleDataModelId(), getComplexDataModelId()]], STRING_ARG)
+
+        expect:
+        verifyResponse OK, jsonCapableResponse
+        String exportedJsonString = jsonCapableResponse.body()
+        logout()
+
+        and:
+        exportedJsonString
+
+        when:
+        loginEditor()
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.0', [
+            finalised                      : false,
+            folderId                       : testFolderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importAsNewBranchModelVersion  : true, // Needed to import models
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: exportedJsonString.bytes.toList()
+            ]
+        ])
+
+        then:
+        verifyResponse CREATED, response
+        response.body().count == 2
+
+        Object object = response.body().items[0]
+        Object object2 = response.body().items[1]
+        String id = object.id
+        String id2 = object2.id
+
+        object.label == 'Simple Test DataModel'
+        object2.label == 'Complex Test DataModel'
+        object.id != object2.id
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(id2)
+        removeValidIdObject(id, NOT_FOUND)
+        removeValidIdObject(id2, NOT_FOUND)
     }
 
     void 'S01 : test searching for label "emptyclass" in complex model'() {

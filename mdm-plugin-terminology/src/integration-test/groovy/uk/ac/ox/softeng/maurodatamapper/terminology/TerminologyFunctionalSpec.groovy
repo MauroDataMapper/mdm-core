@@ -1607,25 +1607,24 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         cleanUpData(id)
     }
 
-    void 'EX03 : test export simple Terminology'() {
+    void 'EX03A : test export simple Terminology JSON'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
             importFile                     : [
-                fileName    : 'FT Import',
                 fileType    : MimeType.JSON_API.name,
                 fileContents: loadTestFile('simpleTerminology').toList()
             ]
         ])
-
-        verifyResponse CREATED, response
-        def id = response.body().items[0].id
-        String expected = new String(loadTestFile('simpleTerminology')).replaceFirst('"exportedBy": "Admin User",',
-                                                                                     '"exportedBy": "Unlogged User",')
+        String expected = new String(loadTestFile('simpleTerminology')).replace(/Admin User/, 'Unlogged User')
 
         expect:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+
+        and:
         id
 
         when:
@@ -1638,29 +1637,90 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         cleanUpData(id)
     }
 
-    void 'EX04 : test export complex Terminology'() {
+    @PendingFeature(reason = 'No means to verify expected XML')
+    void 'EX03B : test export simple Terminology XML'() {
+        given:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyXmlImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.XML.name,
+                fileContents: loadTestFile('simpleTerminology', 'xml').toList()
+            ]
+        ])
+        String expected = new String(loadTestFile('simpleTerminology', 'xml')).replace(/Admin User/, 'Unlogged User')
+
+        expect:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+
+        and:
+        id
+
+        when:
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyXmlExporterService/4.0", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, expected
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'EX04A : test export complex Terminology JSON'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
             importFile                     : [
-                fileName    : 'FT Import',
                 fileType    : MimeType.JSON_API.name,
                 fileContents: loadTestFile('complexTerminology').toList()
             ]
         ])
-
-        verifyResponse CREATED, response
-        def id = response.body().items[0].id
-        String expected = new String(loadTestFile('complexTerminology')).replaceFirst('"exportedBy": "Admin User",',
-                                                                                      '"exportedBy": "Unlogged User",')
+        String expected = new String(loadTestFile('complexTerminology')).replace(/Admin User/, 'Unlogged User')
 
         expect:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+
+        and:
         id
 
         when:
         GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/4.0", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, expected
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    @PendingFeature(reason = 'No means to verify expected XML')
+    void 'EX04B : test export complex Terminology XML'() {
+        given:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyXmlImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.XML.name,
+                fileContents: loadTestFile('complexTerminology', 'xml').toList()
+            ]
+        ])
+        String expected = new String(loadTestFile('complexTerminology', 'xml')).replace(/Admin User/, 'Unlogged User')
+
+        expect:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+
+        and:
+        id
+
+        when:
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyXmlExporterService/4.0", STRING_ARG)
 
         then:
         verifyJsonResponse OK, expected
@@ -1717,6 +1777,75 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                 }
             }
         }'''
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(id2)
+    }
+
+    void 'EX05A : test export multiple Terminologies JSON'() {
+        given:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('simpleAndComplexTerminologies').toList()
+            ]
+        ])
+        String expected = new String(loadTestFile('simpleAndComplexTerminologies')).replace(/Admin User/, 'Unlogged User')
+
+        expect:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+        String id2 = response.body().items[1].id
+
+        and:
+        id
+        id2
+
+        when:
+        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/4.0',
+             [terminologyIds: [id, id2]], STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, expected
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(id2)
+    }
+
+    @PendingFeature(reason = 'No means to verify expected XML')
+    void 'EX05B : test export multiple Terminologies XML'() {
+        given:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyXmlImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.XML.name,
+                fileContents: loadTestFile('simpleAndComplexTerminologies', 'xml').toList()
+            ]
+        ])
+        String expected = new String(loadTestFile('simpleAndComplexTerminologies', 'xml')).replace(/Admin User/, 'Unlogged User')
+
+        expect:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+        String id2 = response.body().items[1].id
+
+        and:
+        id
+        id2
+
+        when:
+        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyXmlExporterService/4.0',
+             [terminologyIds: [id, id2]], STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, expected
 
         cleanup:
         cleanUpData(id)
@@ -1859,48 +1988,148 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         cleanUpData(id)
     }
 
-    void 'IM04 : test import simple Terminology'() {
+    void 'IM04A : test import simple Terminology JSON'() {
         when:
         POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
-            finalised                      : true,
+            finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
             importFile                     : [
-                fileName    : 'FT Import',
                 fileType    : MimeType.JSON_API.name,
                 fileContents: loadTestFile('simpleTerminology').toList()
             ]
         ])
-        verifyResponse CREATED, response
-        def id = response.body().items[0].id
 
         then:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+
+        and:
         id
 
         cleanup:
         cleanUpData(id)
     }
 
-    void 'IM05 : test import complex Terminology'() {
+    void 'IM04B : test import simple Terminology XML'() {
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
-            finalised                      : true,
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyXmlImporterService/4.0', [
+            finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
             importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('complexTerminology').toList()
+                fileType    : MimeType.XML.name,
+                fileContents: loadTestFile('simpleTerminology', 'xml').toList()
             ]
         ])
-        verifyResponse CREATED, response
-        def id = response.body().items[0].id
 
         then:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+
+        and:
         id
 
         cleanup:
         cleanUpData(id)
+    }
+
+    void 'IM05A : test import complex Terminology JSON'() {
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('complexTerminology').toList()
+            ]
+        ])
+
+        then:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+
+        and:
+        id
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'IM05B : test import complex Terminology XML'() {
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyXmlImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.XML.name,
+                fileContents: loadTestFile('complexTerminology', 'xml').toList()
+            ]
+        ])
+
+        then:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+
+        and:
+        id
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'IM06A : test import multiple Terminologies JSON'() {
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('simpleAndComplexTerminologies').toList()
+            ]
+        ])
+
+        then:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+        String id2 = response.body().items[1].id
+
+        and:
+        id
+        id2
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(id2)
+    }
+
+    void 'IM06B : test import multiple Terminologies XML'() {
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyXmlImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.XML.name,
+                fileContents: loadTestFile('simpleAndComplexTerminologies', 'xml').toList()
+            ]
+        ])
+
+        then:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+        String id2 = response.body().items[1].id
+
+        and:
+        id
+        id2
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(id2)
     }
 
     byte[] loadTestFile(String filename, String fileType = 'json') {
