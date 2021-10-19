@@ -53,6 +53,9 @@ class BootStrap {
                     if (CodeSet.countByLabel(BootstrapModels.SIMPLE_CODESET_NAME) == 0) {
                         BootstrapModels.buildAndSaveSimpleCodeSet(messageSource, folder, authority)
                     }
+                    if (CodeSet.countByLabel(BootstrapModels.COMPLEX_CODESET_NAME) == 0) {
+                        BootstrapModels.buildAndSaveComplexCodeSet(messageSource, folder, terminologyService, authority)
+                    }
                     if (CodeSet.countByLabel(BootstrapModels.UNFINALISED_CODESET_NAME) == 0) {
                         BootstrapModels.buildAndSaveUnfinalisedCodeSet(messageSource, folder, authority)
                     }

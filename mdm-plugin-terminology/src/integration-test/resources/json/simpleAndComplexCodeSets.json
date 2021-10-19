@@ -15,7 +15,7 @@
       "organisation": "Oxford BRC",
       "documentationVersion": "1.0.0",
       "finalised": true,
-      "dateFinalised": "${json-unit.matches:offsetDateTime}",
+      "dateFinalised": "2021-10-19T12:41:08.783Z",
       "modelVersion": "1.0.0",
       "authority": {
         "id": "${json-unit.matches:id}",
@@ -46,7 +46,7 @@
       "organisation": "Oxford BRC",
       "documentationVersion": "1.0.0",
       "finalised": true,
-      "dateFinalised": "${json-unit.matches:offsetDateTime}",
+      "dateFinalised": "2021-10-19T12:41:08.783Z",
       "modelVersion": "1.0.0",
       "authority": {
         "id": "${json-unit.matches:id}",

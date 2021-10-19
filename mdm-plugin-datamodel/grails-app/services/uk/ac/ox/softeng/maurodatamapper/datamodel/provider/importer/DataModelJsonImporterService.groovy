@@ -65,10 +65,13 @@ class DataModelJsonImporterService extends DataBindDataModelImporterProviderServ
 
         log.debug('Parsing in file content using JsonSlurper')
         Object jsonContent = slurpAndClean(content)
-        List<Map> dataModels = jsonContent.dataModels ?: [jsonContent.dataModel]
-        if (!dataModels || dataModels.any {!it}) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as dataModel is not present')
+        List<Map> jsonMaps = jsonContent.dataModels?.unique() ?: [jsonContent.dataModel]
+
+        List<Map> dataModelMaps = jsonMaps.findAll {it}
+        if (!dataModelMaps) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as dataModel(s) is not present')
+        if (dataModelMaps.size() < jsonMaps.size()) log.warn('Cannot import certain JSON as dataModel(s) is not present')
 
         log.debug('Importing list of DataModel maps')
-        dataModels.collect {bindMapToDataModel(currentUser, new HashMap(it))}
+        dataModelMaps.collect {bindMapToDataModel(currentUser, new HashMap(it))}
     }
 }

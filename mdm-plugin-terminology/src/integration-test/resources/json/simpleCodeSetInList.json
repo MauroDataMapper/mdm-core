@@ -1,0 +1,44 @@
+{
+  "codeSets": [
+    {
+      "id": "${json-unit.matches:id}",
+      "label": "Simple Test CodeSet",
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "classifiers": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "test classifier",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+        }
+      ],
+      "author": "Test Bootstrap",
+      "organisation": "Oxford BRC",
+      "documentationVersion": "1.0.0",
+      "finalised": true,
+      "dateFinalised": "2021-10-19T12:41:08.783Z",
+      "modelVersion": "1.0.0",
+      "authority": {
+        "id": "${json-unit.matches:id}",
+        "url": "http://localhost",
+        "label": "Test Authority"
+      },
+      "termPaths": [
+        {
+          "termPath": "te:Simple Test Terminology|tm:STT01: Simple Test Term 01"
+        },
+        {
+          "termPath": "te:Simple Test Terminology|tm:STT02: Simple Test Term 02"
+        }
+      ]
+    }
+  ],
+  "exportMetadata": {
+    "exportedBy": "Admin User",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
+      "name": "CodeSetJsonExporterService",
+      "version": "4.0"
+    }
+  }
+}

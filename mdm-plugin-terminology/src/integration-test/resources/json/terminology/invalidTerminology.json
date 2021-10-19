@@ -1,0 +1,14 @@
+{
+  "terminology": {
+    "id": "Invalid Terminology"
+  },
+  "exportMetadata": {
+    "exportedBy": "Admin User",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
+      "name": "TerminologyJsonExporterService",
+      "version": "4.0"
+    }
+  }
+}
