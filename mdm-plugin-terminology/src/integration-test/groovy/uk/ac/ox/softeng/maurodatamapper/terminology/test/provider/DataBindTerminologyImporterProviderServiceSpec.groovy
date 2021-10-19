@@ -19,7 +19,6 @@ package uk.ac.ox.softeng.maurodatamapper.terminology.test.provider
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
-import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FileParameter
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.DataBindTerminologyImporterProviderService
@@ -89,7 +88,7 @@ abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBind
         }
         sessionFactory.currentSession.flush()
         log.debug('Terminologies saved')
-        imported.collect {terminologyService.get(it.id)}
+        imported.collect { terminologyService.get(it.id) }
     }
 
     Terminology importAndConfirm(byte[] bytes) {
@@ -100,7 +99,7 @@ abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBind
 
     List<Terminology> clearExpectedDiffsFromModels(List<UUID> modelIds) {
         // Rules are not imported/exported and will therefore exist as diffs
-        Closure<Boolean> removeRule = {it.rules?.removeIf {rule -> rule.name == 'Bootstrapped Functional Test Rule'}}
+        Closure<Boolean> removeRule = { it.rules?.removeIf { rule -> rule.name == 'Bootstrapped Functional Test Rule' } }
         modelIds.collect {
             Terminology terminology = terminologyService.get(it)
             removeRule(terminology)
@@ -142,8 +141,8 @@ abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBind
         terminology.terms.size() == 2
 
         when:
-        Term a = terminology.terms.find {it.code == 'STT01'}
-        Term b = terminology.terms.find {it.code == 'STT02'}
+        Term a = terminology.terms.find { it.code == 'STT01' }
+        Term b = terminology.terms.find { it.code == 'STT02' }
 
         then:
         a
@@ -208,7 +207,7 @@ abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBind
         terminology.metadata.size() == 3
 
         and:
-        terminology.metadata.every {it.multiFacetAwareItemId == terminology.id}
+        terminology.metadata.every { it.multiFacetAwareItemId == terminology.id }
         terminology.metadata.any {
             it.namespace == 'terminology.test.com/simple' &&
             it.key == 'mdk1' &&
@@ -272,7 +271,7 @@ abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBind
 
         and:
         for (int i = 0; i <= 100; i++) {
-            terminology.terms.any {it.code == "CTT${i}" && it.definition == "Complex Test Term ${i}"}
+            terminology.terms.any { it.code == "CTT${i}" && it.definition == "Complex Test Term ${i}" }
         }
     }
 }

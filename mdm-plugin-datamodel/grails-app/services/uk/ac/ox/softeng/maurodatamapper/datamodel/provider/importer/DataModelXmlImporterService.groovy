@@ -85,7 +85,7 @@ class DataModelXmlImporterService extends DataBindDataModelImporterProviderServi
 
         if (result.name() == 'dataModels') {
             log.debug('Importing DataModel list')
-            return convertToList(result as NodeChild).collect {bindMapToDataModel(currentUser, it)}
+            return convertToList(result as NodeChild).collect { bindMapToDataModel(currentUser, it) }
         }
 
         // Handle single DataModel map or exportModel passed to this method, for backwards compatibility
@@ -98,7 +98,7 @@ class DataModelXmlImporterService extends DataBindDataModelImporterProviderServi
     }
 
     List convertToList(NodeChild nodeChild) {
-        nodeChild.children().collect {convertToMap(it)}
+        nodeChild.children().collect { convertToMap(it) }
     }
 
     String validateXml(String xml) {

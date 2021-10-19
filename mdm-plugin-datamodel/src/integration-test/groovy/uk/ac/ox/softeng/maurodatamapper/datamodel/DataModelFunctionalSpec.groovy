@@ -1450,10 +1450,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         responseBody().items.label as Set == ['existingClass', 'modifyAndModifyReturningDifference', 'modifyLeftOnly',
                                               'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly',
                                               'modifyRightOnly', 'addRightOnly', 'modifyAndModifyReturningNoDifference', 'addAndAddReturningNoDifference'] as Set
-        responseBody().items.find {dataClass -> dataClass.label == 'modifyAndDelete'}.description == 'Description'
-        responseBody().items.find {dataClass -> dataClass.label == 'addAndAddReturningDifference'}.description == 'addedDescriptionSource'
-        responseBody().items.find {dataClass -> dataClass.label == 'modifyAndModifyReturningDifference'}.description == modifiedDescriptionSource
-        responseBody().items.find {dataClass -> dataClass.label == 'modifyLeftOnly'}.description == 'modifiedDescriptionSourceOnly'
+        responseBody().items.find { dataClass -> dataClass.label == 'modifyAndDelete' }.description == 'Description'
+        responseBody().items.find { dataClass -> dataClass.label == 'addAndAddReturningDifference' }.description == 'addedDescriptionSource'
+        responseBody().items.find { dataClass -> dataClass.label == 'modifyAndModifyReturningDifference' }.description == modifiedDescriptionSource
+        responseBody().items.find { dataClass -> dataClass.label == 'modifyLeftOnly' }.description == 'modifiedDescriptionSourceOnly'
 
         when:
         GET("$mergeData.target/dataClasses/$mergeData.targetMap.existingClass/dataClasses")
@@ -1507,8 +1507,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         GET("$source/metadata")
         verifyResponse OK, response
-        String deleteMetadataSource = responseBody().items.find {it.key == 'deleteMetadataSource'}.id
-        String modifyMetadataSource = responseBody().items.find {it.key == 'modifyMetadataSource'}.id
+        String deleteMetadataSource = responseBody().items.find { it.key == 'deleteMetadataSource' }.id
+        String modifyMetadataSource = responseBody().items.find { it.key == 'modifyMetadataSource' }.id
 
         then:
         //dataModel description
@@ -1550,8 +1550,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         GET("$target/metadata")
         verifyResponse OK, response
-        deleteMetadataSource = responseBody().items.find {it.key == "deleteMetadataSource"}.id
-        modifyMetadataSource = responseBody().items.find {it.key == "modifyMetadataSource"}.id
+        deleteMetadataSource = responseBody().items.find { it.key == "deleteMetadataSource" }.id
+        modifyMetadataSource = responseBody().items.find { it.key == "modifyMetadataSource" }.id
 
         GET("$source/mergeDiff/$target", STRING_ARG)
 
@@ -1752,7 +1752,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         then:
         verifyResponse OK, response
         responseBody().items.label as Set == ['modifyLeftOnly'] as Set
-        responseBody().items.find {dataClass -> dataClass.label == 'modifyLeftOnly'}.description == 'modifiedDescriptionSourceOnly'
+        responseBody().items.find { dataClass -> dataClass.label == 'modifyLeftOnly' }.description == 'modifiedDescriptionSourceOnly'
 
         when:
         verifyResponse OK, response
@@ -1760,7 +1760,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         then:
         responseBody().items.key as Set == ['addMetadataSource', 'modifyMetadataSource'] as Set
-        responseBody().items.find {metadata -> metadata.key == 'modifyMetadataSource'}.value == 'modifiedDescriptionSource'
+        responseBody().items.find { metadata -> metadata.key == 'modifyMetadataSource' }.value == 'modifiedDescriptionSource'
 
         when:
         GET("dataClasses/$modifyLeftOnly/metadata", MAP_ARG, true)
@@ -2039,10 +2039,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                                               'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly',
                                               'modifyRightOnly', 'addRightOnly', 'modifyAndModifyReturningNoDifference',
                                               'addAndAddReturningNoDifference'] as Set
-        responseBody().items.find {dataClass -> dataClass.label == 'modifyAndDelete'}.description == 'Description'
-        responseBody().items.find {dataClass -> dataClass.label == 'addAndAddReturningDifference'}.description == 'DescriptionLeft'
-        responseBody().items.find {dataClass -> dataClass.label == 'modifyAndModifyReturningDifference'}.description == 'DescriptionLeft'
-        responseBody().items.find {dataClass -> dataClass.label == 'modifyLeftOnly'}.description == 'Description'
+        responseBody().items.find { dataClass -> dataClass.label == 'modifyAndDelete' }.description == 'Description'
+        responseBody().items.find { dataClass -> dataClass.label == 'addAndAddReturningDifference' }.description == 'DescriptionLeft'
+        responseBody().items.find { dataClass -> dataClass.label == 'modifyAndModifyReturningDifference' }.description == 'DescriptionLeft'
+        responseBody().items.find { dataClass -> dataClass.label == 'modifyLeftOnly' }.description == 'Description'
 
         when:
         GET("$mergeData.target/dataClasses/$mergeData.targetMap.existingClass/dataClasses")
@@ -2066,10 +2066,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         GET("${mergeData.target}/metadata")
 
         then:
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyOnSource'}.value == 'source has modified this'
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyAndDelete'}.value == 'source has modified this also'
-        !responseBody().items.find {it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource'}
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'addToSourceOnly'}
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyOnSource' }.value == 'source has modified this'
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyAndDelete' }.value == 'source has modified this also'
+        !responseBody().items.find { it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource' }
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'addToSourceOnly' }
 
         cleanup:
         cleanUpData(mergeData.source)
@@ -2140,7 +2140,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         GET("${target}/metadata")
 
         then:
-        responseBody().items.find {it.namespace == 'test.com' && it.key == 'testProperty'}
+        responseBody().items.find { it.namespace == 'test.com' && it.key == 'testProperty' }
 
         cleanup:
         cleanUpData(source)
@@ -2183,8 +2183,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse OK, response
         responseBody().id == target
         responseBody().aliases.size() == 2
-        responseBody().aliases.any {it == 'mergeInto'}
-        responseBody().aliases.any {it == 'not main branch'}
+        responseBody().aliases.any { it == 'mergeInto' }
+        responseBody().aliases.any { it == 'not main branch' }
 
         cleanup:
         cleanUpData(source)
@@ -2252,13 +2252,13 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse(OK, response)
 
         when:
-        String addLeftOnly = responseBody().items.find {it.label == 'addLeftOnly'}.id
+        String addLeftOnly = responseBody().items.find { it.label == 'addLeftOnly' }.id
         GET("$mergeData.targetMap.dataModelId/dataClasses/$addLeftOnly/dataClasses")
 
         then:
         verifyResponse(OK, response)
         responseBody().count == 1
-        responseBody().items.any {it.label == 'addAnotherLeftToAddLeftOnly'}
+        responseBody().items.any { it.label == 'addAnotherLeftToAddLeftOnly' }
 
         cleanup:
         cleanUpData(mergeData.source)
@@ -2421,8 +2421,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         //Change child DC label
         GET("$testId/dataClasses")
         verifyResponse(OK, response)
-        parentId = responseBody().items.find {it.label == 'parent'}.id
-        String contentId = responseBody().items.find {it.label == 'content'}.id
+        parentId = responseBody().items.find { it.label == 'parent' }.id
+        String contentId = responseBody().items.find { it.label == 'content' }.id
         GET("$testId/dataClasses/${parentId}/dataClasses")
         verifyResponse(OK, response)
         assert responseBody().items.first().id
@@ -2453,13 +2453,13 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         dataClassesDiffs.modified.size() == 2
 
         and:
-        Map contentDiff = dataClassesDiffs.modified.find {it.label == 'content'}
+        Map contentDiff = dataClassesDiffs.modified.find { it.label == 'content' }
         contentDiff.diffs.size() == 1
         contentDiff.diffs.first().description.left == 'a change to the description'
         contentDiff.diffs.first().description.right == 'some interesting content'
 
         and:
-        Map parentDiff = dataClassesDiffs.modified.find {it.label == 'parent'}
+        Map parentDiff = dataClassesDiffs.modified.find { it.label == 'parent' }
         parentDiff.diffs.size() == 1
         parentDiff.diffs.first().dataClasses.deleted.size() == 1
         parentDiff.diffs.first().dataClasses.created.size() == 1
@@ -3159,7 +3159,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     void 'test delete multiple models'() {
         given:
         def idstoDelete = []
-        (1..4).each {n ->
+        (1..4).each { n ->
             idstoDelete << createNewItem([
                 folder: folderId,
                 label : UUID.randomUUID().toString()
@@ -4163,8 +4163,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         then:
         verifyResponse OK, response
         responseBody().items.size() == 2
-        responseBody().items.any {it.id == internalId && !it.imported}
-        responseBody().items.any {it.id == importableId && it.imported}
+        responseBody().items.any { it.id == internalId && !it.imported }
+        responseBody().items.any { it.id == importableId && it.imported }
 
         cleanup:
         cleanUpData(id)
@@ -4227,7 +4227,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         then:
         verifyResponse OK, response
         responseBody().items.size() == 1
-        responseBody().items.any {it.id == internalId}
+        responseBody().items.any { it.id == internalId }
 
         cleanup:
         cleanUpData(id)
@@ -4310,8 +4310,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         then:
         verifyResponse OK, response
         responseBody().items.size() == 2
-        responseBody().items.any {it.id == internalId && !it.imported}
-        responseBody().items.any {it.id == importableId && it.imported}
+        responseBody().items.any { it.id == internalId && !it.imported }
+        responseBody().items.any { it.id == importableId && it.imported }
 
         cleanup:
         cleanUpData(id)
@@ -4372,7 +4372,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         then:
         verifyResponse OK, response
         responseBody().items.size() == 1
-        responseBody().items.any {it.id == internalId}
+        responseBody().items.any { it.id == internalId }
 
         cleanup:
         cleanUpData(id)

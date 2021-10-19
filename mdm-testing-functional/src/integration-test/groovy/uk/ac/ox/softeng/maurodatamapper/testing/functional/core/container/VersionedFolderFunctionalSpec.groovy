@@ -1211,7 +1211,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         GET("terminologies/$data.terminologyCaId/terms", MAP_ARG, true)
         verifyResponse(OK, response)
         responseBody().count == 6
-        List<String> finalisedTermIds = responseBody().items.collect {it.id}
+        List<String> finalisedTermIds = responseBody().items.collect { it.id }
         GET("codeSets/$data.codeSetCaId/terms", MAP_ARG, true)
         verifyResponse(OK, response)
         responseBody().count == 5
@@ -1292,9 +1292,9 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         then:
         verifyResponse(OK, response)
         responseBody().count == 6
-        List<String> branchedCodeSetTermIds = responseBody().items.collect {it.id}
-        !branchedCodeSetTermIds.any {it in finalisedTermIds}
-        branchedCodeSetTermIds.every {it in branchedTermIds}
+        List<String> branchedCodeSetTermIds = responseBody().items.collect { it.id }
+        !branchedCodeSetTermIds.any { it in finalisedTermIds }
+        branchedCodeSetTermIds.every { it in branchedTermIds }
 
         cleanup:
         cleanupIds(id, branchId)
@@ -1308,11 +1308,11 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         GET("terminologies/$data.terminologyCaId/terms", MAP_ARG, true)
         verifyResponse(OK, response)
         responseBody().count == 6
-        List<String> finalisedTermIds = responseBody().items.collect {it.id}
+        List<String> finalisedTermIds = responseBody().items.collect { it.id }
         GET("codeSets/$data.codeSetCaId/terms", MAP_ARG, true)
         verifyResponse(OK, response)
         responseBody().count == 5
-        List<String> finalisedCodeSetTermIds = responseBody().items.collect {it.id}
+        List<String> finalisedCodeSetTermIds = responseBody().items.collect { it.id }
 
         when: 'checking finalisation status'
         GET("dataModels/$data.dataModelCaId", MAP_ARG, true)
@@ -1364,8 +1364,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         responseBody().count == 2
 
         when: 'getting the folders inside the new branch sub folder'
-        String subFolderId = responseBody().items.find {it.label == 'Sub Folder in VersionedFolder'}.id
-        String subFolder2Id = responseBody().items.find {it.label == 'Sub Folder 2 in VersionedFolder'}.id
+        String subFolderId = responseBody().items.find { it.label == 'Sub Folder in VersionedFolder' }.id
+        String subFolder2Id = responseBody().items.find { it.label == 'Sub Folder 2 in VersionedFolder' }.id
         GET("folders/$subFolderId/folders", MAP_ARG, true)
 
         then:
@@ -1373,7 +1373,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         responseBody().count == 1
 
         when:
-        String subSubFolderId = responseBody().items.find {it.label == 'Sub-Sub Folder in VersionedFolder'}.id
+        String subSubFolderId = responseBody().items.find { it.label == 'Sub-Sub Folder in VersionedFolder' }.id
         GET("folders/$subFolder2Id/dataModels", MAP_ARG, true)
 
         then:
@@ -1401,8 +1401,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         then:
         verifyResponse(OK, response)
         responseBody().count == 8
-        List<String> branchedTermIds = responseBody().items.collect {it.id}
-        !branchedTermIds.any {it in finalisedTermIds}
+        List<String> branchedTermIds = responseBody().items.collect { it.id }
+        !branchedTermIds.any { it in finalisedTermIds }
 
         when: 'getting the models inside the sub folders'
         GET("folders/$subSubFolderId/codeSets", MAP_ARG, true)
@@ -1418,9 +1418,9 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         then:
         verifyResponse(OK, response)
         responseBody().count == 6
-        List<String> branchedCodeSetTermIds = responseBody().items.collect {it.id}
-        !branchedCodeSetTermIds.any {it in finalisedTermIds}
-        branchedCodeSetTermIds.every {it in branchedTermIds}
+        List<String> branchedCodeSetTermIds = responseBody().items.collect { it.id }
+        !branchedCodeSetTermIds.any { it in finalisedTermIds }
+        branchedCodeSetTermIds.every { it in branchedTermIds }
 
         cleanup:
         cleanupIds(id, branchId)
@@ -2435,10 +2435,10 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                                               'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly',
                                               'modifyRightOnly', 'addRightOnly', 'modifyAndModifyReturningNoDifference',
                                               'addAndAddReturningNoDifference'] as Set
-        responseBody().items.find {dataClass -> dataClass.label == 'modifyAndDelete'}.description == 'Description'
-        responseBody().items.find {dataClass -> dataClass.label == 'addAndAddReturningDifference'}.description == 'DescriptionLeft'
-        responseBody().items.find {dataClass -> dataClass.label == 'modifyAndModifyReturningDifference'}.description == 'DescriptionLeft'
-        responseBody().items.find {dataClass -> dataClass.label == 'modifyLeftOnly'}.description == 'Description'
+        responseBody().items.find { dataClass -> dataClass.label == 'modifyAndDelete' }.description == 'Description'
+        responseBody().items.find { dataClass -> dataClass.label == 'addAndAddReturningDifference' }.description == 'DescriptionLeft'
+        responseBody().items.find { dataClass -> dataClass.label == 'modifyAndModifyReturningDifference' }.description == 'DescriptionLeft'
+        responseBody().items.find { dataClass -> dataClass.label == 'modifyLeftOnly' }.description == 'Description'
 
         when:
         GET("dataModels/$targetDataModelMap.dataModelId/dataClasses/$targetDataModelMap.existingClass/dataClasses", MAP_ARG, true)
@@ -2462,10 +2462,10 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         GET("dataModels/$targetDataModelMap.dataModelId/metadata", MAP_ARG, true)
 
         then:
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyOnSource'}.value == 'source has modified this'
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyAndDelete'}.value == 'source has modified this also'
-        !responseBody().items.find {it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource'}
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'addToSourceOnly'}
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyOnSource' }.value == 'source has modified this'
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyAndDelete' }.value == 'source has modified this also'
+        !responseBody().items.find { it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource' }
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'addToSourceOnly' }
 
         when:
         Map targetTerminologyMap = mergeData.targetMap.terminology
@@ -2522,8 +2522,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         responseBody().items.label as Set == ['similarSourceAction', 'sameSourceActionType'] as Set
 
         when:
-        String sameSourceActionType = responseBody().items.find {it.label == 'sameSourceActionType'}.id
-        String similarSourceAction = responseBody().items.find {it.label == 'similarSourceAction'}.id
+        String sameSourceActionType = responseBody().items.find { it.label == 'sameSourceActionType' }.id
+        String similarSourceAction = responseBody().items.find { it.label == 'similarSourceAction' }.id
         GET("terminologies/$targetTerminologyMap.terminologyId/terms/$addLeftOnly/termRelationships/$sameSourceActionType", MAP_ARG, true)
 
         then:
@@ -2543,10 +2543,10 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         GET("terminologies/$targetTerminologyMap.terminologyId/metadata", MAP_ARG, true)
 
         then:
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyOnSource'}.value == 'source has modified this'
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyAndDelete'}.value == 'source has modified this also'
-        !responseBody().items.find {it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource'}
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'addToSourceOnly'}
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyOnSource' }.value == 'source has modified this'
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyAndDelete' }.value == 'source has modified this also'
+        !responseBody().items.find { it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource' }
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'addToSourceOnly' }
 
         when:
         Map targetCodeSetMap = mergeData.targetMap.codeSet
@@ -2556,7 +2556,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         verifyResponse OK, response
         // MAD cannot be added back into the CS as part of the merge
         responseBody().items.code as Set == ['AAARD', 'ALO' /*, 'MAD'*/, 'MAMRD', 'MLO', 'ALOCS'] as Set
-        responseBody().items.each {t ->
+        responseBody().items.each { t ->
             Assert.assertEquals("${t.code} has correct terminology", targetTerminologyMap.terminologyId, t.model)
         }
 
@@ -2564,10 +2564,10 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         GET("codeSets/$targetCodeSetMap.codeSetId/metadata", MAP_ARG, true)
 
         then:
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyOnSource'}.value == 'source has modified this'
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyAndDelete'}.value == 'source has modified this also'
-        !responseBody().items.find {it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource'}
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'addToSourceOnly'}
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyOnSource' }.value == 'source has modified this'
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyAndDelete' }.value == 'source has modified this also'
+        !responseBody().items.find { it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource' }
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'addToSourceOnly' }
 
         cleanup:
         builder.cleanupTestMergeData(mergeData)
@@ -2609,7 +2609,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         then:
         verifyResponse(OK, response)
         responseBody().count == 3
-        responseBody().items.find {it.label == 'New Sub Folder in VersionedFolder'}
+        responseBody().items.find { it.label == 'New Sub Folder in VersionedFolder' }
 
         when:
         GET("${mergeData.targetMap.subFolder2Id}/folders")
@@ -2617,7 +2617,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         then:
         verifyResponse(OK, response)
         responseBody().count == 1
-        responseBody().items.find {it.label == 'New Sub-Sub Folder 2 in VersionedFolder'}
+        responseBody().items.find { it.label == 'New Sub-Sub Folder 2 in VersionedFolder' }
 
         when:
         Map targetDataModelMap = mergeData.targetMap.dataModel1
@@ -2634,10 +2634,10 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                                               'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly',
                                               'modifyRightOnly', 'addRightOnly', 'modifyAndModifyReturningNoDifference',
                                               'addAndAddReturningNoDifference'] as Set
-        responseBody().items.find {dataClass -> dataClass.label == 'modifyAndDelete'}.description == 'Description'
-        responseBody().items.find {dataClass -> dataClass.label == 'addAndAddReturningDifference'}.description == 'DescriptionLeft'
-        responseBody().items.find {dataClass -> dataClass.label == 'modifyAndModifyReturningDifference'}.description == 'DescriptionLeft'
-        responseBody().items.find {dataClass -> dataClass.label == 'modifyLeftOnly'}.description == 'Description'
+        responseBody().items.find { dataClass -> dataClass.label == 'modifyAndDelete' }.description == 'Description'
+        responseBody().items.find { dataClass -> dataClass.label == 'addAndAddReturningDifference' }.description == 'DescriptionLeft'
+        responseBody().items.find { dataClass -> dataClass.label == 'modifyAndModifyReturningDifference' }.description == 'DescriptionLeft'
+        responseBody().items.find { dataClass -> dataClass.label == 'modifyLeftOnly' }.description == 'Description'
 
         when:
         GET("dataModels/$targetDataModelMap.dataModelId/dataClasses/$targetDataModelMap.existingClass/dataClasses", MAP_ARG, true)
@@ -2649,10 +2649,10 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         GET("dataModels/$targetDataModelMap.dataModelId/metadata", MAP_ARG, true)
 
         then:
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyOnSource'}.value == 'source has modified this'
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyAndDelete'}.value == 'source has modified this also'
-        !responseBody().items.find {it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource'}
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'addToSourceOnly'}
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyOnSource' }.value == 'source has modified this'
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyAndDelete' }.value == 'source has modified this also'
+        !responseBody().items.find { it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource' }
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'addToSourceOnly' }
 
         when:
         Map targetTerminologyMap = mergeData.targetMap.terminology
@@ -2666,10 +2666,10 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         then:
         responseBody().items.code as Set == ['AAARD', 'ALO', 'ALOCS', 'ARO', 'MAD', 'MAMRD', 'MLO', 'SALO', 'SMLO', 'DLOCS'] as Set
-        responseBody().items.find {term -> term.code == 'MAD'}.description == 'Description'
-        responseBody().items.find {term -> term.code == 'AAARD'}.description == 'DescriptionLeft'
-        responseBody().items.find {term -> term.code == 'MAMRD'}.description == 'DescriptionLeft'
-        responseBody().items.find {term -> term.code == 'MLO'}.description == 'Description'
+        responseBody().items.find { term -> term.code == 'MAD' }.description == 'Description'
+        responseBody().items.find { term -> term.code == 'AAARD' }.description == 'DescriptionLeft'
+        responseBody().items.find { term -> term.code == 'MAMRD' }.description == 'DescriptionLeft'
+        responseBody().items.find { term -> term.code == 'MLO' }.description == 'Description'
 
         when:
         GET("terminologies/$targetTerminologyMap.terminologyId/termRelationshipTypes", MAP_ARG, true)
@@ -2677,7 +2677,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         then:
         verifyResponse OK, response
         responseBody().items.label as Set == ['inverseOf', 'sameSourceActionType', 'similarSourceAction', 'sameActionAs', 'parentTo'] as Set
-        responseBody().items.find {term -> term.label == 'inverseOf'}.description == 'inverseOf(Modified)'
+        responseBody().items.find { term -> term.label == 'inverseOf' }.description == 'inverseOf(Modified)'
 
         when:
         GET("terminologies/$targetTerminologyMap.terminologyId/terms/$targetTerminologyMap.modifyLeftOnly/termRelationships", MAP_ARG, true)
@@ -2709,8 +2709,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         responseBody().items.label as Set == ['similarSourceAction', 'sameSourceActionType'] as Set
 
         when:
-        String sameSourceActionType = responseBody().items.find {it.label == 'sameSourceActionType'}.id
-        String similarSourceAction = responseBody().items.find {it.label == 'similarSourceAction'}.id
+        String sameSourceActionType = responseBody().items.find { it.label == 'sameSourceActionType' }.id
+        String similarSourceAction = responseBody().items.find { it.label == 'similarSourceAction' }.id
         GET("terminologies/$targetTerminologyMap.terminologyId/terms/$addLeftOnly/termRelationships/$sameSourceActionType", MAP_ARG, true)
 
         then:
@@ -2730,10 +2730,10 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         GET("terminologies/$targetTerminologyMap.terminologyId/metadata", MAP_ARG, true)
 
         then:
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyOnSource'}.value == 'source has modified this'
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyAndDelete'}.value == 'source has modified this also'
-        !responseBody().items.find {it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource'}
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'addToSourceOnly'}
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyOnSource' }.value == 'source has modified this'
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyAndDelete' }.value == 'source has modified this also'
+        !responseBody().items.find { it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource' }
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'addToSourceOnly' }
 
         when:
         Map targetCodeSetMap = mergeData.targetMap.codeSet
@@ -2743,7 +2743,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         verifyResponse OK, response
         // MAD cannot be added back into the CS as part of the merge
         responseBody().items.code as Set == ['AAARD', 'ALO' /*, 'MAD'*/, 'MAMRD', 'MLO', 'ALOCS'] as Set
-        responseBody().items.each {t ->
+        responseBody().items.each { t ->
             Assert.assertEquals("${t.code} has correct terminology", targetTerminologyMap.terminologyId, t.model)
         }
 
@@ -2751,10 +2751,10 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         GET("codeSets/$targetCodeSetMap.codeSetId/metadata", MAP_ARG, true)
 
         then:
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyOnSource'}.value == 'source has modified this'
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyAndDelete'}.value == 'source has modified this also'
-        !responseBody().items.find {it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource'}
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'addToSourceOnly'}
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyOnSource' }.value == 'source has modified this'
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyAndDelete' }.value == 'source has modified this also'
+        !responseBody().items.find { it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource' }
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'addToSourceOnly' }
 
         cleanup:
         builder.cleanupTestMergeData(mergeData)

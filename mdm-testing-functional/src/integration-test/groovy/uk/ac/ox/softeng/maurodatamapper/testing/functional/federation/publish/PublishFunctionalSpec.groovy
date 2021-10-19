@@ -105,7 +105,6 @@ class PublishFunctionalSpec extends FunctionalSpec {
         responseBody().lastUpdated
         responseBody().publishedModels.size() == 3
 
-
         and:
         verifyEntry(responseBody().publishedModels.find { it.title == 'Simple Test CodeSet 1.0.0' }, 'CodeSet')
         verifyEntry(responseBody().publishedModels.find { it.title == 'Finalised Example Test DataModel 1.0.0' }, 'DataModel')

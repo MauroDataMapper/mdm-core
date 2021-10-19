@@ -830,7 +830,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         verifyResponse OK, response
         GET("$id/terms")
         verifyResponse(OK, response)
-        List<String> finalisedTermIds = responseBody().items.collect {it.id}
+        List<String> finalisedTermIds = responseBody().items.collect { it.id }
 
         when:
         PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
@@ -844,18 +844,18 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
 
         then:
         verifyResponse(OK, response)
-        List<String> branchedTermIds = responseBody().items.collect {it.id}
-        !branchedTermIds.any {it in finalisedTermIds}
+        List<String> branchedTermIds = responseBody().items.collect { it.id }
+        !branchedTermIds.any { it in finalisedTermIds }
 
         when:
-        Map<String, String> terms = responseBody().items.collectEntries {[it.code, it.id]}
+        Map<String, String> terms = responseBody().items.collectEntries { [it.code, it.id] }
         GET("$branchId/termRelationshipTypes")
 
         then:
         verifyResponse(OK, response)
         responseBody().count == 5
-        responseBody().items.any {it.label == 'parentTo'}
-        Map<String, String> relationshipTypes = responseBody().items.collectEntries {[it.label, it.id]}
+        responseBody().items.any { it.label == 'parentTo' }
+        Map<String, String> relationshipTypes = responseBody().items.collectEntries { [it.label, it.id] }
 
         GET("$branchId/termRelationshipTypes/$relationshipTypes.parentTo")
 
@@ -1217,10 +1217,10 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                                               'MAD: modifyAndDelete', 'MAMRD: modifyAndModifyReturningDifference', 'MLO: modifyLeftOnly',
                                               'SMLO: secondModifyLeftOnly', 'ARO: addRightOnly',
                                               'ALOCS: addLeftOnlyCodeSet', 'DLOCS: deleteLeftOnlyCodeSet'] as Set
-        responseBody().items.find {term -> term.label == 'MAD: modifyAndDelete'}.description == 'Description'
-        responseBody().items.find {term -> term.label == 'AAARD: addAndAddReturningDifference'}.description == 'addedDescriptionSource'
-        responseBody().items.find {term -> term.label == 'MAMRD: modifyAndModifyReturningDifference'}.description == modifiedDescriptionSource
-        responseBody().items.find {term -> term.label == 'MLO: modifyLeftOnly'}.description == 'modifiedDescriptionSourceOnly'
+        responseBody().items.find { term -> term.label == 'MAD: modifyAndDelete' }.description == 'Description'
+        responseBody().items.find { term -> term.label == 'AAARD: addAndAddReturningDifference' }.description == 'addedDescriptionSource'
+        responseBody().items.find { term -> term.label == 'MAMRD: modifyAndModifyReturningDifference' }.description == modifiedDescriptionSource
+        responseBody().items.find { term -> term.label == 'MLO: modifyLeftOnly' }.description == 'modifiedDescriptionSourceOnly'
 
         when:
         GET("$mergeData.target/termRelationshipTypes")
@@ -1228,7 +1228,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         then:
         verifyResponse OK, response
         responseBody().items.label as Set == ['inverseOf', 'sameSourceActionType', 'similarSourceAction', 'sameActionAs', 'parentTo'] as Set
-        responseBody().items.find {term -> term.label == 'inverseOf'}.description == 'inverseOf(Modified)'
+        responseBody().items.find { term -> term.label == 'inverseOf' }.description == 'inverseOf(Modified)'
 
         when:
         GET("$mergeData.target/terms/$mergeData.targetMap.modifyLeftOnly/termRelationships")
@@ -1257,8 +1257,8 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         responseBody().items.label as Set == ['similarSourceAction', 'sameSourceActionType'] as Set
 
         when:
-        String sameSourceActionType = responseBody().items.find {it.label == 'sameSourceActionType'}.id
-        String similarSourceAction = responseBody().items.find {it.label == 'similarSourceAction'}.id
+        String sameSourceActionType = responseBody().items.find { it.label == 'sameSourceActionType' }.id
+        String similarSourceAction = responseBody().items.find { it.label == 'similarSourceAction' }.id
         GET("$mergeData.target/terms/$addLeftOnly/termRelationships/$sameSourceActionType")
 
         then:
@@ -1324,10 +1324,10 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                                               'MAD: modifyAndDelete', 'MAMRD: modifyAndModifyReturningDifference', 'MLO: modifyLeftOnly',
                                               'SMLO: secondModifyLeftOnly', 'ARO: addRightOnly',
                                               'ALOCS: addLeftOnlyCodeSet', 'DLOCS: deleteLeftOnlyCodeSet'] as Set
-        responseBody().items.find {term -> term.label == 'MAD: modifyAndDelete'}.description == 'Description'
-        responseBody().items.find {term -> term.label == 'AAARD: addAndAddReturningDifference'}.description == 'DescriptionLeft'
-        responseBody().items.find {term -> term.label == 'MAMRD: modifyAndModifyReturningDifference'}.description == 'DescriptionLeft'
-        responseBody().items.find {term -> term.label == 'MLO: modifyLeftOnly'}.description == 'Description'
+        responseBody().items.find { term -> term.label == 'MAD: modifyAndDelete' }.description == 'Description'
+        responseBody().items.find { term -> term.label == 'AAARD: addAndAddReturningDifference' }.description == 'DescriptionLeft'
+        responseBody().items.find { term -> term.label == 'MAMRD: modifyAndModifyReturningDifference' }.description == 'DescriptionLeft'
+        responseBody().items.find { term -> term.label == 'MLO: modifyLeftOnly' }.description == 'Description'
 
         when:
         GET("$mergeData.target/termRelationshipTypes")
@@ -1335,7 +1335,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         then:
         verifyResponse OK, response
         responseBody().items.label as Set == ['inverseOf', 'sameSourceActionType', 'similarSourceAction', 'sameActionAs', 'parentTo'] as Set
-        responseBody().items.find {term -> term.label == 'inverseOf'}.description == 'inverseOf(Modified)'
+        responseBody().items.find { term -> term.label == 'inverseOf' }.description == 'inverseOf(Modified)'
 
         when:
         GET("$mergeData.target/terms/$mergeData.targetMap.modifyLeftOnly/termRelationships")
@@ -1364,8 +1364,8 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         responseBody().items.label as Set == ['similarSourceAction', 'sameSourceActionType'] as Set
 
         when:
-        String sameSourceActionType = responseBody().items.find {it.label == 'sameSourceActionType'}.id
-        String similarSourceAction = responseBody().items.find {it.label == 'similarSourceAction'}.id
+        String sameSourceActionType = responseBody().items.find { it.label == 'sameSourceActionType' }.id
+        String similarSourceAction = responseBody().items.find { it.label == 'similarSourceAction' }.id
         GET("$mergeData.target/terms/$addLeftOnly/termRelationships/$sameSourceActionType")
 
         then:
@@ -1385,10 +1385,10 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         GET("${mergeData.target}/metadata")
 
         then:
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyOnSource'}.value == 'source has modified this'
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyAndDelete'}.value == 'source has modified this also'
-        !responseBody().items.find {it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource'}
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'addToSourceOnly'}
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyOnSource' }.value == 'source has modified this'
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyAndDelete' }.value == 'source has modified this also'
+        !responseBody().items.find { it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource' }
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'addToSourceOnly' }
 
         cleanup:
         builder.cleanupTestMergeData mergeData
@@ -1480,7 +1480,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
     void 'test delete multiple models'() {
         given:
         def idstoDelete = []
-        (1..4).each {n ->
+        (1..4).each { n ->
             idstoDelete << createNewItem([
                 folder: folderId,
                 label : UUID.randomUUID().toString()

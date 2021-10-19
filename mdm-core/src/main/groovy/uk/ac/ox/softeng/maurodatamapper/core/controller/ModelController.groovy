@@ -147,7 +147,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
                 currentUserSecurityPolicyManager = securityPolicyManagerService.retrieveUserSecurityPolicyManager(currentUser.emailAddress)
             }
             request.withFormat {
-                '*' {render status: NO_CONTENT} // NO CONTENT STATUS CODE
+                '*' { render status: NO_CONTENT } // NO CONTENT STATUS CODE
             }
             return
         }
@@ -634,17 +634,17 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             return errorResponse(UNPROCESSABLE_ENTITY, 'No model imported')
         }
 
-        if (versionedFolderService.isVersionedFolderFamily(folder) && result.any {it.finalised}) {
+        if (versionedFolderService.isVersionedFolderFamily(folder) && result.any { it.finalised }) {
             transactionStatus.setRollbackOnly()
             return forbidden('Cannot import finalised models into a VersionedFolder')
         }
 
-        result.each {m ->
+        result.each { m ->
             m.folder = folder
             getModelService().validate(m)
         }
 
-        if (result.any {it.hasErrors()}) {
+        if (result.any { it.hasErrors() }) {
             log.debug('Errors found in imported models')
             transactionStatus.setRollbackOnly()
             respond(getMultiErrorResponseMap(result), view: '/error', status: UNPROCESSABLE_ENTITY)

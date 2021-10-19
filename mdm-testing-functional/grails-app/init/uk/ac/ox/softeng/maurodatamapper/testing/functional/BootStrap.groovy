@@ -51,7 +51,7 @@ class BootStrap implements SecurityDefinition {
 
     AuthorityService authorityService
 
-    def init = {servletContext ->
+    def init = { servletContext ->
 
         log.debug('Main bootstrap complete')
 

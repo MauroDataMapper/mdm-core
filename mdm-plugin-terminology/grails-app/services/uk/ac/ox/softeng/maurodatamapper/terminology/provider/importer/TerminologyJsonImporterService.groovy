@@ -67,11 +67,11 @@ class TerminologyJsonImporterService extends DataBindTerminologyImporterProvider
         Object jsonContent = slurpAndClean(content)
         List<Map> jsonMaps = jsonContent.terminologies?.unique() ?: [jsonContent.terminology]
 
-        List<Map> terminologyMaps = jsonMaps.findAll {it}
+        List<Map> terminologyMaps = jsonMaps.findAll { it }
         if (!terminologyMaps) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as terminology/ies is not present')
         if (terminologyMaps.size() < jsonMaps.size()) log.warn('Cannot import certain JSON as terminology/ies is not present')
 
         log.debug('Importing list of Terminology maps')
-        terminologyMaps.collect {bindMapToTerminology(currentUser, new HashMap(it))}
+        terminologyMaps.collect { bindMapToTerminology(currentUser, new HashMap(it)) }
     }
 }

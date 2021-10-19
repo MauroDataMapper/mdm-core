@@ -78,7 +78,7 @@ class CodeSetXmlImporterService extends DataBindCodeSetImporterProviderService<C
 
         if (result.name() == 'codeSets') {
             log.debug('Importing CodeSet list')
-            return convertToList(result as NodeChild).collect {bindMapToCodeSet(currentUser, it)}
+            return convertToList(result as NodeChild).collect { bindMapToCodeSet(currentUser, it) }
         }
 
         // Handle single CodeSet map or exportModel passed to this method, for backwards compatibility

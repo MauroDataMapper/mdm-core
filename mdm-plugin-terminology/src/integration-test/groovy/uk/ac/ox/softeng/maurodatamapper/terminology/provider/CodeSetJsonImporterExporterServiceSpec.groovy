@@ -209,7 +209,7 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
             assert codeSetService.saveModelWithContent(it)
         }
         sessionFactory.currentSession.flush()
-        imported.collect {codeSetService.get(it.id)}
+        imported.collect { codeSetService.get(it.id) }
     }
 
     void confirmCodeSet(codeSet) {
@@ -657,13 +657,13 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         CodeSet cs = importModel(loadTestFile('propagatedBootstrappedSimpleCodeSet'))
 
         then:
-        cs.annotations.find {it.label == testAnnotation.label}
-        cs.classifiers.find {it.label == testClassifier.label}
-        cs.metadata.find {it.namespace == testMetadata.namespace}
-        cs.rules.find {it.name == testRule.name}
-        cs.semanticLinks.find {it.targetMultiFacetAwareItemId == testSemanticLink.targetMultiFacetAwareItemId}
-        cs.semanticLinks.find {it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType}
-        cs.referenceFiles.find {it.fileName == testReferenceFile.fileName}
+        cs.annotations.find { it.label == testAnnotation.label }
+        cs.classifiers.find { it.label == testClassifier.label }
+        cs.metadata.find { it.namespace == testMetadata.namespace }
+        cs.rules.find { it.name == testRule.name }
+        cs.semanticLinks.find { it.targetMultiFacetAwareItemId == testSemanticLink.targetMultiFacetAwareItemId }
+        cs.semanticLinks.find { it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType }
+        cs.referenceFiles.find { it.fileName == testReferenceFile.fileName }
 
         cleanup:
         cleanupParameters()
