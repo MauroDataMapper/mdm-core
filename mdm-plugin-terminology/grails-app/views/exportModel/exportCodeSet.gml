@@ -2,7 +2,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportMetadata
 
 xmlDeclaration()
 
-Object export = exportModel.modelExportMap.export
+Object export = exportModel.exportMap.export
 
 'exp:exportModel'(exportModel.getXmlNamespaces()) {
     if (export instanceof List) {
