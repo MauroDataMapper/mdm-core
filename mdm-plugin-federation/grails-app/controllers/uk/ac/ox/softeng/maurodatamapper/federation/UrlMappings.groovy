@@ -31,6 +31,7 @@ class UrlMappings {
             '/subscribedCatalogues'(resources: 'subscribedCatalogue') {
                 get '/availableModels'(controller: 'subscribedCatalogue', action: 'publishedModels') // to be removed
                 get '/publishedModels'(controller: 'subscribedCatalogue', action: 'publishedModels')
+                get '/testConnection'(controller: 'subscribedCatalogue', action: 'testConnection')
                 '/subscribedModels'(resources: 'subscribedModel', excludes: DEFAULT_EXCLUDES)
             }
             post "/subscribedModels/$subscribedModelId/federate"(controller: 'subscribedModel', action: 'federate')

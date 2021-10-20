@@ -150,6 +150,7 @@ class SubscribedModelService {
                 return subscribedModel.errors
             }
 
+            log.debug('Imported model {}, version {} from authority {}', model.label, model.modelVersion, model.authority)
             if (modelService.countByAuthorityAndLabelAndVersion(model.authority, model.label, model.modelVersion)) {
                 subscribedModel.errors.reject('invalid.subscribedmodel.import.already.exists',
                                               [model.authority, model.label, model.modelVersion].toArray(),

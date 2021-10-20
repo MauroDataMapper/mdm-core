@@ -31,6 +31,7 @@ import io.micronaut.http.client.DefaultHttpClient
 import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.HttpClientConfiguration
 import io.micronaut.http.client.LoadBalancer
+import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.http.client.ssl.NettyClientSslBuilder
 import io.micronaut.http.codec.MediaTypeCodecRegistry
@@ -135,7 +136,7 @@ class FederationClient {
         try {
             new XmlSlurper().parseText(body)
         } catch (IOException | SAXException exception) {
-            throw new ApiInternalException('FED04', "Could not translate XML from endpoint [${getFullUrl(uriBuilder, params)}].\n" +
+            throw new ApiInternalException('FED01', "Could not translate XML from endpoint [${getFullUrl(uriBuilder, params)}].\n" +
                                                     "Exception: ${exception.getMessage()}")
         }
     }
@@ -146,12 +147,11 @@ class FederationClient {
                                                          .GET(uriBuilder.expand(params))
                                                          .header(API_KEY_HEADER, apiKey.toString()),
                                                      Argument.mapOf(String, Object)) as Flowable<Map>
+            log.debug('retrieveMapFromClient: {}', response.blockingFirst().toString())
             response.blockingFirst()
         }
-        catch (HttpClientResponseException responseException) {
-            handleHttpClientResponseException(responseException, getFullUrl(uriBuilder, params))
-        } catch (HttpException ex) {
-            throw new ApiInternalException('FED03', "Could not load resource from endpoint [${getFullUrl(uriBuilder, params)}]", ex)
+        catch (HttpException ex) {
+            handleHttpException(ex, getFullUrl(uriBuilder, params))
         }
     }
 
@@ -163,10 +163,8 @@ class FederationClient {
                                                         Argument.STRING) as Flowable<String>
             response.blockingFirst()
         }
-        catch (HttpClientResponseException responseException) {
-            handleHttpClientResponseException(responseException, getFullUrl(uriBuilder, params))
-        } catch (HttpException ex) {
-            throw new ApiInternalException('FED03', "Could not load resource from endpoint [${getFullUrl(uriBuilder, params)}]", ex)
+        catch (HttpException ex) {
+            handleHttpException(ex, getFullUrl(uriBuilder, params))
         }
     }
 
@@ -178,21 +176,24 @@ class FederationClient {
                                                       Argument.listOf(Map)) as Flowable<List>
             response.blockingFirst()
         }
-        catch (HttpClientResponseException responseException) {
-            handleHttpClientResponseException(responseException, getFullUrl(uriBuilder, params))
-        } catch (HttpException ex) {
-            throw new ApiInternalException('FED03', "Could not load resource from endpoint [${getFullUrl(uriBuilder, params)}]", ex)
+        catch (HttpException ex) {
+            handleHttpException(ex, getFullUrl(uriBuilder, params))
         }
     }
 
-    private static void handleHttpClientResponseException(HttpClientResponseException responseException, String fullUrl) throws
-        ApiException {
-        if (responseException.status == HttpStatus.NOT_FOUND) {
-            throw new ApiBadRequestException('FED01', "Requested endpoint could not be found ${fullUrl}")
+    private static void handleHttpException(HttpException ex, String fullUrl) throws ApiException {
+        if (ex instanceof HttpClientResponseException) {
+            if (ex.status == HttpStatus.NOT_FOUND) {
+                throw new ApiBadRequestException('FED02', "Requested endpoint could not be found ${fullUrl}")
+            } else {
+                throw new ApiBadRequestException('FED03', "Could not load resource from endpoint [${fullUrl}].\n" +
+                                                          "Response body [${ex.response.body()}]",
+                                                 ex)
+            }
+        } else if (ex instanceof HttpClientException) {
+            throw new ApiBadRequestException('FED04', "Could not load resource from endpoint [${fullUrl}]", ex)
         }
-        throw new ApiInternalException('FED02', "Could not load resource from endpoint [${fullUrl}].\n" +
-                                                "Response body [${responseException.response.body()}]",
-                                       responseException)
+        throw new ApiInternalException('FED05', "Could not load resource from endpoint [${fullUrl}]", ex)
     }
 
     private String getFullUrl(UriBuilder uriBuilder, Map params) {

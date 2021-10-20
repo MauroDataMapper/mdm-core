@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.federation
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.XmlImportMapping
@@ -68,13 +69,15 @@ class SubscribedCatalogueService implements XmlImportMapping {
     }
 
     void verifyConnectionToSubscribedCatalogue(SubscribedCatalogue subscribedCatalogue) {
+        log.debug('verifyConnectionToSubscribedCatalogue')
         try {
             FederationClient client = getFederationClientForSubscribedCatalogue(subscribedCatalogue)
             Map<String, Object> catalogueModels = client.getSubscribedCatalogueModels(subscribedCatalogue.apiKey)
-            if (!catalogueModels) {
-                subscribedCatalogue.errors.reject('invalid.subscription.url.apikey',
+            log.debug('catalogueModels={}', catalogueModels.toString())
+            if (!catalogueModels.containsKey('publishedModels') || !catalogueModels.authority) {
+                subscribedCatalogue.errors.reject('invalid.subscription.url.response',
                                                   [subscribedCatalogue.url].toArray(),
-                                                  'Invalid subscription to catalogue at [{0}] cannot connect using provided Api Key')
+                                                  'Invalid subscription to catalogue at [{0}], response from catalogue is invalid')
             }
             Authority thisAuthority = authorityService.defaultAuthority
 
@@ -89,10 +92,15 @@ class SubscribedCatalogueService implements XmlImportMapping {
                         'Invalid subscription to catalogue at [{0}] as it has the same Authority as this instance [{1}:{2}]')
                 }
             }
+        } catch (ApiException exception) {
+            subscribedCatalogue.errors.reject('invalid.subscription.url.connection',
+                                              [subscribedCatalogue.url, exception.message].toArray(),
+                                              'Invalid subscription to catalogue at [{0}], cannot connect to catalogue due to {1}')
+            log.warn('Unable to confirm catalogue subscription due to exception', exception)
         } catch (Exception exception) {
-            subscribedCatalogue.errors.reject('invalid.subscription.url.apikey',
-                                              [subscribedCatalogue.url].toArray(),
-                                              'Invalid subscription to catalogue at [{0}] cannot connect using provided Api Key')
+            subscribedCatalogue.errors.reject('invalid.subscription.url.exception',
+                                              [subscribedCatalogue.url, exception.message].toArray(),
+                                              'Invalid subscription to catalogue at [{0}] due to {1}')
             log.warn('Unable to confirm catalogue subscription due to exception', exception)
         }
         subscribedCatalogue
@@ -101,12 +109,10 @@ class SubscribedCatalogueService implements XmlImportMapping {
     /**
      * Return a list of models available on the subscribed catalogue.
      * 1. Connect to the endpoint /api/published/models on the remote, authenticating by setting an api key in the header
-     * 2. Parse the returned Atom feed, picking out <entry> nodes
-     * 3. For each <entry>, create an AvailableModel
-     * 4. Return the list of AvailableModel, in order that this can be rendered as json
+     * 2. Return list of PublishedModels received in JSON from the remote catalogue
      *
-     * @param subscribedCatalogue The catalogue we want to query
-     * @return List<AvailableModel>               The list of available models returned by the catalogue
+     * @param subscribedCatalogue   The catalogue we want to query
+     * @return List<PublishedModel> The list of published models returned by the catalogue
      *
      */
     List<PublishedModel> listPublishedModels(SubscribedCatalogue subscribedCatalogue) {
@@ -114,7 +120,6 @@ class SubscribedCatalogueService implements XmlImportMapping {
         FederationClient client = getFederationClientForSubscribedCatalogue(subscribedCatalogue)
 
         Map<String, Object> subscribedCatalogueModels = client.getSubscribedCatalogueModels(subscribedCatalogue.apiKey)
-
         if (subscribedCatalogueModels.publishedModels.isEmpty()) return []
 
         (subscribedCatalogueModels.publishedModels as List<Map<String, String>>).collect {pm ->
