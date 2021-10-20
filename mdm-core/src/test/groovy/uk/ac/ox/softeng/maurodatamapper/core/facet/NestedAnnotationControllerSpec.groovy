@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationController
 import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
+import uk.ac.ox.softeng.maurodatamapper.security.basic.AnonymousUser
 import uk.ac.ox.softeng.maurodatamapper.test.unit.ResourceControllerSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -102,6 +103,11 @@ class NestedAnnotationControllerSpec extends ResourceControllerSpec<Annotation> 
                     basicModel.addToAnnotations(ann)
                 }
             }
+            populateAnnotationUser(_) >> {Annotation ann ->
+                ann?.user = AnonymousUser.instance
+                ann?.childAnnotations.each {controller.annotationService.populateAnnotationUser(it)}
+                ann
+            }
         }
     }
 
@@ -115,21 +121,24 @@ class NestedAnnotationControllerSpec extends ResourceControllerSpec<Annotation> 
           "createdBy": "reader1@test.com",
           "description": "annotation 2.1",
           "id": "${json-unit.matches:id}",
-          "label": "annotation 2 [0]"
+          "label": "annotation 2 [0]",
+          "annotatorName": "Anonymous User"
         },
         {
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "createdBy": "reader1@test.com",
           "description": "annotation 2.2",
           "id": "${json-unit.matches:id}",
-          "label": "annotation 2 [1]"
+          "label": "annotation 2 [1]",
+          "annotatorName": "Anonymous User"
         },
         {
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "createdBy": "editor@test.com",
           "description": "annotation 2.3",
           "id": "${json-unit.matches:id}",
-          "label": "annotation 2 [2]"
+          "label": "annotation 2 [2]",
+          "annotatorName": "Anonymous User"
         }
       ]
 }'''
@@ -163,7 +172,8 @@ class NestedAnnotationControllerSpec extends ResourceControllerSpec<Annotation> 
     "createdBy": "unlogged_user@mdm-core.com",
     "description": "a description",
     "id": "${json-unit.matches:id}",
-    "label": "annotation 2 [4]"
+    "label": "annotation 2 [4]",
+    "annotatorName": "Anonymous User"
 }
 '''
     }
@@ -175,7 +185,8 @@ class NestedAnnotationControllerSpec extends ResourceControllerSpec<Annotation> 
     "createdBy": "reader1@test.com",
     "description": "annotation 2.1",
     "id": "${json-unit.matches:id}",
-    "label": "annotation 2 [0]"
+    "label": "annotation 2 [0]",
+    "annotatorName": "Anonymous User"
 }'''
     }
 
@@ -196,7 +207,8 @@ class NestedAnnotationControllerSpec extends ResourceControllerSpec<Annotation> 
     "createdBy": "reader1@test.com",
     "description": "annotation 2.1 added an updated",
     "id": "${json-unit.matches:id}",
-    "label": "annotation 2 [0]"
+    "label": "annotation 2 [0]",
+    "annotatorName": "Anonymous User"
        
 }'''
     }

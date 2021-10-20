@@ -122,6 +122,7 @@ abstract class CatalogueItemAnnotationFunctionalSpec extends UserAccessWithoutUp
         '''{
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "createdBy": "editor@test.com",
+  "annotatorName": "editor User",
   "id": "${json-unit.matches:id}",
   "label": "Functional Test Annotation"
 }'''
