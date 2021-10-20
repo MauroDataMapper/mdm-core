@@ -2,17 +2,15 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportMetadata
 
 xmlDeclaration()
 
-List<Object> exportList = exportModel.modelExportMap.export
+Object export = exportModel.modelExportMap.export
 
 'exp:exportModel'(exportModel.getXmlNamespaces()) {
-    if (exportList.size() > 1) {
+    if (export instanceof List) {
         'mdm:dataModels' {
-            exportList.each {
-                layout '/dataModel/export.gml', dataModel: it
-            }
+            export.each { layout '/dataModel/export.gml', dataModel: it }
         }
     } else {
-        layout '/dataModel/export.gml', dataModel: exportList.pop()
+        layout '/dataModel/export.gml', dataModel: export
     }
     layout '/exportMetadata/export.gml', exportMetadata: exportModel.exportMetadata
 }

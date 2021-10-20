@@ -5,9 +5,9 @@ model {
 }
 
 json {
-    List<Object> exportList = exportModel.modelExportMap.export
+    Map<String, Object> exportMap = exportModel.modelExportMap
     call(exportModel.exportModelType,
-         exportList.size() > 1 ? g.render(template: exportModel.modelExportTemplatePath, collection: exportList, var: 'export')
-                               : g.render(template: exportModel.modelExportTemplatePath, model: [export: exportList.pop()]))
+         exportMap.export instanceof List ? g.render(template: exportModel.modelExportTemplatePath, collection: exportMap.export, var: 'export')
+                                          : g.render(template: exportModel.modelExportTemplatePath, model: exportMap))
     exportMetadata g.render(exportModel.exportMetadata)
 }

@@ -42,8 +42,6 @@ class TerminologyJsonExporterServiceSpec extends DataBindTerminologyImportAndDef
     implements JsonComparer {
 
     private static final String NO_TERMINOLOGY_IDS_TO_EXPORT_CODE = 'TEEP01'
-    private static final String SIMPLE_TERMINOLOGY_FILENAME = 'simpleTerminology'
-    private static final String SIMPLE_AND_COMPLEX_TERMINOLOGIES_FILENAME = 'simpleAndComplexTerminologies'
 
     TerminologyJsonImporterService terminologyJsonImporterService
     TerminologyJsonExporterService terminologyJsonExporterService
@@ -129,7 +127,7 @@ class TerminologyJsonExporterServiceSpec extends DataBindTerminologyImportAndDef
         String exported = exportModels([simpleTerminologyId])
 
         then:
-        validateExportedModels(SIMPLE_TERMINOLOGY_FILENAME, replaceWithTestAuthority(exported))
+        validateExportedModels('simpleTerminologyInList', replaceWithTestAuthority(exported))
     }
 
     void 'test multi-export multiple Terminologies'() {
@@ -144,7 +142,7 @@ class TerminologyJsonExporterServiceSpec extends DataBindTerminologyImportAndDef
         String exported = exportModels([simpleTerminologyId, complexTerminologyId])
 
         then:
-        validateExportedModels(SIMPLE_AND_COMPLEX_TERMINOLOGIES_FILENAME, replaceWithTestAuthority(exported))
+        validateExportedModels('simpleAndComplexTerminologies', replaceWithTestAuthority(exported))
     }
 
     void 'test multi-export Terminologies with invalid models'() {
@@ -159,13 +157,13 @@ class TerminologyJsonExporterServiceSpec extends DataBindTerminologyImportAndDef
         String exported = exportModels([UUID.randomUUID(), simpleTerminologyId])
 
         then:
-        validateExportedModels(SIMPLE_TERMINOLOGY_FILENAME, replaceWithTestAuthority(exported))
+        validateExportedModels('simpleTerminologyInList', replaceWithTestAuthority(exported))
 
         when:
         exported = exportModels([UUID.randomUUID(), simpleTerminologyId, UUID.randomUUID(), complexTerminologyId])
 
         then:
-        validateExportedModels(SIMPLE_AND_COMPLEX_TERMINOLOGIES_FILENAME, replaceWithTestAuthority(exported))
+        validateExportedModels('simpleAndComplexTerminologies', replaceWithTestAuthority(exported))
     }
 
     void 'test multi-export Terminologies with duplicates'() {
@@ -180,12 +178,12 @@ class TerminologyJsonExporterServiceSpec extends DataBindTerminologyImportAndDef
         String exported = exportModels([simpleTerminologyId, simpleTerminologyId])
 
         then:
-        validateExportedModels(SIMPLE_TERMINOLOGY_FILENAME, replaceWithTestAuthority(exported))
+        validateExportedModels('simpleTerminologyInList', replaceWithTestAuthority(exported))
 
         when:
         exported = exportModels([simpleTerminologyId, complexTerminologyId, complexTerminologyId, simpleTerminologyId])
 
         then:
-        validateExportedModels(SIMPLE_AND_COMPLEX_TERMINOLOGIES_FILENAME, replaceWithTestAuthority(exported))
+        validateExportedModels('simpleAndComplexTerminologies', replaceWithTestAuthority(exported))
     }
 }
