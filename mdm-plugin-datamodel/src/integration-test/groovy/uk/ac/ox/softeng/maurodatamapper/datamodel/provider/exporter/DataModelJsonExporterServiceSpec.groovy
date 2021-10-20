@@ -42,8 +42,6 @@ class DataModelJsonExporterServiceSpec extends DataBindImportAndDefaultExporterS
     implements JsonComparer {
 
     private static final String NO_DATAMODEL_IDS_TO_EXPORT_CODE = 'DMEP01'
-    private static final String SIMPLE_DATAMODEL_FILENAME = 'simpleDataModel'
-    private static final String SIMPLE_AND_COMPLEX_DATAMODELS_FILENAME = 'simpleAndComplexDataModels'
 
     DataModelJsonImporterService dataModelJsonImporterService
     DataModelJsonExporterService dataModelJsonExporterService
@@ -129,7 +127,7 @@ class DataModelJsonExporterServiceSpec extends DataBindImportAndDefaultExporterS
         String exported = exportModels([simpleDataModelId])
 
         then:
-        validateExportedModels(SIMPLE_DATAMODEL_FILENAME, replaceWithTestAuthority(exported))
+        validateExportedModels('simpleDataModelInList', replaceWithTestAuthority(exported))
     }
 
     void 'test multi-export multiple DataModels'() {
@@ -144,7 +142,7 @@ class DataModelJsonExporterServiceSpec extends DataBindImportAndDefaultExporterS
         String exported = exportModels([simpleDataModelId, complexDataModelId])
 
         then:
-        validateExportedModels(SIMPLE_AND_COMPLEX_DATAMODELS_FILENAME, replaceWithTestAuthority(exported))
+        validateExportedModels('simpleAndComplexDataModels', replaceWithTestAuthority(exported))
     }
 
     void 'test multi-export DataModels with invalid models'() {
@@ -159,13 +157,13 @@ class DataModelJsonExporterServiceSpec extends DataBindImportAndDefaultExporterS
         String exported = exportModels([UUID.randomUUID(), simpleDataModelId])
 
         then:
-        validateExportedModels(SIMPLE_DATAMODEL_FILENAME, replaceWithTestAuthority(exported))
+        validateExportedModels('simpleDataModelInList', replaceWithTestAuthority(exported))
 
         when:
         exported = exportModels([UUID.randomUUID(), simpleDataModelId, UUID.randomUUID(), complexDataModelId])
 
         then:
-        validateExportedModels(SIMPLE_AND_COMPLEX_DATAMODELS_FILENAME, replaceWithTestAuthority(exported))
+        validateExportedModels('simpleAndComplexDataModels', replaceWithTestAuthority(exported))
     }
 
     void 'test multi-export DataModels with duplicates'() {
@@ -180,12 +178,12 @@ class DataModelJsonExporterServiceSpec extends DataBindImportAndDefaultExporterS
         String exported = exportModels([simpleDataModelId, simpleDataModelId])
 
         then:
-        validateExportedModels(SIMPLE_DATAMODEL_FILENAME, replaceWithTestAuthority(exported))
+        validateExportedModels('simpleDataModelInList', replaceWithTestAuthority(exported))
 
         when:
         exported = exportModels([simpleDataModelId, complexDataModelId, complexDataModelId, simpleDataModelId])
 
         then:
-        validateExportedModels(SIMPLE_AND_COMPLEX_DATAMODELS_FILENAME, replaceWithTestAuthority(exported))
+        validateExportedModels('simpleAndComplexDataModels', replaceWithTestAuthority(exported))
     }
 }

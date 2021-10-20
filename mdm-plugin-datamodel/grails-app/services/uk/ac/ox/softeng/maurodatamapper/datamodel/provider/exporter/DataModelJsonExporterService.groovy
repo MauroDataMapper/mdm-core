@@ -59,7 +59,8 @@ class DataModelJsonExporterService extends DataModelExporterProviderService impl
 
     @Override
     ByteArrayOutputStream exportDataModel(User currentUser, DataModel dataModel) throws ApiException {
-        exportDataModels(currentUser, [dataModel])
+        ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
+        exportModel(new ExportModel(dataModel, 'dataModel', version, exportMetadata), fileType)
     }
 
     @Override

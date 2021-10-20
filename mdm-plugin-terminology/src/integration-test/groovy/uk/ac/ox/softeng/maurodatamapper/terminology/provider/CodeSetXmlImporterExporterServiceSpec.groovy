@@ -58,8 +58,6 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
     private static final String CANNOT_IMPORT_EMPTY_CONTENT_CODE = 'XTIS02'
     private static final String NO_CODESET_TO_IMPORT_CODE = 'FBIP03'
     private static final String NO_CODESET_IDS_TO_EXPORT_CODE = 'CSEP01'
-    private static final String SIMPLE_CODESET_FILENAME = 'bootstrappedSimpleCodeSet'
-    private static final String SIMPLE_AND_COMPLEX_CODESETS_FILENAME = 'simpleAndComplexCodeSets'
 
     @Autowired
     CodeSetService codeSetService
@@ -847,7 +845,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         String exported = exportModels([simpleCodeSetId])
 
         then:
-        validateExportedModels(SIMPLE_CODESET_FILENAME, replaceWithTestAuthority(exported))
+        validateExportedModels('simpleCodeSetInList', replaceWithTestAuthority(exported))
     }
 
     void 'test multi-export multiple CodeSets'() {
@@ -862,7 +860,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         String exported = exportModels([simpleCodeSetId, complexCodeSetId])
 
         then:
-        validateExportedModels(SIMPLE_AND_COMPLEX_CODESETS_FILENAME, replaceWithTestAuthority(exported))
+        validateExportedModels('simpleAndComplexCodeSets', replaceWithTestAuthority(exported))
     }
 
     void 'test multi-export CodeSets with invalid models'() {
@@ -877,13 +875,13 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         String exported = exportModels([UUID.randomUUID(), simpleCodeSetId])
 
         then:
-        validateExportedModels(SIMPLE_CODESET_FILENAME, replaceWithTestAuthority(exported))
+        validateExportedModels('simpleCodeSetInList', replaceWithTestAuthority(exported))
 
         when:
         exported = exportModels([UUID.randomUUID(), simpleCodeSetId, UUID.randomUUID(), complexCodeSetId])
 
         then:
-        validateExportedModels(SIMPLE_AND_COMPLEX_CODESETS_FILENAME, replaceWithTestAuthority(exported))
+        validateExportedModels('simpleAndComplexCodeSets', replaceWithTestAuthority(exported))
     }
 
     void 'test multi-export CodeSets with duplicates'() {
@@ -898,12 +896,12 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         String exported = exportModels([simpleCodeSetId, simpleCodeSetId])
 
         then:
-        validateExportedModels(SIMPLE_CODESET_FILENAME, replaceWithTestAuthority(exported))
+        validateExportedModels('simpleCodeSetInList', replaceWithTestAuthority(exported))
 
         when:
         exported = exportModels([simpleCodeSetId, complexCodeSetId, complexCodeSetId, simpleCodeSetId])
 
         then:
-        validateExportedModels(SIMPLE_AND_COMPLEX_CODESETS_FILENAME, replaceWithTestAuthority(exported))
+        validateExportedModels('simpleAndComplexCodeSets', replaceWithTestAuthority(exported))
     }
 }
