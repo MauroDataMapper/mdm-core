@@ -104,7 +104,7 @@ hibernate:
 grails:
     plugins:
         hibernatesearch:
-            rebuildOnStart: true
+            rebuildIndexOnStart: true
 environments:
     development:
         grails:
@@ -115,4 +115,4 @@ environments:
         grails:
             plugins:
                 hibernatesearch:
-                    rebuildOnStart: false
+                    rebuildIndexOnStart: false
