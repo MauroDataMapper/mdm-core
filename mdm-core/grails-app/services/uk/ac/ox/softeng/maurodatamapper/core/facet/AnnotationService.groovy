@@ -18,18 +18,24 @@
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
+import uk.ac.ox.softeng.maurodatamapper.core.security.UserService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
+import uk.ac.ox.softeng.maurodatamapper.security.basic.AnonymousUser
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.dao.InvalidDataAccessResourceUsageException
 
 @Slf4j
 @Transactional
 class AnnotationService implements MultiFacetItemAwareService<Annotation> {
+
+    @Autowired(required = false)
+    UserService userService
 
     Annotation get(Serializable id) {
         Annotation.get(id)
@@ -133,5 +139,12 @@ class AnnotationService implements MultiFacetItemAwareService<Annotation> {
     @Override
     Annotation findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
         Annotation.byMultiFacetAwareItemId(parentId).eq('label', pathIdentifier).get()
+    }
+
+    Annotation populateAnnotationUser(Annotation annotation) {
+        if (!annotation) return null
+        annotation.user = userService ? userService.findUser(annotation.createdBy) ?: AnonymousUser.instance : AnonymousUser.instance
+        annotation.childAnnotations?.each {populateAnnotationUser(it)}
+        annotation
     }
 }

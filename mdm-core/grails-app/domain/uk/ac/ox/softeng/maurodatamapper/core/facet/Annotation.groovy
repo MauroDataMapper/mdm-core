@@ -23,9 +23,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.InformationAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.PathAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.security.User
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.PathAware
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
@@ -37,6 +38,7 @@ class Annotation implements MultiFacetItemAware, PathAware, InformationAware, Di
     UUID id
     Annotation parentAnnotation
     List<Annotation> childAnnotations
+    User user
 
     static belongsTo = [Annotation]
 
@@ -48,7 +50,7 @@ class Annotation implements MultiFacetItemAware, PathAware, InformationAware, Di
         childAnnotations: 'parentAnnotation'
     ]
 
-    static transients = ['multiFacetAwareItem']
+    static transients = ['multiFacetAwareItem', 'user']
 
     static constraints = {
         CallableConstraints.call(CreatorAwareConstraints, delegate)
@@ -61,6 +63,7 @@ class Annotation implements MultiFacetItemAware, PathAware, InformationAware, Di
         description validator: {String val, Annotation obj ->
             obj.parentAnnotation && !val ? ['annotation.description.required.message',] : true
         }
+        user nullable: true
     }
 
     static mapping = {
