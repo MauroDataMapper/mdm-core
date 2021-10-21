@@ -162,8 +162,13 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     }
 
     @Override
+    List<DataType> findAllByClassifier(Classifier classifier) {
+        DataType.byClassifierId(DataType, classifier.id).list()
+    }
+
+    @Override
     List<DataType> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        DataType.byClassifierId(DataType, classifier.id).list().findAll {
+        findAllByClassifier(classifier).findAll {
             userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)
         }
     }

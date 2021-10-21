@@ -111,8 +111,13 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> implement
     }
 
     @Override
+    List<EnumerationType> findAllByClassifier(Classifier classifier) {
+        EnumerationType.byClassifierId(EnumerationType, classifier.id).list()
+    }
+
+    @Override
     List<EnumerationType> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        EnumerationType.byClassifierId(EnumerationType, classifier.id).list().findAll {
+        findAllByClassifier(classifier).findAll {
             userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)
         }
     }

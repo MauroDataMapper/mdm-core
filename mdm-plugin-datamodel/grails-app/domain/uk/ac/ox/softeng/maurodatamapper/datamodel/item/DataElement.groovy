@@ -40,13 +40,10 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.databinding.BindUsing
 import grails.gorm.DetachedCriteria
+import grails.plugins.hibernate.search.config.SearchMappingEntityConfig
 import grails.rest.Resource
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
-import org.hibernate.search.annotations.Field
-import org.hibernate.search.annotations.FieldBridge
-import org.hibernate.search.annotations.Index
-import org.hibernate.search.bridge.builtin.UUIDBridge
 
 import javax.persistence.criteria.JoinType
 
@@ -112,10 +109,12 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
         importingDataClasses: 'none'
     ]
 
-    static search = {
+    static search = SearchMappingEntityConfig.entityMapping {
         CallableSearch.call(ModelItemSearch, delegate)
-        dataClass indexEmbedded: true
-        dataType indexEmbedded: true
+        modelType searchable: 'yes', analyze: false, indexingDependency: [reindexOnUpdate: 'shallow', derivedFrom: ['dataClass', 'dataModel']]
+        modelId searchable: 'yes', indexingDependency: [reindexOnUpdate: 'shallow', derivedFrom: ['dataClass', 'dataModel']]
+        dataClass indexEmbedded: [associationInverseSide: 'dataElements', includePaths: ['label']]
+        dataType indexEmbedded: [associationInverseSide: 'dataElements', includePaths: ['label']]
     }
 
     DataElement() {
@@ -131,7 +130,6 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
         'de'
     }
 
-    @Field(index = Index.YES, bridge = @FieldBridge(impl = UUIDBridge))
     UUID getModelId() {
         model.id
     }

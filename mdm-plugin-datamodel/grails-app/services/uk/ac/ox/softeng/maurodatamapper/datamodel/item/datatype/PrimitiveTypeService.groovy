@@ -99,8 +99,13 @@ class PrimitiveTypeService extends ModelItemService<PrimitiveType> implements Su
     }
 
     @Override
+    List<PrimitiveType> findAllByClassifier(Classifier classifier) {
+        PrimitiveType.byClassifierId(PrimitiveType, classifier.id).list()
+    }
+
+    @Override
     List<PrimitiveType> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        PrimitiveType.byClassifierId(PrimitiveType, classifier.id).list().findAll {
+        findAllByClassifier(classifier).findAll {
             userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)
         }
     }

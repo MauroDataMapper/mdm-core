@@ -41,10 +41,6 @@ import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
-import org.hibernate.search.annotations.Field
-import org.hibernate.search.annotations.FieldBridge
-import org.hibernate.search.annotations.Index
-import org.hibernate.search.bridge.builtin.UUIDBridge
 
 import javax.persistence.criteria.JoinType
 
@@ -103,6 +99,8 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
 
     static search = {
         CallableSearch.call(ModelItemSearch, delegate)
+        modelType searchable: 'yes', analyze: false, indexingDependency: [reindexOnUpdate: 'shallow', derivedFrom: 'dataModel']
+        modelId searchable: 'yes', indexingDependency: [reindexOnUpdate: 'shallow', derivedFrom: 'dataModel']
     }
 
     DataType() {
@@ -113,7 +111,6 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
         'dt'
     }
 
-    @Field(index = Index.YES, bridge = @FieldBridge(impl = UUIDBridge))
     UUID getModelId() {
         dataModel.id
     }

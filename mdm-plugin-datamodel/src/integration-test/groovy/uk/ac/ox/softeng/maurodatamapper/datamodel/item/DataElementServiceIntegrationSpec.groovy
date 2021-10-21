@@ -371,11 +371,12 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when:
         DataElementSimilarityResult result = dataElementService.findAllSimilarDataElementsInDataModel(complexDataModel, original)
+        log.debug('{}', result)
 
         then:
-        result.size() == 1
+        result.totalSimilar() == 1
         result.first().item.label == 'ele1'
         result.first().item.id != elementId
-        result.first().similarity > 0
+        result.first().score > 0
     }
 }

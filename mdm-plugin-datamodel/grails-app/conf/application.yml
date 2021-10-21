@@ -1,7 +1,7 @@
 database:
     host: localhost
     port: 5432
-    name: maurodatamapper
+    name: maurodatamapper_hs6
 ---
 apiUser:
     username: admin@maurodatamapper.com
@@ -146,7 +146,9 @@ hibernate:
             provider: org.ehcache.jsr107.EhcacheCachingProvider
             missing_cache_strategy: create
     search:
-        default.indexBase: '/tmp/lucene/plugin/datamodel'
+        backend:
+            directory:
+                root: '/tmp/lucene/plugin/datamodel'
 
 ---
 dataSource:
