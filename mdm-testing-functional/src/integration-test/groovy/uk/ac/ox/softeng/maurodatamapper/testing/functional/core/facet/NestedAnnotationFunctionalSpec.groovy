@@ -132,7 +132,8 @@ class NestedAnnotationFunctionalSpec extends UserAccessWithoutUpdatingFunctional
   "createdBy": "editor@test.com",
   "id": "${json-unit.matches:id}",
   "description": "Nested Functional Test Annotation",
-  "label": "test annotation 1 [1]"
+  "label": "test annotation 1 [1]",
+  "annotatorName": "editor User"
 }'''
     }
 }

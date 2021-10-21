@@ -22,6 +22,8 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 
 interface UserService {
 
+    User findUser(String emailAddress)
+
     UserImageFile addImageCreatedEditToUser(User creator, UserImageFile domain, UUID userId)
 
     UserImageFile addImageUpdatedEditToUser(User editor, UserImageFile domain, UUID userId, List<String> dirtyPropertyNames)

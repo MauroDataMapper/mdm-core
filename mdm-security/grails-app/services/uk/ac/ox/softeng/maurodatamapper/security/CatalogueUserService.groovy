@@ -294,6 +294,11 @@ class CatalogueUserService implements UserService {
     }
 
     @Override
+    User findUser(String emailAddress) {
+        findByEmailAddress(emailAddress)
+    }
+
+    @Override
     UserImageFile addImageCreatedEditToUser(User creator, UserImageFile domain, UUID userId) {
         CatalogueUser user = get(userId)
         user.addToEditsTransactionally EditTitle.CREATE, creator, "[$domain.editLabel] added to component [${user.editLabel}]"

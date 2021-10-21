@@ -32,6 +32,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.ReferenceFileAw
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.RuleAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.SemanticLinkAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.VersionLinkAwareMappingContext
+import uk.ac.ox.softeng.maurodatamapper.core.json.view.JsonViewTemplateEngine
 import uk.ac.ox.softeng.maurodatamapper.core.markup.view.MarkupViewTemplateEngine
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperProviderService
 import uk.ac.ox.softeng.maurodatamapper.provider.plugin.MauroDataMapperPlugin
@@ -111,7 +112,7 @@ This is basically the backend API.
             // Dynamically update the Flyway Schemas
             mdmFlywayMigationStrategy MdmFlywayMigationStrategy
 
-            boolean rebuildIndexes = grailsApplication.config.getProperty('grails.plugins.hibernatesearch.rebuildOnStart', Boolean, false)
+            boolean rebuildIndexes = grailsApplication.config.getProperty('grails.plugins.hibernatesearch.rebuildIndexOnStart', Boolean, false)
             if (rebuildIndexes) log.warn('Rebuilding search indexes')
             /*
              * Load in the Lucene analysers used by the hibernate search functionality
@@ -194,6 +195,12 @@ This is basically the backend API.
             }
 
             markupTemplateEngine(MarkupViewTemplateEngine, ref('markupViewConfiguration'), applicationContext.classLoader)
+
+            // If global exclude fields provided then we need to use the custom MDM port of the template engine as this is the only way
+            // we can actually add the global exclusion fields to the generator
+            if (grailsApplication.config.getProperty('grails.views.excludeFields')) {
+                jsonTemplateEngine(JsonViewTemplateEngine, grailsApplication, ref('jsonViewConfiguration'), applicationContext.classLoader)
+            }
         }
 
     }

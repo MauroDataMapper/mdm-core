@@ -15,46 +15,34 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.security
+package uk.ac.ox.softeng.maurodatamapper.security.basic
+
+import uk.ac.ox.softeng.maurodatamapper.security.User
 
 /**
- * @since 08/10/2019
+ * @since 21/10/2019
  */
-trait User extends SecurableResource {
+@Singleton
+class AnonymousUser implements User {
 
-    abstract UUID getId()
+    public static final String ANONYMOUS_EMAIL_ADDRESS = 'anonymous@maurodatamapper.com'
 
-    abstract String getEmailAddress()
+    String emailAddress = ANONYMOUS_EMAIL_ADDRESS
+    String firstName = 'Anonymous'
+    String lastName = 'User'
+    String tempPassword
 
-    abstract void setEmailAddress(String emailAddress)
+    @Override
+    UUID getId() {
+        UUID.randomUUID()
+    }
 
-    abstract String getFirstName()
-
-    abstract void setFirstName(String firstName)
-
-    abstract String getLastName()
-
-    abstract void setLastName(String lastName)
-
-    abstract String getTempPassword()
-
-    abstract void setTempPassword(String tempPassword)
-
-    String toString() {
-        getEmailAddress()
+    UUID ident() {
+        id
     }
 
     @Override
-    Boolean getReadableByEveryone() {
-        false
-    }
-
-    @Override
-    Boolean getReadableByAuthenticatedUsers() {
-        false
-    }
-
-    String getFullName() {
-        "${firstName} ${lastName}"
+    String getDomainType() {
+        AnonymousUser
     }
 }
