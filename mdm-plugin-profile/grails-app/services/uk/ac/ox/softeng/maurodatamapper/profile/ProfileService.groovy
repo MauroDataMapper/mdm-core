@@ -75,7 +75,7 @@ class ProfileService {
 
     MultiFacetAware storeProfile(ProfileProviderService profileProviderService, MultiFacetAware multiFacetAwareItem, Profile profileToStore, User user) {
         MultiFacetAwareService service = findServiceForMultiFacetAwareDomainType(multiFacetAwareItem.domainType)
-        profileProviderService.storeProfileInEntity(multiFacetAwareItem, profileToStore, user, service.isMultiFacetAwareFinalised(multiFacetAwareItem))
+        profileProviderService.storeProfileInEntity(multiFacetAwareItem, profileToStore, user.emailAddress, service.isMultiFacetAwareFinalised(multiFacetAwareItem))
         service.save(flush: true, validate: false, multiFacetAwareItem)
     }
 

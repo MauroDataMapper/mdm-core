@@ -60,7 +60,7 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
     }
 
     @Override
-    void storeProfileInEntity(MultiFacetAware entity, JsonProfile jsonProfile, String userEmailAddress, boolean isEntityFinalised = false) {
+    void storeProfileInEntity(MultiFacetAware entity, JsonProfile jsonProfile, String userEmailAddress, boolean isEntityFinalised) {
         JsonProfile emptyJsonProfile = getNewProfile()
         emptyJsonProfile.sections.each {section ->
             ProfileSection submittedSection = jsonProfile.sections.find {it.name == section.name}

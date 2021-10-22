@@ -46,7 +46,7 @@ abstract class ProfileProviderService<P extends Profile, D extends MultiFacetAwa
     @Autowired
     MetadataService metadataService
 
-    abstract void storeProfileInEntity(D entity, P profile, String userEmailAddress, boolean isEntityFinalised = false)
+    abstract void storeProfileInEntity(D entity, P profile, String userEmailAddress, boolean isEntityFinalised)
 
     abstract P createProfileFromEntity(D entity)
 
@@ -86,8 +86,8 @@ abstract class ProfileProviderService<P extends Profile, D extends MultiFacetAwa
         resourceClass
     }
 
-    void storeProfileInEntity(D entity, P profile, User user, boolean isEntityFinalised = false) {
-        storeProfileInEntity(entity, profile, user.emailAddress, isEntityFinalised)
+    void storeProfileInEntity(D entity, P profile, String userEmailAddress) {
+        storeProfileInEntity(entity, profile, userEmailAddress, false)
     }
 
     @CompileDynamic
