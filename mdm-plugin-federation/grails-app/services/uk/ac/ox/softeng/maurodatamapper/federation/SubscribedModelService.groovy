@@ -28,14 +28,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FileParameter
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
-import uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter.DataFlowJsonExporterService
-import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter.DataModelJsonExporterService
-import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.ReferenceDataJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.CodeSetJsonExporterService
-import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.TerminologyJsonExporterService
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
@@ -55,21 +50,6 @@ class SubscribedModelService {
 
     @Autowired(required = false)
     SecurityPolicyManagerService securityPolicyManagerService
-
-    @Autowired(required = false)
-    DataModelJsonExporterService dataModelJsonExporterService
-
-    @Autowired(required = false)
-    ReferenceDataJsonExporterService referenceDataJsonExporterService
-
-    @Autowired(required = false)
-    CodeSetJsonExporterService codeSetJsonExporterService
-
-    @Autowired(required = false)
-    TerminologyJsonExporterService terminologyJsonExporterService
-
-    @Autowired(required = false)
-    DataFlowJsonExporterService dataFlowJsonExporterService
 
     SubscribedModel get(Serializable id) {
         SubscribedModel.get(id)
@@ -150,7 +130,7 @@ class SubscribedModelService {
                 return subscribedModel.errors
             }
 
-            log.debug('Imported model {}, version {} from authority {}', model.label, model.modelVersion, model.authority)
+            log.debug('Importing model {}, version {} from authority {}', model.label, model.modelVersion, model.authority)
             if (modelService.countByAuthorityAndLabelAndVersion(model.authority, model.label, model.modelVersion)) {
                 subscribedModel.errors.reject('invalid.subscribedmodel.import.already.exists',
                                               [model.authority, model.label, model.modelVersion].toArray(),
@@ -229,7 +209,7 @@ class SubscribedModelService {
         //Get a ModelService to handle the domain type we are dealing with
         ModelService modelService = modelServices.find {it.handles(subscribedModel.subscribedModelType)}
 
-        Map exporter = getJsonExporter(subscribedModel.subscribedCatalogue, modelService.getUrlResourceName())
+        Map exporter = getJsonExporter(subscribedModel.subscribedCatalogue, modelService)
 
         subscribedCatalogueService.getStringResourceExport(subscribedModel.subscribedCatalogue, modelService.getUrlResourceName(),
                                                            subscribedModel.subscribedModelId, exporter)
@@ -292,18 +272,13 @@ class SubscribedModelService {
      * @param urlModelType
      * @return An exporter
      */
-    private Map getJsonExporter(SubscribedCatalogue subscribedCatalogue, String urlModelType) {
+    private Map getJsonExporter(SubscribedCatalogue subscribedCatalogue, ModelService modelService) {
 
         //Make an object by slurping json
-        List<Map<String, Object>> exporters = subscribedCatalogueService.getAvailableExportersForResourceType(subscribedCatalogue, urlModelType)
+        List<Map<String, Object>> exporters = subscribedCatalogueService.getAvailableExportersForResourceType(subscribedCatalogue, modelService.getUrlResourceName())
 
         //Find a json exporter
-        Map exporterMap =
-            exporters
-                .find {
-                    it.name in [dataModelJsonExporterService.name, referenceDataJsonExporterService.name, codeSetJsonExporterService.name, terminologyJsonExporterService
-                        .name, dataFlowJsonExporterService.name].findAll {it}
-                }
+        Map exporterMap = exporters.find {it.fileType == 'text/json' && it.name == modelService.getJsonModelExporterProviderService().name}
 
         //Can't use DataBindingUtils because of a clash with grails 'version' property
         if (!exporterMap) {

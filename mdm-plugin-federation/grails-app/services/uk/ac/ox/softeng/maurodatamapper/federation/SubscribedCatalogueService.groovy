@@ -69,11 +69,9 @@ class SubscribedCatalogueService implements XmlImportMapping {
     }
 
     void verifyConnectionToSubscribedCatalogue(SubscribedCatalogue subscribedCatalogue) {
-        log.debug('verifyConnectionToSubscribedCatalogue')
         try {
             FederationClient client = getFederationClientForSubscribedCatalogue(subscribedCatalogue)
             Map<String, Object> catalogueModels = client.getSubscribedCatalogueModels(subscribedCatalogue.apiKey)
-            log.debug('catalogueModels={}', catalogueModels.toString())
             if (!catalogueModels.containsKey('publishedModels') || !catalogueModels.authority) {
                 subscribedCatalogue.errors.reject('invalid.subscription.url.response',
                                                   [subscribedCatalogue.url].toArray(),

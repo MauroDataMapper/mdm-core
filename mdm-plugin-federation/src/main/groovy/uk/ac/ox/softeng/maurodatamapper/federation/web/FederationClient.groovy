@@ -147,7 +147,6 @@ class FederationClient {
                                                          .GET(uriBuilder.expand(params))
                                                          .header(API_KEY_HEADER, apiKey.toString()),
                                                      Argument.mapOf(String, Object)) as Flowable<Map>
-            log.debug('retrieveMapFromClient: {}', response.blockingFirst().toString())
             response.blockingFirst()
         }
         catch (HttpException ex) {

@@ -45,6 +45,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDat
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataTypeService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.DefaultReferenceDataTypeProvider
+import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.ReferenceDataJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.ReferenceDataJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.similarity.ReferenceDataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.referencedata.traits.service.ReferenceSummaryMetadataAwareService
@@ -69,6 +70,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
     ReferenceDataValueService referenceDataValueService
     ReferenceSummaryMetadataService referenceSummaryMetadataService
     ReferenceDataJsonImporterService referenceDataJsonImporterService
+    ReferenceDataJsonExporterService referenceDataJsonExporterService
 
     @Autowired
     Set<DefaultReferenceDataTypeProvider> defaultReferenceDataTypeProviders
@@ -686,6 +688,12 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
     ModelImporterProviderService<ReferenceDataModel, ? extends ModelImporterProviderServiceParameters> getJsonModelImporterProviderService() {
         referenceDataJsonImporterService
     }
+
+    @Override
+    ReferenceDataJsonExporterService getJsonModelExporterProviderService () {
+        referenceDataJsonExporterService
+    }
+
 
     @Override
     List<ReferenceDataModel> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {

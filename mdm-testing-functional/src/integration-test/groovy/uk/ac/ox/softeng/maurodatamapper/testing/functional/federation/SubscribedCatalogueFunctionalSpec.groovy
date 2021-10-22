@@ -514,6 +514,16 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         then: 'The response is correct'
         verifyResponse UNPROCESSABLE_ENTITY, response
 
+        when: 'The save action is executed with unreachable URL'
+        Map invalidDomainMap = [
+            url: 'http://invalid.localhost:8080',
+            label: 'Invalid Domain'
+        ]
+        POST('', invalidDomainMap)
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+
         when: 'The save action is executed with valid data'
         POST('', validJson)
 
@@ -590,11 +600,11 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
      * we use the localhost. Test setup and execution is as follows:
      * 1. Login as Admin and create an API Key for Admin
      * 2. Subscribe to the local catalogue (in real life this would be remote), specifying the API key created above
-     * 3. Get the local /publishedModels endpoint. In real life this would connect to /api/feeds/all on the remote,
+     * 3. Get the local /publishedModels endpoint. In real life this would connect to /api/published/models on the remote,
      * but here we use the local.
      * 4. Cleanup
      */
-    void 'Test the availableModels endpoint'() {
+    void 'A05 : Test the publishedModels endpoint'() {
 
         given:
         Map apiKeyJson = [
@@ -661,4 +671,108 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         removeValidIdObject(subscribedCatalogueId)
         cleanUpRoles(subscribedCatalogueId)
     }
+
+    void 'A06 : Test the publishedModels endpoint (without API key)'() {
+        given:
+        loginAdmin()
+
+        when:
+        Map subscriptionJson = [
+            url          : "http://localhost:$serverPort/".toString(),
+            apiKey       : '',
+            label        : 'Functional Test Label',
+            description  : 'Functional Test Description',
+            refreshPeriod: 7
+        ]
+        POST('', subscriptionJson)
+
+        then:
+        verifyResponse CREATED, response
+        String subscribedCatalogueId = responseBody().id
+
+        when:
+        GET("${subscribedCatalogueId}/publishedModels", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+    "count": 0,
+    "items": []
+}
+'''
+
+        cleanup:
+        removeValidIdObject(subscribedCatalogueId)
+        cleanUpRoles(subscribedCatalogueId)
+    }
+
+    void 'A07 : Test the testConnection action'() {
+        given:
+        Map apiKeyJson = [
+            name      : "Functional Test",
+            expiryDate: LocalDate.now().plusDays(5).format(DateTimeFormatter.ISO_LOCAL_DATE)
+        ]
+
+        when:
+        loginAdmin()
+        POST("/api/catalogueUsers/${getUserByEmailAddress(ADMIN).id}/apiKeys", apiKeyJson, MAP_ARG, true)
+
+        then:
+        verifyResponse CREATED, response
+        String apiKey = responseBody().apiKey
+
+        when:
+        Map subscriptionJson = [
+            url          : "http://localhost:$serverPort/".toString(),
+            apiKey       : apiKey,
+            label        : 'Functional Test Label',
+            description  : 'Functional Test Description',
+            refreshPeriod: 7
+        ]
+        POST('', subscriptionJson)
+
+        then:
+        verifyResponse CREATED, response
+        String subscribedCatalogueId = responseBody().id
+
+        when:
+        GET("${subscribedCatalogueId}/testConnection", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, null
+
+        cleanup:
+        DELETE("/api/catalogueUsers/${getUserByEmailAddress(ADMIN).id}/apiKeys/${apiKey}", MAP_ARG, true)
+        removeValidIdObject(subscribedCatalogueId)
+        cleanUpRoles(subscribedCatalogueId)
+    }
+
+    void 'A08 : Test the testConnection action (without API key)'() {
+        given:
+        loginAdmin()
+
+        when:
+        Map subscriptionJson = [
+            url          : "http://localhost:$serverPort/".toString(),
+            apiKey       : '',
+            label        : 'Functional Test Label',
+            description  : 'Functional Test Description',
+            refreshPeriod: 7
+        ]
+        POST('', subscriptionJson)
+
+        then:
+        verifyResponse CREATED, response
+        String subscribedCatalogueId = responseBody().id
+
+        when:
+        GET("${subscribedCatalogueId}/testConnection", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, null
+
+        cleanup:
+        removeValidIdObject(subscribedCatalogueId)
+        cleanUpRoles(subscribedCatalogueId)
+    }
+
 }

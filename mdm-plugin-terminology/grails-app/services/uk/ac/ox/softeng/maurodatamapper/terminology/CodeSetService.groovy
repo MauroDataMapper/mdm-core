@@ -40,6 +40,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.CodeSetJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.CodeSetJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
@@ -53,6 +54,7 @@ class CodeSetService extends ModelService<CodeSet> {
 
     TermService termService
     CodeSetJsonImporterService codeSetJsonImporterService
+    CodeSetJsonExporterService codeSetJsonExporterService
 
     @Override
     CodeSet get(Serializable id) {
@@ -469,6 +471,11 @@ class CodeSetService extends ModelService<CodeSet> {
     @Override
     ModelImporterProviderService<CodeSet, ? extends ModelImporterProviderServiceParameters> getJsonModelImporterProviderService() {
         codeSetJsonImporterService
+    }
+
+    @Override
+    CodeSetJsonExporterService getJsonModelExporterProviderService() {
+        codeSetJsonExporterService
     }
 
     @Override

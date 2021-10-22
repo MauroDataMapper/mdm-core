@@ -23,13 +23,17 @@ import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 
+import static io.micronaut.http.HttpStatus.CREATED
+import static io.micronaut.http.HttpStatus.OK
+
 /**
  * @see SubscribedCatalogueController* Controller: subscribedCatalogue
- *  | POST   | /api/subscribedCatalogues       | Action: save   |
- *  | GET    | /api/subscribedCatalogues       | Action: index  |
- *  | DELETE | /api/subscribedCatalogues/${id} | Action: delete |
- *  | PUT    | /api/subscribedCatalogues/${id} | Action: update |
- *  | GET    | /api/subscribedCatalogues/${id} | Action: show   |
+ *  | POST   | /api/subscribedCatalogues                                         | Action: save           |
+ *  | GET    | /api/subscribedCatalogues                                         | Action: index          |
+ *  | DELETE | /api/subscribedCatalogues/${id}                                   | Action: delete         |
+ *  | PUT    | /api/subscribedCatalogues/${id}                                   | Action: update         |
+ *  | GET    | /api/subscribedCatalogues/${id}                                   | Action: show           |
+ *  | GET    | /api/subscribedCatalogues/${subscribedCatalogueId}/testConnection | Action: testConnection |
  *
  */
 @Integration
@@ -70,5 +74,23 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
   "refreshPeriod": 7,
   "apiKey": "67421316-66a5-4830-9156-b1ba77bba5d1"
 }'''
+    }
+
+    void 'T01 : Test the testConnection action'() {
+        when:
+        POST('', getValidJson())
+
+        then:
+        verifyResponse CREATED, response
+        String subscribedCatalogueId = responseBody().id
+
+        when:
+        GET("${subscribedCatalogueId}/testConnection", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, null
+
+        cleanup:
+        DELETE(subscribedCatalogueId)
     }
 }

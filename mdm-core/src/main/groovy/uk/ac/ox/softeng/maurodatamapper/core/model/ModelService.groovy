@@ -45,6 +45,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwa
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
+import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
@@ -182,6 +183,8 @@ abstract class ModelService<K extends Model>
     abstract List<K> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination = [:])
 
     abstract ModelImporterProviderService<K, ? extends ModelImporterProviderServiceParameters> getJsonModelImporterProviderService()
+
+    abstract ExporterProviderService getJsonModelExporterProviderService()
 
     void deleteModelAndContent(K model) {
         throw new ApiNotYetImplementedException('MSXX', 'deleteModelAndContent')
