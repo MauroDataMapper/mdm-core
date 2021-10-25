@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams

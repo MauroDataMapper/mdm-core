@@ -28,6 +28,7 @@ class ProfileField implements Validateable {
     Integer minMultiplicity
     List<String> allowedValues
     String regularExpression
+    String defaultValue
 
     ProfileFieldDataType dataType
 
@@ -35,6 +36,7 @@ class ProfileField implements Validateable {
 
     Boolean derived
     Boolean uneditable
+    Boolean editableAfterFinalisation
     String derivedFrom
 
     static constraints = {
@@ -43,6 +45,7 @@ class ProfileField implements Validateable {
         description nullable: true, blank: false
         regularExpression nullable: true, blank: false
         derivedFrom nullable: true, blank: false
+        defaultValue nullable: true, blank: false
         currentValue nullable: true, validator: {val, obj ->
             if (!val && !obj.derived && !obj.uneditable && obj.minMultiplicity > 0) return ['null.message', obj.fieldName, obj.metadataPropertyName]
             if (val) {
@@ -50,7 +53,7 @@ class ProfileField implements Validateable {
                 if (obj.regularExpression && !val.matches(obj.regularExpression)) return ['doesnt.match.message', obj.regularExpression, obj.fieldName,
                                                                                           obj.metadataPropertyName]
                 String typeError = obj.dataType.validateString(val)
-                if (typeError) return ['typeMismatch', typeError, obj.fieldName]
+                if (typeError) return ['typeMismatch', typeError, obj.fieldName, obj.metadataPropertyName]
             }
         }
     }
@@ -59,6 +62,9 @@ class ProfileField implements Validateable {
     ProfileField() {
         this.derived = false
         this.uneditable = false
+        this.editableAfterFinalisation = true
+        this.minMultiplicity = 0
+        this.maxMultiplicity = 1
     }
 
     void setDataType(ProfileFieldDataType type) {

@@ -185,4 +185,9 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
 
         log.debug('Batch save took {}', Utils.timeTaken(start))
     }
+
+    @Override
+    boolean isMultiFacetAwareFinalised(K multiFacetAwareItem) {
+        multiFacetAwareItem.model.finalised
+    }
 }

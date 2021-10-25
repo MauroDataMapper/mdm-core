@@ -43,7 +43,7 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
         this.dataModelId = dataModel.id
         this.dataModelLabel = dataModel.label
         this.dataModelDescription = dataModel.description
-        this.dataModelVersion = dataModel.modelVersionTag?:dataModel.modelVersion?:dataModel.branchName
+        this.dataModelVersion = dataModel.modelVersionTag ?: dataModel.modelVersion ?: dataModel.branchName
     }
 
     @Override
@@ -73,6 +73,11 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
             }
         }
         jsonProfile
+    }
+
+    @Override
+    JsonProfile getNewProfile() {
+        new JsonProfile(getSections())
     }
 
     @Override
@@ -172,15 +177,15 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
                 name: dataClass.label,
                 description: dataClass.description,
                 fields: dataClass.dataElements.sort {it.order}.collect {dataElement ->
-                    new ProfileField(
+                    ProfileField profileField = new ProfileField(
                         fieldName: dataElement.label,
                         description: dataElement.description,
                         metadataPropertyName: dataElement.metadata.find {
                             it.namespace == "uk.ac.ox.softeng.maurodatamapper.profile.dataelement" &&
                             it.key == "metadataPropertyName"
                         }?.value,
-                        maxMultiplicity: dataElement.maxMultiplicity,
-                        minMultiplicity: dataElement.minMultiplicity,
+                        maxMultiplicity: dataElement.maxMultiplicity ?: 1,
+                        minMultiplicity: dataElement.minMultiplicity ?: 0,
                         dataType: (dataElement.dataType instanceof EnumerationType) ? 'enumeration' : dataElement.dataType.label,
                         regularExpression: dataElement.metadata.find {
                             it.namespace == "uk.ac.ox.softeng.maurodatamapper.profile.dataelement" &&
@@ -188,8 +193,21 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
                         }?.value,
                         allowedValues: (dataElement.dataType instanceof EnumerationType) ?
                                        ((EnumerationType) dataElement.dataType).enumerationValues.collect {it.key} : [],
-                        currentValue: ""
+                        defaultValue: dataElement.metadata.find {
+                            it.namespace == "uk.ac.ox.softeng.maurodatamapper.profile.dataelement" &&
+                            it.key == "defaultValue"
+                        }?.value,
+                        currentValue: '',
+                        editableAfterFinalisation: {
+                            Metadata md = dataElement.metadata.find {
+                                it.namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.dataelement' &&
+                                it.key == 'editableAfterFinalisation'
+                            }
+                            md ? md.value.toBoolean() : true
+                        }()
                     )
+                    if (!profileField.metadataPropertyName) profileField.metadataPropertyName = profileField.getUniqueKey(dataClass.label)
+                    profileField
                 }
             )
         }

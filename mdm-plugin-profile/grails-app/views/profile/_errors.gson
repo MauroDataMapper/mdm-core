@@ -23,4 +23,7 @@ json {
             }
         }
     }
+    fieldTotal allErrors
+        .findAll {it instanceof FieldError}
+        .countBy {((FieldError) it).arguments.last()}.count({it.key})
 }

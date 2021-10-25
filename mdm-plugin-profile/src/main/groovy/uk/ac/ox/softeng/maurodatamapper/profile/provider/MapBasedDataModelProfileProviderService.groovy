@@ -78,7 +78,7 @@ abstract class MapBasedDataModelProfileProviderService<P extends MapBasedProfile
 
 
     @Override
-    void storeProfileInEntity(DataModel entity, P profile, String userEmailAddress) {
+    void storeProfileInEntity(DataModel entity, P profile, String userEmailAddress, boolean isEntityFinalised) {
         profile.each { fieldName, value ->
             if (value) {
                 entity.addToMetadata(metadataNamespace, fieldName, value.toString(), userEmailAddress)
