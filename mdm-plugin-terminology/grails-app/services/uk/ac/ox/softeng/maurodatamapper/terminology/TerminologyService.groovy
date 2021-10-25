@@ -28,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
+import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.path.Path
@@ -40,6 +41,7 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipTypeSer
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationshipService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.TerminologyJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.TerminologyJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -58,6 +60,7 @@ class TerminologyService extends ModelService<Terminology> {
     TermService termService
     TermRelationshipService termRelationshipService
     TerminologyJsonImporterService terminologyJsonImporterService
+    TerminologyJsonExporterService terminologyJsonExporterService
     CodeSetService codeSetService
 
     @Override
@@ -588,6 +591,11 @@ class TerminologyService extends ModelService<Terminology> {
     @Override
     ModelImporterProviderService<Terminology, ? extends ModelImporterProviderServiceParameters> getJsonModelImporterProviderService() {
         terminologyJsonImporterService
+    }
+
+    @Override
+    TerminologyJsonExporterService getJsonModelExporterProviderService() {
+        terminologyJsonExporterService
     }
 
     @Override

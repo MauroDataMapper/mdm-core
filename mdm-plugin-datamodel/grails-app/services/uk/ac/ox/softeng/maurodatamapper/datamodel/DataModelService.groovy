@@ -30,6 +30,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
+import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
@@ -48,6 +49,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.DefaultDataTypeProvider
+import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter.DataModelJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
@@ -77,6 +79,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     DataElementService dataElementService
     SummaryMetadataService summaryMetadataService
     DataModelJsonImporterService dataModelJsonImporterService
+    DataModelJsonExporterService dataModelJsonExporterService
 
     @Autowired
     Set<DefaultDataTypeProvider> defaultDataTypeProviders
@@ -825,6 +828,11 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     @Override
     ModelImporterProviderService<DataModel, ? extends ModelImporterProviderServiceParameters> getJsonModelImporterProviderService() {
         dataModelJsonImporterService
+    }
+
+    @Override
+    DataModelJsonExporterService getJsonModelExporterProviderService() {
+        dataModelJsonExporterService
     }
 
     @Override
