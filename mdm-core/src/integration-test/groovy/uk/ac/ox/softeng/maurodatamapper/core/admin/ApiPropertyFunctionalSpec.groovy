@@ -71,6 +71,10 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
         "key,value,publiclyVisible,category\r\na.csv.key,a.csv.value,false,csvs"
     }
 
+    String getValidXml() {
+        "<?xml version='1.0'?><apiProperty><key>an.xml.key</key><value>An XML value</value><category>XML</category><publiclyVisible>false</publiclyVisible></apiProperty>"
+    }
+
     void verifyR1EmptyIndexResponse() {
         verifyResponse(HttpStatus.OK, response)
         assert responseBody().count == 15
@@ -143,6 +147,19 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
         when: 'The save action is executed with valid CSV data'
         log.debug('Valid content save')
         POST(getSavePath(), getValidCsv(), MAP_ARG, true, 'text/csv')
+
+        then: 'The response is correct'
+        verifyResponse(HttpStatus.CREATED, response)
+
+        cleanup:
+        DELETE(getDeleteEndpoint(response.body().id))
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
+
+    void 'Test the save action correctly persists an instance from XML'() {
+        when: 'The save action is executed with valid XML data'
+        log.debug('Valid content save')
+        POST(getSavePath(), getValidXml(), MAP_ARG, true, 'application/xml')
 
         then: 'The response is correct'
         verifyResponse(HttpStatus.CREATED, response)
