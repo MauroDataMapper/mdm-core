@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core
 
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiProperty
+import uk.ac.ox.softeng.maurodatamapper.core.databinding.CsvDataBindingSourceCreator
 import uk.ac.ox.softeng.maurodatamapper.core.flyway.MdmFlywayMigationStrategy
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.CoreSchemaMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.AnnotationAwareMappingContext
@@ -51,6 +52,7 @@ import org.apache.lucene.analysis.core.LowerCaseFilterFactory
 import org.apache.lucene.analysis.core.WhitespaceTokenizerFactory
 import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilterFactory
 import org.apache.lucene.analysis.miscellaneous.WordDelimiterFilterFactory
+import org.grails.web.databinding.bindingsource.DataBindingSourceRegistry
 import org.springframework.boot.web.servlet.ServletListenerRegistrationBean
 
 import java.lang.management.ManagementFactory
@@ -182,6 +184,11 @@ This is basically the backend API.
             catalogueItemMappingContext CatalogueItemMappingContext
 
             /*
+             * Define custom data binding beans
+             */
+            csvDataBindingSourceCreator(CsvDataBindingSourceCreator)
+
+            /*
              * Get all MDM Plugins to execute their doWithSpring
              */
             MauroDataMapperProviderService.getServices(MauroDataMapperPlugin).each { MauroDataMapperPlugin plugin ->
@@ -219,6 +226,12 @@ This is basically the backend API.
 
     void doWithApplicationContext() {
         if (config.env == 'live') outputRuntimeArgs()
+
+        /*
+         * Add custom data binding bean to the data binding registry
+         */
+        DataBindingSourceRegistry registry = applicationContext.getBean(DataBindingSourceRegistry.BEAN_NAME)
+        registry.addDataBindingSourceCreator(applicationContext.getBean(CsvDataBindingSourceCreator))
     }
 
     void outputRuntimeArgs() {

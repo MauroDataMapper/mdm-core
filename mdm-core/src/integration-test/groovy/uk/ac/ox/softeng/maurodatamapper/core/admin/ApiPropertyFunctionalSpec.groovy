@@ -64,6 +64,10 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> {
          category: 'Functional Test']
     }
 
+    String getValidCsv() {
+        "key,value,publiclyVisible,category\r\na.csv.key,a.csv.value,false,csvs"
+    }
+
     void verifyR1EmptyIndexResponse() {
         verifyResponse(HttpStatus.OK, response)
         assert responseBody().count == 15
@@ -130,6 +134,19 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> {
         DELETE(getDeleteEndpoint(id))
         assert response.status() == HttpStatus.NO_CONTENT
 
+    }
+
+    void 'Test the save action correctly persists an instance from CSV'() {
+        when: 'The save action is executed with valid CSV data'
+        log.debug('Valid content save')
+        POST(getSavePath(), getValidCsv(), MAP_ARG, true, 'text/csv')
+
+        then: 'The response is correct'
+        verifyResponse(HttpStatus.CREATED, response)
+
+        cleanup:
+        DELETE(getDeleteEndpoint(response.body().id))
+        assert response.status() == HttpStatus.NO_CONTENT
     }
 
     def 'check index and show endpoints for CSV'(){
