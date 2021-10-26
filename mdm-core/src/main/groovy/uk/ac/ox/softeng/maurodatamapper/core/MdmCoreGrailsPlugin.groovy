@@ -47,6 +47,8 @@ import uk.ac.ox.softeng.maurodatamapper.security.basic.NoAccessSecurityPolicyMan
 import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
 
 import grails.plugins.Plugin
+import grails.web.mime.MimeType
+import grails.plugin.markup.view.MarkupViewConfiguration
 import groovy.util.logging.Slf4j
 import org.apache.lucene.analysis.core.LowerCaseFilterFactory
 import org.apache.lucene.analysis.core.WhitespaceTokenizerFactory
@@ -216,6 +218,11 @@ This is basically the backend API.
             }
 
             halCsvApiPropertyCollectionRenderer(MdmCsvApiPropertyCollectionRenderer, ApiProperty) {
+            }
+
+            //Ensure that MarkupViews (rather than the default XML renderer) is used when XML is requested
+            markupViewConfiguration(MarkupViewConfiguration) {
+                mimeTypes = [MimeType.XML.name, MimeType.HAL_XML.name, MimeType.TEXT_XML.name]
             }
         }
 

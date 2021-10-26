@@ -5,11 +5,10 @@ import grails.gorm.PagedResultList
 Iterable<ApiProperty> apl = apiPropertyList as Iterable<ApiProperty>
 
 xmlDeclaration()
-index{
+
+apiProperties {
     count (apl instanceof PagedResultList ? ((PagedResultList) apl).getTotalCount() : apl?.size() ?: 0)
-    apiProperties {
-        apl.each {ap ->
-            layout '_apiProperty.gml', apiProperty: ap
-        }
+    apl.each {ap ->
+        layout 'apiProperty/_apiProperty.gml', apiProperty: ap
     }
 }

@@ -17,17 +17,20 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.admin
 
-
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlComparer
 
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
 import org.junit.Assert
 
+import java.nio.file.Files
+import java.nio.file.Path
+
 @Integration
 @Slf4j
-class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> {
+class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> implements XmlComparer {
 
     ApiPropertyService apiPropertyService
 
@@ -149,7 +152,7 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> {
         assert response.status() == HttpStatus.NO_CONTENT
     }
 
-    def 'check index and show endpoints for CSV'(){
+    void 'check index and show endpoints for CSV'(){
         when:
         GET('?format=csv', STRING_ARG)
 
@@ -170,5 +173,48 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> {
         String[] lines2 = csv2.split("\r\n")
         assert lines2.size() == 2 //header + 1 rows
         assert lines2[0] == "ID,Key,Value,Category,Publicly Visible,Last Updated By,Created By,Last Updated"
+    }
+
+    void 'check index endpoint for XML'(){
+        given:
+        Path expectedIndexPath = xmlResourcesPath.resolve("apiProperties.xml")
+        if (!Files.exists(expectedIndexPath)) {
+            Assert.fail("Expected export file ${expectedIndexPath} does not exist")
+        }
+        String expectedIndexXml = Files.readString(expectedIndexPath)
+
+        when:
+        GET('?format=xml', STRING_ARG)
+
+        then:
+        verifyResponse(HttpStatus.OK, jsonCapableResponse)
+        String actualIndexXml = jsonCapableResponse.body().toString()
+        assert compareXml(expectedIndexXml, actualIndexXml)
+    }
+
+    void 'check show endpoint for XML'(){
+        given:
+        Path expectedShowPath = xmlResourcesPath.resolve("apiProperty.xml")
+        if (!Files.exists(expectedShowPath)) {
+            Assert.fail("Expected export file ${expectedShowPath} does not exist")
+        }
+        String expectedShowXml = Files.readString(expectedShowPath)
+
+        // This is just to retrieve a valid ID for the GET of XML
+        when:
+        GET('')
+
+        then:
+        responseBody().count == 16
+        responseBody().items[0].key == "email.invite_edit.body"
+        String id = responseBody().items[0].id
+
+        when:
+        GET("${id}?format=xml", STRING_ARG)
+
+        then:
+        verifyResponse(HttpStatus.OK, jsonCapableResponse)
+        String actualShowXml = jsonCapableResponse.body().toString()
+        assert compareXml(expectedShowXml, actualShowXml)
     }
 }
