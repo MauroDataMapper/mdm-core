@@ -8,7 +8,9 @@ xmlDeclaration()
 
 apiProperties {
     count (apl instanceof PagedResultList ? ((PagedResultList) apl).getTotalCount() : apl?.size() ?: 0)
-    apl.each {ap ->
-        layout 'apiProperty/_apiProperty.gml', apiProperty: ap
+    items {
+        apl.each {ap ->
+            layout 'apiProperty/_apiProperty.gml', apiProperty: ap
+        }
     }
 }

@@ -18,13 +18,10 @@
 package uk.ac.ox.softeng.maurodatamapper.core.admin
 
 /**
- * This is a helper class for binding to a collection of ApiProperty
+ * A helper class used as the data binding target when the source is a collection
+ * of ApiProperty represented in JSON or XML.
  */
 class ApiPropertyCollection  {
-
-    // id is not used, but required to prevent a Hibernate exception
-    UUID id
-
     int count
     Collection<ApiProperty> items
 }

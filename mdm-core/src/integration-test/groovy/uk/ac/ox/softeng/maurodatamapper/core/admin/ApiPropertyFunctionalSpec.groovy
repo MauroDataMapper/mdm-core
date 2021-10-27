@@ -98,6 +98,38 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
         ]
     }
 
+    String getValidXmlCollection() {
+        """\
+        <?xml version='1.0'?>
+        <apiProperties>
+            <count>2</count>
+            <items>
+                <apiProperty>
+                    <key>functional.test.xml.key.1</key>
+                    <value>XML value 1</value>
+                    <category>XMLTests</category>
+                    <publiclyVisible>false</publiclyVisible>
+                    <lastUpdatedBy>bootstrap.user@maurodatamapper.com</lastUpdatedBy>
+                    <createdBy>example@maurodatamapper.com</createdBy>
+                    <lastUpdated>2021-10-26T13:57:57.342140+01:00</lastUpdated>
+                </apiProperty>
+                <apiProperty>
+                    <key>functional.test.xml.key.2</key>
+                    <value>XML value 2</value>
+                    <category>XMLTests</category>
+                    <publiclyVisible>false</publiclyVisible>
+                    <lastUpdatedBy>bootstrap.user@maurodatamapper.com</lastUpdatedBy>
+                    <createdBy>example@maurodatamapper.com</createdBy>
+                    <lastUpdated>2021-10-26T13:57:57.342140+01:00</lastUpdated>
+                </apiProperty>                
+            </items>
+        </apiProperties>
+        """.stripIndent()
+
+
+    }
+
+
     void verifyR1EmptyIndexResponse() {
         verifyResponse(HttpStatus.OK, response)
         assert responseBody().count == 15
@@ -275,6 +307,29 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
         cleanup:
         String id1 = response.body().items.find{it.key == "functional.test.key1"}.id
         String id2 = response.body().items.find{it.key == "functional.test.key2"}.id
+        DELETE(getDeleteEndpoint(id1))
+        assert response.status() == HttpStatus.NO_CONTENT
+        DELETE(getDeleteEndpoint(id2))
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
+
+    void 'Test the apply action correctly persists a collection of instances from XML'() {
+        when: 'The save action is executed with valid XML collection data'
+        log.debug('Valid content save')
+        POST(getSaveCollectionPath(), getValidXmlCollection(), MAP_ARG, true, 'application/xml')
+
+        then: 'The response is correct and contains properties with keys functional.test.xml.key.1 and functional.test.xml.key.2'
+        verifyResponse(HttpStatus.OK, response)
+        response.body().items.any{it.key == "functional.test.xml.key.1"}
+        response.body().items.any{it.key == "functional.test.xml.key.2"}
+
+        and: 'The lastUpdatedBy property was ignored from the posted data'
+        response.body().items.find{it.key == "functional.test.xml.key.1"}.lastUpdatedBy == "unlogged_user@mdm-core.com"
+        response.body().items.find{it.key == "functional.test.xml.key.2"}.lastUpdatedBy == "unlogged_user@mdm-core.com"
+
+        cleanup:
+        String id1 = response.body().items.find{it.key == "functional.test.xml.key.1"}.id
+        String id2 = response.body().items.find{it.key == "functional.test.xml.key.2"}.id
         DELETE(getDeleteEndpoint(id1))
         assert response.status() == HttpStatus.NO_CONTENT
         DELETE(getDeleteEndpoint(id2))
