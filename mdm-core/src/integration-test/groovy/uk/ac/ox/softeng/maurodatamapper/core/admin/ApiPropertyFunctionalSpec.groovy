@@ -84,10 +84,16 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
          items: [
                  [key     : 'functional.test.key1',
                   value   : 'Some random thing1',
-                  category: 'Functional Test'],
+                  category: 'Functional Test',
+                  publiclyVisible: false,
+                  lastUpdatedBy: 'hello@example.com',
+                  lastUpdated: '2021-10-27T11:02:32.682Z'],
                  [key     : 'functional.test.key2',
                   value   : 'Some random thing2',
-                  category: 'Functional Test']
+                  category: 'Functional Test',
+                  publiclyVisible: false,
+                  lastUpdatedBy: 'hello@example.com',
+                  lastUpdated: '2021-10-27T11:02:32.682Z']
                 ]
         ]
     }
@@ -261,6 +267,10 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
         verifyResponse(HttpStatus.OK, response)
         response.body().items.any{it.key == "functional.test.key1"}
         response.body().items.any{it.key == "functional.test.key2"}
+
+        and: 'The lastUpdatedBy property was ignored from the posted data'
+        response.body().items.find{it.key == "functional.test.key1"}.lastUpdatedBy == "unlogged_user@mdm-core.com"
+        response.body().items.find{it.key == "functional.test.key2"}.lastUpdatedBy == "unlogged_user@mdm-core.com"
 
         cleanup:
         String id1 = response.body().items.find{it.key == "functional.test.key1"}.id
