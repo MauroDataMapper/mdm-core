@@ -75,6 +75,23 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
         "<?xml version='1.0'?><apiProperty><key>an.xml.key</key><value>An XML value</value><category>XML</category><publiclyVisible>false</publiclyVisible></apiProperty>"
     }
 
+    String getSaveCollectionPath() {
+        "${getSavePath()}/apply"
+    }
+
+    Map getValidJsonCollection() {
+        [count: 2,
+         items: [
+                 [key     : 'functional.test.key1',
+                  value   : 'Some random thing1',
+                  category: 'Functional Test'],
+                 [key     : 'functional.test.key2',
+                  value   : 'Some random thing2',
+                  category: 'Functional Test']
+                ]
+        ]
+    }
+
     void verifyR1EmptyIndexResponse() {
         verifyResponse(HttpStatus.OK, response)
         assert responseBody().count == 15
@@ -233,5 +250,24 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
         verifyResponse(HttpStatus.OK, jsonCapableResponse)
         String actualShowXml = jsonCapableResponse.body().toString()
         assert compareXml(expectedShowXml, actualShowXml)
+    }
+
+    void 'Test the apply action correctly persists a collection of instances from JSON'() {
+        when: 'The save action is executed with valid JSON collection data'
+        log.debug('Valid content save')
+        POST(getSaveCollectionPath(), getValidJsonCollection(), MAP_ARG, true)
+
+        then: 'The response is correct and contains properties with keys functional.test.key1 and functional.test.key2'
+        verifyResponse(HttpStatus.OK, response)
+        response.body().items.any{it.key == "functional.test.key1"}
+        response.body().items.any{it.key == "functional.test.key2"}
+
+        cleanup:
+        String id1 = response.body().items.find{it.key == "functional.test.key1"}.id
+        String id2 = response.body().items.find{it.key == "functional.test.key2"}.id
+        DELETE(getDeleteEndpoint(id1))
+        assert response.status() == HttpStatus.NO_CONTENT
+        DELETE(getDeleteEndpoint(id2))
+        assert response.status() == HttpStatus.NO_CONTENT
     }
 }
