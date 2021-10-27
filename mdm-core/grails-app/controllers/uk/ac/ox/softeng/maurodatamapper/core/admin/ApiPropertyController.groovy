@@ -47,6 +47,26 @@ class ApiPropertyController extends EditLoggingController<ApiProperty> {
         respond res, [model: [userSecurityPolicyManager: currentUserSecurityPolicyManager], view: 'index']
     }
 
+    /**
+     * Override so that we can specify includesExcludes when creating the resource
+     * @return
+     */
+    @Transactional
+    @Override
+    def save() {
+        if (handleReadOnly()) return
+
+        def instance = createResource(includesExcludes)
+
+        if (response.isCommitted()) return
+
+        if (!validateResource(instance, 'create')) return
+
+        saveResource instance
+
+        saveResponse instance
+    }
+
     @Override
     protected ApiProperty saveResource(ApiProperty resource) {
         ApiProperty apiProperty = super.saveResource(resource)

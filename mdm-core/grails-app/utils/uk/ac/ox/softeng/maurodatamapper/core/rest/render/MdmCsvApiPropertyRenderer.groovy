@@ -62,7 +62,7 @@ class MdmCsvApiPropertyRenderer<T> extends AbstractIncludeExcludeRenderer<T> {
     }
 
     private void printHeader(CSVPrinter printer) {
-        printer.printRecord(["ID", "Key", "Value", "Category", "Publicly Visible", "Last Updated By", "Created By", "Last Updated"])
+        printer.printRecord(["id", "key", "value", "category", "publiclyVisible", "lastUpdatedBy", "createdBy", "lastUpdated"])
     }
 
     private void printApiProperty(CSVPrinter printer, ApiProperty o) {

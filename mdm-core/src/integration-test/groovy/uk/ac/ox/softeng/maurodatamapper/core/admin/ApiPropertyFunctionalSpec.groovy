@@ -68,11 +68,23 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
     }
 
     String getValidCsv() {
-        "key,value,publiclyVisible,category\r\na.csv.key,a.csv.value,false,csvs"
+        "id,key,value,category,publiclyVisible,lastUpdatedBy,createdBy,lastUpdated\r\n" +
+        "e2b3398f-f3e5-4d70-8793-25526bbe0dbe,a.csv.key,a.csv.value,csvs,false,updater@example.com,creator@example.com,2021-10-27T11:02:32.682Z"
     }
 
     String getValidXml() {
-        "<?xml version='1.0'?><apiProperty><key>an.xml.key</key><value>An XML value</value><category>XML</category><publiclyVisible>false</publiclyVisible></apiProperty>"
+        """\
+        <?xml version='1.0'?>
+        <apiProperty>
+            <id>e2b3398f-f3e5-4d70-8793-25526bbe0dbe</id>
+            <key>an.xml.key</key>
+            <value>An XML value</value>
+            <category>XML</category>
+            <publiclyVisible>false</publiclyVisible>
+            <lastUpdatedBy>bootstrap.user@maurodatamapper.com</lastUpdatedBy>
+            <createdBy>example@maurodatamapper.com</createdBy>
+            <lastUpdated>2021-10-26T13:57:57.342140+01:00</lastUpdated>
+        </apiProperty>""".stripIndent()
     }
 
     String getSaveCollectionPath() {
@@ -82,13 +94,15 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
     Map getValidJsonCollection() {
         [count: 2,
          items: [
-                 [key     : 'functional.test.key1',
+                 [id: 'e2b3398f-f3e5-4d70-8793-25526bbe0dbe',
+                  key     : 'functional.test.key1',
                   value   : 'Some random thing1',
                   category: 'Functional Test',
                   publiclyVisible: false,
                   lastUpdatedBy: 'hello@example.com',
                   lastUpdated: '2021-10-27T11:02:32.682Z'],
-                 [key     : 'functional.test.key2',
+                 [id: 'e2b3398f-f3e5-4d70-8793-25526bbe0dbf',
+                  key     : 'functional.test.key2',
                   value   : 'Some random thing2',
                   category: 'Functional Test',
                   publiclyVisible: false,
@@ -105,6 +119,7 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
             <count>2</count>
             <items>
                 <apiProperty>
+                    <id>e2b3398f-f3e5-4d70-8793-25526bbe0dbe</id>
                     <key>functional.test.xml.key.1</key>
                     <value>XML value 1</value>
                     <category>XMLTests</category>
@@ -114,6 +129,7 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
                     <lastUpdated>2021-10-26T13:57:57.342140+01:00</lastUpdated>
                 </apiProperty>
                 <apiProperty>
+                    <id>e2b3398f-f3e5-4d70-8793-25526bbe0dbf</id>
                     <key>functional.test.xml.key.2</key>
                     <value>XML value 2</value>
                     <category>XMLTests</category>
@@ -233,7 +249,7 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
         String csv = jsonCapableResponse.body().toString()
         String[] lines = csv.split("\r\n")
         assert lines.size() == 17 //header + 16 rows
-        assert lines[0] == "ID,Key,Value,Category,Publicly Visible,Last Updated By,Created By,Last Updated"
+        assert lines[0] == "id,key,value,category,publiclyVisible,lastUpdatedBy,createdBy,lastUpdated"
         String id = lines[1].split(",")[0]
 
         when:
@@ -244,7 +260,7 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
         String csv2 = jsonCapableResponse.body().toString()
         String[] lines2 = csv2.split("\r\n")
         assert lines2.size() == 2 //header + 1 rows
-        assert lines2[0] == "ID,Key,Value,Category,Publicly Visible,Last Updated By,Created By,Last Updated"
+        assert lines2[0] == "id,key,value,category,publiclyVisible,lastUpdatedBy,createdBy,lastUpdated"
     }
 
     void 'check index endpoint for XML'(){
