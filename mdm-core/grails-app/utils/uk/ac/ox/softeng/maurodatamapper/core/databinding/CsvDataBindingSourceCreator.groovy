@@ -51,11 +51,18 @@ class CsvDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceCr
             def req = (HttpServletRequest)bindingSource
             HttpMethod method = HttpMethod.resolve(req.method)
             if (req.contentLength != 0 && !ignoredRequestBodyMethods.contains(method)) {
-                return new SimpleMapDataBindingSource(createCsvMap(req.getInputStream(), req.getCharacterEncoding()))
+                def bindingTargetInstance = bindingTargetType.getDeclaredConstructor().newInstance()
+                if (bindingTargetInstance instanceof MdmDataBindingCollection) {
+                    return new SimpleMapDataBindingSource(createCsvCollectionMap(req.getInputStream(), req.getCharacterEncoding()))
+                } else {
+                    return new SimpleMapDataBindingSource(createCsvMap(req.getInputStream(), req.getCharacterEncoding()))
+                }
+
             }
         }
 
-        return super.createDataBindingSource(mimeType, bindingTargetType, bindingSource)
+        // if the above didn't work then return binding for an empty map
+        return new SimpleMapDataBindingSource([:])
     }
 
     @Override
@@ -100,6 +107,49 @@ class CsvDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceCr
         } catch (Exception e) {
             throw new InvalidRequestBodyException(e)
         }
+
+        parser.close()
+        result
+    }
+
+   /**
+    * Parse an InputStream and for a CSV like
+    * header1,header2
+    * row1value1,row1value2
+    * row2value1,row2value2
+    * return a map like [count: 2, items: [[header1: row1value1, header2: row1value2], [header1: row2value1, header2: row2value2]]]
+    * @param inputStream
+    * @param characterEncoding
+    * @return A map like [count: 2, items: [[header1: row1value1, header2: row1value2], [header1: row2value1, header2: row2value2]]]
+    */
+    protected static Map createCsvCollectionMap(InputStream inputStream, String characterEncoding) {
+        Map result = [:]
+        Collection items = []
+        CSVFormat csvFormat = CSVFormat.newFormat((char) ',')
+                .withQuote((char) '"')
+                .withHeader()
+
+        CSVParser parser = csvFormat.parse(new InputStreamReader(inputStream, characterEncoding))
+
+        List headers = parser.getHeaderNames()
+
+        try {
+            while (parser.iterator().hasNext()) {
+                CSVRecord record = parser.iterator().next()
+
+                Map instance = [:]
+                headers.each {header ->
+                    instance[header] = record.get(header)
+                }
+
+                items.add(instance)
+            }
+        } catch (Exception e) {
+            throw new InvalidRequestBodyException(e)
+        }
+
+        result["count"] = items.size()
+        result["items"] = items
 
         parser.close()
         result

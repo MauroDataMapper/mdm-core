@@ -115,17 +115,22 @@ class ApiPropertyController extends EditLoggingController<ApiProperty> {
     protected Collection<ApiProperty> createResources() {
 
         // First, bind what was exported to an ApiPropertyCollection (which has properties count and items)
+        // There isn't a way here to specify an includesExcludes list
         ApiPropertyCollection apiPropertyCollection = new ApiPropertyCollection()
         bindData apiPropertyCollection, getObjectToBind()
 
-        // Second, iterate the items we just created, and use each instance as the binding source
-        // to create another instance. This time, we specify includesExcludes.
+        // Second, iterate the items we just created, and use each instance
+        // to create another cleaned instance. This time, we specify includesExcludes.
         // At the same time, set the createdBy property of the cleaned instance.
         Collection<ApiProperty> cleanedInstances = []
         User creator = getCurrentUser()
         apiPropertyCollection.items.each {instance ->
             ApiProperty cleanedInstance = new ApiProperty()
-            bindData cleanedInstance, instance, includesExcludes
+
+            // Copy the included properties to a cleaned instance
+            includesExcludes["include"].each {
+                cleanedInstance[it] = instance[it]
+            }
 
             cleanedInstance.createdBy = creator.emailAddress
             cleanedInstances.add(cleanedInstance)

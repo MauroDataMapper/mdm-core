@@ -15,15 +15,15 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.core.admin
-
-import uk.ac.ox.softeng.maurodatamapper.core.databinding.MdmDataBindingCollection
+package uk.ac.ox.softeng.maurodatamapper.core.databinding
 
 /**
  * A helper class used as the data binding target when the source is a collection
- * of ApiProperty represented in JSON, XML or CSV
+ * of domain objects, useful when importing from JSON, XML or CSV a collection that
+ * was exported with data like:
+ * - count
+ * - items[]
  */
-class ApiPropertyCollection extends MdmDataBindingCollection {
-
-    Collection<ApiProperty> items
+class MdmDataBindingCollection  {
+    int count
 }

@@ -141,8 +141,12 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
             </items>
         </apiProperties>
         """.stripIndent()
+    }
 
-
+    String getValidCsvCollection() {
+        "id,key,value,category,publiclyVisible,lastUpdatedBy,createdBy,lastUpdated\r\n" +
+        "e2b3398f-f3e5-4d70-8793-25526bbe0dbe,a.csv.collection.key,a.csv.collection.value,csvs,false,updater@example.com,creator@example.com,2021-10-27T11:02:32.682Z\r\n" +
+        "d2b3398f-f3e5-4d70-8793-25526bbe0dbe,another.csv.collection.key,another.csv.collection.value,csvs,false,updater@example.com,creator@example.com,2021-10-27T11:02:32.682Z"
     }
 
 
@@ -346,6 +350,29 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
         cleanup:
         String id1 = response.body().items.find{it.key == "functional.test.xml.key.1"}.id
         String id2 = response.body().items.find{it.key == "functional.test.xml.key.2"}.id
+        DELETE(getDeleteEndpoint(id1))
+        assert response.status() == HttpStatus.NO_CONTENT
+        DELETE(getDeleteEndpoint(id2))
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
+
+    void 'Test the apply action correctly persists a collection of instances from CSV'() {
+        when: 'The save action is executed with valid CSV collection data'
+        log.debug('Valid content save')
+        POST(getSaveCollectionPath(), getValidCsvCollection(), MAP_ARG, true, 'text/csv')
+
+        then: 'The response is correct and contains properties with keys a.csv.collection.key and another.csv.collection.key'
+        verifyResponse(HttpStatus.OK, response)
+        response.body().items.any{it.key == "a.csv.collection.key"}
+        response.body().items.any{it.key == "another.csv.collection.key"}
+
+        and: 'The lastUpdatedBy property was ignored from the posted data'
+        response.body().items.find{it.key == "a.csv.collection.key"}.lastUpdatedBy == "unlogged_user@mdm-core.com"
+        response.body().items.find{it.key == "another.csv.collection.key"}.lastUpdatedBy == "unlogged_user@mdm-core.com"
+
+        cleanup:
+        String id1 = response.body().items.find{it.key == "a.csv.collection.key"}.id
+        String id2 = response.body().items.find{it.key == "another.csv.collection.key"}.id
         DELETE(getDeleteEndpoint(id1))
         assert response.status() == HttpStatus.NO_CONTENT
         DELETE(getDeleteEndpoint(id2))
