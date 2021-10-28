@@ -1,9 +1,9 @@
 <?xml version='1.0'?>
 <apiProperties>
-    <count>16</count>
+    <count>15</count>
     <items>
         <apiProperty>
-            <id>e2b3398f-f3e5-4d70-8793-25526bbe0dbe</id>
+            <id>cd07f97f-5315-45f4-894f-ed814b835653</id>
             <key>email.invite_edit.body</key>
             <value>Dear ${firstName},
                 You have been invited to edit the model '${itemLabel}' in the Mauro Data Mapper at ${catalogueUrl}
@@ -18,10 +18,10 @@
             <publiclyVisible>false</publiclyVisible>
             <lastUpdatedBy>bootstrap.user@maurodatamapper.com</lastUpdatedBy>
             <createdBy>bootstrap.user@maurodatamapper.com</createdBy>
-            <lastUpdated>2021-10-26T13:57:57.342140+01:00</lastUpdated>
+            <lastUpdated>2021-10-28T13:49:24.720622+01:00</lastUpdated>
         </apiProperty>
         <apiProperty>
-            <id>d2e72ad7-c5b9-4500-93b5-51fcbe5b08f3</id>
+            <id>ea8e5610-5aca-4c26-8003-e97e1cd9b651</id>
             <key>email.admin_register.body</key>
             <value>Dear ${firstName},
                 You have been given access to the Mauro Data Mapper at ${catalogueUrl}
@@ -37,60 +37,60 @@
             <publiclyVisible>false</publiclyVisible>
             <lastUpdatedBy>bootstrap.user@maurodatamapper.com</lastUpdatedBy>
             <createdBy>bootstrap.user@maurodatamapper.com</createdBy>
-            <lastUpdated>2021-10-26T13:57:57.350677+01:00</lastUpdated>
+            <lastUpdated>2021-10-28T13:49:24.793294+01:00</lastUpdated>
         </apiProperty>
         <apiProperty>
-            <id>79050fbb-5f15-44d5-84a2-6dd5593979ee</id>
+            <id>2ebb00f4-2647-448b-95e8-b0feca932d53</id>
             <key>email.admin_register.subject</key>
             <value>Mauro Data Mapper Registration</value>
             <category>Email</category>
             <publiclyVisible>false</publiclyVisible>
             <lastUpdatedBy>bootstrap.user@maurodatamapper.com</lastUpdatedBy>
             <createdBy>bootstrap.user@maurodatamapper.com</createdBy>
-            <lastUpdated>2021-10-26T13:57:57.351740+01:00</lastUpdated>
+            <lastUpdated>2021-10-28T13:49:24.795507+01:00</lastUpdated>
         </apiProperty>
         <apiProperty>
-            <id>cf8dc112-7462-4b3e-b89d-770854e44ab6</id>
+            <id>2e549f31-f802-443e-96c0-ba827fa99e19</id>
             <key>email.self_register.subject</key>
             <value>Mauro Data Mapper Registration</value>
             <category>Email</category>
             <publiclyVisible>false</publiclyVisible>
             <lastUpdatedBy>bootstrap.user@maurodatamapper.com</lastUpdatedBy>
             <createdBy>bootstrap.user@maurodatamapper.com</createdBy>
-            <lastUpdated>2021-10-26T13:57:57.352107+01:00</lastUpdated>
+            <lastUpdated>2021-10-28T13:49:24.796164+01:00</lastUpdated>
         </apiProperty>
         <apiProperty>
-            <id>449ddf99-d79d-4c60-87d7-ab10c4121fe2</id>
+            <id>eb1e80a3-929b-4fd4-b78e-c9b0f5c531b1</id>
             <key>email.forgotten_password.subject</key>
             <value>Mauro Data Mapper Forgotten Password</value>
             <category>Email</category>
             <publiclyVisible>false</publiclyVisible>
             <lastUpdatedBy>bootstrap.user@maurodatamapper.com</lastUpdatedBy>
             <createdBy>bootstrap.user@maurodatamapper.com</createdBy>
-            <lastUpdated>2021-10-26T13:57:57.352675+01:00</lastUpdated>
+            <lastUpdated>2021-10-28T13:49:24.797530+01:00</lastUpdated>
         </apiProperty>
         <apiProperty>
-            <id>0348f2ea-2067-41ba-8b14-6c913b8e5ed7</id>
+            <id>4b6e11ac-2a39-47bc-98fe-b8f371204acd</id>
             <key>email.invite_edit.subject</key>
             <value>Mauro Data Mapper Invitation</value>
             <category>Email</category>
             <publiclyVisible>false</publiclyVisible>
             <lastUpdatedBy>bootstrap.user@maurodatamapper.com</lastUpdatedBy>
             <createdBy>bootstrap.user@maurodatamapper.com</createdBy>
-            <lastUpdated>2021-10-26T13:57:57.353246+01:00</lastUpdated>
+            <lastUpdated>2021-10-28T13:49:24.798075+01:00</lastUpdated>
         </apiProperty>
         <apiProperty>
-            <id>393b37d6-d5d0-49fb-88f5-9fe34e5a3518</id>
+            <id>b9568310-c5c8-4315-9725-2f02ec270da3</id>
             <key>email.invite_view.subject</key>
             <value>Mauro Data Mapper Invitation</value>
             <category>Email</category>
             <publiclyVisible>false</publiclyVisible>
             <lastUpdatedBy>bootstrap.user@maurodatamapper.com</lastUpdatedBy>
             <createdBy>bootstrap.user@maurodatamapper.com</createdBy>
-            <lastUpdated>2021-10-26T13:57:57.354490+01:00</lastUpdated>
+            <lastUpdated>2021-10-28T13:49:24.798667+01:00</lastUpdated>
         </apiProperty>
         <apiProperty>
-            <id>efb00d48-1fe4-4b2e-adbe-f36ebc63a2d0</id>
+            <id>7e9dfd6e-dc59-4dc2-8e2d-52e58c313d57</id>
             <key>email.admin_confirm_registration.body</key>
             <value>Dear ${firstName},
                 Your registration for the Mauro Data Mapper at ${catalogueUrl} has been confirmed.
@@ -105,10 +105,10 @@
             <publiclyVisible>false</publiclyVisible>
             <lastUpdatedBy>bootstrap.user@maurodatamapper.com</lastUpdatedBy>
             <createdBy>bootstrap.user@maurodatamapper.com</createdBy>
-            <lastUpdated>2021-10-26T13:57:57.355320+01:00</lastUpdated>
+            <lastUpdated>2021-10-28T13:49:24.799203+01:00</lastUpdated>
         </apiProperty>
         <apiProperty>
-            <id>ffd5ccd6-eef4-4089-a2ce-30f1fea8f21c</id>
+            <id>a33db8f5-3bbc-4d8f-aa3a-18e0e9fe4ff8</id>
             <key>email.self_register.body</key>
             <value>Dear ${firstName},
                 You have self-registered for the Mauro Data Mapper at ${catalogueUrl}
@@ -122,10 +122,10 @@
             <publiclyVisible>false</publiclyVisible>
             <lastUpdatedBy>bootstrap.user@maurodatamapper.com</lastUpdatedBy>
             <createdBy>bootstrap.user@maurodatamapper.com</createdBy>
-            <lastUpdated>2021-10-26T13:57:57.356045+01:00</lastUpdated>
+            <lastUpdated>2021-10-28T13:49:24.799802+01:00</lastUpdated>
         </apiProperty>
         <apiProperty>
-            <id>c1d6c69c-3e1d-49c5-bcc1-f3738d64fa95</id>
+            <id>5988c0b3-6fc8-4875-ba68-2c389262ae90</id>
             <key>email.password_reset.body</key>
             <value>Dear ${firstName},
                 Your password has been reset for the Mauro Data Mapper at ${catalogueUrl}.
@@ -140,30 +140,30 @@
             <publiclyVisible>false</publiclyVisible>
             <lastUpdatedBy>bootstrap.user@maurodatamapper.com</lastUpdatedBy>
             <createdBy>bootstrap.user@maurodatamapper.com</createdBy>
-            <lastUpdated>2021-10-26T13:57:57.357945+01:00</lastUpdated>
+            <lastUpdated>2021-10-28T13:49:24.800305+01:00</lastUpdated>
         </apiProperty>
         <apiProperty>
-            <id>9efa506e-fdcf-4c2c-9ded-0db1d3e14ce3</id>
+            <id>17b7891d-a169-4c5c-909a-ac52091803df</id>
             <key>email.from.name</key>
             <value>Mauro Data Mapper</value>
             <category>Email</category>
             <publiclyVisible>false</publiclyVisible>
             <lastUpdatedBy>bootstrap.user@maurodatamapper.com</lastUpdatedBy>
             <createdBy>bootstrap.user@maurodatamapper.com</createdBy>
-            <lastUpdated>2021-10-26T13:57:57.358632+01:00</lastUpdated>
+            <lastUpdated>2021-10-28T13:49:24.802335+01:00</lastUpdated>
         </apiProperty>
         <apiProperty>
-            <id>9a39b639-2955-4154-b488-d27390639d0f</id>
+            <id>e137cf55-1fa3-428a-a845-78bc4f65d40b</id>
             <key>email.admin_confirm_registration.subject</key>
             <value>Mauro Data Mapper Registration - Confirmation</value>
             <category>Email</category>
             <publiclyVisible>false</publiclyVisible>
             <lastUpdatedBy>bootstrap.user@maurodatamapper.com</lastUpdatedBy>
             <createdBy>bootstrap.user@maurodatamapper.com</createdBy>
-            <lastUpdated>2021-10-26T13:57:57.358953+01:00</lastUpdated>
+            <lastUpdated>2021-10-28T13:49:24.803009+01:00</lastUpdated>
         </apiProperty>
         <apiProperty>
-            <id>cbb2b36b-1394-49b5-a2f7-ea92135cfb85</id>
+            <id>d632ed42-88cf-4eda-a994-6456a8f5d4aa</id>
             <key>email.forgotten_password.body</key>
             <value>Dear ${firstName},
                 A request has been made to reset the password for the Mauro Data Mapper at ${catalogueUrl}.
@@ -177,20 +177,20 @@
             <publiclyVisible>false</publiclyVisible>
             <lastUpdatedBy>bootstrap.user@maurodatamapper.com</lastUpdatedBy>
             <createdBy>bootstrap.user@maurodatamapper.com</createdBy>
-            <lastUpdated>2021-10-26T13:57:57.359260+01:00</lastUpdated>
+            <lastUpdated>2021-10-28T13:49:24.803475+01:00</lastUpdated>
         </apiProperty>
         <apiProperty>
-            <id>8963c45d-ca59-4936-8c7a-7e3b6856c5ae</id>
+            <id>14e74603-83da-45b6-b7d2-5f89a513ccb5</id>
             <key>email.password_reset.subject</key>
             <value>Mauro Data Mapper Password Reset</value>
             <category>Email</category>
             <publiclyVisible>false</publiclyVisible>
             <lastUpdatedBy>bootstrap.user@maurodatamapper.com</lastUpdatedBy>
             <createdBy>bootstrap.user@maurodatamapper.com</createdBy>
-            <lastUpdated>2021-10-26T13:57:57.360715+01:00</lastUpdated>
+            <lastUpdated>2021-10-28T13:49:24.804030+01:00</lastUpdated>
         </apiProperty>
         <apiProperty>
-            <id>8e881056-06b9-4647-8812-0288b312d061</id>
+            <id>4880df63-0a85-4462-8129-3959f4772f05</id>
             <key>email.invite_view.body</key>
             <value>Dear ${firstName},
                 You have been invited to view the item '${itemLabel}' in the Mauro Data Mapper at ${catalogueUrl}
@@ -205,17 +205,7 @@
             <publiclyVisible>false</publiclyVisible>
             <lastUpdatedBy>bootstrap.user@maurodatamapper.com</lastUpdatedBy>
             <createdBy>bootstrap.user@maurodatamapper.com</createdBy>
-            <lastUpdated>2021-10-26T13:57:57.361160+01:00</lastUpdated>
-        </apiProperty>
-        <apiProperty>
-            <id>fa1686cd-4c08-4127-aa59-f806f25cc71f</id>
-            <key>email.from.address</key>
-            <value>username@gmail.com</value>
-            <category>Email</category>
-            <publiclyVisible>false</publiclyVisible>
-            <lastUpdatedBy>bootstrap.user@maurodatamapper.com</lastUpdatedBy>
-            <createdBy>bootstrap.user@maurodatamapper.com</createdBy>
-            <lastUpdated>2021-10-26T13:57:57.388869+01:00</lastUpdated>
+            <lastUpdated>2021-10-28T13:49:24.804440+01:00</lastUpdated>
         </apiProperty>
     </items>
 </apiProperties>

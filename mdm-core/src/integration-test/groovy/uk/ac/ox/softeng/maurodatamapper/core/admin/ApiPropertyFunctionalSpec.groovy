@@ -252,7 +252,7 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
         verifyResponse(HttpStatus.OK, jsonCapableResponse)
         String csv = jsonCapableResponse.body().toString()
         String[] lines = csv.split("\r\n")
-        assert lines.size() == 17 //header + 16 rows
+        assert lines.size() == 16 //header + 15 rows
         assert lines[0] == "id,key,value,category,publiclyVisible,lastUpdatedBy,createdBy,lastUpdated"
         String id = lines[1].split(",")[0]
 
@@ -297,7 +297,7 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
         GET('')
 
         then:
-        responseBody().count == 16
+        responseBody().count == 15
         responseBody().items[0].key == "email.invite_edit.body"
         String id = responseBody().items[0].id
 
