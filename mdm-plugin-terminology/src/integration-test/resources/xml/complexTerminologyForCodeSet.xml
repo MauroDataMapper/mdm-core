@@ -119,6 +119,20 @@
     </mdm:termRelationshipTypes>
     <mdm:terms>
       <mdm:term>
+        <mdm:id>607940f8-c043-4715-a1c1-7f627812a94b</mdm:id>
+        <mdm:code>STT01</mdm:code>
+        <mdm:definition>Simple Test Term 01</mdm:definition>
+        <mdm:depth>1</mdm:depth>
+        <mdm:lastUpdated>2021-05-21T09:30:26.713Z</mdm:lastUpdated>
+      </mdm:term>
+      <mdm:term>
+        <mdm:id>b794b452-7e2a-4027-8033-208286929bce</mdm:id>
+        <mdm:code>STT02</mdm:code>
+        <mdm:definition>Simple Test Term 02</mdm:definition>
+        <mdm:depth>1</mdm:depth>
+        <mdm:lastUpdated>2021-05-21T09:30:26.714Z</mdm:lastUpdated>
+      </mdm:term>
+      <mdm:term>
         <mdm:id>eaa7f44b-7af8-4420-99dc-7fe5080e2d2d</mdm:id>
         <mdm:code>CTT00</mdm:code>
         <mdm:definition>Complex Test Term 00</mdm:definition>

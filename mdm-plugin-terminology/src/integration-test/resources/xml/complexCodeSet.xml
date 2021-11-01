@@ -43,6 +43,8 @@
       <mdm:lastUpdated>2021-09-02T00:42:27.466Z</mdm:lastUpdated>
     </mdm:authority>
     <mdm:termPaths>
+      <mdm:termPath>te:Simple Test Terminology|tm:STT01: Simple Test Term 01</mdm:termPath>
+      <mdm:termPath>te:Simple Test Terminology|tm:STT02: Simple Test Term 02</mdm:termPath>
       <mdm:termPath>te:Complex Test Terminology|tm:CTT00: Complex Test Term 00</mdm:termPath>
       <mdm:termPath>te:Complex Test Terminology|tm:CTT1: Complex Test Term 1</mdm:termPath>
       <mdm:termPath>te:Complex Test Terminology|tm:CTT2: Complex Test Term 2</mdm:termPath>

@@ -61,6 +61,12 @@
       },
       "termPaths": [
         {
+          "termPath": "te:Simple Test Terminology|tm:STT01: Simple Test Term 01"
+        },
+        {
+          "termPath": "te:Simple Test Terminology|tm:STT02: Simple Test Term 02"
+        },
+        {
           "termPath": "te:Complex Test Terminology|tm:CTT00: Complex Test Term 00"
         },
         {
