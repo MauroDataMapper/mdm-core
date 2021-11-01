@@ -214,10 +214,10 @@ This is basically the backend API.
                 jsonTemplateEngine(JsonViewTemplateEngine, grailsApplication, ref('jsonViewConfiguration'), applicationContext.classLoader)
             }
 
-            halCsvApiPropertyRenderer(MdmCsvApiPropertyRenderer, ApiProperty) {
+            csvApiPropertyRenderer(MdmCsvApiPropertyRenderer, ApiProperty) {
             }
 
-            halCsvApiPropertyCollectionRenderer(MdmCsvApiPropertyCollectionRenderer, ApiProperty) {
+            csvApiPropertyCollectionRenderer(MdmCsvApiPropertyCollectionRenderer, ApiProperty) {
             }
 
             //Ensure that MarkupViews (rather than the default XML renderer) is used when XML is requested
