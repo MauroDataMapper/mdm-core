@@ -99,6 +99,24 @@
     "terms": [
       {
         "id": "${json-unit.matches:id}",
+        "label": "STT01: Simple Test Term 01",
+        "description": "This is a very important description",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "STT01",
+        "definition": "Simple Test Term 01",
+        "url": "https://example.com"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "STT02: Simple Test Term 02",
+        "description": "This is a very important description",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "STT02",
+        "definition": "Simple Test Term 02",
+        "url": "https://example.com"
+      },
+      {
+        "id": "${json-unit.matches:id}",
         "label": "CTT00: Complex Test Term 00",
         "description": "This is a very important description",
         "lastUpdated": "${json-unit.matches:offsetDateTime}",

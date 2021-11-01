@@ -210,11 +210,12 @@ class BootstrapModels {
         codeSet.addToClassifiers(classifier)
         checkAndSave(messageSource, codeSet)
 
-        Terminology complexTestTerminology = Terminology.findByLabel(COMPLEX_TERMINOLOGY_NAME)
-        if (!complexTestTerminology) complexTestTerminology = buildAndSaveComplexTerminology(messageSource, folder, terminologyService, authority)
-        complexTestTerminology.terms.each {
-            codeSet.addToTerms(it)
-        }
+        Terminology simpleTestTerminology = Terminology.findByLabel(SIMPLE_TERMINOLOGY_NAME) ?: buildAndSaveSimpleTerminology(messageSource, folder, authority)
+        simpleTestTerminology.terms.each { codeSet.addToTerms(it) }
+
+        Terminology complexTestTerminology = Terminology.findByLabel(COMPLEX_TERMINOLOGY_NAME) ?:
+                                             buildAndSaveComplexTerminology(messageSource, folder, terminologyService, authority)
+        complexTestTerminology.terms.each { codeSet.addToTerms(it) }
 
         codeSet.finalised = true
         // Truncate the dateFinalised to milliseconds to avoid a Diff failure when test exporting and reimporting a CodeSet
