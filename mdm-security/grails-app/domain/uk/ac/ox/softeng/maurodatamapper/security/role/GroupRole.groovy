@@ -19,14 +19,13 @@ package uk.ac.ox.softeng.maurodatamapper.security.role
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.PathAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
-import uk.ac.ox.softeng.maurodatamapper.search.Lucene
-import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
-import uk.ac.ox.softeng.maurodatamapper.search.PathTokenizerAnalyzer
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.HibernateSearch
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.PathAware
 
 import grails.gorm.DetachedCriteria
 import org.grails.datastore.gorm.GormEntity
@@ -78,8 +77,8 @@ class GroupRole implements EditHistoryAware, PathAware, SecurableResource, Compa
     ]
 
     static search = {
-        name index: 'yes'
-        path index: 'yes', analyzer: PathTokenizerAnalyzer
+        name searchable: 'yes'
+        path searchable: 'yes', analyzer: 'path'
     }
 
     GroupRole() {
@@ -177,8 +176,8 @@ class GroupRole implements EditHistoryAware, PathAware, SecurableResource, Compa
         new DetachedCriteria<GroupRole>(GroupRole).eq('applicationLevelRole', true)
     }
 
-    static PaginatedLuceneResult<GroupRole> findAllByGroupRole(GroupRole groupRole, Map pagination) {
-        Lucene.paginatedList(GroupRole, pagination) {
+    static PaginatedHibernateSearchResult<GroupRole> findAllByGroupRole(GroupRole groupRole, Map pagination) {
+        HibernateSearch.paginatedList(GroupRole, pagination) {
             should {
                 keyword 'id', groupRole.id.toString()
                 keyword 'path', groupRole.id.toString()
@@ -186,8 +185,8 @@ class GroupRole implements EditHistoryAware, PathAware, SecurableResource, Compa
         }
     }
 
-    static PaginatedLuceneResult<GroupRole> findAllFolderLevelRoles(GroupRole topLevelFolderRole, Map pagination) {
-        Lucene.paginatedList(GroupRole, pagination) {
+    static PaginatedHibernateSearchResult<GroupRole> findAllFolderLevelRoles(GroupRole topLevelFolderRole, Map pagination) {
+        HibernateSearch.paginatedList(GroupRole, pagination) {
             should {
                 keyword 'name', 'container_group_admin'
                 keyword 'id', topLevelFolderRole.id.toString()
