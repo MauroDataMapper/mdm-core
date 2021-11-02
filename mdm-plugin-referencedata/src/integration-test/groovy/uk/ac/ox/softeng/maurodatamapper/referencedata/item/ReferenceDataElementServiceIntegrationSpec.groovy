@@ -58,12 +58,14 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
         referenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: admin, label: 'string'))
         referenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: editor, label: 'integer'))
 
-        ReferenceDataElement element = new ReferenceDataElement(createdByUser: admin, label: 'ele1', referenceDataType: referenceDataModel.findReferenceDataTypeByLabel('string'))
+        ReferenceDataElement element = new ReferenceDataElement(createdByUser: admin, label: 'ele1',
+                                                                referenceDataType: referenceDataModel.findReferenceDataTypeByLabel('string'))
         referenceDataModel.addToReferenceDataElements(element)
 
-        ReferenceDataElement element2 = new ReferenceDataElement(createdByUser: admin, label: 'ele2', referenceDataType: referenceDataModel.findReferenceDataTypeByLabel('integer'),
+        ReferenceDataElement element2 = new ReferenceDataElement(createdByUser: admin, label: 'ele2',
+                                                                 referenceDataType: referenceDataModel.findReferenceDataTypeByLabel('integer'),
                                                                  minMultiplicity: 0, maxMultiplicity: 1)
-        referenceDataModel.addToReferenceDataElements(element2)        
+        referenceDataModel.addToReferenceDataElements(element2)
 
         checkAndSave(referenceDataModel)
         elementId = element.id
@@ -108,7 +110,7 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
         setupData()
 
         expect:
-        referenceDataElementService.count() ==2
+        referenceDataElementService.count() == 2
     }
 
     void "test delete"() {
@@ -157,7 +159,7 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
         other.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: editor, label: 'integer'))
         checkAndSave(other)
         ReferenceDataElement element = new ReferenceDataElement(createdByUser: admin, label: 'other element', referenceDataType: other.findReferenceDataTypeByLabel('string'))
-        other.addToReferenceDataElements(element)        
+        other.addToReferenceDataElements(element)
         checkAndSave(other)
 
         expect:
@@ -168,10 +170,10 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
 
         referenceDataElementService.findAllByReferenceDataModelIdAndLabelIlike(UUID.randomUUID(), 'element').isEmpty()
         referenceDataElementService.findAllByReferenceDataModelIdAndLabelIlike(referenceDataModel.id, 'ele').size() == 2
-        referenceDataElementService.findAllByReferenceDataModelIdAndLabelIlike(referenceDataModel.id, 'ele1').size() == 1       
+        referenceDataElementService.findAllByReferenceDataModelIdAndLabelIlike(referenceDataModel.id, 'ele1').size() == 1
         referenceDataElementService.findAllByReferenceDataModelIdAndLabelIlike(referenceDataModel.id, 'aele1').size() == 0
         referenceDataElementService.findAllByReferenceDataModelIdAndLabelIlike(other.id, 'element').size() == 1
-        referenceDataElementService.findAllByReferenceDataModelIdAndLabelIlike(other.id, 'other eleme').size() == 1        
+        referenceDataElementService.findAllByReferenceDataModelIdAndLabelIlike(other.id, 'other eleme').size() == 1
         referenceDataElementService.findAllByReferenceDataModelIdAndLabelIlike(elementId, 'element').isEmpty()
     }
 
@@ -179,7 +181,8 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
         given:
         setupData()
         ReferenceDataElement original = referenceDataElementService.get(id)
-        ReferenceDataModel destination = new ReferenceDataModel(createdByUser: admin, label: 'Destination integration test model', folder: testFolder, authority: testAuthority)
+        ReferenceDataModel destination = new ReferenceDataModel(createdByUser: admin, label: 'Destination integration test model', folder: testFolder,
+                                                                authority: testAuthority)
 
         expect:
         checkAndSave(destination)
@@ -216,7 +219,8 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
         given:
         setupData()
         ReferenceDataElement original = referenceDataElementService.get(id)
-        ReferenceDataModel destination = new ReferenceDataModel(createdByUser: admin, label: 'Destination integration test model', folder: testFolder, authority: testAuthority)
+        ReferenceDataModel destination = new ReferenceDataModel(createdByUser: admin, label: 'Destination integration test model', folder: testFolder,
+                                                                authority: testAuthority)
 
         expect:
         checkAndSave(destination)
@@ -238,8 +242,8 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
         copy.maxMultiplicity == original.maxMultiplicity
 
         and:
-        copy.metadata.every { md ->
-            original.metadata.any { md.namespace == it.namespace && md.key == it.key && md.value == it.value }
+        copy.metadata.every {md ->
+            original.metadata.any {md.namespace == it.namespace && md.key == it.key && md.value == it.value}
         }
 
         and:
@@ -261,9 +265,21 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
             referenceDataElementService.findAllSimilarReferenceDataElementsInReferenceDataModel(complexReferenceDataModel, original)
 
         then:
-        result.size() == 3
-        result.first().item.label == 'Column A'
-        result.first().item.id != elementId
-        result.first().similarity > 0
+        result.totalSimilar() == 3
+        result.any {
+            it.item.label == 'Column A' &&
+            it.item.id != elementId &&
+            it.score > 0
+        }
+        result.any {
+            it.item.label == 'Column B' &&
+            it.item.id != elementId &&
+            it.score > 0
+        }
+        result.any {
+            it.item.label == 'Column C' &&
+            it.item.id != elementId &&
+            it.score > 0
+        }
     }
 }

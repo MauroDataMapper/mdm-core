@@ -883,21 +883,21 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
 
         then:
         ele1Res
-        ele1Res.size() == 1
+        ele1Res.totalSimilar() == 1
         ele1Res.source.referenceDataType.label == 'string'
         ele1Res.first().item.id != ele1Res.source.id
         ele1Res.first().item.label == 'sdmelement'
         ele1Res.first().item.referenceDataType.label == 'string'
-        ele1Res.first().similarity > 0
+        ele1Res.first().score > 0
 
 
         then:
         ele2Res
-        ele2Res.size() == 1
+        ele2Res.totalSimilar() == 1
         ele2Res.first().item.id != ele2Res.source.id
         ele2Res.first().item.label == 'sdmelement'
         ele2Res.first().item.referenceDataType.label == 'string'
-        ele2Res.first().similarity > 0
+        ele2Res.first().score > 0
     }
 }
 

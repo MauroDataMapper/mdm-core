@@ -39,10 +39,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 import org.grails.datastore.gorm.GormEntity
-import org.hibernate.search.annotations.Field
-import org.hibernate.search.annotations.FieldBridge
-import org.hibernate.search.annotations.Index
-import org.hibernate.search.bridge.builtin.UUIDBridge
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
 abstract class ReferenceDataType<D> implements ModelItem<D, ReferenceDataModel>, ReferenceSummaryMetadataAware {
@@ -88,6 +84,7 @@ abstract class ReferenceDataType<D> implements ModelItem<D, ReferenceDataModel>,
 
     static search = {
         CallableSearch.call(ModelItemSearch, delegate)
+        modelId searchable: 'yes', indexingDependency: [reindexOnUpdate: 'shallow', derivedFrom: 'referenceDataModel']
     }
 
     ReferenceDataType() {
@@ -98,7 +95,6 @@ abstract class ReferenceDataType<D> implements ModelItem<D, ReferenceDataModel>,
         'rdt'
     }
 
-    @Field(index = Index.YES, bridge = @FieldBridge(impl = UUIDBridge))
     UUID getModelId() {
         referenceDataModel.id
     }

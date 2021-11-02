@@ -90,8 +90,13 @@ class ReferenceEnumerationTypeService extends ModelItemService<ReferenceEnumerat
     }
 
     @Override
+    List<ReferenceEnumerationType> findAllByClassifier(Classifier classifier) {
+        ReferenceEnumerationType.byClassifierId(ReferenceEnumerationType, classifier.id).list()
+    }
+
+    @Override
     List<ReferenceEnumerationType> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        ReferenceEnumerationType.byClassifierId(ReferenceEnumerationType, classifier.id).list().findAll {
+        findAllByClassifier(classifier).findAll {
             userSecurityPolicyManager.userCanReadSecuredResourceId(ReferenceDataModel, it.model.id)
         }
     }
