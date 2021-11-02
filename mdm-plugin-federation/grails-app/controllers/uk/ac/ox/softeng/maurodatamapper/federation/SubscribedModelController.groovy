@@ -29,6 +29,8 @@ import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.validation.Errors
 
+import static org.springframework.http.HttpStatus.OK
+
 @Slf4j
 class SubscribedModelController extends EditLoggingController<SubscribedModel> {
 
@@ -84,30 +86,7 @@ class SubscribedModelController extends EditLoggingController<SubscribedModel> {
      */
     @Transactional
     def federate() {
-        log.debug("Getting SubscribedModel ${params.subscribedModelId}")
-        SubscribedModel subscribedModel = subscribedModelService.get(params.subscribedModelId)
-        if (!subscribedModel) {
-            log.debug("SubscribedModel not found")
-            return notFound(SubscribedModel, params.subscribedModelId)
-        }
-
-        //Check we can import into the requested folder, and get the folder
-        if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(Folder, subscribedModel.folderId)) {
-            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Folder, subscribedModel.folderId)) {
-                return notFound(Folder, subscribedModel.folderId)
-            }
-            return forbiddenDueToPermissions()
-        }
-
-        def federationResult = subscribedModelService.federateSubscribedModel(subscribedModel, currentUserSecurityPolicyManager)
-        if (federationResult instanceof Errors) {
-            transactionStatus.setRollbackOnly()
-            respond federationResult, view: 'update' // STATUS CODE 422
-        }
-
-        updateResource(subscribedModel)
-        updateResponse(subscribedModel)
-
+        respond null, status: OK
     }
 
     @Override
