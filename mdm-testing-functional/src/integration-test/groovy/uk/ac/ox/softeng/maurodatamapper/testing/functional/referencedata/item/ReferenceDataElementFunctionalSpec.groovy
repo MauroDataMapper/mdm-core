@@ -68,7 +68,8 @@ class ReferenceDataElementFunctionalSpec extends UserAccessFunctionalSpec {
             label          : 'Functional Test DataElement',
             maxMultiplicity: 2,
             minMultiplicity: 0,
-            referenceDataType       : referenceDataTypeId
+            referenceDataType       : referenceDataTypeId,
+            columnNumber: 0
         ]
     }
 
@@ -158,6 +159,7 @@ class ReferenceDataElementFunctionalSpec extends UserAccessFunctionalSpec {
     "delete"
   ],
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
+  "columnNumber": 0,
   "referenceDataType": {
     "id": "${json-unit.matches:id}",
     "domainType": "ReferencePrimitiveType",
@@ -195,6 +197,7 @@ class ReferenceDataElementFunctionalSpec extends UserAccessFunctionalSpec {
           "finalised": false
         }
       ],
+      "columnNumber": 1,
       "referenceDataType": {
         "id": "${json-unit.matches:id}",
         "domainType": "ReferencePrimitiveType",
@@ -223,6 +226,7 @@ class ReferenceDataElementFunctionalSpec extends UserAccessFunctionalSpec {
           "finalised": false
         }
       ],
+      "columnNumber": 0,
       "referenceDataType": {
         "id": "${json-unit.matches:id}",
         "domainType": "ReferencePrimitiveType",

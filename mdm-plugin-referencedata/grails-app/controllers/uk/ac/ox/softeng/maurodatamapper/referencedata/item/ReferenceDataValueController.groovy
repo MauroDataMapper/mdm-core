@@ -170,8 +170,10 @@ class ReferenceDataValueController extends EditLoggingController<ReferenceDataVa
      * Turn a list of ReferenceDataValue into a list of rows
      */
     private List rowify(List<ReferenceDataValue> referenceDataValues) {
-        //Sort the list by rowNumber ascending
-        referenceDataValues.sort {it.getProperty(params.sortBy)}
+        //Sort the list by rowNumber ascending and then columnNumber ascending
+        referenceDataValues.sort {it1, it2 ->
+            it1.rowNumber <=> it2.rowNumber ?: it1.referenceDataElement.columnNumber <=> it2.referenceDataElement.columnNumber
+        }
 
         //Make a list of row numbers
         List rowNumbers = []

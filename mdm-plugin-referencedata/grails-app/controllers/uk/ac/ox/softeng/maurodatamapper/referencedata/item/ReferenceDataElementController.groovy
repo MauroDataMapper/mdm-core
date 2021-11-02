@@ -98,7 +98,8 @@ class ReferenceDataElementController extends CatalogueItemController<ReferenceDa
         }
         if (params.all) removePaginationParameters()
 
-        return referenceDataElementService.findAllByReferenceDataModelId(params.referenceDataModelId, params)
+        // Always sort the list of elements in a model by columnNumber
+        return referenceDataElementService.findAllByReferenceDataModelId(params.referenceDataModelId, params).sort{ it.columnNumber }
     }
 
     @Override

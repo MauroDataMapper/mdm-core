@@ -1,5 +1,5 @@
 <?xml version='1.0'?>
-<exp:exportModel xmlns:exp='http://maurodatamapper.com/export/3.1' xmlns:mdm='http://maurodatamapper.com/referenceDataModel/3.1'>
+<exp:exportModel xmlns:exp='http://maurodatamapper.com/export/4.0' xmlns:mdm='http://maurodatamapper.com/referenceDataModel/4.0'>
     <mdm:referenceDataModel>
         <mdm:id>941f6774-9eae-4bfa-890e-e819eb1af281</mdm:id>
         <mdm:label>importSimple Reference Data Model</mdm:label>
@@ -26,7 +26,7 @@
         <exp:exporter>
             <exp:namespace>uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter</exp:namespace>
             <exp:name>ReferenceDataXmlExporterService</exp:name>
-            <exp:version>3.1</exp:version>
+            <exp:version>4.0</exp:version>
         </exp:exporter>
     </exp:exportMetadata>
 </exp:exportModel>

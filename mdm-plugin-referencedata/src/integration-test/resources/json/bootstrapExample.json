@@ -60,6 +60,7 @@
                 "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                 "label": "Organisation code",
                 "lastUpdated": "2021-02-27T20:50:01.699Z",
+                "columnNumber": 0,
                 "referenceDataType": {
                     "id": "6a8db6ff-1be0-40bb-9961-7f03ba5b1ee3",
                     "label": "string",
@@ -71,6 +72,7 @@
                 "id": "103130c2-661b-439a-996b-0360dc246fd3",
                 "label": "Organisation name",
                 "lastUpdated": "2021-02-27T20:50:02.436Z",
+                "columnNumber": 1,
                 "referenceDataType": {
                     "id": "6a8db6ff-1be0-40bb-9961-7f03ba5b1ee3",
                     "label": "string",
@@ -89,6 +91,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -123,6 +126,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -157,6 +161,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -191,6 +196,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -225,6 +231,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -259,6 +266,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -293,6 +301,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -327,6 +336,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -361,6 +371,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -395,6 +406,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -429,6 +441,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -463,6 +476,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -497,6 +511,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -531,6 +546,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -565,6 +581,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -599,6 +616,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -633,6 +651,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -667,6 +686,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -701,6 +721,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -735,6 +756,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -769,6 +791,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -803,6 +826,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -837,6 +861,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -871,6 +896,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -905,6 +931,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -939,6 +966,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -973,6 +1001,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -1007,6 +1036,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -1041,6 +1071,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -1075,6 +1106,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -1109,6 +1141,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -1143,6 +1176,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -1177,6 +1211,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -1211,6 +1246,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -1245,6 +1281,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -1279,6 +1316,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -1313,6 +1351,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -1347,6 +1386,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -1381,6 +1421,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -1415,6 +1456,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -1449,6 +1491,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -1483,6 +1526,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -1517,6 +1561,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -1551,6 +1596,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -1585,6 +1631,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -1619,6 +1666,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -1653,6 +1701,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -1687,6 +1736,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -1721,6 +1771,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -1755,6 +1806,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -1789,6 +1841,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -1823,6 +1876,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -1857,6 +1911,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -1891,6 +1946,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -1925,6 +1981,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -1959,6 +2016,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -1993,6 +2051,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -2027,6 +2086,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -2061,6 +2121,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -2095,6 +2156,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -2129,6 +2191,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -2163,6 +2226,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -2197,6 +2261,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -2231,6 +2296,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -2265,6 +2331,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -2299,6 +2366,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -2333,6 +2401,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -2367,6 +2436,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -2401,6 +2471,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -2435,6 +2506,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -2469,6 +2541,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -2503,6 +2576,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -2537,6 +2611,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -2571,6 +2646,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -2605,6 +2681,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -2639,6 +2716,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -2673,6 +2751,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -2707,6 +2786,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -2741,6 +2821,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -2775,6 +2856,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -2809,6 +2891,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -2843,6 +2926,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -2877,6 +2961,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -2911,6 +2996,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -2945,6 +3031,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -2979,6 +3066,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -3013,6 +3101,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -3047,6 +3136,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -3081,6 +3171,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -3115,6 +3206,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -3149,6 +3241,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -3183,6 +3276,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -3217,6 +3311,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -3251,6 +3346,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -3285,6 +3381,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -3319,6 +3416,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -3353,6 +3451,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -3387,6 +3486,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -3421,6 +3521,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -3455,6 +3556,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -3489,6 +3591,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -3523,6 +3626,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -3557,6 +3661,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -3591,6 +3696,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -3625,6 +3731,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -3659,6 +3766,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -3693,6 +3801,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -3727,6 +3836,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -3761,6 +3871,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -3795,6 +3906,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -3829,6 +3941,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -3863,6 +3976,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -3897,6 +4011,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -3931,6 +4046,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -3965,6 +4081,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -3999,6 +4116,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -4033,6 +4151,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -4067,6 +4186,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -4101,6 +4221,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -4135,6 +4256,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -4169,6 +4291,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -4203,6 +4326,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -4237,6 +4361,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -4271,6 +4396,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -4305,6 +4431,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -4339,6 +4466,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -4373,6 +4501,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -4407,6 +4536,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -4441,6 +4571,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -4475,6 +4606,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -4509,6 +4641,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -4543,6 +4676,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -4577,6 +4711,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -4611,6 +4746,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -4645,6 +4781,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -4679,6 +4816,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -4713,6 +4851,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -4747,6 +4886,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -4781,6 +4921,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -4815,6 +4956,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -4849,6 +4991,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -4883,6 +5026,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -4917,6 +5061,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -4951,6 +5096,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -4985,6 +5131,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -5019,6 +5166,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -5053,6 +5201,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -5087,6 +5236,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -5121,6 +5271,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -5155,6 +5306,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -5189,6 +5341,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -5223,6 +5376,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -5257,6 +5411,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -5291,6 +5446,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -5325,6 +5481,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -5359,6 +5516,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -5393,6 +5551,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -5427,6 +5586,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -5461,6 +5621,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -5495,6 +5656,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -5529,6 +5691,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -5563,6 +5726,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -5597,6 +5761,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -5631,6 +5796,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -5665,6 +5831,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -5699,6 +5866,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -5733,6 +5901,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -5767,6 +5936,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -5801,6 +5971,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -5835,6 +6006,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -5869,6 +6041,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -5903,6 +6076,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -5937,6 +6111,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -5971,6 +6146,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -6005,6 +6181,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -6039,6 +6216,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -6073,6 +6251,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -6107,6 +6286,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -6141,6 +6321,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -6175,6 +6356,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -6209,6 +6391,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -6243,6 +6426,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -6277,6 +6461,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -6311,6 +6496,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -6345,6 +6531,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -6379,6 +6566,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -6413,6 +6601,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -6447,6 +6636,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -6481,6 +6671,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -6515,6 +6706,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -6549,6 +6741,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -6583,6 +6776,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -6617,6 +6811,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -6651,6 +6846,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -6685,6 +6881,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -6719,6 +6916,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -6753,6 +6951,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -6787,6 +6986,7 @@
                     "id": "d482506c-8387-4d80-ba5c-24332ee76fc8",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation code",
+                    "columnNumber": 0,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -6821,6 +7021,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -6855,6 +7056,7 @@
                     "id": "103130c2-661b-439a-996b-0360dc246fd3",
                     "domainType": "ReferenceDataElement",
                     "label": "Organisation name",
+                    "columnNumber": 1,
                     "model": "cdea5e30-5937-4a02-b8e6-0b803038f90f",
                     "breadcrumbs": [
                         {
@@ -6888,7 +7090,7 @@
         "exporter": {
             "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
             "name": "ReferenceDataJsonExporterService",
-            "version": "3.0"
+            "version": "4.0"
         }
     }
 }

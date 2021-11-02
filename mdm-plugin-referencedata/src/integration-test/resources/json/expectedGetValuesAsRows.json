@@ -20,6 +20,7 @@
                   "finalised": false
                 }
               ],
+              "columnNumber": 0,
               "referenceDataType": {
                 "id": "${json-unit.matches:id}",
                 "domainType": "ReferencePrimitiveType",
@@ -53,6 +54,7 @@
                   "finalised": false
                 }
               ],
+              "columnNumber": 1,
               "referenceDataType": {
                 "id": "${json-unit.matches:id}",
                 "domainType": "ReferencePrimitiveType",
@@ -86,6 +88,7 @@
                   "finalised": false
                 }
               ],
+              "columnNumber": 2,
               "referenceDataType": {
                 "id": "${json-unit.matches:id}",
                 "domainType": "ReferencePrimitiveType",
@@ -123,6 +126,7 @@
                   "finalised": false
                 }
               ],
+              "columnNumber": 0,
               "referenceDataType": {
                 "id": "${json-unit.matches:id}",
                 "domainType": "ReferencePrimitiveType",
@@ -156,6 +160,7 @@
                   "finalised": false
                 }
               ],
+              "columnNumber": 1,
               "referenceDataType": {
                 "id": "${json-unit.matches:id}",
                 "domainType": "ReferencePrimitiveType",
@@ -189,6 +194,7 @@
                   "finalised": false
                 }
               ],
+              "columnNumber": 2,
               "referenceDataType": {
                 "id": "${json-unit.matches:id}",
                 "domainType": "ReferencePrimitiveType",
@@ -226,6 +232,7 @@
                   "finalised": false
                 }
               ],
+              "columnNumber": 0,
               "referenceDataType": {
                 "id": "${json-unit.matches:id}",
                 "domainType": "ReferencePrimitiveType",
@@ -259,6 +266,7 @@
                   "finalised": false
                 }
               ],
+              "columnNumber": 1,
               "referenceDataType": {
                 "id": "${json-unit.matches:id}",
                 "domainType": "ReferencePrimitiveType",
@@ -292,6 +300,7 @@
                   "finalised": false
                 }
               ],
+              "columnNumber": 2,
               "referenceDataType": {
                 "id": "${json-unit.matches:id}",
                 "domainType": "ReferencePrimitiveType",
@@ -329,6 +338,7 @@
                   "finalised": false
                 }
               ],
+              "columnNumber": 0,
               "referenceDataType": {
                 "id": "${json-unit.matches:id}",
                 "domainType": "ReferencePrimitiveType",
@@ -362,6 +372,7 @@
                   "finalised": false
                 }
               ],
+              "columnNumber": 1,
               "referenceDataType": {
                 "id": "${json-unit.matches:id}",
                 "domainType": "ReferencePrimitiveType",
@@ -395,6 +406,7 @@
                   "finalised": false
                 }
               ],
+              "columnNumber": 2,
               "referenceDataType": {
                 "id": "${json-unit.matches:id}",
                 "domainType": "ReferencePrimitiveType",
@@ -432,6 +444,7 @@
                   "finalised": false
                 }
               ],
+              "columnNumber": 0,
               "referenceDataType": {
                 "id": "${json-unit.matches:id}",
                 "domainType": "ReferencePrimitiveType",
@@ -465,6 +478,7 @@
                   "finalised": false
                 }
               ],
+              "columnNumber": 1,
               "referenceDataType": {
                 "id": "${json-unit.matches:id}",
                 "domainType": "ReferencePrimitiveType",
@@ -498,6 +512,7 @@
                   "finalised": false
                 }
               ],
+              "columnNumber": 2,
               "referenceDataType": {
                 "id": "${json-unit.matches:id}",
                 "domainType": "ReferencePrimitiveType",
@@ -535,6 +550,7 @@
                   "finalised": false
                 }
               ],
+              "columnNumber": 0,
               "referenceDataType": {
                 "id": "${json-unit.matches:id}",
                 "domainType": "ReferencePrimitiveType",
@@ -568,6 +584,7 @@
                   "finalised": false
                 }
               ],
+              "columnNumber": 1,
               "referenceDataType": {
                 "id": "${json-unit.matches:id}",
                 "domainType": "ReferencePrimitiveType",
@@ -601,6 +618,7 @@
                   "finalised": false
                 }
               ],
+              "columnNumber": 2,
               "referenceDataType": {
                 "id": "${json-unit.matches:id}",
                 "domainType": "ReferencePrimitiveType",
@@ -638,6 +656,7 @@
                   "finalised": false
                 }
               ],
+              "columnNumber": 0,
               "referenceDataType": {
                 "id": "${json-unit.matches:id}",
                 "domainType": "ReferencePrimitiveType",
@@ -671,6 +690,7 @@
                   "finalised": false
                 }
               ],
+              "columnNumber": 1,
               "referenceDataType": {
                 "id": "${json-unit.matches:id}",
                 "domainType": "ReferencePrimitiveType",
@@ -704,6 +724,7 @@
                   "finalised": false
                 }
               ],
+              "columnNumber": 2,
               "referenceDataType": {
                 "id": "${json-unit.matches:id}",
                 "domainType": "ReferencePrimitiveType",
@@ -741,6 +762,7 @@
                   "finalised": false
                 }
               ],
+              "columnNumber": 0,
               "referenceDataType": {
                 "id": "${json-unit.matches:id}",
                 "domainType": "ReferencePrimitiveType",
@@ -774,6 +796,7 @@
                   "finalised": false
                 }
               ],
+              "columnNumber": 1,
               "referenceDataType": {
                 "id": "${json-unit.matches:id}",
                 "domainType": "ReferencePrimitiveType",
@@ -807,6 +830,7 @@
                   "finalised": false
                 }
               ],
+              "columnNumber": 2,
               "referenceDataType": {
                 "id": "${json-unit.matches:id}",
                 "domainType": "ReferencePrimitiveType",
@@ -844,6 +868,7 @@
                   "finalised": false
                 }
               ],
+              "columnNumber": 0,
               "referenceDataType": {
                 "id": "${json-unit.matches:id}",
                 "domainType": "ReferencePrimitiveType",
@@ -877,6 +902,7 @@
                   "finalised": false
                 }
               ],
+              "columnNumber": 1,
               "referenceDataType": {
                 "id": "${json-unit.matches:id}",
                 "domainType": "ReferencePrimitiveType",
@@ -910,6 +936,7 @@
                   "finalised": false
                 }
               ],
+              "columnNumber": 2,
               "referenceDataType": {
                 "id": "${json-unit.matches:id}",
                 "domainType": "ReferencePrimitiveType",
@@ -947,6 +974,7 @@
                   "finalised": false
                 }
               ],
+              "columnNumber": 0,
               "referenceDataType": {
                 "id": "${json-unit.matches:id}",
                 "domainType": "ReferencePrimitiveType",
@@ -980,6 +1008,7 @@
                   "finalised": false
                 }
               ],
+              "columnNumber": 1,
               "referenceDataType": {
                 "id": "${json-unit.matches:id}",
                 "domainType": "ReferencePrimitiveType",
@@ -1013,6 +1042,7 @@
                   "finalised": false
                 }
               ],
+              "columnNumber": 2,
               "referenceDataType": {
                 "id": "${json-unit.matches:id}",
                 "domainType": "ReferencePrimitiveType",
