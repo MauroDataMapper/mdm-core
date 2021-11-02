@@ -39,13 +39,8 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
-import org.apache.lucene.analysis.core.KeywordAnalyzer
 import org.grails.datastore.gorm.GormEntity
 import org.grails.datastore.mapping.validation.CascadeValidateType
-import org.hibernate.search.annotations.Field
-import org.hibernate.search.annotations.FieldBridge
-import org.hibernate.search.annotations.Index
-import org.hibernate.search.bridge.builtin.UUIDBridge
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
 class Term implements ModelItem<Term, Terminology> {
@@ -107,8 +102,9 @@ class Term implements ModelItem<Term, Terminology> {
 
     static search = {
         CallableSearch.call(ModelItemSearch, delegate)
-        code index: 'yes', analyzer: KeywordAnalyzer, sortable: [name: 'code_sort', normalizer: 'lowercase'], termVector: 'with_positions'
+        code searchable: 'yes', analyzer: 'keyword', sortable: [name: 'code_sort', normalizer: 'lowercase'], termVector: 'with_positions'
         definition termVector: 'with_positions'
+        modelId searchable: 'yes', indexingDependency: [reindexOnUpdate: 'shallow', derivedFrom: 'terminology']
     }
 
     Term() {
@@ -157,7 +153,6 @@ class Term implements ModelItem<Term, Terminology> {
         pathIdentifier
     }
 
-    @Field(index = Index.YES, bridge = @FieldBridge(impl = UUIDBridge))
     UUID getModelId() {
         terminology.id
     }

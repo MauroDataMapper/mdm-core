@@ -26,7 +26,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelItemConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
+import uk.ac.ox.softeng.maurodatamapper.core.search.ModelItemSearch
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.gorm.constraint.validator.TermRelationshipTypeLabelValidator
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
@@ -34,10 +36,6 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
 import com.google.common.base.CaseFormat
 import grails.gorm.DetachedCriteria
 import org.grails.datastore.gorm.GormEntity
-import org.hibernate.search.annotations.Field
-import org.hibernate.search.annotations.FieldBridge
-import org.hibernate.search.annotations.Index
-import org.hibernate.search.bridge.builtin.UUIDBridge
 
 class TermRelationshipType implements ModelItem<TermRelationshipType, Terminology> {
 
@@ -78,6 +76,11 @@ class TermRelationshipType implements ModelItem<TermRelationshipType, Terminolog
 
     static transients = ['aliases', 'model']
 
+    static search = {
+        CallableSearch.call(ModelItemSearch, delegate)
+        modelId searchable: 'yes', indexingDependency: [reindexOnUpdate: 'shallow', derivedFrom: 'terminology']
+    }
+
     TermRelationshipType() {
         parentalRelationship = false
         childRelationship = false
@@ -94,7 +97,6 @@ class TermRelationshipType implements ModelItem<TermRelationshipType, Terminolog
         'trt'
     }
 
-    @Field(index = Index.YES, bridge = @FieldBridge(impl = UUIDBridge))
     UUID getModelId() {
         terminology.id
     }
