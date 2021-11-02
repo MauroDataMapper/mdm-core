@@ -123,6 +123,10 @@ class Annotation implements MultiFacetItemAware, PathAware, InformationAware, Di
         "Annotation:${label}"
     }
 
+    void setCreatedByUser(Map map) {
+        // ignore, this action is just to protect against anyone submitting the createdByUser map
+    }
+
     @Override
     ObjectDiff<Annotation> diff(Annotation otherAnnotation, String context) {
         DiffBuilder.objectDiff(Annotation)

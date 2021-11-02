@@ -116,31 +116,40 @@ class NestedAnnotationControllerSpec extends ResourceControllerSpec<Annotation> 
         '''{
   "count": 3,
   "items": [
-        {
-          "lastUpdated": "${json-unit.matches:offsetDateTime}",
-          "createdBy": "reader1@test.com",
-          "description": "annotation 2.1",
-          "id": "${json-unit.matches:id}",
-          "label": "annotation 2 [0]",
-          "annotatorName": "Anonymous User"
-        },
-        {
-          "lastUpdated": "${json-unit.matches:offsetDateTime}",
-          "createdBy": "reader1@test.com",
-          "description": "annotation 2.2",
-          "id": "${json-unit.matches:id}",
-          "label": "annotation 2 [1]",
-          "annotatorName": "Anonymous User"
-        },
-        {
-          "lastUpdated": "${json-unit.matches:offsetDateTime}",
-          "createdBy": "editor@test.com",
-          "description": "annotation 2.3",
-          "id": "${json-unit.matches:id}",
-          "label": "annotation 2 [2]",
-          "annotatorName": "Anonymous User"
-        }
-      ]
+    {
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "createdBy": "reader1@test.com",
+      "createdByUser": {
+        "name": "Anonymous User",
+        "id": "${json-unit.matches:id}"
+      },
+      "description": "annotation 2.1",
+      "id": "${json-unit.matches:id}",
+      "label": "annotation 2 [0]"
+    },
+    {
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "createdBy": "reader1@test.com",
+      "createdByUser": {
+        "name": "Anonymous User",
+        "id": "${json-unit.matches:id}"
+      },
+      "description": "annotation 2.2",
+      "id": "${json-unit.matches:id}",
+      "label": "annotation 2 [1]"
+    },
+    {
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "createdBy": "editor@test.com",
+      "createdByUser": {
+        "name": "Anonymous User",
+        "id": "${json-unit.matches:id}"
+      },
+      "description": "annotation 2.3",
+      "id": "${json-unit.matches:id}",
+      "label": "annotation 2 [2]"
+    }
+  ]
 }'''
     }
 
@@ -168,25 +177,30 @@ class NestedAnnotationControllerSpec extends ResourceControllerSpec<Annotation> 
     @Override
     String getExpectedValidSavedJson() {
         '''{
-    "lastUpdated": "${json-unit.matches:offsetDateTime}",
-    "createdBy": "unlogged_user@mdm-core.com",
-    "description": "a description",
-    "id": "${json-unit.matches:id}",
-    "label": "annotation 2 [4]",
-    "annotatorName": "Anonymous User"
-}
-'''
+  "lastUpdated": "${json-unit.matches:offsetDateTime}",
+  "createdBy": "unlogged_user@mdm-core.com",
+  "createdByUser": {
+    "name": "Anonymous User",
+    "id": "${json-unit.matches:id}"
+  },
+  "description": "a description",
+  "id": "${json-unit.matches:id}",
+  "label": "annotation 2 [4]"
+}'''
     }
 
     @Override
     String getExpectedShowJson() {
         '''{
-    "lastUpdated": "${json-unit.matches:offsetDateTime}",
-    "createdBy": "reader1@test.com",
-    "description": "annotation 2.1",
-    "id": "${json-unit.matches:id}",
-    "label": "annotation 2 [0]",
-    "annotatorName": "Anonymous User"
+  "lastUpdated": "${json-unit.matches:offsetDateTime}",
+  "createdBy": "reader1@test.com",
+  "createdByUser": {
+    "name": "Anonymous User",
+    "id": "${json-unit.matches:id}"
+  },
+  "description": "annotation 2.1",
+  "id": "${json-unit.matches:id}",
+  "label": "annotation 2 [0]"
 }'''
     }
 
@@ -205,11 +219,13 @@ class NestedAnnotationControllerSpec extends ResourceControllerSpec<Annotation> 
         '''{
     "lastUpdated": "${json-unit.matches:offsetDateTime}",
     "createdBy": "reader1@test.com",
+    "createdByUser": {
+        "name": "Anonymous User",
+        "id": "${json-unit.matches:id}"
+    },
     "description": "annotation 2.1 added an updated",
     "id": "${json-unit.matches:id}",
-    "label": "annotation 2 [0]",
-    "annotatorName": "Anonymous User"
-       
+    "label": "annotation 2 [0]"
 }'''
     }
 

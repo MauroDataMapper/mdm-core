@@ -11,8 +11,8 @@ json {
 
     createdBy annotation.createdBy
     createdByUser {
-        name annotation?.user?.fullName
-        id annotation?.user?.id
+        name annotation.user?.fullName
+        id annotation.user?.id
     }
     lastUpdated annotation.lastUpdated
     if (annotation.description) description annotation.description

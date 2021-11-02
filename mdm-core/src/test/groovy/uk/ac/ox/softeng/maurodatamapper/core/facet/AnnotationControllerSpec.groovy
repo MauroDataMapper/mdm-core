@@ -104,54 +104,75 @@ class AnnotationControllerSpec extends ResourceControllerSpec<Annotation> implem
     {
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "createdBy": "admin@maurodatamapper.com",
+      "createdByUser": {
+        "name": "Anonymous User",
+        "id": "${json-unit.matches:id}"
+      },
       "id": "${json-unit.matches:id}",
-      "label": "annotation 4",
-      "annotatorName": "Anonymous User"
+      "label": "annotation 4"
     },
     {
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "createdBy": "admin@maurodatamapper.com",
+      "createdByUser": {
+        "name": "Anonymous User",
+        "id": "${json-unit.matches:id}"
+      },
       "id": "${json-unit.matches:id}",
-      "label": "annotation 3",
-      "annotatorName": "Anonymous User"
+      "label": "annotation 3"
     },
     {
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "createdBy": "editor@test.com",
+      "createdByUser": {
+        "name": "Anonymous User",
+        "id": "${json-unit.matches:id}"
+      },
       "description": "something to talk about",
       "id": "${json-unit.matches:id}",
       "label": "annotation 2",
-      "annotatorName": "Anonymous User",
       "childAnnotations": [
         {
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "createdBy": "reader1@test.com",
+          "createdByUser": {
+            "name": "Anonymous User",
+            "id": "${json-unit.matches:id}"
+          },
           "description": "annotation 2.1",
-          "id": "${json-unit.matches:id}",
-          "annotatorName": "Anonymous User"
+          "id": "${json-unit.matches:id}"
         },
         {
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "createdBy": "reader1@test.com",
+          "createdByUser": {
+            "name": "Anonymous User",
+            "id": "${json-unit.matches:id}"
+          },
           "description": "annotation 2.2",
-          "id": "${json-unit.matches:id}",
-          "annotatorName": "Anonymous User"
+          "id": "${json-unit.matches:id}"
         },
         {
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "createdBy": "editor@test.com",
+          "createdByUser": {
+            "name": "Anonymous User",
+            "id": "${json-unit.matches:id}"
+          },
           "description": "annotation 2.3",
-          "id": "${json-unit.matches:id}",
-          "annotatorName": "Anonymous User"
+          "id": "${json-unit.matches:id}"
         }
       ]
     },
     {
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "createdBy": "admin@maurodatamapper.com",
+      "createdByUser": {
+        "name": "Anonymous User",
+        "id": "${json-unit.matches:id}"
+      },
       "id": "${json-unit.matches:id}",
-      "label": "annotation 1",
-      "annotatorName": "Anonymous User"
+      "label": "annotation 1"
     }
   ]
 }'''
@@ -182,10 +203,13 @@ class AnnotationControllerSpec extends ResourceControllerSpec<Annotation> implem
         '''{
     "lastUpdated": "${json-unit.matches:offsetDateTime}",
     "createdBy": "unlogged_user@mdm-core.com",
+    "createdByUser": {
+        "name": "Anonymous User",
+        "id": "${json-unit.matches:id}"
+      },
     "description": "a description",
     "id": "${json-unit.matches:id}",
-    "label": "valid",
-    "annotatorName": "Anonymous User"
+    "label": "valid"
 }
 '''
     }
@@ -195,31 +219,43 @@ class AnnotationControllerSpec extends ResourceControllerSpec<Annotation> implem
         '''{
     "lastUpdated": "${json-unit.matches:offsetDateTime}",
     "createdBy": "editor@test.com",
+    "createdByUser": {
+        "name": "Anonymous User",
+        "id": "${json-unit.matches:id}"
+      },
     "description": "something to talk about",
     "id": "${json-unit.matches:id}",
     "label": "annotation 2",
-    "annotatorName": "Anonymous User",
     "childAnnotations": [
         {
             "lastUpdated": "${json-unit.matches:offsetDateTime}",
             "createdBy": "reader1@test.com",
+            "createdByUser": {
+                "name": "Anonymous User",
+                "id": "${json-unit.matches:id}"
+            },
             "description": "annotation 2.1",
-            "id": "${json-unit.matches:id}",
-            "annotatorName": "Anonymous User"
+            "id": "${json-unit.matches:id}"
         },
         {
             "lastUpdated": "${json-unit.matches:offsetDateTime}",
             "createdBy": "reader1@test.com",
+            "createdByUser": {
+                "name": "Anonymous User",
+                "id": "${json-unit.matches:id}"
+            },
             "description": "annotation 2.2",
-            "id": "${json-unit.matches:id}",
-            "annotatorName": "Anonymous User"
+            "id": "${json-unit.matches:id}"
         },
         {
             "lastUpdated": "${json-unit.matches:offsetDateTime}",
             "createdBy": "editor@test.com",
+            "createdByUser": {
+                "name": "Anonymous User",
+                "id": "${json-unit.matches:id}"
+            },
             "description": "annotation 2.3",
-            "id": "${json-unit.matches:id}",
-            "annotatorName": "Anonymous User"
+            "id": "${json-unit.matches:id}"
         }
     ]
 }'''
@@ -240,31 +276,43 @@ class AnnotationControllerSpec extends ResourceControllerSpec<Annotation> implem
         '''{
     "lastUpdated": "${json-unit.matches:offsetDateTime}",
     "createdBy": "editor@test.com",
+    "createdByUser": {
+        "name": "Anonymous User",
+        "id": "${json-unit.matches:id}"
+      },
     "description": "something to talk about added an updated",
     "id": "${json-unit.matches:id}",
     "label": "annotation 2",
-    "annotatorName": "Anonymous User",
     "childAnnotations": [
         {
             "lastUpdated": "${json-unit.matches:offsetDateTime}",
             "createdBy": "reader1@test.com",
+            "createdByUser": {
+                "name": "Anonymous User",
+                "id": "${json-unit.matches:id}"
+            },
             "description": "annotation 2.1",
-            "id": "${json-unit.matches:id}",
-            "annotatorName": "Anonymous User"
+            "id": "${json-unit.matches:id}"
         },
         {
             "lastUpdated": "${json-unit.matches:offsetDateTime}",
             "createdBy": "reader1@test.com",
+            "createdByUser": {
+                "name": "Anonymous User",
+                "id": "${json-unit.matches:id}"
+            },
             "description": "annotation 2.2",
-            "id": "${json-unit.matches:id}",
-            "annotatorName": "Anonymous User"
+            "id": "${json-unit.matches:id}"
         },
         {
             "lastUpdated": "${json-unit.matches:offsetDateTime}",
             "createdBy": "editor@test.com",
+            "createdByUser": {
+                "name": "Anonymous User",
+                "id": "${json-unit.matches:id}"
+            },
             "description": "annotation 2.3",
-            "id": "${json-unit.matches:id}",
-            "annotatorName": "Anonymous User"
+            "id": "${json-unit.matches:id}"
         }
     ]
 }'''
