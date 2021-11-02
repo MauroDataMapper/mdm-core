@@ -7,6 +7,7 @@ model {
 json {
     dateCreated edit.dateCreated
     createdBy edit.createdBy
+    editorName edit?.user?.fullName
     title edit.title
     description edit.description
 }
