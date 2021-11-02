@@ -274,8 +274,13 @@ class DataFlowService extends ModelItemService<DataFlow> {
     }
 
     @Override
+    List<DataFlow> findAllByClassifier(Classifier classifier) {
+        DataFlow.byClassifierId(classifier.id).list()
+    }
+
+    @Override
     List<DataFlow> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        DataFlow.byClassifierId(classifier.id).list().findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)}
+        findAllByClassifier(classifier).findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)}
     }
 
     @Override
