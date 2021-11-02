@@ -62,6 +62,7 @@ class ReferenceDataElement implements ModelItem<ReferenceDataElement, ReferenceD
     ReferenceDataType referenceDataType
 
     UUID id
+    int columnNumber
 
     static belongsTo = [ReferenceDataModel, ReferenceDataType]
 

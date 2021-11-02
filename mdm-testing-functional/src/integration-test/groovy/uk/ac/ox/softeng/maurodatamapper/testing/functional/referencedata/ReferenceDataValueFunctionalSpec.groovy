@@ -100,7 +100,7 @@ class ReferenceDataValueFunctionalSpec extends UserAccessFunctionalSpec {
             rowNumber           : 1,
             value               : 'Functional Test ReferenceDataValue',
             referenceDataModel  : simpleReferenceDataModelId,
-            referenceDataElement: referenceDataElementId,
+            referenceDataElement: referenceDataElementId
         ]
     }
 

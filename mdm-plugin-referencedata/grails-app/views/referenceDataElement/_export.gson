@@ -5,6 +5,7 @@ model {
     ReferenceDataElement referenceDataElement
 }
 json {
+    columnNumber referenceDataElement.columnNumber
     referenceDataType tmpl.'/referenceDataType/export'(referenceDataElement.referenceDataType)
     if (referenceDataElement.maxMultiplicity != null) maxMultiplicity referenceDataElement.maxMultiplicity
     if (referenceDataElement.minMultiplicity != null) minMultiplicity referenceDataElement.minMultiplicity

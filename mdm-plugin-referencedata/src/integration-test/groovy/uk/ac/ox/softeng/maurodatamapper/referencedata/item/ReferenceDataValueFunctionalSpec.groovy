@@ -126,6 +126,7 @@ class ReferenceDataValueFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
                 "finalised": false
             }
         ],
+        "columnNumber": 0,
         "referenceDataType": {
             "id": "${json-unit.matches:id}",
             "domainType": "ReferencePrimitiveType",

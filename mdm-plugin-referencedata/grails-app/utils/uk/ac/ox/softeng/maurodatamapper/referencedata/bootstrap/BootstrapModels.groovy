@@ -61,8 +61,8 @@ class BootstrapModels {
 
             checkAndSave(messageSource, referenceDataModel)
 
-            ReferenceDataElement organisationName = new ReferenceDataElement(referenceDataType: stringDataType, label: "Organisation name", createdBy: DEVELOPMENT)
-            ReferenceDataElement organisationCode = new ReferenceDataElement(referenceDataType: stringDataType, label: "Organisation code", createdBy: DEVELOPMENT)
+            ReferenceDataElement organisationName = new ReferenceDataElement(referenceDataType: stringDataType, label: "Organisation name", createdBy: DEVELOPMENT, columnNumber: 1)
+            ReferenceDataElement organisationCode = new ReferenceDataElement(referenceDataType: stringDataType, label: "Organisation code", createdBy: DEVELOPMENT, columnNumber: 0)
             referenceDataModel.addToReferenceDataElements(organisationName)
             referenceDataModel.addToReferenceDataElements(organisationCode)
 
@@ -115,9 +115,9 @@ class BootstrapModels {
 
             checkAndSave(messageSource, referenceDataModel)
 
-            ReferenceDataElement a = new ReferenceDataElement(referenceDataType: stringDataType, label: "Column A", createdBy: DEVELOPMENT)
-            ReferenceDataElement b = new ReferenceDataElement(referenceDataType: stringDataType, label: "Column B", createdBy: DEVELOPMENT)
-            ReferenceDataElement c = new ReferenceDataElement(referenceDataType: stringDataType, label: "Column C", createdBy: DEVELOPMENT)
+            ReferenceDataElement a = new ReferenceDataElement(referenceDataType: stringDataType, label: "Column A", createdBy: DEVELOPMENT, columnNumber: 0)
+            ReferenceDataElement b = new ReferenceDataElement(referenceDataType: stringDataType, label: "Column B", createdBy: DEVELOPMENT, columnNumber: 1)
+            ReferenceDataElement c = new ReferenceDataElement(referenceDataType: stringDataType, label: "Column C", createdBy: DEVELOPMENT, columnNumber: 2)
             referenceDataModel.addToReferenceDataElements(a)
             referenceDataModel.addToReferenceDataElements(b)
             referenceDataModel.addToReferenceDataElements(c)
