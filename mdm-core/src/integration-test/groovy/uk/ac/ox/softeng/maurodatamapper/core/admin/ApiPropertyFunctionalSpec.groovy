@@ -17,17 +17,20 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.admin
 
-
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlComparer
 
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
 import org.junit.Assert
 
+import java.nio.file.Files
+import java.nio.file.Path
+
 @Integration
 @Slf4j
-class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> {
+class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> implements XmlComparer {
 
     ApiPropertyService apiPropertyService
 
@@ -63,6 +66,89 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> {
          value   : 'Some random thing',
          category: 'Functional Test']
     }
+
+    String getValidCsv() {
+        "id,key,value,category,publiclyVisible,lastUpdatedBy,createdBy,lastUpdated\r\n" +
+        "e2b3398f-f3e5-4d70-8793-25526bbe0dbe,a.csv.key,a.csv.value,csvs,false,updater@example.com,creator@example.com,2021-10-27T11:02:32.682Z"
+    }
+
+    String getValidXml() {
+        """\
+        <?xml version='1.0'?>
+        <apiProperty>
+            <id>e2b3398f-f3e5-4d70-8793-25526bbe0dbe</id>
+            <key>an.xml.key</key>
+            <value>An XML value</value>
+            <category>XML</category>
+            <publiclyVisible>false</publiclyVisible>
+            <lastUpdatedBy>bootstrap.user@maurodatamapper.com</lastUpdatedBy>
+            <createdBy>example@maurodatamapper.com</createdBy>
+            <lastUpdated>2021-10-26T13:57:57.342140+01:00</lastUpdated>
+        </apiProperty>""".stripIndent()
+    }
+
+    String getSaveCollectionPath() {
+        "${getSavePath()}/apply"
+    }
+
+    Map getValidJsonCollection() {
+        [count: 2,
+         items: [
+                 [id: 'e2b3398f-f3e5-4d70-8793-25526bbe0dbe',
+                  key     : 'functional.test.key1',
+                  value   : 'Some random thing1',
+                  category: 'Functional Test',
+                  publiclyVisible: false,
+                  lastUpdatedBy: 'hello@example.com',
+                  lastUpdated: '2021-10-27T11:02:32.682Z'],
+                 [id: 'e2b3398f-f3e5-4d70-8793-25526bbe0dbf',
+                  key     : 'functional.test.key2',
+                  value   : 'Some random thing2',
+                  category: 'Functional Test',
+                  publiclyVisible: false,
+                  lastUpdatedBy: 'hello@example.com',
+                  lastUpdated: '2021-10-27T11:02:32.682Z']
+                ]
+        ]
+    }
+
+    String getValidXmlCollection() {
+        """\
+        <?xml version='1.0'?>
+        <apiProperties>
+            <count>2</count>
+            <items>
+                <apiProperty>
+                    <id>e2b3398f-f3e5-4d70-8793-25526bbe0dbe</id>
+                    <key>functional.test.xml.key.1</key>
+                    <value>XML value 1</value>
+                    <category>XMLTests</category>
+                    <publiclyVisible>false</publiclyVisible>
+                    <lastUpdatedBy>bootstrap.user@maurodatamapper.com</lastUpdatedBy>
+                    <createdBy>example@maurodatamapper.com</createdBy>
+                    <lastUpdated>2021-10-26T13:57:57.342140+01:00</lastUpdated>
+                </apiProperty>
+                <apiProperty>
+                    <id>e2b3398f-f3e5-4d70-8793-25526bbe0dbf</id>
+                    <key>functional.test.xml.key.2</key>
+                    <value>XML value 2</value>
+                    <category>XMLTests</category>
+                    <publiclyVisible>false</publiclyVisible>
+                    <lastUpdatedBy>bootstrap.user@maurodatamapper.com</lastUpdatedBy>
+                    <createdBy>example@maurodatamapper.com</createdBy>
+                    <lastUpdated>2021-10-26T13:57:57.342140+01:00</lastUpdated>
+                </apiProperty>                
+            </items>
+        </apiProperties>
+        """.stripIndent()
+    }
+
+    String getValidCsvCollection() {
+        "id,key,value,category,publiclyVisible,lastUpdatedBy,createdBy,lastUpdated\r\n" +
+        "e2b3398f-f3e5-4d70-8793-25526bbe0dbe,a.csv.collection.key,a.csv.collection.value,csvs,false,updater@example.com,creator@example.com,2021-10-27T11:02:32.682Z\r\n" +
+        "d2b3398f-f3e5-4d70-8793-25526bbe0dbe,another.csv.collection.key,another.csv.collection.value,csvs,false,updater@example.com,creator@example.com,2021-10-27T11:02:32.682Z"
+    }
+
 
     void verifyR1EmptyIndexResponse() {
         verifyResponse(HttpStatus.OK, response)
@@ -130,5 +216,166 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> {
         DELETE(getDeleteEndpoint(id))
         assert response.status() == HttpStatus.NO_CONTENT
 
+    }
+
+    void 'Test the save action correctly persists an instance from CSV'() {
+        when: 'The save action is executed with valid CSV data'
+        log.debug('Valid content save')
+        POST(getSavePath(), getValidCsv(), MAP_ARG, true, 'text/csv')
+
+        then: 'The response is correct'
+        verifyResponse(HttpStatus.CREATED, response)
+
+        cleanup:
+        DELETE(getDeleteEndpoint(response.body().id))
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
+
+    void 'Test the save action correctly persists an instance from XML'() {
+        when: 'The save action is executed with valid XML data'
+        log.debug('Valid content save')
+        POST(getSavePath(), getValidXml(), MAP_ARG, true, 'application/xml')
+
+        then: 'The response is correct'
+        verifyResponse(HttpStatus.CREATED, response)
+
+        cleanup:
+        DELETE(getDeleteEndpoint(response.body().id))
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
+
+    void 'check index and show endpoints for CSV'(){
+        when:
+        GET('?format=csv', STRING_ARG)
+
+        then:
+        verifyResponse(HttpStatus.OK, jsonCapableResponse)
+        String csv = jsonCapableResponse.body().toString()
+        String[] lines = csv.split("\r\n")
+        assert lines.size() == 16 //header + 15 rows
+        assert lines[0] == "id,key,value,category,publiclyVisible,lastUpdatedBy,createdBy,lastUpdated"
+        String id = lines[1].split(",")[0]
+
+        when:
+        GET("${id}?format=csv", STRING_ARG)
+
+        then:
+        verifyResponse(HttpStatus.OK, jsonCapableResponse)
+        String csv2 = jsonCapableResponse.body().toString()
+        String[] lines2 = csv2.split("\r\n")
+        assert lines2.size() == 2 //header + 1 rows
+        assert lines2[0] == "id,key,value,category,publiclyVisible,lastUpdatedBy,createdBy,lastUpdated"
+    }
+
+    void 'check index endpoint for XML'(){
+        given:
+        Path expectedIndexPath = xmlResourcesPath.resolve("apiProperties.xml")
+        if (!Files.exists(expectedIndexPath)) {
+            Assert.fail("Expected export file ${expectedIndexPath} does not exist")
+        }
+        String expectedIndexXml = Files.readString(expectedIndexPath)
+
+        when:
+        GET('?format=xml', STRING_ARG)
+
+        then:
+        verifyResponse(HttpStatus.OK, jsonCapableResponse)
+        String actualIndexXml = jsonCapableResponse.body().toString()
+        assert compareXml(expectedIndexXml, actualIndexXml)
+    }
+
+    void 'check show endpoint for XML'(){
+        given:
+        Path expectedShowPath = xmlResourcesPath.resolve("apiProperty.xml")
+        if (!Files.exists(expectedShowPath)) {
+            Assert.fail("Expected export file ${expectedShowPath} does not exist")
+        }
+        String expectedShowXml = Files.readString(expectedShowPath)
+
+        // This is just to retrieve a valid ID for the GET of XML
+        when:
+        GET('')
+
+        then:
+        responseBody().count == 15
+        responseBody().items[0].key == "email.invite_edit.body"
+        String id = responseBody().items[0].id
+
+        when:
+        GET("${id}?format=xml", STRING_ARG)
+
+        then:
+        verifyResponse(HttpStatus.OK, jsonCapableResponse)
+        String actualShowXml = jsonCapableResponse.body().toString()
+        assert compareXml(expectedShowXml, actualShowXml)
+    }
+
+    void 'Test the apply action correctly persists a collection of instances from JSON'() {
+        when: 'The save action is executed with valid JSON collection data'
+        log.debug('Valid content save')
+        POST(getSaveCollectionPath(), getValidJsonCollection(), MAP_ARG, true)
+
+        then: 'The response is correct and contains properties with keys functional.test.key1 and functional.test.key2'
+        verifyResponse(HttpStatus.OK, response)
+        response.body().items.any{it.key == "functional.test.key1"}
+        response.body().items.any{it.key == "functional.test.key2"}
+
+        and: 'The lastUpdatedBy property was ignored from the posted data'
+        response.body().items.find{it.key == "functional.test.key1"}.lastUpdatedBy == "unlogged_user@mdm-core.com"
+        response.body().items.find{it.key == "functional.test.key2"}.lastUpdatedBy == "unlogged_user@mdm-core.com"
+
+        cleanup:
+        String id1 = response.body().items.find{it.key == "functional.test.key1"}.id
+        String id2 = response.body().items.find{it.key == "functional.test.key2"}.id
+        DELETE(getDeleteEndpoint(id1))
+        assert response.status() == HttpStatus.NO_CONTENT
+        DELETE(getDeleteEndpoint(id2))
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
+
+    void 'Test the apply action correctly persists a collection of instances from XML'() {
+        when: 'The save action is executed with valid XML collection data'
+        log.debug('Valid content save')
+        POST(getSaveCollectionPath(), getValidXmlCollection(), MAP_ARG, true, 'application/xml')
+
+        then: 'The response is correct and contains properties with keys functional.test.xml.key.1 and functional.test.xml.key.2'
+        verifyResponse(HttpStatus.OK, response)
+        response.body().items.any{it.key == "functional.test.xml.key.1"}
+        response.body().items.any{it.key == "functional.test.xml.key.2"}
+
+        and: 'The lastUpdatedBy property was ignored from the posted data'
+        response.body().items.find{it.key == "functional.test.xml.key.1"}.lastUpdatedBy == "unlogged_user@mdm-core.com"
+        response.body().items.find{it.key == "functional.test.xml.key.2"}.lastUpdatedBy == "unlogged_user@mdm-core.com"
+
+        cleanup:
+        String id1 = response.body().items.find{it.key == "functional.test.xml.key.1"}.id
+        String id2 = response.body().items.find{it.key == "functional.test.xml.key.2"}.id
+        DELETE(getDeleteEndpoint(id1))
+        assert response.status() == HttpStatus.NO_CONTENT
+        DELETE(getDeleteEndpoint(id2))
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
+
+    void 'Test the apply action correctly persists a collection of instances from CSV'() {
+        when: 'The save action is executed with valid CSV collection data'
+        log.debug('Valid content save')
+        POST(getSaveCollectionPath(), getValidCsvCollection(), MAP_ARG, true, 'text/csv')
+
+        then: 'The response is correct and contains properties with keys a.csv.collection.key and another.csv.collection.key'
+        verifyResponse(HttpStatus.OK, response)
+        response.body().items.any{it.key == "a.csv.collection.key"}
+        response.body().items.any{it.key == "another.csv.collection.key"}
+
+        and: 'The lastUpdatedBy property was ignored from the posted data'
+        response.body().items.find{it.key == "a.csv.collection.key"}.lastUpdatedBy == "unlogged_user@mdm-core.com"
+        response.body().items.find{it.key == "another.csv.collection.key"}.lastUpdatedBy == "unlogged_user@mdm-core.com"
+
+        cleanup:
+        String id1 = response.body().items.find{it.key == "a.csv.collection.key"}.id
+        String id2 = response.body().items.find{it.key == "another.csv.collection.key"}.id
+        DELETE(getDeleteEndpoint(id1))
+        assert response.status() == HttpStatus.NO_CONTENT
+        DELETE(getDeleteEndpoint(id2))
+        assert response.status() == HttpStatus.NO_CONTENT
     }
 }

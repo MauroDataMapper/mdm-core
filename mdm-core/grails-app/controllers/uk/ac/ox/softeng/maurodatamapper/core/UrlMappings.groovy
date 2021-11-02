@@ -43,6 +43,7 @@ class UrlMappings {
                 '/emails'(resources: 'email', includes: INCLUDES_INDEX_ONLY)
 
                 '/properties'(resources: 'apiProperty', excludes: DEFAULT_EXCLUDES)
+                post '/properties/apply'(controller: 'apiProperty', action: 'apply')
 
                 group "/tree/$containerDomainType/$modelDomainType", {
                     get '/documentationSuperseded'(controller: 'treeItem', action: 'documentationSupersededModels') // New URL

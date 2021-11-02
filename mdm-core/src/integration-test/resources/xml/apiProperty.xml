@@ -1,0 +1,19 @@
+<?xml version='1.0'?>
+<apiProperty>
+    <id>e2b3398f-f3e5-4d70-8793-25526bbe0dbe</id>
+    <key>email.invite_edit.body</key>
+    <value>Dear ${firstName},
+        You have been invited to edit the model '${itemLabel}' in the Mauro Data Mapper at ${catalogueUrl}
+
+        Your username / email address is: ${emailAddress}
+        Your password is: ${tempPassword}
+        and you will be asked to update this when you first log on.
+        Kind regards, the Mauro Data Mapper folks.
+
+        (This is an automated mail).</value>
+    <category>Email</category>
+    <publiclyVisible>false</publiclyVisible>
+    <lastUpdatedBy>bootstrap.user@maurodatamapper.com</lastUpdatedBy>
+    <createdBy>bootstrap.user@maurodatamapper.com</createdBy>
+    <lastUpdated>2021-10-26T13:57:57.342140+01:00</lastUpdated>
+</apiProperty>

@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.admin
 
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum
+import uk.ac.ox.softeng.maurodatamapper.test.csv.CsvComparer
+import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlComparer
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 
 import grails.testing.mixin.integration.Integration
@@ -33,7 +35,7 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 @Integration
 @Slf4j
-class ApiPropertyFunctionalSpec extends FunctionalSpec {
+class ApiPropertyFunctionalSpec extends FunctionalSpec implements CsvComparer, XmlComparer {
 
     @Override
     String getResourcePath() {
@@ -57,6 +59,22 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec {
          value: 'Some different random thing']
     }
 
+    String getValidCsv() {
+        "id,key,value,category,publiclyVisible,lastUpdatedBy,createdBy,lastUpdated\r\n" +
+        "e2b3398f-f3e5-4d70-8793-25526bbe0dbe,a.csv.key,a.csv.value,csvs,false,updater@example.com,creator@example.com,2021-10-27T11:02:32.682Z"
+    }
+
+    String getValidXml() {
+        """\
+        <?xml version='1.0'?>
+        <apiProperty>
+            <id>e2b3398f-f3e5-4d70-8793-25526bbe0dbe</id>
+            <key>functional.test.key</key>
+            <value>Some random thing</value>
+            <category>Functional Test</category>
+        </apiProperty>""".stripIndent()
+    }
+
     String getShowJson() {
         '''{
   "id": "${json-unit.matches:id}",
@@ -68,6 +86,76 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec {
   "createdBy": "admin@maurodatamapper.com",
   "lastUpdated": "${json-unit.matches:offsetDateTime}"
 }'''
+    }
+
+    String getShowXml() {
+        """\
+        <?xml version='1.0'?>
+        <apiProperty>
+            <id>91e1c67a-58fb-4610-929a-d823cf926bf2</id>
+            <key>functional.test.key</key>
+            <value>Some random thing</value>
+            <category>Functional Test</category>
+            <publiclyVisible>false</publiclyVisible>
+            <lastUpdatedBy>admin@maurodatamapper.com</lastUpdatedBy>
+            <createdBy>admin@maurodatamapper.com</createdBy>
+            <lastUpdated>2021-10-28T13:49:24.804030+01:00</lastUpdated>
+        </apiProperty>""".stripIndent()
+    }
+
+    String getShowCsv() {
+        "id,key,value,category,publiclyVisible,lastUpdatedBy,createdBy,lastUpdated\n" +
+        "91e1c67a-58fb-4610-929a-d823cf926bf2,functional.test.key,Some random thing,Functional Test,false,admin@maurodatamapper.com,admin@maurodatamapper.com,2021-10-29T10:33:23.142473+01:00"
+    }
+
+    Map getValidJsonCollection() {
+        [count: 2,
+         items: [
+                 [key     : 'functional.test.key1',
+                  value   : 'Some random thing1',
+                  category: 'Functional Test'],
+                 [key     : 'functional.test.key2',
+                  value   : 'Some random thing2',
+                  category: 'Functional Test']
+         ]
+        ]
+    }
+
+    String getValidXmlCollection() {
+        """\
+        <?xml version='1.0'?>
+        <apiProperties>
+            <count>2</count>
+            <items>
+                <apiProperty>
+                    <id>e2b3398f-f3e5-4d70-8793-25526bbe0dbe</id>
+                    <key>functional.test.xml.key.1</key>
+                    <value>XML value 1</value>
+                    <category>XMLTests</category>
+                    <publiclyVisible>false</publiclyVisible>
+                    <lastUpdatedBy>bootstrap.user@maurodatamapper.com</lastUpdatedBy>
+                    <createdBy>example@maurodatamapper.com</createdBy>
+                    <lastUpdated>2021-10-26T13:57:57.342140+01:00</lastUpdated>
+                </apiProperty>
+                <apiProperty>
+                    <id>e2b3398f-f3e5-4d70-8793-25526bbe0dbf</id>
+                    <key>functional.test.xml.key.2</key>
+                    <value>XML value 2</value>
+                    <category>XMLTests</category>
+                    <publiclyVisible>false</publiclyVisible>
+                    <lastUpdatedBy>bootstrap.user@maurodatamapper.com</lastUpdatedBy>
+                    <createdBy>example@maurodatamapper.com</createdBy>
+                    <lastUpdated>2021-10-26T13:57:57.342140+01:00</lastUpdated>
+                </apiProperty>                
+            </items>
+        </apiProperties>
+        """.stripIndent()
+    }
+
+    String getValidCsvCollection() {
+        "id,key,value,category,publiclyVisible,lastUpdatedBy,createdBy,lastUpdated\r\n" +
+        "e2b3398f-f3e5-4d70-8793-25526bbe0dbe,a.csv.collection.key,a.csv.collection.value,csvs,false,updater@example.com,creator@example.com,2021-10-27T11:02:32.682Z\r\n" +
+        "d2b3398f-f3e5-4d70-8793-25526bbe0dbe,another.csv.collection.key,another.csv.collection.value,csvs,false,updater@example.com,creator@example.com,2021-10-27T11:02:32.682Z"
     }
 
     String getPublicIndexJson() {
@@ -135,6 +223,35 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec {
                 }
             }
 
+        when: 'The index action is requested with XML format'
+        GET('?format=xml', STRING_ARG)
+
+        then: 'The response is correct'
+        verifyResponse OK, jsonCapableResponse
+        ApiPropertyEnum.values()
+            .findAll {!(it in [ApiPropertyEnum.SITE_URL])}
+            .each {ape ->
+                Assert.assertTrue "${ape.key} should exist", jsonCapableResponse.body().toString().contains("<key>${ape.key}</key>")
+            }
+
+        when: 'The index action is requested with CSV format'
+        GET('?format=csv', STRING_ARG)
+
+        then: 'The response is correct'
+        verifyResponse OK, jsonCapableResponse
+
+        and:
+        String[] lines = jsonCapableResponse.body().toString().split("\r\n")
+        Assert.assertEquals "The header row is correct",
+                "id,key,value,category,publiclyVisible,lastUpdatedBy,createdBy,lastUpdated",
+                lines[0]
+
+        and:
+        ApiPropertyEnum.values()
+            .findAll {!(it in [ApiPropertyEnum.SITE_URL])}
+            .each {ape ->
+                Assert.assertTrue "${ape.key} should exist", jsonCapableResponse.body().toString().contains("${ape.key},")
+            }
     }
 
     void 'A02 : Test the show action correctly renders an instance (as admin)'() {
@@ -147,6 +264,20 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec {
 
         then: 'The response is correct'
         verifyJsonResponse OK, showJson
+
+        when: 'When the show action is called to retrieve a resource as XML'
+        GET("$id?format=xml", STRING_ARG)
+
+        then: 'The response is correct'
+        verifyResponse OK, jsonCapableResponse
+        Assert.assertTrue "Retrieved XML is as expected", compareXml(getShowXml(), jsonCapableResponse.body().toString())
+
+        when: 'When the show action is called to retrieve a resource as CSV'
+        GET("$id?format=csv", STRING_ARG)
+
+        then: 'The response is correct'
+        verifyResponse OK, jsonCapableResponse
+        Assert.assertTrue "Retrieved CSV is as expected", compareCsv(getShowCsv(), jsonCapableResponse.body().toString())
 
         cleanup:
         removeValidIdObject(id)
@@ -171,6 +302,58 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec {
         when: 'Trying to save again using the same info'
         String id1 = response.body().id
         POST('', validJson)
+
+        then:
+        verifySameValidDataCreationResponse()
+        String id2 = response.body()?.id
+
+        cleanup:
+        removeValidIdObject(id1)
+        if (id2) {
+            removeValidIdObject(id2) // not expecting anything, but just in case
+        }
+    }
+
+    void 'A03-csv : Test the save action correctly persists an instance from CSV (as admin)'() {
+        given:
+        loginAdmin()
+
+        when:
+        POST('', getValidCsv(), MAP_ARG, false, 'text/csv')
+
+        then:
+        verifyResponse CREATED, response
+        response.body().id
+
+        when: 'Trying to save again using the same info'
+        String id1 = response.body().id
+        POST('', getValidCsv(), MAP_ARG, false, 'text/csv')
+
+        then:
+        verifySameValidDataCreationResponse()
+        String id2 = response.body()?.id
+
+        cleanup:
+        removeValidIdObject(id1)
+        if (id2) {
+            removeValidIdObject(id2) // not expecting anything, but just in case
+        }
+    }
+
+    void 'A03-xml : Test the save action correctly persists an instance from XML (as admin)'() {
+        given:
+        loginAdmin()
+
+        when:
+        POST('', getValidXml(), MAP_ARG, false, 'application/xml')
+
+        then:
+        verifyResponse CREATED, response
+        response.body().id
+
+        when: 'Trying to save again using the same info'
+        String id1 = response.body().id
+        POST('', getValidXml(), MAP_ARG, false, 'application/xml')
 
         then:
         verifySameValidDataCreationResponse()
@@ -240,6 +423,78 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec {
         removeValidIdObject(id)
     }
 
+    void 'A06-json Test the apply action correctly persists a collection of instances from JSON'() {
+        given:
+        loginAdmin()
+
+        when: 'The save action is executed with valid JSON collection data'
+        log.debug('Valid content save')
+        POST('/apply', getValidJsonCollection(), MAP_ARG, false)
+
+        then: 'The response is correct and contains properties with keys functional.test.key1 and functional.test.key2'
+        verifyResponse(OK, response)
+        response.body().items.any{it.key == "functional.test.key1"}
+        response.body().items.any{it.key == "functional.test.key2"}
+
+        cleanup:
+        String id1 = response.body().items.find{it.key == "functional.test.key1"}.id
+        String id2 = response.body().items.find{it.key == "functional.test.key2"}.id
+        removeValidIdObject(id1)
+        removeValidIdObject(id2)
+    }
+
+    void 'A06-csv Test the apply action correctly persists a collection of instances from CSV'() {
+        given:
+        loginAdmin()
+
+        when: 'The save action is executed with valid CSV collection data'
+        log.debug('Valid content save')
+        POST('/apply', getValidCsvCollection(), MAP_ARG, false, 'text/csv')
+
+        then: 'The response is correct and contains properties with keys functional.test.key1 and functional.test.key2'
+        verifyResponse(OK, response)
+        response.body().items.any{it.key == "a.csv.collection.key"}
+        response.body().items.any{it.key == "another.csv.collection.key"}
+
+        and: 'The lastUpdatedBy and createdBy properties were ignored from the posted data'
+        response.body().items.find{it.key == "a.csv.collection.key"}.lastUpdatedBy == "admin@maurodatamapper.com"
+        response.body().items.find{it.key == "another.csv.collection.key"}.lastUpdatedBy == "admin@maurodatamapper.com"
+        response.body().items.find{it.key == "a.csv.collection.key"}.createdBy == "admin@maurodatamapper.com"
+        response.body().items.find{it.key == "another.csv.collection.key"}.createdBy == "admin@maurodatamapper.com"
+
+        cleanup:
+        String id1 = response.body().items.find{it.key == "a.csv.collection.key"}.id
+        String id2 = response.body().items.find{it.key == "another.csv.collection.key"}.id
+        removeValidIdObject(id1)
+        removeValidIdObject(id2)
+    }
+
+    void 'A06-xml Test the apply action correctly persists a collection of instances from XML'() {
+        given:
+        loginAdmin()
+
+        when: 'The save action is executed with valid CSV collection data'
+        log.debug('Valid content save')
+        POST('/apply', getValidXmlCollection(), MAP_ARG, false, 'application/xml')
+
+        then: 'The response is correct and contains properties with keys functional.test.key1 and functional.test.key2'
+        verifyResponse(OK, response)
+        response.body().items.any{it.key == "functional.test.xml.key.1"}
+        response.body().items.any{it.key == "functional.test.xml.key.2"}
+
+        and: 'The lastUpdatedBy and createdBy properties were ignored from the posted data'
+        response.body().items.find{it.key == "functional.test.xml.key.1"}.lastUpdatedBy == "admin@maurodatamapper.com"
+        response.body().items.find{it.key == "functional.test.xml.key.2"}.lastUpdatedBy == "admin@maurodatamapper.com"
+        response.body().items.find{it.key == "functional.test.xml.key.1"}.createdBy == "admin@maurodatamapper.com"
+        response.body().items.find{it.key == "functional.test.xml.key.2"}.createdBy == "admin@maurodatamapper.com"
+
+        cleanup:
+        String id1 = response.body().items.find{it.key == "functional.test.xml.key.1"}.id
+        String id2 = response.body().items.find{it.key == "functional.test.xml.key.2"}.id
+        removeValidIdObject(id1)
+        removeValidIdObject(id2)
+    }
+
     void 'EXX : Test editor endpoints are all forbidden'() {
         given:
         def id = getValidId()
@@ -257,8 +512,38 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec {
         then:
         verifyForbidden(response)
 
-        when: 'save'
+        when: 'save json'
         POST('', validJson)
+
+        then:
+        verifyForbidden(response)
+
+        when: 'save csv'
+        POST('', getValidCsv(), MAP_ARG, false, 'text/csv')
+
+        then:
+        verifyForbidden(response)
+
+        when: 'save xml'
+        POST('', getValidXml(), MAP_ARG, false, 'application/xml')
+
+        then:
+        verifyForbidden(response)
+
+        when: 'apply json'
+        POST('/apply', getValidJsonCollection(), MAP_ARG, false)
+
+        then:
+        verifyForbidden(response)
+
+        when: 'apply csv'
+        POST('/apply', getValidCsvCollection(), MAP_ARG, false, 'text/csv')
+
+        then:
+        verifyForbidden(response)
+
+        when: 'apply xml'
+        POST('/apply', getValidXmlCollection(), MAP_ARG, false, 'application/xml')
 
         then:
         verifyForbidden(response)
@@ -295,8 +580,38 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec {
         then:
         verifyForbidden(response)
 
-        when: 'save'
+        when: 'save json'
         POST('', validJson)
+
+        then:
+        verifyForbidden(response)
+
+        when: 'save csv'
+        POST('', getValidCsv(), MAP_ARG, false, 'text/csv')
+
+        then:
+        verifyForbidden(response)
+
+        when: 'save xml'
+        POST('', getValidXml(), MAP_ARG, false, 'application/xml')
+
+        then:
+        verifyForbidden(response)
+
+        when: 'apply json'
+        POST('/apply', getValidJsonCollection(), MAP_ARG, false)
+
+        then:
+        verifyForbidden(response)
+
+        when: 'apply csv'
+        POST('/apply', getValidCsvCollection(), MAP_ARG, false, 'text/csv')
+
+        then:
+        verifyForbidden(response)
+
+        when: 'apply xml'
+        POST('/apply', getValidXmlCollection(), MAP_ARG, false, 'application/xml')
 
         then:
         verifyForbidden(response)
@@ -334,8 +649,38 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec {
         then:
         verifyForbidden(response)
 
-        when: 'save'
+        when: 'save json'
         POST('', validJson)
+
+        then:
+        verifyForbidden(response)
+
+        when: 'save csv'
+        POST('', getValidCsv(), MAP_ARG, false, 'text/csv')
+
+        then:
+        verifyForbidden(response)
+
+        when: 'save xml'
+        POST('', getValidXml(), MAP_ARG, false, 'application/xml')
+
+        then:
+        verifyForbidden(response)
+
+        when: 'apply json'
+        POST('/apply', getValidJsonCollection(), MAP_ARG, false)
+
+        then:
+        verifyForbidden(response)
+
+        when: 'apply csv'
+        POST('/apply', getValidCsvCollection(), MAP_ARG, false, 'text/csv')
+
+        then:
+        verifyForbidden(response)
+
+        when: 'apply xml'
+        POST('/apply', getValidXmlCollection(), MAP_ARG, false, 'application/xml')
 
         then:
         verifyForbidden(response)
@@ -373,8 +718,38 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec {
         then:
         verifyForbidden(response)
 
-        when: 'save'
+        when: 'save json'
         POST('', validJson)
+
+        then:
+        verifyForbidden(response)
+
+        when: 'save csv'
+        POST('', getValidCsv(), MAP_ARG, false, 'text/csv')
+
+        then:
+        verifyForbidden(response)
+
+        when: 'save xml'
+        POST('', getValidXml(), MAP_ARG, false, 'application/xml')
+
+        then:
+        verifyForbidden(response)
+
+        when: 'apply json'
+        POST('/apply', getValidJsonCollection(), MAP_ARG, false)
+
+        then:
+        verifyForbidden(response)
+
+        when: 'apply csv'
+        POST('/apply', getValidCsvCollection(), MAP_ARG, false, 'text/csv')
+
+        then:
+        verifyForbidden(response)
+
+        when: 'apply xml'
+        POST('/apply', getValidXmlCollection(), MAP_ARG, false, 'application/xml')
 
         then:
         verifyForbidden(response)

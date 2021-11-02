@@ -17,18 +17,22 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.admin
 
+import grails.gorm.transactions.Transactional
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
 
 import grails.web.servlet.mvc.GrailsParameterMap
 import groovy.util.logging.Slf4j
+import uk.ac.ox.softeng.maurodatamapper.security.User
 
 @Slf4j
 class ApiPropertyController extends EditLoggingController<ApiProperty> {
 
     ApiPropertyService apiPropertyService
 
-    static responseFormats = ['json', 'xml']
+    static responseFormats = ['json', 'xml', 'csv']
+
+    static includesExcludes = ["include": ["key", "value", "publiclyVisible", "category"]]
 
     ApiPropertyController() {
         super(ApiProperty)
@@ -41,6 +45,26 @@ class ApiPropertyController extends EditLoggingController<ApiProperty> {
         // Therefore if thats written then we dont want to try and re-write it
         if (response.isCommitted() || modelAndView) return
         respond res, [model: [userSecurityPolicyManager: currentUserSecurityPolicyManager], view: 'index']
+    }
+
+    /**
+     * Override so that we can specify includesExcludes when creating the resource
+     * @return
+     */
+    @Transactional
+    @Override
+    def save() {
+        if (handleReadOnly()) return
+
+        def instance = createResource(includesExcludes)
+
+        if (response.isCommitted()) return
+
+        if (!validateResource(instance, 'create')) return
+
+        saveResource instance
+
+        saveResponse instance
     }
 
     @Override
@@ -64,5 +88,54 @@ class ApiPropertyController extends EditLoggingController<ApiProperty> {
         if ((params as GrailsParameterMap).boolean('openAccess')) return apiPropertyService.findAllByPubliclyVisible(params)
         currentUserSecurityPolicyManager.isApplicationAdministrator() ? apiPropertyService.list(params) : []
 
+    }
+
+    /**
+     * Save a collection of ApiProperty resources and respond with the index listing
+     * @return
+     */
+    @Transactional
+    def apply() {
+        if (handleReadOnly()) return
+
+        Collection instances = createResources()
+
+        instances.each {instance ->
+            saveResource instance
+        }
+
+        // Respond with the index listing
+        index()
+    }
+
+    /**
+     * Create a collection of resources from the request body
+     * @return
+     */
+    protected Collection<ApiProperty> createResources() {
+
+        // First, bind what was exported to an ApiPropertyCollection (which has properties count and items)
+        // There isn't a way here to specify an includesExcludes list
+        ApiPropertyCollection apiPropertyCollection = new ApiPropertyCollection()
+        bindData apiPropertyCollection, getObjectToBind()
+
+        // Second, iterate the items we just created, and use each instance
+        // to create another cleaned instance. This time, we specify includesExcludes.
+        // At the same time, set the createdBy property of the cleaned instance.
+        Collection<ApiProperty> cleanedInstances = []
+        User creator = getCurrentUser()
+        apiPropertyCollection.items.each {instance ->
+            ApiProperty cleanedInstance = new ApiProperty()
+
+            // Copy the included properties to a cleaned instance
+            includesExcludes["include"].each {
+                cleanedInstance[it] = instance[it]
+            }
+
+            cleanedInstance.createdBy = creator.emailAddress
+            cleanedInstances.add(cleanedInstance)
+        }
+
+        cleanedInstances
     }
 }
