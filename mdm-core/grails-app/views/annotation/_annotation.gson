@@ -9,9 +9,11 @@ json {
     id annotation.id
     if (!child) label annotation.label
 
-
     createdBy annotation.createdBy
-    annotatorName annotation?.user?.fullName
+    createdByUser {
+        name annotation?.user?.fullName
+        id annotation?.user?.id
+    }
     lastUpdated annotation.lastUpdated
     if (annotation.description) description annotation.description
     if (annotation.childAnnotations) childAnnotations tmpl.annotation(annotation.childAnnotations, [child: true])
