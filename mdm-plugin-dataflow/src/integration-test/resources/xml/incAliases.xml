@@ -18,7 +18,7 @@
     SPDX-License-Identifier: Apache-2.0
 
 -->
-<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/3.0" xmlns:mdm="http://maurodatamapper.com/dataFlow/3.0">
+<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/4.0" xmlns:mdm="http://maurodatamapper.com/dataFlow/4.0">
   <mdm:dataFlow>
     <mdm:id>33ac687c-1e96-4037-9906-93b7ca2f346b</mdm:id>
     <mdm:label>My DataFlow label</mdm:label>
@@ -30,11 +30,13 @@
     <mdm:source>
       <mdm:id>12bd687c-1e96-7034-9906-93b7ca2f346b</mdm:id>
       <mdm:label>SourceFlowDataModel</mdm:label>
+      <mdm:path>dm:SourceFlowDataModel$main</mdm:path>
       <mdm:type>Data Asset</mdm:type>
     </mdm:source>
     <mdm:target>
       <mdm:id>58bd687c-1e96-7034-9906-93b7ca2f346b</mdm:id>
       <mdm:label>TargetFlowDataModel</mdm:label>
+      <mdm:path>dm:TargetFlowDataModel$main</mdm:path>
       <mdm:type>Data Asset</mdm:type>
     </mdm:target>    
   </mdm:dataFlow>

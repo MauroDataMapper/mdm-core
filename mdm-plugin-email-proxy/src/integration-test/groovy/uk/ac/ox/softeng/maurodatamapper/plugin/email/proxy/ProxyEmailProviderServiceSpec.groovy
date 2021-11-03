@@ -17,12 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.plugin.email.proxy
 
+import uk.ac.ox.softeng.maurodatamapper.core.email.EmailService
+import uk.ac.ox.softeng.maurodatamapper.core.email.SendEmailTask
 import uk.ac.ox.softeng.maurodatamapper.test.MdmSpecification
 import uk.ac.ox.softeng.maurodatamapper.test.json.JsonComparer
 
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 
 /**
@@ -32,13 +33,13 @@ import org.springframework.context.MessageSource
 @Slf4j
 class ProxyEmailProviderServiceSpec extends MdmSpecification implements JsonComparer {
 
+    EmailService emailService
     MessageSource messageSource
-    @Autowired
     ProxyEmailProviderService proxyEmailProviderService
 
     void 'Confirm service info'() {
         expect:
-        proxyEmailProviderService.version == '1.0'
+        proxyEmailProviderService.version == '2.0'
         proxyEmailProviderService.providerType == 'EmailProvider'
         proxyEmailProviderService.name == 'ProxyEmailProviderService'
         proxyEmailProviderService.displayName == 'Proxy Email Provider'
@@ -92,10 +93,15 @@ class ProxyEmailProviderServiceSpec extends MdmSpecification implements JsonComp
 
     void "Test sending email, will fail without credentials"() {
         given:
+        SendEmailTask task = new SendEmailTask(emailService)
+            .to('Ollie', 'ollie.freeman@gmail.com')
+            .from('MDM', 'mdm@mdm.com')
+            .subject('Test')
+            .body('Hello')
         proxyEmailProviderService.allProps.emailServiceUrl = 'http://localhost'
 
         when:
-        def res = proxyEmailProviderService.sendEmail('MDM', 'mdm@mdm.com', ['Ollie': 'ollie.freeman@gmail.com'], [:], 'Test', 'Hello')
+        def res = proxyEmailProviderService.sendEmail(task)
         then:
         res != true
     }

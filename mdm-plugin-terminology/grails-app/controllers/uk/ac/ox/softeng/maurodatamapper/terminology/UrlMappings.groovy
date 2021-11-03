@@ -80,6 +80,7 @@ class UrlMappings {
                  */
                 '/terms'(resources: 'term', excludes: DEFAULT_EXCLUDES) {
                     '/termRelationships'(resources: 'termRelationship', excludes: DEFAULT_EXCLUDES)
+                    get '/codeSets'(controller: 'codeSet', action: 'index') // New URL to return codeSets for provided term
                 }
 
                 post '/terms/search'(controller: 'term', action: 'search')

@@ -130,6 +130,7 @@ class SubscribedModelService {
                 return subscribedModel.errors
             }
 
+            log.debug('Importing model {}, version {} from authority {}', model.label, model.modelVersion, model.authority)
             if (modelService.countByAuthorityAndLabelAndVersion(model.authority, model.label, model.modelVersion)) {
                 subscribedModel.errors.reject('invalid.subscribedmodel.import.already.exists',
                                               [model.authority, model.label, model.modelVersion].toArray(),
@@ -208,7 +209,7 @@ class SubscribedModelService {
         //Get a ModelService to handle the domain type we are dealing with
         ModelService modelService = modelServices.find {it.handles(subscribedModel.subscribedModelType)}
 
-        Map exporter = getJsonExporter(subscribedModel.subscribedCatalogue, modelService.getUrlResourceName())
+        Map exporter = getJsonExporter(subscribedModel.subscribedCatalogue, modelService)
 
         subscribedCatalogueService.getStringResourceExport(subscribedModel.subscribedCatalogue, modelService.getUrlResourceName(),
                                                            subscribedModel.subscribedModelId, exporter)
@@ -271,13 +272,13 @@ class SubscribedModelService {
      * @param urlModelType
      * @return An exporter
      */
-    private Map getJsonExporter(SubscribedCatalogue subscribedCatalogue, String urlModelType) {
+    private Map getJsonExporter(SubscribedCatalogue subscribedCatalogue, ModelService modelService) {
 
         //Make an object by slurping json
-        List<Map<String, Object>> exporters = subscribedCatalogueService.getAvailableExportersForResourceType(subscribedCatalogue, urlModelType)
+        List<Map<String, Object>> exporters = subscribedCatalogueService.getAvailableExportersForResourceType(subscribedCatalogue, modelService.getUrlResourceName())
 
         //Find a json exporter
-        Map exporterMap = exporters.find {it.fileType == 'text/json'}
+        Map exporterMap = exporters.find {it.fileType == 'text/json' && it.name == modelService.getJsonModelExporterProviderService().name}
 
         //Can't use DataBindingUtils because of a clash with grails 'version' property
         if (!exporterMap) {

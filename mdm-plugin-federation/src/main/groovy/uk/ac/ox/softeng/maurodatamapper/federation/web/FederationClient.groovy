@@ -31,6 +31,7 @@ import io.micronaut.http.client.DefaultHttpClient
 import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.HttpClientConfiguration
 import io.micronaut.http.client.LoadBalancer
+import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.http.client.ssl.NettyClientSslBuilder
 import io.micronaut.http.codec.MediaTypeCodecRegistry
@@ -57,15 +58,7 @@ class FederationClient {
     private String contextPath
 
     FederationClient(String hostUrl, ApplicationContext applicationContext) {
-        this(hostUrl, 'api',
-             applicationContext.getBean(HttpClientConfiguration),
-             applicationContext.getBean(NettyClientSslBuilder),
-             applicationContext.getBean(MediaTypeCodecRegistry)
-        )
-    }
-
-    FederationClient(String hostUrl, String contextPath, ApplicationContext applicationContext) {
-        this(hostUrl, contextPath,
+        this(hostUrl,
              applicationContext.getBean(HttpClientConfiguration),
              applicationContext.getBean(NettyClientSslBuilder),
              applicationContext.getBean(MediaTypeCodecRegistry)
@@ -76,7 +69,7 @@ class FederationClient {
                      HttpClientConfiguration httpClientConfiguration,
                      NettyClientSslBuilder nettyClientSslBuilder,
                      MediaTypeCodecRegistry mediaTypeCodecRegistry) {
-        this(hostUrl, 'api',
+        this(hostUrl,
              httpClientConfiguration,
              new DefaultThreadFactory(MultithreadEventLoopGroup),
              nettyClientSslBuilder,
@@ -84,29 +77,25 @@ class FederationClient {
         )
     }
 
-    FederationClient(String hostUrl, String contextPath,
-                     HttpClientConfiguration httpClientConfiguration,
-                     NettyClientSslBuilder nettyClientSslBuilder,
-                     MediaTypeCodecRegistry mediaTypeCodecRegistry) {
-        this(hostUrl, contextPath,
-             httpClientConfiguration,
-             new DefaultThreadFactory(MultithreadEventLoopGroup),
-             nettyClientSslBuilder,
-             mediaTypeCodecRegistry
-        )
-    }
-
-    FederationClient(String hostUrl, String contextPath,
-                     HttpClientConfiguration httpClientConfiguration,
-                     ThreadFactory threadFactory,
-                     NettyClientSslBuilder nettyClientSslBuilder,
-                     MediaTypeCodecRegistry mediaTypeCodecRegistry) {
+    private FederationClient(String hostUrl,
+                             HttpClientConfiguration httpClientConfiguration,
+                             ThreadFactory threadFactory,
+                             NettyClientSslBuilder nettyClientSslBuilder,
+                             MediaTypeCodecRegistry mediaTypeCodecRegistry) {
         this.hostUrl = hostUrl
-        this.contextPath = contextPath
+        // The http client resolves using URI.resolve which ignores anything in the url path,
+        // therefore we need to make sure its part of the context path.
+        URI hostUri = hostUrl.toURI()
+        if (hostUri.path && !hostUri.path.endsWith('api')) {
+            String path = hostUri.path.endsWith('/') ? hostUri.path : "${hostUri.path}/"
+            this.contextPath = "${path}api"
+        } else {
+            this.contextPath = 'api'
+        }
         httpClientConfiguration.setReadTimeout(Duration.ofMinutes(5))
         client = new DefaultHttpClient(LoadBalancer.fixed(hostUrl.toURL()),
                                        httpClientConfiguration,
-                                       contextPath,
+                                       this.contextPath,
                                        threadFactory,
                                        nettyClientSslBuilder,
                                        mediaTypeCodecRegistry,
@@ -147,7 +136,7 @@ class FederationClient {
         try {
             new XmlSlurper().parseText(body)
         } catch (IOException | SAXException exception) {
-            throw new ApiInternalException('FED04', "Could not translate XML from endpoint [${getFullUrl(uriBuilder, params)}].\n" +
+            throw new ApiInternalException('FED01', "Could not translate XML from endpoint [${getFullUrl(uriBuilder, params)}].\n" +
                                                     "Exception: ${exception.getMessage()}")
         }
     }
@@ -160,10 +149,8 @@ class FederationClient {
                                                      Argument.mapOf(String, Object)) as Flowable<Map>
             response.blockingFirst()
         }
-        catch (HttpClientResponseException responseException) {
-            handleHttpClientResponseException(responseException, getFullUrl(uriBuilder, params))
-        } catch (HttpException ex) {
-            throw new ApiInternalException('FED03', "Could not load resource from endpoint [${getFullUrl(uriBuilder, params)}]", ex)
+        catch (HttpException ex) {
+            handleHttpException(ex, getFullUrl(uriBuilder, params))
         }
     }
 
@@ -175,10 +162,8 @@ class FederationClient {
                                                         Argument.STRING) as Flowable<String>
             response.blockingFirst()
         }
-        catch (HttpClientResponseException responseException) {
-            handleHttpClientResponseException(responseException, getFullUrl(uriBuilder, params))
-        } catch (HttpException ex) {
-            throw new ApiInternalException('FED03', "Could not load resource from endpoint [${getFullUrl(uriBuilder, params)}]", ex)
+        catch (HttpException ex) {
+            handleHttpException(ex, getFullUrl(uriBuilder, params))
         }
     }
 
@@ -190,21 +175,24 @@ class FederationClient {
                                                       Argument.listOf(Map)) as Flowable<List>
             response.blockingFirst()
         }
-        catch (HttpClientResponseException responseException) {
-            handleHttpClientResponseException(responseException, getFullUrl(uriBuilder, params))
-        } catch (HttpException ex) {
-            throw new ApiInternalException('FED03', "Could not load resource from endpoint [${getFullUrl(uriBuilder, params)}]", ex)
+        catch (HttpException ex) {
+            handleHttpException(ex, getFullUrl(uriBuilder, params))
         }
     }
 
-    private static void handleHttpClientResponseException(HttpClientResponseException responseException, String fullUrl) throws
-        ApiException {
-        if (responseException.status == HttpStatus.NOT_FOUND) {
-            throw new ApiBadRequestException('FED01', "Requested endpoint could not be found ${fullUrl}")
+    private static void handleHttpException(HttpException ex, String fullUrl) throws ApiException {
+        if (ex instanceof HttpClientResponseException) {
+            if (ex.status == HttpStatus.NOT_FOUND) {
+                throw new ApiBadRequestException('FED02', "Requested endpoint could not be found ${fullUrl}")
+            } else {
+                throw new ApiBadRequestException('FED03', "Could not load resource from endpoint [${fullUrl}].\n" +
+                                                          "Response body [${ex.response.body()}]",
+                                                 ex)
+            }
+        } else if (ex instanceof HttpClientException) {
+            throw new ApiBadRequestException('FED04', "Could not load resource from endpoint [${fullUrl}]", ex)
         }
-        throw new ApiInternalException('FED02', "Could not load resource from endpoint [${fullUrl}].\n" +
-                                                "Response body [${responseException.response.body()}]",
-                                       responseException)
+        throw new ApiInternalException('FED05', "Could not load resource from endpoint [${fullUrl}]", ex)
     }
 
     private String getFullUrl(UriBuilder uriBuilder, Map params) {

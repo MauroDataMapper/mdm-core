@@ -63,11 +63,17 @@ abstract class ModelImporterProviderService<M extends Model, P extends ModelImpo
         // Mst check this first to ensure its in place for finding existing models
         modelService.checkAuthority(currentUser, importedModel, params.useDefaultAuthority)
 
+        //If a model exists with the same Id as the import, finalise the old one
         modelService.checkDocumentationVersion(importedModel, params.importAsNewDocumentationVersion, currentUser)
+
+        //if branchModel option is checked, find and finalise latest non default version
+        //else if no version is found or version is the default, create a finalised version of default instead
         modelService.checkBranchModelVersion(importedModel, params.importAsNewBranchModelVersion, params.newBranchName, currentUser)
 
         // Need to do all the branch management before we finalise the model otherwise the branch work overrides everything
         modelService.checkFinaliseModel(importedModel, params.finalised, params.importAsNewBranchModelVersion)
+
+        modelService.propagateFromPreviousVersion(importedModel, params.propagateFromPreviousVersion)
 
         importedModel
     }

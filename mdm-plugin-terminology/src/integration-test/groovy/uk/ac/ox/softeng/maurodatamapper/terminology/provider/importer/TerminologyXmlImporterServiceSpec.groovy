@@ -31,7 +31,7 @@ import groovy.util.logging.Slf4j
 @Integration
 @Rollback
 @Slf4j
-class XmlTerminologyImporterServiceSpec extends DataBindTerminologyImporterProviderServiceSpec<TerminologyXmlImporterService> {
+class TerminologyXmlImporterServiceSpec extends DataBindTerminologyImporterProviderServiceSpec<TerminologyXmlImporterService> {
 
     TerminologyXmlImporterService terminologyXmlImporterService
 

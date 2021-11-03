@@ -7,11 +7,13 @@
         "source": {
             "id": "125ef610-da29-4f2d-99c0-71d91fa8e72e",
             "label": "SourceFlowDataModel",
+            "path": "dm:SourceFlowDataModel$main",
             "type": "Data Asset"
         },
         "target": {
             "id": "4e8aabbb-543c-48ca-9ea2-e6f4032d6af5",
             "label": "TargetFlowDataModel",
+            "path": "dm:TargetFlowDataModel$main",
             "type": "Data Asset"
         },
         "dataClassComponents": [
@@ -22,12 +24,15 @@
                 "definition": "SELECT * \nINTO TargetFlowDataModel.tableD \nFROM SourceFlowDataModel.tableA",
                 "sourceDataClasses": [
                     {
-                        "label": "tableA"
+                        "label": "tableA",
+                        "path": "dm:SourceFlowDataModel$main|dc:tableA"
                     }
                 ],
                 "targetDataClasses": [
                     {
-                        "label": "tableD"
+                        "label": "tableD",
+                        "path": "dm:TargetFlowDataModel$main|dc:tableD"
+
                     }
                 ],
                 "dataElementComponents": [
@@ -38,6 +43,7 @@
                         "sourceDataElements": [
                             {
                                 "label": "columnA",
+                                "path": "dm:SourceFlowDataModel$main|dc:tableA|de:ColumnA",
                                 "dataClass": {
                                     "label": "tableA"
                                 }
@@ -46,6 +52,7 @@
                         "targetDataElements": [
                             {
                                 "label": "columnN",
+                                "path": "dm:TargetFlowDataModel$main|dc:tableD|de:columnN",
                                 "dataClass": {
                                     "label": "tableD"
                                 }
@@ -59,6 +66,7 @@
                         "sourceDataElements": [
                             {
                                 "label": "columnB",
+                                "path": "dm:SourceFlowDataModel$main|dc:tableA|de:columnB",
                                 "dataClass": {
                                     "label": "tableA"
                                 }
@@ -67,6 +75,7 @@
                         "targetDataElements": [
                             {
                                 "label": "columnO",
+                                "path": "dm:TargetFlowDataModel$main|dc:tableD|de:columnO",
                                 "dataClass": {
                                     "label": "tableD"
                                 }
@@ -80,6 +89,7 @@
                         "sourceDataElements": [
                             {
                                 "label": "columnC",
+                                "path": "dm:SourceFlowDataModel$main|dc:tableA|de:columnC",
                                 "dataClass": {
                                     "label": "tableA"
                                 }
@@ -88,6 +98,7 @@
                         "targetDataElements": [
                             {
                                 "label": "columnP",
+                                "path": "dm:TargetFlowDataModel$main|dc:tableD|de:columnP",
                                 "dataClass": {
                                     "label": "tableD"
                                 }
@@ -101,6 +112,7 @@
                         "sourceDataElements": [
                             {
                                 "label": "columnD",
+                                "path": "dm:SourceFlowDataModel$main|dc:tableA|de:columnD",
                                 "dataClass": {
                                     "label": "tableA"
                                 }
@@ -109,6 +121,7 @@
                         "targetDataElements": [
                             {
                                 "label": "columnQ",
+                                "path": "dm:TargetFlowDataModel$main|dc:tableD|de:columnQ",
                                 "dataClass": {
                                     "label": "tableD"
                                 }
@@ -124,15 +137,18 @@
                 "definition": "INSERT INTO TargetFlowDataModel.tableE\nSELECT  \n    b.columnE1                                      AS columnE,\n    b.columnF                                       AS columnR,\n    CONCAT(b.columnG,'_',c.columnJ)                 AS columnS,\n    CASE\n        WHEN b.columnH IS NULL THEN b.columnI\n        ELSE b.columnH\n    END                                             AS columnT,\n    TRIM(c.columnJ)                                 AS columnU,\n    CONCAT(c.columnL,' ',c.columnM,'--',b.columnG)  AS columnV\nFROM SourceFlowDataModel.tableB b\nINNER JOIN SourceFlowDataModel.tableC c ON b.columnE1 = c.columnE2",
                 "sourceDataClasses": [
                     {
-                        "label": "tableC"
+                        "label": "tableC",
+                        "path": "dm:SourceFlowDataModel$main|dc:tableC"
                     },
                     {
-                        "label": "tableB"
+                        "label": "tableB",
+                        "path": "dm:SourceFlowDataModel$main|dc:tableB"
                     }
                 ],
                 "targetDataClasses": [
                     {
-                        "label": "tableE"
+                        "label": "tableE",
+                        "path": "dm:TargetFlowDataModel$main|dc:tableE"
                     }
                 ],
                 "dataElementComponents": [
@@ -144,18 +160,21 @@
                         "sourceDataElements": [
                             {
                                 "label": "columnM",
+                                "path": "dm:SourceFlowDataModel$main|dc:tableC|de:columnM",
                                 "dataClass": {
                                     "label": "tableC"
                                 }
                             },
                             {
                                 "label": "columnL",
+                                "path": "dm:SourceFlowDataModel$main|dc:tableC|de:columnL",
                                 "dataClass": {
                                     "label": "tableC"
                                 }
                             },
                             {
                                 "label": "columnG",
+                                "path": "dm:SourceFlowDataModel$main|dc:tableB|de:columnG",
                                 "dataClass": {
                                     "label": "tableB"
                                 }
@@ -164,6 +183,7 @@
                         "targetDataElements": [
                             {
                                 "label": "columnV",
+                                "path": "dm:TargetFlowDataModel$main|dc:tableE|de:columnV",
                                 "dataClass": {
                                     "label": "tableE"
                                 }
@@ -253,6 +273,7 @@
                         "sourceDataElements": [
                             {
                                 "label": "columnJ",
+                                "path": "dm:SourceFlowDataModel|dc:tableC|de:columnJ",
                                 "dataClass": {
                                     "label": "tableC"
                                 }
@@ -261,6 +282,7 @@
                         "targetDataElements": [
                             {
                                 "label": "columnU",
+                                "path": "dm:TargetFlowDataModel|dc:tableE|de:columnU",
                                 "dataClass": {
                                     "label": "tableE"
                                 }
@@ -275,12 +297,14 @@
                         "sourceDataElements": [
                             {
                                 "label": "columnJ",
+                                "path": "dm:SourceFlowDataModel|dc:tableC|de:columnJ",
                                 "dataClass": {
                                     "label": "tableC"
                                 }
                             },
                             {
                                 "label": "columnG",
+                                "path": "dm:SourceFlowDataModel|dc:tableB|de:columnG",
                                 "dataClass": {
                                     "label": "tableB"
                                 }
@@ -289,6 +313,7 @@
                         "targetDataElements": [
                             {
                                 "label": "columnS",
+                                "path": "dm:TargetFlowDataModel|dc:tableE|de:columnS",
                                 "dataClass": {
                                     "label": "tableE"
                                 }
@@ -305,7 +330,7 @@
         "exporter": {
             "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter",
             "name": "DataFlowJsonExporterService",
-            "version": "3.0"
+            "version": "4.0"
         }
     }
 }

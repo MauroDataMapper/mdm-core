@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain
 
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.DynamicHibernateMappingContext
-import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.PathAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.PathAware
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import org.grails.datastore.mapping.config.Property

@@ -102,7 +102,6 @@ class TreeItemService {
         log.info('Creating container drill tree')
         long start = System.currentTimeMillis()
 
-
         List<ContainerTreeItem> fullTree = buildContainerTree(containerClass, userSecurityPolicyManager, includeDocumentSuperseded, includeModelSuperseded,
                                                               includeDeleted, removeEmptyContainers)
         ContainerTreeItem treeItem = drillDownIntoTree(fullTree, container.id)
@@ -204,7 +203,6 @@ class TreeItemService {
         tree
     }
 
-
     /**
      * Obtain the tree content for the provided catalogue item.
      * We assume security has been checked to ensure this item is readable by the user (done by interceptor).
@@ -218,7 +216,8 @@ class TreeItemService {
         buildCatalogueItemTree(catalogueItem, false, userSecurityPolicyManager)
     }
 
-    List<ModelItemTreeItem> buildCatalogueItemTree(CatalogueItem catalogueItem, boolean fullTreeRender, UserSecurityPolicyManager userSecurityPolicyManager) {
+    List<ModelItemTreeItem> buildCatalogueItemTree(CatalogueItem catalogueItem, boolean fullTreeRender, UserSecurityPolicyManager userSecurityPolicyManager,
+                                                   boolean includeImportedItems = false) {
         log.debug("Building tree for ${catalogueItem.class.simpleName}")
         long start = System.currentTimeMillis()
 
@@ -226,12 +225,12 @@ class TreeItemService {
 
         if (!service) throw new ApiBadRequestException('TIS01', 'Tree requested for catalogue item with no supporting service')
 
-        if (!service.hasTreeTypeModelItems(catalogueItem, fullTreeRender)) {
+        if (!service.hasTreeTypeModelItems(catalogueItem, fullTreeRender, includeImportedItems)) {
             log.debug('Catalogue Item has no model items')
             return []
         }
 
-        List<ModelItem> content = service.findAllTreeTypeModelItemsIn(catalogueItem, fullTreeRender)
+        List<ModelItem> content = service.findAllTreeTypeModelItemsIn(catalogueItem, fullTreeRender, includeImportedItems)
         log.debug('Catalogue item has {} model items', content.size())
         List<ModelItemTreeItem> tree = content.collect {mi ->
             List<String> actions = userSecurityPolicyManager ?
@@ -243,11 +242,55 @@ class TreeItemService {
                 ModelItemTreeItem modelItemTreeItem = new ModelItemTreeItem(mi, !children.isEmpty(), actions)
                     .withRenderChildren() as ModelItemTreeItem
                 modelItemTreeItem.addAllToChildren(children) as ModelItemTreeItem
-            } else new ModelItemTreeItem(mi, mi.hasChildren(), actions)
+            } else new ModelItemTreeItem(mi, mi.hasChildren(), actions, service.isCatalogueItemImportedIntoCatalogueItem(mi, catalogueItem))
         }
 
         log.debug("Tree build took ${Utils.timeTaken(start)}")
         tree.sort()
+    }
+
+    def <K extends Container> ContainerTreeItem buildCatalogueItemTreeWithAncestors(Class<K> containerClass, CatalogueItem catalogueItem,
+                                                                                    UserSecurityPolicyManager userSecurityPolicyManager) {
+        TreeItem treeItem = recursiveAncestorModelItemTreeItemBuilder(catalogueItem, userSecurityPolicyManager)
+
+        List<ModelTreeItem> ModelItemList = new ArrayList()
+        ModelItemList.add(treeItem as ModelTreeItem)
+
+        List<ContainerTreeItem> cti = buildContainerTreeForModelTreeItems(containerClass, userSecurityPolicyManager, ModelItemList, true)
+        cti.first()
+    }
+
+
+    /**
+     * Given a catalogue Item the method works its way up the tree to a non ModelItem (which should be a DataModel)
+     * and builds a tree from the items along the way
+     * It returns a generic TreeItem for recursion purposes but it is always a ModelTreeItem at the top end when it breaks out
+     * @param catalogueItem
+     * @return TreeItem
+     */
+    TreeItem recursiveAncestorModelItemTreeItemBuilder(CatalogueItem catalogueItem,
+                                                       UserSecurityPolicyManager userSecurityPolicyManager) {
+
+        if (catalogueItem instanceof ModelItem) {
+            ModelItem mi = catalogueItem as ModelItem
+            List<String> actions = userSecurityPolicyManager ?
+                                   userSecurityPolicyManager.userAvailableTreeActions(mi.domainType, mi.id, mi.model.domainType, mi.model.id) :
+                                   []
+            List<ModelItemTreeItem> current = new ArrayList<>()
+            current.add(new ModelItemTreeItem(mi, mi.hasChildren(), actions))
+            if (catalogueItem.getPathParent()) {
+                TreeItem parent = recursiveAncestorModelItemTreeItemBuilder(catalogueItem.getPathParent() as CatalogueItem,
+                                                                            userSecurityPolicyManager)
+                parent.addAllToChildren(current)
+                parent.renderChildren = true
+                return parent
+            }
+        }
+        Model model = catalogueItem as Model
+        List<String> actions = userSecurityPolicyManager ?
+                               userSecurityPolicyManager.userAvailableTreeActions(model.domainType, model.id, model.domainType, model.id) :
+                               []
+        new ModelTreeItem(model, model.folder.id, true, false, actions)
     }
 
     ModelTreeItem buildFullModelTree(Model model) {
@@ -388,7 +431,6 @@ class TreeItemService {
             List<ModelTreeItem> collectedReadableTreeItems = labelGrouping.collectMany {k, v -> v as Collection} as List<ModelTreeItem>
             readableTreeItems.addAll(collectedReadableTreeItems)
             log.debug('Complete listing of {} took: {}', service.modelClass.simpleName, Utils.timeTaken(start1))
-
         }
         readableTreeItems
     }
@@ -625,7 +667,5 @@ class TreeItemService {
             it.isEmptyContainerTree()
         })
         rootTreeItems.each {it.recursivelyRemoveEmptyChildContainers()}
-
     }
-
 }

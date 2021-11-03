@@ -10,4 +10,6 @@ json {
     countAuthorised httpSessionCollection.findAll( { it.getAttribute('emailAddress')}).size() ?: 0
     countUnauthorised httpSessionCollection.findAll( { !it.getAttribute('emailAddress') }).size() ?: 0
     items g.render(httpSessionCollection ?: [])
+    authorisedItems g.render(httpSessionCollection.findAll( { it.getAttribute('emailAddress')}) ?: [])
+    unauthorisedItems g.render(httpSessionCollection.findAll( { !it.getAttribute('emailAddress') }) ?: [])
 }

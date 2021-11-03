@@ -15,6 +15,9 @@ maurodatamapper:
     authority:
         name: 'Mauro Data Mapper'
         url: http://localhost
+    email:
+        from:
+            address: 'mtf@maurodatamapper.com'
 grails:
     profile: rest-api
     codegen:

@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.plugin.email.proxy
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
+import uk.ac.ox.softeng.maurodatamapper.core.email.SendEmailTask
 import uk.ac.ox.softeng.maurodatamapper.core.provider.email.EmailProviderService
 
 import grails.plugin.json.view.JsonViewTemplateEngine
@@ -33,6 +34,10 @@ class ProxyEmailProviderService extends EmailProviderService {
     @Autowired
     JsonViewTemplateEngine templateEngine
 
+    ProxyEmailProviderService() {
+        allProps = [:]
+    }
+
     @Override
     boolean configure(Map properties) {
         allProps = properties
@@ -40,8 +45,7 @@ class ProxyEmailProviderService extends EmailProviderService {
     }
 
     @Override
-    def sendEmail(String fromName, String fromAddress, Map<String, String> to, Map<String, String> cc,
-                  String subject, String body) {
+    String sendEmail(SendEmailTask sendEmailTask) {
 
         if (!allProps.emailServiceUrl) {
             throw new ApiInternalException('MC-PEPS01',
@@ -50,7 +54,7 @@ class ProxyEmailProviderService extends EmailProviderService {
 
         log.warn('Sending email via special email service!')
 
-        String msg = buildMessage(fromName, fromAddress, to, cc, subject, body)
+        String msg = buildMessage(sendEmailTask.fromName, sendEmailTask.fromAddress, sendEmailTask.to, sendEmailTask.cc, sendEmailTask.subject, sendEmailTask.body)
         log.warn(msg)
 
         URL baseUrl = new URL(allProps.emailServiceUrl as String)
@@ -65,10 +69,16 @@ class ProxyEmailProviderService extends EmailProviderService {
                 .inputStream
                 .withReader {it.text}
             log.warn(response)
-            true
+            null
         } catch (Exception ex) {
             return extractFullFailureReason(ex)
         }
+    }
+
+    @Override
+    void testConnection() {
+        URL baseUrl = new URL(allProps.emailServiceUrl as String)
+        baseUrl.openConnection()
     }
 
     @Override
@@ -78,7 +88,7 @@ class ProxyEmailProviderService extends EmailProviderService {
 
     @Override
     String getVersion() {
-        '1.0'
+        '2.0'
     }
 
     @Override

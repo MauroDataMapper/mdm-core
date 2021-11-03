@@ -326,6 +326,42 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         verifyResponse(NO_CONTENT, response)
     }
 
+    void 'AN01 : test getting ancestors of class item'() {
+        given:
+        loginReader()
+
+        when:
+        GET("dataClasses/${getParentDataClassId()}/ancestors")
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().id == folderId
+        responseBody().hasChildren
+        responseBody().children.size() == 1
+
+        responseBody().children.first().id == complexDataModelId
+        responseBody().children.first().hasChildren
+        responseBody().children.first().children.size() == 1
+
+        responseBody().children.first().children.first().id == parentDataClassId
+    }
+
+    void 'AN02 : test getting ancestors of DataModel item'() {
+        given:
+        loginReader()
+
+        when:
+        GET("dataModels/${getComplexDataModelId()}/ancestors")
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().id == folderId
+        responseBody().hasChildren
+        responseBody().children.size() == 1
+        responseBody().children.first().id == complexDataModelId
+        responseBody().children.first().hasChildren
+    }
+
     String getReaderTree() {
         '''[
   {

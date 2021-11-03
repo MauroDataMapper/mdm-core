@@ -126,7 +126,7 @@ class ImporterFunctionalSpec extends FunctionalSpec {
     void confirmModel(Map model) {
         assert model
         assert model.parameters
-        assert model.parameters.size() == 5
+        assert model.parameters.size() == 6
         confirmParameter(model.parameters.find {
             it.name == 'folderId'
         } as Map,

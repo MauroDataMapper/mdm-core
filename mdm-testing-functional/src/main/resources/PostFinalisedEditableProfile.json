@@ -18,6 +18,15 @@
         "minMultiplicity": 0,
         "maxMultiplicity": 1,
         "dataType": "String"
+      },
+      {
+        "fieldName": "Not editable after finalisation",
+        "metadataPropertyName": "notEditableAfterFinalisedField",
+        "description": "This field can't be edited after finalisation",
+        "minMultiplicity": 0,
+        "maxMultiplicity": 1,
+        "dataType": "String",
+        "editableAfterFinalisation": false
       }
     ]
   }

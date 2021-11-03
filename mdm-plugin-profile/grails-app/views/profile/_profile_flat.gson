@@ -1,0 +1,8 @@
+import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
+
+model {
+    Profile profile
+}
+json {
+    sections tmpl.'/profileSection/profileSection_flat'(profile.sections)
+}

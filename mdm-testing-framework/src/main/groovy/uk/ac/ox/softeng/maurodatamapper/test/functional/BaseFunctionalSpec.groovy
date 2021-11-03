@@ -149,6 +149,23 @@ abstract class BaseFunctionalSpec extends MdmSpecification implements ResponseCo
         localResponse
     }
 
+    /**
+     * Use this method if you want to POST a string body. For example, when testing a CSV endpoint, set String body
+     * to the CSV text, and set contentType to text/csv
+     * @param resourceEndpoint
+     * @param body
+     * @param bodyType
+     * @param cleanEndpoint
+     * @param contentType
+     * @return
+     */
+    def <O> HttpResponse<O> POST(String resourceEndpoint, String body, Argument<O> bodyType = STRING_ARG, boolean cleanEndpoint = false, String contentType = null) {
+        HttpResponse<O> localResponse = exchange(HttpRequest.POST(getUrl(resourceEndpoint, cleanEndpoint), body), bodyType, contentType)
+        if (bodyType.type == String) jsonCapableResponse = localResponse as HttpResponse<String>
+        else if (bodyType.type == Map) response = localResponse as HttpResponse<Map>
+        localResponse
+    }
+
     def <O> HttpResponse<O> PUT(String resourceEndpoint, Map body, Argument<O> bodyType = MAP_ARG, boolean cleanEndpoint = false) {
         HttpResponse<O> localResponse = exchange(HttpRequest.PUT(getUrl(resourceEndpoint, cleanEndpoint), body), bodyType)
         if (bodyType.type == String) jsonCapableResponse = localResponse as HttpResponse<String>
@@ -210,12 +227,15 @@ abstract class BaseFunctionalSpec extends MdmSpecification implements ResponseCo
         request
     }
 
-    def <O> HttpResponse<O> exchange(MutableHttpRequest request, Argument<O> bodyType = MAP_ARG) {
+    def <O> HttpResponse<O> exchange(MutableHttpRequest request, Argument<O> bodyType = MAP_ARG, String contentType = null) {
         response = null
         jsonCapableResponse = null
         try {
             // IIf there's a cookie saved then add it to the request
             if (currentCookie) request.cookie(currentCookie)
+            if (contentType) {
+                request.header('Content-Type', contentType)
+            }
             HttpResponse<O> httpResponse = client.toBlocking().exchange(augmentRequest(request), bodyType)
 
             // Preserve the JSESSIONID cookie returned from the server

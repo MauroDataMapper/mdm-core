@@ -2,6 +2,7 @@ import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlow
 
 DataFlow df = dataFlow as DataFlow
 
+
 'mdm:dataFlow' {
     layout '/catalogueItem/_export.gml', catalogueItem: df
     'mdm:type'(df.modelType)

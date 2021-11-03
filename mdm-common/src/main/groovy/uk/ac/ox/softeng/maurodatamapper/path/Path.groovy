@@ -21,6 +21,8 @@ import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.SimpleType
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.PathAware
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 /**
  * @since 28/08/2020
@@ -247,5 +249,17 @@ class Path {
 
     static boolean isValidPath(String possiblePath) {
         from(possiblePath).toString() == possiblePath
+    }
+
+    static Path toPathPrefix(CreatorAware domain, String prefix)
+    {
+        List<CreatorAware> objectsInPath  = []
+        objectsInPath.push(domain)
+
+        while (objectsInPath.first().getPathPrefix() != prefix && Utils.parentClassIsAssignableFromChild(PathAware, objectsInPath.first().class)) {
+            objectsInPath.push(objectsInPath.first().getPathParent())
+        }
+
+        Path.from(objectsInPath)
     }
 }

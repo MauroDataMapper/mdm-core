@@ -40,7 +40,7 @@ import static org.junit.Assert.assertTrue
 @Integration
 @Rollback
 @Slf4j
-class XmlTerminologyExporterServiceSpec
+class TerminologyXmlExporterServiceSpec
     extends DataBindTerminologyImportAndDefaultExporterServiceSpec<TerminologyXmlImporterService, TerminologyXmlExporterService>
     implements XmlValidator {
 

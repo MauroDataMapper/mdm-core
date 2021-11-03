@@ -24,7 +24,7 @@
         "exporter": {
           "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
           "name": "ReferenceDataJsonExporterService",
-          "version": "3.0"
+          "version": "4.0"
         }
     }
 }

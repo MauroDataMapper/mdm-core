@@ -199,7 +199,7 @@ class JsonReferenceDataImporterExporterServiceSpec extends BaseReferenceDataMode
         diff.diffs.find {it.fieldName == 'rule'}.deleted.size() == 1
     }
 
-void 'RDM03: test empty data import'() {
+    void 'RDM03: test empty data import'() {
         given:
         setupData()
 

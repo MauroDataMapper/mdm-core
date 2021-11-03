@@ -7,11 +7,13 @@
         "source": {
             "id": "1e2c95e0-08ec-4e44-8791-87f649e54156",
             "label": "SourceFlowDataModel",
+            "path": "dm:SourceFlowDataModel$main",
             "type": "Data Asset"
         },
         "target": {
             "id": "2d2c95e0-08ec-4e44-8791-87f649e54156",
             "label": "TargetFlowDataModel",
+            "path": "dm:TargetFlowDataModel$main",
             "type": "Data Asset"
         }
     },
@@ -21,7 +23,7 @@
         "exporter": {
             "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter",
             "name": "DataFlowJsonExporterService",
-            "version": "3.0"
+            "version": "4.0"
         }
     }
 }

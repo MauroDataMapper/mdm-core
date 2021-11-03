@@ -22,14 +22,19 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.profile.object.MapBasedProfile
 
+import grails.core.GrailsApplication
 import groovy.transform.CompileStatic
 import org.springframework.beans.factory.annotation.Autowired
 
 @CompileStatic
+@Deprecated
 abstract class MapBasedDataModelProfileProviderService<P extends MapBasedProfile> extends DataModelProfileProviderService<P> {
 
     @Autowired
     DataModelService dataModelService
+
+    @Autowired
+    GrailsApplication grailsApplication
 
     abstract String getTitleFieldName()
 
@@ -73,7 +78,7 @@ abstract class MapBasedDataModelProfileProviderService<P extends MapBasedProfile
 
 
     @Override
-    void storeProfileInEntity(DataModel entity, P profile, String userEmailAddress) {
+    void storeProfileInEntity(DataModel entity, P profile, String userEmailAddress, boolean isEntityFinalised) {
         profile.each { fieldName, value ->
             if (value) {
                 entity.addToMetadata(metadataNamespace, fieldName, value.toString(), userEmailAddress)

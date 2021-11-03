@@ -58,8 +58,8 @@ class ReferenceDataValueController extends EditLoggingController<ReferenceDataVa
         params.sortBy = 'rowNumber'
 
         //Paginate the distinct rowNumber selection or selection of values
-        params.max = params.max ?: searchParams.max ?: 10
-        params.offset = params.offset ?: searchParams.offset ?: 0
+        params.max = params.max ? Integer.parseInt(params.max) : searchParams.max ?: 10
+        params.offset = params.offset ? Integer.parseInt(params.offset) : searchParams.offset ?: 0
 
         String searchTerm = params.search ?: searchParams.searchTerm ?: ""
 
@@ -170,8 +170,10 @@ class ReferenceDataValueController extends EditLoggingController<ReferenceDataVa
      * Turn a list of ReferenceDataValue into a list of rows
      */
     private List rowify(List<ReferenceDataValue> referenceDataValues) {
-        //Sort the list by rowNumber ascending
-        referenceDataValues.sort {it.getProperty(params.sortBy)}
+        //Sort the list by rowNumber ascending and then columnNumber ascending
+        referenceDataValues.sort {it1, it2 ->
+            it1.rowNumber <=> it2.rowNumber ?: it1.referenceDataElement.columnNumber <=> it2.referenceDataElement.columnNumber
+        }
 
         //Make a list of row numbers
         List rowNumbers = []

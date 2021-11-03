@@ -40,6 +40,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.CodeSetJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.CodeSetJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
@@ -53,6 +54,7 @@ class CodeSetService extends ModelService<CodeSet> {
 
     TermService termService
     CodeSetJsonImporterService codeSetJsonImporterService
+    CodeSetJsonExporterService codeSetJsonExporterService
 
     @Override
     CodeSet get(Serializable id) {
@@ -413,6 +415,12 @@ class CodeSetService extends ModelService<CodeSet> {
         ids ? CodeSet.findAllByIdInList(ids, pagination) : []
     }
 
+    List<CodeSet> findAllByTermIdAndUser(UUID termId, UserSecurityPolicyManager userSecurityPolicyManager, Map pagination = [:]) {
+        List<UUID> ids = userSecurityPolicyManager.listReadableSecuredResourceIds(CodeSet)
+        CodeSet.byTermIdAndIdInList(termId, ids).list(pagination)
+    }
+
+
     /**
      * Find a CodeSet by label.
      * @param label
@@ -466,6 +474,11 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
+    CodeSetJsonExporterService getJsonModelExporterProviderService() {
+        codeSetJsonExporterService
+    }
+
+    @Override
     List<CodeSet> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
         CodeSet.byMetadataNamespaceAndKey(namespace, key).list(pagination)
     }
@@ -510,14 +523,14 @@ class CodeSetService extends ModelService<CodeSet> {
         List<Term> terms = new ArrayList<>(copiedModel.terms)
         Path copiedCodeSetPath = getFullPathForModel(copiedModel)
         Path originalCodeSetPath = getFullPathForModel(originalModel)
-        terms.each {term ->
+        terms.each { term ->
 
             Terminology terminology = term.terminology
             Path fullContextTerminologyPath = getFullPathForModel(terminology)
             Path termPath = Path.from(terminology, term)
             // Need to check if the CS is inside the same VF as the terminology
-            PathNode terminologyVersionedFolderPathNode = fullContextTerminologyPath.find {it.prefix == 'vf'}
-            if (terminologyVersionedFolderPathNode && originalCodeSetPath.any {it == terminologyVersionedFolderPathNode}) {
+            PathNode terminologyVersionedFolderPathNode = fullContextTerminologyPath.find { it.prefix == 'vf' }
+            if (terminologyVersionedFolderPathNode && originalCodeSetPath.any { it == terminologyVersionedFolderPathNode }) {
                 log.debug('Original codeset is inside the same context path as terminology for term [{}]', termPath)
                 Term branchedTerm = pathService.findResourceByPathFromRootResource(copiedModel, termPath,
                                                                                    copiedCodeSetPath.last().modelIdentifier) as Term

@@ -24,6 +24,8 @@ import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 
+import static org.springframework.http.HttpStatus.OK
+
 @Slf4j
 class SubscribedCatalogueController extends EditLoggingController<SubscribedCatalogue> {
 
@@ -60,6 +62,22 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
             return notFound(SubscribedCatalogue, params.subscribedCatalogueId)
         }
         respond subscribedCatalogueService.listPublishedModels(subscribedCatalogue)
+    }
+
+    def testConnection() {
+        SubscribedCatalogue subscribedCatalogue = queryForResource(params.subscribedCatalogueId)
+
+        if (!subscribedCatalogue) {
+            return notFound(SubscribedCatalogue, params.subscribedCatalogueId)
+        }
+
+        subscribedCatalogueService.verifyConnectionToSubscribedCatalogue(subscribedCatalogue)
+
+        if (subscribedCatalogue.hasErrors()) {
+            respond subscribedCatalogue.errors
+        } else {
+            respond null, status: OK
+        }
     }
 
     @Override

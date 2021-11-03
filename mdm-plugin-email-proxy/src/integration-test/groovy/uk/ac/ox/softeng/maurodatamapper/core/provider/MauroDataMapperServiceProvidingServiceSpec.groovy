@@ -38,11 +38,7 @@ class MauroDataMapperServiceProvidingServiceSpec extends MdmSpecification {
         then: 'we have 2 email providers'
         results.size() == 2
 
-        and:
-        mauroDataMapperServiceProviderService.emailProvider.version == '1.0'
-        mauroDataMapperServiceProviderService.emailProvider.providerType == 'EmailProvider'
-        mauroDataMapperServiceProviderService.emailProvider.name == 'ProxyEmailProviderService'
-        mauroDataMapperServiceProviderService.emailProvider.displayName == 'Proxy Email Provider'
-        mauroDataMapperServiceProviderService.emailProvider.namespace == 'uk.ac.ox.softeng.maurodatamapper.plugin.email.proxy'
+        and: 'no email provider as no connection possible so disabled'
+        !mauroDataMapperServiceProviderService.emailProvider
     }
 }

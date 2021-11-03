@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.provider.email
 
+import uk.ac.ox.softeng.maurodatamapper.core.email.SendEmailTask
 import uk.ac.ox.softeng.maurodatamapper.core.provider.ProviderType
 import uk.ac.ox.softeng.maurodatamapper.provider.MauroDataMapperService
 
@@ -25,14 +26,17 @@ import groovy.transform.CompileStatic
 @CompileStatic
 abstract class EmailProviderService extends MauroDataMapperService {
 
+    boolean enabled
+
     abstract boolean configure(Map props)
 
-    abstract def sendEmail(String fromName,
-                           String fromAddress,
-                           Map<String, String> to,
-                           Map<String, String> cc,
-                           String subject,
-                           String messageBody)
+    abstract String sendEmail(SendEmailTask sendEmailTask)
+
+    abstract void testConnection()
+
+    String validateEmail(SendEmailTask sendEmailTask) {
+        null
+    }
 
     @Override
     String getProviderType() {

@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValueService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -82,17 +83,18 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> implement
     }
 
     @Override
-    EnumerationType copy(Model copiedDataModel, EnumerationType original, CatalogueItem nonModelParent, UserSecurityPolicyManager userSecurityPolicyManager) {
+    EnumerationType copy(Model copiedDataModel, EnumerationType original, CatalogueItem nonModelParent,
+                         UserSecurityPolicyManager userSecurityPolicyManager) {
         dataTypeService.copy(copiedDataModel, original, nonModelParent, userSecurityPolicyManager) as EnumerationType
     }
 
     @Override
-    boolean hasTreeTypeModelItems(EnumerationType catalogueItem, boolean fullTreeRender) {
+    boolean hasTreeTypeModelItems(EnumerationType catalogueItem, boolean fullTreeRender, boolean includeImportedItems) {
         fullTreeRender && catalogueItem.enumerationValues
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(EnumerationType catalogueItem, boolean fullTreeRender) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(EnumerationType catalogueItem, boolean fullTreeRender, boolean includeImportedItems) {
         fullTreeRender ? catalogueItem.enumerationValues.toList() : [] as List<ModelItem>
     }
 
@@ -200,5 +202,15 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> implement
     @Override
     List<EnumerationType> findAllByMetadataNamespace(String namespace, Map pagination) {
         EnumerationType.byMetadataNamespace(namespace).list(pagination)
+    }
+
+    @Override
+    void propagateContentsInformation(EnumerationType catalogueItem, EnumerationType previousVersionCatalogueItem) {
+        previousVersionCatalogueItem.enumerationValues.each {previousEnumerationValue ->
+            EnumerationValue enumerationValue = catalogueItem.enumerationValues.find {it.label == previousEnumerationValue.label}
+            if (enumerationValue) {
+                enumerationValueService.propagateDataFromPreviousVersion(enumerationValue, previousEnumerationValue)
+            }
+        }
     }
 }

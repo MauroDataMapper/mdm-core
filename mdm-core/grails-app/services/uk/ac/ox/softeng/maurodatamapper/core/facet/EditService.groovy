@@ -19,7 +19,9 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
+import uk.ac.ox.softeng.maurodatamapper.core.security.UserService
 import uk.ac.ox.softeng.maurodatamapper.security.User
+import uk.ac.ox.softeng.maurodatamapper.security.basic.AnonymousUser
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import groovy.util.logging.Slf4j
@@ -28,6 +30,9 @@ import org.springframework.context.MessageSource
 
 @Slf4j
 class EditService {
+
+    @Autowired(required = false)
+    UserService userService
 
     MessageSource messageSource
     @Autowired(required = false)
@@ -55,7 +60,7 @@ class EditService {
 
     List<Edit> findAllByResourceAndTitle(String resourceDomainType, UUID resourceId, EditTitle title, Map pagination = [sort: 'dateCreated', order: 'asc']) {
         Edit.findAllByResourceAndTitle(resourceDomainType, resourceId, title, pagination)
-    }    
+    }
 
     void createAndSaveEdit(EditTitle title, UUID resourceId, String resourceDomainType, String description, User createdBy, boolean flush = false) {
         Edit edit = new Edit(title: title, resourceId: resourceId, resourceDomainType: resourceDomainType,
@@ -65,5 +70,11 @@ class EditService {
         } else {
             throw new ApiInvalidModelException('ES01', 'Created Edit is invalid', edit.errors, messageSource)
         }
+    }
+
+    Edit populateEditUser(Edit edit) {
+        if (!edit) return null
+        edit.user = userService ? userService.findUser(edit.createdBy) ?: AnonymousUser.instance : AnonymousUser.instance
+        edit
     }
 }

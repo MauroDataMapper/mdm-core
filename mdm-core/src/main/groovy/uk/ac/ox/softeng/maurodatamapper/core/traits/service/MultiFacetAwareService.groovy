@@ -66,6 +66,8 @@ trait MultiFacetAwareService<K extends MultiFacetAware> {
 
     abstract List<K> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination = [:])
 
+    abstract boolean isMultiFacetAwareFinalised (K multiFacetAwareItem)
+
     void removeMetadataFromMultiFacetAware(UUID multiFacetAwareId, Metadata metadata) {
         removeFacetFromDomain(multiFacetAwareId, metadata.id, 'metadata')
     }
@@ -146,6 +148,7 @@ trait MultiFacetAwareService<K extends MultiFacetAware> {
             multiFacetAware.referenceFiles.each {
                 if (!it.isDirty()) it.trackChanges()
                 it.beforeValidate()
+                it.multiFacetAwareItemId = multiFacetAware.id
             }
             ReferenceFile.saveAll(multiFacetAware.referenceFiles)
         }

@@ -1,0 +1,10 @@
+import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
+
+model {
+    ProfileSection profileSection
+}
+json {
+    name profileSection.name
+    if (profileSection.description) description profileSection.description
+    fields profileSection.flatFieldMap
+}

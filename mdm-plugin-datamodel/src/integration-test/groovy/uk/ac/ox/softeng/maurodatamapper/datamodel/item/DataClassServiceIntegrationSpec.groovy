@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -229,7 +230,6 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         expect:
         dataClassService.findAllContentOfDataClassIdInDataModelId(dataModel.id, grandParentId).size() == 1
         dataClassService.findAllContentOfDataClassIdInDataModelId(dataModel.id, parentId).size() == 2
-
     }
 
     void 'test findAllByDataModelId'() {
@@ -241,6 +241,34 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         expect:
         dataClassService.findAllByDataModelId(dataModelId).size() == 5
         dataClassService.findAllByDataModelId(UUID.randomUUID()).isEmpty()
+    }
+
+    void 'test findAllByDataModelIdIncludingImported'() {
+        given:
+        setupData()
+        setupImportingData()
+
+        def dataModelId = DataModel.findByLabel('Integration test model').id
+
+        expect:
+        dataClassService.findAllByDataModelIdIncludingImported(dataModelId).size() == 9
+        dataClassService.findAllByDataModelIdIncludingImported(UUID.randomUUID()).isEmpty()
+    }
+
+    void 'test findAllByDataModelIdAndParentDataClassIdIncludingImported'() {
+        given:
+        setupData()
+        setupImportingData()
+
+        def dataModelId = DataModel.findByLabel('Integration test model').id
+        def importingParentId = DataClass.findByLabel('Integration Test Importing Parent DataClass').id
+        def imported1Id = DataClass.findByLabel('Integration Test Imported DataClass 1').id
+        def imported2Id = DataClass.findByLabel('Integration Test Imported DataClass 2').id
+
+        expect:
+        dataClassService.findAllByDataModelIdAndParentDataClassIdIncludingImported(dataModelId, importingParentId).size() == 2
+        dataClassService.findAllByDataModelIdAndParentDataClassIdIncludingImported(dataModelId, imported1Id).size() == 0
+        dataClassService.findAllByDataModelIdAndParentDataClassIdIncludingImported(dataModelId, imported2Id).size() == 1
     }
 
     void 'test findAllByDataModelIdAndLabelIlikeOrDescriptionIlike'() {
@@ -352,6 +380,33 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
     }
 
+    void 'test metadata saved at parent'()
+    {
+        given:
+        setupData()
+
+        DataModel copyModel = new DataModel(label: 'test', createdByUser: editor, folder: testFolder, authority: testAuthority)
+
+        DataClass top = new DataClass(createdByUser: reader1, label: 'Top', minMultiplicity: 1, maxMultiplicity: 1)
+
+        Metadata metadata = new Metadata(namespace: 'Test', key: 'key', value: '1')
+
+        copyModel.addToDataClasses(top)
+        top.addToMetadata(metadata)
+
+        DataClass middle = new DataClass(createdByUser: reader1, label: 'Middle', minMultiplicity: 1, maxMultiplicity: 1)
+        top.addToDataClasses(middle)
+        copyModel.addToDataClasses(middle)
+
+        when:
+        dataModelService.validate(copyModel)
+        dataModelService.saveModelWithContent(copyModel)
+
+        then:
+        DataModel dm = DataModel.get(copyModel.id)
+        dm.dataClasses.find {it.label == 'Top'}.metadata.size() == 1
+    }
+
     void 'test copying complex dataclass'() {
         given:
         setupData()
@@ -365,7 +420,6 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         expect:
         check(copyModel)
         dataModelService.saveModelNewContentOnly(copyModel)
-
 
         when:
         sessionFactory.currentSession.flush()
@@ -426,5 +480,27 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         then:
         copiedElement
         copiedElement.dataType == referenceType
+    }
+
+    private void setupImportingData() {
+        // DataModel: Integration test model
+        //      DataClass: Integration Test Importing Parent DataClass (directly owned)
+        //          DataClass: Integration Test Imported DataClass 1 (imported)
+        //          DataClass: Integration Test Imported DataClass 2 (imported)
+        //              DataClass: Integration Test Imported Child DataClass 1 (imported)
+
+        DataClass importedChild1 = new DataClass(createdByUser: reader1, label: 'Integration Test Imported Child DataClass 1', dataModel: dataModel)
+        checkAndSave(importedChild1)
+
+        DataClass imported1 = new DataClass(createdByUser: reader1, label: 'Integration Test Imported DataClass 1', dataModel: dataModel)
+        DataClass imported2 = new DataClass(createdByUser: reader1, label: 'Integration Test Imported DataClass 2', dataModel: dataModel)
+        imported2.addToImportedDataClasses(importedChild1)
+        [imported1, imported2].each {checkAndSave(it)}
+
+        DataClass importingParent = new DataClass(createdByUser: editor, label: 'Integration Test Importing Parent DataClass', dataModel: dataModel)
+        [imported1, imported2].each {importingParent.addToImportedDataClasses(it)}
+        checkAndSave(importingParent)
+        dataModel.addToDataClasses(importingParent)
+        checkAndSave(dataModel)
     }
 }

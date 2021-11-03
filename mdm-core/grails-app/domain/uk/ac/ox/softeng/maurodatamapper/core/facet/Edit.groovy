@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 
 class Edit implements CreatorAware {
@@ -29,6 +30,7 @@ class Edit implements CreatorAware {
     String description
     String resourceDomainType
     UUID resourceId
+    User user
 
     static constraints = {
         CallableConstraints.call(CreatorAwareConstraints, delegate)
@@ -40,6 +42,8 @@ class Edit implements CreatorAware {
     static mapping = {
         description type: 'text'
     }
+
+    static transients = ['user']
 
     Edit() {
     }

@@ -105,7 +105,8 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> implements Su
     }
 
     @Override
-    ReferenceType copy(Model copiedDataModel, ReferenceType original, CatalogueItem nonModelParent, UserSecurityPolicyManager userSecurityPolicyManager) {
+    ReferenceType copy(Model copiedDataModel, ReferenceType original, CatalogueItem nonModelParent,
+                       UserSecurityPolicyManager userSecurityPolicyManager) {
         dataTypeService.copy(copiedDataModel, original, nonModelParent, userSecurityPolicyManager) as ReferenceType
     }
 
@@ -189,6 +190,7 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> implements Su
         }
         dataType as ReferenceType
     }
+
 
     @Override
     PersistentEntity getPersistentEntity() {

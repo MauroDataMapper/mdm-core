@@ -53,4 +53,8 @@ trait User extends SecurableResource {
     Boolean getReadableByAuthenticatedUsers() {
         false
     }
+
+    String getFullName() {
+        "${firstName} ${lastName}"
+    }
 }

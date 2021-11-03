@@ -23,11 +23,11 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
-import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.CodeSetJsonExporterService
-import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.CodeSetJsonImporterService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.CodeSetXmlExporterService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.CodeSetXmlImporterService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.terminology.test.BaseCodeSetIntegrationSpec
-import uk.ac.ox.softeng.maurodatamapper.test.json.JsonComparer
+import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlValidator
 
 import com.google.common.base.CaseFormat
 import grails.gorm.transactions.Rollback
@@ -44,12 +44,12 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 /**
- * @since 17/09/2020
+ * @since 18/09/2020
  */
 @Integration
 @Rollback
 @Slf4j
-class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec implements JsonComparer {
+class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec implements XmlValidator {
 
     @Shared
     Path resourcesPath
@@ -60,9 +60,8 @@ class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
     @Shared
     UUID simpleCodeSetId
 
-    CodeSetJsonImporterService codeSetJsonImporterService
-    CodeSetJsonExporterService codeSetJsonExporterService
-
+    CodeSetXmlImporterService codeSetXmlImporterService
+    CodeSetXmlExporterService codeSetXmlExporterService
 
     @Shared
     CodeSetFileImporterProviderServiceParameters basicParameters
@@ -76,29 +75,29 @@ class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
     }
 
     String getImportType() {
-        'json'
+        'xml'
     }
 
-    CodeSetJsonImporterService getCodeSetImporterService() {
-        codeSetJsonImporterService
+    CodeSetXmlImporterService getCodeSetImporterService() {
+        codeSetXmlImporterService
     }
 
-    CodeSetJsonExporterService getCodeSetExporterService() {
-        codeSetJsonExporterService
+    CodeSetXmlExporterService getCodeSetExporterService() {
+        codeSetXmlExporterService
     }
 
     void validateExportedModel(String testName, String exportedModel) {
         assert exportedModel, 'There must be an exported model string'
 
-        Path expectedPath = resourcesPath.resolve("${CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, testName)}.${importType}")
+        Path expectedPath = resourcesPath.resolve("${CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, testName)}.xml")
         if (!Files.exists(expectedPath)) {
-            Files.write(expectedPath, exportedModel.bytes)
+            Files.writeString(expectedPath, (prettyPrint(exportedModel)))
             Assert.fail("Expected export file ${expectedPath} does not exist")
         }
-
-        String expectedJson = replaceContentWithMatchers(Files.readString(expectedPath))
-        verifyJson(expectedJson, exportedModel)
+        validateAndCompareXml(Files.readString(expectedPath), exportedModel.replace(/Mauro Data Mapper/, 'Test Authority'), 'export',
+                              codeSetXmlExporterService.version)
     }
+
 
     @OnceBefore
     void setupResourcesPath() {

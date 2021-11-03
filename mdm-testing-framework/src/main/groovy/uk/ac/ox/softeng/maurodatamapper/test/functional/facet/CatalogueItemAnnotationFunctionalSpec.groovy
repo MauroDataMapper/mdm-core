@@ -65,6 +65,10 @@ abstract class CatalogueItemAnnotationFunctionalSpec extends CatalogueItemFacetF
         '''{
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "createdBy": "unlogged_user@mdm-core.com",
+  "createdByUser": {
+    "name": "Anonymous User",
+    "id": "${json-unit.matches:id}"
+  },
   "description": "Why are we writing these tests?",
   "id": "${json-unit.matches:id}",
   "label": "Some interesting comment"

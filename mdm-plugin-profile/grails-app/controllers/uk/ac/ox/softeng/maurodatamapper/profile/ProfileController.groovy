@@ -17,12 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile
 
-
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
-import uk.ac.ox.softeng.maurodatamapper.core.model.Model
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
-import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MetadataAware
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.ResourcelessMdmController
@@ -32,7 +27,6 @@ import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import org.hibernate.SessionFactory
 import org.springframework.beans.factory.annotation.Autowired
 
 import static org.springframework.http.HttpStatus.NO_CONTENT
@@ -40,8 +34,6 @@ import static org.springframework.http.HttpStatus.NO_CONTENT
 @Slf4j
 class ProfileController implements ResourcelessMdmController {
     static responseFormats = ['json', 'xml']
-
-    SessionFactory sessionFactory
 
     ProfileService profileService
 
@@ -124,7 +116,7 @@ class ProfileController implements ResourcelessMdmController {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
 
-        respond profileService.createProfile(profileProviderService, multiFacetAware)
+        respond profile: profileService.createProfile(profileProviderService, multiFacetAware), format: params.format
     }
 
     @Transactional
@@ -196,38 +188,9 @@ class ProfileController implements ResourcelessMdmController {
         if (!profileProviderService) {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
-
-        List<MetadataAware> profiledItems = profileProviderService.findAllProfiledItems(params.multiFacetAwareItemDomainType)
-        List<MetadataAware> filteredProfiledItems = []
-        profiledItems.each {profiledItem ->
-            if (profiledItem instanceof Model
-                && currentUserSecurityPolicyManager.userCanReadSecuredResourceId(profiledItem.getClass(), profiledItem.id)) {
-                filteredProfiledItems.add(profiledItem)
-            } else if (profiledItem instanceof ModelItem) {
-
-                Model model = proxyHandler.unwrapIfProxy(profiledItem.getModel())
-                if (currentUserSecurityPolicyManager.userCanReadResourceId(profiledItem.getClass(), profiledItem.id, model.getClass(), model.id)) {
-                    filteredProfiledItems.add(profiledItem)
-                }
-            }
-
-        }
-        Map<String, Collection<String>> allValuesMap = [:]
-        profileProviderService.getKnownMetadataKeys().findAll {key -> (!params.filter || params.filter.contains(key))}.each {key ->
-            Set<String> allValues = new HashSet<String>();
-            filteredProfiledItems.each {profiledItem ->
-                Metadata md = profiledItem.metadata.find {
-                    it.namespace == profileProviderService.metadataNamespace &&
-                    it.key == key
-                }
-                if (md) {
-                    allValues.add(md.value)
-                }
-            }
-
-            allValuesMap[key] = allValues
-        }
-
+        Map<String, Collection<String>> allValuesMap = profileProviderService.listAllValuesInProfile(params.multiFacetAwareItemDomainType,
+                                                                                                     params.filter,
+                                                                                                     currentUserSecurityPolicyManager)
 
         respond allValuesMap
     }

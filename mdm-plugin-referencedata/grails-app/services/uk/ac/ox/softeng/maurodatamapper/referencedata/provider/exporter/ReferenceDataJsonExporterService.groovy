@@ -50,7 +50,7 @@ class ReferenceDataJsonExporterService extends ReferenceDataModelExporterProvide
 
     @Override
     String getVersion() {
-        '3.0'
+        '4.0'
     }
 
     @Override

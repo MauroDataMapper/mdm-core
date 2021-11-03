@@ -33,7 +33,9 @@ class Email {
     String failureReason
 
     static constraints = {
+        emailServiceUsed nullable: true
         failureReason nullable: true
+        dateTimeSent nullable: true
     }
 
     static mapping = {

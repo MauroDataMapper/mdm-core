@@ -1,5 +1,61 @@
 #!/bin/zsh
 
+POSITIONAL=()
+while [[ $# -gt 0 ]]
+do
+key="$1"
+
+case $key in
+    -u|--unit-test)
+    UNIT=true
+    shift # past argument
+    ;;
+   -i|--integration-test)
+    INTEGRATION=true
+    shift # past argument
+    ;;
+    -f|--functional-test)
+    FUNCTIONAL=true
+    shift # past argument
+    ;;
+    -e|--e2e-test)
+    E2E=true
+    shift # past argument
+    ;;
+    -r|--build-report)
+    E2E=true
+    shift # past argument
+    ;;
+    -h|--help)
+    USAGE=true
+    shift # past argument
+    ;;
+    *)    # unknown option
+    POSITIONAL+=("$1") # save it in an array for later
+    shift # past argument
+    ;;
+esac
+done
+set -- "${POSITIONAL[@]}" # restore positional parameters
+
+USAGE="${USAGE:-false}"
+UNIT="${UNIT:-false}"
+INTEGRATION="${INTEGRATION:-false}"
+FUNCTIONAL="${FUNCTIONAL:-false}"
+E2E="${E2E:-false}"
+REPORT="${REPORT:-false}"
+
+if $UNIT || $INTEGRATION || $FUNCTIONAL || $E2E
+then
+  echo 'Restricted testing mode'
+else
+  echo 'Testing everything'
+  UNIT=true
+  INTEGRATION=true
+  FUNCTIONAL=true
+  E2E=true
+fi
+
 function unitTest(){
   echo ">> Unit Tests <<"
 ./gradlew --build-cache test
@@ -15,7 +71,8 @@ function integrationTest(){
   :mdm-security:integrationTest \
   :mdm-plugin-dataflow:integrationTest \
   :mdm-plugin-referencedata:integrationTest \
-  :mdm-plugin-federation:integrationTest
+  :mdm-plugin-federation:integrationTest \
+  :mdm-plugin-profile:integrationTest
 }
 
 function functionalTest(){
@@ -44,6 +101,7 @@ function e2eTest(){
   ./gradlew --build-cache -Dgradle.test.package=dataflow :mdm-testing-functional:integrationTest
   ./gradlew --build-cache -Dgradle.test.package=referencedata :mdm-testing-functional:integrationTest
   ./gradlew --build-cache -Dgradle.test.package=federation :mdm-testing-functional:integrationTest
+  ./gradlew --build-cache -Dgradle.test.package=profile :mdm-testing-functional:integrationTest
 }
 
 function initialReport(){
@@ -52,6 +110,9 @@ function initialReport(){
   pushd mdm-core || exit
   ./gradlew -v
   popd || exit
+}
+
+function compile() {
   echo ">> Compile <<"
   ./gradlew --build-cache compile
   echo ">> License Check <<"
@@ -62,19 +123,53 @@ function initialReport(){
 # This executes all the commands Jenkinsfile executes in the same order and format that Jenkins does
 # The hope is that we can repeat the tests locally and get the same instability
 
-./gradlew jenkinsClean
 
-initialReport
+function usage(){
+  echo
+  echo "Usage: ./run-all-tests.sh [OPTIONS]"
+  echo "
+Build and test the mdm-core.
+If no options provided then all tests will be run, if options are provided then only the tests stated by the options will be run.
+If the tests run then a HTML report will be generated and will automatically open in your default browser.
+"
+  echo "
+Options:
+  -r, --report            Output the initial report which details the build environment.
+  -u, --unit-test         Run the unit tests
+  -i, --integration-test  Run the integration tests
+  -f, --functional-test   Run the functional tests
+  -e, --e2e-test          Run the end-to-end tests which are contained inside the MTF module
+  -h, --help              This help
+"
+}
 
-unitTest
+if $USAGE
+then
+  usage
+else
 
-integrationTest
+  if $REPORT; then initialReport; fi;
 
-functionalTest
+  if $UNIT || $INTEGRATION || $FUNCTIONAL || $E2E
+  then
+    ./gradlew jenkinsClean
+    compile
+  fi
 
-e2eTest
+  if $UNIT; then unitTest; fi;
 
-echo ">> Root Test Report <<"
-./gradlew --build-cache rootTestReport
+  if $INTEGRATION; then integrationTest; fi;
+
+  if $FUNCTIONAL; then functionalTest; fi;
+
+  if $E2E; then e2eTest; fi;
+
+  if $UNIT || $INTEGRATION || $FUNCTIONAL || $E2E
+  then
+    echo ">> Root Test Report <<"
+    ./gradlew --build-cache rootTestReport
+  fi
+
+fi
 #./gradlew --build-cache jacocoTestReport
 #./gradlew --build-cache staticCodeAnalysis

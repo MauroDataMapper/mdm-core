@@ -169,11 +169,14 @@ class EnumerationValueService extends ModelItemService<EnumerationValue> impleme
     }
 
     @Override
-    EnumerationValue copy(Model copiedDataModel, EnumerationValue original, CatalogueItem enumerationTypeToCopyInto, UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyEnumerationValue(copiedDataModel as DataModel, original, enumerationTypeToCopyInto as EnumerationType, userSecurityPolicyManager.user, userSecurityPolicyManager)
+    EnumerationValue copy(Model copiedDataModel, EnumerationValue original, CatalogueItem enumerationTypeToCopyInto,
+                          UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyEnumerationValue(copiedDataModel as DataModel, original, enumerationTypeToCopyInto as EnumerationType, userSecurityPolicyManager.user,
+                             userSecurityPolicyManager)
     }
 
-    EnumerationValue copyEnumerationValue(DataModel copiedDataModel, EnumerationValue original, EnumerationType enumerationTypeToCopyInto, User copier,
+    EnumerationValue copyEnumerationValue(DataModel copiedDataModel, EnumerationValue original, EnumerationType enumerationTypeToCopyInto,
+                                          User copier,
                                           UserSecurityPolicyManager userSecurityPolicyManager) {
         EnumerationValue copy = new EnumerationValue(key: original.key,
                                                      value: original.value)

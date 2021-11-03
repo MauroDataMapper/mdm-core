@@ -47,7 +47,7 @@ class ReferenceDataCsvImporterService
 
     @Override
     String getVersion() {
-        '3.0'
+        '4.0'
     }
 
     @Override
@@ -77,8 +77,8 @@ class ReferenceDataCsvImporterService
         log.debug('Input parsed in {}', Utils.timeTaken(start))            
 
         List headers = parser.getHeaderNames()
-        headers.each {
-            ReferenceDataElement referenceDataElement = new ReferenceDataElement(referenceDataType: stringDataType, label: it, createdBy: currentUser.emailAddress)
+        headers.eachWithIndex {it, index ->
+            ReferenceDataElement referenceDataElement = new ReferenceDataElement(referenceDataType: stringDataType, columnNumber: index, label: it, createdBy: currentUser.emailAddress)
             referenceDataModel.addToReferenceDataElements(referenceDataElement)
             referenceDataElements[it] = referenceDataElement
         }

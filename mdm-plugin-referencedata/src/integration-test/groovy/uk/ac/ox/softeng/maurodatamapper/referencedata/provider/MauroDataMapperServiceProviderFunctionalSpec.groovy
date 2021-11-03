@@ -124,7 +124,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
   },
   {
     "name": "ReferenceDataCsvImporterService",
-    "version": "3.0",
+    "version": "${json-unit.matches:version}",
     "displayName": "CSV Reference Data Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": false,

@@ -1,13 +1,12 @@
 import uk.ac.ox.softeng.maurodatamapper.profile.object.JsonProfile
 
+inherits template: '/profile/profile', model: [profile: jsonProfile]
+
 model {
     JsonProfile jsonProfile
 }
-
 json {
-    sections tmpl.'/profileSection/profileSection'(jsonProfile.sections)
     id jsonProfile.id
     label jsonProfile.label
     domainType jsonProfile.domainType
-
 }

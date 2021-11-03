@@ -188,7 +188,7 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
         verifyJsonResponse OK, '''[
   {
     "name": "DataFlowXmlExporterService",
-    "version": "3.0",
+    "version": "4.0",
     "displayName": "XML DataFlow Exporter",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter",
     "allowsExtraMetadataKeys": true,
@@ -202,7 +202,7 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
   },
   {
     "name": "DataFlowJsonExporterService",
-    "version": "3.0",
+    "version": "4.0",
     "displayName": "JSON DataFlow Exporter",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter",
     "allowsExtraMetadataKeys": true,
@@ -257,7 +257,7 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
         String id = createNewItem(validJson)
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/4.0", STRING_ARG)
 
         then:
         verifyJsonResponse OK, '''{
@@ -269,11 +269,13 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
     "source": {
       "id": "${json-unit.matches:id}",
       "label": "SourceFlowDataModel",
+      "path" : "dm:SourceFlowDataModel$main",
       "type": "Data Asset"
     },
     "target": {
       "id": "${json-unit.matches:id}",
       "label": "TargetFlowDataModel",
+      "path" : "dm:TargetFlowDataModel$main",
       "type": "Data Asset"
     }
   },
@@ -283,7 +285,7 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter",
       "name": "DataFlowJsonExporterService",
-      "version": "3.0"
+      "version": "4.0"
     }
   }
 }'''
@@ -301,7 +303,7 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
         ])
 
         when:
-        POST("export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/3.0",
+        POST("export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/4.0",
              [dataFlowIds: [id, id2]], STRING_ARG
         )
 
@@ -315,11 +317,13 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
     "source": {
       "id": "${json-unit.matches:id}",
       "label": "SourceFlowDataModel",
+      "path" : "dm:SourceFlowDataModel$main",
       "type": "Data Asset"
     },
     "target": {
       "id": "${json-unit.matches:id}",
       "label": "TargetFlowDataModel",
+       "path" : "dm:TargetFlowDataModel$main",
       "type": "Data Asset"
     }
   },
@@ -329,7 +333,7 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter",
       "name": "DataFlowJsonExporterService",
-      "version": "3.0"
+      "version": "4.0"
     }
   }
 }'''
@@ -344,7 +348,7 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
         given:
         String id = createNewItem(validJson)
 
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/4.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
 
@@ -352,7 +356,7 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
         exportedJsonString
 
         when:
-        POST("import/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer/DataFlowJsonImporterService/3.0", [
+        POST("import/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer/DataFlowJsonImporterService/4.0", [
             modelName                      : 'Functional Test Import',
             importFile                     : [
                 fileName    : 'FT Import',

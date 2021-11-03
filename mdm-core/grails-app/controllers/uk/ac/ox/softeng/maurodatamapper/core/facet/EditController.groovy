@@ -43,6 +43,7 @@ class EditController extends RestfulController<Edit> implements MdmController {
         params.sort = params.sort ?: 'dateCreated'
         params.order = params.order ?: 'asc'
 
-        editService.findAllByResource(params.resourceDomainType, params.resourceId, params)
+        List<Edit> edits = editService.findAllByResource(params.resourceDomainType, params.resourceId, params)
+        edits.collect {editService.populateEditUser(it)}
     }
 }

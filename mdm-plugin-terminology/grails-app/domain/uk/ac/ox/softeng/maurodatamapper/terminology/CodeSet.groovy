@@ -132,6 +132,14 @@ class CodeSet implements Model<CodeSet> {
         new DetachedCriteria<CodeSet>(CodeSet)
     }
 
+    static DetachedCriteria<CodeSet> byTermIdAndIdInList(UUID termId, List<UUID> ids) {
+        where {
+            terms {
+                eq 'id', termId
+            }
+        }.inList('id', ids)
+    }
+
     static DetachedCriteria<CodeSet> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
         where {
             metadata {

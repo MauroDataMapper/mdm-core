@@ -271,6 +271,8 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
                     dc.dataElements?.clear()
                     dc.referenceTypes?.clear()
 
+                    dc.parentDataClass?.attach()
+
                     batch.add dc
                     count++
                     if (count % DataClass.BATCH_SIZE == 0) {
@@ -351,7 +353,6 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
                 log.warn('No ReferenceType with label {} is owned by DataModel, merging existing and assigning to DataModel', label)
                 ReferenceType keep = dataTypeService.mergeDataTypes(dmGrouped.dataModel)
                 dataModel.addToDataTypes(keep)
-
             }
         }
     }
@@ -481,19 +482,13 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         findCommonParent(leftDataClass.getParent() as DataClass, rightDataClass.getParent() as DataClass)
     }
 
-    private void moveDataClassToParent(DataClass dataClass, CatalogueItem parent) {
-        if (parent.instanceOf(DataModel)) {
-            dataClass.parentDataClass?.removeFromDataClasses(dataClass)
-            parent.addToDataClasses(dataClass)
-        } else if (parent.instanceOf(DataClass)) {
-            dataClass.parentDataClass?.removeFromDataClasses(dataClass)
-            parent.addToChildDataClasses(dataClass)
-            parent.getDataModel().addToDataClasses(dataClass)
-        }
+    void moveDataClassToParent(DataClass dataClass, CatalogueItem parent) {
+        dataClass.parentDataClass?.removeFromDataClasses(dataClass)
+        parent.addToDataClasses(dataClass)
     }
 
-    private DataClass createDataClass(String label, String description, User createdBy, Integer minMultiplicity = 1,
-                                      Integer maxMultiplicity = 1) {
+    DataClass createDataClass(String label, String description, User createdBy, Integer minMultiplicity = 1,
+                              Integer maxMultiplicity = 1) {
         new DataClass(label: label, description: description, createdBy: createdBy.emailAddress, minMultiplicity: minMultiplicity,
                       maxMultiplicity: maxMultiplicity)
     }
@@ -587,7 +582,6 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         log.debug('Copied required DataClass, now checking for reference classes which haven\'t been matched or added')
         matchUpAndAddMissingReferenceTypeClasses(copiedDataModel, original.dataModel, copier, userSecurityPolicyManager)
         copiedDataClass
-
     }
 
     @Override
@@ -650,9 +644,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         }
 
         copy
-
     }
-
 
     DataClass copyCatalogueItemInformation(DataClass original,
                                            DataClass copy,
@@ -697,7 +689,6 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         matchUpAndAddMissingReferenceTypeClasses(copiedDataModel, originalDataModel, copier, userSecurityPolicyManager)
     }
 
-
     @Deprecated(forRemoval = true)
     private Set<ReferenceType> getAllNestedReferenceTypes(DataClass dataClass) {
         Set<ReferenceType> referenceTypes = []
@@ -709,11 +700,9 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         referenceTypes
     }
 
-
     private Set<ReferenceType> findAllEmptyReferenceTypes(DataModel dataModel) {
         dataModel.referenceTypes.findAll {!(it as ReferenceType).referenceClass} as Set<ReferenceType>
     }
-
 
     String buildPath(DataClass dataClass) {
         if (!dataClass.parentDataClass) return dataClass.label
@@ -726,13 +715,20 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     }
 
     @Override
-    boolean hasTreeTypeModelItems(DataClass dataClass, boolean fullTreeRender) {
-        dataClass.dataClasses || (dataClass.dataElements && fullTreeRender)
+    boolean isCatalogueItemImportedIntoCatalogueItem(CatalogueItem catalogueItem, DataClass owningDataClass) {
+        if (!(catalogueItem instanceof DataClass)) return false
+        owningDataClass.id && ((DataClass) catalogueItem).parentDataClass?.id != owningDataClass.id
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(DataClass dataClass, boolean fullTreeRender = false) {
-        (DataClass.byDataModelIdAndParentDataClassId(dataClass.dataModel.id, dataClass.id).list() +
+    boolean hasTreeTypeModelItems(DataClass dataClass, boolean fullTreeRender, boolean includeImportedDataClasses) {
+        dataClass.dataClasses || (includeImportedDataClasses ? dataClass.importedDataClasses : false) || (dataClass.dataElements && fullTreeRender)
+    }
+
+    @Override
+    List<ModelItem> findAllTreeTypeModelItemsIn(DataClass dataClass, boolean fullTreeRender, boolean includeImportedDataClasses) {
+        ((includeImportedDataClasses ? DataClass.byDataModelIdAndParentDataClassIdIncludingImported(dataClass.dataModel.id, dataClass.id).list()
+                                     : DataClass.byDataModelIdAndParentDataClassId(dataClass.dataModel.id, dataClass.id).list()) +
          (fullTreeRender ? DataElement.byDataClassId(dataClass.id).list() : []) as List<ModelItem>)
     }
 
@@ -861,5 +857,22 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
 
     boolean isDataClassBeingUsedAsImport(DataClass dataClass) {
         DataClass.byImportedDataClassId(dataClass.id).count() || DataModel.byImportedDataClassId(dataClass.id).count()
+    }
+
+    @Override
+    void propagateContentsInformation(DataClass catalogueItem, DataClass previousVersionCatalogueItem) {
+        previousVersionCatalogueItem.dataClasses.each {previousChildDataClass ->
+            DataClass childDataClass = catalogueItem.dataClasses.find {it.label == previousChildDataClass.label}
+            if (childDataClass) {
+                propagateDataFromPreviousVersion(childDataClass, previousChildDataClass)
+            }
+        }
+
+        previousVersionCatalogueItem.dataElements.each {previousDataElement ->
+            DataElement dataElement = catalogueItem.dataElements.find {it.label == previousDataElement.label}
+            if (dataElement) {
+                dataElementService.propagateDataFromPreviousVersion(dataElement, previousDataElement)
+            }
+        }
     }
 }

@@ -36,14 +36,23 @@ class AnnotationController extends FacetController<Annotation> {
     }
 
     @Override
+    protected Annotation queryForResource(Serializable resourceId) {
+        Annotation annotation = super.queryForResource(resourceId) as Annotation
+        annotationService.populateAnnotationUser(annotation)
+        annotation
+    }
+
+    @Override
     protected List<Annotation> listAllReadableResources(Map params) {
         params.sort = params.sort ?: 'dateCreated'
         params.order = params.order ?: 'desc'
+        List<Annotation> annotations
         if (params.annotationId) {
-            return annotationService.findAllByParentAnnotationId(params.annotationId, params)
+            annotations = annotationService.findAllByParentAnnotationId(params.annotationId, params)
+        } else {
+            annotations = annotationService.findAllWhereRootAnnotationOfMultiFacetAwareItemId(params.multiFacetAwareItemId, params)
         }
-
-        return annotationService.findAllWhereRootAnnotationOfMultiFacetAwareItemId(params.multiFacetAwareItemId, params)
+        annotations.collect {annotationService.populateAnnotationUser(it)}
     }
 
     @Override
@@ -56,5 +65,17 @@ class AnnotationController extends FacetController<Annotation> {
             resource.label = "${resource.parentAnnotation.label} [${resource.parentAnnotation.childAnnotations.size()}]"
         }
         resource
+    }
+
+    @Override
+    protected void updateResponse(Annotation instance) {
+        annotationService.populateAnnotationUser(instance)
+        super.updateResponse(instance)
+    }
+
+    @Override
+    protected void saveResponse(Annotation instance) {
+        annotationService.populateAnnotationUser(instance)
+        super.saveResponse(instance)
     }
 }

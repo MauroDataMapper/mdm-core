@@ -11,6 +11,7 @@ dependencies {
 
     implementation group: 'org.grails', name: 'grails-core', version: grailsVersion
     implementation group: 'org.grails', name: 'grails-datastore-gorm'
+    implementation group: 'org.grails', name: 'grails-datastore-gorm-hibernate5'
     implementation group: 'org.grails', name: 'grails-plugin-validation'
     implementation "org.grails.plugins:views-json:$grailsViewsVersion"
 

@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired
 @SuppressWarnings('GroovyAssignabilityCheck')
 class TreeItemController extends RestfulController<TreeItem> implements MdmController {
 
+    private static final String INCLUDE_IMPORTED_PARAM = 'includeImported'
     private static final String INCLUDE_DELETED_PARAM = 'includeDeleted'
     private static final String INCLUDE_DOCUMENT_SUPERSEDED_PARAM = 'includeDocumentSuperseded'
     private static final String INCLUDE_MODEL_SUPERSEDED_PARAM = 'includeModelSuperseded'
@@ -73,7 +74,7 @@ class TreeItemController extends RestfulController<TreeItem> implements MdmContr
         CatalogueItem catalogueItem = treeItemService.findTreeCapableCatalogueItem(params.catalogueItemClass, params.catalogueItemId)
         if (!catalogueItem) return notFound(CatalogueItem, params.catalogueItemId)
 
-        respond treeItemList: treeItemService.buildCatalogueItemTree(catalogueItem, false, currentUserSecurityPolicyManager)
+        respond treeItemList: treeItemService.buildCatalogueItemTree(catalogueItem, false, currentUserSecurityPolicyManager, shouldIncludeImportedItems())
     }
 
     def index() {
@@ -94,7 +95,6 @@ class TreeItemController extends RestfulController<TreeItem> implements MdmContr
                                                    shouldIncludeModelSupersededItems(),
                                                    shouldIncludeDeletedItems(),
                                                    false)
-
     }
 
     def search() {
@@ -130,6 +130,20 @@ class TreeItemController extends RestfulController<TreeItem> implements MdmContr
         if (!model) return notFound(Model, params.modelId)
 
         respond(treeItemService.buildFullModelTree(model))
+    }
+
+    def ancestors() {
+        log.debug('Call to tree for containing ancestors of a catalogue item')
+        CatalogueItem catalogueItem = treeItemService.findTreeCapableCatalogueItem(params.catalogueItemClass, params.catalogueItemId)
+        if (!catalogueItem) return notFound(CatalogueItem, params.catalogueItemId)
+
+        respond(containerTreeItem:
+                    treeItemService.buildCatalogueItemTreeWithAncestors(params.containerClass, catalogueItem, currentUserSecurityPolicyManager))
+
+    }
+
+    private boolean shouldIncludeImportedItems() {
+        params.boolean(INCLUDE_IMPORTED_PARAM)
     }
 
     private boolean shouldIncludeDeletedItems() {

@@ -28,6 +28,7 @@ import groovy.util.logging.Slf4j
 
 @Slf4j
 @CompileStatic
+@Deprecated
 abstract class MapBasedProfile extends Profile {
 
     private Map<String, Object> contents
@@ -36,7 +37,6 @@ abstract class MapBasedProfile extends Profile {
         contents = new HashMap<>()
     }
 
-    @Override
     Object getField(String fieldName) {
         contents[fieldName]
     }
@@ -61,7 +61,6 @@ abstract class MapBasedProfile extends Profile {
         contents[name] = arg
     }
 
-    @Override
     void setField(String fieldName, def value) {
         contents[fieldName] = value
     }

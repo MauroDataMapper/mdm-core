@@ -67,6 +67,10 @@ class DataModelAnnotationFunctionalSpec extends CatalogueItemAnnotationFunctiona
       "id": "${json-unit.matches:id}",
       "label": "test annotation 2",
       "createdBy": "development@test.com",
+      "createdByUser": {
+        "name": "Anonymous User",
+        "id": "${json-unit.matches:id}"
+      },
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "description": "with description"
     },
@@ -74,6 +78,10 @@ class DataModelAnnotationFunctionalSpec extends CatalogueItemAnnotationFunctiona
       "id": "${json-unit.matches:id}",
       "label": "test annotation 1",
       "createdBy": "development@test.com",
+      "createdByUser": {
+        "name": "Anonymous User",
+        "id": "${json-unit.matches:id}"
+      },
       "lastUpdated": "${json-unit.matches:offsetDateTime}"
     }
   ]

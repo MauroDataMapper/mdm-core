@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core
 
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiProperty
+import uk.ac.ox.softeng.maurodatamapper.core.databinding.CsvDataBindingSourceCreator
 import uk.ac.ox.softeng.maurodatamapper.core.flyway.MdmFlywayMigationStrategy
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.CoreSchemaMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.AnnotationAwareMappingContext
@@ -32,8 +34,11 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.ReferenceFileAw
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.RuleAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.SemanticLinkAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.VersionLinkAwareMappingContext
+import uk.ac.ox.softeng.maurodatamapper.core.json.view.JsonViewTemplateEngine
 import uk.ac.ox.softeng.maurodatamapper.core.markup.view.MarkupViewTemplateEngine
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperProviderService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.render.MdmCsvApiPropertyRenderer
+import uk.ac.ox.softeng.maurodatamapper.core.rest.render.MdmCsvApiPropertyCollectionRenderer
 import uk.ac.ox.softeng.maurodatamapper.provider.plugin.MauroDataMapperPlugin
 import uk.ac.ox.softeng.maurodatamapper.search.filter.IdPathFilterFactory
 import uk.ac.ox.softeng.maurodatamapper.search.filter.IdPathSecureFilterFactory
@@ -42,11 +47,14 @@ import uk.ac.ox.softeng.maurodatamapper.security.basic.NoAccessSecurityPolicyMan
 import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
 
 import grails.plugins.Plugin
+import grails.web.mime.MimeType
+import grails.plugin.markup.view.MarkupViewConfiguration
 import groovy.util.logging.Slf4j
 import org.apache.lucene.analysis.core.LowerCaseFilterFactory
 import org.apache.lucene.analysis.core.WhitespaceTokenizerFactory
 import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilterFactory
 import org.apache.lucene.analysis.miscellaneous.WordDelimiterFilterFactory
+import org.grails.web.databinding.bindingsource.DataBindingSourceRegistry
 import org.springframework.boot.web.servlet.ServletListenerRegistrationBean
 
 import java.lang.management.ManagementFactory
@@ -107,14 +115,18 @@ This is basically the backend API.
     ]
 
     Closure doWithSpring() {
-        { ->
+        {->
             // Dynamically update the Flyway Schemas
             mdmFlywayMigationStrategy MdmFlywayMigationStrategy
 
+            boolean rebuildIndexes = grailsApplication.config.getProperty('grails.plugins.hibernatesearch.rebuildIndexOnStart', Boolean, false)
+            if (rebuildIndexes) log.warn('Rebuilding search indexes')
             /*
              * Load in the Lucene analysers used by the hibernate search functionality
              */
             grailsApplication.config.grails.plugins.hibernatesearch = {
+                // Rebuild dev and test indexes on each restart
+                rebuildIndexOnStart rebuildIndexes
 
                 analyzer(name: 'wordDelimiter', tokenizer: WhitespaceTokenizerFactory) {
                     filter WordDelimiterFilterFactory
@@ -174,6 +186,11 @@ This is basically the backend API.
             catalogueItemMappingContext CatalogueItemMappingContext
 
             /*
+             * Define custom data binding beans
+             */
+            csvDataBindingSourceCreator(CsvDataBindingSourceCreator)
+
+            /*
              * Get all MDM Plugins to execute their doWithSpring
              */
             MauroDataMapperProviderService.getServices(MauroDataMapperPlugin).each { MauroDataMapperPlugin plugin ->
@@ -190,6 +207,23 @@ This is basically the backend API.
             }
 
             markupTemplateEngine(MarkupViewTemplateEngine, ref('markupViewConfiguration'), applicationContext.classLoader)
+
+            // If global exclude fields provided then we need to use the custom MDM port of the template engine as this is the only way
+            // we can actually add the global exclusion fields to the generator
+            if (grailsApplication.config.getProperty('grails.views.excludeFields')) {
+                jsonTemplateEngine(JsonViewTemplateEngine, grailsApplication, ref('jsonViewConfiguration'), applicationContext.classLoader)
+            }
+
+            csvApiPropertyRenderer(MdmCsvApiPropertyRenderer, ApiProperty) {
+            }
+
+            csvApiPropertyCollectionRenderer(MdmCsvApiPropertyCollectionRenderer, ApiProperty) {
+            }
+
+            //Ensure that MarkupViews (rather than the default XML renderer) is used when XML is requested
+            markupViewConfiguration(MarkupViewConfiguration) {
+                mimeTypes = [MimeType.XML.name, MimeType.HAL_XML.name, MimeType.TEXT_XML.name]
+            }
         }
 
     }
@@ -199,6 +233,12 @@ This is basically the backend API.
 
     void doWithApplicationContext() {
         if (config.env == 'live') outputRuntimeArgs()
+
+        /*
+         * Add custom data binding bean to the data binding registry
+         */
+        DataBindingSourceRegistry registry = applicationContext.getBean(DataBindingSourceRegistry.BEAN_NAME)
+        registry.addDataBindingSourceCreator(applicationContext.getBean(CsvDataBindingSourceCreator))
     }
 
     void outputRuntimeArgs() {

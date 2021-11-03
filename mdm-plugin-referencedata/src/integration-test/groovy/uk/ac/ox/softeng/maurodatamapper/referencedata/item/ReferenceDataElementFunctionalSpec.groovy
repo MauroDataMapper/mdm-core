@@ -128,7 +128,8 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
             label          : 'Functional Test DataElement',
             maxMultiplicity: 2,
             minMultiplicity: 0,
-            referenceDataType       : referenceDataTypeId.toString()
+            referenceDataType       : referenceDataTypeId.toString(),
+            columnNumber: 83
         ]
     }
 
@@ -155,6 +156,7 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "domainType": "ReferenceDataElement",
   "availableActions": ["delete","show","update"],
+  "columnNumber": 83,
   "referenceDataType": {
     "domainType": "ReferencePrimitiveType",
     "model": "${json-unit.matches:id}",
@@ -222,6 +224,7 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
                  label            : 'Functional Test DataElement',
                  maxMultiplicity  : 2,
                  minMultiplicity  : 1,
+                 columnNumber: 12,
                  referenceDataType: [
                      label     : 'Functional Test DataType',
                      domainType: ReferenceDataType.PRIMITIVE_DOMAIN_TYPE
@@ -233,6 +236,7 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "domainType": "ReferenceDataElement",
   "availableActions": ["delete","show","update"],
+  "columnNumber": 12,
   "referenceDataType": {
     "domainType": "ReferencePrimitiveType",
     "model": "${json-unit.matches:id}",
@@ -285,6 +289,7 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "domainType": "ReferenceDataElement",
   "availableActions": ["delete","show","update"],
+  "columnNumber": 83,
   "referenceDataType": {
     "domainType": "ReferencePrimitiveType",
     "model": "${json-unit.matches:id}",
@@ -326,6 +331,7 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
                  label          : 'Functional Test DataElement',
                  maxMultiplicity: 2,
                  minMultiplicity: 1,
+                 columnNumber: 3,
                  referenceDataType       : [
                      label         : 'Functional Test DataType 3',
                      domainType    : ReferenceDataType.PRIMITIVE_DOMAIN_TYPE,
@@ -338,6 +344,7 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "domainType": "ReferenceDataElement",
   "availableActions": ["delete","show","update"],
+  "columnNumber": 3,
   "referenceDataType": {
     "domainType": "ReferencePrimitiveType",
     "model": "${json-unit.matches:id}",
