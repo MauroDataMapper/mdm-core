@@ -59,6 +59,8 @@ class BootStrap implements SecurityDefinition {
             test {
                 Folder folder
                 Folder folder2
+                Folder parentFolder
+
                 CatalogueUser.withNewTransaction {
 
                     createModernSecurityUsers('functionalTest', false)
@@ -67,7 +69,12 @@ class BootStrap implements SecurityDefinition {
                     createBasicGroups('functionalTest', false)
                     checkAndSave(messageSource, editors, readers)
 
-                    folder = new Folder(label: 'Functional Test Folder', createdBy: userEmailAddresses.functionalTest)
+                    parentFolder = new Folder(label: 'Parent Functional Test Folder', createdBy: userEmailAddresses.functionalTest)
+                    checkAndSave(messageSource, parentFolder)
+
+                    folder = new Folder(label: 'Functional Test Folder',
+                                        parentFolder: parentFolder,
+                                        createdBy: userEmailAddresses.functionalTest)
                     checkAndSave(messageSource, folder)
 
                     // This folder will only be visible to admins as it has no rights
@@ -91,10 +98,23 @@ class BootStrap implements SecurityDefinition {
                         userGroup: editors,
                         groupRole: groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole)
                     )
+                    checkAndSave(messageSource, new SecurableResourceGroupRole(
+                        createdBy: userEmailAddresses.functionalTest,
+                        securableResource: parentFolder,
+                        userGroup: editors,
+                        groupRole: groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole)
+                    )
                     // Make readers reviewers of the test folder, this will allow "comment" adding testing
                     checkAndSave(messageSource, new SecurableResourceGroupRole(
                         createdBy: userEmailAddresses.functionalTest,
                         securableResource: folder,
+                        userGroup: readers,
+                        groupRole: groupRoleService.getFromCache(GroupRole.REVIEWER_ROLE_NAME).groupRole)
+                    )
+
+                    checkAndSave(messageSource, new SecurableResourceGroupRole(
+                        createdBy: userEmailAddresses.functionalTest,
+                        securableResource: parentFolder,
                         userGroup: readers,
                         groupRole: groupRoleService.getFromCache(GroupRole.REVIEWER_ROLE_NAME).groupRole)
                     )
