@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.exporter.ExporterService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.importer.ImporterService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -65,6 +66,8 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
     ExporterService exporterService
     ImporterService importerService
     VersionedFolderService versionedFolderService
+
+    BreadcrumbTreeService breadcrumbTreeService
 
     final String alternateParamsIdKey
 
@@ -779,6 +782,10 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         log.debug('Saved model')
         if (securityPolicyManagerService) {
             currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(savedModel, currentUser, savedModel.label)
+        }
+        if(savedModel.finalised)
+        {
+            breadcrumbTreeService.finalise(savedModel.breadcrumbTree)
         }
         savedModel
     }
