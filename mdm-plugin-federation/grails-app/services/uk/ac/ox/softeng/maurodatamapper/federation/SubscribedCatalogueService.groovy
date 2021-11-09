@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.XmlImportMapping
 import uk.ac.ox.softeng.maurodatamapper.federation.web.FederationClient
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Transactional
 import grails.util.Environment
@@ -123,7 +124,9 @@ class SubscribedCatalogueService implements XmlImportMapping {
         (subscribedCatalogueModels.publishedModels as List<Map<String, String>>).collect {pm ->
             new PublishedModel().tap {
                 modelId = Utils.toUuid(pm.modelId)
-                title = pm.title
+                title = pm.title // to be removed
+                if (pm.label) modelLabel = pm.label
+                if (pm.version) modelVersion = Version.from(pm.version)
                 modelType = pm.modelType
                 lastUpdated = OffsetDateTime.parse(pm.lastUpdated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
                 dateCreated = OffsetDateTime.parse(pm.dateCreated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
@@ -140,6 +143,10 @@ class SubscribedCatalogueService implements XmlImportMapping {
 
     Map<String, Object> getVersionLinksForModel(SubscribedCatalogue subscribedCatalogue, String urlModelType, UUID modelId) {
         getFederationClientForSubscribedCatalogue(subscribedCatalogue).getVersionLinksForModel(subscribedCatalogue.apiKey, urlModelType, modelId)
+    }
+
+    Map<String, Object> getNewerPublishedVersionsForPublishedModel(SubscribedCatalogue subscribedCatalogue, UUID modelId) {
+        getFederationClientForSubscribedCatalogue(subscribedCatalogue).getNewerPublishedVersionsForPublishedModel(subscribedCatalogue.apiKey, modelId)
     }
 
     String getStringResourceExport(SubscribedCatalogue subscribedCatalogue, String urlResourceType, UUID resourceId, Map exporterInfo) {

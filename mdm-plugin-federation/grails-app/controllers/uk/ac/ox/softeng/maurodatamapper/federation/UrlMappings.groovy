@@ -31,12 +31,14 @@ class UrlMappings {
             '/subscribedCatalogues'(resources: 'subscribedCatalogue') {
                 get '/availableModels'(controller: 'subscribedCatalogue', action: 'publishedModels') // to be removed
                 get '/publishedModels'(controller: 'subscribedCatalogue', action: 'publishedModels')
+                get "/publishedModels/$publishedModelId/newerVersions"(controller: 'subscribedCatalogue', action: 'newerVersions')
                 get '/testConnection'(controller: 'subscribedCatalogue', action: 'testConnection')
                 '/subscribedModels'(resources: 'subscribedModel', excludes: DEFAULT_EXCLUDES)
+                get "/subscribedModels/$id/newerVersions"(controller: 'subscribedModel', action: 'newerVersions')
             }
-            post "/subscribedModels/$subscribedModelId/federate"(controller: 'subscribedModel', action: 'federate')
 
             get '/published/models'(controller: 'publish', action: 'index')
+            get "/published/models/$publishedModelId/newerVersions"(controller: 'publish', action: 'newerVersions')
         }
     }
 }

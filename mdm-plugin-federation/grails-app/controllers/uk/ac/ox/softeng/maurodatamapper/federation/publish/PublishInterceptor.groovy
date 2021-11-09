@@ -23,7 +23,7 @@ class PublishInterceptor implements MdmInterceptor {
 
     boolean before() {
         // Allow anyone to retrieve feeds
-        actionName == 'index'
+        actionName == 'index' || actionName == 'newerVersions'
     }
 
 }

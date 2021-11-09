@@ -196,6 +196,10 @@ class SubscribedModelService {
             getVersionLinksForModel(subscribedModel.subscribedCatalogue, urlModelResourceType, subscribedModel.subscribedModelId)
     }
 
+    Map getNewerPublishedVersions(SubscribedModel subscribedModel) {
+        subscribedCatalogueService.getNewerPublishedVersionsForPublishedModel(subscribedModel.subscribedCatalogue, subscribedModel.subscribedModelId)
+    }
+
     /**
      * Export a model as Json from a remote SubscribedCatalogue
      * 1. Find an exporter on the remote SubscribedCatalogue
@@ -232,7 +236,7 @@ class SubscribedModelService {
             matches.each {vl ->
                 log.debug("matched")
                 //Get Subscribed models for the new (source) and old (target) versions of the model
-                SubscribedModel sourceSubscribedModel = findBySubscribedModelId(UUID.fromString(vl.sourceModel.id))
+                SubscribedModel sourceSubscribedModel = subscribedModel
                 SubscribedModel targetSubscribedModel = findBySubscribedModelId(UUID.fromString(vl.targetModel.id))
 
                 if (sourceSubscribedModel && targetSubscribedModel) {

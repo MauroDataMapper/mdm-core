@@ -1,0 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.federation.PublishedModel
+
+import java.time.OffsetDateTime
+
+model {
+    List<PublishedModel> newerPublishedModels
+}
+
+json {
+    lastUpdated newerPublishedModels?.max { it.lastUpdated }?.lastUpdated ?: OffsetDateTime.now()
+    newerPublishedModels tmpl.'/publishedModel/publishedModel'(newerPublishedModels ?: [])
+}

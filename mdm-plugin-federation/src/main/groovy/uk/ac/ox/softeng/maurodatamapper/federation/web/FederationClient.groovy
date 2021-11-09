@@ -117,7 +117,11 @@ class FederationClient {
     }
 
     Map<String, Object> getVersionLinksForModel(UUID apiKey, String urlModelResourceType, UUID modelId) {
-        retrieveMapFromClient(UriBuilder.of(urlModelResourceType).path(modelId.toString()), apiKey)
+        retrieveMapFromClient(UriBuilder.of(urlModelResourceType).path(modelId.toString()).path('versionLinks'), apiKey)
+    }
+
+    Map<String, Object> getNewerPublishedVersionsForPublishedModel(UUID apiKey, UUID modelId) {
+        retrieveMapFromClient(UriBuilder.of('published/models').path(modelId.toString()).path('newerVersions'), apiKey)
     }
 
     String getStringResourceExport(UUID apiKey, String urlResourceType, UUID resourceId, Map exporterInfo) {

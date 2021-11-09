@@ -48,7 +48,11 @@ class SubscribedCatalogueInterceptor extends SecurableResourceInterceptor {
         } else if (!currentUserSecurityPolicyManager.isAuthenticated()) {
             notFound(SubscribedCatalogue, getId())
         } else {
-            actionName == 'index' || actionName == 'show' || currentUserSecurityPolicyManager.isApplicationAdministrator() ?: forbiddenDueToNotApplicationAdministrator()
+            actionName == 'index' ||
+            actionName == 'show' ||
+            actionName == 'publishedModels' ||
+            actionName == 'newerVersions' ||
+            currentUserSecurityPolicyManager.isApplicationAdministrator() ?: forbiddenDueToNotApplicationAdministrator()
         }
     }
 }

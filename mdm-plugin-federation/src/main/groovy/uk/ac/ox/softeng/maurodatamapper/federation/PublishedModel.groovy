@@ -34,6 +34,7 @@ class PublishedModel {
     OffsetDateTime dateCreated
     OffsetDateTime datePublished
     String author
+    UUID previousModelId
 
     PublishedModel() {
     }
