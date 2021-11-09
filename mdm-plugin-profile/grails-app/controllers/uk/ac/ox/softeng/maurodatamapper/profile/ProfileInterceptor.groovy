@@ -38,7 +38,6 @@ class ProfileInterceptor extends FacetInterceptor {
         checkActionAllowedOnFacet()
     }
 
-
     boolean checkActionAuthorisationOnUnsecuredResource(Class resourceClass, UUID id,
                                                         Class<? extends SecurableResource> owningSecureResourceClass, UUID owningSecureResourceId) {
 
@@ -46,7 +45,9 @@ class ProfileInterceptor extends FacetInterceptor {
         boolean canRead = currentUserSecurityPolicyManager.userCanReadResourceId(resourceClass, id, owningSecureResourceClass, owningSecureResourceId)
 
         // Read only actions
-        if (actionName in ['validate', 'usedProfiles', 'unusedProfiles', 'nonProfileMetadata']) {
+        // ProfileController.itemsProfiles must check that items requested in the body of the request
+        // belong to the model that was requested
+        if (actionName in ['validate', 'usedProfiles', 'unusedProfiles', 'nonProfileMetadata', 'itemsProfiles']) {
             return canRead ?: notFound(id ? resourceClass : owningSecureResourceClass, (id ?: owningSecureResourceId).toString())
         }
 

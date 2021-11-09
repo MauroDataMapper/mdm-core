@@ -54,6 +54,11 @@ class UrlMappings {
                 delete "/profile/$profileNamespace/$profileName/$profileVersion?"(controller: 'profile', action: 'delete')
                 post "/profile/$profileNamespace/$profileName/$profileVersion?"(controller: 'profile', action: 'save')
             }
+
+            // Methods to retrieve and save many profiles for many multiFacetAware items belonging to a Model
+            group "/${multiFacetAwareItemDomainType}/${multiFacetAwareItemId}", {
+                post '/profile/itemsProfiles'(controller: 'profile', action: 'itemsProfiles')
+            }
         }
     }
 }

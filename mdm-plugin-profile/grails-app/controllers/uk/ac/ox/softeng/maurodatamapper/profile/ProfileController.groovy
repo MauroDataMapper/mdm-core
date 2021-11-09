@@ -17,7 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile
 
+import uk.ac.ox.softend.maurodatamapper.profile.databinding.ItemsProfilesDataBinding
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.ResourcelessMdmController
@@ -25,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 
+import grails.web.databinding.DataBinder
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
@@ -32,7 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import static org.springframework.http.HttpStatus.NO_CONTENT
 
 @Slf4j
-class ProfileController implements ResourcelessMdmController {
+class ProfileController implements ResourcelessMdmController, DataBinder {
     static responseFormats = ['json', 'xml']
 
     ProfileService profileService
@@ -117,6 +121,53 @@ class ProfileController implements ResourcelessMdmController {
         }
 
         respond profile: profileService.createProfile(profileProviderService, multiFacetAware), format: params.format
+    }
+
+    /**
+     * The request must contain a collection of IDs of items which belong to the multi facet aware item, and a collection
+     * of profile namespaces/names/version. The response returns all matching profiles for the requested items and profiles.
+     */
+    def itemsProfiles() {
+        List<Profile> profiles = []
+        // this multiFacetAware item is expected to be a model
+        MultiFacetAware model = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params
+                .multiFacetAwareItemId)
+        if (!model || !(model instanceof Model)) {
+            return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
+        }
+
+        ItemsProfilesDataBinding itemsProfiles = new ItemsProfilesDataBinding()
+        bindData itemsProfiles, request
+
+        itemsProfiles.multiFacetAwareItems.each { multiFacetAwareItemDataBinding ->
+            MultiFacetAware multiFacetAware = profileService.findMultiFacetAwareItemByDomainTypeAndId(
+                    multiFacetAwareItemDataBinding.multiFacetAwareItemDomainType,
+                    multiFacetAwareItemDataBinding.multiFacetAwareItemId)
+
+            // In the interceptor we only checked access to the model
+            // The body of the request (which was bound to itemsProfiles) could contain
+            // multi facet aware items which do not belong to the checked model.
+            // So here, only proceed if the multiFacetAware is a ModelItem and that ModelItem
+            // belongs to the checked model.
+            if (multiFacetAware &&
+            multiFacetAware instanceof ModelItem &&
+            multiFacetAware.model.id == model.id) {
+
+                itemsProfiles.profileProviderServices.each { profileProviderServiceDataBinding ->
+                    ProfileProviderService profileProviderService = profileService.findProfileProviderService(
+                            profileProviderServiceDataBinding.namespace,
+                            profileProviderServiceDataBinding.name,
+                            profileProviderServiceDataBinding.version)
+
+                    if (profileProviderService) {
+                        profiles.add(profileService.createProfile(profileProviderService, multiFacetAware))
+                    }
+                }
+
+            }
+        }
+
+        respond profileList: profiles, format: params.format, view: 'itemsProfiles'
     }
 
     @Transactional
