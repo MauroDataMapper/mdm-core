@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.profile
 
 import uk.ac.ox.softend.maurodatamapper.profile.databinding.ItemsProfilesDataBinding
+import uk.ac.ox.softend.maurodatamapper.profile.databinding.ProfilesDataBinding
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
@@ -221,6 +222,52 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
         respond validatedInstance
     }
 
+    def validateItemsProfiles() {
+        log.debug("Validating items profiles")
+        List validatedInstances = []
+
+        // this multiFacetAware item is expected to be a model
+        MultiFacetAware model = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params
+                .multiFacetAwareItemId)
+        if (!model || !(model instanceof Model)) {
+            return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
+        }
+
+        ProfilesDataBinding submittedInstances = new ProfilesDataBinding()
+        bindData(submittedInstances, request)
+
+        submittedInstances.profiles.each {submittedProfileInstance ->
+            MultiFacetAware multiFacetAware = profileService.findMultiFacetAwareItemByDomainTypeAndId(submittedProfileInstance.domainType, submittedProfileInstance.id)
+
+            // In the interceptor we only checked access to the model
+            // The body of the request could contain
+            // multi facet aware items which do not belong to the checked model.
+            // So here, only proceed if the multiFacetAware is a ModelItem and that ModelItem
+            // belongs to the checked model.
+            if (multiFacetAware &&
+                    multiFacetAware instanceof ModelItem &&
+                    multiFacetAware.model.id == model.id) {
+
+                ProfileProviderService profileProviderService = profileService.findProfileProviderService(
+                        submittedProfileInstance.namespace,
+                        submittedProfileInstance.name,
+                        submittedProfileInstance.version)
+
+                if (profileProviderService) {
+                    Profile submittedInstance = profileProviderService.getNewProfile()
+                    bindData submittedInstance, submittedProfileInstance
+
+                    // The bindData above does not bind id, but we need this
+                    submittedInstance.id = submittedProfileInstance.id
+
+                    Profile validatedInstance = profileService.validateProfile(profileProviderService, submittedInstance)
+                    validatedInstances.add(validatedInstance)
+                }
+            }
+        }
+
+        respond profileList: validatedInstances
+    }
 
     def listModelsInProfile() {
         ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName,
