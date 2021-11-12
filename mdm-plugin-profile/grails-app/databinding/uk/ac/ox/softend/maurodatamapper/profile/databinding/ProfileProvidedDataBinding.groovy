@@ -17,18 +17,10 @@
  */
 package uk.ac.ox.softend.maurodatamapper.profile.databinding
 
-import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
-
 /**
- * Bind to a request body like
- * ...
+ * Composite class for binding a profile and its provider service
  */
-class ProfilesSectionsDataBinding {
-    List<ProfileSection> sections
-    UUID id
-    String label
-    String domainType
-    String namespace
-    String name
-    String version
+class ProfileProvidedDataBinding {
+    Map profile
+    ProfileProviderServiceDataBinding profileProviderService
 }

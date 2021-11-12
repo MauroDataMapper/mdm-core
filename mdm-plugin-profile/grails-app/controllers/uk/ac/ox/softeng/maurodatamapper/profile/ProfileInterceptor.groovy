@@ -45,10 +45,15 @@ class ProfileInterceptor extends FacetInterceptor {
         boolean canRead = currentUserSecurityPolicyManager.userCanReadResourceId(resourceClass, id, owningSecureResourceClass, owningSecureResourceId)
 
         // Read only actions
-        // ProfileController.itemsProfiles and ProfileController.validateItemsProfiles must check that items requested
+        // ProfileController.getMany and ProfileController.validateMany must check that items requested
         // in the body of the request belong to the model that was requested
-        if (actionName in ['validate', 'usedProfiles', 'unusedProfiles', 'nonProfileMetadata', 'itemsProfiles', 'validateItemsProfiles']) {
+        if (actionName in ['validate', 'usedProfiles', 'unusedProfiles', 'nonProfileMetadata', 'getMany', 'validateMany']) {
             return canRead ?: notFound(id ? resourceClass : owningSecureResourceClass, (id ?: owningSecureResourceId).toString())
+        }
+
+        // TODO how to test against all of the profile providers specified in the POST body?
+        if (actionName == "saveMany") {
+            return true
         }
 
         ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName, params.profileVersion)

@@ -18,7 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.profile
 
 import uk.ac.ox.softend.maurodatamapper.profile.databinding.ItemsProfilesDataBinding
-import uk.ac.ox.softend.maurodatamapper.profile.databinding.ProfilesDataBinding
+import uk.ac.ox.softend.maurodatamapper.profile.databinding.ProfileProvidedCollection
+import uk.ac.ox.softend.maurodatamapper.profile.databinding.ProfileProvided
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
@@ -128,8 +129,8 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
      * The request must contain a collection of IDs of items which belong to the multi facet aware item, and a collection
      * of profile namespaces/names/version. The response returns all matching profiles for the requested items and profiles.
      */
-    def itemsProfiles() {
-        List<Profile> profiles = []
+    def getMany() {
+        List<ProfileProvided> profiles = []
         // this multiFacetAware item is expected to be a model
         MultiFacetAware model = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params
                 .multiFacetAwareItemId)
@@ -161,14 +162,17 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
                             profileProviderServiceDataBinding.version)
 
                     if (profileProviderService) {
-                        profiles.add(profileService.createProfile(profileProviderService, multiFacetAware))
+                        ProfileProvided profileProvided = new ProfileProvided()
+                        profileProvided.profile = profileService.createProfile(profileProviderService, multiFacetAware)
+                        profileProvided.profileProviderService = profileProviderService
+                        profiles.add(profileProvided)
                     }
                 }
 
             }
         }
 
-        respond profileList: profiles, format: params.format, view: 'itemsProfiles'
+        respond([view: 'many'], [profileProvidedList: profiles])
     }
 
     @Transactional
@@ -194,6 +198,11 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
 
         // Create the profile as the stored profile may only be segments of the profile and we now want to get everything
         respond profileService.createProfile(profileProviderService, profiled)
+    }
+
+    @Transactional
+    def saveMany() {
+        handleMany(false)
     }
 
     def validate() {
@@ -222,51 +231,75 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
         respond validatedInstance
     }
 
-    def validateItemsProfiles() {
-        log.debug("Validating items profiles")
-        List validatedInstances = []
+    def validateMany() {
+        handleMany(true)
+    }
 
-        // this multiFacetAware item is expected to be a model
-        MultiFacetAware model = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params
-                .multiFacetAwareItemId)
+    /**
+     * Validate or save many profile instances
+     * @param validateOnly
+     * @return
+     */
+    private handleMany(boolean validateOnly) {
+        log.debug("Handling many items profiles")
+        List<ProfileProvided> handledInstances = []
+
+        // The multiFacetAware item referenced in the URI, is expected to be a model
+        MultiFacetAware model = profileService.findMultiFacetAwareItemByDomainTypeAndId(
+                params.multiFacetAwareItemDomainType,
+                params.multiFacetAwareItemId)
+
         if (!model || !(model instanceof Model)) {
             return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
 
-        ProfilesDataBinding submittedInstances = new ProfilesDataBinding()
-        bindData(submittedInstances, request)
+        // Bind the request to a collection of ProfileProvidedDataBinding. Within each instance of
+        // ProfileProvidedDataBinding, the profile is bound to a Map, because we don't yet know what
+        // subclass of Profile to bind to.
+        ProfileProvidedCollection profileProvidedCollection = new ProfileProvidedCollection()
+        bindData(profileProvidedCollection, request)
 
-        submittedInstances.profiles.each {submittedProfileInstance ->
-            MultiFacetAware multiFacetAware = profileService.findMultiFacetAwareItemByDomainTypeAndId(submittedProfileInstance.domainType, submittedProfileInstance.id)
+        profileProvidedCollection.profilesProvided.each {profileProvided ->
 
-            // In the interceptor we only checked access to the model
-            // The body of the request could contain
-            // multi facet aware items which do not belong to the checked model.
-            // So here, only proceed if the multiFacetAware is a ModelItem and that ModelItem
-            // belongs to the checked model.
-            if (multiFacetAware &&
+            ProfileProviderService profileProviderService = profileService.findProfileProviderService(
+                    profileProvided.profileProviderService.namespace,
+                    profileProvided.profileProviderService.name,
+                    profileProvided.profileProviderService.version)
+
+            if (profileProviderService) {
+                // Bind the Map profileProvided.profile to an object of the right subclass of Profile
+                Profile submittedInstance = profileProviderService.getNewProfile()
+                bindData submittedInstance, profileProvided.profile
+
+                MultiFacetAware multiFacetAware = profileService.findMultiFacetAwareItemByDomainTypeAndId(submittedInstance.domainType, submittedInstance.id)
+
+                // In the interceptor we only checked access to the model
+                // The body of the request could contain
+                // multi facet aware items which do not belong to the checked model.
+                // So here, only proceed if the multiFacetAware is a ModelItem and that ModelItem
+                // belongs to the checked model.
+                if (multiFacetAware &&
                     multiFacetAware instanceof ModelItem &&
                     multiFacetAware.model.id == model.id) {
 
-                ProfileProviderService profileProviderService = profileService.findProfileProviderService(
-                        submittedProfileInstance.namespace,
-                        submittedProfileInstance.name,
-                        submittedProfileInstance.version)
-
-                if (profileProviderService) {
-                    Profile submittedInstance = profileProviderService.getNewProfile()
-                    bindData submittedInstance, submittedProfileInstance
-
-                    // The bindData above does not bind id, but we need this
-                    submittedInstance.id = submittedProfileInstance.id
-
-                    Profile validatedInstance = profileService.validateProfile(profileProviderService, submittedInstance)
-                    validatedInstances.add(validatedInstance)
+                    if (validateOnly) {
+                        ProfileProvided validated = new ProfileProvided()
+                        validated.profile = profileService.validateProfile(profileProviderService, submittedInstance)
+                        validated.profileProviderService = profileProviderService
+                        handledInstances.add(validated)
+                    } else {
+                        ProfileProvided saved = new ProfileProvided()
+                        MultiFacetAware profiled = profileService.storeProfile(profileProviderService, multiFacetAware, submittedInstance, currentUser)
+                        // Create the profile as the stored profile may only be segments of the profile and we now want to get everything
+                        saved.profile = profileService.createProfile(profileProviderService, profiled)
+                        saved.profileProviderService = profileProviderService
+                        handledInstances.add(saved)
+                    }
                 }
             }
         }
 
-        respond profileList: validatedInstances
+        respond([view: 'many'], [profileProvidedList: handledInstances])
     }
 
     def listModelsInProfile() {

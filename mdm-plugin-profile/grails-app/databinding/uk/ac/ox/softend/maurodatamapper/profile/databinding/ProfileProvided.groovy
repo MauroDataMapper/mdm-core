@@ -18,11 +18,14 @@
 package uk.ac.ox.softend.maurodatamapper.profile.databinding
 
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
+import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 
 /**
- * Bind to a request body like
- * ...
+ * Composite class containing a Profile and the ProfileProviderService that
+ * created the Profile. Useful for rendering responses which contain many profiles
+ * and their providers.
  */
-class ProfilesDataBinding {
-    List<ProfilesSectionsDataBinding> profiles
+class ProfileProvided {
+    Profile profile
+    ProfileProviderService profileProviderService
 }

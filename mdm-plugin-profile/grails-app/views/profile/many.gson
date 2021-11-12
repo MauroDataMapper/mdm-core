@@ -1,0 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
+import uk.ac.ox.softend.maurodatamapper.profile.databinding.ProfileProvided
+
+model {
+    Iterable<ProfileProvided> profileProvidedList
+}
+
+json {
+    count profileProvidedList instanceof PaginatedResultList ? ((PaginatedResultList) profileProvidedList).getTotalCount() : profileProvidedList?.size() ?: 0
+    profilesProvided tmpl.'/profile/profileProvided'(profileProvidedList ?: [])
+}
+
