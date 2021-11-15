@@ -288,12 +288,22 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
                         validated.profileProviderService = profileProviderService
                         handledInstances.add(validated)
                     } else {
-                        ProfileProvided saved = new ProfileProvided()
-                        MultiFacetAware profiled = profileService.storeProfile(profileProviderService, multiFacetAware, submittedInstance, currentUser)
-                        // Create the profile as the stored profile may only be segments of the profile and we now want to get everything
-                        saved.profile = profileService.createProfile(profileProviderService, profiled)
-                        saved.profileProviderService = profileProviderService
-                        handledInstances.add(saved)
+                        boolean saveAllowed = false
+
+                        if (profileProviderService.canBeEditedAfterFinalisation()) {
+                            saveAllowed = currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(model.class, model.id, 'saveIgnoreFinalise')
+                        } else {
+                            saveAllowed = currentUserSecurityPolicyManager.userCanCreateResourceId(Profile.class, null, model.class, model.id)
+                        }
+
+                        if (saveAllowed) {
+                            ProfileProvided saved = new ProfileProvided()
+                            MultiFacetAware profiled = profileService.storeProfile(profileProviderService, multiFacetAware, submittedInstance, currentUser)
+                            // Create the profile as the stored profile may only be segments of the profile and we now want to get everything
+                            saved.profile = profileService.createProfile(profileProviderService, profiled)
+                            saved.profileProviderService = profileProviderService
+                            handledInstances.add(saved)
+                        }
                     }
                 }
             }

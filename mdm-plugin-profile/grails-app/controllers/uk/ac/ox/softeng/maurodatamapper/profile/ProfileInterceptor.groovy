@@ -51,7 +51,7 @@ class ProfileInterceptor extends FacetInterceptor {
             return canRead ?: notFound(id ? resourceClass : owningSecureResourceClass, (id ?: owningSecureResourceId).toString())
         }
 
-        // TODO how to test against all of the profile providers specified in the POST body?
+        // ProfileController.saveMany must check access for every profile service provider referenced in the request body
         if (actionName == "saveMany") {
             return true
         }
