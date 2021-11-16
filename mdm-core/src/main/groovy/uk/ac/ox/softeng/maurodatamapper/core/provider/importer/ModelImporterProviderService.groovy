@@ -26,6 +26,8 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 import groovy.transform.CompileStatic
 import org.springframework.beans.factory.annotation.Autowired
 
+import java.time.OffsetDateTime
+
 @CompileStatic
 abstract class ModelImporterProviderService<M extends Model, P extends ModelImporterProviderServiceParameters>
     extends ImporterProviderService<M, P> {
@@ -79,7 +81,10 @@ abstract class ModelImporterProviderService<M extends Model, P extends ModelImpo
     }
 
     M updateImportedModelFromParameters(M importedModel, P params, boolean list = false) {
-        if (params.finalised != null) importedModel.finalised = params.finalised
+        if (params.finalised != null) {
+            importedModel.finalised = params.finalised
+            importedModel.dateFinalised = importedModel.dateFinalised?:OffsetDateTime.now()
+        }
         if (!list && params.modelName) importedModel.label = params.modelName
         if (params.author) importedModel.author = params.author
         if (params.organisation) importedModel.organisation = params.organisation
