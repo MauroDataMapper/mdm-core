@@ -282,18 +282,22 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
                     multiFacetAware instanceof ModelItem &&
                     multiFacetAware.model.id == model.id) {
 
+                    log.debug("Found allowed multiFacetAware ${multiFacetAware.model.id}")
+
                     if (validateOnly) {
                         ProfileProvided validated = new ProfileProvided()
                         validated.profile = profileService.validateProfile(profileProviderService, submittedInstance)
                         validated.profileProviderService = profileProviderService
                         handledInstances.add(validated)
                     } else {
-                        boolean saveAllowed = false
+                        boolean saveAllowed
 
                         if (profileProviderService.canBeEditedAfterFinalisation()) {
                             saveAllowed = currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(model.class, model.id, 'saveIgnoreFinalise')
+                            log.debug("Profile can be edited after finalisation ${profileProviderService.namespace}.${profileProviderService.name} and saveAllowed is ${saveAllowed}")
                         } else {
                             saveAllowed = currentUserSecurityPolicyManager.userCanCreateResourceId(Profile.class, null, model.class, model.id)
+                            log.debug("Profile cannot be edited after finalisation ${profileProviderService.namespace}.${profileProviderService.name} and saveAllowed is ${saveAllowed}")
                         }
 
                         if (saveAllowed) {
@@ -303,6 +307,8 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
                             saved.profile = profileService.createProfile(profileProviderService, profiled)
                             saved.profileProviderService = profileProviderService
                             handledInstances.add(saved)
+                        } else {
+                            log.debug("Save not allowed for multiFacetAware ${multiFacetAware.model.id}")
                         }
                     }
                 }

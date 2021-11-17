@@ -64,6 +64,227 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         id
     }
 
+    Map<String, String> getSecondDataModelIds() {
+        loginEditor()
+
+        // Create a Data Model
+        POST("folders/${getTestFolderId()}/dataModels", [label: "second profile functional model"])
+        verifyResponse(CREATED, response)
+        String id = responseBody().id
+
+        // Add a Data Type
+        POST("dataModels/${id}/dataTypes", [label: "profile functional data type", domainType: "PrimitiveType"])
+        verifyResponse(CREATED, response)
+        String dataTypeId = responseBody().id
+
+        // Add a Data Class
+        POST("dataModels/${id}/dataClasses", [label: "profile functional class"])
+        verifyResponse(CREATED, response)
+        String dataClassId = responseBody().id
+
+        // Add a Data Element
+        POST("dataModels/${id}/dataClasses/${dataClassId}/dataElements", [label: "first data element in profile functional class", dataType: [id: dataTypeId]])
+        verifyResponse(CREATED, response)
+        String firstDataElementId = responseBody().id
+
+        // And another Data Element
+        POST("dataModels/${id}/dataClasses/${dataClassId}/dataElements", [label: "second data element in profile functional class", dataType: [id: dataTypeId]])
+        verifyResponse(CREATED, response)
+        String secondDataElementId = responseBody().id
+
+        logout()
+        ["dataModelId": id, "dataTypeId": dataTypeId, "dataClassId": dataClassId, "firstDataElementId": firstDataElementId, "secondDataElementId": secondDataElementId]
+    }
+
+    Map<String, String> getThirdDataModelIds() {
+        loginEditor()
+
+        // Create a Data Model
+        POST("folders/${getTestFolderId()}/dataModels", [label: "third profile functional model"])
+        verifyResponse(CREATED, response)
+        String id = responseBody().id
+
+        // Add a Data Type
+        POST("dataModels/${id}/dataTypes", [label: "profile functional data type", domainType: "PrimitiveType"])
+        verifyResponse(CREATED, response)
+        String dataTypeId = responseBody().id
+
+        // Add a Data Class
+        POST("dataModels/${id}/dataClasses", [label: "profile functional class"])
+        verifyResponse(CREATED, response)
+        String dataClassId = responseBody().id
+
+        // Add a Data Element
+        POST("dataModels/${id}/dataClasses/${dataClassId}/dataElements", [label: "first data element in profile functional class", dataType: [id: dataTypeId]])
+        verifyResponse(CREATED, response)
+        String firstDataElementId = responseBody().id
+
+        // And another Data Element
+        POST("dataModels/${id}/dataClasses/${dataClassId}/dataElements", [label: "second data element in profile functional class", dataType: [id: dataTypeId]])
+        verifyResponse(CREATED, response)
+        String secondDataElementId = responseBody().id
+
+        logout()
+        ["dataModelId": id, "dataTypeId": dataTypeId, "dataClassId": dataClassId, "firstDataElementId": firstDataElementId, "secondDataElementId": secondDataElementId]
+    }
+
+    String getDynamicProfileModelId() {
+
+        loginEditor()
+        POST("folders/${getTestFolderId()}/dataModels?defaultDataTypeProvider=ProfileSpecificationDataTypeProvider", [label: "Dynamic Profile Model"])
+        verifyResponse(CREATED, response)
+        String dynamicProfileModelId = responseBody().id
+
+        POST("dataModels/$dynamicProfileModelId/dataClasses", [label: 'Profile Section Class'])
+        verifyResponse(CREATED, response)
+        String dataClassId = responseBody().id
+
+        GET("dataModels/$dynamicProfileModelId/dataTypes")
+        verifyResponse(OK, response)
+        Map<String, String> dataTypes = (responseBody().items as List<Map>).collectEntries {
+            [it.label, it.id]
+        }
+
+        POST("dataModels/$dynamicProfileModelId/dataClasses/$dataClassId/dataElements", [
+                label          : 'Dynamic Profile Elem (Optional)',
+                dataType       : dataTypes.string,
+                maxMultiplicity: 1,
+                minMultiplicity: 0
+        ])
+        verifyResponse(CREATED, response)
+
+        POST("dataModels/$dynamicProfileModelId/dataClasses/$dataClassId/dataElements", [
+                label          : 'Dynamic Profile Elem (Mandatory)',
+                dataType       : dataTypes.string,
+                maxMultiplicity: 1,
+                minMultiplicity: 1
+        ])
+        verifyResponse(CREATED, response)
+
+        POST("dataModels/$dynamicProfileModelId/dataClasses/$dataClassId/dataElements", [
+                label   : 'Dynamic Profile Elem (Default Optional)',
+                dataType: dataTypes.string
+        ])
+        verifyResponse(CREATED, response)
+
+        Map namespaceFieldMap = [
+                currentValue        : 'functional.test.profile',
+                metadataPropertyName: 'metadataNamespace',
+        ]
+        Map domainsFieldMap = [
+                currentValue        : '',
+                metadataPropertyName: 'domainsApplicable',
+        ]
+        Map profileMap = [
+                sections  : [
+                        [
+                                description: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
+                                fields     : [
+                                        namespaceFieldMap,
+                                        domainsFieldMap
+                                ],
+                                name       : 'Profile Specification'
+                        ]
+                ],
+                id        : dynamicProfileModelId.toString(),
+                label     : 'Dynamic Profile Model',
+                domainType: 'DataModel',
+                namespace : profileSpecificationProfileService.namespace,
+                name      : profileSpecificationProfileService.name
+        ]
+
+        POST("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${dynamicProfileModelId}", profileMap)
+
+        verifyResponse(OK, response)
+
+        logout()
+
+        dynamicProfileModelId
+    }
+
+    /**
+     * A dynamic profile which is editable post finalisation
+     * @return
+     */
+    String getSecondDynamicProfileModelId() {
+
+        loginEditor()
+        POST("folders/${getTestFolderId()}/dataModels?defaultDataTypeProvider=ProfileSpecificationDataTypeProvider", [label: "Second Dynamic Profile Model"])
+        verifyResponse(CREATED, response)
+        String dynamicProfileModelId = responseBody().id
+
+        POST("dataModels/$dynamicProfileModelId/dataClasses", [label: 'Profile Section Class'])
+        verifyResponse(CREATED, response)
+        String dataClassId = responseBody().id
+
+        GET("dataModels/$dynamicProfileModelId/dataTypes")
+        verifyResponse(OK, response)
+        Map<String, String> dataTypes = (responseBody().items as List<Map>).collectEntries {
+            [it.label, it.id]
+        }
+
+        POST("dataModels/$dynamicProfileModelId/dataClasses/$dataClassId/dataElements", [
+            label          : 'Dynamic Profile Elem (Optional)',
+            dataType       : dataTypes.string,
+            maxMultiplicity: 1,
+            minMultiplicity: 0
+        ])
+        verifyResponse(CREATED, response)
+
+        POST("dataModels/$dynamicProfileModelId/dataClasses/$dataClassId/dataElements", [
+            label          : 'Dynamic Profile Elem (Mandatory)',
+            dataType       : dataTypes.string,
+            maxMultiplicity: 1,
+            minMultiplicity: 1
+        ])
+        verifyResponse(CREATED, response)
+
+        POST("dataModels/$dynamicProfileModelId/dataClasses/$dataClassId/dataElements", [
+            label   : 'Dynamic Profile Elem (Default Optional)',
+            dataType: dataTypes.string
+        ])
+        verifyResponse(CREATED, response)
+
+        Map namespaceFieldMap = [
+            currentValue        : 'functional.test.second.profile',
+            metadataPropertyName: 'metadataNamespace',
+        ]
+        Map domainsFieldMap = [
+            currentValue        : '',
+            metadataPropertyName: 'domainsApplicable',
+        ]
+        Map editableMap = [
+                currentValue        : true,
+                metadataPropertyName: 'editableAfterFinalisation',
+        ]
+        Map profileMap = [
+            sections  : [
+                [
+                    description: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
+                    fields     : [
+                        namespaceFieldMap,
+                        domainsFieldMap,
+                        editableMap
+                    ],
+                    name       : 'Profile Specification'
+                ]
+            ],
+            id        : dynamicProfileModelId.toString(),
+            label     : 'Dynamic Profile Model',
+            domainType: 'DataModel',
+            namespace : profileSpecificationProfileService.namespace,
+            name      : profileSpecificationProfileService.name
+        ]
+
+        POST("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${dynamicProfileModelId}", profileMap)
+
+        verifyResponse(OK, response)
+
+        logout()
+
+        dynamicProfileModelId
+    }
+
     void finaliseDataModelId(String id) {
         loginEditor()
         PUT("dataModels/$id/finalise", [versionChangeType: 'Major'])
@@ -1227,5 +1448,1062 @@ class ProfileFunctionalSpec extends FunctionalSpec {
   "label": "profile functional model",
   "domainType": "DataModel"
 }'''
+    }
+
+    void 'N12 : test validating OK a dynamic profile (as editor) using validateMany'() {
+        given:
+        Map<String, String> secondIds = getSecondDataModelIds()
+        String secondModelId = secondIds["dataModelId"]
+        String secondModelFirstDataElementId = secondIds["firstDataElementId"]
+        String secondModelSecondDataElementId = secondIds["secondDataElementId"]
+        Map<String, String> thirdIds = getThirdDataModelIds()
+        String thirdModelId = thirdIds["dataModelId"]
+        String thirdModelFirstDataElementId = thirdIds["firstDataElementId"]
+        String thirdModelSecondDataElementId = thirdIds["secondDataElementId"]
+        String dynamicProfileModelId = getDynamicProfileModelId()
+        String secondDynamicProfileModelId = getSecondDynamicProfileModelId()
+
+        /**
+         * 1. Validate two profiles against two data elements, both succeed
+         */
+        when: 'use saveMany to save one profile on the first data element'
+        Map optionalFieldMap1 = [
+            fieldName   : 'Dynamic Profile Elem (Optional)',
+            currentValue: 'abc'
+        ]
+        Map mandatoryFieldMap1 = [
+            fieldName   : 'Dynamic Profile Elem (Mandatory)',
+            currentValue: 'def'
+        ]
+        Map defaultOptionalFieldMap1 = [
+            fieldName   : 'Dynamic Profile Elem (Default Optional)',
+            currentValue: ''
+        ]
+
+        Map optionalFieldMap2_1 = [
+            fieldName   : 'Dynamic Profile Elem (Optional)',
+            currentValue: '2_1 abc'
+        ]
+        Map mandatoryFieldMap2_1 = [
+            fieldName   : 'Dynamic Profile Elem (Mandatory)',
+            currentValue: '2_1 def'
+        ]
+        Map defaultOptionalFieldMap2_1 = [
+            fieldName   : 'Dynamic Profile Elem (Default Optional)',
+            currentValue: '2_1'
+        ]
+
+        Map dynamicProfileMap = [
+            profilesProvided: [
+                [
+                    profile: [
+                        sections  : [
+                            [
+                                fields: [
+                                    optionalFieldMap1,
+                                    mandatoryFieldMap1,
+                                    defaultOptionalFieldMap1
+                                ],
+                                name  : 'Profile Section Class'
+                            ]
+                        ],
+                        id        : secondModelFirstDataElementId,
+                        label     : "first data element in profile functional class",
+                        domainType: 'DataElement'],
+                    profileProviderService: [
+                        namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
+                        name      : 'Dynamic+Profile+Model'
+                    ]
+                ],
+                [
+                    profile: [
+                        sections  : [
+                            [
+                                fields: [
+                                    optionalFieldMap2_1,
+                                    mandatoryFieldMap2_1,
+                                    defaultOptionalFieldMap2_1
+                                ],
+                                name  : 'Profile Section Class'
+                            ]
+                        ],
+                        id        : secondModelSecondDataElementId,
+                        label     : "second data element in profile functional class",
+                        domainType: 'DataElement'],
+                    profileProviderService: [
+                        namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
+                        name      : 'Second+Dynamic+Profile+Model'
+                    ]
+                ]
+            ]
+        ]
+
+        loginEditor()
+        POST("dataModels/$secondModelId/profile/validateMany", dynamicProfileMap)
+
+        then: 'the profiles are validated successfully'
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().profilesProvided.size == 2
+        responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == optionalFieldMap1.fieldName}.currentValue == optionalFieldMap1.currentValue
+        responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap1.fieldName}.currentValue == mandatoryFieldMap1.currentValue
+        responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}.currentValue == defaultOptionalFieldMap1.currentValue
+        responseBody().profilesProvided[0].profile.id == secondModelFirstDataElementId
+        responseBody().profilesProvided[0].profile.domainType == "DataElement"
+        responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2_1.fieldName}.currentValue == optionalFieldMap2_1.currentValue
+        responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2_1.fieldName}.currentValue == mandatoryFieldMap2_1.currentValue
+        responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2_1.fieldName}.currentValue == defaultOptionalFieldMap2_1.currentValue
+        responseBody().profilesProvided[1].profile.id == secondModelSecondDataElementId
+        responseBody().profilesProvided[1].profile.domainType == "DataElement"
+
+        when: 'used profiles are retrieved for the first data element'
+        HttpResponse<List<Map>> localResponse = GET("dataElements/$secondModelFirstDataElementId/profiles/used", Argument.listOf(Map))
+
+        then: 'there are not any'
+        verifyResponse(OK, localResponse)
+        localResponse.body().size() == 0
+
+        when: 'used profiles are retrieved for the second data element'
+        localResponse = GET("dataElements/$secondModelSecondDataElementId/profiles/used", Argument.listOf(Map))
+
+        then: 'there are not any'
+        verifyResponse(OK, localResponse)
+        localResponse.body().size() == 0
+
+        cleanup:
+        cleanupDataModelId(secondModelId)
+        cleanupDataModelId(thirdModelId)
+        cleanupDataModelId(dynamicProfileModelId)
+        cleanupDataModelId(secondDynamicProfileModelId)
+    }
+
+    void 'N13 : test validating OK a dynamic profile (as editor) using validateMany'() {
+        given:
+        Map<String, String> secondIds = getSecondDataModelIds()
+        String secondModelId = secondIds["dataModelId"]
+        String secondModelFirstDataElementId = secondIds["firstDataElementId"]
+        String secondModelSecondDataElementId = secondIds["secondDataElementId"]
+        Map<String, String> thirdIds = getThirdDataModelIds()
+        String thirdModelId = thirdIds["dataModelId"]
+        String thirdModelFirstDataElementId = thirdIds["firstDataElementId"]
+        String thirdModelSecondDataElementId = thirdIds["secondDataElementId"]
+        String dynamicProfileModelId = getDynamicProfileModelId()
+        String secondDynamicProfileModelId = getSecondDynamicProfileModelId()
+
+        /**
+         * 1. Validate two profiles against two data elements, first one fails
+         */
+        when: 'use validateMany to save one profile on the first data element'
+        Map optionalFieldMap1 = [
+            fieldName   : 'Dynamic Profile Elem (Optional)',
+            currentValue: 'abc'
+        ]
+        Map mandatoryFieldMap1 = [
+            fieldName   : 'Dynamic Profile Elem (Mandatory)',
+            currentValue: '' // Missing value so should fail validation
+        ]
+        Map defaultOptionalFieldMap1 = [
+            fieldName   : 'Dynamic Profile Elem (Default Optional)',
+            currentValue: ''
+        ]
+
+        Map optionalFieldMap2_1 = [
+            fieldName   : 'Dynamic Profile Elem (Optional)',
+            currentValue: '2_1 abc'
+        ]
+        Map mandatoryFieldMap2_1 = [
+            fieldName   : 'Dynamic Profile Elem (Mandatory)',
+            currentValue: '2_1 def'
+        ]
+        Map defaultOptionalFieldMap2_1 = [
+            fieldName   : 'Dynamic Profile Elem (Default Optional)',
+            currentValue: '2_1'
+        ]
+
+        Map dynamicProfileMap = [
+            profilesProvided: [
+                [
+                    profile: [
+                        sections  : [
+                            [
+                                fields: [
+                                    optionalFieldMap1,
+                                    mandatoryFieldMap1,
+                                    defaultOptionalFieldMap1
+                                ],
+                                name  : 'Profile Section Class'
+                            ]
+                        ],
+                        id        : secondModelFirstDataElementId,
+                        label     : "first data element in profile functional class",
+                        domainType: 'DataElement'],
+                    profileProviderService: [
+                        namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
+                        name      : 'Dynamic+Profile+Model'
+                    ]
+                ],
+                [
+                    profile: [
+                        sections  : [
+                            [
+                                fields: [
+                                    optionalFieldMap2_1,
+                                     mandatoryFieldMap2_1,
+                                      defaultOptionalFieldMap2_1
+                                ],
+                                name  : 'Profile Section Class'
+                            ]
+                        ],
+                        id        : secondModelSecondDataElementId,
+                        label     : "second data element in profile functional class",
+                        domainType: 'DataElement'],
+                    profileProviderService: [
+                        namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
+                        name      : 'Second+Dynamic+Profile+Model'
+                    ]
+                ]
+            ]
+        ]
+
+        loginEditor()
+        POST("dataModels/$secondModelId/profile/validateMany", dynamicProfileMap)
+
+        then: 'the first profile has an error'
+        verifyResponse(UNPROCESSABLE_ENTITY, response)
+        responseBody().count == 2
+        responseBody().profilesProvided.size == 2
+        responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == optionalFieldMap1.fieldName}.currentValue == optionalFieldMap1.currentValue
+        responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap1.fieldName}.currentValue == mandatoryFieldMap1.currentValue
+        responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}.currentValue == defaultOptionalFieldMap1.currentValue
+        responseBody().profilesProvided[0].profile.id == secondModelFirstDataElementId
+        responseBody().profilesProvided[0].profile.domainType == "DataElement"
+        responseBody().profilesProvided[0].errors.errors.size == 1
+        responseBody().profilesProvided[0].errors.errors[0].message == "This field cannot be empty"
+        responseBody().profilesProvided[0].errors.errors[0].fieldName == "Dynamic Profile Elem (Mandatory)"
+
+        responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2_1.fieldName}.currentValue == optionalFieldMap2_1.currentValue
+        responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2_1.fieldName}.currentValue == mandatoryFieldMap2_1.currentValue
+        responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2_1.fieldName}.currentValue == defaultOptionalFieldMap2_1.currentValue
+        responseBody().profilesProvided[1].profile.id == secondModelSecondDataElementId
+        responseBody().profilesProvided[1].profile.domainType == "DataElement"
+        !responseBody().profilesProvided[1].errors
+
+        when: 'used profiles are retrieved for the first data element'
+        HttpResponse<List<Map>> localResponse = GET("dataElements/$secondModelFirstDataElementId/profiles/used", Argument.listOf(Map))
+
+        then: 'there are not any'
+        verifyResponse(OK, localResponse)
+        localResponse.body().size() == 0
+
+        when: 'used profiles are retrieved for the second data element'
+        localResponse = GET("dataElements/$secondModelSecondDataElementId/profiles/used", Argument.listOf(Map))
+
+        then: 'there are not any'
+        verifyResponse(OK, localResponse)
+        localResponse.body().size() == 0
+
+        cleanup:
+        cleanupDataModelId(secondModelId)
+        cleanupDataModelId(thirdModelId)
+        cleanupDataModelId(dynamicProfileModelId)
+        cleanupDataModelId(secondDynamicProfileModelId)
+    }
+
+
+    /**
+     * 1. Save two profiles for one Data Element
+     * 2. Update one of the previously saved dynamic profiles, and in the same
+     * request save a dynamic profile against the second data element
+     * 3. Use saveMany to update the dynamic profiles that have previously been saved
+     * against the first and second data elements on the second data model, and also
+     * try to save a profile against the first data element of the third model, but using
+     * the endpoint of the second data model. The first two updates should work, and the
+     * third should fail silently.
+     */
+    void 'N14 : test saving a dynamic profile (as editor) using saveMany'() {
+        given:
+        Map<String, String> secondIds = getSecondDataModelIds()
+        String secondModelId = secondIds["dataModelId"]
+        String secondModelFirstDataElementId = secondIds["firstDataElementId"]
+        String secondModelSecondDataElementId = secondIds["secondDataElementId"]
+        Map<String, String> thirdIds = getThirdDataModelIds()
+        String thirdModelId = thirdIds["dataModelId"]
+        String thirdModelFirstDataElementId = thirdIds["firstDataElementId"]
+        String thirdModelSecondDataElementId = thirdIds["secondDataElementId"]
+        String dynamicProfileModelId = getDynamicProfileModelId()
+        String secondDynamicProfileModelId = getSecondDynamicProfileModelId()
+
+        /**
+         * 1. First save two dynamic profiles against the first data element
+         */
+        when: 'use saveMany to save one profile on the first data element'
+        Map optionalFieldMap1 = [
+            fieldName   : 'Dynamic Profile Elem (Optional)',
+            currentValue: 'abc'
+        ]
+        Map mandatoryFieldMap1 = [
+            fieldName   : 'Dynamic Profile Elem (Mandatory)',
+            currentValue: 'def'
+        ]
+        Map defaultOptionalFieldMap1 = [
+            fieldName   : 'Dynamic Profile Elem (Default Optional)',
+            currentValue: ''
+        ]
+
+        Map optionalFieldMap2_1 = [
+                fieldName   : 'Dynamic Profile Elem (Optional)',
+                currentValue: '2_1 abc'
+        ]
+        Map mandatoryFieldMap2_1 = [
+                fieldName   : 'Dynamic Profile Elem (Mandatory)',
+                currentValue: '2_1 def'
+        ]
+        Map defaultOptionalFieldMap2_1 = [
+                fieldName   : 'Dynamic Profile Elem (Default Optional)',
+                currentValue: '2_1'
+        ]
+
+        Map dynamicProfileMap = [
+            profilesProvided: [
+                [
+                    profile: [
+                        sections  : [
+                            [
+                                fields: [
+                                    optionalFieldMap1,
+                                    mandatoryFieldMap1,
+                                    defaultOptionalFieldMap1
+                                ],
+                                name  : 'Profile Section Class'
+                            ]
+                        ],
+                        id        : secondModelFirstDataElementId,
+                        label     : "first data element in profile functional class",
+                        domainType: 'DataElement'],
+                    profileProviderService: [
+                        namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
+                        name      : 'Dynamic+Profile+Model'
+                    ]
+                ],
+                [
+                    profile: [
+                        sections  : [
+                            [
+                                fields: [
+                                    optionalFieldMap2_1,
+                                    mandatoryFieldMap2_1,
+                                    defaultOptionalFieldMap2_1
+                                ],
+                                name  : 'Profile Section Class'
+                            ]
+                        ],
+                        id        : secondModelFirstDataElementId,
+                        label     : "first data element in profile functional class",
+                        domainType: 'DataElement'],
+                    profileProviderService: [
+                        namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
+                        name      : 'Second+Dynamic+Profile+Model'
+                    ]
+                ]
+            ]
+        ]
+
+        loginEditor()
+        POST("dataModels/$secondModelId/profile/saveMany", dynamicProfileMap)
+
+        then: 'the profile is saved for the first data element'
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().profilesProvided.size == 2
+        responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == optionalFieldMap1.fieldName}.currentValue == optionalFieldMap1.currentValue
+        responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap1.fieldName}.currentValue == mandatoryFieldMap1.currentValue
+        responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}.currentValue == defaultOptionalFieldMap1.currentValue
+        responseBody().profilesProvided[0].profile.id == secondModelFirstDataElementId
+        responseBody().profilesProvided[0].profile.domainType == "DataElement"
+        responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2_1.fieldName}.currentValue == optionalFieldMap2_1.currentValue
+        responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2_1.fieldName}.currentValue == mandatoryFieldMap2_1.currentValue
+        responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2_1.fieldName}.currentValue == defaultOptionalFieldMap2_1.currentValue
+        responseBody().profilesProvided[1].profile.id == secondModelFirstDataElementId
+        responseBody().profilesProvided[1].profile.domainType == "DataElement"
+
+        when: 'used profiles are retrieved for the first data element'
+        HttpResponse<List<Map>> localResponse = GET("dataElements/$secondModelFirstDataElementId/profiles/used", Argument.listOf(Map))
+
+        then: 'the saved profile is returned'
+        verifyResponse(OK, localResponse)
+        localResponse.body().size() == 2
+        localResponse.body()[0].name == 'Dynamic+Profile+Model'
+        localResponse.body()[0].namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
+        localResponse.body()[1].name == 'Second+Dynamic+Profile+Model'
+        localResponse.body()[1].namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
+
+        when:
+        GET("dataElements/$secondModelFirstDataElementId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model", STRING_ARG)
+
+        then:
+        verifyResponse(OK, jsonCapableResponse)
+        verifyJsonResponse OK, '''{
+  "sections": [
+    {
+      "name": "Profile Section Class",
+      "description": null,
+      "fields": [
+        {
+          "fieldName": "Dynamic Profile Elem (Optional)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Optional)",
+          "description": null,
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "allowedValues": [],
+          "regularExpression": null,
+          "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
+          "defaultValue":null,
+          "editableAfterFinalisation": true,
+          "currentValue": "abc"
+        },
+        {
+          "fieldName": "Dynamic Profile Elem (Mandatory)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Mandatory)",
+          "description": null,
+          "maxMultiplicity": 1,
+          "minMultiplicity": 1,
+          "allowedValues": [],
+          "regularExpression": null,
+          "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
+          "defaultValue":null,
+          "editableAfterFinalisation": true,
+          "currentValue": "def"
+        },
+        {
+          "fieldName": "Dynamic Profile Elem (Default Optional)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Default Optional)",
+          "description": null,
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "allowedValues": [],
+          "regularExpression": null,
+          "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
+          "defaultValue":null,
+          "editableAfterFinalisation": true,
+          "currentValue": ""
+        }
+      ]
+    }
+  ],
+  "id": "${json-unit.matches:id}",
+  "label": "first data element in profile functional class",
+  "domainType": "DataElement"
+}'''
+
+
+        /**
+         * 2. Use saveMany to update one of the previously saved dynamic profiles, and in the same
+         * request save a dynamic profile against the second data element
+         */
+        when:
+        optionalFieldMap1 = [
+                fieldName   : 'Dynamic Profile Elem (Optional)',
+                currentValue: 'abc updated'
+        ]
+        mandatoryFieldMap1 = [
+                fieldName   : 'Dynamic Profile Elem (Mandatory)',
+                currentValue: 'def updated'
+        ]
+        defaultOptionalFieldMap1 = [
+                fieldName   : 'Dynamic Profile Elem (Default Optional)',
+                currentValue: 'updated'
+        ]
+
+        Map optionalFieldMap2 = [
+            fieldName   : 'Dynamic Profile Elem (Optional)',
+            currentValue: 'xyz'
+        ]
+        Map mandatoryFieldMap2 = [
+            fieldName   : 'Dynamic Profile Elem (Mandatory)',
+            currentValue: 'pqr'
+        ]
+        Map defaultOptionalFieldMap2 = [
+            fieldName   : 'Dynamic Profile Elem (Default Optional)',
+            currentValue: 'onm'
+        ]
+
+        dynamicProfileMap = [
+            profilesProvided: [
+                [
+                    profile: [
+                        sections  : [
+                            [
+                                fields: [
+                                    optionalFieldMap1,
+                                    mandatoryFieldMap1,
+                                    defaultOptionalFieldMap1
+                                ],
+                                name  : 'Profile Section Class'
+                            ]
+                        ],
+                        id        : secondModelFirstDataElementId,
+                        label     : "first data element in profile functional class",
+                        domainType: 'DataElement'],
+                    profileProviderService: [
+                        namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
+                        name      : 'Dynamic+Profile+Model'
+                    ]
+                ],
+                [
+                    profile: [
+                        sections  : [
+                            [
+                                fields: [
+                                    optionalFieldMap2,
+                                    mandatoryFieldMap2,
+                                    defaultOptionalFieldMap2
+                                ],
+                                name  : 'Profile Section Class'
+                            ]
+                        ],
+                        id        : secondModelSecondDataElementId,
+                        label     : "second data element in profile functional class",
+                        domainType: 'DataElement'],
+                    profileProviderService: [
+                        namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
+                        name      : 'Dynamic+Profile+Model'
+                    ]
+                ]
+            ]
+        ]
+
+        POST("dataModels/$secondModelId/profile/saveMany", dynamicProfileMap)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().profilesProvided.size == 2
+        responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == optionalFieldMap1.fieldName}.currentValue == optionalFieldMap1.currentValue
+        responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap1.fieldName}.currentValue == mandatoryFieldMap1.currentValue
+        responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}.currentValue == defaultOptionalFieldMap1.currentValue
+        responseBody().profilesProvided[0].profile.id == secondModelFirstDataElementId
+        responseBody().profilesProvided[0].profile.domainType == "DataElement"
+        responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2.fieldName}.currentValue == optionalFieldMap2.currentValue
+        responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2.fieldName}.currentValue == mandatoryFieldMap2.currentValue
+        responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2.fieldName}.currentValue == defaultOptionalFieldMap2.currentValue
+        responseBody().profilesProvided[1].profile.id == secondModelSecondDataElementId
+        responseBody().profilesProvided[1].profile.domainType == "DataElement"
+
+        when:
+        localResponse = GET("dataElements/$secondModelFirstDataElementId/profiles/used", Argument.listOf(Map))
+
+        then:
+        verifyResponse(OK, localResponse)
+        localResponse.body().size() == 2
+        localResponse.body()[0].name == 'Dynamic+Profile+Model'
+        localResponse.body()[0].namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
+        localResponse.body()[1].name == 'Second+Dynamic+Profile+Model'
+        localResponse.body()[1].namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
+
+        when:
+        GET("dataElements/$secondModelFirstDataElementId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model", STRING_ARG)
+
+        then:
+        verifyResponse(OK, jsonCapableResponse)
+        verifyJsonResponse OK, '''{
+  "sections": [
+    {
+      "name": "Profile Section Class",
+      "description": null,
+      "fields": [
+        {
+          "fieldName": "Dynamic Profile Elem (Optional)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Optional)",
+          "description": null,
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "allowedValues": [],
+          "regularExpression": null,
+          "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
+          "defaultValue":null,
+          "editableAfterFinalisation": true,
+          "currentValue": "abc updated"
+        },
+        {
+          "fieldName": "Dynamic Profile Elem (Mandatory)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Mandatory)",
+          "description": null,
+          "maxMultiplicity": 1,
+          "minMultiplicity": 1,
+          "allowedValues": [],
+          "regularExpression": null,
+          "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
+          "defaultValue":null,
+          "editableAfterFinalisation": true,
+          "currentValue": "def updated"
+        },
+        {
+          "fieldName": "Dynamic Profile Elem (Default Optional)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Default Optional)",
+          "description": null,
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "allowedValues": [],
+          "regularExpression": null,
+          "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
+          "defaultValue":null,
+          "editableAfterFinalisation": true,
+          "currentValue": "updated"
+        }
+      ]
+    }
+  ],
+  "id": "${json-unit.matches:id}",
+  "label": "first data element in profile functional class",
+  "domainType": "DataElement"
+}'''
+
+        when:
+        localResponse = GET("dataElements/$secondModelSecondDataElementId/profiles/used", Argument.listOf(Map))
+
+        then:
+        verifyResponse(OK, localResponse)
+        localResponse.body().size() == 1
+        localResponse.body().first().name == 'Dynamic+Profile+Model'
+        localResponse.body().first().namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
+
+        when:
+        GET("dataElements/$secondModelSecondDataElementId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model", STRING_ARG)
+
+        then:
+        verifyResponse(OK, jsonCapableResponse)
+        verifyJsonResponse OK, '''{
+  "sections": [
+    {
+      "name": "Profile Section Class",
+      "description": null,
+      "fields": [
+        {
+          "fieldName": "Dynamic Profile Elem (Optional)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Optional)",
+          "description": null,
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "allowedValues": [],
+          "regularExpression": null,
+          "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
+          "defaultValue":null,
+          "editableAfterFinalisation": true,
+          "currentValue": "xyz"
+        },
+        {
+          "fieldName": "Dynamic Profile Elem (Mandatory)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Mandatory)",
+          "description": null,
+          "maxMultiplicity": 1,
+          "minMultiplicity": 1,
+          "allowedValues": [],
+          "regularExpression": null,
+          "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
+          "defaultValue":null,
+          "editableAfterFinalisation": true,
+          "currentValue": "pqr"
+        },
+        {
+          "fieldName": "Dynamic Profile Elem (Default Optional)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Default Optional)",
+          "description": null,
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "allowedValues": [],
+          "regularExpression": null,
+          "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
+          "defaultValue":null,
+          "editableAfterFinalisation": true,
+          "currentValue": "onm"
+        }
+      ]
+    }
+  ],
+  "id": "${json-unit.matches:id}",
+  "label": "second data element in profile functional class",
+  "domainType": "DataElement"
+}'''
+
+        /**
+         * 3. Use saveMany to update the dynamic profiles that have previously been saved
+         * against the first and second data elements on the second data model, and also
+         * try to save a profile against the first data element of the third model, but using
+         * the endpoint of the second data model. The first two updates should work, and the
+         * third should fail silently.
+         */
+        when:
+        optionalFieldMap1 = [
+                fieldName   : 'Dynamic Profile Elem (Optional)',
+                currentValue: 'abc updated again'
+        ]
+        mandatoryFieldMap1 = [
+                fieldName   : 'Dynamic Profile Elem (Mandatory)',
+                currentValue: 'def updated again'
+        ]
+        defaultOptionalFieldMap1 = [
+                fieldName   : 'Dynamic Profile Elem (Default Optional)',
+                currentValue: 'updated again'
+        ]
+
+        optionalFieldMap2 = [
+                fieldName   : 'Dynamic Profile Elem (Optional)',
+                currentValue: 'xyz updated'
+        ]
+        mandatoryFieldMap2 = [
+                fieldName   : 'Dynamic Profile Elem (Mandatory)',
+                currentValue: 'pqr updated'
+        ]
+        defaultOptionalFieldMap2 = [
+                fieldName   : 'Dynamic Profile Elem (Default Optional)',
+                currentValue: 'onm updated'
+        ]
+
+        Map optionalFieldMap3 = [
+                fieldName   : 'Dynamic Profile Elem (Optional)',
+                currentValue: 'hij'
+        ]
+        Map mandatoryFieldMap3 = [
+                fieldName   : 'Dynamic Profile Elem (Mandatory)',
+                currentValue: 'klm'
+        ]
+        Map defaultOptionalFieldMap3 = [
+                fieldName   : 'Dynamic Profile Elem (Default Optional)',
+                currentValue: ''
+        ]
+
+        dynamicProfileMap = [
+            profilesProvided: [
+                [
+                    profile: [
+                        sections  : [
+                            [
+                                fields: [
+                                    optionalFieldMap1,
+                                    mandatoryFieldMap1,
+                                    defaultOptionalFieldMap1
+                                ],
+                                name  : 'Profile Section Class'
+                            ]
+                        ],
+                        id        : secondModelFirstDataElementId,
+                        label     : "first data element in profile functional class",
+                        domainType: 'DataElement'],
+                    profileProviderService: [
+                        namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
+                        name      : 'Dynamic+Profile+Model'
+                    ]
+                ],
+                [
+                    profile: [
+                        sections  : [
+                            [
+                                fields: [
+                                    optionalFieldMap2,
+                                    mandatoryFieldMap2,
+                                    defaultOptionalFieldMap2
+                                ],
+                                name  : 'Profile Section Class'
+                            ]
+                        ],
+                        id        : secondModelSecondDataElementId,
+                        label     : "second data element in profile functional class",
+                        domainType: 'DataElement'],
+                    profileProviderService: [
+                        namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
+                        name      : 'Dynamic+Profile+Model'
+                    ]
+                ],
+                [
+                    profile: [
+                        sections  : [
+                            [
+                                fields: [
+                                    optionalFieldMap3,
+                                    mandatoryFieldMap3,
+                                    defaultOptionalFieldMap3
+                                ],
+                                name  : 'Profile Section Class'
+                            ]
+                        ],
+                        id        : thirdModelFirstDataElementId,
+                        label     : "first data element in profile functional class",
+                        domainType: 'DataElement'],
+                    profileProviderService: [
+                        namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
+                        name      : 'Second+Dynamic+Profile+Model'
+                    ]
+                ]
+            ]
+        ]
+
+        POST("dataModels/$secondModelId/profile/saveMany", dynamicProfileMap)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().profilesProvided.size == 2
+        responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == optionalFieldMap1.fieldName}.currentValue == optionalFieldMap1.currentValue
+        responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap1.fieldName}.currentValue == mandatoryFieldMap1.currentValue
+        responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}.currentValue == defaultOptionalFieldMap1.currentValue
+        responseBody().profilesProvided[0].profile.id == secondModelFirstDataElementId
+        responseBody().profilesProvided[0].profile.domainType == "DataElement"
+        responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2.fieldName}.currentValue == optionalFieldMap2.currentValue
+        responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2.fieldName}.currentValue == mandatoryFieldMap2.currentValue
+        responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2.fieldName}.currentValue == defaultOptionalFieldMap2.currentValue
+        responseBody().profilesProvided[1].profile.id == secondModelSecondDataElementId
+        responseBody().profilesProvided[1].profile.domainType == "DataElement"
+
+        when:
+        localResponse = GET("dataElements/$secondModelFirstDataElementId/profiles/used", Argument.listOf(Map))
+
+        then:
+        verifyResponse(OK, localResponse)
+        localResponse.body().size() == 2
+        localResponse.body()[0].name == 'Dynamic+Profile+Model'
+        localResponse.body()[0].namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
+        localResponse.body()[1].name == 'Second+Dynamic+Profile+Model'
+        localResponse.body()[1].namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
+
+        when:
+        GET("dataElements/$secondModelFirstDataElementId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model", STRING_ARG)
+
+        then:
+        verifyResponse(OK, jsonCapableResponse)
+        verifyJsonResponse OK, '''{
+  "sections": [
+    {
+      "name": "Profile Section Class",
+      "description": null,
+      "fields": [
+        {
+          "fieldName": "Dynamic Profile Elem (Optional)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Optional)",
+          "description": null,
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "allowedValues": [],
+          "regularExpression": null,
+          "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
+          "defaultValue":null,
+          "editableAfterFinalisation": true,
+          "currentValue": "abc updated again"
+        },
+        {
+          "fieldName": "Dynamic Profile Elem (Mandatory)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Mandatory)",
+          "description": null,
+          "maxMultiplicity": 1,
+          "minMultiplicity": 1,
+          "allowedValues": [],
+          "regularExpression": null,
+          "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
+          "defaultValue":null,
+          "editableAfterFinalisation": true,
+          "currentValue": "def updated again"
+        },
+        {
+          "fieldName": "Dynamic Profile Elem (Default Optional)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Default Optional)",
+          "description": null,
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "allowedValues": [],
+          "regularExpression": null,
+          "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
+          "defaultValue":null,
+          "editableAfterFinalisation": true,
+          "currentValue": "updated again"
+        }
+      ]
+    }
+  ],
+  "id": "${json-unit.matches:id}",
+  "label": "first data element in profile functional class",
+  "domainType": "DataElement"
+}'''
+
+        when:
+        localResponse = GET("dataElements/$secondModelSecondDataElementId/profiles/used", Argument.listOf(Map))
+
+        then:
+        verifyResponse(OK, localResponse)
+        localResponse.body().size() == 1
+        localResponse.body().first().name == 'Dynamic+Profile+Model'
+        localResponse.body().first().namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
+
+        when:
+        GET("dataElements/$secondModelSecondDataElementId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model", STRING_ARG)
+
+        then:
+        verifyResponse(OK, jsonCapableResponse)
+        verifyJsonResponse OK, '''{
+  "sections": [
+    {
+      "name": "Profile Section Class",
+      "description": null,
+      "fields": [
+        {
+          "fieldName": "Dynamic Profile Elem (Optional)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Optional)",
+          "description": null,
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "allowedValues": [],
+          "regularExpression": null,
+          "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
+          "defaultValue":null,
+          "editableAfterFinalisation": true,
+          "currentValue": "xyz updated"
+        },
+        {
+          "fieldName": "Dynamic Profile Elem (Mandatory)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Mandatory)",
+          "description": null,
+          "maxMultiplicity": 1,
+          "minMultiplicity": 1,
+          "allowedValues": [],
+          "regularExpression": null,
+          "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
+          "defaultValue":null,
+          "editableAfterFinalisation": true,
+          "currentValue": "pqr updated"
+        },
+        {
+          "fieldName": "Dynamic Profile Elem (Default Optional)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Default Optional)",
+          "description": null,
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "allowedValues": [],
+          "regularExpression": null,
+          "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
+          "defaultValue":null,
+          "editableAfterFinalisation": true,
+          "currentValue": "onm updated"
+        }
+      ]
+    }
+  ],
+  "id": "${json-unit.matches:id}",
+  "label": "second data element in profile functional class",
+  "domainType": "DataElement"
+}'''
+
+        when:
+        localResponse = GET("dataElements/$thirdModelFirstDataElementId/profiles/used", Argument.listOf(Map))
+
+        then:
+        verifyResponse(OK, localResponse)
+        localResponse.body().size() == 0
+
+        when: 'do the same POST again, but after finalising the data models'
+        finaliseDataModelId(secondModelId)
+        finaliseDataModelId(thirdModelId)
+        loginEditor()
+        POST("dataModels/$secondModelId/profile/saveMany", dynamicProfileMap)
+
+        then: 'no changes are made'
+        verifyResponse(OK, response)
+        responseBody().count == 0
+        responseBody().profilesProvided.size == 0
+
+        when: 'make the same POST again, but this time to thirdDataModel'
+        POST("dataModels/$thirdModelId/profile/saveMany", dynamicProfileMap)
+
+        then: 'the change to the first data element on the third model is made'
+        verifyResponse(OK, response)
+        responseBody().count == 1
+        responseBody().profilesProvided.size == 1
+
+        /**
+         * 4. Get many profiles for many elements
+         */
+        Map getManyMap = [
+            "multiFacetAwareItems": [
+                [
+                    "multiFacetAwareItemDomainType": "dataElement",
+                    "multiFacetAwareItemId": secondModelFirstDataElementId
+                ],
+                [
+                    "multiFacetAwareItemDomainType": "dataElement",
+                    "multiFacetAwareItemId": secondModelSecondDataElementId
+                ]
+            ],
+            "profileProviderServices": [
+                [
+                    "name": "Dynamic+Profile+Model",
+                    "namespace": "uk.ac.ox.softeng.maurodatamapper.profile.provider"
+                ]
+            ]
+        ]
+
+        when: 'correctly request against the second model'
+        POST("dataModels/$secondModelId/profile/getMany", getManyMap)
+
+        then: 'the profiles are listed'
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().profilesProvided.size == 2
+
+        when: 'incorrectly request against the third model'
+        POST("dataModels/$thirdModelId/profile/getMany", getManyMap)
+
+        then: 'the profiles are not listed'
+        verifyResponse(OK, response)
+        responseBody().count == 0
+        !responseBody().profilesProvided
+
+
+        cleanup:
+        cleanupDataModelId(secondModelId)
+        cleanupDataModelId(thirdModelId)
+        cleanupDataModelId(dynamicProfileModelId)
+        cleanupDataModelId(secondDynamicProfileModelId)
     }
 }
