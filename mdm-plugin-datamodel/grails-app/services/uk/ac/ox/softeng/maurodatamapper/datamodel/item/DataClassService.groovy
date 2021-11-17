@@ -79,6 +79,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     @Override
     DataClass save(Map args, DataClass domain) {
         // If not previously saved then allow a deep save and/or datatype save
+        Collection<DataType> newDataTypes
         if (!domain.ident()) {
             if (args.deepSave) {
                 saveDataClassHierarchy(domain)
@@ -86,13 +87,37 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
 
             // If ignore datatypes then skip this bit or DC already been saved as this is designed to handle full builds or copies
             if (args.saveDataTypes) {
-                saveDataTypesUsedInDataClass(domain)
+                newDataTypes = saveDataTypesUsedInDataClass(domain)
             }
         }
-        super.save(args, domain)
+        if(args.deepSave){
+            this.updateDataClassHierarchyAfterInsert(args, domain)
+        }
+
+        DataClass saved = super.save(args, domain)
+
+        if(newDataTypes){
+            newDataTypes.each{dt ->
+                dataTypeService.updateFacetsAfterInsertingCatalogueItem(dt)
+            }
+        }
+        saved
     }
 
-    void saveDataTypesUsedInDataClass(DataClass dataClass) {
+    void updateDataClassHierarchyAfterInsert(Map args, DataClass dataClass){
+        if(dataClass.dataElements){
+            dataClass.dataElements.each{de ->
+                dataElementService.save(de)
+            }
+        }
+        if(dataClass.dataClasses){
+            dataClass.dataClasses.each{dc ->
+                updateDataClassHierarchyAfterInsert(args, dc)
+            }
+        }
+    }
+
+    Collection<DataType> saveDataTypesUsedInDataClass(DataClass dataClass) {
         // Make sure all datatypes are saved
         Set<DataType> dataTypes = extractAllUsedNewOrDirtyDataTypes(dataClass)
         log.debug('{} new or dirty used datatypes inside dataclass', dataTypes.size())
@@ -123,7 +148,6 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         dataClass.dataElements?.clear()
         Set<ReferenceType> referenceTypes = new HashSet<>(dataClass.referenceTypes ?: [])
         dataClass.referenceTypes?.clear()
-
         // Save the DC without flushing
         dataClass.save(flush: false, validate: false)
 

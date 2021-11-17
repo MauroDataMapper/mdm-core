@@ -147,6 +147,7 @@ class BootstrapModels {
 
             DataClass parent =
                 new DataClass(createdBy: DEVELOPMENT, label: 'parent', minMultiplicity: 1, maxMultiplicity: -1, dataModel: dataModel)
+
             DataClass child = new DataClass(createdBy: DEVELOPMENT, label: 'child')
             parent.addToDataClasses(child)
             dataModel.addToDataClasses(child)
@@ -174,6 +175,22 @@ class BootstrapModels {
             DataElement el1 = new DataElement(createdBy: DEVELOPMENT, label: 'child', minMultiplicity: 1, maxMultiplicity: 1)
             refType.addToDataElements(el1)
             parent.addToDataElements(el1)
+
+            Metadata metaclass = new Metadata(createdBy: DEVELOPMENT,
+                                              namespace: 'test.com', key: 'mdcl1', value: 'mdcl1')
+            parent.addToMetadata(metaclass)
+
+            checkAndSave(messageSource, parent)
+            checkAndSave(messageSource, metaclass)
+
+            Metadata metaelement = new Metadata(createdBy: DEVELOPMENT,
+                                                namespace: 'test.com', key: 'mdel1', value: 'mdel1')
+
+            el1.addToMetadata(metaelement)
+            checkAndSave(messageSource, el1)
+            checkAndSave(messageSource, metaelement)
+
+            checkAndSave(messageSource, parent)
 
             DataClass content = new DataClass(createdBy: DEVELOPMENT, label: 'content', description: 'A dataclass with elements',
                                               minMultiplicity: 0, maxMultiplicity: 1)

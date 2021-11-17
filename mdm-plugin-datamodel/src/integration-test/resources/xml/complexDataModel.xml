@@ -151,6 +151,15 @@
         <mdm:lastUpdated>2020-04-12T16:48:47.581144Z</mdm:lastUpdated>
         <mdm:maxMultiplicity>-1</mdm:maxMultiplicity>
         <mdm:minMultiplicity>1</mdm:minMultiplicity>
+        <mdm:metadata>
+          <mdm:metadata>
+            <mdm:id>f586794a-2132-4392-9154-4d94f3df4ccc</mdm:id>
+            <mdm:namespace>test.com</mdm:namespace>
+            <mdm:key>mdcl1</mdm:key>
+            <mdm:value>mdcl1</mdm:value>
+            <mdm:lastUpdated>2021-12-16T20:03:06.918Z</mdm:lastUpdated>
+          </mdm:metadata>
+        </mdm:metadata>
         <mdm:dataClasses>
           <mdm:dataClass>
             <mdm:id>ac948501-d3d9-430d-81a9-b3ceaa8c3171</mdm:id>
@@ -163,6 +172,15 @@
             <mdm:id>7a14a850-5e5d-4b4d-8e77-a61d79a0236f</mdm:id>
             <mdm:label>child</mdm:label>
             <mdm:lastUpdated>2020-04-12T16:48:47.572319Z</mdm:lastUpdated>
+            <mdm:metadata>
+              <mdm:metadata>
+                <mdm:id>b67eda47-5515-455a-8aa0-afcb28ba4a74</mdm:id>
+                <mdm:namespace>test.com</mdm:namespace>
+                <mdm:key>mdel1</mdm:key>
+                <mdm:value>mdel1</mdm:value>
+                <mdm:lastUpdated>2021-12-16T20:03:06.949Z</mdm:lastUpdated>
+              </mdm:metadata>
+            </mdm:metadata>
             <mdm:dataType>
               <mdm:id>c4f4eaf9-7557-4e5f-92ea-bfa9008456ab</mdm:id>
               <mdm:label>child</mdm:label>
