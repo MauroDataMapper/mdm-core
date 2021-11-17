@@ -146,51 +146,51 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         }
 
         POST("dataModels/$dynamicProfileModelId/dataClasses/$dataClassId/dataElements", [
-                label          : 'Dynamic Profile Elem (Optional)',
-                dataType       : dataTypes.string,
-                maxMultiplicity: 1,
-                minMultiplicity: 0
+            label          : 'Dynamic Profile Elem (Optional)',
+            dataType       : dataTypes.string,
+            maxMultiplicity: 1,
+            minMultiplicity: 0
         ])
         verifyResponse(CREATED, response)
 
         POST("dataModels/$dynamicProfileModelId/dataClasses/$dataClassId/dataElements", [
-                label          : 'Dynamic Profile Elem (Mandatory)',
-                dataType       : dataTypes.string,
-                maxMultiplicity: 1,
-                minMultiplicity: 1
+            label          : 'Dynamic Profile Elem (Mandatory)',
+            dataType       : dataTypes.string,
+            maxMultiplicity: 1,
+            minMultiplicity: 1
         ])
         verifyResponse(CREATED, response)
 
         POST("dataModels/$dynamicProfileModelId/dataClasses/$dataClassId/dataElements", [
-                label   : 'Dynamic Profile Elem (Default Optional)',
-                dataType: dataTypes.string
+            label   : 'Dynamic Profile Elem (Default Optional)',
+            dataType: dataTypes.string
         ])
         verifyResponse(CREATED, response)
 
         Map namespaceFieldMap = [
-                currentValue        : 'functional.test.profile',
-                metadataPropertyName: 'metadataNamespace',
+            currentValue        : 'functional.test.profile',
+            metadataPropertyName: 'metadataNamespace',
         ]
         Map domainsFieldMap = [
-                currentValue        : '',
-                metadataPropertyName: 'domainsApplicable',
+            currentValue        : '',
+            metadataPropertyName: 'domainsApplicable',
         ]
         Map profileMap = [
-                sections  : [
-                        [
-                                description: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
-                                fields     : [
-                                        namespaceFieldMap,
-                                        domainsFieldMap
-                                ],
-                                name       : 'Profile Specification'
-                        ]
-                ],
-                id        : dynamicProfileModelId.toString(),
-                label     : 'Dynamic Profile Model',
-                domainType: 'DataModel',
-                namespace : profileSpecificationProfileService.namespace,
-                name      : profileSpecificationProfileService.name
+            sections  : [
+                [
+                    description: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
+                    fields     : [
+                        namespaceFieldMap,
+                        domainsFieldMap
+                    ],
+                    name       : 'Profile Specification'
+               ]
+            ],
+            id        : dynamicProfileModelId.toString(),
+            label     : 'Dynamic Profile Model',
+            domainType: 'DataModel',
+            namespace : profileSpecificationProfileService.namespace,
+            name      : profileSpecificationProfileService.name
         ]
 
         POST("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${dynamicProfileModelId}", profileMap)
@@ -1719,8 +1719,9 @@ class ProfileFunctionalSpec extends FunctionalSpec {
      * try to save a profile against the first data element of the third model, but using
      * the endpoint of the second data model. The first two updates should work, and the
      * third should fail silently.
+     * 4. Use getMany to retrieve the saved profiles
      */
-    void 'N14 : test saving a dynamic profile (as editor) using saveMany'() {
+    void 'N14 : test saving and retrieving dynamic profiles (as editor) using saveMany and getMany'() {
         given:
         Map<String, String> secondIds = getSecondDataModelIds()
         String secondModelId = secondIds["dataModelId"]
