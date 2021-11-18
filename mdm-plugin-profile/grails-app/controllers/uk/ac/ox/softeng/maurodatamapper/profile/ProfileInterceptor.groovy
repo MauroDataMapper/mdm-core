@@ -51,9 +51,14 @@ class ProfileInterceptor extends FacetInterceptor {
             return canRead ?: notFound(id ? resourceClass : owningSecureResourceClass, (id ?: owningSecureResourceId).toString())
         }
 
+        // This tests that we *might* be able to save.
         // ProfileController.saveMany must check access for every profile service provider referenced in the request body
         if (actionName == "saveMany") {
-            return true
+            return (currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(owningSecureResourceClass, owningSecureResourceId, 'saveIgnoreFinalise')
+                    ||
+                    currentUserSecurityPolicyManager.userCanCreateResourceId(Profile.class, null, owningSecureResourceClass, owningSecureResourceId))
+                    ?:
+                    forbiddenOrNotFound(canRead, id ? resourceClass : owningSecureResourceClass, id ?: owningSecureResourceId)
         }
 
         ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName, params.profileVersion)
