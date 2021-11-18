@@ -27,7 +27,7 @@ class SubscribedModelInterceptor extends SecurableResourceInterceptor {
 
     @Override
     def <S extends SecurableResource> Class<S> getSecuredClass() {
-        SubscribedCatalogue as Class<S>
+        SubscribedModel as Class<S>
     }
 
     @Override

@@ -54,7 +54,7 @@ class PublishService {
     }
 
     List<PublishedModel> findAllPublishedReadableModels(UserSecurityPolicyManager userSecurityPolicyManager) {
-        findAllReadableModelsToPublish(userSecurityPolicyManager).collect {new PublishedModel(it)}
+        findAllReadableModelsToPublish(userSecurityPolicyManager).collect {new PublishedModel(it)}.sort()
     }
 
     List<PublishedModel> findPublishedSupersedingModels(List<PublishedModel> publishedModels, String modelType, UUID modelId,
@@ -63,17 +63,11 @@ class PublishService {
             findServiceForModelDomainType(modelType).buildModelVersionTree(findModelByDomainTypeAndId(modelType, modelId), null, null,
                                                                            false, false, userSecurityPolicyManager)
         List<PublishedModel> newerPublishedModels = []
-        def findPublishedParent
-        findPublishedParent = {VersionTreeModel child ->
-            VersionTreeModel parent = child.parentVersionTreeModel
-            if (publishedModels.find {pm -> pm.modelId = parent.versionAware.id}) return parent
-            else findPublishedParent(parent)
-        }
         newerVersionTree.findAll {it ->
             Model model = it.versionAware
             model.id != modelId && publishedModels.find {pm -> pm.modelId == model.id}
         }.each {vtm ->
-            newerPublishedModels << new PublishedModel(vtm.versionAware).tap {previousModelId = findPublishedParent(vtm).versionAware.id}
+            newerPublishedModels << new PublishedModel(vtm.versionAware).tap {previousModelId = vtm.parentVersionTreeModel.versionAware.id}
         }
         return newerPublishedModels
     }

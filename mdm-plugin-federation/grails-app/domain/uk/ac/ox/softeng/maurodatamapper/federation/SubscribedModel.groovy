@@ -56,7 +56,7 @@ class SubscribedModel implements SecurableResource, EditHistoryAware {
     }
 
     SubscribedModel() {
-        readableByAuthenticatedUsers = false
+        readableByAuthenticatedUsers = true
         readableByEveryone = false
     }
 

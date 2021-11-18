@@ -45,6 +45,16 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 
+/**
+ * @see uk.ac.ox.softeng.maurodatamapper.federation.SubscribedModelController* Controller: subscribedModel
+ *  | POST   | /api/subscribedCatalogues/${subscribedCatalogueId}/subscribedModels                     | Action: save          |
+ *  | GET    | /api/subscribedCatalogues/${subscribedCatalogueId}/subscribedModels                     | Action: index         |
+ *  | DELETE | /api/subscribedCatalogues/${subscribedCatalogueId}/subscribedModels/${id}               | Action: delete        |
+ *  | PUT    | /api/subscribedCatalogues/${subscribedCatalogueId}/subscribedModels/${id}               | Action: update        |
+ *  | GET    | /api/subscribedCatalogues/${subscribedCatalogueId}/subscribedModels/${id}               | Action: show          |
+ *  | GET    | /api/subscribedCatalogues/${subscribedCatalogueId}/subscribedModels/${id}/newerVersions | Action: newerVersions |
+ *
+ */
 @Integration
 @Slf4j
 class SubscribedModelFunctionalSpec extends FunctionalSpec {
@@ -67,8 +77,8 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
                                  createdBy: FUNCTIONAL_TEST).save(flush: true).id
 
 
-        subscribedCatalogueId = new SubscribedCatalogue(url: "http://localhost:$serverPort/".toString(),
-                                                        apiKey: adminApiKey,
+        subscribedCatalogueId = new SubscribedCatalogue(url: 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment',
+                                                        apiKey: '720e60bc-3993-48d4-a17e-c3a13f037c7e',
                                                         label: 'Functional Test Label',
                                                         description: 'Functional Test Description',
                                                         refreshPeriod: 7,
@@ -97,31 +107,45 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
 
     String getValidId() {
         loginAdmin()
-        POST('?federate=false', validJson)
+        POST('', validJson)
         verifyResponse CREATED, response
-        String id = response.body().id
+        String id = responseBody().id
         logout()
         id
     }
 
-    void removeValidIdObject(String id) {
+    void removeValidIdObjects(String id, String localModelId = null) {
         loginAdmin()
-        DELETE(id)
-        verifyResponse NO_CONTENT, response
+        if (id) {
+            DELETE(id)
+            verifyResponse NO_CONTENT, response
+        }
+        if (localModelId) {
+            DELETE("dataModels/${localModelId}?permanent=true", MAP_ARG, true)
+            verifyResponse NO_CONTENT, response
+        }
         logout()
+    }
+
+    String getSubscribedModelLocalModelId(String id) {
+        loginAdmin()
+        GET(id)
+        String localModelId = responseBody().localModelId
+        logout()
+        localModelId
     }
 
     @Transactional
     void cleanUpRoles(String... ids) {
         log.info('Cleaning up roles and groups')
         log.debug('Cleaning up {} roles for ids {}', SecurableResourceGroupRole.count(), ids)
-        SecurableResourceGroupRole.bySecurableResourceIds(ids.collect { Utils.toUuid(it) }).deleteAll()
+        SecurableResourceGroupRole.bySecurableResourceIds(ids.collect {Utils.toUuid(it)}).deleteAll()
         sessionFactory.currentSession.flush()
     }
 
     Map getValidJson() {
         [
-            subscribedModelId  : '67421316-66a5-4830-9156-b1ba77bba5d1',
+            subscribedModelId  : '427d1243-4f89-46e8-8f8f-8424890b5083',
             folderId           : getFolderId(),
             subscribedModelType: 'DataModel'
         ]
@@ -130,14 +154,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
     Map getInvalidJson() {
         [
             subscribedModelId: null,
-            folderId: getFolderId()
-        ]
-    }
-
-    Map getValidUpdateJson() {
-        [
-            subscribedModelId: '67421316-66a5-4830-9156-b1ba77bba5d1',
-            folderId: getFolderId()
+            folderId         : getFolderId()
         ]
     }
 
@@ -155,6 +172,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
 
         then:
         verifyResponse OK, response
+        String localModelId = responseBody().localModelId
 
         when: 'When the index action is called'
         GET('')
@@ -163,8 +181,8 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         verifyResponse OK, response
 
         cleanup:
-        removeValidIdObject(id)
-        cleanUpRoles(id)
+        removeValidIdObjects(id, localModelId)
+        cleanUpRoles(id, localModelId)
     }
 
     /*
@@ -188,8 +206,9 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         verifyResponse NOT_FOUND, response
 
         cleanup:
-        removeValidIdObject(id)
-        cleanUpRoles(id)
+        String localModelId = getSubscribedModelLocalModelId(id)
+        removeValidIdObjects(id, localModelId)
+        cleanUpRoles(id, localModelId)
     }
 
     /**
@@ -205,6 +224,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
 
         then:
         verifyResponse OK, response
+        String localModelId = responseBody().localModelId
 
         when: 'When the index action is called'
         GET('')
@@ -213,8 +233,8 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         verifyResponse OK, response
 
         cleanup:
-        removeValidIdObject(id)
-        cleanUpRoles(id)
+        removeValidIdObjects(id, localModelId)
+        cleanUpRoles(id, localModelId)
     }
 
     /**
@@ -230,6 +250,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
 
         then:
         verifyResponse OK, response
+        String localModelId = responseBody().localModelId
 
         when: 'When the index action is called'
         GET('')
@@ -238,8 +259,8 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         verifyResponse OK, response
 
         cleanup:
-        removeValidIdObject(id)
-        cleanUpRoles(id)
+        removeValidIdObjects(id, localModelId)
+        cleanUpRoles(id, localModelId)
     }
 
     /*
@@ -256,64 +277,50 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
 
         then:
         verifyResponse OK, response
+        String localModelId = responseBody().localModelId
 
         cleanup:
-        removeValidIdObject(id)
-        cleanUpRoles(id)
+        removeValidIdObjects(id, localModelId)
+        cleanUpRoles(id, localModelId)
     }
 
     /*
      * Logged in as editor testing
      */
 
-    void 'E03a : Test the save action is forbidden (as editor)'() {
+    void 'E03 : Test the save action is ok (as editor)'() {
         given:
         loginEditor()
 
         when: 'The save action is executed with no content'
         POST('', [:])
 
-        then: 'The response is forbidden'
-        verifyResponse FORBIDDEN, response
+        then: 'The response is correct'
+        verifyResponse UNPROCESSABLE_ENTITY, response
 
         when: 'The save action is executed with invalid data'
         POST('', invalidJson)
 
-        then: 'The response is forbidden'
-        verifyResponse FORBIDDEN, response
+        then: 'The response is correct'
+        verifyResponse UNPROCESSABLE_ENTITY, response
 
         when: 'The save action is executed with valid data'
         POST('', validJson)
 
-        then: 'The response is forbidden'
-        verifyResponse FORBIDDEN, response
-    }
-
-    void 'E03b : Test the save action is forbidden when using  PUT (as editor)'() {
-        given:
-        String id = getValidId()
-        loginEditor()
-
-        when: 'The save action is executed with invalid data'
-        PUT(id, invalidJson)
-
-        then: 'The response is forbidden'
-        verifyResponse FORBIDDEN, response
-
-        when: 'The save action is executed with valid data'
-        PUT(id, validJson)
-
-        then: 'The response is forbidden'
-        verifyResponse FORBIDDEN, response
+        then: 'The response is correct'
+        verifyResponse CREATED, response
+        String id = responseBody().id
+        String localModelId = responseBody().localModelId
 
         cleanup:
-        removeValidIdObject(id)
-        cleanUpRoles(id)
+        removeValidIdObjects(id, localModelId)
+        cleanUpRoles(id, localModelId)
     }
 
     void 'E04 : Test the delete action is forbidden (as editor)'() {
         given:
         String id = getValidId()
+        String localModelId = getSubscribedModelLocalModelId(id)
         loginEditor()
 
         when: 'When the delete action is executed on an existing instance'
@@ -323,15 +330,15 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         verifyResponse FORBIDDEN, response
 
         cleanup:
-        removeValidIdObject(id)
-        cleanUpRoles(id)
+        removeValidIdObjects(id, localModelId)
+        cleanUpRoles(id, localModelId)
     }
 
     /*
      * Logged out testing
      */
 
-    void 'L03a : Test the save action is not found (as not logged in)'() {
+    void 'L03 : Test the save action is not found (as not logged in)'() {
         given:
 
         when: 'The save action is executed with no content'
@@ -353,30 +360,10 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         verifyResponse NOT_FOUND, response
     }
 
-    void 'L03b : Test the save action is not found when using  PUT (as not logged in)'() {
-        given:
-        String id = getValidId()
-
-        when: 'The save action is executed with invalid data'
-        PUT(id, invalidJson)
-
-        then: 'The response is not found'
-        verifyResponse NOT_FOUND, response
-
-        when: 'The save action is executed with valid data'
-        PUT(id, validJson)
-
-        then: 'The response is not found'
-        verifyResponse NOT_FOUND, response
-
-        cleanup:
-        removeValidIdObject(id)
-        cleanUpRoles(id)
-    }
-
     void 'L04 : Test the delete action is not found (as not logged in)'() {
         given:
         String id = getValidId()
+        String localModelId = getSubscribedModelLocalModelId(id)
 
         when: 'When the delete action is executed on an existing instance'
         DELETE(id)
@@ -385,62 +372,43 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         verifyResponse NOT_FOUND, response
 
         cleanup:
-        removeValidIdObject(id)
-        cleanUpRoles(id)
+        removeValidIdObjects(id, localModelId)
+        cleanUpRoles(id, localModelId)
     }
 
     /**
      * Testing when logged in as a no access/authenticated user
      */
 
-    void 'N03a : Test the save action is forbidden (as authenticated)'() {
+    void 'N03 : Test the save action is ok (as authenticated)'() {
         given:
         loginAuthenticated()
 
         when: 'The save action is executed with no content'
         POST('', [:])
 
-        then: 'The response is forbidden'
-        verifyResponse FORBIDDEN, response
+        then: 'The response is correct'
+        verifyResponse UNPROCESSABLE_ENTITY, response
 
         when: 'The save action is executed with invalid data'
         POST('', invalidJson)
 
-        then: 'The response is forbidden'
-        verifyResponse FORBIDDEN, response
+        then: 'The response is correct'
+        verifyResponse UNPROCESSABLE_ENTITY, response
 
         when: 'The save action is executed with valid data'
         POST('', validJson)
 
-        then: 'The response is forbidden'
-        verifyResponse FORBIDDEN, response
-    }
-
-    void 'N03b : Test the save action is forbidden when using  PUT (as authenticated)'() {
-        given:
-        String id = getValidId()
-        loginAuthenticated()
-
-        when: 'The save action is executed with invalid data'
-        PUT(id, invalidJson)
-
-        then: 'The response is forbidden'
-        verifyResponse FORBIDDEN, response
-
-        when: 'The save action is executed with valid data'
-        PUT(id, validJson)
-
-        then: 'The response is forbidden'
-        verifyResponse FORBIDDEN, response
-
-        cleanup:
-        removeValidIdObject(id)
-        cleanUpRoles(id)
+        then: 'The response is correct'
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().total == 1
+        responseBody().errors.contains([message: 'Invalid folderId for subscribed model, user does not have the necessary permissions'])
     }
 
     void 'N04 : Test the delete action is forbidden (as authenticated)'() {
         given:
         String id = getValidId()
+        String localModelId = getSubscribedModelLocalModelId(id)
         loginAuthenticated()
 
         when: 'When the delete action is executed on an existing instance'
@@ -450,8 +418,8 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         verifyResponse FORBIDDEN, response
 
         cleanup:
-        removeValidIdObject(id)
-        cleanUpRoles(id)
+        removeValidIdObjects(id, localModelId)
+        cleanUpRoles(id, localModelId)
     }
 
     /**
@@ -465,47 +433,28 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         when: 'The save action is executed with no content'
         POST('', [:])
 
-        then: 'The response is forbidden'
-        verifyResponse FORBIDDEN, response
+        then: 'The response is correct'
+        verifyResponse UNPROCESSABLE_ENTITY, response
 
         when: 'The save action is executed with invalid data'
         POST('', invalidJson)
 
-        then: 'The response is forbidden'
-        verifyResponse FORBIDDEN, response
+        then: 'The response is correct'
+        verifyResponse UNPROCESSABLE_ENTITY, response
 
         when: 'The save action is executed with valid data'
         POST('', validJson)
 
-        then: 'The response is forbidden'
-        verifyResponse FORBIDDEN, response
-    }
-
-    void 'R03b : Test the save action is forbidden when using  PUT (as reader)'() {
-        given:
-        String id = getValidId()
-        loginReader()
-
-        when: 'The save action is executed with invalid data'
-        PUT(id, invalidJson)
-
-        then: 'The response is forbidden'
-        verifyResponse FORBIDDEN, response
-
-        when: 'The save action is executed with valid data'
-        PUT(id, validJson)
-
-        then: 'The response is forbidden'
-        verifyResponse FORBIDDEN, response
-
-        cleanup:
-        removeValidIdObject(id)
-        cleanUpRoles(id)
+        then: 'The response is correct'
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().total == 1
+        responseBody().errors.contains([message: 'Invalid folderId for subscribed model, user does not have the necessary permissions'])
     }
 
     void 'R04 : Test the delete action is forbidden (as reader)'() {
         given:
         String id = getValidId()
+        String localModelId = getSubscribedModelLocalModelId(id)
         loginReader()
 
         when: 'When the delete action is executed on an existing instance'
@@ -515,8 +464,8 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         verifyResponse FORBIDDEN, response
 
         cleanup:
-        removeValidIdObject(id)
-        cleanUpRoles(id)
+        removeValidIdObjects(id, localModelId)
+        cleanUpRoles(id, localModelId)
     }
 
     /*
@@ -524,7 +473,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
     * This proves that admin users can mess with items created by other users
     */
 
-    void 'A03a : Test the save action is ok (as admin)'() {
+    void 'A03 : Test the save action is ok (as admin)'() {
         given:
         loginAdmin()
 
@@ -541,52 +490,32 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         verifyResponse UNPROCESSABLE_ENTITY, response
 
         when: 'The save action is executed with valid data'
-        POST('?federate=false', validJson)
+        POST('', validJson)
 
         then: 'The response is correct'
         verifyResponse CREATED, response
         String id = responseBody().id
+        String localModelId = responseBody().localModelId
 
         cleanup:
-        removeValidIdObject(id)
-        cleanUpRoles(id)
+        removeValidIdObjects(id, localModelId)
+        cleanUpRoles(id, localModelId)
     }
-
-    void 'A03b : Test the save action is OK when using PUT (as admin)'() {
-        given:
-        String id = getValidId()
-        loginAdmin()
-
-        when: 'The save action is executed with invalid data'
-        PUT(id, invalidJson)
-
-        then: 'The response is correct'
-        verifyResponse UNPROCESSABLE_ENTITY, response
-
-        when: 'The save action is executed with valid data'
-        PUT(id, validJson)
-
-        then: 'The response is not found'
-        verifyResponse OK, response
-
-        cleanup:
-        removeValidIdObject(id)
-        cleanUpRoles(id)
-    }
-
 
     void 'A04 : Test the delete action is ok (as admin)'() {
         given:
         String id = getValidId()
+        String localModelId = getSubscribedModelLocalModelId(id)
         loginAdmin()
 
         when: 'When the delete action is executed on an existing instance'
         DELETE(id)
 
-        then: 'The response is not correct'
+        then: 'The response is correct'
         verifyResponse NO_CONTENT, response
 
         cleanup:
+        removeValidIdObjects(null, localModelId)
         cleanUpRoles(id)
     }
 
@@ -594,26 +523,26 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         given:
         loginAdmin()
 
-        //        when: 'The save action is executed with non-existent published model id'
-        //        POST('?federate=true', validJson)
-        //
-        //        then: 'The response is unprocessable as no export endpoint'
-        //        verifyResponse UNPROCESSABLE_ENTITY, response
-        //        responseBody().errors.first().message == 'Could not federate SubscribedModel into local Catalogue due to ' +
-        //        "[Requested endpoint could not be found http://localhost:$serverPort/api/dataModels/67421316-66a5-4830-9156-b1ba77bba5d1/export]"
+        when: 'The save action is executed with valid data'
+        POST('', validJson)
+
+        then: 'The response is correct'
+        verifyResponse CREATED, response
+        String id = responseBody().id
+        String localModelId = responseBody().localModelId
 
         when: 'The save action is executed with existing published model id'
-        POST('?federate=true', [
-            subscribedModelId  : getPublishedDataModelId(),
-            folderId           : getFolderId(),
-            subscribedModelType: 'DataModel'
-        ])
+        POST('', validJson)
 
-        then: 'The response is unprocessable as subscribed/federated model has same authority and label as model already in storage'
+        then: 'The response is unprocessable as this model is already subscribed'
         verifyResponse UNPROCESSABLE_ENTITY, response
-        responseBody().errors.first().message == 'Model from authority [Mauro Data Mapper@http://localhost] with label [Finalised Example Test DataModel] ' +
-        'and version [1.0.0] already exists in catalogue'
+        log.debug('responseBody().errors.first().message={}', responseBody().errors.first().message)
+        responseBody().errors.first().message == 'Property [subscribedModelId] of class [class uk.ac.ox.softeng.maurodatamapper.federation.SubscribedModel] with value [' +
+            getValidJson().subscribedModelId + '] must be unique'
 
+        cleanup:
+        removeValidIdObjects(id, localModelId)
+        cleanUpRoles(id, localModelId)
     }
 
     @Transactional

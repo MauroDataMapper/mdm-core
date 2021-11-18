@@ -134,7 +134,7 @@ class SubscribedCatalogueService implements XmlImportMapping {
                 author = pm.author
                 description = pm.description
             }
-        }
+        }.sort()
     }
 
     List<Map<String, Object>> getAvailableExportersForResourceType(SubscribedCatalogue subscribedCatalogue, String urlResourceType) {

@@ -20,9 +20,11 @@ package uk.ac.ox.softeng.maurodatamapper.federation
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
+import groovy.transform.Sortable
+
 import java.time.OffsetDateTime
 
-
+@Sortable(includes = ['modelLabel', 'modelType', 'modelVersion'])
 class PublishedModel {
 
     UUID modelId

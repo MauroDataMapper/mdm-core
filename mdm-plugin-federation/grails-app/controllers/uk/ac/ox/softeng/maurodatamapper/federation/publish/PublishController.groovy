@@ -65,6 +65,6 @@ class PublishController extends RestfulController<Model> implements Resourceless
 
         List<PublishedModel> newerPublishedModels =
             publishService.findPublishedSupersedingModels(publishedModels, publishedModel.modelType, modelId, currentUserSecurityPolicyManager)
-        respond newerPublishedModels
+        respond(newerPublishedModels: newerPublishedModels)
     }
 }
