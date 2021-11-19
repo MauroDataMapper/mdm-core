@@ -192,7 +192,8 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
             modifyAndModifyReturningDifference  : getIdFromPath(target, "${pathing}dm:Functional Test DataModel ${suffix}\$main|dc:modifyAndModifyReturningDifference"),
             deleteLeftOnly                      : getIdFromPath(target, "${pathing}dm:Functional Test DataModel ${suffix}\$main|dc:deleteLeftOnly"),
             modifyLeftOnly                      : getIdFromPath(target, "${pathing}dm:Functional Test DataModel ${suffix}\$main|dc:modifyLeftOnly"),
-            deleteLeftOnlyFromExistingClass     : getIdFromPath(target, "${pathing}dm:Functional Test DataModel ${suffix}\$main|dc:deleteLeftOnlyFromExistingClass"),
+            deleteLeftOnlyFromExistingClass     :
+                    getIdFromPath(target, "${pathing}dm:Functional Test DataModel ${suffix}\$main|dc:existingClass|dc:deleteLeftOnlyFromExistingClass"),
             metadataModifyAndDelete             : getIdFromPath(target, "${pathing}dm:Functional Test DataModel ${suffix}\$main|md:functional.test.modifyAndDelete"),
         ]
 
