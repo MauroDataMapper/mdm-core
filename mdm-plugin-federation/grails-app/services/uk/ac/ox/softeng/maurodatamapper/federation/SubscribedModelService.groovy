@@ -101,6 +101,9 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
 
     @Override
     void delete(SubscribedModel subscribedModel) {
+        if (securityPolicyManagerService) {
+            securityPolicyManagerService.removeSecurityForSecurableResource(subscribedModel, null)
+        }
         subscribedModel.delete(flush: true)
     }
 

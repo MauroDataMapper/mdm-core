@@ -92,7 +92,7 @@ class FederationClient {
         } else {
             this.contextPath = 'api'
         }
-        httpClientConfiguration.setReadTimeout(Duration.ofMinutes(5))
+        httpClientConfiguration.setReadTimeout(Duration.ofMinutes(30))
         client = new DefaultHttpClient(LoadBalancer.fixed(hostUrl.toURL()),
                                        httpClientConfiguration,
                                        this.contextPath,
