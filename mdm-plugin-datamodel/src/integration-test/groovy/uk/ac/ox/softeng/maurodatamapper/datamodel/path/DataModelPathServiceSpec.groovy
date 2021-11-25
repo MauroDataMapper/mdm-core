@@ -50,6 +50,12 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
     DataClass dataClass2_3
     DataClass dataClass2_4
 
+    DataModel dataModel3
+    DataClass dataClass3_1
+    DataClass dataClass3_core
+    DataClass dataClass3_core_1
+    DataClass dataClass3_core_2
+
     PathService pathService
 
     /*
@@ -67,6 +73,12 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
            ->     "data class 2"
            ->     "data class 3"
            ->     "data class 4"
+
+     "data model 3"
+           ->     "data class 1"
+           ->     "data class core"
+                      -> data class 1
+                      -> data class 2
      */
 
     @Override
@@ -108,7 +120,33 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         dataModel2.addToDataClasses(dataClass2_4)
         checkAndSave(dataModel2)
 
-        [dataModel1, dataClass1_1, dataClass1_2, dataClass1_3, dataModel2, dataClass2_1, dataClass2_2, dataClass2_3, dataClass2_4, dataElement2_1].each {
+        /*
+        "data model 3"
+            ->     "data class 1"
+            ->     "data class core"
+                        -> data class 1
+                        -> data class 2
+        */
+        //This is to test that when we have duplicate labels ("data class 1") at different levels then the correct
+        //class is retrieved. We intentionally add the core class and its children first.
+
+        dataModel3 = new DataModel(createdByUser: admin, label: 'data model 3', folder: testFolder, authority: testAuthority)
+        checkAndSave(dataModel3)
+
+        dataClass3_core = new DataClass(createdByUser: admin, label: 'data class core')
+        dataClass3_core_1 = new DataClass(createdByUser: admin, label: 'data class 1')
+        dataClass3_core_2 = new DataClass(createdByUser: admin, label: 'data class 2')
+        dataClass3_core.addToDataClasses(dataClass3_core_1)
+        dataClass3_core.addToDataClasses(dataClass3_core_2)
+        dataModel3.addToDataClasses(dataClass3_core)
+
+        dataClass3_1 = new DataClass(createdByUser: admin, label: 'data class 1')
+        dataModel3.addToDataClasses(dataClass3_1)
+
+        checkAndSave(dataModel3)
+
+        [dataModel1, dataClass1_1, dataClass1_2, dataClass1_3, dataModel2, dataClass2_1, dataClass2_2, dataClass2_3, dataClass2_4, dataElement2_1,
+        dataModel3, dataClass3_core, dataClass3_core_1, dataClass3_core_2, dataClass3_1].each {
             log.debug("${it.label}  ${it.id}")
         }
     }
@@ -419,5 +457,29 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         catalogueItem.model.id == dataModel2.id
     }
 
+    void "test get of data classes in data model 3 by data class label, where the label is duplicated at different levels"() {
+        given:
+        setupData()
+        CatalogueItem catalogueItem
 
+        when: 'look for data class 1 belonging directly to data model 3'
+        Path path = Path.from(dataModel3, dataClass3_1)
+        catalogueItem = pathService.findResourceByPathFromRootClass(DataModel, path) as CatalogueItem
+
+        then: 'we find the class called data class 1 which does not have a parent data class'
+        catalogueItem.label == "data class 1"
+        catalogueItem.domainType == "DataClass"
+        catalogueItem.model.id == dataModel3.id
+        !catalogueItem.parentDataClass
+
+        when: 'look for data class 1 belonging to data class core'
+        path = Path.from(dataModel3, dataClass3_core, dataClass3_core_1)
+        catalogueItem = pathService.findResourceByPathFromRootClass(DataModel, path) as CatalogueItem
+
+        then: 'we find the class called data class 1 which does have a parent data class called data class core'
+        catalogueItem.label == "data class 1"
+        catalogueItem.domainType == "DataClass"
+        catalogueItem.model.id == dataModel3.id
+        catalogueItem.parentDataClass.label == "data class core"
+    }
 }

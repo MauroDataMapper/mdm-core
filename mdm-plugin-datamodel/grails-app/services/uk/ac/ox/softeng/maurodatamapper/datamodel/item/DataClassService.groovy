@@ -417,6 +417,10 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         DataClass.byDataModelId(dataModelId).eq('label', label).find()
     }
 
+    DataClass findByDataModelIdAndNullParentDataClassAndLabel(UUID dataModelId, String label) {
+        DataClass.byDataModelId(dataModelId).isNull('parentDataClass').eq('label', label).find()
+    }
+
     DataClass findWhereRootDataClassOfDataModelIdAndId(UUID dataModelId, Serializable id) {
         DataClass.byRootDataClassOfDataModelId(dataModelId).idEq(id).find()
     }
@@ -821,7 +825,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
      */
     @Override
     DataClass findByParentIdAndLabel(UUID parentId, String label) {
-        DataClass dataClass = findByDataModelIdAndLabel(parentId, label)
+        DataClass dataClass = findByDataModelIdAndNullParentDataClassAndLabel(parentId, label)
         if (!dataClass) {
             dataClass = DataClass.byParentDataClassId(parentId).eq('label', label).get()
         }
