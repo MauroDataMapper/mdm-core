@@ -30,6 +30,7 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
+import spock.lang.Ignore
 import spock.lang.Shared
 
 import java.nio.file.Path
@@ -57,6 +58,7 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
  */
 @Integration
 @Slf4j
+@Ignore("Depends on remote catalogue - to be run manually")
 class SubscribedModelFunctionalSpec extends FunctionalSpec {
 
     @Shared

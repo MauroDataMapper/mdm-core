@@ -35,7 +35,6 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 import grails.gorm.transactions.Transactional
-import grails.util.Environment
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 

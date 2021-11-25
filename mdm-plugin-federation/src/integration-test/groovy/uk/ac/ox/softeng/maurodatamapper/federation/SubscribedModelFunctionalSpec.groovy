@@ -27,6 +27,7 @@ import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
+import spock.lang.Ignore
 import spock.lang.Shared
 
 /**
@@ -41,6 +42,7 @@ import spock.lang.Shared
  */
 @Integration
 @Slf4j
+@Ignore("Depends on remote catalogue - to be run manually")
 class SubscribedModelFunctionalSpec extends BaseFunctionalSpec {
 
     @Shared
