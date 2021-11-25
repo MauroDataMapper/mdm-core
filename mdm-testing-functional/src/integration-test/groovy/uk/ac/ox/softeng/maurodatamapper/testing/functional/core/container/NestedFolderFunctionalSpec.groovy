@@ -28,6 +28,9 @@ import io.micronaut.http.HttpResponse
 
 import java.util.regex.Pattern
 
+import static io.micronaut.http.HttpStatus.OK
+import static io.micronaut.http.HttpStatus.OK
+
 /**
  * <pre>
  * Controller: folder
@@ -135,8 +138,90 @@ class NestedFolderFunctionalSpec extends UserAccessFunctionalSpec {
   }'''
     }
 
+    @Transactional
+    String getParentTestFolderId() {
+        Folder.findByLabel('Parent Functional Test Folder').id.toString()
+    }
 
-    /**
+    void 'S01 : test searching for "simple" in the test folder with parent folder id'() {
+        given:
+        String term = 'simple'
+
+        when: 'logged in as reader user'
+        loginReader()
+        POST("folders/${getParentTestFolderId()}/search", [searchTerm: term], STRING_ARG, true)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 7,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "Term",
+      "label": "STT01: Simple Test Term 01",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Simple Test Terminology",
+          "domainType": "Terminology",
+          "finalised": false
+        }
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "Term",
+      "label": "STT02: Simple Test Term 02",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Simple Test Terminology",
+          "domainType": "Terminology",
+          "finalised": false
+        }
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "ReferenceDataModel",
+      "label": "Second Simple Reference Data Model"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "ReferenceDataModel",
+      "label": "Simple Reference Data Model"
+    },    
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "Simple Test DataModel"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "Terminology",
+      "label": "Simple Test Terminology"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataClass",
+      "label": "simple",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Simple Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ]
+    }
+  ]
+}'''
+    }
+
+     /**
      * Whilst this is actually tested in the user access tests we ignore the labels being created
      * we need to make sure that folders and subsequent folders are named correctly
      * We test this inside thie test folder.

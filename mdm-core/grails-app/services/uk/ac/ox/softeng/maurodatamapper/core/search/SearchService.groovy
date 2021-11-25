@@ -118,7 +118,7 @@ class SearchService extends AbstractCatalogueItemSearchService<CatalogueItem> {
         containedFolderIds.add(folderId)
         modelServices.collectMany {service ->
             containedFolderIds.collectMany {fId ->
-                (service.findAllByContainerId(folderId) as List<Model>).collect {model -> model.id}
+                (service.findAllByContainerId(fId) as List<Model>).collect {model -> model.id}
             }
         }
     }

@@ -216,7 +216,7 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
     @Override
     String getEditorIndexJson() {
         '''{
-  "count": 3,
+  "count": 4,
   "items": [
     {
       "id": "${json-unit.matches:id}",
@@ -238,6 +238,12 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "domainType": "VersionedFolder",
       "hasChildFolders": false
+    },
+    { "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "id": "${json-unit.matches:id}",
+      "hasChildFolders": true,
+      "domainType": "Folder",
+      "label": "Parent Functional Test Folder"
     }
   ]
 }'''
@@ -246,8 +252,14 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
     @Override
     String getAdminIndexJson() {
         '''{
-  "count": 4,
+  "count": 5,
   "items": [
+    { "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "id": "${json-unit.matches:id}",
+      "hasChildFolders": true,
+      "domainType": "Folder",
+      "label": "Parent Functional Test Folder"
+    },
     {
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "id": "${json-unit.matches:id}",

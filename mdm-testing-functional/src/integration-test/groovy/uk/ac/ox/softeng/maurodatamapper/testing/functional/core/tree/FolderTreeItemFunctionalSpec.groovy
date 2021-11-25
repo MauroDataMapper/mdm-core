@@ -54,6 +54,10 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         Folder.findByLabel('Functional Test Folder').id.toString()
     }
 
+    @Transactional
+    String getParentFolderId() {
+        Folder.findByLabel('Parent Functional Test Folder').id.toString()
+    }
 
     void 'E07 : test focus on folder'() {
         when: 'logged in as normal user'
@@ -335,15 +339,20 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
 
         then:
         verifyResponse(OK, response)
-        responseBody().id == folderId
+
+        responseBody().id == parentFolderId
         responseBody().hasChildren
         responseBody().children.size() == 1
 
-        responseBody().children.first().id == complexDataModelId
+        responseBody().children.first().id == folderId
         responseBody().children.first().hasChildren
         responseBody().children.first().children.size() == 1
 
-        responseBody().children.first().children.first().id == parentDataClassId
+        responseBody().children.first().children.first().id == complexDataModelId
+        responseBody().children.first().children.first().hasChildren
+        responseBody().children.first().children.first().children.size() == 1
+
+        responseBody().children.first().children.first().children.first().id == parentDataClassId
     }
 
     void 'AN02 : test getting ancestors of DataModel item'() {
@@ -355,22 +364,40 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
 
         then:
         verifyResponse(OK, response)
-        responseBody().id == folderId
+
+        responseBody().id == parentFolderId
         responseBody().hasChildren
         responseBody().children.size() == 1
-        responseBody().children.first().id == complexDataModelId
+
+        responseBody().children.first().id == folderId
         responseBody().children.first().hasChildren
+        responseBody().children.first().children.size() == 1
+
+        responseBody().children.first().children.first().id == complexDataModelId
+        responseBody().children.first().children.first().hasChildren
     }
 
     String getReaderTree() {
         '''[
-  {
+   {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Folder",
+    "label": "Parent Functional Test Folder",
+    "hasChildren": true,
+    "availableActions": [
+      
+    ],
+    "deleted": false,
+    "children": [
+      {
+  
     "id": "${json-unit.matches:id}",
     "domainType": "Folder",
     "label": "Functional Test Folder",
     "hasChildren": true,
     "availableActions": [],
     "deleted": false,
+    "parentFolder": "${json-unit.matches:id}",
     "children": [
       {
         "id": "${json-unit.matches:id}",
@@ -517,6 +544,8 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "folder": "${json-unit.matches:id}",
         "type": "CodeSet"
       }
+      ]
+      }
     ]
   },
   {
@@ -550,7 +579,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
   {
     "id": "${json-unit.matches:id}",
     "domainType": "Folder",
-    "label": "Functional Test Folder",
+    "label": "Parent Functional Test Folder",
     "hasChildren": true,
     "availableActions": [
       "createFolder",
@@ -558,227 +587,246 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
       "createVersionedFolder",
       "delete",
       "moveToFolder",
+      "moveToVersionedFolder",
       "softDelete"
     ],
     "deleted": false,
     "children": [
       {
         "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
-        "label": "Complex Test DataModel",
+        "domainType": "Folder",
+        "label": "Functional Test Folder",
         "hasChildren": true,
         "availableActions": [
-          "createModelItem",
+          "createFolder",
+          "createModel",
+          "createVersionedFolder",
           "delete",
-          "moveToContainer",
-          "moveToFolder",
-          "moveToVersionedFolder",
-          "softDelete"
-        ],
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "Terminology",
-        "label": "Complex Test Terminology",
-        "hasChildren": true,
-        "availableActions": [
-          "createModelItem",
-          "delete",
-          "moveToContainer",
-          "moveToFolder",
-          "moveToVersionedFolder",
-          "softDelete"
-        ],
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Terminology"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
-        "label": "Finalised Example Test DataModel",
-        "hasChildren": true,
-        "availableActions": [
-          "delete",
-          "moveToContainer",
           "moveToFolder",
           "softDelete"
         ],
         "deleted": false,
-        "finalised": true,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Data Standard",
-        "modelVersion": "1.0.0"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "ReferenceDataModel",
-        "label": "Second Simple Reference Data Model",
-        "hasChildren": false,
-        "availableActions": [
-          "createModelItem",
-          "delete",
-          "moveToContainer",
-          "moveToFolder",
-          "moveToVersionedFolder",
-          "softDelete"
-        ],
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "ReferenceDataModel"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "ReferenceDataModel",
-        "label": "Simple Reference Data Model",
-        "hasChildren": false,
-        "availableActions": [
-          "createModelItem",
-          "delete",
-          "moveToContainer",
-          "moveToFolder",
-          "moveToVersionedFolder",
-          "softDelete"
-        ],
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "ReferenceDataModel"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "CodeSet",
-        "label": "Simple Test CodeSet",
-        "hasChildren": false,
-        "availableActions": [
-          "delete",
-          "moveToContainer",
-          "moveToFolder",
-          "softDelete"
-        ],
-        "deleted": false,
-        "finalised": true,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "CodeSet",
-        "modelVersion": "1.0.0"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
-        "label": "Simple Test DataModel",
-        "hasChildren": true,
-        "availableActions": [
-          "createModelItem",
-          "delete",
-          "moveToContainer",
-          "moveToFolder",
-          "moveToVersionedFolder",
-          "softDelete"
-        ],
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "Terminology",
-        "label": "Simple Test Terminology",
-        "hasChildren": false,
-        "availableActions": [
-          "createModelItem",
-          "delete",
-          "moveToContainer",
-          "moveToFolder",
-          "moveToVersionedFolder",
-          "softDelete"
-        ],
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Terminology"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
-        "label": "SourceFlowDataModel",
-        "hasChildren": true,
-        "availableActions": [
-          "createModelItem",
-          "delete",
-          "moveToContainer",
-          "moveToFolder",
-          "moveToVersionedFolder",
-          "softDelete"
-        ],
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Data Asset"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
-        "label": "TargetFlowDataModel",
-        "hasChildren": true,
-        "availableActions": [
-          "createModelItem",
-          "delete",
-          "moveToContainer",
-          "moveToFolder",
-          "moveToVersionedFolder",
-          "softDelete"
-        ],
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Data Asset"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "CodeSet",
-        "label": "Unfinalised Simple Test CodeSet",
-        "hasChildren": false,
-        "availableActions": [
-          "createModelItem",
-          "delete",
-          "moveToContainer",
-          "moveToFolder",
-          "moveToVersionedFolder",
-          "softDelete"
-        ],
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "CodeSet"
+        "parentFolder": "${json-unit.matches:id}",
+        "children": [
+          {
+            "id": "${json-unit.matches:id}",
+            "domainType": "DataModel",
+            "label": "Complex Test DataModel",
+            "hasChildren": true,
+            "availableActions": [
+              "createModelItem",
+              "delete",
+              "moveToContainer",
+              "moveToFolder",
+              "moveToVersionedFolder",
+              "softDelete"
+            ],
+            "deleted": false,
+            "finalised": false,
+            "superseded": false,
+            "documentationVersion": "1.0.0",
+            "folder": "${json-unit.matches:id}",
+            "type": "Data Standard"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "domainType": "Terminology",
+            "label": "Complex Test Terminology",
+            "hasChildren": true,
+            "availableActions": [
+              "createModelItem",
+              "delete",
+              "moveToContainer",
+              "moveToFolder",
+              "moveToVersionedFolder",
+              "softDelete"
+            ],
+            "deleted": false,
+            "finalised": false,
+            "superseded": false,
+            "documentationVersion": "1.0.0",
+            "folder": "${json-unit.matches:id}",
+            "type": "Terminology"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "domainType": "DataModel",
+            "label": "Finalised Example Test DataModel",
+            "hasChildren": true,
+            "availableActions": [
+              "delete",
+              "moveToContainer",
+              "moveToFolder",
+              "softDelete"
+            ],
+            "deleted": false,
+            "finalised": true,
+            "superseded": false,
+            "documentationVersion": "1.0.0",
+            "folder": "${json-unit.matches:id}",
+            "type": "Data Standard",
+            "modelVersion": "1.0.0"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "domainType": "ReferenceDataModel",
+            "label": "Second Simple Reference Data Model",
+            "hasChildren": false,
+            "availableActions": [
+              "createModelItem",
+              "delete",
+              "moveToContainer",
+              "moveToFolder",
+              "moveToVersionedFolder",
+              "softDelete"
+            ],
+            "deleted": false,
+            "finalised": false,
+            "superseded": false,
+            "documentationVersion": "1.0.0",
+            "folder": "${json-unit.matches:id}",
+            "type": "ReferenceDataModel"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "domainType": "ReferenceDataModel",
+            "label": "Simple Reference Data Model",
+            "hasChildren": false,
+            "availableActions": [
+              "createModelItem",
+              "delete",
+              "moveToContainer",
+              "moveToFolder",
+              "moveToVersionedFolder",
+              "softDelete"
+            ],
+            "deleted": false,
+            "finalised": false,
+            "superseded": false,
+            "documentationVersion": "1.0.0",
+            "folder": "${json-unit.matches:id}",
+            "type": "ReferenceDataModel"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "domainType": "CodeSet",
+            "label": "Simple Test CodeSet",
+            "hasChildren": false,
+            "availableActions": [
+              "delete",
+              "moveToContainer",
+              "moveToFolder",
+              "softDelete"
+            ],
+            "deleted": false,
+            "finalised": true,
+            "superseded": false,
+            "documentationVersion": "1.0.0",
+            "folder": "${json-unit.matches:id}",
+            "type": "CodeSet",
+            "modelVersion": "1.0.0"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "domainType": "DataModel",
+            "label": "Simple Test DataModel",
+            "hasChildren": true,
+            "availableActions": [
+              "createModelItem",
+              "delete",
+              "moveToContainer",
+              "moveToFolder",
+              "moveToVersionedFolder",
+              "softDelete"
+            ],
+            "deleted": false,
+            "finalised": false,
+            "superseded": false,
+            "documentationVersion": "1.0.0",
+            "folder": "${json-unit.matches:id}",
+            "type": "Data Standard"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "domainType": "Terminology",
+            "label": "Simple Test Terminology",
+            "hasChildren": false,
+            "availableActions": [
+              "createModelItem",
+              "delete",
+              "moveToContainer",
+              "moveToFolder",
+              "moveToVersionedFolder",
+              "softDelete"
+            ],
+            "deleted": false,
+            "finalised": false,
+            "superseded": false,
+            "documentationVersion": "1.0.0",
+            "folder": "${json-unit.matches:id}",
+            "type": "Terminology"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "domainType": "DataModel",
+            "label": "SourceFlowDataModel",
+            "hasChildren": true,
+            "availableActions": [
+              "createModelItem",
+              "delete",
+              "moveToContainer",
+              "moveToFolder",
+              "moveToVersionedFolder",
+              "softDelete"
+            ],
+            "deleted": false,
+            "finalised": false,
+            "superseded": false,
+            "documentationVersion": "1.0.0",
+            "folder": "${json-unit.matches:id}",
+            "type": "Data Asset"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "domainType": "DataModel",
+            "label": "TargetFlowDataModel",
+            "hasChildren": true,
+            "availableActions": [
+              "createModelItem",
+              "delete",
+              "moveToContainer",
+              "moveToFolder",
+              "moveToVersionedFolder",
+              "softDelete"
+            ],
+            "deleted": false,
+            "finalised": false,
+            "superseded": false,
+            "documentationVersion": "1.0.0",
+            "folder": "${json-unit.matches:id}",
+            "type": "Data Asset"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "domainType": "CodeSet",
+            "label": "Unfinalised Simple Test CodeSet",
+            "hasChildren": false,
+            "availableActions": [
+              "createModelItem",
+              "delete",
+              "moveToContainer",
+              "moveToFolder",
+              "moveToVersionedFolder",
+              "softDelete"
+            ],
+            "deleted": false,
+            "finalised": false,
+            "superseded": false,
+            "documentationVersion": "1.0.0",
+            "folder": "${json-unit.matches:id}",
+            "type": "CodeSet"
+          }
+        ]
       }
     ]
   },
@@ -825,7 +873,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
   {
     "id": "${json-unit.matches:id}",
     "domainType": "Folder",
-    "label": "Functional Test Folder",
+    "label": "Parent Functional Test Folder",
     "hasChildren": true,
     "availableActions": [
       "createFolder",
@@ -833,227 +881,246 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
       "createVersionedFolder",
       "delete",
       "moveToFolder",
+      "moveToVersionedFolder",
       "softDelete"
     ],
     "deleted": false,
     "children": [
       {
         "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
-        "label": "Complex Test DataModel",
+        "domainType": "Folder",
+        "label": "Functional Test Folder",
         "hasChildren": true,
         "availableActions": [
-          "createModelItem",
+          "createFolder",
+          "createModel",
+          "createVersionedFolder",
           "delete",
-          "moveToContainer",
-          "moveToFolder",
-          "moveToVersionedFolder",
-          "softDelete"
-        ],
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "Terminology",
-        "label": "Complex Test Terminology",
-        "hasChildren": true,
-        "availableActions": [
-          "createModelItem",
-          "delete",
-          "moveToContainer",
-          "moveToFolder",
-          "moveToVersionedFolder",
-          "softDelete"
-        ],
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Terminology"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
-        "label": "Finalised Example Test DataModel",
-        "hasChildren": true,
-        "availableActions": [
-          "delete",
-          "moveToContainer",
           "moveToFolder",
           "softDelete"
         ],
         "deleted": false,
-        "finalised": true,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Data Standard",
-        "modelVersion": "1.0.0"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "ReferenceDataModel",
-        "label": "Second Simple Reference Data Model",
-        "hasChildren": false,
-        "availableActions": [
-          "createModelItem",
-          "delete",
-          "moveToContainer",
-          "moveToFolder",
-          "moveToVersionedFolder",
-          "softDelete"
-        ],
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "ReferenceDataModel"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "ReferenceDataModel",
-        "label": "Simple Reference Data Model",
-        "hasChildren": false,
-        "availableActions": [
-          "createModelItem",
-          "delete",
-          "moveToContainer",
-          "moveToFolder",
-          "moveToVersionedFolder",
-          "softDelete"
-        ],
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "ReferenceDataModel"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "CodeSet",
-        "label": "Simple Test CodeSet",
-        "hasChildren": false,
-        "availableActions": [
-          "delete",
-          "moveToContainer",
-          "moveToFolder",
-          "softDelete"
-        ],
-        "deleted": false,
-        "finalised": true,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "CodeSet",
-        "modelVersion": "1.0.0"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
-        "label": "Simple Test DataModel",
-        "hasChildren": true,
-        "availableActions": [
-          "createModelItem",
-          "delete",
-          "moveToContainer",
-          "moveToFolder",
-          "moveToVersionedFolder",
-          "softDelete"
-        ],
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "Terminology",
-        "label": "Simple Test Terminology",
-        "hasChildren": false,
-        "availableActions": [
-          "createModelItem",
-          "delete",
-          "moveToContainer",
-          "moveToFolder",
-          "moveToVersionedFolder",
-          "softDelete"
-        ],
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Terminology"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
-        "label": "SourceFlowDataModel",
-        "hasChildren": true,
-        "availableActions": [
-          "createModelItem",
-          "delete",
-          "moveToContainer",
-          "moveToFolder",
-          "moveToVersionedFolder",
-          "softDelete"
-        ],
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Data Asset"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
-        "label": "TargetFlowDataModel",
-        "hasChildren": true,
-        "availableActions": [
-          "createModelItem",
-          "delete",
-          "moveToContainer",
-          "moveToFolder",
-          "moveToVersionedFolder",
-          "softDelete"
-        ],
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Data Asset"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "CodeSet",
-        "label": "Unfinalised Simple Test CodeSet",
-        "hasChildren": false,
-        "availableActions": [
-          "createModelItem",
-          "delete",
-          "moveToContainer",
-          "moveToFolder",
-          "moveToVersionedFolder",
-          "softDelete"
-        ],
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "CodeSet"
+        "parentFolder": "${json-unit.matches:id}",
+        "children": [
+          {
+            "id": "${json-unit.matches:id}",
+            "domainType": "DataModel",
+            "label": "Complex Test DataModel",
+            "hasChildren": true,
+            "availableActions": [
+              "createModelItem",
+              "delete",
+              "moveToContainer",
+              "moveToFolder",
+              "moveToVersionedFolder",
+              "softDelete"
+            ],
+            "deleted": false,
+            "finalised": false,
+            "superseded": false,
+            "documentationVersion": "1.0.0",
+            "folder": "${json-unit.matches:id}",
+            "type": "Data Standard"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "domainType": "Terminology",
+            "label": "Complex Test Terminology",
+            "hasChildren": true,
+            "availableActions": [
+              "createModelItem",
+              "delete",
+              "moveToContainer",
+              "moveToFolder",
+              "moveToVersionedFolder",
+              "softDelete"
+            ],
+            "deleted": false,
+            "finalised": false,
+            "superseded": false,
+            "documentationVersion": "1.0.0",
+            "folder": "${json-unit.matches:id}",
+            "type": "Terminology"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "domainType": "DataModel",
+            "label": "Finalised Example Test DataModel",
+            "hasChildren": true,
+            "availableActions": [
+              "delete",
+              "moveToContainer",
+              "moveToFolder",
+              "softDelete"
+            ],
+            "deleted": false,
+            "finalised": true,
+            "superseded": false,
+            "documentationVersion": "1.0.0",
+            "folder": "${json-unit.matches:id}",
+            "type": "Data Standard",
+            "modelVersion": "1.0.0"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "domainType": "ReferenceDataModel",
+            "label": "Second Simple Reference Data Model",
+            "hasChildren": false,
+            "availableActions": [
+              "createModelItem",
+              "delete",
+              "moveToContainer",
+              "moveToFolder",
+              "moveToVersionedFolder",
+              "softDelete"
+            ],
+            "deleted": false,
+            "finalised": false,
+            "superseded": false,
+            "documentationVersion": "1.0.0",
+            "folder": "${json-unit.matches:id}",
+            "type": "ReferenceDataModel"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "domainType": "ReferenceDataModel",
+            "label": "Simple Reference Data Model",
+            "hasChildren": false,
+            "availableActions": [
+              "createModelItem",
+              "delete",
+              "moveToContainer",
+              "moveToFolder",
+              "moveToVersionedFolder",
+              "softDelete"
+            ],
+            "deleted": false,
+            "finalised": false,
+            "superseded": false,
+            "documentationVersion": "1.0.0",
+            "folder": "${json-unit.matches:id}",
+            "type": "ReferenceDataModel"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "domainType": "CodeSet",
+            "label": "Simple Test CodeSet",
+            "hasChildren": false,
+            "availableActions": [
+              "delete",
+              "moveToContainer",
+              "moveToFolder",
+              "softDelete"
+            ],
+            "deleted": false,
+            "finalised": true,
+            "superseded": false,
+            "documentationVersion": "1.0.0",
+            "folder": "${json-unit.matches:id}",
+            "type": "CodeSet",
+            "modelVersion": "1.0.0"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "domainType": "DataModel",
+            "label": "Simple Test DataModel",
+            "hasChildren": true,
+            "availableActions": [
+              "createModelItem",
+              "delete",
+              "moveToContainer",
+              "moveToFolder",
+              "moveToVersionedFolder",
+              "softDelete"
+            ],
+            "deleted": false,
+            "finalised": false,
+            "superseded": false,
+            "documentationVersion": "1.0.0",
+            "folder": "${json-unit.matches:id}",
+            "type": "Data Standard"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "domainType": "Terminology",
+            "label": "Simple Test Terminology",
+            "hasChildren": false,
+            "availableActions": [
+              "createModelItem",
+              "delete",
+              "moveToContainer",
+              "moveToFolder",
+              "moveToVersionedFolder",
+              "softDelete"
+            ],
+            "deleted": false,
+            "finalised": false,
+            "superseded": false,
+            "documentationVersion": "1.0.0",
+            "folder": "${json-unit.matches:id}",
+            "type": "Terminology"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "domainType": "DataModel",
+            "label": "SourceFlowDataModel",
+            "hasChildren": true,
+            "availableActions": [
+              "createModelItem",
+              "delete",
+              "moveToContainer",
+              "moveToFolder",
+              "moveToVersionedFolder",
+              "softDelete"
+            ],
+            "deleted": false,
+            "finalised": false,
+            "superseded": false,
+            "documentationVersion": "1.0.0",
+            "folder": "${json-unit.matches:id}",
+            "type": "Data Asset"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "domainType": "DataModel",
+            "label": "TargetFlowDataModel",
+            "hasChildren": true,
+            "availableActions": [
+              "createModelItem",
+              "delete",
+              "moveToContainer",
+              "moveToFolder",
+              "moveToVersionedFolder",
+              "softDelete"
+            ],
+            "deleted": false,
+            "finalised": false,
+            "superseded": false,
+            "documentationVersion": "1.0.0",
+            "folder": "${json-unit.matches:id}",
+            "type": "Data Asset"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "domainType": "CodeSet",
+            "label": "Unfinalised Simple Test CodeSet",
+            "hasChildren": false,
+            "availableActions": [
+              "createModelItem",
+              "delete",
+              "moveToContainer",
+              "moveToFolder",
+              "moveToVersionedFolder",
+              "softDelete"
+            ],
+            "deleted": false,
+            "finalised": false,
+            "superseded": false,
+            "documentationVersion": "1.0.0",
+            "folder": "${json-unit.matches:id}",
+            "type": "CodeSet"
+          }
+        ]
       }
     ]
   },
