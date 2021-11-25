@@ -221,4 +221,47 @@ class NestedFolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
         then: 'The response is correct'
         response.status == HttpStatus.NO_CONTENT
     }
+
+    void 'test can retrieve by valid path'() {
+        given:
+        def pathParent = 'Parent%20Functional%20Test%20Folder'
+        def pathNested = 'Functional%20Test%20Folder'
+
+        when: 'The save action is executed with valid data'
+        POST('', validJson)
+
+        then: 'The response is correct'
+        response.status == HttpStatus.CREATED
+        String id = response.body().id
+
+        when: 'Retrieve by path of parent folder'
+        GET("folders/path/fo:${pathParent}", MAP_ARG, true)
+
+        then: 'The parent folder is found'
+        verifyResponse HttpStatus.OK, response
+        responseBody().label == 'Parent Functional Test Folder'
+
+        when: 'Retrieve nested folder by path of nested folder only'
+        GET("folders/path/fo:${pathNested}", MAP_ARG, true)
+
+        then: 'The nested folder is not found'
+        verifyResponse HttpStatus.NOT_FOUND, response
+
+        when: 'Retrieve nested folder by path of nested folder and parent folder'
+        GET("folders/path/fo:${pathParent}%7cfo:${pathNested}", MAP_ARG, true)
+
+        then: 'The nested folder is found'
+        verifyResponse HttpStatus.OK, response
+        responseBody().label == 'Functional Test Folder'
+
+        when: 'Retrieve nested folder by path of nested folder and ID of parent folder'
+        GET("folders/${parentFolderId}/path/fo:${pathNested}", MAP_ARG, true)
+
+        then: 'The nested folder is found'
+        verifyResponse HttpStatus.OK, response
+        responseBody().label == 'Functional Test Folder'
+
+        cleanup:
+        DELETE(getDeleteEndpoint(id))
+    }
 }
