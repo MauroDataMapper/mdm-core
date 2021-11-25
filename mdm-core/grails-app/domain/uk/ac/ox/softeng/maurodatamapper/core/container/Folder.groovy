@@ -190,7 +190,11 @@ class Folder implements Container, Diffable<Folder> {
     }
 
     static DetachedCriteria<Folder> byParentFolderIdAndLabel(UUID id, String label) {
-        byParentFolderId(id).eq('label', label)
+        if (id) {
+            byParentFolderId(id).eq('label', label)
+        } else {
+            byNoParentFolder().eq('label', label)
+        }
     }
 
     static Folder getMiscellaneousFolder() {
