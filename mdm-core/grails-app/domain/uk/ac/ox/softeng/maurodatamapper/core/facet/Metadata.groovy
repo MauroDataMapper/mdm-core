@@ -158,8 +158,13 @@ class Metadata implements MultiFacetItemAware, Diffable<Metadata> {
         new DetachedCriteria<Metadata>(Metadata)
     }
 
-    static DetachedCriteria<Metadata> byMultiFacetAwareItemId(Serializable multiFacetAwareItemId) {
-        new DetachedCriteria<Metadata>(Metadata).eq('multiFacetAwareItemId', Utils.toUuid(multiFacetAwareItemId))
+    static DetachedCriteria<Metadata> byMultiFacetAwareItemId(Serializable multiFacetAwareItemId, Map filters = [:]) {
+        DetachedCriteria criteria = new DetachedCriteria<Metadata>(Metadata).eq('multiFacetAwareItemId', Utils.toUuid(multiFacetAwareItemId))
+        if (filters) {
+            criteria = withFilter(criteria, filters)
+        }
+
+        criteria
     }
 
     static DetachedCriteria<Metadata> byMultiFacetAwareItemIdInList(List<UUID> multiFacetAwareItemIds) {
@@ -186,8 +191,13 @@ class Metadata implements MultiFacetItemAware, Diffable<Metadata> {
         byMultiFacetAwareItemId(multiFacetAwareItemId).eq('namespace', namespace)
     }
 
-    static DetachedCriteria<Metadata> byMultiFacetAwareItemIdAndNotNamespaces(Serializable multiFacetAwareItemId, List<String> namespaces) {
-        byMultiFacetAwareItemId(multiFacetAwareItemId).not {inList('namespace', namespaces)}
+    static DetachedCriteria<Metadata> byMultiFacetAwareItemIdAndNotNamespaces(Serializable multiFacetAwareItemId, List<String> namespaces, Map filters = [:]) {
+        DetachedCriteria criteria = byMultiFacetAwareItemId(multiFacetAwareItemId).not {inList('namespace', namespaces)}
+        if (filters) {
+            criteria = withFilter(criteria, filters)
+        }
+
+        criteria
     }
 
 
