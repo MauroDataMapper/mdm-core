@@ -128,4 +128,20 @@ class FolderJsonExporterServiceSpec extends BaseFolderExporterServiceSpec<Folder
         then:
         validateExportedFolder('folderIncAnnotations', exportFolder(folderId))
     }
+
+    void 'test export Folder with rules'() {
+        when:
+        Folder folder = folderService.get(folderId)
+        List<Map<String, String>> rules = [
+            [name: 'Test Rule 1', description: 'Test Rule 1 description'],
+            [name: 'Test Rule 2', description: 'Test Rule 2 description']
+        ]
+        rules.each {
+            folder.addToRules(*: it, createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        }
+        checkAndSave(folder)
+
+        then:
+        validateExportedFolder('folderIncRules', exportFolder(folderId))
+    }
 }
