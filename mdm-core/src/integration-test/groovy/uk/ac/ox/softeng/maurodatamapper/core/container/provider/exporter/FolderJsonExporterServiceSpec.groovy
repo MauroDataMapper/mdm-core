@@ -35,6 +35,22 @@ import java.nio.file.Path
 @Rollback
 class FolderJsonExporterServiceSpec extends BaseFolderExporterServiceSpec<FolderJsonExporterService> implements JsonComparer {
 
+    private static final List<Map<String, String>> metadata = [
+        [namespace: 'test.com', key: 'mdk1', value: 'mdv1'],
+        [namespace: 'test.com/simple', key: 'mdk1', value: 'mdv1'],
+        [namespace: 'test.com/simple', key: 'mdk2', value: 'mdv2'],
+    ]
+
+    private static final List<Map<String, String>> annotations = [
+        [label: 'Test Annotation 1', description: 'Test Annotation 1 description'],
+        [label: 'Test Annotation 2', description: 'Test Annotation 2 description']
+    ]
+
+    private static final List<Map<String, String>> rules = [
+        [name: 'Test Rule 1', description: 'Test Rule 1 description'],
+        [name: 'Test Rule 2', description: 'Test Rule 2 description']
+    ]
+
     FolderJsonExporterService folderJsonExporterService
 
     @Override
@@ -70,6 +86,15 @@ class FolderJsonExporterServiceSpec extends BaseFolderExporterServiceSpec<Folder
         verifyJson(expectedJson, exportedFolder.replace(/Mauro Data Mapper/, 'Test Authority'))
     }
 
+    void addFacetsAndChildFolder(Folder folder) {
+        ['Metadata', 'Annotations', 'Rules'].each { String facetType ->
+            getProperty(facetType.toLowerCase()).each {
+                folder."addTo${facetType}"(*: it, createdBy: StandardEmailAddress.INTEGRATION_TEST)
+            }
+        }
+        folder.addToChildFolders(label: 'Inner Child Folder', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+    }
+
     void 'test export null Folder'() {
         when:
         exportFolder(null)
@@ -98,11 +123,6 @@ class FolderJsonExporterServiceSpec extends BaseFolderExporterServiceSpec<Folder
     void 'test export Folder with metadata'() {
         when:
         Folder folder = folderService.get(folderId)
-        List<Map<String, String>> metadata = [
-            [namespace: 'test.com', key: 'mdk1', value: 'mdv1'],
-            [namespace: 'test.com/simple', key: 'mdk1', value: 'mdv1'],
-            [namespace: 'test.com/simple', key: 'mdk2', value: 'mdv2']
-        ]
         metadata.each {
             folder.addToMetadata(*: it, createdBy: StandardEmailAddress.INTEGRATION_TEST)
         }
@@ -115,10 +135,6 @@ class FolderJsonExporterServiceSpec extends BaseFolderExporterServiceSpec<Folder
     void 'test export Folder with annotations'() {
         when:
         Folder folder = folderService.get(folderId)
-        List<Map<String, String>> annotations = [
-            [label: 'Test Annotation 1', description: 'Test Annotation 1 description'],
-            [label: 'Test Annotation 2', description: 'Test Annotation 2 description']
-        ]
         annotations.each {
             folder.addToAnnotations(*: it, createdBy: StandardEmailAddress.INTEGRATION_TEST)
         }
@@ -131,10 +147,6 @@ class FolderJsonExporterServiceSpec extends BaseFolderExporterServiceSpec<Folder
     void 'test export Folder with rules'() {
         when:
         Folder folder = folderService.get(folderId)
-        List<Map<String, String>> rules = [
-            [name: 'Test Rule 1', description: 'Test Rule 1 description'],
-            [name: 'Test Rule 2', description: 'Test Rule 2 description']
-        ]
         rules.each {
             folder.addToRules(*: it, createdBy: StandardEmailAddress.INTEGRATION_TEST)
         }
@@ -142,5 +154,30 @@ class FolderJsonExporterServiceSpec extends BaseFolderExporterServiceSpec<Folder
 
         then:
         validateExportedFolder('folderIncRules', exportFolder(folderId))
+    }
+
+    void 'test export Folder with child Folders'() {
+        when:
+        Folder folder = folderService.get(folderId).tap {
+            Folder child = new Folder(label: 'Empty Child Folder', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+            checkAndSave(child)
+            addToChildFolders(child)
+            checkAndSave(it)
+        }
+
+        then:
+        validateExportedFolder('folderIncEmptyChildFolder', exportFolder(folderId))
+
+        when:
+        folder.tap {
+            Folder child = new Folder(label: 'Child Folder with Facets and Own Child Folder', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+            checkAndSave(child)
+            addFacetsAndChildFolder(child)
+            addToChildFolders(child)
+            checkAndSave(it)
+        }
+
+        then:
+        validateExportedFolder('folderIncChildFolders', exportFolder(folderId))
     }
 }
