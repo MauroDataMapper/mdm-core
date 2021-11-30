@@ -112,4 +112,20 @@ class FolderJsonExporterServiceSpec extends BaseFolderExporterServiceSpec<Folder
         then:
         validateExportedFolder('folderIncMetadata', exportFolder(folderId))
     }
+
+    void 'test export Folder with annotations'() {
+        when:
+        Folder folder = folderService.get(folderId)
+        List<Map<String, String>> annotations = [
+            [label: 'Test Annotation 1', description: 'Test Annotation 1 description'],
+            [label: 'Test Annotation 2', description: 'Test Annotation 2 description']
+        ]
+        annotations.each {
+            folder.addToAnnotations(*: it, createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        }
+        checkAndSave(folder)
+
+        then:
+        validateExportedFolder('folderIncAnnotations', exportFolder(folderId))
+    }
 }
