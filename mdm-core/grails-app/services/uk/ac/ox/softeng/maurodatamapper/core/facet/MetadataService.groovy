@@ -191,9 +191,9 @@ class MetadataService implements MultiFacetItemAwareService<Metadata> {
 
     List<Metadata> findAllByMultiFacetAwareItemIdAndNotNamespaces(UUID multiFacetAwareItemId, List<String> namespaces, Map pagination = [:]) {
         if (!namespaces || namespaces.size() == 0) {
-            return Metadata.byMultiFacetAwareItemId(multiFacetAwareItemId).list(pagination)
+            return Metadata.byMultiFacetAwareItemId(multiFacetAwareItemId, pagination).list(pagination)
         }
-        Metadata.byMultiFacetAwareItemIdAndNotNamespaces(multiFacetAwareItemId, namespaces).list(pagination)
+        Metadata.byMultiFacetAwareItemIdAndNotNamespaces(multiFacetAwareItemId, namespaces, pagination).list(pagination)
     }
 
     List<NamespaceKeys> findNamespaceKeysIlikeNamespace(String namespacePrefix) {

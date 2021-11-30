@@ -321,6 +321,108 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
 '''
     }
 
+    void 'test getting with filters other properties on a datamodel'() {
+        given:
+        String id = getComplexDataModelId()
+
+        when: 'filter with a namespace that matches all three properties'
+        GET("dataModels/${id}/profiles/otherMetadata?ns=test.com", STRING_ARG)
+
+        then: 'all three properties are returned'
+        verifyJsonResponse OK, '''
+{
+    "count": 3,
+    "items": [{
+        "id":"${json-unit.matches:id}",
+        "namespace":"test.com",
+        "key":"mdk1",
+        "value":"mdv1",
+        "lastUpdated":"${json-unit.matches:offsetDateTime}"
+    },{
+        "id":"${json-unit.matches:id}",
+        "namespace":"test.com",
+        "key":"mdk2",
+        "value":"mdv2",
+        "lastUpdated":"${json-unit.matches:offsetDateTime}"
+    },{
+        "id":"${json-unit.matches:id}",
+        "namespace":"test.com/test",
+        "key":"mdk1",
+        "value":"mdv2",
+        "lastUpdated":"${json-unit.matches:offsetDateTime}"
+    }
+]}
+'''
+
+        when: 'filter with a namespace that matches just one property'
+        GET("dataModels/${id}/profiles/otherMetadata?ns=test.com/test", STRING_ARG)
+
+        then: 'the one matching property is returned'
+        verifyJsonResponse OK, '''
+{
+    "count": 1,
+    "items": [{
+        "id":"${json-unit.matches:id}",
+        "namespace":"test.com/test",
+        "key":"mdk1",
+        "value":"mdv2",
+        "lastUpdated":"${json-unit.matches:offsetDateTime}"
+    }
+]}
+'''
+
+        when: 'filter by namespace and key'
+        GET("dataModels/${id}/profiles/otherMetadata?ns=test.com&key=mdk1", STRING_ARG)
+
+        then: 'two matching properties are returned'
+        verifyJsonResponse OK, '''
+{
+    "count": 2,
+    "items": [{
+        "id":"${json-unit.matches:id}",
+        "namespace":"test.com",
+        "key":"mdk1",
+        "value":"mdv1",
+        "lastUpdated":"${json-unit.matches:offsetDateTime}"
+    },{
+        "id":"${json-unit.matches:id}",
+        "namespace":"test.com/test",
+        "key":"mdk1",
+        "value":"mdv2",
+        "lastUpdated":"${json-unit.matches:offsetDateTime}"
+    }
+]}
+'''
+
+        when: 'filter by namespace and key and value'
+        GET("dataModels/${id}/profiles/otherMetadata?ns=test.com&key=mdk1&value=mdv2", STRING_ARG)
+
+        then: 'the one matching property is returned'
+        verifyJsonResponse OK, '''
+{
+    "count": 1,
+    "items": [{
+        "id":"${json-unit.matches:id}",
+        "namespace":"test.com/test",
+        "key":"mdk1",
+        "value":"mdv2",
+        "lastUpdated":"${json-unit.matches:offsetDateTime}"
+    }
+]}
+'''
+
+        when: 'filter by namespace and key and value that do not match'
+        GET("dataModels/${id}/profiles/otherMetadata?ns=test.com&key=mdk1&value=mdv3", STRING_ARG)
+
+        then: 'no properties are returned'
+        verifyJsonResponse OK, '''
+{
+    "count": 0,
+    "items": [
+]}
+'''
+    }
+
     void 'test getting other properties on a folder'() {
         given:
         String id = folder.id.toString()
