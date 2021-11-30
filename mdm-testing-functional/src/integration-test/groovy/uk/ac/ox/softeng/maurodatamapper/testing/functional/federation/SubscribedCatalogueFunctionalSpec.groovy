@@ -788,7 +788,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         then:
         verifyJsonResponse OK, '''
         {
-  "count": 2,
+  "count": 3,
   "items": [
     {
       "modelId": "${json-unit.matches:id}",
@@ -805,6 +805,15 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
       "title": "Simple Test CodeSet 1.0.0",
       "label": "Simple Test CodeSet",
       "version": "1.0.0",
+      "modelType": "CodeSet",
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "dateCreated": "${json-unit.matches:offsetDateTime}",
+      "datePublished": "${json-unit.matches:offsetDateTime}",
+      "author": "Test Bootstrap"
+    },
+    {
+      "modelId": "${json-unit.matches:id}",
+      "title": "Complex Test CodeSet 1.0.0",
       "modelType": "CodeSet",
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "dateCreated": "${json-unit.matches:offsetDateTime}",

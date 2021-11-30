@@ -283,6 +283,25 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
     "documentationVersion": "1.0.0",
     "folder": "${json-unit.matches:id}",
     "type": "CodeSet"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "CodeSet",
+    "label": "Complex Test CodeSet",
+    "hasChildren": false,
+    "availableActions": [
+      "delete",
+      "moveToContainer",
+      "moveToFolder",
+      "softDelete"
+    ],
+    "deleted": false,
+    "finalised": true,
+    "superseded": false,
+    "documentationVersion": "1.0.0",
+    "folder": "${json-unit.matches:id}",
+    "type": "CodeSet",
+    "modelVersion": "1.0.0"
   }
 ]'''
     }
@@ -543,6 +562,20 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
         "type": "CodeSet"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "CodeSet",
+        "label": "Complex Test CodeSet",
+        "hasChildren": false,
+        "availableActions": [],
+        "deleted": false,
+        "finalised": true,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "CodeSet",
+        "modelVersion": "1.0.0"
       }
       ]
       }
@@ -825,6 +858,25 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
             "documentationVersion": "1.0.0",
             "folder": "${json-unit.matches:id}",
             "type": "CodeSet"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "domainType": "CodeSet",
+            "label": "Complex Test CodeSet",
+            "hasChildren": false,
+            "availableActions": [
+              "delete",
+              "moveToContainer",
+              "moveToFolder",
+              "softDelete"
+            ],
+            "deleted": false,
+            "finalised": true,
+            "superseded": false,
+            "documentationVersion": "1.0.0",
+            "folder": "${json-unit.matches:id}",
+            "type": "CodeSet",
+            "modelVersion": "1.0.0"
           }
         ]
       }
@@ -1119,6 +1171,25 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
             "documentationVersion": "1.0.0",
             "folder": "${json-unit.matches:id}",
             "type": "CodeSet"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "domainType": "CodeSet",
+            "label": "Complex Test CodeSet",
+            "hasChildren": false,
+            "availableActions": [
+              "delete",
+              "moveToContainer",
+              "moveToFolder",
+              "softDelete"
+            ],
+            "deleted": false,
+            "finalised": true,
+            "superseded": false,
+            "documentationVersion": "1.0.0",
+            "folder": "${json-unit.matches:id}",
+            "type": "CodeSet",
+            "modelVersion": "1.0.0"
           }
         ]
       }
