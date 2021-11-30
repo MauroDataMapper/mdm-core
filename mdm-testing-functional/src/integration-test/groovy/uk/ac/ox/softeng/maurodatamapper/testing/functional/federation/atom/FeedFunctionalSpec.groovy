@@ -65,7 +65,7 @@ class FeedFunctionalSpec extends FunctionalSpec {
 
         then:
         GPathResult feed = verifyBaseAtomResponse(xmlResponse, true, 'localhost')
-        feed.entry.size() == 2
+        feed.entry.size() == 3
         verifyEntry(feed.entry.find {it.title == 'Simple Test CodeSet 1.0.0'}, 'CodeSet',
                     "http://localhost:$serverPort", 'codeSets')
         verifyEntry(feed.entry.find {it.title == 'Finalised Example Test DataModel 1.0.0'}, 'DataModel',

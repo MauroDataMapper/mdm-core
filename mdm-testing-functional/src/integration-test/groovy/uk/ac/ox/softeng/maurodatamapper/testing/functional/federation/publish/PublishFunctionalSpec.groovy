@@ -103,7 +103,7 @@ class PublishFunctionalSpec extends FunctionalSpec {
         responseBody().authority.label == 'Mauro Data Mapper'
         responseBody().authority.url == 'http://localhost'
         responseBody().lastUpdated
-        responseBody().publishedModels.size() == 2
+        responseBody().publishedModels.size() == 3
 
 
         and:
