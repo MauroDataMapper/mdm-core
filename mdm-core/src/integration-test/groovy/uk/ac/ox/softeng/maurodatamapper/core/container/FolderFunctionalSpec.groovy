@@ -276,6 +276,22 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
         cleanUpData(id)
     }
 
+    void 'test can retrieve by valid path'() {
+        given:
+        def id = createNewItem(validJson)
+        def path = 'Functional%20Test%20Folder'
+
+        when:
+        GET("path/fo:${path}")
+
+        then:
+        verifyResponse HttpStatus.OK, response
+        responseBody().label == 'Functional Test Folder'
+
+        cleanup:
+        cleanUpData(id)
+    }
+
     void 'test searching for label "test" in empty folder using POST'() {
         given:
         def id = createNewItem(validJson)
