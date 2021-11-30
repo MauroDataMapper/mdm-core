@@ -1,0 +1,17 @@
+{
+  "folder": {
+    "id": "${json-unit.matches:id}",
+    "label": "Test Folder",
+    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+    "domainType": "Folder"
+  },
+  "exportMetadata": {
+    "exportedBy": "Admin User",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.core.container.provider.exporter",
+      "name": "FolderJsonExporterService",
+      "version": "1.0"
+    }
+  }
+}

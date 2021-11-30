@@ -76,4 +76,9 @@ class FolderJsonExporterServiceSpec extends BaseFolderExporterServiceSpec<Folder
         ApiBadRequestException exception = thrown(ApiBadRequestException)
         exception.errorCode == NO_FOLDER_IDS_TO_EXPORT_CODE
     }
+
+    void 'test export empty Folder'() {
+        expect:
+        validateExportedFolder('emptyFolder', exportFolder(folderId))
+    }
 }
