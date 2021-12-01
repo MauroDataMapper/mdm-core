@@ -1,0 +1,5 @@
+maurodatamapper:
+    federation:
+        subscribedcatalogue:
+            default:
+                timeout: 5

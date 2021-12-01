@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.federation.web.FederationClient
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
+import grails.core.GrailsApplication
 import grails.gorm.transactions.Transactional
 import grails.util.Environment
 import groovy.util.logging.Slf4j
@@ -33,6 +34,7 @@ import io.micronaut.http.client.ssl.NettyClientSslBuilder
 import io.micronaut.http.codec.MediaTypeCodecRegistry
 import org.springframework.beans.factory.annotation.Autowired
 
+import java.time.Duration
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
@@ -47,6 +49,7 @@ class SubscribedCatalogueService implements XmlImportMapping {
     @Autowired
     MediaTypeCodecRegistry mediaTypeCodecRegistry
 
+    GrailsApplication grailsApplication
     AuthorityService authorityService
 
     SubscribedCatalogue get(Serializable id) {
@@ -110,7 +113,7 @@ class SubscribedCatalogueService implements XmlImportMapping {
      * 1. Connect to the endpoint /api/published/models on the remote, authenticating by setting an api key in the header
      * 2. Return list of PublishedModels received in JSON from the remote catalogue
      *
-     * @param subscribedCatalogue   The catalogue we want to query
+     * @param subscribedCatalogue The catalogue we want to query
      * @return List<PublishedModel> The list of published models returned by the catalogue
      *
      */
@@ -124,7 +127,7 @@ class SubscribedCatalogueService implements XmlImportMapping {
         (subscribedCatalogueModels.publishedModels as List<Map<String, String>>).collect {pm ->
             new PublishedModel().tap {
                 modelId = Utils.toUuid(pm.modelId)
-                title = pm.title // to be removed
+                title = pm.title // for compatibility with remote catalogue versions prior to 4.12
                 if (pm.label) modelLabel = pm.label
                 if (pm.version) modelVersion = Version.from(pm.version)
                 modelType = pm.modelType
@@ -155,7 +158,10 @@ class SubscribedCatalogueService implements XmlImportMapping {
     }
 
     private FederationClient getFederationClientForSubscribedCatalogue(SubscribedCatalogue subscribedCatalogue) {
-        new FederationClient(subscribedCatalogue.url,
+        httpClientConfiguration.setReadTimeout(Duration.ofMinutes(
+            subscribedCatalogue.connectionTimeout ?: grailsApplication.config.getProperty(SubscribedCatalogue.DEFAULT_CONNECTION_TIMEOUT_CONFIG_PROPERTY, Integer)
+        ))
+        new FederationClient(subscribedCatalogue,
                              httpClientConfiguration,
                              nettyClientSslBuilder,
                              mediaTypeCodecRegistry)

@@ -24,7 +24,7 @@ import groovy.transform.Sortable
 
 import java.time.OffsetDateTime
 
-@Sortable(includes = ['modelLabel', 'modelType', 'modelVersion'])
+@Sortable(includes = ['modelLabel', 'modelVersion'])
 class PublishedModel {
 
     UUID modelId

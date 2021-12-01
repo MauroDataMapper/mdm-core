@@ -136,11 +136,37 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         ]
     }
 
+    String getExpectedShowJson() {
+        """{
+    "apiKey": "\${json-unit.matches:id}",
+    "description": "Functional Test Description",
+    "id": "\${json-unit.matches:id}",
+    "label": "Functional Test Label",
+    "refreshPeriod": 7,
+    "url": "http://localhost:$serverPort"
+}"""
+    }
+
+    String getExpectedIndexJson() {
+        """{
+    "count": 1,
+    "items": [
+        {
+            "id": "\${json-unit.matches:id}",
+            "url": "http://localhost:$serverPort",
+            "label": "Functional Test Label",
+            "description": "Functional Test Description",
+            "refreshPeriod": 7
+        }
+    ]
+}"""
+    }
+
     /*
       * Logged in as editor testing
       */
 
-    void 'E02 : Test the show and index action correctly renders an instance for set user (as editor)'() {
+    void 'E02 : Test the show action is forbidden and index action correctly renders (as editor)'() {
         given:
         String id = getValidId()
         loginEditor()
@@ -149,13 +175,13 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         GET(id)
 
         then:
-        verifyResponse OK, response
+        verifyResponse FORBIDDEN, response
 
         when: 'When the index action is called'
-        GET('')
+        GET('', STRING_ARG)
 
         then:
-        verifyResponse OK, response
+        verifyJsonResponse OK, getExpectedIndexJson()
 
         cleanup:
         removeValidIdObject(id)
@@ -211,7 +237,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
     /**
      * Testing when logged in as a no access/authenticated user
      */
-    void 'N02 : Test the show and index action correctly renders an instance for set user (as no access/authenticated)'() {
+    void 'N02 : Test the show action is forbidden and index action correctly renders (as no access/authenticated)'() {
         given:
         String id = getValidId()
         loginAuthenticated()
@@ -220,13 +246,13 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         GET(id)
 
         then:
-        verifyResponse OK, response
+        verifyResponse FORBIDDEN, response
 
         when: 'When the index action is called'
-        GET('')
+        GET('', STRING_ARG)
 
         then:
-        verifyResponse OK, response
+        verifyJsonResponse OK, getExpectedIndexJson()
 
         cleanup:
         removeValidIdObject(id)
@@ -236,7 +262,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
     /**
      * Testing when logged in as a reader only user
      */
-    void 'R02 : Test the show and index action correctly renders an instance for set user (as reader)'() {
+    void 'R02 : Test the show action is forbidden and index action correctly renders (as reader)'() {
         given:
         String id = getValidId()
         loginReader()
@@ -245,13 +271,13 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         GET(id)
 
         then:
-        verifyResponse OK, response
+        verifyResponse FORBIDDEN, response
 
         when: 'When the index action is called'
-        GET('')
+        GET('', STRING_ARG)
 
         then:
-        verifyResponse OK, response
+        verifyJsonResponse OK, getExpectedIndexJson()
 
         cleanup:
         removeValidIdObject(id)
@@ -262,16 +288,22 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
      * Logged in as admin testing
      */
 
-    void 'A02 : Test the show action correctly renders an instance for set user (as admin)'() {
+    void 'A02 : Test the show and index actions correctly render (as admin)'() {
         given:
         String id = getValidId()
         loginAdmin()
 
         when: 'When the show action is called to retrieve a resource'
-        GET(id)
+        GET(id, STRING_ARG)
 
         then:
-        verifyResponse OK, response
+        verifyJsonResponse OK, getExpectedShowJson()
+
+        when: 'When the index action is called'
+        GET('', STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, getExpectedIndexJson()
 
         cleanup:
         removeValidIdObject(id)

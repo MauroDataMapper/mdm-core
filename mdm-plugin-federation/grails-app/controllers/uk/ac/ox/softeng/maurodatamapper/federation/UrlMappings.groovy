@@ -29,7 +29,6 @@ class UrlMappings {
             get "/feeds/all"(controller: 'feed', action: 'index')
 
             '/subscribedCatalogues'(resources: 'subscribedCatalogue') {
-                get '/availableModels'(controller: 'subscribedCatalogue', action: 'publishedModels') // to be removed
                 get '/publishedModels'(controller: 'subscribedCatalogue', action: 'publishedModels')
                 get "/publishedModels/$publishedModelId/newerVersions"(controller: 'subscribedCatalogue', action: 'newerVersions')
                 get '/testConnection'(controller: 'subscribedCatalogue', action: 'testConnection')
