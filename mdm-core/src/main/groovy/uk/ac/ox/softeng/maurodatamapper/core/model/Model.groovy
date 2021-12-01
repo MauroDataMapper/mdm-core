@@ -58,6 +58,12 @@ trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableRes
     }
 
     @Override
+    void setFinalised(Boolean finalised) {
+        super.setFinalised(finalised)
+        this.breadcrumbTree?.finalised = finalised
+    }
+
+    @Override
     String getPathIdentifier() {
         "${label}${PathNode.MODEL_PATH_IDENTIFIER_SEPARATOR}${modelVersion ?: branchName}"
     }

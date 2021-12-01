@@ -177,6 +177,27 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         basicParameters.finalised = false
     }
 
+    void 'F04 : test import as finalised with content and check BreadcrumbTree'() {
+        given:
+        setupData()
+        basicParameters.finalised = true
+
+        when:
+        DataModel dm = importModel(loadTestFile('incDataClassWithChild'))
+
+        then:
+        dm
+        dm.finalised
+        dm.dateFinalised
+        dm.breadcrumbTree.finalised
+
+        and:
+        dm.dataClasses
+        dm.dataClasses.every { it.breadcrumbs.first().finalised }
+
+        cleanup:
+        basicParameters.finalised = false
+    }
 
     void 'MV01 : test import as newBranchModelVersion with no existing model'() {
         given:
