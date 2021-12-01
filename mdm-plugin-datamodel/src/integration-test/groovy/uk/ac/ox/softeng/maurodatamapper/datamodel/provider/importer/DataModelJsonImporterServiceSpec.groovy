@@ -41,6 +41,8 @@ import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 
+import java.time.OffsetDateTime
+
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getDEVELOPMENT
 
 /**
@@ -197,6 +199,30 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
 
         cleanup:
         basicParameters.finalised = false
+    }
+
+    void 'F05 : test import finalised with content and check BreadcrumbTree and date'() {
+        given:
+        setupData()
+        basicParameters.useDefaultAuthority = false
+
+        when:
+        DataModel dm = importModel(loadTestFile('simpleFinalised'))
+
+        then:
+        dm
+        dm.finalised
+        dm.dateFinalised
+        dm.dateFinalised == OffsetDateTime.parse('2021-01-11T14:56:15.600Z')
+        dm.breadcrumbTree.finalised
+
+        and:
+        dm.dataClasses
+        dm.dataClasses.every { it.breadcrumbs.first().finalised }
+
+        and:
+        dm.authority.url == 'http://localhost/other'
+        dm.authority.label == 'Another Test Authority'
     }
 
     void 'MV01 : test import as newBranchModelVersion with no existing model'() {
