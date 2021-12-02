@@ -17,9 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile
 
-import uk.ac.ox.softend.maurodatamapper.profile.databinding.ItemsProfilesDataBinding
-import uk.ac.ox.softend.maurodatamapper.profile.databinding.ProfileProvidedCollection
-import uk.ac.ox.softend.maurodatamapper.profile.databinding.ProfileProvided
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -30,6 +27,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.ResourcelessMdmCo
 import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
+import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ItemsProfilesDataBinding
+import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ProfileProvidedCollection
+import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ProfileProvided
 
 import grails.web.databinding.DataBinder
 import grails.gorm.transactions.Transactional
@@ -130,7 +130,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
      * The request must contain a collection of IDs of items which belong to the multi facet aware item, and a collection
      * of profile namespaces/names/version. The response returns all matching profiles for the requested items and profiles.
      */
-    def getMany() {
+    def getMany(ItemsProfilesDataBinding itemsProfiles) {
         List<ProfileProvided> profiles = []
         // this multiFacetAware item is expected to be a model
         MultiFacetAware model = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params
@@ -138,9 +138,6 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
         if (!model || !(model instanceof Model)) {
             throw new ApiBadRequestException('PC01', 'Cannot use this endpoint on a item which is not a Model')
         }
-
-        ItemsProfilesDataBinding itemsProfiles = new ItemsProfilesDataBinding()
-        bindData itemsProfiles, request
 
         itemsProfiles.multiFacetAwareItems.each { multiFacetAwareItemDataBinding ->
             MultiFacetAware multiFacetAware = profileService.findMultiFacetAwareItemByDomainTypeAndId(
@@ -202,8 +199,8 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
     }
 
     @Transactional
-    def saveMany() {
-        handleMany(false)
+    def saveMany(ProfileProvidedCollection profileProvidedCollection) {
+        handleMany(false, profileProvidedCollection)
     }
 
     def validate() {
@@ -232,16 +229,17 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
         respond validatedInstance
     }
 
-    def validateMany() {
-        handleMany(true)
+    def validateMany(ProfileProvidedCollection profileProvidedCollection) {
+        handleMany(true, profileProvidedCollection)
     }
 
     /**
      * Validate or save many profile instances
      * @param validateOnly
+     * @param ProfileProvidedCollection bound data from the request
      * @return
      */
-    private handleMany(boolean validateOnly) {
+    private handleMany(boolean validateOnly, ProfileProvidedCollection profileProvidedCollection) {
         log.debug("Handling many items profiles")
         List<ProfileProvided> handledInstances = []
 
@@ -253,12 +251,6 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
         if (!model || !(model instanceof Model)) {
             throw new ApiBadRequestException('PC02', 'Cannot use this endpoint on a item which is not a Model')
         }
-
-        // Bind the request to a collection of ProfileProvidedDataBinding. Within each instance of
-        // ProfileProvidedDataBinding, the profile is bound to a Map, because we don't yet know what
-        // subclass of Profile to bind to.
-        ProfileProvidedCollection profileProvidedCollection = new ProfileProvidedCollection()
-        bindData(profileProvidedCollection, request)
 
         profileProvidedCollection.profilesProvided.each {profileProvided ->
 

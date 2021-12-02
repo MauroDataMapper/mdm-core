@@ -15,9 +15,10 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softend.maurodatamapper.profile.databinding
+package uk.ac.ox.softeng.maurodatamapper.profile.rest.transport
 
-class MultiFacetAwareItemDataBinding {
-    UUID multiFacetAwareItemId
-    String multiFacetAwareItemDomainType
+class ProfileProviderServiceDataBinding {
+    String name
+    String namespace
+    String version
 }

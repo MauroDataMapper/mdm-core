@@ -15,10 +15,17 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softend.maurodatamapper.profile.databinding
+package uk.ac.ox.softeng.maurodatamapper.profile.rest.transport
 
-class ProfileProviderServiceDataBinding {
-    String name
-    String namespace
-    String version
+import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
+import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
+
+/**
+ * Composite class containing a Profile and the ProfileProviderService that
+ * created the Profile. Useful for rendering responses which contain many profiles
+ * and their providers.
+ */
+class ProfileProvided {
+    Profile profile
+    ProfileProviderService profileProviderService
 }

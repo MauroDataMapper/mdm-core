@@ -15,12 +15,9 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softend.maurodatamapper.profile.databinding
+package uk.ac.ox.softeng.maurodatamapper.profile.rest.transport
 
-/**
- * Composite class for binding a profile and its provider service
- */
-class ProfileProvidedDataBinding {
-    Map profile
-    ProfileProviderServiceDataBinding profileProviderService
+class MultiFacetAwareItemDataBinding {
+    UUID multiFacetAwareItemId
+    String multiFacetAwareItemDomainType
 }

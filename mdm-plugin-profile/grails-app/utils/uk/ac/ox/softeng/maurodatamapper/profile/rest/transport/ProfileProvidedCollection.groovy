@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softend.maurodatamapper.profile.databinding
+package uk.ac.ox.softeng.maurodatamapper.profile.rest.transport
 
 /**
  * Bind to a request body like
