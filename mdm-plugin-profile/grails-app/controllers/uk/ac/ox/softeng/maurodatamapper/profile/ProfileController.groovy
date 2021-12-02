@@ -20,7 +20,6 @@ package uk.ac.ox.softeng.maurodatamapper.profile
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.ResourcelessMdmController
@@ -29,7 +28,6 @@ import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ItemsProfilesDataBinding
 import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ProfileProvidedCollection
-import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ProfileProvided
 
 import grails.web.databinding.DataBinder
 import grails.gorm.transactions.Transactional
@@ -131,7 +129,6 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
      * of profile namespaces/names/version. The response returns all matching profiles for the requested items and profiles.
      */
     def getMany(ItemsProfilesDataBinding itemsProfiles) {
-        List<ProfileProvided> profiles = []
         // this multiFacetAware item is expected to be a model
         MultiFacetAware model = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params
                 .multiFacetAwareItemId)
@@ -139,38 +136,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
             throw new ApiBadRequestException('PC01', 'Cannot use this endpoint on a item which is not a Model')
         }
 
-        itemsProfiles.multiFacetAwareItems.each { multiFacetAwareItemDataBinding ->
-            MultiFacetAware multiFacetAware = profileService.findMultiFacetAwareItemByDomainTypeAndId(
-                    multiFacetAwareItemDataBinding.multiFacetAwareItemDomainType,
-                    multiFacetAwareItemDataBinding.multiFacetAwareItemId)
-
-            // In the interceptor we only checked access to the model
-            // The body of the request (which was bound to itemsProfiles) could contain
-            // multi facet aware items which do not belong to the checked model.
-            // So here, only proceed if the multiFacetAware is a ModelItem and that ModelItem
-            // belongs to the checked model.
-            if (multiFacetAware &&
-            multiFacetAware instanceof ModelItem &&
-            multiFacetAware.model.id == model.id) {
-
-                itemsProfiles.profileProviderServices.each { profileProviderServiceDataBinding ->
-                    ProfileProviderService profileProviderService = profileService.findProfileProviderService(
-                            profileProviderServiceDataBinding.namespace,
-                            profileProviderServiceDataBinding.name,
-                            profileProviderServiceDataBinding.version)
-
-                    if (profileProviderService) {
-                        ProfileProvided profileProvided = new ProfileProvided()
-                        profileProvided.profile = profileService.createProfile(profileProviderService, multiFacetAware)
-                        profileProvided.profileProviderService = profileProviderService
-                        profiles.add(profileProvided)
-                    }
-                }
-
-            }
-        }
-
-        respond([view: 'many'], [profileProvidedList: profiles])
+        respond([view: 'many'], [profileProvidedList: profileService.getMany(model.id, itemsProfiles)])
     }
 
     @Transactional
@@ -241,7 +207,6 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
      */
     private handleMany(boolean validateOnly, ProfileProvidedCollection profileProvidedCollection) {
         log.debug("Handling many items profiles")
-        List<ProfileProvided> handledInstances = []
 
         // The multiFacetAware item referenced in the URI, is expected to be a model
         MultiFacetAware model = profileService.findMultiFacetAwareItemByDomainTypeAndId(
@@ -252,63 +217,8 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
             throw new ApiBadRequestException('PC02', 'Cannot use this endpoint on a item which is not a Model')
         }
 
-        profileProvidedCollection.profilesProvided.each {profileProvided ->
-
-            ProfileProviderService profileProviderService = profileService.findProfileProviderService(
-                    profileProvided.profileProviderService.namespace,
-                    profileProvided.profileProviderService.name,
-                    profileProvided.profileProviderService.version)
-
-            if (profileProviderService) {
-                // Bind the Map profileProvided.profile to an object of the right subclass of Profile
-                Profile submittedInstance = profileProviderService.getNewProfile()
-                bindData submittedInstance, profileProvided.profile
-
-                MultiFacetAware multiFacetAware = profileService.findMultiFacetAwareItemByDomainTypeAndId(submittedInstance.domainType, submittedInstance.id)
-
-                // In the interceptor we only checked access to the model
-                // The body of the request could contain
-                // multi facet aware items which do not belong to the checked model.
-                // So here, only proceed if the multiFacetAware is a ModelItem and that ModelItem
-                // belongs to the checked model.
-                if (multiFacetAware &&
-                    multiFacetAware instanceof ModelItem &&
-                    multiFacetAware.model.id == model.id) {
-
-                    log.debug("Found allowed multiFacetAware ${multiFacetAware.model.id}")
-
-                    if (validateOnly) {
-                        ProfileProvided validated = new ProfileProvided()
-                        validated.profile = profileService.validateProfile(profileProviderService, submittedInstance)
-                        validated.profileProviderService = profileProviderService
-                        handledInstances.add(validated)
-                    } else {
-                        boolean saveAllowed
-
-                        if (profileProviderService.canBeEditedAfterFinalisation()) {
-                            saveAllowed = currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(model.class, model.id, 'saveIgnoreFinalise')
-                            log.debug("Profile can be edited after finalisation ${profileProviderService.namespace}.${profileProviderService.name} and saveAllowed is ${saveAllowed}")
-                        } else {
-                            saveAllowed = currentUserSecurityPolicyManager.userCanCreateResourceId(Profile.class, null, model.class, model.id)
-                            log.debug("Profile cannot be edited after finalisation ${profileProviderService.namespace}.${profileProviderService.name} and saveAllowed is ${saveAllowed}")
-                        }
-
-                        if (saveAllowed) {
-                            ProfileProvided saved = new ProfileProvided()
-                            MultiFacetAware profiled = profileService.storeProfile(profileProviderService, multiFacetAware, submittedInstance, currentUser)
-                            // Create the profile as the stored profile may only be segments of the profile and we now want to get everything
-                            saved.profile = profileService.createProfile(profileProviderService, profiled)
-                            saved.profileProviderService = profileProviderService
-                            handledInstances.add(saved)
-                        } else {
-                            log.debug("Save not allowed for multiFacetAware ${multiFacetAware.model.id}")
-                        }
-                    }
-                }
-            }
-        }
-
-        respond([view: 'many'], [profileProvidedList: handledInstances])
+        respond([view: 'many'], [profileProvidedList: profileService.handleMany(validateOnly,
+                profileProvidedCollection, model, currentUserSecurityPolicyManager, currentUser)])
     }
 
     def listModelsInProfile() {
