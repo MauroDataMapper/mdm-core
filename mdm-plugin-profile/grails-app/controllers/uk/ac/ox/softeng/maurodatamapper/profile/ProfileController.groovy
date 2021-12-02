@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.profile
 import uk.ac.ox.softend.maurodatamapper.profile.databinding.ItemsProfilesDataBinding
 import uk.ac.ox.softend.maurodatamapper.profile.databinding.ProfileProvidedCollection
 import uk.ac.ox.softend.maurodatamapper.profile.databinding.ProfileProvided
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
@@ -135,7 +136,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
         MultiFacetAware model = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params
                 .multiFacetAwareItemId)
         if (!model || !(model instanceof Model)) {
-            return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
+            throw new ApiBadRequestException('PC01', 'Cannot use this endpoint on a item which is not a Model')
         }
 
         ItemsProfilesDataBinding itemsProfiles = new ItemsProfilesDataBinding()
@@ -250,7 +251,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
                 params.multiFacetAwareItemId)
 
         if (!model || !(model instanceof Model)) {
-            return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
+            throw new ApiBadRequestException('PC02', 'Cannot use this endpoint on a item which is not a Model')
         }
 
         // Bind the request to a collection of ProfileProvidedDataBinding. Within each instance of

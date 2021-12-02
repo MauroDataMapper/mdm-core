@@ -31,6 +31,7 @@ import io.micronaut.core.type.Argument
 import io.micronaut.http.HttpResponse
 import spock.lang.PendingFeature
 
+import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
@@ -1734,10 +1735,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         String dynamicProfileModelId = getDynamicProfileModelId()
         String secondDynamicProfileModelId = getSecondDynamicProfileModelId()
 
-        /**
-         * 1. First save two dynamic profiles against the first data element
-         */
-        when: 'use saveMany to save one profile on the first data element'
+
         Map optionalFieldMap1 = [
             fieldName   : 'Dynamic Profile Elem (Optional)',
             currentValue: 'abc'
@@ -1810,6 +1808,18 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         ]
 
         loginEditor()
+
+        /**
+         * 1. First save two dynamic profiles against the first data element
+         */
+
+        when: 'use saveMany on a MultiFacetAwareItem that is not a Model'
+        POST("dataElements/$secondModelFirstDataElementId/profile/saveMany", dynamicProfileMap)
+
+        then:
+        verifyResponse(BAD_REQUEST, response)
+
+        when: 'use saveMany to save one profile on the first data element'
         POST("dataModels/$secondModelId/profile/saveMany", dynamicProfileMap)
 
         then: 'the profile is saved for the first data element'
@@ -2483,6 +2493,12 @@ class ProfileFunctionalSpec extends FunctionalSpec {
                 ]
             ]
         ]
+
+        when: 'request made against a MultiFacetAwareItem that is not a model'
+        POST("dataElements/$secondModelFirstDataElementId/profile/getMany", getManyMap)
+
+        then:
+        verifyResponse(BAD_REQUEST, response)
 
         when: 'correctly request against the second model'
         POST("dataModels/$secondModelId/profile/getMany", getManyMap)
