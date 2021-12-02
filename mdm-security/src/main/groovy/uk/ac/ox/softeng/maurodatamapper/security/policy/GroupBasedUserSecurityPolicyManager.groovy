@@ -31,7 +31,6 @@ import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.security.authentication.ApiKey
-import uk.ac.ox.softeng.maurodatamapper.security.basic.UnloggedUser
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.VirtualSecurableResourceGroupRole
@@ -39,12 +38,9 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.core.GrailsApplication
 import grails.core.GrailsClass
-import groovy.transform.stc.ClosureParams
-import groovy.transform.stc.SimpleType
+import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import org.grails.orm.hibernate.proxy.HibernateProxyHandler
-
-import java.util.function.Predicate
 
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.AUTHORITY_ADMIN_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.AUTHOR_ACTIONS
@@ -113,20 +109,14 @@ import static uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole.USER_ADMI
  * zero calls to the database when ascertaining access. It also means we can make 1 check for rights to access.
  */
 @Slf4j
+@CompileStatic
 class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
 
-    CatalogueUser user
-    Set<UserGroup> userGroups
-    List<SecurableResourceGroupRole> securableResourceGroupRoles
-    Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles
-    Set<GroupRole> applicationPermittedRoles
     HibernateProxyHandler hibernateProxyHandler = new HibernateProxyHandler()
-
-    GrailsApplication grailsApplication
+    private UserSecurityPolicy userPolicy
+    private GrailsApplication grailsApplication
 
     GroupBasedUserSecurityPolicyManager() {
-        userGroups = [] as Set
-        setNoAccess()
     }
 
     GroupBasedUserSecurityPolicyManager inApplication(GrailsApplication grailsApplication) {
@@ -134,87 +124,70 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         this
     }
 
-    GroupBasedUserSecurityPolicyManager forUser(CatalogueUser catalogueUser) {
-        user = catalogueUser
+    GroupBasedUserSecurityPolicyManager withUserPolicy(UserSecurityPolicy userPolicy) {
+        if (this.userPolicy) throw new ApiInternalException('GBUSPM', 'Cannot set a UserPolicy when its already set')
+        this.userPolicy = userPolicy
         this
     }
 
-    GroupBasedUserSecurityPolicyManager inGroups(Set<UserGroup> userGroups) {
-        this.userGroups = userGroups
+    GroupBasedUserSecurityPolicyManager withUpdatedUserPolicy(UserSecurityPolicy userPolicy) {
+        if (!this.userPolicy) throw new ApiInternalException('GBUSPM', 'Cannot update a UserPolicy when its not set')
+        this.userPolicy = userPolicy
         this
     }
 
-    GroupBasedUserSecurityPolicyManager withSecurableRoles(List<SecurableResourceGroupRole> securableResourceGroupRoles) {
-        this.securableResourceGroupRoles = securableResourceGroupRoles
+    GroupBasedUserSecurityPolicyManager lock() {
+        this.userPolicy.lock()
         this
     }
 
-    GroupBasedUserSecurityPolicyManager includeSecurableRoles(List<SecurableResourceGroupRole> securableResourceGroupRoles) {
-        this.securableResourceGroupRoles.addAll(securableResourceGroupRoles)
+    GroupBasedUserSecurityPolicyManager unlock() {
+        this.userPolicy.unlock()
         this
     }
 
-    GroupBasedUserSecurityPolicyManager withVirtualRoles(Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles) {
-        this.virtualSecurableResourceGroupRoles = virtualSecurableResourceGroupRoles
+    boolean isLocked() {
+        this.userPolicy.locked
+    }
+
+    boolean isUnLocked() {
+        !this.userPolicy.locked
+    }
+
+    boolean userPolicyIsManagedByGroup(UserGroup userGroup) {
+        userPolicy.isManagedByGroup(userGroup)
+    }
+
+    boolean userPolicyHasApplicationRoles() {
+        userPolicy.applicationPermittedRoles
+    }
+
+    UserSecurityPolicy getUserPolicy() {
+        this.userPolicy
+    }
+
+    GroupBasedUserSecurityPolicyManager ensureCatalogueUser(CatalogueUser catalogueUser) {
+        this.userPolicy.ensureCatalogueUser(catalogueUser)
         this
     }
 
-    GroupBasedUserSecurityPolicyManager withApplicationRoles(Set<GroupRole> applicationPermittedRoles) {
-        this.applicationPermittedRoles = applicationPermittedRoles
+    GroupBasedUserSecurityPolicyManager withUpdatedUserGroups(Set<UserGroup> userGroups) {
+        this.userPolicy.inGroups(userGroups)
         this
     }
 
-    GroupBasedUserSecurityPolicyManager includeApplicationRoles(Set<GroupRole> applicationPermittedRoles) {
-        this.applicationPermittedRoles.addAll(applicationPermittedRoles)
-        this
+    void revoke() {
+        userPolicy.destroy()
     }
 
-    GroupBasedUserSecurityPolicyManager includeVirtualRoles(Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles) {
-        this.virtualSecurableResourceGroupRoles.addAll(virtualSecurableResourceGroupRoles)
-        this
-    }
-
-    GroupBasedUserSecurityPolicyManager hasNoAccess() {
-        setNoAccess()
-        this
-    }
-
-    GroupBasedUserSecurityPolicyManager removeVirtualRoleIf(@ClosureParams(
-        value = SimpleType,
-        options = 'uk.ac.ox.softeng.maurodatamapper.security.role.VirtualSecurableResourceGroupRole') Closure predicate
-                                                           ) {
-        virtualSecurableResourceGroupRoles.removeIf([test: predicate] as Predicate)
-        this
-    }
-
-    GroupBasedUserSecurityPolicyManager removeVirtualRoles(Collection<VirtualSecurableResourceGroupRole> rolesToRemoved) {
-        virtualSecurableResourceGroupRoles.removeAll(rolesToRemoved)
-        this
-    }
-
-    GroupBasedUserSecurityPolicyManager removeAssignedRoleIf(@ClosureParams(
-        value = SimpleType,
-        options = 'uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole') Closure predicate
-                                                            ) {
-        securableResourceGroupRoles.removeIf([test: predicate] as Predicate)
-        this
-    }
-
-    // If the usergroups are set then the entire security policy is unsure so will need to be rebuilt
-    void setUserGroups(Set<UserGroup> userGroups) {
-        setNoAccess()
-        this.userGroups = userGroups.toSet()
-    }
-
-    void setNoAccess() {
-        applicationPermittedRoles = [] as Set
-        securableResourceGroupRoles = []
-        virtualSecurableResourceGroupRoles = [] as Set
+    @Override
+    CatalogueUser getUser() {
+        userPolicy.getUser()
     }
 
     @Override
     List<UUID> listReadableSecuredResourceIds(Class<? extends SecurableResource> securableResourceClass) {
-        virtualSecurableResourceGroupRoles
+        userPolicy.getVirtualSecurableResourceGroupRoles()
             .findAll { it.domainType == securableResourceClass.simpleName || it.alternateDomainType == securableResourceClass.simpleName }
             .collect { it.domainId }
             .toSet()
@@ -225,7 +198,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     boolean userCanReadResourceId(Class resourceClass, UUID id,
                                   Class<? extends SecurableResource> owningSecureResourceClass, UUID owningSecureResourceId) {
         if (Utils.parentClassIsAssignableFromChild(SecurableResource, resourceClass)) {
-            return userCanReadSecuredResourceId(resourceClass, id)
+            return userCanReadSecuredResourceId(resourceClass as Class<? extends SecurableResource>, id)
         }
         // Allow users to read any user image files
         if (Utils.parentClassIsAssignableFromChild(UserImageFile, resourceClass) &&
@@ -239,7 +212,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     boolean userCanCreateResourceId(Class resourceClass, UUID id,
                                     Class<? extends SecurableResource> owningSecureResourceClass, UUID owningSecureResourceId) {
         if (Utils.parentClassIsAssignableFromChild(SecurableResource, resourceClass)) {
-            return userCanCreateSecuredResourceId(resourceClass, id)
+            return userCanCreateSecuredResourceId(resourceClass as Class<? extends SecurableResource>, id)
         }
         // Allow reviewers to create annotations on a model if they have reviewer status
         if (Utils.parentClassIsAssignableFromChild(Annotation, resourceClass) &&
@@ -267,7 +240,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     boolean userCanEditResourceId(Class resourceClass, UUID id,
                                   Class<? extends SecurableResource> owningSecureResourceClass, UUID owningSecureResourceId) {
         if (Utils.parentClassIsAssignableFromChild(SecurableResource, resourceClass)) {
-            return userCanEditSecuredResourceId(resourceClass, id)
+            return userCanEditSecuredResourceId(resourceClass as Class<? extends SecurableResource>, id)
         }
         // Allow users to edit their own user image file
         if (Utils.parentClassIsAssignableFromChild(UserImageFile, resourceClass) &&
@@ -282,7 +255,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     boolean userCanDeleteResourceId(Class resourceClass, UUID id,
                                     Class<? extends SecurableResource> owningSecureResourceClass, UUID owningSecureResourceId) {
         if (Utils.parentClassIsAssignableFromChild(SecurableResource, resourceClass)) {
-            return userCanDeleteSecuredResourceId(resourceClass, id, false)
+            return userCanDeleteSecuredResourceId(resourceClass as Class<? extends SecurableResource>, id, false)
         }
         // Allow users to create their own user image file
         if (Utils.parentClassIsAssignableFromChild(UserImageFile, resourceClass) &&
@@ -511,37 +484,17 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
 
     @Override
     boolean isApplicationAdministrator() {
-        applicationPermittedRoles.any { it.name == APPLICATION_ADMIN_ROLE_NAME }
+        userPolicy.getApplicationPermittedRoles().any { it.name == APPLICATION_ADMIN_ROLE_NAME }
     }
 
     @Override
     boolean isAuthenticated() {
-        user && user.emailAddress != UnloggedUser.instance.emailAddress
+        userPolicy.isAuthenticated()
     }
 
     @Override
     boolean isPending() {
-        user && user.pending
-    }
-
-    GroupRole getHighestApplicationLevelAccess() {
-        applicationPermittedRoles.sort().first()
-    }
-
-    GroupRole findHighestAccessToSecurableResource(String securableResourceDomainType, UUID securableResourceId) {
-        Set<VirtualSecurableResourceGroupRole> found = virtualSecurableResourceGroupRoles.findAll {
-            it.domainType == securableResourceDomainType && it.domainId == securableResourceId
-        }
-        if (!found) return null
-        found.sort().first().groupRole
-    }
-
-    GroupRole findHighestAssignedAccessToSecurableResource(String securableResourceDomainType, UUID securableResourceId) {
-        List<SecurableResourceGroupRole> found = securableResourceGroupRoles.findAll {
-            it.securableResourceDomainType == securableResourceDomainType && it.securableResourceId == securableResourceId
-        }
-        if (!found) return null
-        found.collect { it.groupRole }.sort().first()
+        user && userPolicy.getUser().pending
     }
 
     boolean hasUserAdminRights() {
@@ -733,7 +686,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
             return false
         }
 
-        return virtualSecurableResourceGroupRoles.any {
+        return userPolicy.getVirtualSecurableResourceGroupRoles().any {
             it.matchesDomainResource(securableResourceClass, id)
         }
     }
@@ -741,13 +694,13 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     private VirtualSecurableResourceGroupRole getSpecificLevelAccessToSecuredResource(Class<? extends SecurableResource> securableResourceClass,
                                                                                       UUID id,
                                                                                       String roleName) {
-        virtualSecurableResourceGroupRoles.find {
+        userPolicy.getVirtualSecurableResourceGroupRoles().find {
             it.matchesDomainResource(securableResourceClass, id) && it.matchesGroupRole(roleName)
         }
     }
 
     private boolean hasApplicationLevelRole(String rolename) {
-        applicationPermittedRoles.any { it.name == rolename }
+        userPolicy.getApplicationPermittedRoles().any { it.name == rolename }
     }
 
     private List<String> getStandardActionsWithControlRole(Class<? extends SecurableResource> securableResourceClass, UUID id, String roleName) {
@@ -759,6 +712,4 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
             return READ_ONLY_ACTIONS
         } else return []
     }
-
-
 }

@@ -161,6 +161,11 @@ dataSource:
 environments:
     test:
         spring.flyway.enabled: false
+        maurodatamapper:
+            security:
+                max:
+                    lock:
+                        time: 1
         database:
             name: 'msTest'
             creation: 'CREATE SCHEMA IF NOT EXISTS core\;CREATE SCHEMA IF NOT EXISTS security'

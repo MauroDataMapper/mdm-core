@@ -42,8 +42,6 @@ class UserSecurityPolicyManagerInterceptor implements SecurityPolicyManagerInter
     }
 
     boolean before() {
-        checkSessionIsValid()
-
         if (!securityPolicyManagerIsSet()) {
             if (sessionService.isAuthenticatedSession(session.id)) {
                 UserSecurityPolicyManager userSecurityPolicyManager =
