@@ -17,7 +17,7 @@
                   "id": "${json-unit.matches:id}",
                   "label": "FT Test Reference Data Model",
                   "domainType": "ReferenceDataModel",
-                  "finalised": false
+                  "finalised": true
                 }
               ],
               "columnNumber": 0,
@@ -31,7 +31,7 @@
                     "id": "${json-unit.matches:id}",
                     "label": "FT Test Reference Data Model",
                     "domainType": "ReferenceDataModel",
-                    "finalised": false
+                    "finalised": true
                   }
                 ]
               }
@@ -51,7 +51,7 @@
                   "id": "${json-unit.matches:id}",
                   "label": "FT Test Reference Data Model",
                   "domainType": "ReferenceDataModel",
-                  "finalised": false
+                  "finalised": true
                 }
               ],
               "columnNumber": 1,
@@ -65,7 +65,7 @@
                     "id": "${json-unit.matches:id}",
                     "label": "FT Test Reference Data Model",
                     "domainType": "ReferenceDataModel",
-                    "finalised": false
+                    "finalised": true
                   }
                 ]
               }
@@ -85,7 +85,7 @@
                   "id": "${json-unit.matches:id}",
                   "label": "FT Test Reference Data Model",
                   "domainType": "ReferenceDataModel",
-                  "finalised": false
+                  "finalised": true
                 }
               ],
               "columnNumber": 2,
@@ -99,7 +99,7 @@
                     "id": "${json-unit.matches:id}",
                     "label": "FT Test Reference Data Model",
                     "domainType": "ReferenceDataModel",
-                    "finalised": false
+                    "finalised": true
                   }
                 ]
               }
@@ -123,7 +123,7 @@
                   "id": "${json-unit.matches:id}",
                   "label": "FT Test Reference Data Model",
                   "domainType": "ReferenceDataModel",
-                  "finalised": false
+                  "finalised": true
                 }
               ],
               "columnNumber": 0,
@@ -137,7 +137,7 @@
                     "id": "${json-unit.matches:id}",
                     "label": "FT Test Reference Data Model",
                     "domainType": "ReferenceDataModel",
-                    "finalised": false
+                    "finalised": true
                   }
                 ]
               }
@@ -157,7 +157,7 @@
                   "id": "${json-unit.matches:id}",
                   "label": "FT Test Reference Data Model",
                   "domainType": "ReferenceDataModel",
-                  "finalised": false
+                  "finalised": true
                 }
               ],
               "columnNumber": 1,
@@ -171,7 +171,7 @@
                     "id": "${json-unit.matches:id}",
                     "label": "FT Test Reference Data Model",
                     "domainType": "ReferenceDataModel",
-                    "finalised": false
+                    "finalised": true
                   }
                 ]
               }
@@ -191,7 +191,7 @@
                   "id": "${json-unit.matches:id}",
                   "label": "FT Test Reference Data Model",
                   "domainType": "ReferenceDataModel",
-                  "finalised": false
+                  "finalised": true
                 }
               ],
               "columnNumber": 2,
@@ -205,7 +205,7 @@
                     "id": "${json-unit.matches:id}",
                     "label": "FT Test Reference Data Model",
                     "domainType": "ReferenceDataModel",
-                    "finalised": false
+                    "finalised": true
                   }
                 ]
               }
@@ -215,4 +215,3 @@
       }
     ]
   }
-  
