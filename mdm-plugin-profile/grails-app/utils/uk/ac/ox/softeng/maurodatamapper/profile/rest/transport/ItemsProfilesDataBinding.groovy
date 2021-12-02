@@ -38,7 +38,7 @@ package uk.ac.ox.softeng.maurodatamapper.profile.rest.transport
  *     ]
  * }
  */
-class ItemsProfilesDataBinding {
+class ItemsProfilesDataBinding implements grails.validation.Validateable {
     List<MultiFacetAwareItemDataBinding> multiFacetAwareItems
     List<ProfileProviderServiceDataBinding> profileProviderServices
 }

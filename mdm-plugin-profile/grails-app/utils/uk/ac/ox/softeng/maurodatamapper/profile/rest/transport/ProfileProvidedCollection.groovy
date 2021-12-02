@@ -58,6 +58,6 @@ package uk.ac.ox.softeng.maurodatamapper.profile.rest.transport
  * profile is initially bound to a Map. This Map can later be bound to an instance returned by
  * the ProfileProviderService specified.
  */
-class ProfileProvidedCollection {
+class ProfileProvidedCollection implements grails.validation.Validateable {
     List<ProfileProvidedDataBinding> profilesProvided
 }
