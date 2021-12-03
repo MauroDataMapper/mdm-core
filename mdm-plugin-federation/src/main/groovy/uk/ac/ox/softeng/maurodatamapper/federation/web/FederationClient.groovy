@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.federation.web
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
+import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogue
 
 import groovy.util.logging.Slf4j
 import groovy.util.slurpersupport.GPathResult
@@ -57,19 +58,19 @@ class FederationClient {
     private String hostUrl
     private String contextPath
 
-    FederationClient(String hostUrl, ApplicationContext applicationContext) {
-        this(hostUrl,
+    FederationClient(SubscribedCatalogue subscribedCatalogue, ApplicationContext applicationContext) {
+        this(subscribedCatalogue,
              applicationContext.getBean(HttpClientConfiguration),
              applicationContext.getBean(NettyClientSslBuilder),
              applicationContext.getBean(MediaTypeCodecRegistry)
         )
     }
 
-    FederationClient(String hostUrl,
+    FederationClient(SubscribedCatalogue subscribedCatalogue,
                      HttpClientConfiguration httpClientConfiguration,
                      NettyClientSslBuilder nettyClientSslBuilder,
                      MediaTypeCodecRegistry mediaTypeCodecRegistry) {
-        this(hostUrl,
+        this(subscribedCatalogue,
              httpClientConfiguration,
              new DefaultThreadFactory(MultithreadEventLoopGroup),
              nettyClientSslBuilder,
@@ -77,12 +78,12 @@ class FederationClient {
         )
     }
 
-    private FederationClient(String hostUrl,
+    private FederationClient(SubscribedCatalogue subscribedCatalogue,
                              HttpClientConfiguration httpClientConfiguration,
                              ThreadFactory threadFactory,
                              NettyClientSslBuilder nettyClientSslBuilder,
                              MediaTypeCodecRegistry mediaTypeCodecRegistry) {
-        this.hostUrl = hostUrl
+        hostUrl = subscribedCatalogue.url
         // The http client resolves using URI.resolve which ignores anything in the url path,
         // therefore we need to make sure its part of the context path.
         URI hostUri = hostUrl.toURI()
@@ -92,7 +93,6 @@ class FederationClient {
         } else {
             this.contextPath = 'api'
         }
-        httpClientConfiguration.setReadTimeout(Duration.ofMinutes(5))
         client = new DefaultHttpClient(LoadBalancer.fixed(hostUrl.toURL()),
                                        httpClientConfiguration,
                                        this.contextPath,
@@ -117,7 +117,11 @@ class FederationClient {
     }
 
     Map<String, Object> getVersionLinksForModel(UUID apiKey, String urlModelResourceType, UUID modelId) {
-        retrieveMapFromClient(UriBuilder.of(urlModelResourceType).path(modelId.toString()), apiKey)
+        retrieveMapFromClient(UriBuilder.of(urlModelResourceType).path(modelId.toString()).path('versionLinks'), apiKey)
+    }
+
+    Map<String, Object> getNewerPublishedVersionsForPublishedModel(UUID apiKey, UUID modelId) {
+        retrieveMapFromClient(UriBuilder.of('published/models').path(modelId.toString()).path('newerVersions'), apiKey)
     }
 
     String getStringResourceExport(UUID apiKey, String urlResourceType, UUID resourceId, Map exporterInfo) {

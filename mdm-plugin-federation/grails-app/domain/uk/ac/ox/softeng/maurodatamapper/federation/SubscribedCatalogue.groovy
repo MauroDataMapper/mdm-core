@@ -31,6 +31,7 @@ import java.time.OffsetDateTime
 class SubscribedCatalogue implements SecurableResource, EditHistoryAware, InformationAware {
 
     private static final int DEFAULT_REFRESH_PERIOD = 7
+    private static final String DEFAULT_CONNECTION_TIMEOUT_CONFIG_PROPERTY = 'maurodatamapper.federation.subscribedcatalogue.default.timeout'
 
     UUID id
     String url
@@ -43,6 +44,9 @@ class SubscribedCatalogue implements SecurableResource, EditHistoryAware, Inform
 
     //The last time that we checked the catalogue for models to export
     OffsetDateTime lastRead
+
+    //HTTP read connection timeout in minutes
+    Integer connectionTimeout
 
     static hasMany = [
         subscribedModels: SubscribedModel
@@ -57,6 +61,7 @@ class SubscribedCatalogue implements SecurableResource, EditHistoryAware, Inform
         refreshPeriod nullable: true
         lastRead nullable: true
         apiKey nullable: true
+        connectionTimeout nullable: true
     }
 
     static mapping = {
@@ -66,7 +71,6 @@ class SubscribedCatalogue implements SecurableResource, EditHistoryAware, Inform
     SubscribedCatalogue() {
         readableByAuthenticatedUsers = false
         readableByEveryone = false
-        refreshPeriod = refreshPeriod ?: DEFAULT_REFRESH_PERIOD
     }
 
     void setUrl(String url) {

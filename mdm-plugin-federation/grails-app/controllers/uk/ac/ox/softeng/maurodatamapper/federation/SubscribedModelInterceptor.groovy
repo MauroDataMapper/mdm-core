@@ -27,7 +27,7 @@ class SubscribedModelInterceptor extends SecurableResourceInterceptor {
 
     @Override
     def <S extends SecurableResource> Class<S> getSecuredClass() {
-        SubscribedCatalogue as Class<S>
+        SubscribedModel as Class<S>
     }
 
     @Override
@@ -47,6 +47,8 @@ class SubscribedModelInterceptor extends SecurableResourceInterceptor {
         if (currentUserSecurityPolicyManager.isAuthenticated()) {
             return actionName == 'index' ||
                    actionName == 'show' ||
+                   actionName == 'save' ||
+                   actionName == 'newerVersions' ||
                    currentUserSecurityPolicyManager.isApplicationAdministrator() ?: forbiddenDueToNotApplicationAdministrator()
         }
         notFound(SubscribedModel, getId())

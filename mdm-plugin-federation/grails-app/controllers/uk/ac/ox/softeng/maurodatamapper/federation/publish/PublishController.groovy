@@ -22,7 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.ResourcelessMdmController
 import uk.ac.ox.softeng.maurodatamapper.federation.PublishedModel
-import uk.ac.ox.softeng.maurodatamapper.federation.publish.PublishService
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.rest.RestfulController
 
@@ -55,4 +55,16 @@ class PublishController extends RestfulController<Model> implements Resourceless
         respond(publishedModels: publishedModels, authority: authority)
     }
 
+    def newerVersions() {
+        List<PublishedModel> publishedModels = publishService.findAllPublishedReadableModels(currentUserSecurityPolicyManager)
+        UUID modelId = Utils.toUuid(params.publishedModelId)
+        PublishedModel publishedModel = publishedModels.find({it.modelId == modelId})
+        if (!publishedModel) {
+            return notFound(PublishedModel, params.publishedModelId)
+        }
+
+        List<PublishedModel> newerPublishedModels =
+            publishService.findPublishedSupersedingModels(publishedModels, publishedModel.modelType, modelId, currentUserSecurityPolicyManager)
+        respond(newerPublishedModels: newerPublishedModels)
+    }
 }

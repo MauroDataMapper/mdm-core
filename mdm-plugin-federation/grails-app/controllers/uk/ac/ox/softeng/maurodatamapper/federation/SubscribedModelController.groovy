@@ -62,13 +62,11 @@ class SubscribedModelController extends EditLoggingController<SubscribedModel> {
 
         if (!validateResource(instance, 'create')) return
 
-        if (params.boolean('federate', true)) {
-            def federationResult = subscribedModelService.federateSubscribedModel(instance, currentUserSecurityPolicyManager)
-            if (federationResult instanceof Errors) {
-                transactionStatus.setRollbackOnly()
-                respond federationResult, view: 'create' // STATUS CODE 422
-                return
-            }
+        def federationResult = subscribedModelService.federateSubscribedModel(instance, currentUserSecurityPolicyManager)
+        if (federationResult instanceof Errors) {
+            transactionStatus.setRollbackOnly()
+            respond federationResult, view: 'create' // STATUS CODE 422
+            return
         }
 
         saveResource instance
@@ -76,17 +74,13 @@ class SubscribedModelController extends EditLoggingController<SubscribedModel> {
         saveResponse instance
     }
 
-    /**
-     * Federate the specified SubscribedModel by
-     * 1. Get the SubscribedModel, else respond not found
-     * 2. Export as Json the model from the remote catalogue, responding no content if the result is empty
-     * 3. Import the json into the local catalogue, responding unprocessable if this doesn't work
-     * 4. Look up version links from the remote and save this locally
-     * @return
-     */
-    @Transactional
-    def federate() {
-        respond null, status: OK
+    def newerVersions() {
+        SubscribedModel subscribedModel = queryForResource(params.id)
+        if (!subscribedModel) {
+            return notFound(SubscribedModel, params.id)
+        }
+
+        respond subscribedModelService.getNewerPublishedVersions(subscribedModel), view: 'newerVersions'
     }
 
     @Override

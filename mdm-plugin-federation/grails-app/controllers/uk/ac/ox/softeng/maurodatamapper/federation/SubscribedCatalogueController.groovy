@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.federation
 
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
@@ -62,6 +63,15 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
             return notFound(SubscribedCatalogue, params.subscribedCatalogueId)
         }
         respond subscribedCatalogueService.listPublishedModels(subscribedCatalogue)
+    }
+
+    def newerVersions() {
+        SubscribedCatalogue subscribedCatalogue = queryForResource(params.subscribedCatalogueId)
+        if (!subscribedCatalogue) {
+            return notFound(SubscribedCatalogue, params.subscribedCatalogueId)
+        }
+
+        respond subscribedCatalogueService.getNewerPublishedVersionsForPublishedModel(subscribedCatalogue, Utils.toUuid(params.publishedModelId))
     }
 
     def testConnection() {
