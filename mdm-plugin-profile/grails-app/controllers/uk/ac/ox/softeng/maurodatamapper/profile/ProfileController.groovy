@@ -130,9 +130,12 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
      */
     def getMany(ItemsProfilesDataBinding itemsProfiles) {
         // this multiFacetAware item is expected to be a model
-        MultiFacetAware model = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params
-                .multiFacetAwareItemId)
-        if (!model || !(model instanceof Model)) {
+        MultiFacetAware model = profileService.findMultiFacetAwareItemByDomainTypeAndId(
+            params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
+        if (!model) {
+            return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
+        }
+        if (!(model instanceof Model)) {
             throw new ApiBadRequestException('PC01', 'Cannot use this endpoint on a item which is not a Model')
         }
 
@@ -210,15 +213,17 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
 
         // The multiFacetAware item referenced in the URI, is expected to be a model
         MultiFacetAware model = profileService.findMultiFacetAwareItemByDomainTypeAndId(
-                params.multiFacetAwareItemDomainType,
-                params.multiFacetAwareItemId)
+                params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
 
-        if (!model || !(model instanceof Model)) {
+        if (!model) {
+            return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
+        }
+        if (!(model instanceof Model)) {
             throw new ApiBadRequestException('PC02', 'Cannot use this endpoint on a item which is not a Model')
         }
 
         respond([view: 'many'], [profileProvidedList: profileService.handleMany(validateOnly,
-                profileProvidedCollection, model, currentUserSecurityPolicyManager, currentUser)])
+            profileProvidedCollection, model, currentUserSecurityPolicyManager, currentUser)])
     }
 
     def listModelsInProfile() {

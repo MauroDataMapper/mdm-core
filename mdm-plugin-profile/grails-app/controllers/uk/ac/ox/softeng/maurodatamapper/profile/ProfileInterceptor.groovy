@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.interceptor.FacetInterceptor
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 class ProfileInterceptor extends FacetInterceptor {
 
@@ -36,6 +37,15 @@ class ProfileInterceptor extends FacetInterceptor {
         if (actionName in ['profileProviders', 'dynamicProfileProviders', 'search', 'listModelsInProfile', 'listValuesInProfile']) return true
         facetResourceChecks()
         checkActionAllowedOnFacet()
+    }
+
+    @Override
+    void facetResourceChecks() {
+        Utils.toUuid(params, 'id')
+        params.multiFacetAwareItemDomainType = params.multiFacetAwareItemDomainType?: params.catalogueItemDomainType ?: params.containerDomainType ?: params.modelDomainType
+        params.multiFacetAwareItemId = params.multiFacetAwareItemId ?: params.catalogueItemId ?: params.containerId ?: params.modelId
+        checkAdditionalIds()
+        mapDomainTypeToClass(getOwningType(), true)
     }
 
     boolean checkActionAuthorisationOnUnsecuredResource(Class resourceClass, UUID id,

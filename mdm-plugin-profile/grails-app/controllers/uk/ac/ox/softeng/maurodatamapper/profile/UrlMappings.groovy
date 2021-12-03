@@ -56,7 +56,7 @@ class UrlMappings {
             }
 
             // Methods to retrieve and save many profiles for many multiFacetAware items belonging to a Model
-            group "/${multiFacetAwareItemDomainType}/${multiFacetAwareItemId}", {
+            group "/${modelDomainType}/${modelId}", {
                 post '/profile/getMany'(controller: 'profile', action: 'getMany')
                 post "/profile/validateMany"(controller: 'profile', action: 'validateMany')
                 post "/profile/saveMany"(controller: 'profile', action: 'saveMany')
