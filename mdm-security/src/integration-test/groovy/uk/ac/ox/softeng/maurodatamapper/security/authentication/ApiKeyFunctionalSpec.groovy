@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.security.basic.UnloggedUser
 import uk.ac.ox.softeng.maurodatamapper.security.policy.GroupBasedSecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.policy.GroupBasedUserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.security.policy.UserSecurityPolicyService
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRoleService
 import uk.ac.ox.softeng.maurodatamapper.security.role.VirtualGroupRole
@@ -62,6 +63,8 @@ class ApiKeyFunctionalSpec extends ResourceFunctionalSpec<ApiKey> implements Sec
     ApplicationContext applicationContext
     @Autowired
     GroupBasedSecurityPolicyManagerService groupBasedSecurityPolicyManagerService
+    @Autowired
+    UserSecurityPolicyService userSecurityPolicyService
     @Autowired
     GroupRoleService groupRoleService
 
@@ -155,15 +158,15 @@ class ApiKeyFunctionalSpec extends ResourceFunctionalSpec<ApiKey> implements Sec
 
         GroupBasedUserSecurityPolicyManager defaultUserSecurityPolicyManager = applicationContext.getBean(
             MdmCoreGrailsPlugin.DEFAULT_USER_SECURITY_POLICY_MANAGER_BEAN_NAME)
-
+        defaultUserSecurityPolicyManager.lock()
         if (accessGranted) {
             VirtualGroupRole applicationLevelRole = groupRoleService.getFromCache(GroupRole.USER_ADMIN_ROLE_NAME)
-            defaultUserSecurityPolicyManager.withApplicationRoles(applicationLevelRole.allowedRoles).withVirtualRoles(
-                groupBasedSecurityPolicyManagerService.buildCatalogueUserVirtualRoles([applicationLevelRole.groupRole] as HashSet)
+            defaultUserSecurityPolicyManager.userPolicy.withApplicationRoles(applicationLevelRole.allowedRoles).withVirtualRoles(
+                userSecurityPolicyService.buildCatalogueUserVirtualRoles([applicationLevelRole.groupRole] as HashSet)
             )
         } else {
-            defaultUserSecurityPolicyManager.withApplicationRoles([] as HashSet)
-            groupBasedSecurityPolicyManagerService.buildUserSecurityPolicyManager(defaultUserSecurityPolicyManager)
+            defaultUserSecurityPolicyManager.userPolicy.withApplicationRoles([] as HashSet)
+            userSecurityPolicyService.buildUserSecurityPolicy(defaultUserSecurityPolicyManager.userPolicy)
         }
         groupBasedSecurityPolicyManagerService.storeUserSecurityPolicyManager(defaultUserSecurityPolicyManager)
     }

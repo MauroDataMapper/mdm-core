@@ -35,18 +35,18 @@ import groovy.util.logging.Slf4j
 @Integration
 @Rollback
 @Slf4j
-class GroupBasedSecurityPolicyManagerServiceIntegrationSpec extends BaseIntegrationSpec implements SecurityUsers {
+class UserSecurityPolicyServiceIntegrationSpec extends BaseIntegrationSpec implements SecurityUsers {
 
     GroupRole editorRole
     Folder folder2
     UserGroup appAdmins
 
-    GroupBasedSecurityPolicyManagerService groupBasedSecurityPolicyManagerService
+    UserSecurityPolicyService userSecurityPolicyService
     GroupRoleService groupRoleService
 
     @Override
     void setupDomainData() {
-        log.debug('Setting up SecurableResourceGroupRoleServiceSpec')
+        log.debug('Setting up UserSecurityPolicyServiceIntegrationSpec')
         implementBasicSecurity('integrationTest')
 
         editorRole = groupRoleService.getFromCache('editor').groupRole
@@ -96,22 +96,24 @@ class GroupBasedSecurityPolicyManagerServiceIntegrationSpec extends BaseIntegrat
         setupData()
 
         when:
-        def policy = groupBasedSecurityPolicyManagerService.buildUserSecurityPolicyManager(editor)
+        UserSecurityPolicy policy = userSecurityPolicyService.buildUserSecurityPolicy(editor, editor.groups)
+        policy.unlock()
 
         then:
         policy
+        !policy.locked
 
         and:
         policy.user.id == editor.id
         policy.userGroups.size() == 1
         policy.applicationPermittedRoles.size() == 0
         policy.securableResourceGroupRoles.size() == 2
-        policy.virtualSecurableResourceGroupRoles.size() == 10
+        policy.virtualSecurableResourceGroupRoles.values().flatten().size() == 10
 
         when:
-        Set<VirtualSecurableResourceGroupRole> folderRoles = policy.virtualSecurableResourceGroupRoles.findAll {it.domainId == folder.id}
-        Set<VirtualSecurableResourceGroupRole> folder2Roles = policy.virtualSecurableResourceGroupRoles.findAll {it.domainId == folder2.id}
-        Set<VirtualSecurableResourceGroupRole> userRoles = policy.virtualSecurableResourceGroupRoles.findAll {
+        Set<VirtualSecurableResourceGroupRole> folderRoles = policy.virtualSecurableResourceGroupRoles.values().flatten().findAll {it.domainId == folder.id}
+        Set<VirtualSecurableResourceGroupRole> folder2Roles = policy.virtualSecurableResourceGroupRoles.values().flatten().findAll {it.domainId == folder2.id}
+        Set<VirtualSecurableResourceGroupRole> userRoles = policy.virtualSecurableResourceGroupRoles.values().flatten().findAll {
             it.domainType == CatalogueUser.simpleName
         }
 
@@ -141,25 +143,27 @@ class GroupBasedSecurityPolicyManagerServiceIntegrationSpec extends BaseIntegrat
         setupData()
 
         when:
-        def policy = groupBasedSecurityPolicyManagerService.buildUserSecurityPolicyManager(admin)
+        def policy = userSecurityPolicyService.buildUserSecurityPolicy(admin, admin.groups)
+        policy.unlock()
 
         then:
         policy
+        !policy.locked
 
         and:
         policy.user.id == admin.id
         policy.userGroups.size() == 4
         policy.applicationPermittedRoles.size() == 5
         policy.securableResourceGroupRoles.size() == 1
-        policy.virtualSecurableResourceGroupRoles.size() == 93
+        policy.virtualSecurableResourceGroupRoles.values().flatten().size() == 93
 
         when:
-        Set<VirtualSecurableResourceGroupRole> folderRoles = policy.virtualSecurableResourceGroupRoles.findAll {it.domainId == folder.id}
-        Set<VirtualSecurableResourceGroupRole> folder2Roles = policy.virtualSecurableResourceGroupRoles.findAll {it.domainId == folder2.id}
-        Set<VirtualSecurableResourceGroupRole> userRoles = policy.virtualSecurableResourceGroupRoles.findAll {
+        Set<VirtualSecurableResourceGroupRole> folderRoles = policy.virtualSecurableResourceGroupRoles.values().flatten().findAll {it.domainId == folder.id}
+        Set<VirtualSecurableResourceGroupRole> folder2Roles = policy.virtualSecurableResourceGroupRoles.values().flatten().findAll {it.domainId == folder2.id}
+        Set<VirtualSecurableResourceGroupRole> userRoles = policy.virtualSecurableResourceGroupRoles.values().flatten().findAll {
             it.domainType == CatalogueUser.simpleName
         }
-        Set<VirtualSecurableResourceGroupRole> groupRoles = policy.virtualSecurableResourceGroupRoles.findAll {
+        Set<VirtualSecurableResourceGroupRole> groupRoles = policy.virtualSecurableResourceGroupRoles.values().flatten().findAll {
             it.domainType == UserGroup.simpleName
         }
 
@@ -199,26 +203,28 @@ class GroupBasedSecurityPolicyManagerServiceIntegrationSpec extends BaseIntegrat
         checkAndSave(appAdmins)
 
         when:
-        def policy = groupBasedSecurityPolicyManagerService.buildUserSecurityPolicyManager(admin)
+        def policy = userSecurityPolicyService.buildUserSecurityPolicy(admin, admin.groups)
+        policy.unlock()
 
         then:
         policy
+        !policy.locked
 
         and:
         policy.user.id == admin.id
         policy.userGroups.size() == 4
         policy.applicationPermittedRoles.size() == 5
         policy.securableResourceGroupRoles.size() == 1
-        policy.virtualSecurableResourceGroupRoles.size() == 93
+        policy.virtualSecurableResourceGroupRoles.values().flatten().size() == 93
 
         when:
-        Set<VirtualSecurableResourceGroupRole> folderRoles = policy.virtualSecurableResourceGroupRoles.findAll {it.domainId == folder.id}
+        Set<VirtualSecurableResourceGroupRole> folderRoles = policy.virtualSecurableResourceGroupRoles.values().flatten().findAll {it.domainId == folder.id}
         Set<VirtualSecurableResourceGroupRole> folder2Roles = policy
-            .virtualSecurableResourceGroupRoles.findAll {it.domainId == folder2.id}
-        Set<VirtualSecurableResourceGroupRole> userRoles = policy.virtualSecurableResourceGroupRoles.findAll {
+            .virtualSecurableResourceGroupRoles.values().flatten().findAll {it.domainId == folder2.id}
+        Set<VirtualSecurableResourceGroupRole> userRoles = policy.virtualSecurableResourceGroupRoles.values().flatten().findAll {
             it.domainType == CatalogueUser.simpleName
         }
-        Set<VirtualSecurableResourceGroupRole> groupRoles = policy.virtualSecurableResourceGroupRoles.findAll {
+        Set<VirtualSecurableResourceGroupRole> groupRoles = policy.virtualSecurableResourceGroupRoles.values().flatten().findAll {
             it.domainType == UserGroup.simpleName
         }
 
