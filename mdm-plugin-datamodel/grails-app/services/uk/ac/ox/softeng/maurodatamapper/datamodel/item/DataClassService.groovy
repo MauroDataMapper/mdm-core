@@ -878,5 +878,20 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
                 dataElementService.propagateDataFromPreviousVersion(dataElement, previousDataElement)
             }
         }
+
+        previousVersionCatalogueItem.summaryMetadata.each {previousSummaryMetadata ->
+            if (catalogueItem.summaryMetadata.any {it.label == previousSummaryMetadata.label}) return
+            SummaryMetadata summaryMetadata = new SummaryMetadata(label: previousSummaryMetadata.label,
+                description: previousSummaryMetadata.description,
+                summaryMetadataType: previousSummaryMetadata.summaryMetadataType)
+
+            previousSummaryMetadata.summaryMetadataReports.each {previousSummaryMetadataReport ->
+                summaryMetadata.addToSummaryMetadataReports(reportDate: previousSummaryMetadataReport.reportDate,
+                    reportValue: previousSummaryMetadataReport.reportValue,
+                    createdBy: previousSummaryMetadataReport.createdBy
+                )
+            }
+            catalogueItem.addToSummaryMetadata(summaryMetadata)
+        }
     }
 }

@@ -29,7 +29,11 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwa
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FileParameter
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.summarymetadata.SummaryMetadataReport
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
@@ -39,7 +43,10 @@ import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
+import groovy.json.JsonBuilder
 import groovy.util.logging.Slf4j
+
+import java.time.OffsetDateTime
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getDEVELOPMENT
 
@@ -346,12 +353,68 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         ReferenceFile testReferenceFile = new ReferenceFile(fileName: 'propagationTest', fileType: 'text', fileContents: 'hello'.bytes, fileSize:
             'hello'.bytes.size(), createdBy: admin.emailAddress)
 
+        // Add summary metadata with a report to the Data Model
+        SummaryMetadata dataModelSummaryMetadata = new SummaryMetadata(label: 'PropagationTest: Data Model Summary Metadata', createdBy: admin.emailAddress,
+            summaryMetadataType: SummaryMetadataType.MAP)
+        SummaryMetadataReport dataModelSummaryMetadataReport = new SummaryMetadataReport(
+            reportDate: OffsetDateTime.now(),
+            reportValue: new JsonBuilder([A: 1, B: 2]).toString(),
+            createdBy: admin.emailAddress
+        )
+        dataModelSummaryMetadata.addToSummaryMetadataReports(dataModelSummaryMetadataReport)
+
         dataModel.addToAnnotations(testAnnotation)
         dataModel.addToClassifiers(testClassifier)
         dataModel.addToMetadata(testMetadata)
         dataModel.addToRules(testRule)
         dataModel.addToSemanticLinks(testSemanticLink)
         dataModel.addToReferenceFiles(testReferenceFile)
+        dataModel.addToSummaryMetadata(dataModelSummaryMetadata)
+
+        // Add summary metadata with a report to a Data Class
+        DataClass parentDataClass = dataModel.childDataClasses.find {
+            it.label == 'parent'
+        }
+
+        SummaryMetadata parentDataClassSummaryMetadata = new SummaryMetadata(label: 'PropagationTest: Parent Data Class Summary Metadata', createdBy: admin.emailAddress,
+            summaryMetadataType: SummaryMetadataType.MAP)
+        SummaryMetadataReport parentDataClassSummaryMetadataReport = new SummaryMetadataReport(
+            reportDate: OffsetDateTime.now(),
+            reportValue: new JsonBuilder([C: 3, D: 4]).toString(),
+            createdBy: admin.emailAddress
+        )
+        parentDataClassSummaryMetadata.addToSummaryMetadataReports(parentDataClassSummaryMetadataReport)
+        parentDataClass.addToSummaryMetadata(parentDataClassSummaryMetadata)
+
+        // Add summary metadata with a report to a Data Element
+        DataElement dataElement = parentDataClass.dataElements.find {
+            it.label == 'child'
+        }
+
+        SummaryMetadata dataElementSummaryMetadata = new SummaryMetadata(label: 'PropagationTest: Data Element Summary Metadata', createdBy: admin.emailAddress,
+            summaryMetadataType: SummaryMetadataType.MAP)
+        SummaryMetadataReport dataElementSummaryMetadataReport = new SummaryMetadataReport(
+            reportDate: OffsetDateTime.now(),
+            reportValue: new JsonBuilder([E: 5, F: 6]).toString(),
+            createdBy: admin.emailAddress
+        )
+        dataElementSummaryMetadata.addToSummaryMetadataReports(dataElementSummaryMetadataReport)
+        dataElement.addToSummaryMetadata(dataElementSummaryMetadata)
+
+        // Add summary metadata with a report to a Data Type
+        PrimitiveType dataType = dataModel.dataTypes.find {
+            it.label == 'string'
+        }
+
+        SummaryMetadata dataTypeSummaryMetadata = new SummaryMetadata(label: 'PropagationTest: Data Type Summary Metadata', createdBy: admin.emailAddress,
+            summaryMetadataType: SummaryMetadataType.MAP)
+        SummaryMetadataReport dataTypeSummaryMetadataReport = new SummaryMetadataReport(
+            reportDate: OffsetDateTime.now(),
+            reportValue: new JsonBuilder([G: 7, H: 8]).toString(),
+            createdBy: admin.emailAddress
+        )
+        dataTypeSummaryMetadata.addToSummaryMetadataReports(dataTypeSummaryMetadataReport)
+        dataType.addToSummaryMetadata(dataTypeSummaryMetadata)
 
         checkAndSave(dataModel)
 
@@ -366,7 +429,27 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         dm.semanticLinks.find {it.targetMultiFacetAwareItemId == testSemanticLink.targetMultiFacetAwareItemId}
         dm.semanticLinks.find {it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType}
         dm.referenceFiles.find {it.fileName == testReferenceFile.fileName}
+        dm.summaryMetadata.find {it.label == dataModelSummaryMetadata.label}
+        SummaryMetadata foundDataModelSummaryMetadata = dm.summaryMetadata.find {it.label == dataModelSummaryMetadata.label}
+        foundDataModelSummaryMetadata.summaryMetadataReports.size() == 1
 
+        DataClass pdc = dm.childDataClasses.find{it.label == 'parent'}
+        pdc
+        pdc.summaryMetadata.find {it.label == parentDataClassSummaryMetadata.label}
+        SummaryMetadata foundParentDataClassSummaryMetadata = pdc.summaryMetadata.find {it.label == parentDataClassSummaryMetadata.label}
+        foundParentDataClassSummaryMetadata.summaryMetadataReports.size() == 1
+
+        DataElement de = pdc.dataElements.find {it.label == 'child'}
+        de
+        de.summaryMetadata.find {it.label == dataElementSummaryMetadata.label}
+        SummaryMetadata foundDataElementSummaryMetadata = de.summaryMetadata.find {it.label == dataElementSummaryMetadata.label}
+        foundDataElementSummaryMetadata.summaryMetadataReports.size() == 1
+
+        PrimitiveType dt = dm.dataTypes.find {it.label == 'string'}
+        dt
+        dt.summaryMetadata.find {it.label == dataTypeSummaryMetadata.label}
+        SummaryMetadata foundDataTypeSummaryMetadata = dt.summaryMetadata.find {it.label == dataTypeSummaryMetadata.label}
+        foundDataTypeSummaryMetadata.summaryMetadataReports.size() == 1
 
     }
 
