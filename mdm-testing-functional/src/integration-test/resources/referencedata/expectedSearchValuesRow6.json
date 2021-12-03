@@ -15,7 +15,7 @@
             "id": "${json-unit.matches:id}",
             "label": "FT Test Reference Data Model",
             "domainType": "ReferenceDataModel",
-            "finalised": false
+            "finalised": true
           }
         ],
         "columnNumber": 1,
@@ -29,7 +29,7 @@
               "id": "${json-unit.matches:id}",
               "label": "FT Test Reference Data Model",
               "domainType": "ReferenceDataModel",
-              "finalised": false
+              "finalised": true
             }
           ]
         }

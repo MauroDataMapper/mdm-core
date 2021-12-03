@@ -2711,13 +2711,13 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     }
 
 
-    void 'test listing and searching Reference Data Values'() {
+    void 'T01 test listing and searching Reference Data Values'() {
         given:
         log.debug("${loadCsvFile('simpleCSV').toList().toString()}")
 
         when:
         POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataCsvImporterService/4.0', [
-            finalised                      : true,
+            finalised                      : false,
             folderId                       : folderId.toString(),
             modelName                      : 'FT Test Reference Data Model',
             importAsNewDocumentationVersion: false,

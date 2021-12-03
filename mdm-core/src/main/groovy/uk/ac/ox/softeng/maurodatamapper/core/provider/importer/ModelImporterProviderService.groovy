@@ -79,7 +79,8 @@ abstract class ModelImporterProviderService<M extends Model, P extends ModelImpo
     }
 
     M updateImportedModelFromParameters(M importedModel, P params, boolean list = false) {
-        if (params.finalised != null) importedModel.finalised = params.finalised
+        // Dont allow finalisation state to be overridden to unfinalised
+        if (params.finalised != null && !importedModel.finalised) importedModel.finalised = params.finalised
         if (!list && params.modelName) importedModel.label = params.modelName
         if (params.author) importedModel.author = params.author
         if (params.organisation) importedModel.organisation = params.organisation
