@@ -3231,4 +3231,98 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
   ]
 }'''
     }
+
+
+    String getPublicTestFolderId() {
+        loginEditor()
+
+        Map validFolderJson = [
+                label: 'Folder for testing public folder and model settings'
+        ]
+        POST("folders", validFolderJson, MAP_ARG, true)
+        verifyResponse CREATED, response
+        String id = response.body().id
+        logout()
+        id
+    }
+
+    String getPublicDataModelTestId(String folderId) {
+        loginEditor()
+
+        Map validFolderJson = [
+                label: 'Data Model for testing public folder and model settings'
+        ]
+        POST("folders/${folderId}/dataModels", validFolderJson, MAP_ARG, true)
+        verifyResponse CREATED, response
+        String id = response.body().id
+        logout()
+        id
+    }
+
+    void setFolderReadableByEveryone(String folderId, boolean value) {
+        loginEditor()
+        PUT("folders/${folderId}", [readableByEveryone: value], MAP_ARG, true)
+        verifyResponse OK, response
+        response.body().readableByEveryone == value
+        logout()
+    }
+
+    void setDataModelReadableByEveryone(String dataModelId, boolean value) {
+        loginEditor()
+        PUT("dataModels/${dataModelId}", [readableByEveryone: value], MAP_ARG, true)
+        verifyResponse OK, response
+        response.body().readableByEveryone == value
+        logout()
+    }
+
+    boolean getFolderNonAuthenticated(String folderId, boolean expectToGet) {
+        GET("folders/${folderId}", MAP_ARG, true)
+        return (expectToGet && response.status() == OK && response.body().id == folderId) || (!expectToGet && response.status() == NOT_FOUND)
+    }
+
+    boolean getDataModelNonAuthenticated(String dataModelId, boolean expectToGet) {
+        GET("dataModels/${dataModelId}", MAP_ARG, true)
+        return (expectToGet && response.status() == OK && response.body().id == dataModelId) || (!expectToGet && response.status() == NOT_FOUND)
+    }
+
+    void 'test public settings for a folder and model'() {
+        given: 'a valid folder and model'
+        String folderId = getPublicTestFolderId()
+        String dataModelId = getPublicDataModelTestId(folderId)
+
+        when: 'the folder and data model are set to public'
+        setFolderReadableByEveryone(folderId, true)
+        setDataModelReadableByEveryone(dataModelId, true)
+
+        then: 'the folder and data model can be viewed by a non-authenticated user'
+        getFolderNonAuthenticated(folderId, true)
+        getDataModelNonAuthenticated(dataModelId, true)
+
+        when: 'the folder is set to not public'
+        setFolderReadableByEveryone(folderId, false)
+
+        then: 'the folder cannot be viewed by a non-authenticated user, but the data model can because it overrides the folders setting'
+        getFolderNonAuthenticated(folderId, false)
+        getDataModelNonAuthenticated(dataModelId, true)
+
+        when: 'the folder is set to public and the data model is set to not public'
+        setFolderReadableByEveryone(folderId, true)
+        setDataModelReadableByEveryone(dataModelId, false)
+
+        then: 'the folder can be viewed by a non-authenticated user, and the data model can be viewed by a non-authenticated user because it inherits the folders setting'
+        getFolderNonAuthenticated(folderId, true)
+        getDataModelNonAuthenticated(dataModelId, true)
+
+        when: 'the folder and data model are both set to not public'
+        setFolderReadableByEveryone(folderId, false)
+        setDataModelReadableByEveryone(dataModelId, false)
+
+        then: 'neither the folder nor data model can be viewed by a non-authenticated user'
+        getFolderNonAuthenticated(folderId, false)
+        getDataModelNonAuthenticated(dataModelId, false)
+
+        cleanup:
+        removeValidIdObject(dataModelId)
+        removeValidIdObject(folderId)
+    }
 }
