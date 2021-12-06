@@ -28,7 +28,6 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.search.searchparamfilter.DataModelTypeFilter
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
-import uk.ac.ox.softeng.maurodatamapper.profile.provider.MapBasedDataModelProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -97,10 +96,6 @@ class SearchService extends AbstractCatalogueItemSearchService<DataModel> {
 
         // Set the sort parameter
         if (searchParams.sort) {
-            if (dataModelProfileProviderService instanceof MapBasedDataModelProfileProviderService &&
-                searchParams.sort.equalsIgnoreCase(dataModelProfileProviderService.getTitleFieldName())) {
-                searchParams.sort = "label"
-            }
             searchParams.sort = "${dataModelProfileProviderService.metadataNamespace} | ${searchParams.sort}".toString()
         }
         searchParams.labelOnly = false

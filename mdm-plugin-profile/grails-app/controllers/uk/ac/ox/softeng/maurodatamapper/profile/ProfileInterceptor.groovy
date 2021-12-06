@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.interceptor.FacetInterceptor
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 class ProfileInterceptor extends FacetInterceptor {
 
@@ -38,6 +39,14 @@ class ProfileInterceptor extends FacetInterceptor {
         checkActionAllowedOnFacet()
     }
 
+    @Override
+    void facetResourceChecks() {
+        Utils.toUuid(params, 'id')
+        params.multiFacetAwareItemDomainType = params.multiFacetAwareItemDomainType?: params.catalogueItemDomainType ?: params.containerDomainType ?: params.modelDomainType
+        params.multiFacetAwareItemId = params.multiFacetAwareItemId ?: params.catalogueItemId ?: params.containerId ?: params.modelId
+        checkAdditionalIds()
+        mapDomainTypeToClass(getOwningType(), true)
+    }
 
     boolean checkActionAuthorisationOnUnsecuredResource(Class resourceClass, UUID id,
                                                         Class<? extends SecurableResource> owningSecureResourceClass, UUID owningSecureResourceId) {
@@ -46,8 +55,20 @@ class ProfileInterceptor extends FacetInterceptor {
         boolean canRead = currentUserSecurityPolicyManager.userCanReadResourceId(resourceClass, id, owningSecureResourceClass, owningSecureResourceId)
 
         // Read only actions
-        if (actionName in ['validate', 'usedProfiles', 'unusedProfiles', 'nonProfileMetadata']) {
+        // ProfileController.getMany and ProfileController.validateMany must check that items requested
+        // in the body of the request belong to the model that was requested
+        if (actionName in ['validate', 'usedProfiles', 'unusedProfiles', 'nonProfileMetadata', 'getMany', 'validateMany']) {
             return canRead ?: notFound(id ? resourceClass : owningSecureResourceClass, (id ?: owningSecureResourceId).toString())
+        }
+
+        // This tests that we *might* be able to save.
+        // ProfileController.saveMany must check access for every profile service provider referenced in the request body
+        if (actionName == "saveMany") {
+            return (currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(owningSecureResourceClass, owningSecureResourceId, 'saveIgnoreFinalise')
+                    ||
+                    currentUserSecurityPolicyManager.userCanCreateResourceId(Profile.class, null, owningSecureResourceClass, owningSecureResourceId))
+                    ?:
+                    forbiddenOrNotFound(canRead, id ? resourceClass : owningSecureResourceClass, id ?: owningSecureResourceId)
         }
 
         ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName, params.profileVersion)

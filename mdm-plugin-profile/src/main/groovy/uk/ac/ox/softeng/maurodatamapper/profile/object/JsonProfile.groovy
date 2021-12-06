@@ -24,11 +24,6 @@ import groovy.util.logging.Slf4j
 @Slf4j
 class JsonProfile extends Profile {
 
-    List<ProfileSection> sections
-    String domainType
-    String label
-    UUID id
-
     // Empty constructor used for deserialization from Json
     JsonProfile() {
         super()

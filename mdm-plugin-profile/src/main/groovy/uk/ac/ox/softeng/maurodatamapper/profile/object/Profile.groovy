@@ -26,9 +26,12 @@ import groovy.transform.CompileStatic
 @CompileStatic
 abstract class Profile implements Comparable<Profile>, Validateable {
 
-    abstract Set<String> getKnownFields()
+    List<ProfileSection> sections
+    String domainType
+    String label
+    UUID id
 
-    abstract List<ProfileSection> getSections()
+    abstract Set<String> getKnownFields()
 
     @Override
     boolean validate() {

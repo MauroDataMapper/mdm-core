@@ -1,0 +1,11 @@
+import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
+
+model {
+    ProfileProviderService profileProviderService
+}
+
+json {
+    name profileProviderService.name
+    namespace profileProviderService.namespace
+    if (profileProviderService) version profileProviderService.version
+}
