@@ -141,15 +141,10 @@ trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableRes
         .eq('label', label)
     }
 
-    static <T extends Model> DetachedCriteria<T> byLabelAndFinalisedAndLatestModelVersion(String label) {
+    static <T extends Model> DetachedCriteria<T> byLabelAndBranchNameAndFinalised(String label, String branchName) {
         byLabel(label)
-        .eq('finalised', true)
-        .order('modelVersion', 'desc')
-    }
-
-    static <T extends Model> DetachedCriteria<T> byLabelAndBranchNameAndFinalisedAndLatestModelVersion(String label, String branchName) {
-        byLabelAndFinalisedAndLatestModelVersion(label)
         .eq('branchName', branchName)
+        .eq('finalised', true)
     }
 
     static <T extends Model> DetachedCriteria<T> byLabelAndNotFinalised(String label) {
