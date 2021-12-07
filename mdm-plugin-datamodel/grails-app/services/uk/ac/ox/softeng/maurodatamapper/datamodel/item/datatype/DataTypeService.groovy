@@ -183,6 +183,21 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         if (previousVersionCatalogueItem.instanceOf(EnumerationType)) {
             enumerationTypeService.propagateContentsInformation(catalogueItem as EnumerationType, previousVersionCatalogueItem as EnumerationType)
         }
+
+        previousVersionCatalogueItem.summaryMetadata.each {previousSummaryMetadata ->
+            if (catalogueItem.summaryMetadata.any {it.label == previousSummaryMetadata.label}) return
+            SummaryMetadata summaryMetadata = new SummaryMetadata(label: previousSummaryMetadata.label,
+                description: previousSummaryMetadata.description,
+                summaryMetadataType: previousSummaryMetadata.summaryMetadataType)
+
+            previousSummaryMetadata.summaryMetadataReports.each {previousSummaryMetadataReport ->
+                summaryMetadata.addToSummaryMetadataReports(reportDate: previousSummaryMetadataReport.reportDate,
+                    reportValue: previousSummaryMetadataReport.reportValue,
+                    createdBy: previousSummaryMetadataReport.createdBy
+                )
+            }
+            catalogueItem.addToSummaryMetadata(summaryMetadata)
+        }
     }
 
     @Override

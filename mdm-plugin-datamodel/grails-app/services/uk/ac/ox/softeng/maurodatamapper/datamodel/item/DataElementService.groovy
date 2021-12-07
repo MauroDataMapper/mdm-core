@@ -516,4 +516,21 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
         DataElement.byMetadataNamespace(namespace).list(pagination)
     }
 
+    @Override
+    void propagateContentsInformation(DataElement catalogueItem, DataElement previousVersionCatalogueItem) {
+        previousVersionCatalogueItem.summaryMetadata.each {previousSummaryMetadata ->
+            if (catalogueItem.summaryMetadata.any {it.label == previousSummaryMetadata.label}) return
+            SummaryMetadata summaryMetadata = new SummaryMetadata(label: previousSummaryMetadata.label,
+                description: previousSummaryMetadata.description,
+                summaryMetadataType: previousSummaryMetadata.summaryMetadataType)
+
+            previousSummaryMetadata.summaryMetadataReports.each {previousSummaryMetadataReport ->
+                summaryMetadata.addToSummaryMetadataReports(reportDate: previousSummaryMetadataReport.reportDate,
+                    reportValue: previousSummaryMetadataReport.reportValue,
+                    createdBy: previousSummaryMetadataReport.createdBy
+                )
+            }
+            catalogueItem.addToSummaryMetadata(summaryMetadata)
+        }
+    }
 }
