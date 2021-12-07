@@ -538,7 +538,8 @@ class UserSecurityPolicyService {
             models.each {Model model ->
                 virtualSecurableResourceGroupRoles.addAll(
                     accessRoles.collect {igr ->
-                        virtualSecurableResourceGroupRoleService.buildForSecurableResource(model)
+                        virtualSecurableResourceGroupRoleService
+                            .buildForSecurableResource(model)
                             .withAccessLevel(igr)
                             .definedByGroup(userGroup)
                             .definedByAccessLevel(appliedGroupRole)

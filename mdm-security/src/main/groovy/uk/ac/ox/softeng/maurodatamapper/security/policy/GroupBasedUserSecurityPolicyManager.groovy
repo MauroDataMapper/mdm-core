@@ -158,6 +158,10 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         userPolicy.isManagedByGroup(userGroup)
     }
 
+    boolean userPolicyManagesAccessToSecurableResource(SecurableResource securableResource) {
+        userPolicy.managesVirtualAccessToSecurableResource(securableResource)
+    }
+
     boolean userPolicyHasApplicationRoles() {
         userPolicy.applicationPermittedRoles
     }

@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.security.policy
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
+import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.security.basic.UnloggedUser
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
@@ -220,6 +221,10 @@ class UserSecurityPolicy {
 
     boolean isManagedByGroup(UserGroup userGroup) {
         userGroup.id in userGroups*.id
+    }
+
+    boolean managesVirtualAccessToSecurableResource(SecurableResource securableResource) {
+        virtualSecurableResourceGroupRoles.any {it.domainId == securableResource.resourceId && it.domainType == securableResource.domainType}
     }
 
     GroupRole getHighestApplicationLevelAccess() {
