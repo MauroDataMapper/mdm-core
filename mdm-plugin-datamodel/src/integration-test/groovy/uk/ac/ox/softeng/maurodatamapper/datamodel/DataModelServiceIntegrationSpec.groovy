@@ -869,6 +869,93 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         latestVersion == Version.from('2')
     }
 
+    void 'DMSF02a : test finding latest finalised model version works after v9.0.0'() {
+        given:
+        setupData()
+
+        when:
+        DataModel v1 = getAndFinaliseDataModel()
+        String label = v1.label
+
+        then:
+        v1.modelVersion == Version.from('1')
+        dataModelService.findLatestFinalisedModelByLabel(label).modelVersion == Version.from('1')
+
+        when:
+        DataModel v2 = getAndFinaliseDataModel(createSaveAndGetNewBranchModel('main', v1).id)
+
+        then:
+        v2.modelVersion == Version.from('2')
+        dataModelService.findLatestFinalisedModelByLabel(label).modelVersion == Version.from('2')
+
+        when:
+        DataModel v3 = getAndFinaliseDataModel(createSaveAndGetNewBranchModel('main', v2).id)
+
+        then:
+        v3.modelVersion == Version.from('3')
+        dataModelService.findLatestFinalisedModelByLabel(label).modelVersion == Version.from('3')
+
+        when:
+        DataModel v4 = getAndFinaliseDataModel(createSaveAndGetNewBranchModel('main', v3).id)
+
+        then:
+        v4.modelVersion == Version.from('4')
+        dataModelService.findLatestFinalisedModelByLabel(label).modelVersion == Version.from('4')
+
+        when:
+        DataModel v5 = getAndFinaliseDataModel(createSaveAndGetNewBranchModel('main', v4).id)
+
+        then:
+        v5.modelVersion == Version.from('5')
+        dataModelService.findLatestFinalisedModelByLabel(label).modelVersion == Version.from('5')
+
+        when:
+        DataModel v6 = getAndFinaliseDataModel(createSaveAndGetNewBranchModel('main', v5).id)
+
+        then:
+        v6.modelVersion == Version.from('6')
+        dataModelService.findLatestFinalisedModelByLabel(label).modelVersion == Version.from('6')
+
+        when:
+        DataModel v7 = getAndFinaliseDataModel(createSaveAndGetNewBranchModel('main', v6).id)
+
+        then:
+        v7.modelVersion == Version.from('7')
+        dataModelService.findLatestFinalisedModelByLabel(label).modelVersion == Version.from('7')
+
+        when:
+        DataModel v8 = getAndFinaliseDataModel(createSaveAndGetNewBranchModel('main', v7).id)
+
+        then:
+        v8.modelVersion == Version.from('8')
+        dataModelService.findLatestFinalisedModelByLabel(label).modelVersion == Version.from('8')
+
+        when:
+        DataModel v9 = getAndFinaliseDataModel(createSaveAndGetNewBranchModel('main', v8).id)
+
+        then:
+        v9.modelVersion == Version.from('9')
+        dataModelService.findLatestFinalisedModelByLabel(label).modelVersion == Version.from('9')
+
+        /**
+         * The point of this test is to test that versions above v9 are correctly retrieved when they
+         * are the latest version.
+         */
+        when: 'we create a v10 model'
+        DataModel v10 = getAndFinaliseDataModel(createSaveAndGetNewBranchModel('main', v9).id)
+
+        then: 'the latest version is retrieved as v10 rather than v9'
+        v10.modelVersion == Version.from('10')
+        dataModelService.findLatestFinalisedModelByLabel(label).modelVersion == Version.from('10')
+
+        when: 'we create a v11 model'
+        DataModel v11 = getAndFinaliseDataModel(createSaveAndGetNewBranchModel('main', v10).id)
+
+        then: 'the latest version is retrieved as v11 rather than v9'
+        v11.modelVersion == Version.from('11')
+        dataModelService.findLatestFinalisedModelByLabel(label).modelVersion == Version.from('11')
+    }
+
     void 'DMSF03 : test getting current draft model on main branch from side branch'() {
         /*
         dataModel (finalised) -- finalisedModel (finalised) -- draftModel (draft)
