@@ -30,6 +30,29 @@
         <mdm:lastUpdated>2021-09-02T00:42:50.627Z</mdm:lastUpdated>
       </mdm:classifier>
     </mdm:classifiers>
+    <mdm:metadata>
+      <mdm:metadata>
+        <mdm:id>8c516e71-aaa2-49ca-945b-4b91972ec703</mdm:id>
+        <mdm:namespace>terminology.test.com/simple</mdm:namespace>
+        <mdm:key>mdk1</mdm:key>
+        <mdm:value>mdv1</mdm:value>
+        <mdm:lastUpdated>2021-06-02T12:14:21.931Z</mdm:lastUpdated>
+      </mdm:metadata>
+      <mdm:metadata>
+        <mdm:id>d9025c83-ea5d-40f0-8057-320d589d6878</mdm:id>
+        <mdm:namespace>terminology.test.com</mdm:namespace>
+        <mdm:key>mdk2</mdm:key>
+        <mdm:value>mdv2</mdm:value>
+        <mdm:lastUpdated>2021-06-02T12:14:21.932Z</mdm:lastUpdated>
+      </mdm:metadata>
+      <mdm:metadata>
+        <mdm:id>c2419ffc-201a-4b58-ab4b-d4b4c1f44a56</mdm:id>
+        <mdm:namespace>terminology.test.com/simple</mdm:namespace>
+        <mdm:key>mdk2</mdm:key>
+        <mdm:value>mdv2</mdm:value>
+        <mdm:lastUpdated>2021-06-02T12:14:21.932Z</mdm:lastUpdated>
+      </mdm:metadata>
+    </mdm:metadata>
     <mdm:author>Test Bootstrap</mdm:author>
     <mdm:organisation>Oxford BRC</mdm:organisation>
     <mdm:documentationVersion>1.0.0</mdm:documentationVersion>

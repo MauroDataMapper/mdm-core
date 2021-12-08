@@ -210,6 +210,10 @@ class BootstrapModels {
         codeSet.addToClassifiers(classifier)
         checkAndSave(messageSource, codeSet)
 
+        codeSet.addToMetadata(createdBy: DEVELOPMENT, namespace: 'terminology.test.com/simple', key: 'mdk1', value: 'mdv1')
+               .addToMetadata(createdBy: DEVELOPMENT, namespace: 'terminology.test.com', key: 'mdk2', value: 'mdv2')
+               .addToMetadata(createdBy: DEVELOPMENT, namespace: 'terminology.test.com/simple', key: 'mdk2', value: 'mdv2')
+
         Terminology simpleTestTerminology = Terminology.findByLabel(SIMPLE_TERMINOLOGY_NAME) ?: buildAndSaveSimpleTerminology(messageSource, folder, authority)
         simpleTestTerminology.terms.each { codeSet.addToTerms(it) }
 
