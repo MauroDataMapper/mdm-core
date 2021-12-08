@@ -564,9 +564,6 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetImportExportAndIn
 
         then:
         simpleDiff.objectsAreIdentical()
-
-        cleanup:
-        basicParameters.importAsNewBranchModelVersion = false
     }
 
     void 'test multi-import single CodeSet'() {
@@ -593,9 +590,6 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetImportExportAndIn
 
         then:
         simpleDiff.objectsAreIdentical()
-
-        cleanup:
-        basicParameters.importAsNewBranchModelVersion = false
     }
 
     void 'test multi-import multiple CodeSets'() {
@@ -624,9 +618,6 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetImportExportAndIn
         then:
         simpleDiff.objectsAreIdentical()
         complexDiff.objectsAreIdentical()
-
-        cleanup:
-        basicParameters.importAsNewBranchModelVersion = false
     }
 
     @PendingFeature(reason = 'Invalid models are imported')
@@ -669,9 +660,6 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetImportExportAndIn
         then:
         simpleDiff.objectsAreIdentical()
         complexDiff.objectsAreIdentical()
-
-        cleanup:
-        basicParameters.importAsNewBranchModelVersion = false
     }
 
     void 'test multi-export invalid CodeSets'() {

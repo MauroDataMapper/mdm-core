@@ -55,19 +55,11 @@ abstract class BaseTerminologyImportExportSpec extends BaseTerminologyIntegratio
     @Shared
     TerminologyFileImporterProviderServiceParameters basicParameters
 
-    def setupSpec() {
-        basicParameters = new TerminologyFileImporterProviderServiceParameters().tap {
-            importAsNewBranchModelVersion = false
-            importAsNewDocumentationVersion = false
-            finalised = false
-        }
+    Object setupSpec() {
+        basicParameters = new TerminologyFileImporterProviderServiceParameters()
     }
 
-    abstract DataBindTerminologyImporterProviderService getImporterService()
-
-    abstract String getImportType()
-
-    void cleanupParameters() {
+    Object setup() {
         basicParameters.tap {
             importAsNewBranchModelVersion = false
             importAsNewDocumentationVersion = false
@@ -76,6 +68,10 @@ abstract class BaseTerminologyImportExportSpec extends BaseTerminologyIntegratio
             importFile = null
         }
     }
+
+    abstract DataBindTerminologyImporterProviderService getImporterService()
+
+    abstract String getImportType()
 
     @OnceBefore
     void setupResourcesPath() {

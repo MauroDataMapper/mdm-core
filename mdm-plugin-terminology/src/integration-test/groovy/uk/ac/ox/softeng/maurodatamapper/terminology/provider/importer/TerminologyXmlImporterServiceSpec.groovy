@@ -140,9 +140,6 @@ class TerminologyXmlImporterServiceSpec extends DataBindTerminologyImporterProvi
 
         then:
         simpleDiff.objectsAreIdentical()
-
-        cleanup:
-        basicParameters.importAsNewBranchModelVersion = false
     }
 
     void 'test multi-import single Terminology'() {
@@ -167,9 +164,6 @@ class TerminologyXmlImporterServiceSpec extends DataBindTerminologyImporterProvi
 
         then:
         simpleDiff.objectsAreIdentical()
-
-        cleanup:
-        basicParameters.importAsNewBranchModelVersion = false
     }
 
     void 'test multi-import multiple Terminologies'() {
@@ -196,9 +190,6 @@ class TerminologyXmlImporterServiceSpec extends DataBindTerminologyImporterProvi
         then:
         simpleDiff.objectsAreIdentical()
         complexDiff.objectsAreIdentical()
-
-        cleanup:
-        basicParameters.importAsNewBranchModelVersion = false
     }
 
     @PendingFeature
@@ -239,8 +230,5 @@ class TerminologyXmlImporterServiceSpec extends DataBindTerminologyImporterProvi
         then:
         simpleDiff.objectsAreIdentical()
         complexDiff.objectsAreIdentical()
-
-        cleanup:
-        basicParameters.importAsNewBranchModelVersion = false
     }
 }

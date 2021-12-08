@@ -80,8 +80,12 @@ abstract class BaseCodeSetImportExportAndIntegrationSpec<I extends DataBindCodeS
         folder
     }
 
-    def setupSpec() {
-        basicParameters = new CodeSetFileImporterProviderServiceParameters().tap {
+    Object setupSpec() {
+        basicParameters = new CodeSetFileImporterProviderServiceParameters()
+    }
+
+    Object setup() {
+        basicParameters.tap {
             importAsNewBranchModelVersion = false
             importAsNewDocumentationVersion = false
             finalised = false
@@ -100,16 +104,6 @@ abstract class BaseCodeSetImportExportAndIntegrationSpec<I extends DataBindCodeS
 
     void validateExportedModels(String testName, String exportedModels) {
         validateExportedModel(testName, exportedModels)
-    }
-
-    void cleanupParameters() {
-        basicParameters.tap {
-            importAsNewBranchModelVersion = false
-            importAsNewDocumentationVersion = false
-            finalised = false
-            propagateFromPreviousVersion = false
-            importFile = null
-        }
     }
 
     @OnceBefore

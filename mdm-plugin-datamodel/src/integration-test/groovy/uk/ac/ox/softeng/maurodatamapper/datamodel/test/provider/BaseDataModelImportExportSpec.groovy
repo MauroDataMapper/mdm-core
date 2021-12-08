@@ -59,19 +59,11 @@ abstract class BaseDataModelImportExportSpec extends BaseDataModelIntegrationSpe
     @Shared
     DataModelFileImporterProviderServiceParameters basicParameters
 
-    def setupSpec() {
-        basicParameters = new DataModelFileImporterProviderServiceParameters().tap {
-            importAsNewBranchModelVersion = false
-            importAsNewDocumentationVersion = false
-            finalised = false
-        }
+    Object setupSpec() {
+        basicParameters = new DataModelFileImporterProviderServiceParameters()
     }
 
-    abstract DataBindDataModelImporterProviderService getImporterService()
-
-    abstract String getImportType()
-
-    void cleanupParameters() {
+    Object setup() {
         basicParameters.tap {
             importAsNewBranchModelVersion = false
             importAsNewDocumentationVersion = false
@@ -80,6 +72,10 @@ abstract class BaseDataModelImportExportSpec extends BaseDataModelIntegrationSpe
             importFile = null
         }
     }
+
+    abstract DataBindDataModelImporterProviderService getImporterService()
+
+    abstract String getImportType()
 
     @OnceBefore
     void setupResourcesPath() {

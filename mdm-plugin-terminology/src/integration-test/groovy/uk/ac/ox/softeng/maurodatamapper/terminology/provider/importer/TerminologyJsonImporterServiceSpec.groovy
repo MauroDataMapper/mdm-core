@@ -95,7 +95,6 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
     }
 
     void 'PG01 test propagatingCatalogueItemElements'() {
-
         given:
         setupData()
         basicParameters.finalised = false
@@ -135,13 +134,9 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
         term.semanticLinks.find { it.targetMultiFacetAwareItemId == testSemanticLink.targetMultiFacetAwareItemId }
         term.semanticLinks.find { it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType }
         term.referenceFiles.find { it.fileName == testReferenceFile.fileName }
-
-        cleanup:
-        cleanupParameters()
     }
 
     void 'PG02 : test propagating child content'() {
-
         given:
         setupData()
         basicParameters.finalised = false
@@ -204,9 +199,6 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
 
         then: 'description is not overwritten as it was included in the import'
         term.description == 'Example of truncated term label when code and definition are the same'
-
-        cleanup:
-        cleanupParameters()
     }
 
     void 'test multi-import invalid Terminology content'() {
@@ -307,9 +299,6 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
 
         then:
         simpleDiff.objectsAreIdentical()
-
-        cleanup:
-        basicParameters.importAsNewBranchModelVersion = false
     }
 
     void 'test multi-import single Terminology'() {
@@ -334,9 +323,6 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
 
         then:
         simpleDiff.objectsAreIdentical()
-
-        cleanup:
-        basicParameters.importAsNewBranchModelVersion = false
     }
 
     void 'test multi-import multiple Terminologies'() {
@@ -363,9 +349,6 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
         then:
         simpleDiff.objectsAreIdentical()
         complexDiff.objectsAreIdentical()
-
-        cleanup:
-        basicParameters.importAsNewBranchModelVersion = false
     }
 
     void 'test multi-import Terminologies with invalid models'() {
@@ -405,9 +388,6 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
         then:
         simpleDiff.objectsAreIdentical()
         complexDiff.objectsAreIdentical()
-
-        cleanup:
-        basicParameters.importAsNewBranchModelVersion = false
     }
 
     void 'test multi-import Terminologies with duplicates'() {
@@ -447,8 +427,5 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
         then:
         simpleDiff.objectsAreIdentical()
         complexDiff.objectsAreIdentical()
-
-        cleanup:
-        basicParameters.importAsNewBranchModelVersion = false
     }
 }

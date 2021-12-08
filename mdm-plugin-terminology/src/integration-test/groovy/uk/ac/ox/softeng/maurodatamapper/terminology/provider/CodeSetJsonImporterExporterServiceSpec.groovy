@@ -480,7 +480,6 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetImportExportAndI
     }
 
     void 'PG01 test propagatingCatalogueItemElements'() {
-
         given:
         setupData()
         basicParameters.finalised = false
@@ -521,9 +520,6 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetImportExportAndI
         cs.semanticLinks.find { it.targetMultiFacetAwareItemId == testSemanticLink.targetMultiFacetAwareItemId }
         cs.semanticLinks.find { it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType }
         cs.referenceFiles.find { it.fileName == testReferenceFile.fileName }
-
-        cleanup:
-        cleanupParameters()
     }
 
     void 'test multi-import invalid CodeSet content'() {
@@ -626,9 +622,6 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetImportExportAndI
 
         then:
         simpleDiff.objectsAreIdentical()
-
-        cleanup:
-        basicParameters.importAsNewBranchModelVersion = false
     }
 
     void 'test multi-import single CodeSet'() {
@@ -655,9 +648,6 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetImportExportAndI
 
         then:
         simpleDiff.objectsAreIdentical()
-
-        cleanup:
-        basicParameters.importAsNewBranchModelVersion = false
     }
 
     void 'test multi-import multiple CodeSets'() {
@@ -686,9 +676,6 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetImportExportAndI
         then:
         simpleDiff.objectsAreIdentical()
         complexDiff.objectsAreIdentical()
-
-        cleanup:
-        basicParameters.importAsNewBranchModelVersion = false
     }
 
     @PendingFeature(reason = 'Failed to lazily initialize a collection of role: Term.metadata, could not initialize proxy - no Session')
@@ -731,9 +718,6 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetImportExportAndI
         then:
         simpleDiff.objectsAreIdentical()
         complexDiff.objectsAreIdentical()
-
-        cleanup:
-        basicParameters.importAsNewBranchModelVersion = false
     }
 
     @PendingFeature(reason = 'Failed to lazily initialize a collection of role: Term.metadata, could not initialize proxy - no Session')
@@ -776,9 +760,6 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetImportExportAndI
         then:
         simpleDiff.objectsAreIdentical()
         complexDiff.objectsAreIdentical()
-
-        cleanup:
-        basicParameters.importAsNewBranchModelVersion = false
     }
 
     void 'test multi-export invalid CodeSets'() {

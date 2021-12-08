@@ -141,9 +141,6 @@ class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderS
 
         then:
         simpleDiff.objectsAreIdentical()
-
-        cleanup:
-        basicParameters.importAsNewBranchModelVersion = false
     }
 
     void 'test multi-import single DataModel'() {
@@ -168,9 +165,6 @@ class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderS
 
         then:
         simpleDiff.objectsAreIdentical()
-
-        cleanup:
-        basicParameters.importAsNewBranchModelVersion = false
     }
 
     void 'test multi-import multiple DataModels'() {
@@ -197,9 +191,6 @@ class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderS
         then:
         simpleDiff.objectsAreIdentical()
         complexDiff.objectsAreIdentical()
-
-        cleanup:
-        basicParameters.importAsNewBranchModelVersion = false
     }
 
     @PendingFeature
@@ -240,8 +231,5 @@ class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderS
         then:
         simpleDiff.objectsAreIdentical()
         complexDiff.objectsAreIdentical()
-
-        cleanup:
-        basicParameters.importAsNewBranchModelVersion = false
     }
 }
