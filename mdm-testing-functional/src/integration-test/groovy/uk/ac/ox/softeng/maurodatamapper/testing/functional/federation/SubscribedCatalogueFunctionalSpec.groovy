@@ -590,7 +590,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
 
         when: 'The save action is executed with unreachable URL'
         Map invalidDomainMap = [
-            url: 'http://invalid.localhost:8080',
+            url  : 'http://invalid.localhost:8080',
             label: 'Invalid Domain'
         ]
         POST('', invalidDomainMap)
@@ -741,6 +741,8 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
     {
       "modelId": "${json-unit.matches:id}",
       "title": "Complex Test CodeSet 1.0.0",
+      "label": "Complex Test CodeSet",
+      "version": "1.0.0",
       "modelType": "CodeSet",
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "dateCreated": "${json-unit.matches:offsetDateTime}",
@@ -1014,5 +1016,4 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         removeValidIdObject(subscribedCatalogueId)
         cleanUpRoles(subscribedCatalogueId)
     }
-
 }

@@ -107,6 +107,7 @@ class PublishFunctionalSpec extends FunctionalSpec {
 
         and:
         verifyEntry(responseBody().publishedModels.find { it.title == 'Simple Test CodeSet 1.0.0' }, 'CodeSet')
+        verifyEntry(responseBody().publishedModels.find { it.title == 'Complex Test CodeSet 1.0.0' }, 'CodeSet')
         verifyEntry(responseBody().publishedModels.find { it.title == 'Finalised Example Test DataModel 1.0.0' }, 'DataModel')
     }
 
