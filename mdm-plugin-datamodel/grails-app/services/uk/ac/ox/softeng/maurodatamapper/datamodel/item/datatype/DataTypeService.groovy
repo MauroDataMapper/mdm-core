@@ -262,6 +262,17 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     }
 
     @Override
+    void checkBreadcrumbTreeAfterSavingCatalogueItem(DataType dataType) {
+        super.checkBreadcrumbTreeAfterSavingCatalogueItem(dataType)
+
+        if (dataType.instanceOf(EnumerationType)) {
+            dataType.enumerationValues.each { enumerationValue ->
+                super.checkBreadcrumbTreeAfterSavingCatalogueItem(enumerationValue)
+            }
+        }
+    }
+
+    @Override
     DataType updateFacetsAfterInsertingCatalogueItem(DataType dataType) {
         if (dataType.instanceOf(EnumerationType)) {
             enumerationTypeService.updateFacetsAfterInsertingCatalogueItem(dataType as EnumerationType)
