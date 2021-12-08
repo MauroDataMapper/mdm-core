@@ -1417,7 +1417,6 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         DELETE("terminologies/${terminologyId}?permanent=true")
     }
 
-    @PendingFeature(reason = 'Text ${json-unit.matches:offsetDateTime} could not be parsed at index 0}')
     void 'EX04A : test export complex CodeSet JSON'() {
         given:
         POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
@@ -1566,7 +1565,6 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         cleanUpData(id2)
     }
 
-    @PendingFeature(reason = 'Text ${json-unit.matches:offsetDateTime} could not be parsed at index 0}')
     void 'EX05A : test export multiple CodeSets JSON'() {
         given:
         POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
