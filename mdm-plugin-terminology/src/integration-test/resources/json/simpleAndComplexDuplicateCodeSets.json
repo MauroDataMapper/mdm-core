@@ -42,6 +42,29 @@
           "lastUpdated": "${json-unit.matches:offsetDateTime}"
         }
       ],
+      "metadata": [
+        {
+          "id": "${json-unit.matches:id}",
+          "namespace": "terminology.test.com/simple",
+          "key": "mdk1",
+          "value": "mdv1",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+        },
+        {
+          "id": "${json-unit.matches:id}",
+          "namespace": "terminology.test.com",
+          "key": "mdk2",
+          "value": "mdv2",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+        },
+        {
+          "id": "${json-unit.matches:id}",
+          "namespace": "terminology.test.com/simple",
+          "key": "mdk2",
+          "value": "mdv2",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+        }
+      ],
       "author": "Test Bootstrap",
       "organisation": "Oxford BRC",
       "documentationVersion": "1.0.0",
@@ -376,6 +399,29 @@
         {
           "id": "${json-unit.matches:id}",
           "label": "test classifier",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+        }
+      ],
+      "metadata": [
+        {
+          "id": "${json-unit.matches:id}",
+          "namespace": "terminology.test.com/simple",
+          "key": "mdk1",
+          "value": "mdv1",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+        },
+        {
+          "id": "${json-unit.matches:id}",
+          "namespace": "terminology.test.com",
+          "key": "mdk2",
+          "value": "mdv2",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+        },
+        {
+          "id": "${json-unit.matches:id}",
+          "namespace": "terminology.test.com/simple",
+          "key": "mdk2",
+          "value": "mdv2",
           "lastUpdated": "${json-unit.matches:offsetDateTime}"
         }
       ],
