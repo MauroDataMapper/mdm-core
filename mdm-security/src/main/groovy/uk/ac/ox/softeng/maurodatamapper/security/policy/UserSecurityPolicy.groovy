@@ -158,11 +158,11 @@ class UserSecurityPolicy {
     }
 
     UserSecurityPolicy withVirtualRoles(Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles) {
-        this.virtualSecurableResourceGroupRoles = virtualSecurableResourceGroupRoles
+        this.virtualSecurableResourceGroupRoles = (virtualSecurableResourceGroupRoles
             .groupBy {it.domainId}
             .collectEntries {
                 [it.key, new TreeSet<>(it.value)]
-            } as Map<UUID, SortedSet<VirtualSecurableResourceGroupRole>>
+            } as Map<UUID, SortedSet<VirtualSecurableResourceGroupRole>> )
         this
     }
 
@@ -179,7 +179,7 @@ class UserSecurityPolicy {
     UserSecurityPolicy includeVirtualRoles(Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles) {
         Map<UUID, List<VirtualSecurableResourceGroupRole>> grouped = virtualSecurableResourceGroupRoles.groupBy {it.domainId}
         grouped.each {id, roles ->
-            this.virtualSecurableResourceGroupRoles.merge(id,
+            this.@virtualSecurableResourceGroupRoles.merge(id,
                                                           new TreeSet<VirtualSecurableResourceGroupRole>(roles.toSet()),
                                                           {existing, addtl ->
                                                               existing + addtl
@@ -196,7 +196,7 @@ class UserSecurityPolicy {
     UserSecurityPolicy removeVirtualRoles(Collection<VirtualSecurableResourceGroupRole> allRolesToBeRemoved) {
         Map<UUID, List<VirtualSecurableResourceGroupRole>> grouped = allRolesToBeRemoved.groupBy {it.domainId}
         grouped.each {id, idRolesToBeRemoved ->
-            this.virtualSecurableResourceGroupRoles.computeIfPresent(id,
+            this.@virtualSecurableResourceGroupRoles.computeIfPresent(id,
                                                                      {k, existing ->
                                                                          existing.removeAll(idRolesToBeRemoved)
                                                                          existing
