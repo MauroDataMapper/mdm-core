@@ -43,7 +43,7 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
         this.dataModelId = dataModel.id
         this.dataModelLabel = dataModel.label
         this.dataModelDescription = dataModel.description
-        this.dataModelVersion = dataModel.modelVersionTag ?: dataModel.modelVersion ?: dataModel.branchName
+        this.dataModelVersion = dataModel.modelVersion ?: 'SNAPSHOT'
     }
 
     @Override
