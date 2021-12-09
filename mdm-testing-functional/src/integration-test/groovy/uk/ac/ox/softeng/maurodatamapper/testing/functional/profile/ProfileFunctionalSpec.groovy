@@ -2523,4 +2523,43 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         cleanupDataModelId(dynamicProfileModelId)
         cleanupDataModelId(secondDynamicProfileModelId)
     }
+
+    void 'test that a profile having two versions, each with version tags, can be retrieved by namespace and name only'() {
+        given: 'a finalised profile and a simple data model'
+        String simpleModelId = getDataModelId()
+        String profileModelId = getDynamicProfileModelId()
+        loginEditor()
+        PUT("dataModels/$profileModelId/finalise", [versionChangeType: 'Major', versionTag: 'Functional Test Version Tag'])
+        verifyResponse OK, response
+
+        when: 'get the finalised profile against the simple data model'
+        GET("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model", STRING_ARG)
+
+        then: 'the response is OK'
+        verifyResponse(OK, jsonCapableResponse)
+
+        when: 'create a new branch model version of the profile'
+        PUT("dataModels/$profileModelId/newBranchModelVersion", [:], MAP_ARG)
+
+        then: 'the response is CREATED'
+        verifyResponse CREATED, response
+        String profileModelVersion2Id = response.body().id
+
+        when: 'finalise the new branch model version'
+        PUT("dataModels/$profileModelVersion2Id/finalise", [versionChangeType: 'Major', versionTag: 'Functional Test Second Version Tag'])
+
+        then: 'the response is OK'
+        verifyResponse OK, response
+
+        when: 'get the finalised profile against the simple data model now that there are two versions of the profile'
+        GET("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model", MAP_ARG)
+
+        then: 'the response is OK'
+        verifyResponse(OK, response)
+
+        cleanup:
+        logout()
+        cleanupDataModelId(simpleModelId)
+        cleanupDataModelId(profileModelId)
+    }
 }
