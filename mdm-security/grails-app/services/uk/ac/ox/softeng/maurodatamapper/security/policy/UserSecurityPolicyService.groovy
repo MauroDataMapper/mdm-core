@@ -137,10 +137,7 @@ class UserSecurityPolicyService {
             securableResourceGroupRole.securableResourceId == securableResource.resourceId &&
             securableResourceGroupRole.securableResourceDomainType == securableResource.domainType
         }
-        userSecurityPolicy.removeVirtualRoleIf {securableResourceGroupRole ->
-            securableResourceGroupRole.domainId == securableResource.resourceId &&
-            securableResourceGroupRole.domainType == securableResource.domainType
-        }
+        userSecurityPolicy.removeVirtualRolesForSecurableResource(securableResource)
     }
 
     UserSecurityPolicy updatePolicyForAccessToModel(UserSecurityPolicy userSecurityPolicy, Model model,
@@ -163,9 +160,7 @@ class UserSecurityPolicyService {
 
             // If no folder access and no assigned model permission then revoke all model access
             if (!folderMaxPermission && !modelMaxAssignedPermission) {
-                userSecurityPolicy.removeVirtualRoleIf {virtualRole ->
-                    virtualRole.domainType == model.domainType && virtualRole.domainId == model.id
-                }
+                userSecurityPolicy.removeVirtualRolesForSecurableResource(model)
             } else {
                 // The access level is controlled from multiple places and as there could be more than one group providing access so lets just
                 // rebuild
@@ -190,27 +185,16 @@ class UserSecurityPolicyService {
         userSecurityPolicy
     }
 
-    UserSecurityPolicy updateAndStoreBuiltInSecurity(UserSecurityPolicy userSecurityPolicy, Boolean addAccess,
-                                                     Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles,
-                                                     Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRolesForParents) {
+    UserSecurityPolicy addAccessAndStoreBuiltInSecurity(UserSecurityPolicy userSecurityPolicy,
+                                                        Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles,
+                                                        Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRolesForParents) {
         if (!userSecurityPolicy.isLocked()) throw new ApiInternalException('GBSPMS', 'Cannot update on an unlocked UserPolicy')
         log.debug('Updating UserSecurityPolicy for builtInSecurity')
-        if (addAccess) {
-            // If readable then add to all policy managers
-            userSecurityPolicy.includeVirtualRoles(virtualSecurableResourceGroupRoles)
-            userSecurityPolicy.includeVirtualRoles(virtualSecurableResourceGroupRolesForParents)
-        } else {
-            // Remove from all policy managers we can do a perfect match to only remove the valid roles
-            userSecurityPolicy.removeVirtualRoleIf {virtualSecurableResourceGroupRole ->
-                virtualSecurableResourceGroupRole in virtualSecurableResourceGroupRoles
-            }
-            // Clean up parent tree of access
-            Set<VirtualSecurableResourceGroupRole> allRolesToRemove = virtualSecurableResourceGroupRolesForParents.findAll {
-                it in userSecurityPolicy.getVirtualSecurableResourceGroupRolesForBuilding()
-            }
-            removeRolesWithNoRequiredAccess(userSecurityPolicy, allRolesToRemove)
-        }
+
+        // If readable then add to all policy managers
         userSecurityPolicy
+            .includeVirtualRoles(virtualSecurableResourceGroupRoles)
+            .includeVirtualRoles(virtualSecurableResourceGroupRolesForParents)
     }
 
     private UserSecurityPolicy buildUserSecurityPolicyForContent(

@@ -192,10 +192,8 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     @Override
     List<UUID> listReadableSecuredResourceIds(Class<? extends SecurableResource> securableResourceClass) {
         userPolicy.getVirtualSecurableResourceGroupRoles()
-            .findAll { it.domainType == securableResourceClass.simpleName || it.alternateDomainType == securableResourceClass.simpleName }
-            .collect { it.domainId }
-            .toSet()
-            .toList()
+            .findAll {it.value.first().matchesDomainResourceType(securableResourceClass)}
+            .collect {it.key}
     }
 
     @Override
@@ -488,7 +486,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
 
     @Override
     boolean isApplicationAdministrator() {
-        userPolicy.getApplicationPermittedRoles().any { it.name == APPLICATION_ADMIN_ROLE_NAME }
+        hasApplicationLevelRole(APPLICATION_ADMIN_ROLE_NAME)
     }
 
     @Override
@@ -690,17 +688,13 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
             return false
         }
 
-        return userPolicy.getVirtualSecurableResourceGroupRoles().any {
-            it.matchesDomainResource(securableResourceClass, id)
-        }
+        userPolicy.managesVirtualAccessToSecurableResource(securableResourceClass, id)
     }
 
     private VirtualSecurableResourceGroupRole getSpecificLevelAccessToSecuredResource(Class<? extends SecurableResource> securableResourceClass,
                                                                                       UUID id,
                                                                                       String roleName) {
-        userPolicy.getVirtualSecurableResourceGroupRoles().find {
-            it.matchesDomainResource(securableResourceClass, id) && it.matchesGroupRole(roleName)
-        }
+        userPolicy.getVirtualRoleForSecuredResource(securableResourceClass, id, roleName)
     }
 
     private boolean hasApplicationLevelRole(String rolename) {

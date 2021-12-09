@@ -117,6 +117,8 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
     @Override
     int compareTo(VirtualSecurableResourceGroupRole that) {
         if (this.domainType != that.domainType || this.domainId != that.domainId) return LOWEST_PRECEDENCE
+        if (this.groupRole.applicationLevelRole && !that.groupRole.applicationLevelRole) return HIGHEST_PRECEDENCE
+        if (!this.groupRole.applicationLevelRole && that.groupRole.applicationLevelRole) return LOWEST_PRECEDENCE
         this.order <=> that.order
     }
 
@@ -146,6 +148,14 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
 
     boolean matchesDomainResource(Class<? extends SecurableResource> securableResourceClass, UUID id) {
         (domainType == securableResourceClass.simpleName || alternateDomainType == securableResourceClass.simpleName) && domainId == id
+    }
+
+    boolean matchesDomainResourceType(Class<? extends SecurableResource> securableResourceClass) {
+        (domainType == securableResourceClass.simpleName || alternateDomainType == securableResourceClass.simpleName)
+    }
+
+    boolean matchesDomainResourceType(String securableResourceDomainType) {
+        (domainType == securableResourceDomainType || alternateDomainType == securableResourceDomainType)
     }
 
     boolean matchesGroupRole(String roleName) {

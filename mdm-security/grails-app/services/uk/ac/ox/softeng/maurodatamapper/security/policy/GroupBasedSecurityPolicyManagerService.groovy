@@ -437,10 +437,9 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
                 GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
                 userSecurityPolicyManager.lock()
                 UserSecurityPolicy updatedPolicy =
-                    userSecurityPolicyService.updateAndStoreBuiltInSecurity(userSecurityPolicyManager.userPolicy,
-                                                                            securableResource.readableByEveryone,
-                                                                            virtualSecurableResourceGroupRoles,
-                                                                            virtualSecurableResourceGroupRolesForParents)
+                    userSecurityPolicyService.addAccessAndStoreBuiltInSecurity(userSecurityPolicyManager.userPolicy,
+                                                                               virtualSecurableResourceGroupRoles,
+                                                                               virtualSecurableResourceGroupRolesForParents)
                 storeUserSecurityPolicyManager(userSecurityPolicyManager.withUpdatedUserPolicy(updatedPolicy))
             }
         }
@@ -452,10 +451,9 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
                     userSecurityPolicyManager.lock()
 
                     UserSecurityPolicy updatedPolicy =
-                        userSecurityPolicyService.updateAndStoreBuiltInSecurity(userSecurityPolicyManager.userPolicy,
-                                                                                securableResource.readableByAuthenticatedUsers,
-                                                                                virtualSecurableResourceGroupRoles,
-                                                                                virtualSecurableResourceGroupRolesForParents)
+                        userSecurityPolicyService.addAccessAndStoreBuiltInSecurity(userSecurityPolicyManager.userPolicy,
+                                                                                   virtualSecurableResourceGroupRoles,
+                                                                                   virtualSecurableResourceGroupRolesForParents)
                     storeUserSecurityPolicyManager(userSecurityPolicyManager.withUpdatedUserPolicy(updatedPolicy))
                 }
             }

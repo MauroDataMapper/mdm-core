@@ -48,15 +48,15 @@ class UserSecurityPolicy {
     private CatalogueUser user
     private Set<UserGroup> userGroups
     private List<SecurableResourceGroupRole> securableResourceGroupRoles
-    private Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles
-    private Set<GroupRole> applicationPermittedRoles
+    private Map<UUID, SortedSet<VirtualSecurableResourceGroupRole>> virtualSecurableResourceGroupRoles
+    private SortedSet<GroupRole> applicationPermittedRoles
     private int maxLock = 5
 
     private UserSecurityPolicy() {
         userGroups = [] as Set
-        applicationPermittedRoles = [] as Set
+        applicationPermittedRoles = new TreeSet<>()
         securableResourceGroupRoles = []
-        virtualSecurableResourceGroupRoles = [] as Set
+        virtualSecurableResourceGroupRoles = [:]
     }
 
     CatalogueUser getUser() {
@@ -73,7 +73,7 @@ class UserSecurityPolicy {
     }
 
     Set<GroupRole> getAssignedUserGroupApplicationRoles() {
-        userGroups.collect { it.applicationGroupRole }.findAll().toSet()
+        userGroups.collect {it.applicationGroupRole}.findAll().toSet()
     }
 
     List<SecurableResourceGroupRole> getSecurableResourceGroupRoles() {
@@ -81,9 +81,14 @@ class UserSecurityPolicy {
         destroyed.get() ? Collections.emptyList() : securableResourceGroupRoles
     }
 
-    Set<VirtualSecurableResourceGroupRole> getVirtualSecurableResourceGroupRoles() {
+    VirtualSecurableResourceGroupRole getVirtualRoleForSecuredResource(Class<? extends SecurableResource> securableResourceClass, UUID id, String roleName) {
+        SortedSet roles = getVirtualSecurableResourceGroupRoles()[id]
+        roles && roles.first().matchesDomainResourceType(securableResourceClass) ? roles.find {it.matchesGroupRole(roleName)} : null
+    }
+
+    Map<UUID, SortedSet<VirtualSecurableResourceGroupRole>> getVirtualSecurableResourceGroupRoles() {
         holdForLock() // Ensure roles are only returned if theres no lock
-        destroyed.get() ? Collections.emptySet() : virtualSecurableResourceGroupRoles
+        destroyed.get() ? Collections.emptyMap() : virtualSecurableResourceGroupRoles
     }
 
     Set<GroupRole> getApplicationPermittedRoles() {
@@ -98,7 +103,12 @@ class UserSecurityPolicy {
 
     Set<VirtualSecurableResourceGroupRole> getVirtualSecurableResourceGroupRolesForBuilding() {
         if (!isLocked()) throw new ApiInternalException('USP', 'Cannot build on an unlocked UserPolicy')
-        destroyed.get() ? Collections.emptySet() : virtualSecurableResourceGroupRoles
+        destroyed.get() ? Collections.emptySet() : virtualSecurableResourceGroupRoles.values() as Set<VirtualSecurableResourceGroupRole>
+    }
+
+    Set<VirtualSecurableResourceGroupRole> getVirtualSecurableResourceGroupRolesForBuildingById(UUID id) {
+        if (!isLocked()) throw new ApiInternalException('USP', 'Cannot build on an unlocked UserPolicy')
+        destroyed.get() ? Collections.emptySet() : virtualSecurableResourceGroupRoles[id] as Set<VirtualSecurableResourceGroupRole>
     }
 
     Set<GroupRole> getApplicationPermittedRolesForBuilding() {
@@ -149,11 +159,15 @@ class UserSecurityPolicy {
 
     UserSecurityPolicy withVirtualRoles(Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles) {
         this.virtualSecurableResourceGroupRoles = virtualSecurableResourceGroupRoles
+            .groupBy {it.domainId}
+            .collectEntries {
+                [it.key, new TreeSet<>(it.value)]
+            } as Map<UUID, SortedSet<VirtualSecurableResourceGroupRole>>
         this
     }
 
     UserSecurityPolicy withApplicationRoles(Set<GroupRole> applicationPermittedRoles) {
-        this.applicationPermittedRoles = applicationPermittedRoles
+        this.applicationPermittedRoles = new TreeSet<>(applicationPermittedRoles)
         this
     }
 
@@ -163,19 +177,31 @@ class UserSecurityPolicy {
     }
 
     UserSecurityPolicy includeVirtualRoles(Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles) {
-        this.virtualSecurableResourceGroupRoles.addAll(virtualSecurableResourceGroupRoles)
+        Map<UUID, List<VirtualSecurableResourceGroupRole>> grouped = virtualSecurableResourceGroupRoles.groupBy {it.domainId}
+        grouped.each {id, roles ->
+            this.virtualSecurableResourceGroupRoles.merge(id,
+                                                          new TreeSet<VirtualSecurableResourceGroupRole>(roles.toSet()),
+                                                          {existing, addtl ->
+                                                              existing + addtl
+                                                          })
+        }
         this
     }
 
-    UserSecurityPolicy removeVirtualRoleIf(@ClosureParams(
-        value = SimpleType,
-        options = 'uk.ac.ox.softeng.maurodatamapper.security.role.VirtualSecurableResourceGroupRole') Closure predicate) {
-        virtualSecurableResourceGroupRoles.removeIf([test: predicate] as Predicate)
+    UserSecurityPolicy removeVirtualRolesForSecurableResource(SecurableResource securableResource) {
+        this.virtualSecurableResourceGroupRoles.remove(securableResource.resourceId)
         this
     }
 
-    UserSecurityPolicy removeVirtualRoles(Collection<VirtualSecurableResourceGroupRole> rolesToRemoved) {
-        virtualSecurableResourceGroupRoles.removeAll(rolesToRemoved)
+    UserSecurityPolicy removeVirtualRoles(Collection<VirtualSecurableResourceGroupRole> allRolesToBeRemoved) {
+        Map<UUID, List<VirtualSecurableResourceGroupRole>> grouped = allRolesToBeRemoved.groupBy {it.domainId}
+        grouped.each {id, idRolesToBeRemoved ->
+            this.virtualSecurableResourceGroupRoles.computeIfPresent(id,
+                                                                     {k, existing ->
+                                                                         existing.removeAll(idRolesToBeRemoved)
+                                                                         existing
+                                                                     })
+        }
         this
     }
 
@@ -213,9 +239,9 @@ class UserSecurityPolicy {
     }
 
     UserSecurityPolicy setNoAccess() {
-        applicationPermittedRoles = [] as Set
+        applicationPermittedRoles = new TreeSet<>()
         securableResourceGroupRoles = []
-        virtualSecurableResourceGroupRoles = [] as Set
+        virtualSecurableResourceGroupRoles = [:]
         this
     }
 
@@ -223,19 +249,22 @@ class UserSecurityPolicy {
         userGroup.id in userGroups*.id
     }
 
+    boolean managesVirtualAccessToSecurableResource(Class<? extends SecurableResource> securableResourceClass, UUID id) {
+        Set<VirtualSecurableResourceGroupRole> roles = virtualSecurableResourceGroupRoles[id]
+        roles ? roles.first().matchesDomainResourceType(securableResourceClass) : false
+    }
+
     boolean managesVirtualAccessToSecurableResource(SecurableResource securableResource) {
-        virtualSecurableResourceGroupRoles.any {it.domainId == securableResource.resourceId && it.domainType == securableResource.domainType}
+        managesVirtualAccessToSecurableResource(securableResource.class, securableResource.resourceId)
     }
 
     GroupRole getHighestApplicationLevelAccess() {
-        applicationPermittedRoles.sort().first()
+        applicationPermittedRoles.first() // Sorted set so the first entry is always the highest acess
     }
 
     GroupRole findHighestAccessToSecurableResource(String securableResourceDomainType, UUID securableResourceId) {
-        Set<VirtualSecurableResourceGroupRole> found = getVirtualSecurableResourceGroupRolesForBuilding().findAll {
-            it.domainType == securableResourceDomainType && it.domainId == securableResourceId
-        }
-        if (!found) return null
+        Set<VirtualSecurableResourceGroupRole> found = getVirtualSecurableResourceGroupRolesForBuildingById(securableResourceId)
+        if (!found || !found.first().matchesDomainResourceType(securableResourceDomainType)) return null
         found.sort().first().groupRole
     }
 
@@ -244,7 +273,7 @@ class UserSecurityPolicy {
             it.securableResourceDomainType == securableResourceDomainType && it.securableResourceId == securableResourceId
         }
         if (!found) return null
-        found.collect { it.groupRole }.sort().first()
+        found.collect {it.groupRole}.sort().first()
     }
 
     void holdForLock() {
