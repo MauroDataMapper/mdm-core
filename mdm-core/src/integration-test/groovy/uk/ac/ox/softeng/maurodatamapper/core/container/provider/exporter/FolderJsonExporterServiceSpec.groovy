@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container.provider.exporter
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.container.test.provider.BaseFolderExporterServiceSpec
 import uk.ac.ox.softeng.maurodatamapper.test.json.JsonComparer
 
@@ -66,5 +67,14 @@ class FolderJsonExporterServiceSpec extends BaseFolderExporterServiceSpec<Folder
 
         String expectedJson = replaceContentWithMatchers(Files.readString(expectedPath))
         verifyJson(expectedJson, exportedFolder.replace(/Mauro Data Mapper/, 'Test Authority'))
+    }
+
+    void 'test export null Folder'() {
+        when:
+        exportFolder(null)
+
+        then:
+        ApiBadRequestException exception = thrown(ApiBadRequestException)
+        exception.errorCode == NO_FOLDER_IDS_TO_EXPORT_CODE
     }
 }
