@@ -103,7 +103,7 @@ class UserSecurityPolicy {
 
     Set<VirtualSecurableResourceGroupRole> getVirtualSecurableResourceGroupRolesForBuilding() {
         if (!isLocked()) throw new ApiInternalException('USP', 'Cannot build on an unlocked UserPolicy')
-        destroyed.get() ? Collections.emptySet() : virtualSecurableResourceGroupRoles.values() as Set<VirtualSecurableResourceGroupRole>
+        destroyed.get() ? Collections.emptySet() : virtualSecurableResourceGroupRoles.values().flatten() as Set<VirtualSecurableResourceGroupRole>
     }
 
     Set<VirtualSecurableResourceGroupRole> getVirtualSecurableResourceGroupRolesForBuildingById(UUID id) {

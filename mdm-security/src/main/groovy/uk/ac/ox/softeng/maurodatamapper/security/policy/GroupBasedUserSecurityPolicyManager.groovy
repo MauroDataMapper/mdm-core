@@ -672,7 +672,6 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
 
     private boolean hasAnyAccessToSecuredResource(Class<? extends SecurableResource> securableResourceClass, UUID id) {
         if (!id) {
-            log.warn('Checking for any access to secured resource class {} without providing an ID', securableResourceClass.simpleName)
 
             // No id means indexing endpoint
             // Users and Groups can be indexed with show actions by the bottom layer of application roles
@@ -683,8 +682,12 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
             if (Utils.parentClassIsAssignableFromChild(CatalogueUser, securableResourceClass)) {
                 return hasApplicationLevelRole(CONTAINER_GROUP_ADMIN_ROLE_NAME)
             }
-            log.info("No id access for read rights for {}, default response is false", securableResourceClass)
-            //        return virtualSecurableResourceGroupRoles.any { it.domainType == securableResourceClass.simpleName }
+            if (Utils.parentClassIsAssignableFromChild(Container, securableResourceClass) || Utils.parentClassIsAssignableFromChild(Model, securableResourceClass)) {
+                // To be clear that containers and models may have open indexing but its not stated in the policy
+                return false
+            }
+
+            log.warn('Checking for any access to secured resource class {} without providing an ID', securableResourceClass.simpleName)
             return false
         }
 

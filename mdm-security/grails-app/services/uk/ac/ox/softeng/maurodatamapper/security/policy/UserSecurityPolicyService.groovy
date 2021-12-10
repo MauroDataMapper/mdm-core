@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.security.policy
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
@@ -55,6 +56,7 @@ class UserSecurityPolicyService {
     VirtualSecurableResourceGroupRoleService virtualSecurableResourceGroupRoleService
     CatalogueUserService catalogueUserService
     UserGroupService userGroupService
+    FolderService folderService
 
     @Autowired(required = false)
     List<SecurableResourceService> securableResourceServices = []
@@ -289,6 +291,25 @@ class UserSecurityPolicyService {
         virtualSecurableResourceGroupRoles
     }
 
+    private Set<VirtualSecurableResourceGroupRole> buildControlledAccessToFoldersOfModel(Model model,
+                                                                                         ModelService modelService,
+                                                                                         UserGroup userGroup,
+                                                                                         GroupRole appliedGroupRole) {
+
+        VirtualGroupRole readerRole = groupRoleService.getFromCache(GroupRole.READER_ROLE_NAME)
+        // Only deal with folders, there is a question around if you can see a model can you read all its classifiers??
+        // We need to make the tree of folders down to the model readable so that the tree can be rendered,
+        // As these are virtual roles we dont iterate into any of the folders, we just want to make that folder and its parents readable
+        folderService
+            .findAllWhereDirectParentOfModel(model)
+            .collect {folder ->
+                virtualSecurableResourceGroupRoleService.buildForSecurableResource(folder)
+                    .withAccessLevel(readerRole.groupRole)
+                    .definedByGroup(userGroup)
+                    .definedByAccessLevel(appliedGroupRole)
+            }.toSet()
+    }
+
     private Set<VirtualSecurableResourceGroupRole> buildCatalogueUserVirtualRoles(Set<GroupRole> applicationLevelRoles) {
         if (!applicationLevelRoles) return new HashSet<VirtualSecurableResourceGroupRole>()
 
@@ -382,8 +403,17 @@ class UserSecurityPolicyService {
                                                                                                      sgr.groupRole))
 
             }
-        }
 
+            // If we're securing a model we need to make sure the model's folder tree is readable
+            // As we're only adding the folder as readable the other contents wont be visible as they arent iterated through
+            ModelService modelService = modelServices.find {it.handles(sgr.securableResourceDomainType)}
+            if (modelService) {
+                virtualSecurableResourceGroupRoles.addAll(buildControlledAccessToFoldersOfModel(sgr.securableResource as Model,
+                                                                                                modelService,
+                                                                                                sgr.userGroup,
+                                                                                                sgr.groupRole))
+            }
+        }
 
         virtualSecurableResourceGroupRoles
     }
