@@ -62,4 +62,9 @@ class FolderJsonImporterServiceSpec extends BaseFolderImporterServiceSpec {
         !folder.childFolders
         !folderService.findAllModelsInFolder(folder)
     }
+
+    void 'test import Folder with description'() {
+        expect:
+        importFolder('folderIncDescription').description == 'Test Folder description'
+    }
 }
