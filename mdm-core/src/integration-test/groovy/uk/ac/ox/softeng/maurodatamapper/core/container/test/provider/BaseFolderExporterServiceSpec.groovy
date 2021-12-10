@@ -27,10 +27,13 @@ import grails.util.BuildSettings
 import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Shared
 
+import java.nio.charset.Charset
 import java.nio.file.Path
 import java.nio.file.Paths
 
 abstract class BaseFolderExporterServiceSpec<E extends FolderExporterProviderService> extends BaseIntegrationSpec {
+
+    static final String NO_FOLDER_IDS_TO_EXPORT_CODE = 'FEP01'
 
     @Autowired
     FolderService folderService
@@ -57,5 +60,9 @@ abstract class BaseFolderExporterServiceSpec<E extends FolderExporterProviderSer
         Folder folder = new Folder(label: 'Test Folder', createdBy: admin.emailAddress)
         checkAndSave(folder)
         folderId = folder.id
+    }
+
+    String exportFolder(UUID folderId) {
+        new String(exporterService.exportDomain(admin, folderId).toByteArray(), Charset.defaultCharset())
     }
 }
