@@ -23,10 +23,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
 import uk.ac.ox.softeng.maurodatamapper.core.container.provider.importer.parameter.FolderImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.core.provider.ProviderType
 
-import groovy.transform.CompileStatic
 import org.springframework.beans.factory.annotation.Autowired
 
-@CompileStatic
 abstract class FolderImporterProviderService<P extends FolderImporterProviderServiceParameters> extends ContainerImporterProviderService<Folder, P> {
 
     @Autowired
@@ -43,5 +41,11 @@ abstract class FolderImporterProviderService<P extends FolderImporterProviderSer
     @Override
     String getProviderType() {
         "Folder${ProviderType.IMPORTER.name}"
+    }
+
+    Folder checkImport(Folder folder) {
+        folder.tap {
+            createdBy = authorityService.defaultAuthority.createdBy
+        }
     }
 }

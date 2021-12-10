@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container.provider.importer
 
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.test.provider.BaseFolderImporterServiceSpec
 
 import grails.gorm.transactions.Rollback
@@ -39,4 +40,17 @@ class FolderJsonImporterServiceSpec extends BaseFolderImporterServiceSpec {
     }
 
     // TODO: Test import null and invalid Folders
+
+    void 'test import Folder'() {
+        when:
+        Folder folder = importFolder('emptyFolder')
+
+        then:
+        folder.tap {
+            id
+            label == 'Test Folder'
+            lastUpdated
+            domainType == 'Folder'
+        }
+    }
 }

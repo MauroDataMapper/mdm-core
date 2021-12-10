@@ -38,6 +38,10 @@ abstract class ContainerImporterProviderService<C extends Container, P extends I
 
     abstract List<C> importDomains(User currentUser, P params)
 
+    List<String> getImportBlacklistedProperties() {
+        ['id', 'lastUpdated', 'domainType']
+    }
+
     Class<P> getImporterProviderServiceParametersClass() {
         (Class<P>) GenericTypeResolver.resolveTypeArguments(getClass(), ContainerImporterProviderService).last()
     }

@@ -23,11 +23,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.provider.importer.paramet
 import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.JsonImportMapping
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
-import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 
 @Slf4j
-@CompileStatic
 class FolderJsonImporterService extends DataBindFolderImporterProviderService<FolderFileImporterProviderServiceParameters> implements JsonImportMapping {
 
     @Override
@@ -47,7 +45,12 @@ class FolderJsonImporterService extends DataBindFolderImporterProviderService<Fo
 
     @Override
     Folder importFolder(User currentUser, byte[] content) {
-        null
+        log.debug('Parsing in file content using JsonSlurper')
+        Map folder = slurpAndClean(content).folder
+        if (!folder) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as folder is not present')
+
+        log.debug('Importing Folder map')
+        bindMapToFolder(currentUser, new HashMap(folder))
     }
 
     @Override
