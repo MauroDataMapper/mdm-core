@@ -21,7 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 
 import groovy.xml.Namespace
 
-class ExportModel {
+class ExportModel implements ExportResource {
 
     Map<String, Object> exportMap
     String modelType
