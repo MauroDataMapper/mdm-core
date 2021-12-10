@@ -81,4 +81,15 @@ class FolderJsonExporterServiceSpec extends BaseFolderExporterServiceSpec<Folder
         expect:
         validateExportedFolder('emptyFolder', exportFolder(folderId))
     }
+
+    void 'test export Folder with description'() {
+        when:
+        folderService.get(folderId).tap {
+            description = 'Test Folder description'
+            checkAndSave(it)
+        }
+
+        then:
+        validateExportedFolder('folderIncDescription', exportFolder(folderId))
+    }
 }

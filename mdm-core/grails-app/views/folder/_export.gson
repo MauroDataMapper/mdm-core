@@ -10,4 +10,5 @@ json {
     label export.label
     if (export.lastUpdated) lastUpdated OffsetDateTimeConverter.toString(export.lastUpdated)
     domainType export.domainType
+    if (export.description) description export.description
 }
