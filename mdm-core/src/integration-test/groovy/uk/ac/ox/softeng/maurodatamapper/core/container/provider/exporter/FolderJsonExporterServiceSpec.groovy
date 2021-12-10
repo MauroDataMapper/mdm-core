@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.core.container.provider.exporter
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.test.provider.BaseFolderExporterServiceSpec
 import uk.ac.ox.softeng.maurodatamapper.test.json.JsonComparer
 
@@ -92,5 +94,22 @@ class FolderJsonExporterServiceSpec extends BaseFolderExporterServiceSpec<Folder
 
         then:
         validateExportedFolder('folderIncDescription', exportFolder(folderId))
+    }
+
+    void 'test export Folder with metadata'() {
+        when:
+        Folder folder = folderService.get(folderId)
+        List<Map<String, String>> metadata = [
+            [namespace: 'test.com', key: 'mdk1', value: 'mdv1'],
+            [namespace: 'test.com/simple', key: 'mdk1', value: 'mdv1'],
+            [namespace: 'test.com/simple', key: 'mdk2', value: 'mdv2']
+        ]
+        metadata.each {
+            folder.addToMetadata(*: it, createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        }
+        checkAndSave(folder)
+
+        then:
+        validateExportedFolder('folderIncMetadata', exportFolder(folderId))
     }
 }
