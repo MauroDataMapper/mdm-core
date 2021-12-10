@@ -1,0 +1,40 @@
+{
+  "folder": {
+    "id": "${json-unit.matches:id}",
+    "label": "Test Folder",
+    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+    "domainType": "Folder",
+    "metadata": [
+      {
+        "id": "${json-unit.matches:id}",
+        "namespace": "test.com",
+        "key": "mdk1",
+        "value": "mdv1",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "namespace": "test.com/simple",
+        "key": "mdk1",
+        "value": "mdv1",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "namespace": "test.com/simple",
+        "key": "mdk2",
+        "value": "mdv2",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      }
+    ]
+  },
+  "exportMetadata": {
+    "exportedBy": "Admin User",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.core.container.provider.exporter",
+      "name": "FolderJsonExporterService",
+      "version": "1.0"
+    }
+  }
+}
