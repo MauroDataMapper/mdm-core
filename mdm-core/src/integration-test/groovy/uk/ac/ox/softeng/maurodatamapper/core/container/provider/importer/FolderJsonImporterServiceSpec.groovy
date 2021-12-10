@@ -67,4 +67,17 @@ class FolderJsonImporterServiceSpec extends BaseFolderImporterServiceSpec {
         expect:
         importFolder('folderIncDescription').description == 'Test Folder description'
     }
+
+    void 'test import Folder with metadata'() {
+        when:
+        Folder folder = importFolder('folderIncMetadata')
+
+        then:
+        folder.metadata.size() == 3
+        folder.metadata.tap {
+            find { it.namespace == 'test.com' && it.key == 'mdk1' && it.value == 'mdv1' }
+            find { it.namespace == 'test.com/simple' && it.key == 'mdk1' && it.value == 'mdv1' }
+            find { it.namespace == 'test.com/simple' && it.key == 'mdk2' && it.value == 'mdv2' }
+        }
+    }
 }

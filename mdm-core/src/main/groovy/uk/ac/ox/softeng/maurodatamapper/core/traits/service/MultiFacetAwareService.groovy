@@ -120,6 +120,7 @@ trait MultiFacetAwareService<K extends MultiFacetAware> {
             multiFacetAware.metadata.each {
                 if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
                 it.multiFacetAwareItemId = multiFacetAware.id
+                it.multiFacetAwareItemDomainType = it.domainType
             }
             Metadata.saveAll(multiFacetAware.metadata)
         }

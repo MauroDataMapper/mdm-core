@@ -196,7 +196,7 @@ class FolderService extends ContainerService<Folder> {
             if (inserting) updateFacetsAfterInsertingMultiFacetAware(folder)
             sessionFactory.currentSession.flush()
         } else {
-            (folder as GormEntity).save(args)
+            (folder as GormEntity).save(saveArgs)
             if (inserting) updateFacetsAfterInsertingMultiFacetAware(folder)
         }
         folder
@@ -530,4 +530,10 @@ class FolderService extends ContainerService<Folder> {
         Path.from(folder)
     }
 
+    Folder checkImportedFolderAssociations(User importingUser, Folder folder) {
+        folder.createdBy = importingUser.emailAddress
+        if (!folder.id) save(folder, insert: true, validate: false) // Skip validation to avoid error on null folderId/multiFacetAwareItemId
+        checkFacetsAfterImportingMultiFacetAware(folder)
+        log.debug('Folder associations checked')
+    }
 }

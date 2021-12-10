@@ -81,7 +81,7 @@ abstract class BaseFolderImporterServiceSpec extends BaseIntegrationSpec {
         Folder imported = importerService.importDomain(admin, basicParameters) as Folder
         check(imported)
         folderService.save(imported)
-        sessionFactory.currentSession.flush()
+        // sessionFactory.currentSession.flush()
         log.debug('Folder saved')
         folderService.get(imported.id)
     }
