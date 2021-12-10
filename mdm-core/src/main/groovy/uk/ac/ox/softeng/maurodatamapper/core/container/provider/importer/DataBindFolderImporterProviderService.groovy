@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.provider.importer.parameter.FolderFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
+import grails.web.databinding.DataBindingUtils
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import org.springframework.core.GenericTypeResolver
@@ -43,13 +44,26 @@ abstract class DataBindFolderImporterProviderService<P extends FolderFileImporte
     @Override
     Folder importDomain(User currentUser, FolderFileImporterProviderServiceParameters params) {
         checkImportParams(currentUser, params)
-        importFolder(currentUser, params.importFile.fileContents)
+        Folder folder = importFolder(currentUser, params.importFile.fileContents)
+        checkImport(folder)
     }
 
     @Override
     List<Folder> importDomains(User currentUser, FolderFileImporterProviderServiceParameters params) {
         checkImportParams(currentUser, params)
-        importFolders(currentUser, params.importFile.fileContents)
+        List<Folder> folders = importFolders(currentUser, params.importFile.fileContents)
+        folders.collect { checkImport(it) }
+    }
+
+    Folder bindMapToFolder(User currentUser, Map folderMap) {
+        if (!folderMap) throw new ApiBadRequestException('FBIP03', 'No FolderMap supplied to import')
+
+        Folder folder = new Folder()
+        log.debug('Binding map to new Folder instance')
+        DataBindingUtils.bindObjectToInstance(folder, folderMap, null, importBlacklistedProperties, null)
+
+        log.debug('Binding complete')
+        folder
     }
 
     private void checkImportParams(User currentUser, FolderFileImporterProviderServiceParameters params) {
