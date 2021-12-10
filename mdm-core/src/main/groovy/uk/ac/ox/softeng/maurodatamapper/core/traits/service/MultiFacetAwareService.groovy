@@ -135,6 +135,7 @@ trait MultiFacetAwareService<K extends MultiFacetAware> {
             multiFacetAware.annotations.each {
                 if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
                 it.multiFacetAwareItemId = multiFacetAware.id
+                it.multiFacetAwareItemDomainType = it.domainType
             }
             Annotation.saveAll(multiFacetAware.annotations)
         }

@@ -17,8 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container.provider.importer
 
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.test.provider.BaseFolderImporterServiceSpec
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
@@ -78,6 +80,19 @@ class FolderJsonImporterServiceSpec extends BaseFolderImporterServiceSpec {
             find { it.namespace == 'test.com' && it.key == 'mdk1' && it.value == 'mdv1' }
             find { it.namespace == 'test.com/simple' && it.key == 'mdk1' && it.value == 'mdv1' }
             find { it.namespace == 'test.com/simple' && it.key == 'mdk2' && it.value == 'mdv2' }
+        }
+    }
+
+    void 'test import Folder with annotations'() {
+        when:
+        Folder folder = importFolder('folderIncAnnotations')
+
+        then:
+        folder.annotations.size() == 2
+        folder.annotations.eachWithIndex { Annotation it, int i ->
+            it.createdBy == StandardEmailAddress.INTEGRATION_TEST
+            it.label == "Test Annotation ${i}"
+            it.description == "Test Annotation ${i} description"
         }
     }
 }
