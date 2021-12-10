@@ -53,4 +53,13 @@ class FolderJsonImporterServiceSpec extends BaseFolderImporterServiceSpec {
             domainType == 'Folder'
         }
     }
+
+    void 'test import empty Folder'() {
+        when:
+        Folder folder = importFolder('emptyFolder')
+
+        then:
+        !folder.childFolders
+        !folderService.findAllModelsInFolder(folder)
+    }
 }
