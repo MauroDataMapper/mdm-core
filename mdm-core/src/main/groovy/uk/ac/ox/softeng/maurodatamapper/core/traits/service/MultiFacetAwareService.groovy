@@ -162,18 +162,21 @@ trait MultiFacetAwareService<K extends MultiFacetAware> {
         if (multiFacetAware.metadata) {
             multiFacetAware.metadata.each {
                 it.multiFacetAwareItemId = multiFacetAware.id
+                it.multiFacetAwareItemDomainType = it.domainType
                 it.createdBy = it.createdBy ?: multiFacetAware.createdBy
             }
         }
         if (multiFacetAware.rules) {
             multiFacetAware.rules.each {
                 it.multiFacetAwareItemId = multiFacetAware.id
+                it.multiFacetAwareItemDomainType = it.domainType
                 it.createdBy = it.createdBy ?: multiFacetAware.createdBy
             }
         }
         if (multiFacetAware.annotations) {
             multiFacetAware.annotations.each {
                 it.multiFacetAwareItemId = multiFacetAware.id
+                it.multiFacetAwareItemDomainType = it.domainType
                 it.createdBy = it.createdBy ?: multiFacetAware.createdBy
             }
         }

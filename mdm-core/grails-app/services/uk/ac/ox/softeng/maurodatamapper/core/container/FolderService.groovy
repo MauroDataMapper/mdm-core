@@ -534,6 +534,16 @@ class FolderService extends ContainerService<Folder> {
         folder.createdBy = importingUser.emailAddress
         if (!folder.id) save(folder, insert: true, validate: false) // Skip validation to avoid error on null folderId/multiFacetAwareItemId
         checkFacetsAfterImportingMultiFacetAware(folder)
+
+        // Check imported child Folder assocations breadth-first to avoid recursion
+        List<Folder> childFolders = folder.childFolders?.toList() ?: []
+        for (int i = 0; i < childFolders.size(); i++) {
+            childFolders[i].childFolders?.each {
+                if (!childFolders.contains(it)) childFolders << it
+            }
+        }
+        childFolders.each { checkImportedFolderAssociations(importingUser, it) }
+
         log.debug('Folder associations checked')
     }
 }
