@@ -109,4 +109,42 @@ class FolderJsonImporterServiceSpec extends BaseFolderImporterServiceSpec {
             it.description == "Test Rule ${i} description"
         }
     }
+
+    void 'test import Folder with child Folders'() {
+        when:
+        Folder folder = importFolder('folderIncEmptyChildFolder')
+
+        then:
+        folder.childFolders.size() == 1
+        folder.childFolders.find { it.label == 'Empty Child Folder' && !it.childFolders }
+
+        when:
+        folder = importFolder('folderIncChildFolders')
+
+        then:
+        folder.childFolders.size() == 2
+        folder.childFolders.find { it.label == 'Empty Child Folder' && !it.childFolders }
+        folder.childFolders.find { it.label == 'Child Folder with Facets and Own Child Folder' }.tap {
+            metadata.size() == 3
+            metadata.tap {
+                find { it.namespace == 'test.com' && it.key == 'mdk1' && it.value == 'mdv1' }
+                find { it.namespace == 'test.com/simple' && it.key == 'mdk1' && it.value == 'mdv1' }
+                find { it.namespace == 'test.com/simple' && it.key == 'mdk2' && it.value == 'mdv2' }
+            }
+            annotations.size() == 2
+            annotations.eachWithIndex { Annotation annotation, int i ->
+                annotation.createdBy == StandardEmailAddress.INTEGRATION_TEST
+                annotation.label == "Test Annotation ${i}"
+                annotation.description == "Test Annotation ${i} description"
+            }
+            rules.size() == 2
+            rules.eachWithIndex { Rule rule, int i ->
+                rule.createdBy == StandardEmailAddress.INTEGRATION_TEST
+                rule.name == "Test Rule ${i}"
+                rule.description == "Test Rule ${i} description"
+            }
+            childFolders.size() == 1
+            childFolders.find { it.label == 'Inner Child Folder' && !it.childFolders }
+        }
+    }
 }
