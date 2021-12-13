@@ -32,6 +32,8 @@ import io.micronaut.http.HttpStatus
 import java.util.regex.Pattern
 
 import static io.micronaut.http.HttpStatus.CREATED
+import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 
 /**
@@ -871,6 +873,109 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
         getFolderParentFolderId(id) == getTestFolder2Id()
 
         cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'P01 : test changing public status with public model access maintained'() {
+
+        given: 'create folder with publically readable DM'
+        String id = getValidId()
+        loginAdmin()
+        POST("$id/dataModels", [
+            label: 'Functional Test DataModel'
+        ])
+        verifyResponse(CREATED, response)
+        String dmId = responseBody().id
+        POST("$id/dataModels", [
+            label: 'Functional Test DataModel 2'
+        ])
+        verifyResponse(CREATED, response)
+        String dmId2 = responseBody().id
+        PUT("dataModels/${dmId}/readByEveryone", [:], MAP_ARG, true)
+        verifyResponse(OK, response)
+
+
+        when: 'getting the folder its not public but its readable due to the DM'
+        // it has to be readable as it will be "clickable" in the tree
+        logout()
+        GET("$id")
+
+        then:
+        verifyResponse(OK, response)
+
+        when: 'getting the datamodel it is public'
+        GET("dataModels/${dmId}", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+
+        when: 'getting the datamodel 2 it is not public'
+        GET("dataModels/${dmId2}", MAP_ARG, true)
+
+        then:
+        verifyResponse(NOT_FOUND, response)
+
+        when: 'setting folder public'
+        loginAdmin()
+        PUT("${id}/readByEveryone", [:])
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().readableByEveryone
+
+        when: 'getting the folder it is public'
+        logout()
+        GET("$id")
+
+        then:
+        verifyResponse(OK, response)
+
+        when: 'getting the datamodel it is public'
+        GET("dataModels/${dmId}", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+
+        when: 'getting the datamodel 2 it is public due to the folder being public'
+        GET("dataModels/${dmId2}", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+
+        when: 'setting folder not public'
+        loginAdmin()
+        DELETE("${id}/readByEveryone", [:])
+
+        then:
+        verifyResponse(OK, response)
+        !responseBody().readableByEveryone
+
+        when: 'getting the folder its not public but its readable due to the DM'
+        // it has to be readable as it will be "clickable" in the tree
+        logout()
+        GET("$id")
+
+        then:
+        verifyResponse(OK, response)
+
+        when: 'getting the datamodel it is public'
+        GET("dataModels/${dmId}", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+
+        when: 'getting the datamodel 2 it is not public'
+        GET("dataModels/${dmId2}", MAP_ARG, true)
+
+        then:
+        verifyResponse(NOT_FOUND, response)
+
+        cleanup:
+        loginAdmin()
+        DELETE("dataModels/${dmId}?permanent=true", MAP_ARG, true)
+        verifyResponse(NO_CONTENT, response)
+        DELETE("dataModels/${dmId2}?permanent=true", MAP_ARG, true)
+        verifyResponse(NO_CONTENT, response)
         removeValidIdObject(id)
     }
 }

@@ -23,6 +23,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.security.basic.UnloggedUser
 import uk.ac.ox.softeng.maurodatamapper.security.policy.GroupBasedSecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.policy.GroupBasedUserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.security.policy.UserSecurityPolicy
+import uk.ac.ox.softeng.maurodatamapper.security.policy.UserSecurityPolicyService
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRoleService
 import uk.ac.ox.softeng.maurodatamapper.security.role.VirtualGroupRole
@@ -73,6 +75,8 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
     GroupBasedSecurityPolicyManagerService groupBasedSecurityPolicyManagerService
     @Autowired
     GroupRoleService groupRoleService
+    @Autowired
+    UserSecurityPolicyService userSecurityPolicyService
 
     String getResourcePath() {
         ''
@@ -126,21 +130,24 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
     void reconfigureDefaultUserPrivileges(boolean accessGranted) {
 
         GroupBasedUserSecurityPolicyManager defaultUserSecurityPolicyManager = applicationContext.getBean(
-            MdmCoreGrailsPlugin.DEFAULT_USER_SECURITY_POLICY_MANAGER_BEAN_NAME)
-
+            MdmCoreGrailsPlugin.DEFAULT_USER_SECURITY_POLICY_MANAGER_BEAN_NAME, GroupBasedUserSecurityPolicyManager)
+        defaultUserSecurityPolicyManager.lock()
         if (accessGranted) {
             VirtualGroupRole applicationLevelRole = groupRoleService.getFromCache(GroupRole.USER_ADMIN_ROLE_NAME)
-            defaultUserSecurityPolicyManager
-                .forUser(CatalogueUser.findByEmailAddress(userEmailAddresses.admin))
-                .withApplicationRoles([applicationLevelRole.groupRole] as HashSet)
-                .withVirtualRoles(
-                    groupBasedSecurityPolicyManagerService.buildCatalogueUserVirtualRoles([applicationLevelRole.groupRole] as HashSet)
-                )
+            defaultUserSecurityPolicyManager.withUpdatedUserPolicy(UserSecurityPolicy.builder()
+                                                                       .forUser(CatalogueUser.findByEmailAddress(userEmailAddresses.admin))
+                                                                       .withApplicationRoles([applicationLevelRole.groupRole] as HashSet)
+                                                                       .withVirtualRoles(
+                                                                           userSecurityPolicyService.buildCatalogueUserVirtualRoles(
+                                                                               [applicationLevelRole.groupRole] as HashSet)
+                                                                       )
+            )
         } else {
-            defaultUserSecurityPolicyManager
-                .forUser(CatalogueUser.findByEmailAddress(UnloggedUser.instance.emailAddress))
-                .withApplicationRoles([] as HashSet)
-            groupBasedSecurityPolicyManagerService.buildUserSecurityPolicyManager(defaultUserSecurityPolicyManager)
+            defaultUserSecurityPolicyManager.withUpdatedUserPolicy(
+                userSecurityPolicyService.buildUserSecurityPolicy(UserSecurityPolicy.builder()
+                                                                      .forUser(CatalogueUser.findByEmailAddress(UnloggedUser.instance.emailAddress))
+                                                                      .withApplicationRoles([] as HashSet))
+            )
         }
         groupBasedSecurityPolicyManagerService.storeUserSecurityPolicyManager(defaultUserSecurityPolicyManager)
     }

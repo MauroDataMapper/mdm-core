@@ -151,6 +151,11 @@ dataSource:
 environments:
     test:
         spring.flyway.enabled: false
+        maurodatamapper:
+            security:
+                max:
+                    lock:
+                        time: 1
         database:
             name: 'mtf'
             creation: 'CREATE SCHEMA IF NOT EXISTS CORE\;CREATE SCHEMA IF NOT EXISTS SECURITY\;CREATE SCHEMA IF NOT EXISTS DATAMODEL\;CREATE SCHEMA IF NOT EXISTS TERMINOLOGY\;CREATE SCHEMA IF NOT EXISTS DATAFLOW\;CREATE SCHEMA IF NOT EXISTS REFERENCEDATA\;CREATE SCHEMA IF NOT EXISTS FEDERATION'

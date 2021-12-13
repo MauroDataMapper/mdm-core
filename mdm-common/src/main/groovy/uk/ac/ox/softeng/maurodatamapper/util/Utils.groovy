@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.util
 import grails.core.GrailsApplication
 import grails.core.GrailsClass
 import groovy.transform.CompileStatic
+import groovy.util.logging.Slf4j
 import org.grails.core.artefact.DomainClassArtefactHandler
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -31,6 +32,7 @@ import java.time.Duration
 /**
  * @since 15/03/2018
  */
+@Slf4j
 @CompileStatic
 class Utils {
 
@@ -126,13 +128,25 @@ class Utils {
     }
 
     static GrailsClass lookupGrailsDomain(GrailsApplication grailsApplication, String lookup) {
-        grailsApplication.getArtefacts(DomainClassArtefactHandler.TYPE).find {
-            lookup in [
-                it.getPropertyName(),
-                it.getPropertyName() + 's',
-                it.getPropertyName() + 'es',
-                it.getPropertyName().replaceFirst(/y$/, 'ies')
-            ] || lookup == it.getShortName()
+        if (!cachedGrailsDomains) loadGrailsDomainsCache(grailsApplication)
+        GrailsClass gc = cachedGrailsDomains[lookup]
+        if (gc) return gc
+        // Just incase theres a secondary load of artefacts we can check the system again
+        // Should only happen under test
+        log.debug('Reloading grails domain cache')
+        loadGrailsDomainsCache(grailsApplication)
+        cachedGrailsDomains[lookup]
+    }
+
+    private static Map<String, GrailsClass> cachedGrailsDomains = [:]
+
+    private static void loadGrailsDomainsCache(GrailsApplication grailsApplication) {
+        grailsApplication.getArtefacts(DomainClassArtefactHandler.TYPE).each {gc ->
+            cachedGrailsDomains[gc.getShortName()] = gc
+            cachedGrailsDomains[gc.propertyName] = gc
+            cachedGrailsDomains[(gc.propertyName + 's')] = gc
+            cachedGrailsDomains[(gc.propertyName + 'es')] = gc
+            cachedGrailsDomains[(gc.propertyName.replaceFirst(/y$/, 'ies'))] = gc
         }
     }
 }

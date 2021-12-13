@@ -1,6 +1,9 @@
 maurodatamapper:
     security:
         public: false
+        max:
+            lock:
+                time: 5
     bootstrap:
         adminuser: true
         folder: true
