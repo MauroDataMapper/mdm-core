@@ -31,6 +31,7 @@ import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import org.apache.commons.lang3.NotImplementedException
+import org.hibernate.HibernateException
 import org.junit.Assert
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -312,7 +313,11 @@ abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAcces
             }
         }
         SecurableResourceGroupRole.deleteAll(rolesLeftOver)
-        sessionFactory.currentSession.flush()
+        try {
+            sessionFactory.currentSession.flush()
+        } catch (HibernateException exception) {
+            log.error('Unknown error occured. Ignoring but may cause other tests to fail', exception)
+        }
     }
 
 
