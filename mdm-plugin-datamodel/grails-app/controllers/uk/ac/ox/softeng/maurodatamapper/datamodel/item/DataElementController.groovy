@@ -69,7 +69,7 @@ class DataElementController extends CatalogueItemController<DataElement> {
         if (!originalDataElement) return notFound(params.dataElementId)
         DataElement copy
         try {
-            copy = dataElementService.copyDataElement(destinationDataModel, originalDataElement, currentUser, currentUserSecurityPolicyManager, copyInformation)
+            copy = dataElementService.copyDataElement(destinationDataModel, originalDataElement, currentUser, currentUserSecurityPolicyManager, false, copyInformation)
             destinationDataClass.addToDataElements(copy)
             dataClassService.matchUpAndAddMissingReferenceTypeClasses(destinationDataModel, sourceDataModel, currentUser,
                                                                       currentUserSecurityPolicyManager)
