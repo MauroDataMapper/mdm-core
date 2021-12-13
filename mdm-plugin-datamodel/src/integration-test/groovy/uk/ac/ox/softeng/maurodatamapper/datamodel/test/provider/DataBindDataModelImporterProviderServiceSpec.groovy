@@ -403,6 +403,8 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         !val2.metadata
         !val1.annotations
         !val2.annotations
+        val1.breadcrumbTree.domainId
+        val2.breadcrumbTree.domainId
 
     }
 
