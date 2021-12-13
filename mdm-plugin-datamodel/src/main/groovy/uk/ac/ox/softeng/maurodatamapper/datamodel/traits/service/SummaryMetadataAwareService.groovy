@@ -20,7 +20,9 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service
 
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
+import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import groovy.transform.SelfType
 
@@ -34,5 +36,31 @@ trait SummaryMetadataAwareService {
 
     void removeSummaryMetadataFromMultiFacetAware(UUID multiFacetAwareId, SummaryMetadata summaryMetadata) {
         removeFacetFromDomain(multiFacetAwareId, summaryMetadata.id, 'summaryMetadata')
+    }
+
+    /**
+     * Copy the summary metadata and summary metadata reports from original to copy
+     * @param original
+     * @param copy
+     * @param copier
+     * @return
+     */
+    SummaryMetadataAware copySummaryMetadataFromOriginal(SummaryMetadataAware original, SummaryMetadataAware copy, User copier) {
+        summaryMetadataService.findAllByMultiFacetAwareItemId(original.id).each {sm ->
+            SummaryMetadata summaryMetadata = new SummaryMetadata(label: sm.label,
+                description: sm.description,
+                summaryMetadataType: sm.summaryMetadataType,
+                createdBy: copier.emailAddress)
+
+            sm.summaryMetadataReports.each {smr ->
+                summaryMetadata.addToSummaryMetadataReports(reportDate: smr.reportDate,
+                    reportValue: smr.reportValue,
+                    createdBy: copier.emailAddress
+                )
+            }
+            copy.addToSummaryMetadata(summaryMetadata)
+        }
+
+        copy
     }
 }

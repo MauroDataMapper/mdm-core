@@ -618,14 +618,14 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         if (original.dataTypes) {
             // Copy all the datatypes
             original.dataTypes.each { dt ->
-                dataTypeService.copyDataType(copy, dt, copier, userSecurityPolicyManager)
+                dataTypeService.copyDataType(copy, dt, copier, userSecurityPolicyManager, copySummaryMetadata)
             }
         }
 
         if (original.childDataClasses) {
             // Copy all the dataclasses (this will also match up the reference types)
             original.childDataClasses.each { dc ->
-                dataClassService.copyDataClass(copy, dc, copier, userSecurityPolicyManager)
+                dataClassService.copyDataClass(copy, dc, copier, userSecurityPolicyManager, null, copySummaryMetadata, null)
             }
         }
 
@@ -647,9 +647,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
                                            boolean copySummaryMetadata) {
         copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager) as DataModel
         if (copySummaryMetadata) {
-            summaryMetadataService.findAllByMultiFacetAwareItemId(original.id).each {
-                copy.addToSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
-            }
+            copy = copySummaryMetadataFromOriginal(original, copy, copier)
         }
         copy
     }

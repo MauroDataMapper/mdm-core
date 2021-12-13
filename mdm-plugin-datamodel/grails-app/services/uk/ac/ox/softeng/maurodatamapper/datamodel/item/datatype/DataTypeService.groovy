@@ -425,9 +425,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
                                           copyInformation = new CopyInformation()) {
         copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
         if (copySummaryMetadata) {
-            summaryMetadataService.findAllByMultiFacetAwareItemId(original.id).each {
-                copy.addToSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
-            }
+            copy = copySummaryMetadataFromOriginal(original, copy, copier)
         }
         copy
     }
