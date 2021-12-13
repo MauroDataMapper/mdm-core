@@ -169,9 +169,13 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
     }
 
     @Override
+    List<DataClassComponent> findAllByClassifier(Classifier classifier) {
+        DataClassComponent.byClassifierId(classifier.id).list()
+    }
+
+    @Override
     List<DataClassComponent> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        DataClassComponent.byClassifierId(classifier.id).list().
-            findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id) }
+        findAllByClassifier(classifier).findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)}
     }
 
     @Override

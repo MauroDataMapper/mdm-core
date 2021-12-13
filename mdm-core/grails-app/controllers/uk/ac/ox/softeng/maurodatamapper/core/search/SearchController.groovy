@@ -20,7 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.search
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.ResourcelessMdmController
-import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 
 class SearchController implements ResourcelessMdmController {
 
@@ -43,9 +43,9 @@ class SearchController implements ResourcelessMdmController {
             params.order = searchParams.order
         }
 
-        PaginatedLuceneResult<CatalogueItem> results = mdmCoreSearchService.findAllReadableByLuceneSearch(currentUserSecurityPolicyManager,
-                                                                                                          searchParams,
-                                                                                                          params)
+        PaginatedHibernateSearchResult<CatalogueItem> results = mdmCoreSearchService.findAllReadableByLuceneSearch(currentUserSecurityPolicyManager,
+                                                                                                                   searchParams,
+                                                                                                                   params)
 
         respond results
     }

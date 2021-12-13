@@ -17,15 +17,18 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.similarity
 
+import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityPair
 import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
+
+import org.hibernate.search.engine.search.query.SearchResult
 
 /**
  * @since 07/04/2020
  */
 class DataElementSimilarityResult extends SimilarityResult<DataElement> {
 
-    DataElementSimilarityResult(DataElement source) {
-        super(source)
+    DataElementSimilarityResult(DataElement source, SearchResult<SimilarityPair<DataElement>> searchResult) {
+        super(source, searchResult)
     }
 }

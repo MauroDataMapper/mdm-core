@@ -19,15 +19,19 @@ package uk.ac.ox.softeng.maurodatamapper.core.hibernate
 
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.DynamicHibernateMappingContext
 
+import grails.config.Config
 import grails.core.GrailsApplication
-import grails.plugins.hibernate.search.context.HibernateSearchMappingContextConfiguration
+import grails.util.Holders
 import groovy.util.logging.Slf4j
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.orm.hibernate.cfg.HibernateMappingContextConfiguration
 import org.hibernate.HibernateException
 import org.hibernate.SessionFactory
+import org.hibernate.cfg.AvailableSettings
+import org.hibernate.cfg.Configuration
 import org.hibernate.service.ServiceRegistry
-import org.springframework.context.ApplicationContext
+import org.springframework.context.ConfigurableApplicationContext
+import org.springframework.orm.hibernate5.SpringBeanContainer
 
 import static uk.ac.ox.softeng.maurodatamapper.util.Utils.parentClassIsAssignableFromChild
 
@@ -50,12 +54,16 @@ import static uk.ac.ox.softeng.maurodatamapper.util.Utils.parentClassIsAssignabl
 class MauroDataMapperHibernateMappingContextConfiguration extends HibernateMappingContextConfiguration {
 
     final List dynamicHibernateMappingContexts = []
-    private final GrailsApplication grailsApplication
 
     MauroDataMapperHibernateMappingContextConfiguration() {
+        GrailsApplication grailsApplication = Holders.grailsApplication
+        ConfigurableApplicationContext applicationContext = grailsApplication.parentContext as ConfigurableApplicationContext
+
+        checkHibernateSearchConfig(grailsApplication.config)
+        checkBeanProvider(grailsApplication.config, applicationContext)
+
         log.debug('Instantiating Mauro Data Mapper Hibernate mapping')
-        grailsApplication = HibernateSearchMappingContextConfiguration.grailsApplication
-        ApplicationContext applicationContext = grailsApplication.parentContext
+
         List beans = applicationContext.beanDefinitionNames.collect {name ->
             try {
                 Class beanClass = applicationContext.getType(name)
@@ -89,6 +97,41 @@ class MauroDataMapperHibernateMappingContextConfiguration extends HibernateMappi
                 context.handlesDomainClass(entity.javaClass)
             }.each {context ->
                 context.updateDomainMapping(entity)
+            }
+        }
+    }
+
+    void checkBeanProvider(Config config, ConfigurableApplicationContext applicationContext) {
+        if (config.getProperty(AvailableSettings.BEAN_CONTAINER)) return
+        SpringBeanContainer beanContainer = new SpringBeanContainer(applicationContext.getBeanFactory())
+        config.setAt(AvailableSettings.BEAN_CONTAINER, beanContainer)
+        (this as Configuration).getProperties()[AvailableSettings.BEAN_CONTAINER] = beanContainer
+    }
+
+    void checkHibernateSearchConfig(Config config) {
+        log.debug('Checking hibernate search v5 to v6 configuration')
+        checkConfig config, 'hibernate.search.lucene_version', 'hibernate.search.backend.lucene_version'
+        checkConfig config, 'hibernate.search.default.indexmanager', null
+        checkConfig config, 'hibernate.search.default.directory_provider', null
+        checkConfig config, 'hibernate.search.default.optimizer.operation_limit.max', null
+        checkConfig config, 'hibernate.search.default.optimizer.transaction_limit.max', null
+
+        checkConfig config, 'hibernate.search.default.indexBase', 'hibernate.search.backend.directory.root'
+
+        String luceneDir = config['hibernate.search.backend.directory.root']
+        log.info("Using lucene index directory of: {}", luceneDir)
+    }
+
+
+    void checkConfig(Config config, String oldProp, String newProp) {
+        if (config[oldProp]) {
+            def oldValue = config.remove(oldProp)
+            if (newProp) {
+                log.warn('DEPRECATED : Configuration property [{}] has moved to [{}]', oldProp, newProp)
+                config[newProp] = oldValue
+                (this as Configuration).getProperties()[newProp] = oldValue
+            } else {
+                log.warn('DEPRECATED : Configuration property [{}] has been removed', oldProp)
             }
         }
     }

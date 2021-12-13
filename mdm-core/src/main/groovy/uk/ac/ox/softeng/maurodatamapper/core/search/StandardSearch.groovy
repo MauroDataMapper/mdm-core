@@ -17,9 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.search
 
-import uk.ac.ox.softeng.maurodatamapper.core.search.bridge.MetadataBridge
-import uk.ac.ox.softeng.maurodatamapper.search.PipeTokenizerAnalyzer
-import uk.ac.ox.softeng.maurodatamapper.search.bridge.OffsetDateTimeBridge
+import uk.ac.ox.softeng.maurodatamapper.core.hibernate.search.mapper.pojo.binder.MetadataBinder
 
 /**
  * @since 27/02/2020
@@ -27,14 +25,12 @@ import uk.ac.ox.softeng.maurodatamapper.search.bridge.OffsetDateTimeBridge
 class StandardSearch {
 
     static search = {
-        label index: 'yes', analyzer: 'wordDelimiter', sortable: [name: 'label_sort', normalizer: 'lowercase'], termVector: 'with_positions'
+        label searchable: 'yes', analyzer: 'wordDelimiter', sortable: [name: 'label_sort', normalizer: 'lowercase'], termVector: 'with_positions'
         description termVector: 'with_positions'
-        //domainType index: 'yes', sortable: [name: 'domainType_sort', normalizer: 'lowercase']
-        aliasesString index: 'yes', analyzer: PipeTokenizerAnalyzer
-        metadata bridge: ['class': MetadataBridge]
-        metadata indexEmbedded: true
-        classifiers indexEmbedded: true
-        lastUpdated index: 'yes', bridge: ['class': OffsetDateTimeBridge]
-        dateCreated index: 'yes', bridge: ['class': OffsetDateTimeBridge]
+        aliasesString searchable: 'yes', analyzer: 'pipe'
+        metadata binder: MetadataBinder, indexingDependency: [reindexOnUpdate: 'shallow'], indexEmbedded: [includePaths: ['key', 'value', 'namespace']]
+        classifiers indexingDependency: [reindexOnUpdate: 'shallow'], indexEmbedded: [includePaths: ['label', 'description']]
+        lastUpdated searchable: 'yes'
+        dateCreated searchable: 'yes'
     }
 }

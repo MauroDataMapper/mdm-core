@@ -6,5 +6,5 @@ model {
 
 json {
     sourceDataElement g.render(similarityResult.source)
-    results g.render(similarityResult.results)
+    results g.render(similarityResult.similarResults)
 }

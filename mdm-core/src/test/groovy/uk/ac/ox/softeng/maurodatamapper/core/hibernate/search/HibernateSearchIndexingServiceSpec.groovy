@@ -17,12 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.hibernate.search
 
-import uk.ac.ox.softeng.maurodatamapper.core.hibernate.search.LuceneIndexingService
+
 import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec
 
 import grails.testing.services.ServiceUnitTest
 
-class LuceneIndexingServiceSpec extends BaseUnitSpec implements ServiceUnitTest<LuceneIndexingService> {
+class HibernateSearchIndexingServiceSpec extends BaseUnitSpec implements ServiceUnitTest<HibernateSearchIndexingService> {
 
     void 'test core lucene index directory'() {
         expect:

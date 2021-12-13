@@ -575,9 +575,13 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
     }
 
     @Override
+    List<ReferenceDataModel> findAllByClassifier(Classifier classifier) {
+        ReferenceDataModel.byClassifierId(classifier.id).list() as List<ReferenceDataModel>
+    }
+
+    @Override
     List<ReferenceDataModel> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        ReferenceDataModel.byClassifierId(classifier.id).list().
-            findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(ReferenceDataModel, it.id) }
+        findAllByClassifier(classifier).findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(ReferenceDataModel, it.id)}
     }
 
     @Override

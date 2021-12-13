@@ -21,7 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.controller.CatalogueItemController
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelItemTreeItem
-import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSetService
 import uk.ac.ox.softeng.maurodatamapper.terminology.SearchService
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
@@ -56,9 +56,9 @@ class TermController extends CatalogueItemController<Term> {
             params.order = searchParams.order
         }
 
-        PaginatedLuceneResult<ModelItem> result = mdmPluginTerminologySearchService.findAllByTerminologyIdByLuceneSearch(params.terminologyId,
-                                                                                                                         searchParams,
-                                                                                                                         params)
+        PaginatedHibernateSearchResult<ModelItem> result = mdmPluginTerminologySearchService.findAllByTerminologyIdByLuceneSearch(params.terminologyId,
+                                                                                                                                  searchParams,
+                                                                                                                                  params)
 
         respond result
     }

@@ -129,8 +129,13 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> implements Su
     }
 
     @Override
+    List<ReferenceType> findAllByClassifier(Classifier classifier) {
+        ReferenceType.byClassifierId(ReferenceType, classifier.id).list()
+    }
+
+    @Override
     List<ReferenceType> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        ReferenceType.byClassifierId(ReferenceType, classifier.id).list().findAll {
+        findAllByClassifier(classifier).findAll {
             userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)
         }
     }

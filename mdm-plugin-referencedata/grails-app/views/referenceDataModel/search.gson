@@ -1,10 +1,10 @@
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
-import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 
 model {
-    PaginatedLuceneResult<ModelItem> paginatedLuceneResult
+    PaginatedHibernateSearchResult<ModelItem> paginatedHibernateSearchResult
 }
 json {
-    count paginatedLuceneResult.count
-    items tmpl.'/catalogueItem/catalogueItem'(paginatedLuceneResult.results ?: [])
+    count paginatedHibernateSearchResult.count
+    items tmpl.'/catalogueItem/catalogueItem'(paginatedHibernateSearchResult.results ?: [])
 }

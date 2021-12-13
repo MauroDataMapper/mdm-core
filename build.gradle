@@ -132,6 +132,31 @@ task rootTestReport(type: TestReport) {
     }
 }
 
+tasks.register('outputRuntimeArgs'){
+    doLast{
+        RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean()
+        List<String> arguments = runtimeMxBean.getInputArguments()
+
+        logger.warn("Running with JVM args : {}", arguments.size())
+        Map<String, String> map = arguments.collectEntries {arg ->
+            arg.split('=').toList()
+        }.sort() as Map<String, String>
+
+        map.each {k, v ->
+            if (v) logger.quiet('{}={}', k, v)
+            else logger.quiet('{}', k)
+        }
+    }
+}
+
+allprojects {
+    repositories {
+        mavenLocal()
+        maven {url "https://jenkins.cs.ox.ac.uk/artifactory/libs-release"}
+        maven {url "https://jenkins.cs.ox.ac.uk/artifactory/libs-snapshot"}
+    }
+}
+
 subprojects {
 
     apply plugin: 'com.github.hierynomus.license'
@@ -184,8 +209,14 @@ subprojects {
     }
 
     afterEvaluate {
+        def addtlJvmArgs = [ '-Xmx8g','-XX:+UseG1GC','-XX:+UseStringDeduplication','-XX:+UseCompressedOops','-Dfile.encoding=UTF-8']
+        // Make sure bootRun runs with the required arguments
+        project.tasks.findByName('bootRun')?.jvmArgs(addtlJvmArgs)
+
         project.tasks.withType(Test) {testTask ->
             ignoreFailures = System.getenv().containsKey('JENKINS')
+            jvmArgs(addtlJvmArgs)
+
         }
 
         //        Set<Project> dependencyProjects = collectProjectDependencies(project)

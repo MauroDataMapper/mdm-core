@@ -43,10 +43,6 @@ import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
-import org.hibernate.search.annotations.Field
-import org.hibernate.search.annotations.FieldBridge
-import org.hibernate.search.annotations.Index
-import org.hibernate.search.bridge.builtin.UUIDBridge
 
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
 @Resource(readOnly = false, formats = ['json', 'xml'])
@@ -99,8 +95,9 @@ class ReferenceDataElement implements ModelItem<ReferenceDataElement, ReferenceD
 
     static search = {
         CallableSearch.call(ModelItemSearch, delegate)
-        referenceDataModel indexEmbedded: true
-        referenceDataType indexEmbedded: true
+        referenceDataModel indexEmbedded: [associationInverseSide: 'referenceDataElements', includePaths: ['label']]
+        referenceDataType indexEmbedded: [associationInverseSide: 'referenceDataElements', includePaths: ['label']]
+        modelId searchable: 'yes', indexingDependency: [reindexOnUpdate: 'shallow', derivedFrom: ['referenceDataModel']]
     }
 
     ReferenceDataElement() {
@@ -116,7 +113,7 @@ class ReferenceDataElement implements ModelItem<ReferenceDataElement, ReferenceD
         'rde'
     }
 
-    @Field(index = Index.YES, bridge = @FieldBridge(impl = UUIDBridge))
+
     UUID getModelId() {
         model.id
     }

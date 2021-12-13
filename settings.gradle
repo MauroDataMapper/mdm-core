@@ -1,4 +1,4 @@
-rootProject.name = 'mdm-core.ROOT'
+rootProject.name = 'mdm-core.HS6'
 
 include(
     'mdm-common',
@@ -13,8 +13,8 @@ include(
     'mdm-plugin-authentication-basic',
     'mdm-plugin-authentication-apikey',
     'mdm-plugin-terminology',
-    'mdm-plugin-dataflow',
     'mdm-plugin-referencedata',
+    'mdm-plugin-dataflow',
     'mdm-plugin-profile',
     'mdm-plugin-federation',
     )

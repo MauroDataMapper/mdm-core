@@ -65,17 +65,15 @@ spring:
         ignoreMissingMigrations: true
         baselineOnMigrate: true
 ---
-
 hibernate:
     configClass: uk.ac.ox.softeng.maurodatamapper.core.hibernate.MauroDataMapperHibernateMappingContextConfiguration
     search:
-        lucene_version: 5.5.5
-        default:
-            indexmanager: near-real-time
-            directory_provider: filesystem
-            optimizer:
-                operation_limit.max: 1000
-                transaction_limit.max: 100
+        configuration_property_checking:
+            strategy: ignore
+        backend:
+            lucene_version: 8.7.0
+            analysis:
+                configurer: 'class:uk.ac.ox.softeng.maurodatamapper.hibernate.search.backend.lucene.analysis.MdmLuceneAnalysisConfigurer'
         # Defaults
         massindexer:
             typesToIndexInParallel: 1

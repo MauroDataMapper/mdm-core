@@ -26,7 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
-import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityResult
+import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityPair
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
@@ -34,6 +34,9 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate.FilterFactory
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate.IdPathSecureFilterFactory
+import uk.ac.ox.softeng.maurodatamapper.lucene.queries.mlt.BoostedMoreLikeThisQuery
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -42,14 +45,16 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import org.apache.lucene.search.Query
-import org.hibernate.search.engine.ProjectionConstants
-import org.hibernate.search.jpa.FullTextEntityManager
-import org.hibernate.search.jpa.FullTextQuery
-import org.hibernate.search.jpa.Search
-import org.hibernate.search.query.dsl.QueryBuilder
+import org.apache.lucene.analysis.Analyzer
+import org.hibernate.search.backend.lucene.LuceneBackend
+import org.hibernate.search.backend.lucene.LuceneExtension
+import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep
+import org.hibernate.search.engine.search.query.SearchResult
+import org.hibernate.search.mapper.orm.Search
+import org.hibernate.search.mapper.orm.mapping.SearchMapping
+import org.hibernate.search.mapper.orm.session.SearchSession
 
-import javax.persistence.EntityManager
+import java.util.function.BiFunction
 
 @Slf4j
 @Transactional
@@ -177,8 +182,13 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     }
 
     @Override
+    List<DataElement> findAllByClassifier(Classifier classifier) {
+        DataElement.byClassifierId(classifier.id).list()
+    }
+
+    @Override
     List<DataElement> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        DataElement.byClassifierId(classifier.id).list().findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)}
+        findAllByClassifier(classifier).findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)}
     }
 
     @Override
@@ -400,44 +410,65 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
 
     DataElementSimilarityResult findAllSimilarDataElementsInDataModel(DataModel dataModelToSearch, DataElement dataElementToCompare, maxResults = 5) {
 
-        EntityManager entityManager = sessionFactory.createEntityManager()
-        FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager)
+        SearchSession searchSession = Search.session(sessionFactory.currentSession)
+        SearchMapping searchMapping = Search.mapping(sessionFactory)
+        Analyzer wordDelimiter = searchMapping.backend().unwrap(LuceneBackend).analyzer('wordDelimiter').get()
+        Analyzer standard = searchMapping.backend().unwrap(LuceneBackend).analyzer('standard').get()
 
+        String[] fields = ['label', 'dataClass.label', 'dataType.label', 'description'] as String[]
 
-        QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory()
-            .buildQueryBuilder()
-            .forEntity(DataElement)
-            .get()
+        List<BoostedMoreLikeThisQuery> moreLikeThisQueries = [
+            new BoostedMoreLikeThisQuery(wordDelimiter, 'label', dataElementToCompare.label, fields)
+                .boostedTo(2f)
+                .withMinWordLength(2)
+                .withMinDocFrequency(2),
+            new BoostedMoreLikeThisQuery(wordDelimiter, 'dataClass.label', dataElementToCompare.dataClass.label, fields)
+                .boostedTo(1f)
+                .withMinWordLength(2)
+                .withMinDocFrequency(2),
+            new BoostedMoreLikeThisQuery(wordDelimiter, 'dataType.label', dataElementToCompare.dataType.label, fields)
+                .boostedTo(1f)
+                .withMinWordLength(2)
+                .withMinDocFrequency(2),
+        ]
+        if (dataElementToCompare.description) moreLikeThisQueries.add(new BoostedMoreLikeThisQuery(standard, 'description', dataElementToCompare.description, fields)
+                                                                          .boostedTo(1f)
+                                                                          .withMinWordLength(2)
+        )
 
-        Query moreLikeThisQuery = queryBuilder
-            .bool()
-            .must(queryBuilder.moreLikeThis()
-                      .excludeEntityUsedForComparison()
-                      .comparingField('label').boostedTo(1f)
-                      .andField('description').boostedTo(1f)
-                      .andField('dataType.label').boostedTo(1f)
-                      .andField('dataClass.label').boostedTo(1f)
-                      .toEntity(dataElementToCompare)
-                      .createQuery()
-            )
-            .createQuery()
+        SearchResult<SimilarityPair<DataElement>> searchResult = searchSession.search(DataElement)
+            .extension(LuceneExtension.get())
+            .select {pf ->
+                pf.composite(new BiFunction<DataElement, Float, SimilarityPair<DataElement>>() {
 
-        SimilarityResult similarityResult = new DataElementSimilarityResult(dataElementToCompare)
+                    @Override
+                    SimilarityPair<DataElement> apply(DataElement dataElement, Float score) {
+                        dataElement.dataClass = proxyHandler.unwrapIfProxy(dataElement.dataClass)
+                        dataElement.dataType = proxyHandler.unwrapIfProxy(dataElement.dataType)
+                        dataElement.dataClass.dataModel = proxyHandler.unwrapIfProxy(dataElement.dataClass.dataModel)
+                        new SimilarityPair<DataElement>(dataElement, score)
+                    }
+                }, pf.entity(), pf.score())
+            }
+            .where {lsf ->
+                BooleanPredicateClausesStep boolStep = lsf
+                    .bool()
+                    .filter(IdPathSecureFilterFactory.createFilter(lsf, [dataModelToSearch.id]))
+                    .filter(FilterFactory.mustNot(lsf, lsf.id().matching(dataElementToCompare.id)))
 
-        FullTextQuery query = fullTextEntityManager
-            .createFullTextQuery(moreLikeThisQuery, DataElement)
-            .setMaxResults(maxResults)
-            .setProjection(ProjectionConstants.THIS, ProjectionConstants.SCORE)
+                moreLikeThisQueries.each {mlt ->
+                    boolStep.should(lsf.bool().must(lsf.fromLuceneQuery(mlt)).boost(mlt.boost))
+                }
 
-        query.enableFullTextFilter('idPathSecured').setParameter('allowedIds', [dataModelToSearch.id])
+                boolStep
+            }
+            .fetch(maxResults)
 
-        query.getResultList().each {
-            similarityResult.add(get(it[0].id), it[1])
-        }
-
+        DataElementSimilarityResult similarityResult = new DataElementSimilarityResult(dataElementToCompare, searchResult)
+        log.debug('Found {} similar results in {}', similarityResult.totalSimilar(), Utils.durationToString(similarityResult.took()))
         similarityResult
-    }
 
+    }
 
     DataElement findDataElementWithSameLabelTree(DataModel dataModel, DataElement original) {
         DataClass parent = dataClassService.findSameLabelTree(dataModel, original.dataClass)

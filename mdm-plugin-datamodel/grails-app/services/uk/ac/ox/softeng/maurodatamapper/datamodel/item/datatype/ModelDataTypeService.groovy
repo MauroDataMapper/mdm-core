@@ -91,8 +91,13 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> implements Su
     }
 
     @Override
+    List<ModelDataType> findAllByClassifier(Classifier classifier) {
+        ModelDataType.byClassifierId(ModelDataType, classifier.id).list()
+    }
+
+    @Override
     List<ModelDataType> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        ModelDataType.byClassifierId(ModelDataType, classifier.id).list().findAll {
+        findAllByClassifier(classifier).findAll {
             userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)
         }
     }

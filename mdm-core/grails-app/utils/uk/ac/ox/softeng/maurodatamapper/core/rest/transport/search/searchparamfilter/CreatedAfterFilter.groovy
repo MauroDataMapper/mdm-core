@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter
 
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
-import uk.ac.ox.softeng.maurodatamapper.search.Lucene
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.HibernateSearch
 
 class CreatedAfterFilter extends DateTimeSearchParamFilter {
 
@@ -27,7 +27,7 @@ class CreatedAfterFilter extends DateTimeSearchParamFilter {
     }
 
     Closure getClosure(SearchParams searchParams) {
-        Lucene.defineAdditionalLuceneQuery {
+        HibernateSearch.defineAdditionalLuceneQuery {
             above 'dateCreated', getOffsetDateTimeFromDate(searchParams.createdAfter)
         }
     }

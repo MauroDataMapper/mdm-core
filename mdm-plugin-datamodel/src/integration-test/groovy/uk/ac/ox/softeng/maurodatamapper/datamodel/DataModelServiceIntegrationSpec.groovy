@@ -1870,23 +1870,26 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         DataElementSimilarityResult childRes = results.find {it.source.label == 'child'}
         DataElementSimilarityResult ele1Res = results.find {it.source.label == 'ele1'}
         DataElementSimilarityResult ele2Res = results.find {it.source.label == 'element2'}
+        log.debug('{}', childRes)
+        log.debug('{}', ele1Res)
+        log.debug('{}', ele2Res)
 
         then:
         ele1Res
-        ele1Res.size() == 1
+        ele1Res.totalSimilar() == 1
         ele1Res.source.dataType.label == 'string'
         ele1Res.first().item.id != ele1Res.source.id
         ele1Res.first().item.label == 'sdmelement'
         ele1Res.first().item.dataType.label == 'string'
-        ele1Res.first().similarity > 0
+        ele1Res.first().score > 0
 
         and:
         childRes
-        childRes.size() == 0
+        childRes.totalSimilar() == 0
 
         then:
         ele2Res
-        ele2Res.size() == 0
+        ele2Res.totalSimilar() == 0
     }
 }
 

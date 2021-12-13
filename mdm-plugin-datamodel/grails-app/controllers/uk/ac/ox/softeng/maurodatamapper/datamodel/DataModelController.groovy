@@ -28,7 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter.DataModelExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.DeleteAllParams
-import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
@@ -155,8 +155,8 @@ class DataModelController extends ModelController<DataModel> {
             params.order = searchParams.order
         }
 
-        PaginatedLuceneResult<ModelItem> result = mdmPluginDataModelSearchService.findAllByDataModelIdByLuceneSearch(params.dataModelId,
-                                                                                                                     searchParams, params)
+        PaginatedHibernateSearchResult<ModelItem> result = mdmPluginDataModelSearchService.findAllByDataModelIdByLuceneSearch(params.dataModelId,
+                                                                                                                              searchParams, params)
         respond result
     }
 

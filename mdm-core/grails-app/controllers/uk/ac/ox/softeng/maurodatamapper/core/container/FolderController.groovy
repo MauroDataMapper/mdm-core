@@ -21,7 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.search.SearchService
-import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 
 import grails.gorm.transactions.Transactional
@@ -72,7 +72,7 @@ class FolderController extends EditLoggingController<Folder> {
             params.order = searchParams.order
         }
 
-        PaginatedLuceneResult<CatalogueItem> result = mdmCoreSearchService.findAllByFolderIdByLuceneSearch(params.folderId, searchParams, params)
+        PaginatedHibernateSearchResult<CatalogueItem> result = mdmCoreSearchService.findAllByFolderIdByLuceneSearch(params.folderId, searchParams, params)
         respond result
     }
 

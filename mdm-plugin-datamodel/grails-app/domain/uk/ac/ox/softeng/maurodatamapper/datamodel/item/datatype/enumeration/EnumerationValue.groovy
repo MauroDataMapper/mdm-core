@@ -81,6 +81,7 @@ class EnumerationValue implements ModelItem<EnumerationValue, DataModel> {
 
     static search = {
         CallableSearch.call(ModelItemSearch, delegate)
+        modelType searchable: 'yes', analyze: false, indexingDependency: [reindexOnUpdate: 'shallow', derivedFrom: ['enumerationType', 'dataModel']]
     }
 
     EnumerationValue() {

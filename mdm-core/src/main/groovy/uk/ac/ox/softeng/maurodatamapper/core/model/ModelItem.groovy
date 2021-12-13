@@ -26,7 +26,6 @@ import uk.ac.ox.softeng.maurodatamapper.traits.domain.PathAware
 import groovy.transform.SelfType
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
-import org.hibernate.search.annotations.Field
 import org.springframework.core.Ordered
 
 /**
@@ -49,7 +48,7 @@ trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> im
     }
 
     /**
-     * On setting the index, update the indices of siblings. 
+     * On setting the index, update the indices of siblings.
      */
     void setIndex(Integer index) {
         Integer oldIndex = idx
@@ -98,7 +97,6 @@ trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> im
         beforeValidateCatalogueItem()
     }
 
-    @Field
     String getModelType() {
         model.modelType
     }

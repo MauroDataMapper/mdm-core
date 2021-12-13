@@ -31,8 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.UniqueValuesValidator
-import uk.ac.ox.softeng.maurodatamapper.search.PathTokenizerAnalyzer
-import uk.ac.ox.softeng.maurodatamapper.search.bridge.OffsetDateTimeBridge
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate.IdSecureFilterFactory
 
 import grails.gorm.DetachedCriteria
 import grails.plugins.hibernate.search.HibernateSearchApi
@@ -84,11 +83,11 @@ class Folder implements Container, Diffable<Folder> {
     ]
 
     static search = {
-        label index: 'yes', analyzer: 'wordDelimiter'
-        path index: 'yes', analyzer: PathTokenizerAnalyzer
+        label searchable: 'yes', analyzer: 'wordDelimiter'
+        path searchable: 'yes', analyzer: 'path'
         description termVector: 'with_positions'
-        lastUpdated index: 'yes', bridge: ['class': OffsetDateTimeBridge]
-        dateCreated index: 'yes', bridge: ['class': OffsetDateTimeBridge]
+        lastUpdated searchable: 'yes'
+        dateCreated searchable: 'yes'
     }
 
     Folder() {
@@ -228,7 +227,7 @@ class Folder implements Container, Diffable<Folder> {
         if (!allowedIds) return []
         luceneList {
             keyword 'label', searchTerm
-            filter name: 'idSecured', params: [allowedIds: allowedIds]
+            filter IdSecureFilterFactory.createFilterPredicate(searchPredicateFactory, allowedIds)
         }
     }
 

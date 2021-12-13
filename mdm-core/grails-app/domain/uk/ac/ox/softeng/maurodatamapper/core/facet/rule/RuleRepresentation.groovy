@@ -53,8 +53,8 @@ class RuleRepresentation implements Diffable<RuleRepresentation>, EditHistoryAwa
     }
 
     static search = {
-        language index: 'yes'
-        representation index: 'yes'
+        language searchable: 'yes'
+        representation searchable: 'yes'
     }
 
     RuleRepresentation() {

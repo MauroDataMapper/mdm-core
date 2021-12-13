@@ -59,8 +59,9 @@ class Metadata implements MultiFacetItemAware, Diffable<Metadata> {
     }
 
     static search = {
-        key index: 'yes', analyzer: 'wordDelimiter'
-        value index: 'yes'
+        namespace searchable: 'yes', analyze: false
+        key searchable: 'yes', analyzer: 'wordDelimiter'
+        value searchable: 'yes'
     }
 
     static transients = ['multiFacetAwareItem']

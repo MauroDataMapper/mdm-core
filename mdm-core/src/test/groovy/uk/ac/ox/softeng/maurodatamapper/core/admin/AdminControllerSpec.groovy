@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.admin
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.BootStrap
-import uk.ac.ox.softeng.maurodatamapper.core.hibernate.search.LuceneIndexingService
+import uk.ac.ox.softeng.maurodatamapper.core.hibernate.search.HibernateSearchIndexingService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.LuceneIndexParameters
 import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec
@@ -59,7 +59,7 @@ class AdminControllerSpec extends BaseUnitSpec implements ControllerUnitTest<Adm
         adminService.apiPropertyService = apiPropertyService
         controller.adminService = adminService
 
-        controller.luceneIndexingService = Stub(LuceneIndexingService) {
+        controller.hibernateSearchIndexingService = Stub(HibernateSearchIndexingService) {
             rebuildLuceneIndexes(_) >> {sleep(1000)}
         }
 

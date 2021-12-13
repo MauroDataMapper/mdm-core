@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.search
+package uk.ac.ox.softeng.maurodatamapper.hibernate.search
 
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.FromString
@@ -25,12 +25,12 @@ import groovy.util.logging.Slf4j
  * @since 27/04/2018
  */
 @Slf4j
-class PaginatedLuceneResult<K> {
+class PaginatedHibernateSearchResult<K> {
 
     int count
     List<K> results
 
-    PaginatedLuceneResult(List<K> results, int count) {
+    PaginatedHibernateSearchResult(List<K> results, int count) {
         this.count = count
         this.results = results
     }
@@ -43,9 +43,9 @@ class PaginatedLuceneResult<K> {
         results.each closure
     }
 
-    static <D> PaginatedLuceneResult<D> paginateFullResultSet(List<D> fullResultSet, Map pagination) {
+    static <D> PaginatedHibernateSearchResult<D> paginateFullResultSet(List<D> fullResultSet, Map pagination) {
 
-        if (!pagination) return new PaginatedLuceneResult<D>(fullResultSet, fullResultSet.size())
+        if (!pagination) return new PaginatedHibernateSearchResult<D>(fullResultSet, fullResultSet.size())
 
         Integer max = pagination.max?.toInteger()
         Integer offsetAmount = pagination.offset?.toInteger()
@@ -63,6 +63,6 @@ class PaginatedLuceneResult<K> {
 
         List<D> offsetList = offsetAmount == null ? sortedList : sortedList.drop(offsetAmount)
         List<D> maxList = max == null ? offsetList : offsetList.take(max)
-        new PaginatedLuceneResult<D>(maxList, fullResultSet.size())
+        new PaginatedHibernateSearchResult<D>(maxList, fullResultSet.size())
     }
 }

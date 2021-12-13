@@ -27,7 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfi
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.SearchParamFilter
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.UpdatedAfterFilter
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.UpdatedBeforeFilter
-import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.compiler.GrailsCompileStatic
@@ -56,21 +56,21 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
         Set<Class<K>> allDomains = getDomainsToSearch()
         if (!searchParams.domainTypes) return allDomains
 
-        allDomains.findAll { domainClass ->
+        allDomains.findAll {domainClass ->
             domainClass.simpleName in searchParams.domainTypes
         }
     }
 
-    PaginatedLuceneResult<K> findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch(List<UUID> owningIds,
-                                                                                  SearchParams searchParams,
-                                                                                  boolean removeOwningIds,
-                                                                                  Map pagination = [:],
-                                                                                  @DelegatesTo(HibernateSearchApi) Closure customSearch = null) {
+    PaginatedHibernateSearchResult<K> findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch(List<UUID> owningIds,
+                                                                                           SearchParams searchParams,
+                                                                                           boolean removeOwningIds,
+                                                                                           Map pagination = [:],
+                                                                                           @DelegatesTo(HibernateSearchApi) Closure customSearch = null) {
         Closure additional = null
 
         Set<Class<SearchParamFilter>> searchParamFilters = getSearchParamFilters()
 
-        searchParamFilters.each { f ->
+        searchParamFilters.each {f ->
             SearchParamFilter filter = f.getDeclaredConstructor().newInstance()
             if (filter.doesApply(searchParams)) {
                 if (additional) {
@@ -83,7 +83,7 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
         Set<Class<K>> filteredDomainsToSearch = getFilteredDomainsToSearch(searchParams)
 
         if (!filteredDomainsToSearch) {
-            return new PaginatedLuceneResult<K>(new ArrayList<K>(), 0)
+            return new PaginatedHibernateSearchResult<K>(new ArrayList<K>(), 0)
         }
 
         long start = System.currentTimeMillis()
@@ -96,7 +96,7 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
             items = items.findAll { !(it.id in owningIds) }
         }
 
-        PaginatedLuceneResult<K> results = PaginatedLuceneResult.paginateFullResultSet(items, pagination)
+        PaginatedHibernateSearchResult<K> results = PaginatedHibernateSearchResult.paginateFullResultSet(items, pagination)
 
         log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}")
         results

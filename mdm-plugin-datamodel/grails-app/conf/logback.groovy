@@ -98,6 +98,8 @@ if (Environment.current != Environment.PRODUCTION) {
     logger('uk.ac.ox.softeng', DEBUG)
     logger('db.migration', DEBUG)
 
+    logger 'org.hibernate.search.query', TRACE // Output the lucene query
+    //    logger 'grails.plugins.hibernate.search', DEBUG
     logger('org.springframework.jdbc.core.JdbcTemplate', DEBUG)
 
     logger('org.apache.lucene', DEBUG)

@@ -45,10 +45,6 @@ import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
-import org.hibernate.search.annotations.Field
-import org.hibernate.search.annotations.FieldBridge
-import org.hibernate.search.annotations.Index
-import org.hibernate.search.bridge.builtin.UUIDBridge
 
 import javax.persistence.criteria.JoinType
 
@@ -155,6 +151,8 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
 
     static search = {
         CallableSearch.call(ModelItemSearch, delegate)
+        modelType searchable: 'yes', analyze: false, indexingDependency: [reindexOnUpdate: 'shallow', derivedFrom: 'dataModel']
+        modelId searchable: 'yes', indexingDependency: [reindexOnUpdate: 'shallow', derivedFrom: 'dataModel']
     }
 
     DataClass() {
@@ -170,7 +168,6 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         'dc'
     }
 
-    @Field(index = Index.YES, bridge = @FieldBridge(impl = UUIDBridge))
     UUID getModelId() {
         dataModel.id
     }

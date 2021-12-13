@@ -15,30 +15,19 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.search.bridge
+package uk.ac.ox.softeng.maurodatamapper.hibernate.search.mapper.pojo.bridge
 
-import org.hibernate.search.bridge.StringBridge
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-
-import java.time.OffsetDateTime
-import java.time.format.DateTimeFormatter
+import org.grails.datastore.gorm.GormEntity
+import org.hibernate.search.mapper.pojo.bridge.ValueBridge
+import org.hibernate.search.mapper.pojo.bridge.runtime.ValueBridgeToIndexedValueContext
 
 /**
  * @since 20/07/2018
  */
-class OffsetDateTimeBridge implements StringBridge {
-
-    Logger logger = LoggerFactory.getLogger(OffsetDateTimeBridge)
-
-    static DateTimeFormatter dtf = DateTimeFormatter.BASIC_ISO_DATE
+class DomainClassBridge implements ValueBridge<GormEntity, String> {
 
     @Override
-    String objectToString(Object object) {
-        if (object instanceof OffsetDateTime) {
-            return ((OffsetDateTime) object).toLocalDate().format(dtf)
-        }
-        logger.error('Bridge set up to convert object of type {} but it is not an OffsetDateTime', object.getClass())
-        return null
+    String toIndexedValue(GormEntity value, ValueBridgeToIndexedValueContext context) {
+        value.ident().toString()
     }
 }

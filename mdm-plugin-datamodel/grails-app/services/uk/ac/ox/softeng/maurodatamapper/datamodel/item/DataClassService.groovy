@@ -749,8 +749,13 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     }
 
     @Override
+    List<DataClass> findAllByClassifier(Classifier classifier) {
+        DataClass.byClassifierId(classifier.id).list()
+    }
+
+    @Override
     List<DataClass> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        DataClass.byClassifierId(classifier.id).list().findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)}
+        findAllByClassifier(classifier).findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)}
     }
 
     @Override

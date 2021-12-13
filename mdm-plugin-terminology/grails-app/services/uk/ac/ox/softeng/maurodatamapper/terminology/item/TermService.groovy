@@ -260,8 +260,13 @@ class TermService extends ModelItemService<Term> {
     }
 
     @Override
+    List<Term> findAllByClassifier(Classifier classifier) {
+        Term.byClassifierId(classifier.id).list()
+    }
+
+    @Override
     List<Term> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        Term.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.model.id) }
+        findAllByClassifier(classifier).findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.model.id)}
     }
 
     @Override

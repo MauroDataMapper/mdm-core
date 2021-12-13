@@ -26,7 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.SearchParamFilter
-import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 import grails.compiler.GrailsCompileStatic
@@ -50,19 +50,19 @@ class SearchService extends AbstractCatalogueItemSearchService<CatalogueItem> {
     @Autowired(required = false)
     List<CatalogueItemSearchDomainProvider> catalogueItemSearchDomainProviders
 
-    PaginatedLuceneResult<CatalogueItem> findAllByFolderIdByLuceneSearch(UUID folderId, SearchParams searchParams, Map pagination = [:]) {
+    PaginatedHibernateSearchResult<CatalogueItem> findAllByFolderIdByLuceneSearch(UUID folderId, SearchParams searchParams, Map pagination = [:]) {
         List<UUID> modelIds = getAllModelIdsInFolderId(folderId)
         findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch(modelIds, searchParams, false, pagination)
     }
 
-    PaginatedLuceneResult<CatalogueItem> findAllReadableByLuceneSearch(UserSecurityPolicyManager userSecurityPolicyManager,
-                                                                       SearchParams searchParams, Map pagination = [:]) {
+    PaginatedHibernateSearchResult<CatalogueItem> findAllReadableByLuceneSearch(UserSecurityPolicyManager userSecurityPolicyManager,
+                                                                                SearchParams searchParams, Map pagination = [:]) {
 
-        if (!modelServices) return new PaginatedLuceneResult<CatalogueItem>([], 0)
+        if (!modelServices) return new PaginatedHibernateSearchResult<CatalogueItem>([], 0)
 
         List<UUID> readableFolderIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Folder)
 
-        if (!readableFolderIds) return new PaginatedLuceneResult<CatalogueItem>([], 0)
+        if (!readableFolderIds) return new PaginatedHibernateSearchResult<CatalogueItem>([], 0)
 
         List<UUID> readableModelIds = readableFolderIds.collectMany {containerId -> getAllModelIdsInFolderId(containerId)}
 

@@ -107,8 +107,13 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
     }
 
     @Override
+    List<ReferenceDataType> findAllByClassifier(Classifier classifier) {
+        ReferenceDataType.byClassifierId(ReferenceDataType, classifier.id).list()
+    }
+
+    @Override
     List<ReferenceDataType> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        ReferenceDataType.byClassifierId(ReferenceDataType, classifier.id).list().findAll {
+        findAllByClassifier(classifier).findAll {
             userSecurityPolicyManager.userCanReadSecuredResourceId(ReferenceDataModel, it.model.id)
         }
     }

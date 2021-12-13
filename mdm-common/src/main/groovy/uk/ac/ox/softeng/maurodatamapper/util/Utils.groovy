@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory
 
 import java.lang.management.ManagementFactory
 import java.lang.management.RuntimeMXBean
+import java.time.Duration
 
 /**
  * @since 15/03/2018
@@ -38,12 +39,22 @@ class Utils {
     }
 
     static String getTimeString(long duration) {
+        durationToString(Duration.ofMillis(duration))
+    }
+
+    static String durationToString(Duration duration) {
         StringBuilder sb = new StringBuilder()
 
-        long secs = (duration / 1000) as long
-        long ms = duration - (secs * 1000)
-        long mins = (secs / 60) as long
-        secs = secs % 60
+        int hrs = duration.toHoursPart()
+        int mins = duration.toMinutesPart()
+        int secs = duration.toSecondsPart()
+        int ms = duration.toMillisPart()
+
+        if (hrs > 0) {
+            sb.append(duration.toHoursPart()).append(' hr')
+            if (hrs > 1) sb.append('s')
+            sb.append(' ')
+        }
 
         if (mins > 0) {
             sb.append(mins).append(' min')
@@ -58,6 +69,8 @@ class Utils {
         }
 
         sb.append(ms).append(' ms').toString()
+
+        sb.toString()
     }
 
     static void outputRuntimeArgs(Class clazz) {

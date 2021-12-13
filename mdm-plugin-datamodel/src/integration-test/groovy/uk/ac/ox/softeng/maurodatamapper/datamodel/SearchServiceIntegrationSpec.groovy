@@ -24,7 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.BaseDataModelIntegrationSpec
-import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
@@ -200,7 +200,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         SearchParams searchParams = new SearchParams(search: 'emptyclass')
 
         when:
-        PaginatedLuceneResult<ModelItem> result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams)
+        PaginatedHibernateSearchResult<ModelItem> result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams)
 
         then:
         result.count == 1
@@ -255,7 +255,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
 
         when:
-        PaginatedLuceneResult<ModelItem> result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams, pagination)
+        PaginatedHibernateSearchResult<ModelItem> result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams, pagination)
 
         then:
         result.count == 3
@@ -301,7 +301,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
 
         when:
-        PaginatedLuceneResult<ModelItem> result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams, pagination)
+        PaginatedHibernateSearchResult<ModelItem> result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams, pagination)
 
         then:
         result.count == 1
@@ -352,7 +352,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
 
         when:
-        PaginatedLuceneResult<ModelItem> result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams, pagination)
+        PaginatedHibernateSearchResult<ModelItem> result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams, pagination)
 
         then:
         result.count == 2

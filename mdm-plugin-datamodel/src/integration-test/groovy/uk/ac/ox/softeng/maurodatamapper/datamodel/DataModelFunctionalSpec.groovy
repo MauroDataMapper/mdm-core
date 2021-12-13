@@ -4282,7 +4282,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         GET("${complexDataModelId}/suggestLinks/${simpleDataModelId}", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, expectedLinkSuggestions(['', '', ''])
+        verifyJsonResponse OK, expectedLinkSuggestions([child: '', ele1: '', element2: ''])
 
         cleanup:
         cleanUpData(complexDataModelId)
@@ -4334,7 +4334,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(simpleDataModelId)
     }
 
-    String expectedLinkSuggestions(List<String> results) {
+    String expectedLinkSuggestions(Map<String, String> results) {
         '''{
                       "links": [
                         {
@@ -4394,7 +4394,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                               }
                             ]
                           },
-                          "results": [''' + results[2] + '''
+                          "results": [''' + results.child + '''
 
                           ]
                         },
@@ -4435,7 +4435,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                               }
                             ]
                           },
-                          "results": [''' + results[0] + '''
+                          "results": [''' + results.ele1 + '''
 
                           ]
                         },
@@ -4476,7 +4476,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                               }
                             ]
                           },
-                          "results": [''' + results[1] + '''
+                          "results": [''' + results.element2 + '''
 
                           ]
                         }
@@ -4484,122 +4484,86 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                     }'''
     }
 
-    List<String> expectedLinkSuggestionResults() {
-        ['''
+    Map<String, String> expectedLinkSuggestionResults() {
+        [child   : '',
+         ele1    : '''
                     {
-                        "score": "${json-unit.any-number}",
-                        "dataElement": {
-                            "domainType": "DataElement",
-                            "dataClass": "${json-unit.matches:id}",
-                            "dataType": {
-                                "domainType": "PrimitiveType",
-                                "model": "${json-unit.matches:id}",
-                                "id": "${json-unit.matches:id}",
-                                "label": "string",
-                                "breadcrumbs": [
-                                    {
-                                        "domainType": "DataModel",
-                                        "finalised": false,
-                                        "id": "${json-unit.matches:id}",
-                                        "label": "Simple Test DataModel"
-                                    }
-                                ]
-                            },
-                            "model": "${json-unit.matches:id}",
-                            "description": "most obvious match",
-                            "id": "${json-unit.matches:id}",
-                            "label": "ele1",
-                            "breadcrumbs": [
-                                {
-                                    "domainType": "DataModel",
-                                    "finalised": false,
-                                    "id": "${json-unit.matches:id}",
-                                    "label": "Simple Test DataModel"
-                                },
-                                {
-                                    "domainType": "DataClass",
-                                    "id": "${json-unit.matches:id}",
-                                    "label": "simple"
-                                }
-                            ]
-                        }
-                    },
-                    {
-                        "score": "${json-unit.any-number}",
-                        "dataElement": {
-                            "domainType": "DataElement",
-                            "dataClass": "${json-unit.matches:id}",
-                            "dataType": {
-                                "domainType": "PrimitiveType",
-                                "model": "${json-unit.matches:id}",
-                                "id": "${json-unit.matches:id}",
-                                "label": "string",
-                                "breadcrumbs": [
-                                    {
-                                        "domainType": "DataModel",
-                                        "finalised": false,
-                                        "id": "${json-unit.matches:id}",
-                                        "label": "Simple Test DataModel"
-                                    }
-                                ]
-                            },
-                            "model": "${json-unit.matches:id}",
-                            "description": "least obvious match",
-                            "id": "${json-unit.matches:id}",
-                            "label": "ele2",
-                            "breadcrumbs": [
-                                {
-                                    "domainType": "DataModel",
-                                    "finalised": false,
-                                    "id": "${json-unit.matches:id}",
-                                    "label": "Simple Test DataModel"
-                                },
-                                {
-                                    "domainType": "DataClass",
-                                    "id": "${json-unit.matches:id}",
-                                    "label": "simple"
-                                }
-                            ]
-                        }
-                    }''', '''
-                    {
-                        "score": "${json-unit.any-number}",
-                        "dataElement": {
-                            "domainType": "DataElement",
-                            "dataClass": "${json-unit.matches:id}",
-                            "dataType": {
-                                "domainType": "PrimitiveType",
-                                "model": "${json-unit.matches:id}",
-                                "id": "${json-unit.matches:id}",
-                                "label": "string",
-                                "breadcrumbs": [
-                                    {
-                                        "domainType": "DataModel",
-                                        "finalised": false,
-                                        "id": "${json-unit.matches:id}",
-                                        "label": "Simple Test DataModel"
-                                    }
-                                ]
-                            },
-                            "model": "${json-unit.matches:id}",
-                            "description": "least obvious match",
-                            "id": "${json-unit.matches:id}",
-                            "label": "ele2",
-                            "breadcrumbs": [
-                                {
-                                    "domainType": "DataModel",
-                                    "finalised": false,
-                                    "id": "${json-unit.matches:id}",
-                                    "label": "Simple Test DataModel"
-                                },
-                                {
-                                    "domainType": "DataClass",
-                                    "id": "${json-unit.matches:id}",
-                                    "label": "simple"
-                                }
-                            ]
-                        }
-                    }''', '''''']
+          "dataElement": {
+            "id": "${json-unit.matches:id}",
+            "domainType": "DataElement",
+            "label": "ele1",
+            "model": "${json-unit.matches:id}",
+            "breadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Simple Test DataModel",
+                "domainType": "DataModel",
+                "finalised": false
+              },
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "simple",
+                "domainType": "DataClass"
+              }
+            ],
+            "description": "most obvious match",
+            "dataClass": "${json-unit.matches:id}",
+            "dataType": {
+              "id": "${json-unit.matches:id}",
+              "domainType": "PrimitiveType",
+              "label": "string",
+              "model": "${json-unit.matches:id}",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Simple Test DataModel",
+                  "domainType": "DataModel",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          "score": "${json-unit.any-number}"
+        },
+        {
+          "dataElement": {
+            "id": "${json-unit.matches:id}",
+            "domainType": "DataElement",
+            "label": "ele2",
+            "model": "${json-unit.matches:id}",
+            "breadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Simple Test DataModel",
+                "domainType": "DataModel",
+                "finalised": false
+              },
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "simple",
+                "domainType": "DataClass"
+              }
+            ],
+            "description": "least obvious match",
+            "dataClass": "${json-unit.matches:id}",
+            "dataType": {
+              "id": "${json-unit.matches:id}",
+              "domainType": "PrimitiveType",
+              "label": "string",
+              "model": "${json-unit.matches:id}",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Simple Test DataModel",
+                  "domainType": "DataModel",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          "score": "${json-unit.any-number}"
+        }''',
+         element2: '']
     }
 
     String getExpectedLegacyMergeDiffJson() {

@@ -335,8 +335,13 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
+    List<CodeSet> findAllByClassifier(Classifier classifier) {
+        CodeSet.byClassifierId(classifier.id).list() as List<CodeSet>
+    }
+
+    @Override
     List<CodeSet> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        CodeSet.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(CodeSet, it.id) }
+        findAllByClassifier(classifier).findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(CodeSet, it.id)}
     }
 
     @Override

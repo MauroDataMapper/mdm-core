@@ -310,18 +310,28 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         sessionFactory.currentSession.clear()
         long start = System.currentTimeMillis()
         log.trace('Disabling validation on contents')
-        enumerationTypes.each { dt ->
+        enumerationTypes.each {dt ->
             dt.skipValidation(true)
-            dt.enumerationValues.each { ev -> ev.skipValidation(true) }
+            dt.enumerationValues.each {ev -> ev.skipValidation(true)}
+            dt.dataElements?.clear()
         }
-        primitiveTypes.each { it.skipValidation(true) }
-        referenceTypes.each { it.skipValidation(true) }
-        modelDataTypes.each { it.skipValidation(true) }
-        dataClasses.each { dc ->
+        primitiveTypes.each {
+            it.skipValidation(true)
+            it.dataElements?.clear()
+        }
+        referenceTypes.each {
+            it.skipValidation(true)
+            it.dataElements?.clear()
+        }
+        modelDataTypes.each {
+            it.skipValidation(true)
+            it.dataElements?.clear()
+        }
+        dataClasses.each {dc ->
             dc.skipValidation(true)
-            dc.dataElements.each { de -> de.skipValidation(true) }
+            dc.dataElements.each {de -> de.skipValidation(true)}
         }
-        referenceTypes.each { it.skipValidation(true) }
+        referenceTypes.each {it.skipValidation(true)}
 
         long subStart = System.currentTimeMillis()
         dataTypeService.saveAll(enumerationTypes)
@@ -723,10 +733,14 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     }
 
     @Override
+    List<DataModel> findAllByClassifier(Classifier classifier) {
+        DataModel.byClassifierId(classifier.id).list() as List<DataModel>
+    }
+
+    @Override
     List<DataModel> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        DataModel.byClassifierId(classifier.id)
-            .list()
-            .findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.id) } as List<DataModel>
+        findAllByClassifier(classifier)
+            .findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.id)} as List<DataModel>
     }
 
     @Override

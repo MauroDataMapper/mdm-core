@@ -15,31 +15,22 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.search.filter
+package uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate
 
-import org.apache.lucene.index.Term
-import org.apache.lucene.search.BooleanClause
-import org.apache.lucene.search.BooleanQuery
-import org.apache.lucene.search.Query
-import org.apache.lucene.search.TermQuery
-import org.hibernate.search.annotations.Factory
+import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep
+import org.hibernate.search.engine.search.predicate.dsl.PredicateFinalStep
+import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory
 
 /**
- * @since 27/04/2018
+ * @since 25/10/2021
  */
-class IdPathFilterFactory {
+class FilterFactory {
 
-    private UUID id
-
-    void setId(UUID id) {
-        this.id = id
+    static BooleanPredicateClausesStep startFilter(SearchPredicateFactory factory) {
+        factory.bool().constantScore()
     }
 
-    @Factory
-    Query create() {
-        BooleanQuery.Builder builder = new BooleanQuery.Builder()
-        builder.add(new TermQuery(new Term('id', id.toString())), BooleanClause.Occur.SHOULD)
-        builder.add(new TermQuery(new Term('path', id.toString())), BooleanClause.Occur.SHOULD)
-        builder.build()
+    static BooleanPredicateClausesStep mustNot(SearchPredicateFactory factory, PredicateFinalStep filter) {
+        startFilter(factory).mustNot(filter)
     }
 }

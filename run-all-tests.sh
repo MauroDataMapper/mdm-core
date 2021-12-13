@@ -65,12 +65,12 @@ function integrationTest(){
   echo ">> Integration Tests <<"
 ./gradlew --build-cache -Dgradle.integrationTest=true \
   :mdm-core:integrationTest \
+  :mdm-security:integrationTest \
   :mdm-plugin-email-proxy:integrationTest \
   :mdm-plugin-datamodel:integrationTest \
   :mdm-plugin-terminology:integrationTest \
-  :mdm-security:integrationTest \
-  :mdm-plugin-dataflow:integrationTest \
   :mdm-plugin-referencedata:integrationTest \
+  :mdm-plugin-dataflow:integrationTest \
   :mdm-plugin-federation:integrationTest \
   :mdm-plugin-profile:integrationTest
 }
@@ -79,14 +79,14 @@ function functionalTest(){
   echo ">> Functional Tests <<"
 ./gradlew --build-cache -Dgradle.functionalTest=true \
   :mdm-core:integrationTest \
+  :mdm-security:integrationTest \
   :mdm-plugin-authentication-apikey:integrationTest \
   :mdm-plugin-authentication-basic:integrationTest \
-  :mdm-plugin-dataflow:integrationTest \
   :mdm-plugin-datamodel:integrationTest \
-  :mdm-plugin-referencedata:integrationTest \
   :mdm-plugin-terminology:integrationTest \
+  :mdm-plugin-dataflow:integrationTest \
+  :mdm-plugin-referencedata:integrationTest \
   :mdm-plugin-profile:integrationTest \
-  :mdm-security:integrationTest \
   :mdm-plugin-federation:integrationTest
 
 }
@@ -115,9 +115,21 @@ function initialReport(){
 function compile() {
   echo ">> Compile <<"
   ./gradlew --build-cache compile
+  exit_on_error $?
   echo ">> License Check <<"
   ./gradlew --build-cache license
 }
+
+exit_on_error() {
+    exit_code=$1
+    last_command=${@:2}
+    if [ $exit_code -ne 0 ]; then
+        exit $exit_code
+    fi
+}
+
+# enable !! command completion
+#set -o history -o histexpand
 
 ########################################################################################################
 # This executes all the commands Jenkinsfile executes in the same order and format that Jenkins does

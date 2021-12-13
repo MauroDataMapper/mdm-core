@@ -91,8 +91,13 @@ class ReferencePrimitiveTypeService extends ModelItemService<ReferencePrimitiveT
     }
 
     @Override
+    List<ReferencePrimitiveType> findAllByClassifier(Classifier classifier) {
+        ReferencePrimitiveType.byClassifierId(ReferencePrimitiveType, classifier.id).list()
+    }
+
+    @Override
     List<ReferencePrimitiveType> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        ReferencePrimitiveType.byClassifierId(ReferencePrimitiveType, classifier.id).list().findAll {
+        findAllByClassifier(classifier).findAll {
             userSecurityPolicyManager.userCanReadSecuredResourceId(ReferenceDataModel, it.model.id)
         }
     }
