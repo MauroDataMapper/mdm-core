@@ -739,7 +739,12 @@ abstract class ModelService<K extends Model>
     }
 
     K findLatestFinalisedModelByLabel(String label) {
-        modelClass.byLabelAndBranchNameAndFinalisedAndLatestModelVersion(label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).get() as K
+        // List all matching models and sort descending my model version. The first result is the latest version.
+        // To get the first result, use [0] rather than .first(), because even with a safe navigation operator,
+        // ?.first() throws a NoSuchElementException on an empty collection
+        modelClass.byLabelAndBranchNameAndFinalised(label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).list().sort{
+            a, b -> b.modelVersion <=> a.modelVersion
+        }[0] as K
     }
 
     /*
