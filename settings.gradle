@@ -1,4 +1,4 @@
-rootProject.name = 'mdm-core.HS6'
+rootProject.name = 'mdm-core.ROOT'
 
 include(
     'mdm-common',
