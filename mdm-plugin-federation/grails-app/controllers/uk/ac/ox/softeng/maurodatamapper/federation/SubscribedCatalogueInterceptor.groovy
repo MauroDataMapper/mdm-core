@@ -48,7 +48,8 @@ class SubscribedCatalogueInterceptor extends SecurableResourceInterceptor {
         } else if (!currentUserSecurityPolicyManager.isAuthenticated()) {
             notFound(SubscribedCatalogue, getId())
         } else {
-            actionName == 'index' ||
+            actionName == 'index' && params.openAccess ||
+            actionName == 'show' && params.openAccess ||
             actionName == 'publishedModels' ||
             actionName == 'newerVersions' ||
             currentUserSecurityPolicyManager.isApplicationAdministrator() ?: forbiddenDueToNotApplicationAdministrator()

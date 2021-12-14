@@ -28,12 +28,26 @@ class UrlMappings {
            */
             get "/feeds/all"(controller: 'feed', action: 'index')
 
-            '/subscribedCatalogues'(resources: 'subscribedCatalogue') {
-                get '/publishedModels'(controller: 'subscribedCatalogue', action: 'publishedModels')
-                get "/publishedModels/$publishedModelId/newerVersions"(controller: 'subscribedCatalogue', action: 'newerVersions')
-                get '/testConnection'(controller: 'subscribedCatalogue', action: 'testConnection')
-                '/subscribedModels'(resources: 'subscribedModel', excludes: DEFAULT_EXCLUDES)
-                get "/subscribedModels/$id/newerVersions"(controller: 'subscribedModel', action: 'newerVersions')
+            group '/admin', {
+                '/subscribedCatalogues'(resources: 'subscribedCatalogue') {
+                    get '/testConnection'(controller: 'subscribedCatalogue', action: 'testConnection')
+                }
+            }
+
+            group '/subscribedCatalogues', {
+                get '/'(controller: 'subscribedCatalogue', action: 'index') {
+                    openAccess = true
+                }
+                group "/$subscribedCatalogueId", {
+                    get '/'(controller: 'subscribedCatalogue', action: 'show') {
+                        openAccess = true
+                    }
+                    get '/testConnection'(controller: 'subscribedCatalogue', action: 'testConnection')
+                    get '/publishedModels'(controller: 'subscribedCatalogue', action: 'publishedModels')
+                    get "/publishedModels/$publishedModelId/newerVersions"(controller: 'subscribedCatalogue', action: 'newerVersions')
+                    '/subscribedModels'(resources: 'subscribedModel', excludes: DEFAULT_EXCLUDES)
+                    get "/subscribedModels/$id/newerVersions"(controller: 'subscribedModel', action: 'newerVersions')
+                }
             }
 
             get '/published/models'(controller: 'publish', action: 'index')
