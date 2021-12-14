@@ -98,12 +98,12 @@ class TermService extends ModelItemService<Term> {
     }
 
     @Override
-    void deleteAllByModelId(UUID modelId) {
-        List<UUID> termIds = Term.byTerminologyId(modelId).id().list() as List<UUID>
+    void deleteAllByModelIds(Set<UUID> modelIds) {
+        List<UUID> termIds = Term.byTerminologyIdInList(modelIds).id().list() as List<UUID>
 
         if (termIds) {
             log.trace('Removing TermRelationships in {} Terms', termIds.size())
-            termRelationshipService.deleteAllByModelId(modelId)
+            termRelationshipService.deleteAllByModelIds(modelIds)
 
             log.trace('Removing CodeSet references for {} Terms', termIds.size())
             sessionFactory.currentSession
@@ -117,8 +117,8 @@ class TermService extends ModelItemService<Term> {
 
             log.trace('Removing {} Terms', termIds.size())
             sessionFactory.currentSession
-                .createSQLQuery('DELETE FROM terminology.term WHERE terminology_id = :id')
-                .setParameter('id', modelId)
+                .createSQLQuery('DELETE FROM terminology.term WHERE terminology_id IN :ids')
+                .setParameter('ids', modelIds)
                 .executeUpdate()
 
             log.trace('Terms removed')

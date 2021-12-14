@@ -30,7 +30,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
-import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
@@ -142,11 +141,6 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         dataModel
     }
 
-    @Override
-    void deleteAll(Collection<DataModel> catalogueItems) {
-        deleteAll(catalogueItems.id, true)
-    }
-
     void delete(UUID id) {
         delete(get(id))
     }
@@ -168,16 +162,6 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             deleteModelAndContent(dm)
             log.debug('DataModel deleted. Took {}', Utils.timeTaken(start))
         } else delete(dm)
-    }
-
-    List<DataModel> deleteAll(List<Serializable> idsToDelete, Boolean permanent) {
-        List<DataModel> updated = []
-        idsToDelete.each {
-            DataModel dm = get(it)
-            delete(dm, permanent, false)
-            if (!permanent) updated << dm
-        }
-        updated
     }
 
     @Override
@@ -358,47 +342,48 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     }
 
     @Override
-    void deleteModelAndContent(DataModel dataModel) {
+    void deleteModelsAndContent(Set<UUID> idsToDelete) {
 
         GormUtils.disableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
 
-        log.trace('Removing other ModelItems in DataModel')
+        log.trace('Removing other ModelItems in {} DataModels', idsToDelete.size())
         modelItemServices.findAll {
             !(it.modelItemClass in [DataClass, DataElement, DataType, EnumerationType, ModelDataType, PrimitiveType,
                                     ReferenceType, EnumerationValue])
-        }.each { modelItemService ->
+        }.each {modelItemService ->
             try {
-                modelItemService.deleteAllByModelId(dataModel.id)
+                modelItemService.deleteAllByModelIds(idsToDelete)
             } catch (ApiNotYetImplementedException ignored) {
             }
         }
 
-        log.trace('Removing DataClasses in DataModel')
-        dataClassService.deleteAllByModelId(dataModel.id)
+        log.trace('Removing DataClasses in {} DataModels', idsToDelete.size())
+        dataClassService.deleteAllByModelIds(idsToDelete)
 
-        log.trace('Removing DataTypes in DataModel')
-        dataTypeService.deleteAllByModelId(dataModel.id)
+        log.trace('Removing DataTypes in {} DataModels', idsToDelete.size())
+        dataTypeService.deleteAllByModelIds(idsToDelete)
 
         log.trace('Removing facets')
-        deleteAllFacetsByMultiFacetAwareId(dataModel.id, 'delete from datamodel.join_datamodel_to_facet where datamodel_id=:id')
+        deleteAllFacetsByMultiFacetAwareIds(idsToDelete.toList(), 'delete from datamodel.join_datamodel_to_facet where datamodel_id in :ids')
 
         log.trace('Content removed')
         sessionFactory.currentSession
-            .createSQLQuery('DELETE FROM datamodel.data_model WHERE id = :id')
-            .setParameter('id', dataModel.id)
+            .createSQLQuery('DELETE FROM datamodel.data_model WHERE id IN :ids')
+            .setParameter('ids', idsToDelete)
             .executeUpdate()
 
-        log.trace('DataModel removed')
+        log.trace('DataModels removed')
 
         sessionFactory.currentSession
-            .createSQLQuery('DELETE FROM core.breadcrumb_tree WHERE domain_id = :id')
-            .setParameter('id', dataModel.id)
+            .createSQLQuery('DELETE FROM core.breadcrumb_tree WHERE domain_id IN :ids')
+            .setParameter('ids', idsToDelete)
             .executeUpdate()
 
-        log.trace('Breadcrumb tree removed')
+        log.trace('Breadcrumb trees removed')
 
         GormUtils.enableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
     }
+
 
     @Override
     List<DataModel> findAllReadableModels(List<UUID> constrainedIds, boolean includeDeleted) {

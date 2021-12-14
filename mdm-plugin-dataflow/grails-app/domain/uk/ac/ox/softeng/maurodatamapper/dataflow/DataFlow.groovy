@@ -178,7 +178,7 @@ class DataFlow implements ModelItem<DataFlow, DataModel> {
         }
     }
 
-    static DetachedCriteria<DataFlow> byDataModelIdInList(List<UUID> dataModelIds) {
+    static DetachedCriteria<DataFlow> byDataModelIdInList(Collection<UUID> dataModelIds) {
         by()
             .inList('source.id', dataModelIds)
             .inList('target.id', dataModelIds)

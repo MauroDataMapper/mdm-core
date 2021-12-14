@@ -96,11 +96,6 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    void deleteAll(Collection<CodeSet> catalogueItems) {
-        deleteAll(catalogueItems.id, true)
-    }
-
-    @Override
     void delete(CodeSet codeSet) {
         codeSet.deleted = true
     }
@@ -115,16 +110,6 @@ class CodeSetService extends ModelService<CodeSet> {
             }
             codeSet.delete(flush: flush)
         } else delete(codeSet)
-    }
-
-    List<CodeSet> deleteAll(List<Serializable> idsToDelete, Boolean permanent) {
-        List<CodeSet> updated = []
-        idsToDelete.each {
-            CodeSet t = get(it)
-            delete(t, permanent, false)
-            if (!permanent) updated << t
-        }
-        updated
     }
 
     @Override

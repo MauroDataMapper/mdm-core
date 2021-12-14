@@ -110,13 +110,14 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         }
     }
 
-    void deleteAllByModelId(UUID dataModelId) {
+    @Override
+    void deleteAllByModelIds(Set<UUID> dataModelIds) {
         //Assume DataElements gone by this point
 
-        List<UUID> dataTypeIds = DataType.byDataModelId(dataModelId).id().list() as List<UUID>
+        List<UUID> dataTypeIds = DataType.byDataModelIdInList(dataModelIds).id().list() as List<UUID>
 
         if (dataTypeIds) {
-            enumerationValueService.deleteAllByModelId(dataModelId)
+            enumerationValueService.deleteAllByModelIds(dataModelIds)
 
             log.trace('Removing facets for {} DataTypes', dataTypeIds.size())
 
@@ -125,8 +126,8 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
             log.trace('Removing {} DataTypes', dataTypeIds.size())
 
             sessionFactory.currentSession
-                .createSQLQuery('DELETE FROM datamodel.data_type WHERE data_model_id = :id')
-                .setParameter('id', dataModelId)
+                .createSQLQuery('DELETE FROM datamodel.data_type WHERE data_model_id in :ids')
+                .setParameter('ids', dataModelIds)
                 .executeUpdate()
 
             log.trace('DataTypes removed')

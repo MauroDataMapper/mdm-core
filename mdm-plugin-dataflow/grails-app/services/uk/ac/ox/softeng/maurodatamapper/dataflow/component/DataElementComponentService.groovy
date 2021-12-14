@@ -92,14 +92,15 @@ class DataElementComponentService extends ModelItemService<DataElementComponent>
         }
     }
 
-    void deleteAllByModelId(UUID modelId) {
+    @Override
+    void deleteAllByModelIds(Set<UUID> modelIds) {
 
         List<UUID> dataElementComponentIds = DataElementComponent.by().where {
             dataClassComponent {
                 dataFlow {
                     or {
-                        eq 'source.id', modelId
-                        eq 'target.id', modelId
+                        inList 'source.id', modelIds
+                        inList 'target.id', modelIds
                     }
                 }
             }

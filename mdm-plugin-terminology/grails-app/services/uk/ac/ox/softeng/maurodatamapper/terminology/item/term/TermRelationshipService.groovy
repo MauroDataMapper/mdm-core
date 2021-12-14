@@ -73,13 +73,13 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
     }
 
     @Override
-    void deleteAllByModelId(UUID modelId) {
+    void deleteAllByModelIds(Set<UUID> modelIds) {
         List<UUID> termRelationshipIds = TermRelationship.by().or {
             sourceTerm {
-                eq('terminology.id', modelId)
+                inList('terminology.id', modelIds)
             }
             targetTerm {
-                eq('terminology.id', modelId)
+                inList('terminology.id', modelIds)
             }
         }.id().list() as List<UUID>
 

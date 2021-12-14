@@ -43,7 +43,11 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
     abstract Class<K> getModelItemClass()
 
     void deleteAllByModelId(UUID modelId) {
-        throw new ApiNotYetImplementedException('MIS01', "deleteAllByModelId for ${getModelItemClass().simpleName}")
+        deleteAllByModelIds(Collections.singleton(modelId))
+    }
+
+    void deleteAllByModelIds(Set<UUID> modelIds) {
+        throw new ApiNotYetImplementedException('MIS01', "deleteAllByModelIds for ${getModelItemClass().simpleName}")
     }
 
     @Deprecated

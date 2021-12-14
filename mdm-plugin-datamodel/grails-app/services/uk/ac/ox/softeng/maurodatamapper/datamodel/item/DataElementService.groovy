@@ -101,10 +101,11 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
         dataElement.delete(flush: flush)
     }
 
-    void deleteAllByModelId(UUID dataModelId) {
+    @Override
+    void deleteAllByModelIds(Set<UUID> dataModelIds) {
         List<UUID> dataElementIds = DataElement.by().where {
             dataClass {
-                eq('dataModel.id', dataModelId)
+                inList('dataModel.id', dataModelIds)
             }
         }.id().list() as List<UUID>
 

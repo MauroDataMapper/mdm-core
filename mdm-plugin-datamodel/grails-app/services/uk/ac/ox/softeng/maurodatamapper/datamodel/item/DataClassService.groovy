@@ -192,17 +192,18 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         }
     }
 
-    void deleteAllByModelId(UUID dataModelId) {
+    @Override
+    void deleteAllByModelIds(Set<UUID> dataModelIds) {
 
-        List<UUID> dataClassIds = DataClass.byDataModelId(dataModelId).id().list() as List<UUID>
+        List<UUID> dataClassIds = DataClass.byDataModelIdInList(dataModelIds).id().list() as List<UUID>
 
         if (dataClassIds) {
 
             log.trace('Removing DataElements in {} DataClasses', dataClassIds.size())
-            dataElementService.deleteAllByModelId(dataModelId)
+            dataElementService.deleteAllByModelIds(dataModelIds)
 
             log.trace('Removing ReferenceTypes in {} DataClasses', dataClassIds.size())
-            referenceTypeService.deleteAllByModelId(dataModelId)
+            referenceTypeService.deleteAllByModelIds(dataModelIds)
 
             log.trace('Removing facets for {} DataClasses', dataClassIds.size())
             deleteAllFacetsByMultiFacetAwareIds(dataClassIds,
@@ -210,8 +211,8 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
 
             log.trace('Removing {} DataClasses', dataClassIds.size())
             sessionFactory.currentSession
-                .createSQLQuery('DELETE FROM datamodel.data_class WHERE data_model_id = :id')
-                .setParameter('id', dataModelId)
+                .createSQLQuery('DELETE FROM datamodel.data_class WHERE data_model_id in :ids')
+                .setParameter('ids', dataModelIds)
                 .executeUpdate()
 
             log.trace('DataClasses removed')

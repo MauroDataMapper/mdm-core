@@ -185,6 +185,10 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
         new DetachedCriteria<DataType>(DataType).eq('dataModel.id', Utils.toUuid(dataModelId))
     }
 
+    static DetachedCriteria<DataType> byDataModelIdInList(Collection<UUID> dataModelIds) {
+        new DetachedCriteria<DataType>(DataType).inList('dataModel.id', dataModelIds)
+    }
+
     static DetachedCriteria<DataType> byDataModelIdIncludingImported(Serializable dataModelId) {
         new DetachedCriteria<DataType>(DataType).or {
             eq('dataModel.id', Utils.toUuid(dataModelId))

@@ -281,6 +281,10 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         new DetachedCriteria<DataClass>(DataClass).eq('dataModel.id', dataModelId)
     }
 
+    static DetachedCriteria<DataClass> byDataModelIdInList(Collection<UUID> dataModelIds) {
+        new DetachedCriteria<DataClass>(DataClass).inList('dataModel.id', dataModelIds)
+    }
+
     static DetachedCriteria<DataClass> byDataModelIdIncludingImported(UUID dataModelId) {
         new DetachedCriteria<DataClass>(DataClass).or {
             eq('dataModel.id', Utils.toUuid(dataModelId))

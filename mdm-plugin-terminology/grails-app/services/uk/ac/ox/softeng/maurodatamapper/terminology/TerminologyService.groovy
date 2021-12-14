@@ -102,11 +102,6 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    void deleteAll(Collection<Terminology> catalogueItems) {
-        deleteAll(catalogueItems.id, true)
-    }
-
-    @Override
     void delete(Terminology terminology) {
         terminology.deleted = true
     }
@@ -123,16 +118,6 @@ class TerminologyService extends ModelService<Terminology> {
             deleteModelAndContent(terminology)
             log.debug('Terminology deleted. Took {}', Utils.timeTaken(start))
         } else delete(terminology)
-    }
-
-    List<Terminology> deleteAll(List<Serializable> idsToDelete, Boolean permanent) {
-        List<Terminology> updated = []
-        idsToDelete.each {
-            Terminology t = get(it)
-            delete(t, permanent, false)
-            if (!permanent) updated << t
-        }
-        updated
     }
 
     @Override
@@ -233,33 +218,33 @@ class TerminologyService extends ModelService<Terminology> {
         log.debug('Content save of Terminology complete in {}', Utils.timeTaken(start))
     }
 
-    void deleteModelAndContent(Terminology model) {
+    void deleteModelsAndContent(Set<UUID> idsToDelete) {
 
         GormUtils.disableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
 
-        log.trace('Removing Terms in Terminology')
-        termService.deleteAllByModelId(model.id)
+        log.trace('Removing Terms in {} Terminologies', idsToDelete.size())
+        termService.deleteAllByModelIds(idsToDelete)
 
-        log.trace('Removing TermRelationshipTypes in Terminology')
-        termRelationshipTypeService.deleteAllByModelId(model.id)
+        log.trace('Removing TermRelationshipTypes in {} Terminologies', idsToDelete.size())
+        termRelationshipTypeService.deleteAllByModelIds(idsToDelete)
 
         log.trace('Removing facets')
-        deleteAllFacetsByMultiFacetAwareId(model.id, 'delete from terminology.join_terminology_to_facet where terminology_id=:id')
+        deleteAllFacetsByMultiFacetAwareIds(idsToDelete.toList(), 'delete from terminology.join_terminology_to_facet where terminology_id in :ids')
 
         log.trace('Content removed')
         sessionFactory.currentSession
-            .createSQLQuery('DELETE FROM terminology.terminology WHERE id = :id')
-            .setParameter('id', model.id)
+            .createSQLQuery('DELETE FROM terminology.terminology WHERE id IN :ids')
+            .setParameter('ids', idsToDelete)
             .executeUpdate()
 
-        log.trace('Terminology removed')
+        log.trace('Terminologies removed')
 
         sessionFactory.currentSession
-            .createSQLQuery('DELETE FROM core.breadcrumb_tree WHERE domain_id = :id')
-            .setParameter('id', model.id)
+            .createSQLQuery('DELETE FROM core.breadcrumb_tree WHERE domain_id in :ids')
+            .setParameter('ids', idsToDelete)
             .executeUpdate()
 
-        log.trace('Breadcrumb tree removed')
+        log.trace('Breadcrumb trees removed')
 
         GormUtils.enableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
     }

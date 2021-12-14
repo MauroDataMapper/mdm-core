@@ -113,11 +113,6 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
         "referenceDataModels"
     }
 
-    @Override
-    void deleteAll(Collection<ReferenceDataModel> catalogueItems) {
-        deleteAll(catalogueItems.id, true)
-    }
-
     void delete(UUID id) {
         delete(get(id))
     }
@@ -139,14 +134,8 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
         } else delete(rdm)
     }
 
-    List<ReferenceDataModel> deleteAll(List<Serializable> idsToDelete, Boolean permanent) {
-        List<ReferenceDataModel> updated = []
-        idsToDelete.each {
-            ReferenceDataModel dm = get(it)
-            delete(dm, permanent, false)
-            if (!permanent) updated << dm
-        }
-        updated
+    void deleteModelsAndContent(Set<UUID> idsToDelete) {
+        ReferenceDataModel.deleteAll(getAll(idsToDelete))
     }
 
     @Override
