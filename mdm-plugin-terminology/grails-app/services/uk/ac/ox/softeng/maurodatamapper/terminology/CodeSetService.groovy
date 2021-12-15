@@ -543,8 +543,8 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    void updateCopiedCrossModelLinks(CodeSet copiedModel, CodeSet originalModel) {
-        super.updateCopiedCrossModelLinks(copiedModel, originalModel)
+    void updateCopiedCrossModelLinks(CodeSet copiedModel, CodeSet originalModel, String branchName) {
+        super.updateCopiedCrossModelLinks(copiedModel, originalModel, branchName)
         // Find all Terms which were added to this codeSet
         // These will all point to the same terminology terms as the original model,
         // However this method is designed to repoint them to the branched model which exists inside the same VF as this copied model

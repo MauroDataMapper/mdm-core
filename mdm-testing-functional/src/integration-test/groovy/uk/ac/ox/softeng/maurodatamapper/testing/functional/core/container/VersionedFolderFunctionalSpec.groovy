@@ -1117,14 +1117,6 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         getIdFromPath(branchId, 'te:Functional Test Terminology 1$main')
         getIdFromPath(branchId, 'cs:Functional Test CodeSet 1$main')
 
-        when: 'getting the DMs inside the branch'
-        GET("folders/$branchId/dataModels", MAP_ARG, true)
-
-        then:
-        verifyResponse(OK, response)
-        responseBody().count == 1
-        responseBody().items.first().id == getIdFromPath(branchId, 'dm:Functional Test DataModel 1$main')
-
         when: 'getting the Ts inside the branch'
         GET("folders/$branchId/terminologies", MAP_ARG, true)
 
@@ -1132,6 +1124,31 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         verifyResponse(OK, response)
         responseBody().count == 1
         responseBody().items.first().id == getIdFromPath(branchId, 'te:Functional Test Terminology 1$main')
+
+        when: 'getting the DMs inside the branch'
+        GET("folders/$branchId/dataModels", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+
+        when:
+        String branchedDataModelId = responseBody().items.first().id
+
+        then:
+        branchedDataModelId == getIdFromPath(branchId, 'dm:Functional Test DataModel 1$main')
+
+        when: 'getting the model data type from the DM inside the branch'
+        GET("dataModels/$branchedDataModelId/dataTypes", MAP_ARG, true)
+
+        then: 'the branched model data type points to the branched terminology'
+        verifyResponse(OK, response)
+        responseBody().count == 1
+        def first = responseBody().items.first()
+        first.id == getIdFromPath(branchId, 'dm:Functional Test DataModel 1$main|dt:Functional Test Model Data Type')
+        first.domainType == 'ModelDataType'
+        first.modelResourceDomainType == 'Terminology'
+        first.modelResourceId == getIdFromPath(branchId, 'te:Functional Test Terminology 1$main')
 
         when: 'getting the CSs inside the branch'
         GET("folders/$branchId/codeSets", MAP_ARG, true)

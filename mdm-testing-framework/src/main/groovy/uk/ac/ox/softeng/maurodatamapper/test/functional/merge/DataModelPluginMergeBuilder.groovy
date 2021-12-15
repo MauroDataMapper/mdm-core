@@ -20,6 +20,8 @@ package uk.ac.ox.softeng.maurodatamapper.test.functional.merge
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 
+import java.nio.charset.Charset
+
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
@@ -98,6 +100,37 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         verifyResponse CREATED, response
 
         dataModel1Id
+    }
+
+    String buildCommonAncestorModelDataType(String dataModelId, String terminologyId) {
+        // Create a DataElement on the DataModel, with the DataElement having a ModelDataType
+        // pointing to the Terminology
+
+        POST("dataModels/$dataModelId/dataTypes", [
+            label: "Functional Test Model Data Type",
+            domainType: "ModelDataType",
+            modelResourceDomainType: "Terminology",
+            modelResourceId: terminologyId
+        ])
+        verifyResponse(CREATED, response)
+        String modelDataTypeId = responseBody().id
+
+        GET("dataModels/$dataModelId/path/${URLEncoder.encode('dc:existingClass', Charset.defaultCharset())}")
+        verifyResponse OK, response
+        assert responseBody().id
+        String dataClassId = responseBody().id
+
+        POST("dataModels/$dataModelId/dataClasses/$dataClassId/dataElements", [
+            label: "Functional Test Data Element with Model Data Type",
+            domainType: "DataElement",
+            dataType: [id: modelDataTypeId],
+            minMultiplicity: 1,
+            maxMultiplicity: 1
+        ])
+        verifyResponse(CREATED, response)
+        String dataElementId = responseBody().id
+
+        dataElementId
     }
 
     Map modifySourceDataModel(String source, String suffix = '1', String pathing = '') {

@@ -1072,7 +1072,13 @@ abstract class ModelService<K extends Model>
         copiedModel
     }
 
-    void updateCopiedCrossModelLinks(K copiedModel, K originalModel) {
+    /**
+     *
+     * @param copiedModel
+     * @param originalModel
+     * @param branchName The name of the versioned folder branch to which copiedModel has been copied
+     */
+    void updateCopiedCrossModelLinks(K copiedModel, K originalModel, String branchName) {
         log.debug('Updating cross model links for [{}]', Path.from(copiedModel))
 
         // TODO

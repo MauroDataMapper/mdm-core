@@ -233,6 +233,19 @@ class Path {
         }
     }
 
+    /**
+     * Make a path for a domain, but using a specified branch name rather than the branch name or model version of the domain.
+     * Useful when retrieving a domain which has been copied to a different branch.
+     * @param otherBranchName
+     * @param domain
+     * @return
+     */
+    static Path from(String otherBranchName, CreatorAware domain) {
+        new Path().tap {
+            pathNodes << new PathNode(domain.pathPrefix, domain.getOtherBranchPathIdentifier(otherBranchName), true)
+        }
+    }
+
     static Path from(List<CreatorAware> domains) {
         new Path().tap {
             domains.eachWithIndex {CreatorAware domain, int i ->

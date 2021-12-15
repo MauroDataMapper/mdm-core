@@ -35,6 +35,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProv
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
@@ -58,6 +59,7 @@ import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
@@ -343,6 +345,32 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         log.debug('Complete save of DataModel complete in {}', Utils.timeTaken(start))
         // Return the clean stored version of the datamodel, as we've messed with it so much this is much more stable
         get(dataModel.id)
+    }
+
+    @Override
+    void updateCopiedCrossModelLinks(DataModel copiedModel, DataModel originalModel, String branchName) {
+        super.updateCopiedCrossModelLinks(copiedModel, originalModel, branchName)
+
+        // Point all model data types to the new model
+        copiedModel.modelDataTypes.each {mdt ->
+            DomainService domainService = domainServices.find { service ->
+                service.handles(mdt.modelResourceDomainType)
+            }
+
+            if (domainService) {
+                // The model pointed to originally
+                CreatorAware ca = domainService.get(mdt.modelResourceId)
+
+                // Construct a path from the prefix and label of the model pointed to originally, but with the branch name now used,
+                // to get the copy of the model in the copied folder
+                CreatorAware replacement = pathService.findResourceByPathFromRootResource(copiedModel.folder, Path.from(branchName, ca))
+
+                // Update the model data type to point to the copy of the model
+                mdt.modelResourceId = replacement.id
+            } else {
+                throw new ApiInternalException('DMSXX', "No domain service to handle repointing of modelResourceDomainType [${mdt.modelResourceDomainType}]")
+            }
+        }
     }
 
     void saveContent(Collection<EnumerationType> enumerationTypes,

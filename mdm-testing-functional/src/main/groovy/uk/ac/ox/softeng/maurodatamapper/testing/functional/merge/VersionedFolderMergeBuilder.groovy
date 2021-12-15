@@ -69,6 +69,7 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         String dataModelCa = dataModelPluginMergeBuilder.buildCommonAncestorDataModel(commonAncestorId)
         String terminologyCa = terminologyPluginMergeBuilder.buildCommonAncestorTerminology(commonAncestorId)
         String codeSetCa = terminologyPluginMergeBuilder.buildCommonAncestorCodeSet(commonAncestorId, terminologyCa)
+        String modelDataTypeCa = dataModelPluginMergeBuilder.buildCommonAncestorModelDataType(dataModelCa, terminologyCa)
 
         // Finalise
         PUT("versionedFolders/$commonAncestorId/finalise", [versionChangeType: 'Major'])
