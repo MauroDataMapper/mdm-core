@@ -348,29 +348,40 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     }
 
     @Override
-    void updateCopiedCrossModelLinks(DataModel copiedModel, DataModel originalModel, String branchName) {
-        super.updateCopiedCrossModelLinks(copiedModel, originalModel, branchName)
+    void updateCopiedCrossModelLinks(DataModel copiedDataModel, DataModel originalDataModel, String branchName) {
+        super.updateCopiedCrossModelLinks(copiedDataModel, originalDataModel, branchName)
 
-        // Point all model data types to the new model
-        copiedModel.modelDataTypes.each {mdt ->
+        copiedDataModel.modelDataTypes.each { mdt ->
+
             DomainService domainService = domainServices.find { service ->
                 service.handles(mdt.modelResourceDomainType)
             }
 
-            if (domainService) {
-                // The model pointed to originally
-                CreatorAware ca = domainService.get(mdt.modelResourceId)
+            if (!domainService) throw new ApiInternalException('DMSXX', "No domain service to handle repointing of modelResourceDomainType [${mdt.modelResourceDomainType}]")
+
+            // The model pointed to originally
+            CreatorAware originalModelResource = domainService.get(mdt.modelResourceId)
+
+            Path fullContextOriginalModelResourcePath = getFullPathForModel(originalModelResource)
+            Path fullContextOriginalDataModelPath = getFullPathForModel(originalDataModel)
+
+            // Is the original model resource in the same versioned folder as the original data model?
+            PathNode originalModelResourceVersionedFolderPathNode = fullContextOriginalModelResourcePath.find { it.prefix == 'vf' }
+            PathNode originalDataModelVersionedFolderPathNode = fullContextOriginalDataModelPath.find { it.prefix == 'vf' }
+
+            if (originalModelResourceVersionedFolderPathNode && originalModelResourceVersionedFolderPathNode == originalDataModelVersionedFolderPathNode) {
+                log.debug('Original model resource is inside the same context path as data model for modelDataType [{}]', mdt)
 
                 // Construct a path from the prefix and label of the model pointed to originally, but with the branch name now used,
                 // to get the copy of the model in the copied folder
-                CreatorAware replacement = pathService.findResourceByPathFromRootResource(copiedModel.folder, Path.from(branchName, ca))
+                CreatorAware replacementModelResource = pathService.findResourceByPathFromRootResource(copiedDataModel.folder, Path.from(branchName, originalModelResource))
 
                 // Update the model data type to point to the copy of the model
-                mdt.modelResourceId = replacement.id
-            } else {
-                throw new ApiInternalException('DMSXX', "No domain service to handle repointing of modelResourceDomainType [${mdt.modelResourceDomainType}]")
+                mdt.modelResourceId = replacementModelResource.id
             }
         }
+
+        save(copiedDataModel, flush: false, validate: false)
     }
 
     void saveContent(Collection<EnumerationType> enumerationTypes,
