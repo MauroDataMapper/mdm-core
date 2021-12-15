@@ -29,6 +29,7 @@ class TestDataFlowSecuredUserSecurityPolicyManager extends AbstractBasicSecurity
     List<UUID> noAccessIds
     List<UUID> readAccessIds
     List<UUID> writeAccessIds
+    User user
 
     TestDataFlowSecuredUserSecurityPolicyManager(User user, List<UUID> unknownIds, List<UUID> noAccessIds, List<UUID> readAccessIds,
                                                  List<UUID> writeAccessIds) {

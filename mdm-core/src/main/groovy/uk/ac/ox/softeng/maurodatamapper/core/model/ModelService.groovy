@@ -240,10 +240,10 @@ abstract class ModelService<K extends Model>
 
         // Batch deletion
         if (securityPolicyManagerService) {
-            securityPolicyManagerService.removeSecurityForSecurableResourceIds(getDomainClass(), ids)
+            securityPolicyManagerService.removeSecurityForSecurableResourceIds(getDomainClass().simpleName, ids)
         }
         long start = System.currentTimeMillis()
-        log.debug('Deleting {} Models', ids.size())
+        log.debug('Deleting {} {} Models', ids.size(), getDomainClass().simpleName)
         deleteModelsAndContent(ids)
         log.debug('Models deleted. Took {}', Utils.timeTaken(start))
         []

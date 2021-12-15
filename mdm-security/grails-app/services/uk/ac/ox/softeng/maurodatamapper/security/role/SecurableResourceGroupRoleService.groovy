@@ -63,6 +63,10 @@ class SecurableResourceGroupRoleService implements AnonymisableService {
         SecurableResourceGroupRole.bySecurableResource(securableResource.domainType, securableResource.resourceId).deleteAll()
     }
 
+    void deleteAllBySecurableResourceDomainTypeAndIds(securableResourceDomainType, Collection<UUID> ids) {
+        SecurableResourceGroupRole.bySecurableResourceDomainTypeAndSecurableResourceIdInList(securableResourceDomainType, ids).deleteAll()
+    }
+
     SecurableResourceGroupRole createAndSaveSecurableResourceGroupRole(SecurableResource securableResource, GroupRole groupRole, UserGroup userGroup,
                                                                        CatalogueUser createdBy) {
         SecurableResourceGroupRole securableResourceGroupRole = new SecurableResourceGroupRole(
