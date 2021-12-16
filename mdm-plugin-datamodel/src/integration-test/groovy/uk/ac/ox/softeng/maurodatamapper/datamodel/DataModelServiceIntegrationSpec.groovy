@@ -32,6 +32,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchDat
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.legacy.ItemPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.legacy.LegacyFieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.summarymetadata.SummaryMetadataReport
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClassService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
@@ -46,10 +49,12 @@ import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
+import groovy.json.JsonBuilder
 import groovy.util.logging.Slf4j
 import org.spockframework.util.Assert
 import spock.lang.PendingFeature
 
+import java.time.OffsetDateTime
 import java.util.function.Predicate
 
 @Slf4j
@@ -76,7 +81,6 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
                                              authority: testAuthority)
         DataModel dataModel3 = new DataModel(createdByUser: editor, label: 'test standard', type: DataModelType.DATA_STANDARD, folder: testFolder,
                                              authority: testAuthority)
-
         checkAndSave(dataModel1)
         checkAndSave(dataModel2)
         checkAndSave(dataModel3)
@@ -89,6 +93,71 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         checkAndSave(dataModel1)
 
         id = dataModel1.id
+    }
+
+    void setupDataModelWithSummaryMetadata() {
+        DataModel dataModel = new DataModel(createdByUser: editor, label: 'Data Model having Summary Metadata', type: DataModelType.DATA_ASSET, folder: testFolder,
+            authority: testAuthority)
+
+        checkAndSave(dataModel)
+
+        // Add summary metadata with report to data model
+        SummaryMetadata dataModelSummaryMetadata = new SummaryMetadata(label: 'Data Model Summary Metadata', createdBy: editor.emailAddress,
+            summaryMetadataType: SummaryMetadataType.MAP)
+        SummaryMetadataReport dataModelSummaryMetadataReport = new SummaryMetadataReport(
+            reportDate: OffsetDateTime.now(),
+            reportValue: new JsonBuilder([A: 1, B: 2]).toString(),
+            createdBy: editor.emailAddress
+        )
+        dataModelSummaryMetadata.addToSummaryMetadataReports(dataModelSummaryMetadataReport)
+        dataModel.addToSummaryMetadata(dataModelSummaryMetadata)
+
+        // Add summary metadata with report to data type
+        DataType dataType = new PrimitiveType(createdByUser: admin, label: 'Data Type having Summary Metadata')
+        dataModel.addToDataTypes(dataType)
+        checkAndSave(dataModel)
+        SummaryMetadata dataTypeSummaryMetadata = new SummaryMetadata(label: 'Data Type Summary Metadata', createdBy: editor.emailAddress,
+            summaryMetadataType: SummaryMetadataType.MAP)
+        SummaryMetadataReport dataTypeSummaryMetadataReport = new SummaryMetadataReport(
+            reportDate: OffsetDateTime.now(),
+            reportValue: new JsonBuilder([A: 1, B: 2]).toString(),
+            createdBy: editor.emailAddress
+        )
+        dataTypeSummaryMetadata.addToSummaryMetadataReports(dataTypeSummaryMetadataReport)
+        dataType.addToSummaryMetadata(dataTypeSummaryMetadata)
+
+        // Add summary metadata with report to data class
+        DataClass dataClass = new DataClass(createdByUser: editor, label: 'Data Class having Summary Metadata', dataModel: dataModel)
+        checkAndSave(dataClass)
+        SummaryMetadata dataClassSummaryMetadata = new SummaryMetadata(label: 'Data Class Summary Metadata', createdBy: editor.emailAddress,
+            summaryMetadataType: SummaryMetadataType.MAP)
+        SummaryMetadataReport dataClassSummaryMetadataReport = new SummaryMetadataReport(
+            reportDate: OffsetDateTime.now(),
+            reportValue: new JsonBuilder([A: 1, B: 2]).toString(),
+            createdBy: editor.emailAddress
+        )
+        dataClassSummaryMetadata.addToSummaryMetadataReports(dataClassSummaryMetadataReport)
+        dataClass.addToSummaryMetadata(dataClassSummaryMetadata)
+
+        dataModel.addToDataClasses(dataClass)
+        checkAndSave(dataModel)
+
+        // Add summary metadata with report to data element
+        DataElement dataElement = new DataElement(createdByUser: editor, label: 'Data Element having Summary Metadata', dataType: dataType)
+        dataClass.addToDataElements(dataElement)
+        checkAndSave(dataElement)
+
+        SummaryMetadata dataElementSummaryMetadata = new SummaryMetadata(label: 'Data Element Summary Metadata', createdBy: editor.emailAddress,
+            summaryMetadataType: SummaryMetadataType.MAP)
+        SummaryMetadataReport dataElementSummaryMetadataReport = new SummaryMetadataReport(
+            reportDate: OffsetDateTime.now(),
+            reportValue: new JsonBuilder([A: 1, B: 2]).toString(),
+            createdBy: editor.emailAddress
+        )
+        dataElementSummaryMetadata.addToSummaryMetadataReports(dataElementSummaryMetadataReport)
+        dataElement.addToSummaryMetadata(dataElementSummaryMetadata)
+
+        checkAndSave(dataModel)
     }
 
     protected DataModel checkAndSaveNewVersion(DataModel dataModel) {
@@ -1977,6 +2046,47 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         then:
         ele2Res
         ele2Res.totalSimilar() == 0
+    }
+
+    void 'test summary metadata is copied to new version'() {
+        given:
+        setupData()
+        setupDataModelWithSummaryMetadata()
+        DataModel dataModel4 = dataModelService.findByLabel('Data Model having Summary Metadata')
+
+        when: 'finalising model and then creating a new doc version is allowed'
+        DataModel dataModel = getAndFinaliseDataModel(dataModel4.id)
+        def result = dataModelService.
+            createNewBranchModelVersion(VersionAwareConstraints.DEFAULT_BRANCH_NAME, dataModel, editor, false, editorSecurityPolicyManager, [
+                moveDataFlows: false,
+                throwErrors  : true
+            ])
+
+        then:
+        checkAndSaveNewVersion(result)
+
+        when: 'load new branch from DB'
+        DataModel newBranch = dataModelService.get(result.id)
+
+        then: 'there is summary metadata on the branch Data Model'
+        newBranch.summaryMetadata.find {it.label == 'Data Model Summary Metadata'}
+        SummaryMetadata foundDataModelSummaryMetadata = newBranch.summaryMetadata.find {it.label == 'Data Model Summary Metadata'}
+        foundDataModelSummaryMetadata.summaryMetadataReports.size() == 1
+
+        and: 'there is summary metadata on the Data Class'
+        DataClass dc = newBranch.childDataClasses.find{it.label =='Data Class having Summary Metadata'}
+        SummaryMetadata foundDataClassSummaryMetadata = dc.summaryMetadata.find {it.label == 'Data Class Summary Metadata'}
+        foundDataClassSummaryMetadata.summaryMetadataReports.size() == 1
+
+        and: 'there is summary metadata on the Data Type'
+        PrimitiveType dt = newBranch.dataTypes.find{it.label =='Data Type having Summary Metadata'}
+        SummaryMetadata foundDataTypeSummaryMetadata = dt.summaryMetadata.find {it.label == 'Data Type Summary Metadata'}
+        foundDataTypeSummaryMetadata.summaryMetadataReports.size() == 1
+
+        and: 'there is summary metadata on the Data Element'
+        DataElement de = dc.dataElements.find{it.label =='Data Element having Summary Metadata'}
+        SummaryMetadata foundDataElementSummaryMetadata = de.summaryMetadata.find {it.label == 'Data Element Summary Metadata'}
+        foundDataElementSummaryMetadata.summaryMetadataReports.size() == 1
     }
 }
 

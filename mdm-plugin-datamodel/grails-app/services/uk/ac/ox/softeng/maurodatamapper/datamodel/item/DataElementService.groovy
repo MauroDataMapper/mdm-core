@@ -366,11 +366,12 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     }
 
     DataElement copyDataElement(DataModel copiedDataModel, DataElement original, User copier,
-                                UserSecurityPolicyManager userSecurityPolicyManager, CopyInformation copyInformation = new CopyInformation()) {
+                                UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata = false,
+                                CopyInformation copyInformation = new CopyInformation()) {
         DataElement copy = new DataElement(minMultiplicity: original.minMultiplicity,
                                            maxMultiplicity: original.maxMultiplicity)
 
-        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
+        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata, copyInformation)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         DataType dataType = copiedDataModel.findDataTypeByLabel(original.dataType.label)
@@ -390,12 +391,11 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
                                              DataElement copy,
                                              User copier,
                                              UserSecurityPolicyManager userSecurityPolicyManager,
-                                             boolean copySummaryMetadata, CopyInformation copyInformation) {
+                                             boolean copySummaryMetadata,
+                                             CopyInformation copyInformation) {
         copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
         if (copySummaryMetadata) {
-            summaryMetadataService.findAllByMultiFacetAwareItemId(original.id).each {
-                copy.addToSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
-            }
+            copySummaryMetadataFromOriginal(original, copy, copier)
         }
         copy
     }
@@ -404,7 +404,8 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     DataElement copyCatalogueItemInformation(DataElement original,
                                              DataElement copy,
                                              User copier,
-                                             UserSecurityPolicyManager userSecurityPolicyManager, CopyInformation copyInformation) {
+                                             UserSecurityPolicyManager userSecurityPolicyManager,
+                                             CopyInformation copyInformation) {
         copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, false, copyInformation)
     }
 

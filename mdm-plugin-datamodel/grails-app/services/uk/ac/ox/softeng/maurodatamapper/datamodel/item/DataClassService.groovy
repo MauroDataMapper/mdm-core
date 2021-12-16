@@ -640,11 +640,11 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
 
         copy.dataClasses = []
         original.dataClasses.each {child ->
-            copy.addToDataClasses(copyDataClass(copiedDataModel, child, copier, userSecurityPolicyManager))
+            copy.addToDataClasses(copyDataClass(copiedDataModel, child, copier, userSecurityPolicyManager, null, copySummaryMetadata, null))
         }
         copy.dataElements = []
         original.dataElements.each {element ->
-            copy.addToDataElements(dataElementService.copyDataElement(copiedDataModel, element, copier, userSecurityPolicyManager))
+            copy.addToDataElements(dataElementService.copyDataElement(copiedDataModel, element, copier, userSecurityPolicyManager, copySummaryMetadata))
         }
 
         copy
@@ -658,9 +658,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
 
         copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
         if (copySummaryMetadata) {
-            summaryMetadataService.findAllByMultiFacetAwareItemId(original.id).each {
-                copy.addToSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
-            }
+            copy = copySummaryMetadataFromOriginal(original, copy, copier)
         }
         copy
     }
