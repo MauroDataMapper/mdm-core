@@ -48,6 +48,14 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
     }
 
     @Override
+    def show() {
+        def resource = queryForResource(params.id ?: params.subscribedCatalogueId)
+        resource ? respond(resource, [model: [userSecurityPolicyManager: currentUserSecurityPolicyManager],
+                                      view : (params.openAccess ? 'show_min' : 'show')])
+                 : notFound(params.id)
+    }
+
+    @Override
     void serviceDeleteResource(SubscribedCatalogue resource) {
         subscribedCatalogueService.delete(resource)
     }

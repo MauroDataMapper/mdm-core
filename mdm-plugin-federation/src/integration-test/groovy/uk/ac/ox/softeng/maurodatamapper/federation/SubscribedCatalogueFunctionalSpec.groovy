@@ -36,13 +36,16 @@ import static io.micronaut.http.HttpStatus.OK
 
 /**
  * @see SubscribedCatalogueController* Controller: subscribedCatalogue
- *  | POST   | /api/subscribedCatalogues                                          | Action: save            |
- *  | GET    | /api/subscribedCatalogues                                          | Action: index           |
- *  | DELETE | /api/subscribedCatalogues/${id}                                    | Action: delete          |
- *  | PUT    | /api/subscribedCatalogues/${id}                                    | Action: update          |
- *  | GET    | /api/subscribedCatalogues/${id}                                    | Action: show            |
- *  | GET    | /api/subscribedCatalogues/${subscribedCatalogueId}/testConnection  | Action: testConnection  |
- *  | GET    | /api/subscribedCatalogues/${subscribedCatalogueId}/publishedModels | Action: publishedModels |
+ *  | POST   | /api/admin/subscribedCatalogues                                          | Action: save            |
+ *  | GET    | /api/admin/subscribedCatalogues                                          | Action: index           |
+ *  | DELETE | /api/admin/subscribedCatalogues/${id}                                    | Action: delete          |
+ *  | PUT    | /api/admin/subscribedCatalogues/${id}                                    | Action: update          |
+ *  | GET    | /api/admin/subscribedCatalogues/${id}                                    | Action: show            |
+ *  | GET    | /api/admin/subscribedCatalogues/${subscribedCatalogueId}/testConnection  | Action: testConnection  |
+ *  | GET    | /api/subscribedCatalogues                                                | Action: index           |
+ *  | GET    | /api/subscribedCatalogues/${id}                                          | Action: show            |
+ *  | GET    | /api/subscribedCatalogues/${subscribedCatalogueId}/testConnection        | Action: testConnection  |
+ *  | GET    | /api/subscribedCatalogues/${subscribedCatalogueId}/publishedModels       | Action: publishedModels |
  *
  */
 @Integration
@@ -54,7 +57,7 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
 
     @Override
     String getResourcePath() {
-        'subscribedCatalogues'
+        'admin/subscribedCatalogues'
     }
 
     @OnceBefore
@@ -125,6 +128,69 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
 }'''
     }
 
+    String getExpectedOpenAccessShowJson() {
+        '''{
+  "id": "${json-unit.matches:id}",
+  "url": "${json-unit.any-string}",
+  "label": 'Functional Test Label',
+  "description": 'Functional Test Description',
+  "refreshPeriod": 7
+}'''
+    }
+
+    String getExpectedOpenAccessIndexJson() {
+        '''{
+  "count": 1,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "url": "${json-unit.any-string}",
+      "label": "Functional Test Label",
+      "description": "Functional Test Description",
+      "refreshPeriod": 7
+    }
+  ]
+}'''
+    }
+
+    void 'O01 : Test the open access index action'() {
+        when:
+        POST('', getValidJson())
+
+        then:
+        verifyResponse CREATED, response
+        String subscribedCatalogueId = responseBody().id
+
+        when:
+        GET('subscribedCatalogues', STRING_ARG, true)
+
+        then:
+        verifyJsonResponse OK, getExpectedOpenAccessIndexJson()
+
+        cleanup:
+        DELETE(subscribedCatalogueId)
+        verifyResponse NO_CONTENT, response
+    }
+
+    void 'O02 : Test the open access show action'() {
+        when:
+        POST('', getValidJson())
+
+        then:
+        verifyResponse CREATED, response
+        String subscribedCatalogueId = responseBody().id
+
+        when:
+        GET("subscribedCatalogues/${subscribedCatalogueId}", STRING_ARG, true)
+
+        then:
+        verifyJsonResponse OK, getExpectedOpenAccessShowJson()
+
+        cleanup:
+        DELETE(subscribedCatalogueId)
+        verifyResponse NO_CONTENT, response
+    }
+
     void 'T01 : Test the testConnection action'() {
         when:
         POST('', getValidJson())
@@ -135,6 +201,12 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
 
         when:
         GET("${subscribedCatalogueId}/testConnection", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, null
+
+        when:
+        GET("subscribedCatalogues/${subscribedCatalogueId}/testConnection", STRING_ARG, true)
 
         then:
         verifyJsonResponse OK, null
@@ -150,7 +222,7 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
         String subscribedCatalogueId = responseBody().id
 
         when:
-        GET("${subscribedCatalogueId}/publishedModels", STRING_ARG)
+        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels", STRING_ARG, true)
 
         then:
         verifyJsonResponse OK, '''{
@@ -180,7 +252,7 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
         String subscribedCatalogueId = responseBody().id
 
         when:
-        GET("${subscribedCatalogueId}/publishedModels/${finalisedSimpleDataModelId}/newerVersions", STRING_ARG)
+        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels/${finalisedSimpleDataModelId}/newerVersions", STRING_ARG, true)
 
         then:
         verifyJsonResponse OK, '''{
@@ -200,7 +272,7 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
         String subscribedCatalogueId = responseBody().id
 
         when:
-        GET("${subscribedCatalogueId}/publishedModels/${finalisedSimpleDataModelId}/newerVersions", STRING_ARG)
+        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels/${finalisedSimpleDataModelId}/newerVersions", STRING_ARG, true)
 
         then:
         verifyJsonResponse OK, '''{

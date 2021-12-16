@@ -41,13 +41,16 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 /**
  * @see uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogueController* Controller: subscribedCatalogue
- *  | POST   | /api/subscribedCatalogues                                          | Action: save            |
- *  | GET    | /api/subscribedCatalogues                                          | Action: index           |
- *  | DELETE | /api/subscribedCatalogues/${id}                                    | Action: delete          |
- *  | PUT    | /api/subscribedCatalogues/${id}                                    | Action: update          |
- *  | GET    | /api/subscribedCatalogues/${id}                                    | Action: show            |
- *  | GET    | /api/subscribedCatalogues/${subscribedCatalogueId}/testConnection  | Action: testConnection  |
- *  | GET    | /api/subscribedCatalogues/${subscribedCatalogueId}/publishedModels | Action: publishedModels |
+ *  | POST   | /api/admin/subscribedCatalogues                                          | Action: save            |
+ *  | GET    | /api/admin/subscribedCatalogues                                          | Action: index           |
+ *  | DELETE | /api/admin/subscribedCatalogues/${id}                                    | Action: delete          |
+ *  | PUT    | /api/admin/subscribedCatalogues/${id}                                    | Action: update          |
+ *  | GET    | /api/admin/subscribedCatalogues/${id}                                    | Action: show            |
+ *  | GET    | /api/admin/subscribedCatalogues/${subscribedCatalogueId}/testConnection  | Action: testConnection  |
+ *  | GET    | /api/subscribedCatalogues                                                | Action: index           |
+ *  | GET    | /api/subscribedCatalogues/${id}                                          | Action: show            |
+ *  | GET    | /api/subscribedCatalogues/${subscribedCatalogueId}/testConnection        | Action: testConnection  |
+ *  | GET    | /api/subscribedCatalogues/${subscribedCatalogueId}/publishedModels       | Action: publishedModels |
  *
  */
 @Integration
@@ -56,7 +59,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
 
     @Override
     String getResourcePath() {
-        "subscribedCatalogues"
+        "admin/subscribedCatalogues"
     }
 
     String getValidId() {
@@ -147,6 +150,16 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
 }"""
     }
 
+    String getExpectedOpenAccessShowJson() {
+        """{
+    "description": "Functional Test Description",
+    "id": "\${json-unit.matches:id}",
+    "label": "Functional Test Label",
+    "refreshPeriod": 7,
+    "url": "http://localhost:$serverPort"
+}"""
+    }
+
     String getExpectedIndexJson() {
         """{
     "count": 1,
@@ -166,19 +179,31 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
       * Logged in as editor testing
       */
 
-    void 'E02 : Test the show action is forbidden and index action correctly renders (as editor)'() {
+    void 'E02 : Test the open access show and index actions render and admin actions are forbidden (as editor)'() {
         given:
         String id = getValidId()
         loginEditor()
 
-        when: 'When the show action is called to retrieve a resource'
+        when: 'When the admin show action is called to retrieve a resource'
         GET(id)
 
         then:
         verifyResponse FORBIDDEN, response
 
-        when: 'When the index action is called'
-        GET('', STRING_ARG)
+        when: 'When the admin index action is called'
+        GET('')
+
+        then:
+        verifyResponse FORBIDDEN, response
+
+        when: 'When the open access show action is called to retrieve a resource'
+        GET("subscribedCatalogues/$id", STRING_ARG, true)
+
+        then:
+        verifyJsonResponse OK, getExpectedOpenAccessShowJson()
+
+        when: 'When the open access index action is called'
+        GET("subscribedCatalogues", STRING_ARG, true)
 
         then:
         verifyJsonResponse OK, getExpectedIndexJson()
@@ -192,18 +217,30 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
      * Logged out testing
      */
 
-    void 'L02 : Test the show and index action does not render an instance for set user (not logged in)'() {
+    void 'L02 : Test the show and index actions do not render an instance for set user (not logged in)'() {
         given:
         String id = getValidId()
 
-        when: 'When the show action is called to retrieve a resource'
+        when: 'When the admin show action is called to retrieve a resource'
         GET(id)
 
         then:
         verifyResponse NOT_FOUND, response
 
-        when: 'When the index action is called'
+        when: 'When the admin index action is called'
         GET('')
+
+        then:
+        verifyResponse NOT_FOUND, response
+
+        when: 'When the open access show action is called to retrieve a resource'
+        GET("subscribedCatalogues/$id", MAP_ARG, true)
+
+        then:
+        verifyResponse NOT_FOUND, response
+
+        when: 'When the open access index action is called'
+        GET("subscribedCatalogues", MAP_ARG, true)
 
         then:
         verifyResponse NOT_FOUND, response
@@ -237,19 +274,31 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
     /**
      * Testing when logged in as a no access/authenticated user
      */
-    void 'N02 : Test the show action is forbidden and index action correctly renders (as no access/authenticated)'() {
+    void 'N02 : Test the open access show and index actions render and admin actions are forbidden (as no access/authenticated)'() {
         given:
         String id = getValidId()
         loginAuthenticated()
 
-        when: 'When the show action is called to retrieve a resource'
+        when: 'When the admin show action is called to retrieve a resource'
         GET(id)
 
         then:
         verifyResponse FORBIDDEN, response
 
-        when: 'When the index action is called'
-        GET('', STRING_ARG)
+        when: 'When the admin index action is called'
+        GET('')
+
+        then:
+        verifyResponse FORBIDDEN, response
+
+        when: 'When the open access show action is called to retrieve a resource'
+        GET("subscribedCatalogues/$id", STRING_ARG, true)
+
+        then:
+        verifyJsonResponse OK, getExpectedOpenAccessShowJson()
+
+        when: 'When the open access index action is called'
+        GET("subscribedCatalogues", STRING_ARG, true)
 
         then:
         verifyJsonResponse OK, getExpectedIndexJson()
@@ -262,19 +311,31 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
     /**
      * Testing when logged in as a reader only user
      */
-    void 'R02 : Test the show action is forbidden and index action correctly renders (as reader)'() {
+    void 'R02 : Test the open access show and index actions render and admin actions are forbidden (as reader)'() {
         given:
         String id = getValidId()
         loginReader()
 
-        when: 'When the show action is called to retrieve a resource'
+        when: 'When the admin show action is called to retrieve a resource'
         GET(id)
 
         then:
         verifyResponse FORBIDDEN, response
 
-        when: 'When the index action is called'
-        GET('', STRING_ARG)
+        when: 'When the admin index action is called'
+        GET('')
+
+        then:
+        verifyResponse FORBIDDEN, response
+
+        when: 'When the open access show action is called to retrieve a resource'
+        GET("subscribedCatalogues/$id", STRING_ARG, true)
+
+        then:
+        verifyJsonResponse OK, getExpectedOpenAccessShowJson()
+
+        when: 'When the open access index action is called'
+        GET("subscribedCatalogues", STRING_ARG, true)
 
         then:
         verifyJsonResponse OK, getExpectedIndexJson()
@@ -293,14 +354,26 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         String id = getValidId()
         loginAdmin()
 
-        when: 'When the show action is called to retrieve a resource'
+        when: 'When the admin show action is called to retrieve a resource'
         GET(id, STRING_ARG)
 
         then:
         verifyJsonResponse OK, getExpectedShowJson()
 
-        when: 'When the index action is called'
+        when: 'When the admin index action is called'
         GET('', STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, getExpectedIndexJson()
+
+        when: 'When the open access show action is called to retrieve a resource'
+        GET("subscribedCatalogues/$id", STRING_ARG, true)
+
+        then:
+        verifyJsonResponse OK, getExpectedOpenAccessShowJson()
+
+        when: 'When the open access index action is called'
+        GET("subscribedCatalogues", STRING_ARG, true)
 
         then:
         verifyJsonResponse OK, getExpectedIndexJson()
@@ -710,7 +783,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         String subscribedCatalogueId = responseBody().id
 
         when:
-        GET("${subscribedCatalogueId}/publishedModels", STRING_ARG)
+        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels", STRING_ARG, true)
 
         then:
         verifyJsonResponse OK, '''
@@ -767,7 +840,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         String subscribedCatalogueId = responseBody().id
 
         when:
-        GET("${subscribedCatalogueId}/publishedModels", STRING_ARG)
+        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels", STRING_ARG, true)
 
         then:
         verifyJsonResponse OK, '''{
@@ -804,7 +877,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
 
         when:
         String finalisedDataModelId = getFinalisedDataModelId()
-        GET("${subscribedCatalogueId}/publishedModels/${finalisedDataModelId}/newerVersions", STRING_ARG)
+        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels/${finalisedDataModelId}/newerVersions", STRING_ARG, true)
 
         then:
         verifyJsonResponse OK, '''{
@@ -843,7 +916,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         String subscribedCatalogueId = responseBody().id
 
         when:
-        GET("${subscribedCatalogueId}/publishedModels/${finalisedDataModelId}/newerVersions", STRING_ARG)
+        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels/${finalisedDataModelId}/newerVersions", STRING_ARG, true)
 
         then:
         verifyJsonResponse OK, '''{
@@ -904,7 +977,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         verifyResponse OK, response
 
         when:
-        GET("${subscribedCatalogueId}/publishedModels/${finalisedDataModelId}/newerVersions", STRING_ARG)
+        GET("subscribedCatalogues/${subscribedCatalogueId}/publishedModels/${finalisedDataModelId}/newerVersions", STRING_ARG, true)
 
         then:
         verifyJsonResponse OK, '''{
@@ -970,6 +1043,12 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         then:
         verifyJsonResponse OK, null
 
+        when:
+        GET("subscribedCatalogues/${subscribedCatalogueId}/testConnection", STRING_ARG, true)
+
+        then:
+        verifyJsonResponse OK, null
+
         cleanup:
         DELETE("catalogueUsers/${getUserByEmailAddress(ADMIN).id}/apiKeys/${apiKey}", MAP_ARG, true)
         verifyResponse NO_CONTENT, response
@@ -997,6 +1076,12 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
 
         when:
         GET("${subscribedCatalogueId}/testConnection", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, null
+
+        when:
+        GET("subscribedCatalogues/${subscribedCatalogueId}/testConnection", STRING_ARG, true)
 
         then:
         verifyJsonResponse OK, null
