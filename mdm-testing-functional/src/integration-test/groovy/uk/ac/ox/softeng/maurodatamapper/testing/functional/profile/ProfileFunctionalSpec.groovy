@@ -195,8 +195,10 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         ]
 
         POST("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${dynamicProfileModelId}", profileMap)
-
         verifyResponse(OK, response)
+
+        PUT("dataModels/$dynamicProfileModelId/finalise", [versionChangeType: 'Major', versionTag: 'Functional Test Version Tag'])
+        verifyResponse OK, response
 
         logout()
 
@@ -278,8 +280,10 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         ]
 
         POST("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${dynamicProfileModelId}", profileMap)
-
         verifyResponse(OK, response)
+
+        PUT("dataModels/$dynamicProfileModelId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
 
         logout()
 
@@ -1070,6 +1074,12 @@ class ProfileFunctionalSpec extends FunctionalSpec {
 
         then:
         verifyResponse(OK, response)
+
+        when: 'the dynamic profile data model is finalised'
+        PUT("dataModels/$dynamicProfileModelId/finalise", [versionChangeType: 'Major'])
+
+        then: 'the response is OK'
+        verifyResponse OK, response
 
         when:
         Map optionalFieldMap = [
@@ -2529,8 +2539,20 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         String simpleModelId = getDataModelId()
         String profileModelId = getDynamicProfileModelId()
         loginEditor()
-        PUT("dataModels/$profileModelId/finalise", [versionChangeType: 'Major', versionTag: 'Functional Test Version Tag'])
-        verifyResponse OK, response
+
+        when: 'count the used profiles on the simple data model'
+        HttpResponse<List<Map>> localResponse = GET("dataModels/${simpleModelId}/profiles/used", Argument.listOf(Map))
+
+        then: 'the result is 0'
+        verifyResponse(OK, localResponse)
+        localResponse.body().size() == 0
+
+        when: 'get the unused profiles on the simple data model'
+        localResponse = GET("dataModels/${simpleModelId}/profiles/unused", Argument.listOf(Map))
+
+        then: '1 of these is for the Dynamic Profile Model'
+        verifyResponse(OK, localResponse)
+        localResponse.body().findAll{it.displayName == 'Dynamic Profile Model'}.size() == 1
 
         when: 'get the finalised profile against the simple data model'
         GET("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model", STRING_ARG)
@@ -2545,11 +2567,25 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         verifyResponse CREATED, response
         String profileModelVersion2Id = response.body().id
 
+        when: 'get the unused profiles on the simple data model'
+        localResponse = GET("dataModels/${simpleModelId}/profiles/unused", Argument.listOf(Map))
+
+        then: 'still 1 of these is for the Dynamic Profile Model'
+        verifyResponse(OK, localResponse)
+        localResponse.body().findAll{it.displayName == 'Dynamic Profile Model'}.size() == 1
+
         when: 'finalise the new branch model version'
         PUT("dataModels/$profileModelVersion2Id/finalise", [versionChangeType: 'Major', versionTag: 'Functional Test Second Version Tag'])
 
         then: 'the response is OK'
         verifyResponse OK, response
+
+        when: 'get the unused profiles on the simple data model'
+        localResponse = GET("dataModels/${simpleModelId}/profiles/unused", Argument.listOf(Map))
+
+        then: 'now 2 of these are for the Dynamic Profile Model, because we get the finalised profile branch'
+        verifyResponse(OK, localResponse)
+        localResponse.body().findAll{it.displayName == 'Dynamic Profile Model'}.size() == 2
 
         when: 'get the finalised profile against the simple data model now that there are two versions of the profile'
         GET("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model", MAP_ARG)
