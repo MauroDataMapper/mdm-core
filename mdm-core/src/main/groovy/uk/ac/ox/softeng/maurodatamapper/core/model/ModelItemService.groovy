@@ -50,6 +50,10 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
         throw new ApiNotYetImplementedException('MIS01', "deleteAllByModelIds for ${getModelItemClass().simpleName}")
     }
 
+    K validate(K modelItem) {
+        throw new ApiNotYetImplementedException('MIS01', "validate for ${getModelItemClass().simpleName}")
+    }
+
     @Deprecated
     K copy(Model copiedModelInto, K original, UserSecurityPolicyManager userSecurityPolicyManager) {
         copy(copiedModelInto, original, null, userSecurityPolicyManager)

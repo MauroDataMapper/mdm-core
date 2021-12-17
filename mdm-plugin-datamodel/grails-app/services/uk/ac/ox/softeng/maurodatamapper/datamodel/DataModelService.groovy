@@ -28,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
@@ -122,14 +123,73 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         DataModel.countByAuthorityAndLabel(authority, label)
     }
 
+    void validateModelItemsForDataModel(Collection<ModelItem> modelItems, DataModel dataModel, String associationName, ModelItemService service) {
+        modelItems.eachWithIndex {et, i ->
+            service.validate(et)
+            if (et.hasErrors()) {
+                et.errors.fieldErrors.each {err ->
+                    dataModel.errors.rejectValue("${associationName}[${i}].${err.field}", err.code, err.arguments, err.defaultMessage)
+                }
+            }
+        }
+        dataModel."${associationName}" = modelItems
+    }
+
+    void validateDataClassesForDataModel(Collection<DataClass> allDataClasses, DataModel dataModel) {
+        if (!allDataClasses) return
+
+        log.trace('{} dataclasses to validate', allDataClasses.count {!it.parentDataClass}, allDataClasses.size())
+
+        dataModel.fullSortOfChildren(allDataClasses.findAll {!it.parentDataClass})
+
+        allDataClasses.each {
+            it.dataModel.skipValidation(true)
+            it.skipValidation(true)
+        }
+        dataModel.dataTypes.each {it.skipValidation(true)}
+        allDataClasses.eachWithIndex {dc, i ->
+            long st = System.currentTimeMillis()
+            dc.skipValidation(false)
+            dataClassService.validate(dc)
+            dc.skipValidation(true)
+            long tt = System.currentTimeMillis() - st
+            if (tt >= 1000) log.debug('{} validated in {}', dc.label, Utils.getTimeString(tt))
+        }
+        dataModel.dataClasses.addAll(allDataClasses)
+
+        // To be able to register the errors in the DM we need to add the DCs back to the DM
+        allDataClasses.eachWithIndex { dc, i ->
+            if (dc.hasErrors()) {
+                dc.errors.fieldErrors.each {err ->
+                    dataModel.errors.rejectValue("dataClasses[${i}].${err.field}", err.code, err.arguments, err.defaultMessage)
+                }
+            }
+        }
+    }
+
     DataModel validate(DataModel dataModel) {
-        log.debug('Validating DataModel')
+        log.debug('Validating DataModel {}', dataModel.label)
+        long totalStart = System.currentTimeMillis()
+
+        // Extract DCs to validate separately
+        Collection<DataClass> dataClasses = []
+        if (dataModel.dataClasses) {
+            dataClasses.addAll dataModel.dataClasses
+            dataModel.dataClasses.clear()
+        }
+
         long st = System.currentTimeMillis()
         dataModel.validate()
+        log.debug('DataModel base content validation took {}', Utils.timeTaken(st))
+
+        st = System.currentTimeMillis()
+        validateDataClassesForDataModel(dataClasses, dataModel)
+        log.debug('DataModel dataClasses validation took {}', Utils.timeTaken(st))
+
         if (dataModel.hasErrors()) {
             Errors existingErrors = dataModel.errors
             Errors cleanedErrors = new ValidationErrors(dataModel)
-            existingErrors.fieldErrors.each { fe ->
+            existingErrors.fieldErrors.each {fe ->
                 if (!fe.field.contains('dataModel')) {
                     cleanedErrors.rejectValue(fe.field, fe.code, fe.arguments, fe.defaultMessage)
                 }
@@ -137,7 +197,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             }
             dataModel.errors = cleanedErrors
         }
-        log.debug('Validated DataModel in {}', Utils.timeTaken(st))
+        log.debug('Validated DataModel in {}', Utils.timeTaken(totalStart))
         dataModel
     }
 
@@ -582,6 +642,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
     DataModel copyModel(DataModel original, Folder folderToCopyInto, User copier, boolean copyPermissions, String label, Version copyDocVersion,
                         String branchName, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata) {
+        log.debug('Creating a new copy of {} with branch name {}', original.label, branchName)
         DataModel copy = new DataModel(author: original.author, organisation: original.organisation, modelType: original.modelType, finalised: false,
                                        deleted: false, documentationVersion: copyDocVersion, folder: folderToCopyInto,
                                        authority: authorityService.defaultAuthority,

@@ -77,6 +77,12 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     }
 
     @Override
+    DataClass validate(DataClass dataClass) {
+        dataClass.validate()
+        dataClass
+    }
+
+    @Override
     DataClass save(Map args, DataClass domain) {
         // If not previously saved then allow a deep save and/or datatype save
         Collection<DataType> newDataTypes

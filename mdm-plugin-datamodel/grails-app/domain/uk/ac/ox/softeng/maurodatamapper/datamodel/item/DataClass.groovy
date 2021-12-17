@@ -110,7 +110,7 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         referenceTypes cascade: 'none'
         summaryMetadata cascade: 'all-delete-orphan'
         dataModel index: 'data_class_data_model_idx' //, cascade: 'none', cascadeValidate: 'none'
-        parentDataClass index: 'data_class_parent_data_class_idx' , cascade: 'save-update'
+        parentDataClass index: 'data_class_parent_data_class_idx', cascade: 'save-update'
         extendedDataClasses cascade: 'none', cascadeValidate: 'none', joinTable: [
             name  : 'join_dataclass_to_extended_data_class',
             key   : 'dataclass_id',
@@ -196,6 +196,12 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
             if (!it.createdBy) it.createdBy = createdBy
             it.multiFacetAwareItem = this
         }
+        // New save/validate so all DEs and DCs are also new so sort the indexes now
+        // This avoids repeated calls to the individual DE or DC during their beforeValidate
+        if (!id) {
+            if (dataElements && !dataElements.first().idx) fullSortOfChildren(dataElements)
+            if (dataClasses && !dataClasses.first().idx) fullSortOfChildren(dataClasses)
+        }
         log.trace('DC before validate {} took {}', this.label, Utils.timeTaken(st))
     }
 
@@ -243,7 +249,11 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
      */
     @Override
     CatalogueItem getIndexedWithin() {
-        getParent()
+        // Hack around the code, its indexed with the DC or DM but if the DC has no id then the DC will be sorted and idx'd as part of the DC beforeValidate
+        if (parentDataClass) {
+            return parentDataClass.id ? parentDataClass : null
+        }
+        return dataModel?.id ? dataModel : null
     }
 
     @Override

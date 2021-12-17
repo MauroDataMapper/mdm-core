@@ -192,7 +192,8 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
      */
     @Override
     DataClass getIndexedWithin() {
-        dataClass
+        // Hack around the code, its indexed with the DC but if the DC has no id then the DE will be sorted and idx'd as part of the DC beforeValidate
+        dataClass?.id ? dataClass : null
     }
 
     ObjectDiff<DataElement> diff(DataElement otherDataElement, String context) {

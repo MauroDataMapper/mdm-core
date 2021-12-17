@@ -203,6 +203,12 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
             if (!it.createdBy) it.createdBy = createdBy
             it.multiFacetAwareItem = this
         }
+        // New save/validate so all DEs and DCs are also new so sort the indexes now
+        // This avoids repeated calls to the individual DE or DC during their beforeValidate
+        if (!id) {
+            fullSortOfChildren(getDataTypes())
+            fullSortOfChildren(childDataClasses)
+        }
     }
 
     DataType findDataTypeByLabel(String label) {

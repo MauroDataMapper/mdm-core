@@ -161,7 +161,8 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
      */
     @Override
     DataModel getIndexedWithin() {
-        dataModel
+        // Hack around the code, its indexed with the DC but if the DC has no id then the DE will be sorted and idx'd as part of the DC beforeValidate
+        dataModel?.id ? dataModel : null
     }
 
     Set<UUID> getDataElementIds() {
