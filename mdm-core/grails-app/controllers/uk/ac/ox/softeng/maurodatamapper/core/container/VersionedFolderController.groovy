@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
@@ -100,7 +101,7 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
             }
 
             request.withFormat {
-                '*' { render status: NO_CONTENT } // NO CONTENT STATUS CODE
+                '*' {render status: NO_CONTENT} // NO CONTENT STATUS CODE
             }
             return
         }
@@ -162,7 +163,7 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
 
         Set<String> changedProperties = instance.getDirtyPropertyNames()
 
-        updateResource(instance)
+        updateResourceAndHierarchy(instance, changedProperties)
         updateSecurity(instance, changedProperties)
         updateResponse(instance)
     }
@@ -189,7 +190,7 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
 
         if (!validateResource(copy, 'create')) return
 
-        saveResource(copy)
+        saveResourceAndHierarchy(copy)
 
         saveResponse(copy)
     }
@@ -220,7 +221,7 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
 
         if (!validateResource(copy, 'create')) return
 
-        saveResource(copy)
+        saveResourceAndHierarchy(copy)
 
         saveResponse(copy)
     }
@@ -248,7 +249,7 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
 
         if (!validateResource(copy, 'create')) return
 
-        saveResource(copy)
+        saveResourceAndHierarchy(copy)
 
         saveResponse(copy)
     }
@@ -409,9 +410,17 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
         folder
     }
 
+    protected VersionedFolder saveResourceAndHierarchy(VersionedFolder resource) {
+        versionedFolderService.saveFolderHierarchy(resource)
+        saveResource(resource)
+    }
+
     @Override
     protected VersionedFolder updateResource(VersionedFolder resource) {
-        Set<String> changedProperties = resource.getDirtyPropertyNames()
+        updateResource resource, resource.getDirtyPropertyNames().toSet()
+    }
+
+    protected VersionedFolder updateResource(VersionedFolder resource, Set<String> changedProperties) {
         VersionedFolder folder = super.updateResource(resource) as VersionedFolder
         if (securityPolicyManagerService) {
             currentUserSecurityPolicyManager = securityPolicyManagerService.updateSecurityForSecurableResource(folder,
@@ -419,6 +428,11 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
                                                                                                                currentUser)
         }
         folder
+    }
+
+    protected VersionedFolder updateResourceAndHierarchy(VersionedFolder resource, Set<String> changedProperties) {
+        versionedFolderService.saveFolderHierarchy(resource)
+        updateResource(resource, changedProperties)
     }
 
     @Override
@@ -431,16 +445,13 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
 
     @Override
     protected void serviceDeleteResource(VersionedFolder resource) {
-        if (securityPolicyManagerService) {
-            currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(resource, currentUser)
-        }
-        versionedFolderService.delete(resource)
+        throw new ApiNotYetImplementedException('MC01', 'serviceDeleteResource')
     }
 
     protected VersionedFolder updateSecurity(VersionedFolder instance, Set<String> changedProperties) {
-        modelServices.each { service ->
+        modelServices.each {service ->
             Collection<Model> modelsInFolder = service.findAllByFolderId(instance.id)
-            modelsInFolder.each { model ->
+            modelsInFolder.each {model ->
                 if (securityPolicyManagerService) {
                     currentUserSecurityPolicyManager = securityPolicyManagerService.updateSecurityForSecurableResource(model as SecurableResource,
                                                                                                                        changedProperties,

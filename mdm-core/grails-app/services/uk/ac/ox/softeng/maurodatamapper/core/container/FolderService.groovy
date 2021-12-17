@@ -202,6 +202,23 @@ class FolderService extends ContainerService<Folder> {
         folder
     }
 
+    Folder saveFolderHierarchy(Map args, Folder folder) {
+        log.trace('Saving Folder Hierarchy')
+        // Saves folders and the models but not the model contents
+        folder.childFolders.each {cf ->
+            saveFolderHierarchy(cf, validate: false, flush: false)
+        }
+
+        modelServices.each {service ->
+            List<Model> models = service.findAllByContainerId(folder.id) as List<Model>
+            models.each {m ->
+                service.save(m, validate: false, flush: false)
+            }
+        }
+
+        save(args ?: [validate: false, flush: true], folder)
+    }
+
     /**
      * Find all resources by the defined user security policy manager. If none provided then assume no security policy in place in which case
      * everything is public.
