@@ -494,40 +494,37 @@ class FolderService extends ContainerService<Folder> {
                             boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
         modelServices.each {service ->
             List<Model> originalModels = service.findAllByContainerId(originalFolder.id) as List<Model>
-            List<Model> copiedModels = originalModels.collect {Model originalModel ->
-
+            originalModels.each {Model originalModel ->
+                Model workingModel = service.get(originalModel.id) as Model
                 switch (copyPassType) {
                     case CopyPassType.FIRST_PASS:
+                        Folder workingFolder = get(copiedFolder.id)
                         // First pass copy/create all the models
                         // Any links across models will remain pointing to the original VF models
-                        return service.copyModel(originalModel, copiedFolder, copier, copyPermissions,
-                                                 "${originalModel.label}${labelSuffix}",
-                                                 copyDocVersion, branchName, throwErrors,
-                                                 userSecurityPolicyManager)
+                        Model copiedModel = service.copyModel(workingModel, workingFolder, copier, copyPermissions,
+                                                              "${workingModel.label}${labelSuffix}",
+                                                              copyDocVersion, branchName, throwErrors,
+                                                              userSecurityPolicyManager)
+                        log.debug('Validating and saving model copy')
+                        service.validate(copiedModel)
+                        if (copiedModel.hasErrors()) {
+                            throw new ApiInvalidModelException('VFS02', 'Copied Model is invalid', copiedModel.errors, messageSource)
+                        }
+                        service.saveModelWithContent(copiedModel)
+                        return copiedModel
                     case CopyPassType.SECOND_PASS:
                         // Second pass work through all the models and update the links across models
-                        Model copiedModel = service.findByFolderIdAndLabel(copiedFolder.id, "${originalModel.label}${labelSuffix}")
+                        Model copiedModel = service.findByFolderIdAndLabel(copiedFolder.id, "${workingModel.label}${labelSuffix}")
                         if (!copiedModel) {
-                            throw new ApiInternalException('FSXX', "${originalModel.label}${labelSuffix} does not exist inside ${copiedFolder.label}")
+                            throw new ApiInternalException('FSXX', "${workingModel.label}${labelSuffix} does not exist inside ${copiedFolder.label}")
                         }
-                        return service.updateCopiedCrossModelLinks(copiedModel, originalModel)
+                        return service.updateCopiedCrossModelLinks(copiedModel, workingModel)
                     case CopyPassType.THIRD_PASS:
-                        return service.findByFolderIdAndLabel(copiedFolder.id, "${originalModel.label}${labelSuffix}")
+                        return service.findByFolderIdAndLabel(copiedFolder.id, "${workingModel.label}${labelSuffix}")
                 }
                 null
             }
 
-            if (copyPassType == CopyPassType.FIRST_PASS) {
-                // We can't save until after all copied as the save clears the sessions
-                copiedModels.each {copy ->
-                    log.debug('Validating and saving model copy')
-                    service.validate(copy)
-                    if (copy.hasErrors()) {
-                        throw new ApiInvalidModelException('VFS02', 'Copied Model is invalid', copy.errors, messageSource)
-                    }
-                    service.saveModelWithContent(copy)
-                }
-            }
             if (copyPassType == CopyPassType.THIRD_PASS) {
                 // At the moment just make sure the session is flushed in the third pass, this makes sure all objects are the same
                 sessionFactory.currentSession.flush()
