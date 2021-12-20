@@ -394,6 +394,7 @@ class FolderService extends ContainerService<Folder> {
                           Version modelCopyDocVersion, boolean throwErrors,
                           UserSecurityPolicyManager userSecurityPolicyManager) {
         log.debug('{} performing copy folder pass for {}[{}]', copyPassType, original.id, original.label)
+        long start = System.currentTimeMillis()
         if (copyPassType == CopyPassType.FIRST_PASS) {
             copiedFolder = copyBasicFolderInformation(original, copiedFolder, label, copier)
 
@@ -423,7 +424,7 @@ class FolderService extends ContainerService<Folder> {
         copyFolderContents(original, copiedFolder, copier, copyPassType, copyPermissions, modelCopyDocVersion, modelBranchName, throwErrors,
                            userSecurityPolicyManager)
 
-        log.debug('Folder copy complete')
+        log.debug('{} folder copy complete in {}', copyPassType, Utils.timeTaken(start))
         copiedFolder
     }
 
@@ -494,6 +495,7 @@ class FolderService extends ContainerService<Folder> {
                             boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
         modelServices.each {service ->
             List<Model> originalModels = service.findAllByContainerId(originalFolder.id) as List<Model>
+
             originalModels.each {Model originalModel ->
                 Model workingModel = service.get(originalModel.id) as Model
                 switch (copyPassType) {
@@ -519,14 +521,14 @@ class FolderService extends ContainerService<Folder> {
                             throw new ApiInternalException('FSXX', "${workingModel.label}${labelSuffix} does not exist inside ${copiedFolder.label}")
                         }
                         return service.updateCopiedCrossModelLinks(copiedModel, workingModel)
-                    case CopyPassType.THIRD_PASS:
-                        return service.findByFolderIdAndLabel(copiedFolder.id, "${workingModel.label}${labelSuffix}")
                 }
                 null
             }
 
             if (copyPassType == CopyPassType.THIRD_PASS) {
+                // TODO is this necessary???
                 // At the moment just make sure the session is flushed in the third pass, this makes sure all objects are the same
+                service.findAllByContainerId(copiedFolder.id)
                 sessionFactory.currentSession.flush()
             }
         }
