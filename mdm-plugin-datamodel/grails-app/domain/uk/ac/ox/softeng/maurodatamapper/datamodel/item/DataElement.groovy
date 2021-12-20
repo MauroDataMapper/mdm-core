@@ -149,7 +149,7 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
         }
         // If datatype is newly created with dataelement and the datamodel is not new
         // If the DM is new then DT validation will happen at the DM level
-        if (dataType && !dataType.ident() && getModel().id) {
+        if (dataType && !dataType.ident() && getModel().id && !dataType.shouldSkipValidation()) {
             dataType.dataModel = model
             dataType.createdBy = createdBy
             dataType.beforeValidate()

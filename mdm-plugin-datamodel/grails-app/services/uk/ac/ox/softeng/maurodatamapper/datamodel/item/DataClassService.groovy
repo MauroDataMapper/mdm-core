@@ -671,7 +671,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
 
         copy.dataClasses = []
         original.dataClasses.each {child ->
-            copy.addToDataClasses(copyDataClass(copiedDataModel, child, copier, userSecurityPolicyManager, null, copySummaryMetadata, null))
+            copyDataClass(copiedDataModel, child, copier, userSecurityPolicyManager, copy, copySummaryMetadata, null)
         }
         copy.dataElements = []
         original.dataElements.each {element ->
