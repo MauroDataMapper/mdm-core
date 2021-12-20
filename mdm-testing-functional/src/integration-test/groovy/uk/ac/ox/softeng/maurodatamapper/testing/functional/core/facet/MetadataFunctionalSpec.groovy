@@ -80,6 +80,8 @@ class MetadataFunctionalSpec extends FunctionalSpec {
     "defaultNamespace": false,
     "editable": true,
     "keys": [
+      "mdcl1",
+      "mdel1",
       "mdk1",
       "mdk2"
     ],
@@ -197,6 +199,8 @@ class MetadataFunctionalSpec extends FunctionalSpec {
     "defaultNamespace": false,
     "editable": true,
     "keys": [
+      "mdcl1",
+      "mdel1",
       "mdk1",
       "mdk2"
     ],

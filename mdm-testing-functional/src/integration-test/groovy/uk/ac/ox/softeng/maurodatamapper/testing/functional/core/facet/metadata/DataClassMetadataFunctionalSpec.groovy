@@ -57,4 +57,20 @@ class DataClassMetadataFunctionalSpec extends CatalogueItemMetadataFunctionalSpe
     String getCatalogueItemId() {
         DataClass.byDataModelIdAndLabel(Utils.toUuid(getModelId()), 'parent').get().id.toString()
     }
+
+    @Override
+    String getEditorIndexJson() {
+        '''{
+  "count": 1,
+  "items": [
+  {
+    "id": "${json-unit.matches:id}",
+    "namespace": "test.com",
+    "key": "mdcl1",
+    "value": "mdcl1",
+    "lastUpdated": "${json-unit.matches:offsetDateTime}"
+  }
+  ]
+}'''
+    }
 }

@@ -900,7 +900,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         child.dataClasses.size() == 1
 
         and:
-        Metadata.count() == 296
+        Metadata.count() == 298
         DataClass.count() == 19
         DataElement.count() == 143
         Annotation.count() == 2
