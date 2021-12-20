@@ -750,6 +750,12 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         verifyResponse(OK, response)
 
         when:
+        PUT("dataModels/$dynamicProfileModelId/finalise", [versionChangeType: 'Major', versionTag: 'Functional Test Version Tag'])
+
+        then:
+        verifyResponse OK, response
+
+        when:
         Map optionalFieldMap = [
             fieldName   : 'Dynamic Profile Elem (Optional)',
             currentValue: 'abc'

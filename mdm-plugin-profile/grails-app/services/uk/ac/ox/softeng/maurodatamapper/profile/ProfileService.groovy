@@ -152,18 +152,18 @@ class ProfileService implements DataBinder {
         metadataList.collect {it.namespace} as Set
     }
 
-    Set<ProfileProviderService> getUsedProfileServices(MultiFacetAware multiFacetAwareItem) {
+    Set<ProfileProviderService> getUsedProfileServices(MultiFacetAware multiFacetAwareItem, boolean finalisedOnly = false) {
         Set<String> usedNamespaces = getUsedNamespaces(multiFacetAwareItem)
 
-        getAllProfileProviderServices().findAll {
+        getAllProfileProviderServices(finalisedOnly).findAll {
             (usedNamespaces.contains(it.getMetadataNamespace()) &&
              (it.profileApplicableForDomains().contains(multiFacetAwareItem.domainType) || it.profileApplicableForDomains().size() == 0))
         }
     }
 
-    Set<ProfileProviderService> getUnusedProfileServices(MultiFacetAware multiFacetAwareItem) {
-        Set<ProfileProviderService> usedProfiles = getUsedProfileServices(multiFacetAwareItem)
-        Set<ProfileProviderService> allProfiles = getAllProfileProviderServices().findAll {
+    Set<ProfileProviderService> getUnusedProfileServices(MultiFacetAware multiFacetAwareItem, boolean finalisedOnly = false) {
+        Set<ProfileProviderService> usedProfiles = getUsedProfileServices(multiFacetAwareItem, finalisedOnly)
+        Set<ProfileProviderService> allProfiles = getAllProfileProviderServices(finalisedOnly).findAll {
             it.profileApplicableForDomains().size() == 0 ||
             it.profileApplicableForDomains().contains(multiFacetAwareItem.domainType)
         }
@@ -178,7 +178,11 @@ class ProfileService implements DataBinder {
 
     }
 
-    Set<ProfileProviderService> getAllProfileProviderServices() {
+    /**
+     * @param finalisedOnly If true then exclude dynamic profiles which are not finalised
+     * @return
+     */
+    Set<ProfileProviderService> getAllProfileProviderServices(boolean finalisedOnly = false) {
         // First we'll get the ones we already know about...
         // (Except those that we've already disabled)
         Set<ProfileProviderService> allProfileServices = []
@@ -210,7 +214,8 @@ class ProfileService implements DataBinder {
 
         // Now find any new profile models and create a service for them:
         List<DataModel> newDynamicModels = dynamicModels.findAll {dataModel ->
-            !alreadyKnownServiceDataModels.contains(dataModel.id)
+            (!alreadyKnownServiceDataModels.contains(dataModel.id)) &&
+            !(finalisedOnly && !dataModel.finalised)
         }
 
         allProfileServices.addAll(
@@ -218,7 +223,6 @@ class ProfileService implements DataBinder {
         )
 
         return allProfileServices
-
     }
 
     Set<ProfileProviderService> getAllDynamicProfileProviderServices() {
