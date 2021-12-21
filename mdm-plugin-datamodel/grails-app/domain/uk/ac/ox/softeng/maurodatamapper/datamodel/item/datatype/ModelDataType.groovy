@@ -19,7 +19,12 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.path.Path
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import grails.core.GrailsApplication
+import grails.util.Holders
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 
@@ -41,10 +46,27 @@ class ModelDataType extends DataType<ModelDataType> {
     }
 
     ObjectDiff<ModelDataType> diff(ModelDataType otherDataType, String context) {
-        catalogueItemDiffBuilder(ModelDataType, this, otherDataType)
-            .appendString('modelResourceId', this.modelResourceId.toString(), otherDataType.modelResourceId.toString())
-            .appendString('modelResourceDomainType', this.modelResourceDomainType, otherDataType.modelResourceDomainType)
+        ObjectDiff<ModelDataType> diff = catalogueItemDiffBuilder(ModelDataType, this, otherDataType)
 
+        GrailsApplication grailsApplication = Holders.getGrailsApplication()
+
+        Class thisResourceClass = Utils.lookupGrailsDomain(grailsApplication, this.modelResourceDomainType).getClazz()
+        Class otherResourceClass = Utils.lookupGrailsDomain(grailsApplication, otherDataType.modelResourceDomainType).getClazz()
+
+        Model thisResourceModel = thisResourceClass.byIdInList([this.modelResourceId]).first()
+        Model otherResourceModel = otherResourceClass.byIdInList([otherDataType.modelResourceId]).first()
+
+        // Aside from branch and version, is the model pointed to by the modelDataType really different by path?
+        Path thisResourcePath = Path.from(thisResourceModel.folder, thisResourceModel)
+        Path otherResourcePath = Path.from(otherResourceModel.folder, otherResourceModel)
+        if (!thisResourcePath.equalsIgnoringModelIdentifier(otherResourcePath)) {
+            diff.
+            appendString('modelResourceId', this.modelResourceId.toString(), otherDataType.modelResourceId.toString()).
+            appendString('modelResourceDomainType', this.modelResourceDomainType, otherDataType.modelResourceDomainType)
+            //.appendString('modelResourcePath', thisResourcePath.toString(), otherResourcePath.toString()) //TODO
+        }
+
+        diff
     }
 
     static DetachedCriteria<ModelDataType> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {

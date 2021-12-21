@@ -120,6 +120,19 @@ class PathNode {
         return true
     }
 
+    boolean equalsIgnoringModelIdentifier(o) {
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+
+        PathNode pathNode = (PathNode) o
+        if (prefix != pathNode.prefix) return false
+        if (identifier != pathNode.identifier) return false
+
+        if (attribute != pathNode.attribute) return false
+
+        return true
+    }
+
     int hashCode() {
         int result
         result = prefix.hashCode()

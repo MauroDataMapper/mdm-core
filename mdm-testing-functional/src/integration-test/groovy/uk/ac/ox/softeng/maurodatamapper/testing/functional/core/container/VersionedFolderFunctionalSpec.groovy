@@ -2467,13 +2467,13 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         GET("dataModels/$targetDataModelMap.dataModelId/dataClasses/$targetDataModelMap.existingClass/dataElements", MAP_ARG, true)
 
         then:
-        responseBody().items.label as Set == ['addLeftOnly'] as Set
+        responseBody().items.label as Set == ['addLeftOnly', 'Functional Test Data Element with Model Data Type'] as Set
 
         when:
         GET("dataModels/$targetDataModelMap.dataModelId/dataTypes", MAP_ARG, true)
 
         then:
-        responseBody().items.label as Set == ['addLeftOnly'] as Set
+        responseBody().items.label as Set == ['addLeftOnly', 'Functional Test Model Data Type'] as Set
 
         when:
         GET("dataModels/$targetDataModelMap.dataModelId/metadata", MAP_ARG, true)

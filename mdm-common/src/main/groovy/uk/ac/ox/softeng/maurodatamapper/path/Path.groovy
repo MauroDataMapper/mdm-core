@@ -157,6 +157,19 @@ class Path {
         return true
     }
 
+    boolean equalsIgnoringModelIdentifier(o) {
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+
+        if (size() != o.size()) return false
+
+        for (i in 0..<size()) {
+            if (!this[i].equalsIgnoringModelIdentifier(o[i])) return false
+        }
+
+        return true
+    }
+
     int hashCode() {
         return (pathNodes != null ? pathNodes.hashCode() : 0)
     }
