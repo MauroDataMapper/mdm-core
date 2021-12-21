@@ -379,12 +379,14 @@ class FolderService extends ContainerService<Folder> {
                       Version modelCopyDocVersion, boolean throwErrors,
                       UserSecurityPolicyManager userSecurityPolicyManager) {
         log.debug('Copying folder {}[{}]', original.id, original.label)
+        long start = System.currentTimeMillis()
         copyFolderPass(CopyPassType.FIRST_PASS, original, copiedFolder, label, copier, copyPermissions, modelBranchName, modelCopyDocVersion,
                        throwErrors, userSecurityPolicyManager)
         copyFolderPass(CopyPassType.SECOND_PASS, original, copiedFolder, label, copier, copyPermissions, modelBranchName, modelCopyDocVersion,
                        throwErrors, userSecurityPolicyManager)
         copyFolderPass(CopyPassType.THIRD_PASS, original, copiedFolder, label, copier, copyPermissions, modelBranchName, modelCopyDocVersion,
                        throwErrors, userSecurityPolicyManager)
+        log.debug('Folder copy complete in {}', Utils.timeTaken(start))
         get(copiedFolder.id)
     }
 
