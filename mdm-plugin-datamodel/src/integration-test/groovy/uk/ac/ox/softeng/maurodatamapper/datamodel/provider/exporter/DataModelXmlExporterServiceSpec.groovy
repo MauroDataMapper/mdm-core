@@ -115,7 +115,7 @@ class DataModelXmlExporterServiceSpec extends DataBindImportAndDefaultExporterSe
         ]
     }
 
-    void 'test multi-export invalid DataModels'() {
+    void 'M01 : test multi-export invalid DataModels'() {
         expect:
         exporterService.canExportMultipleDomains()
 
@@ -155,7 +155,7 @@ class DataModelXmlExporterServiceSpec extends DataBindImportAndDefaultExporterSe
         exception.errorCode == NO_DATAMODEL_IDS_TO_EXPORT_CODE
     }
 
-    void 'test multi-export single DataModel'() {
+    void 'M02 : test multi-export single DataModel'() {
         given:
         setupData()
         DataModel.count() == 2
@@ -170,7 +170,7 @@ class DataModelXmlExporterServiceSpec extends DataBindImportAndDefaultExporterSe
         validateExportedModels('simpleDataModelInList', replaceWithTestAuthority(exported))
     }
 
-    void 'test multi-export multiple DataModels'() {
+    void 'M03 : test multi-export multiple DataModels'() {
         given:
         setupData()
         DataModel.count() == 2
@@ -185,7 +185,7 @@ class DataModelXmlExporterServiceSpec extends DataBindImportAndDefaultExporterSe
         validateExportedModels('simpleAndComplexDataModels', replaceWithTestAuthority(exported))
     }
 
-    void 'test multi-export DataModels with invalid models'() {
+    void 'M04 : test multi-export DataModels with invalid models'() {
         given:
         setupData()
         DataModel.count() == 2
@@ -206,7 +206,7 @@ class DataModelXmlExporterServiceSpec extends DataBindImportAndDefaultExporterSe
         validateExportedModels('simpleAndComplexDataModels', replaceWithTestAuthority(exported))
     }
 
-    void 'test multi-export DataModels with duplicates'() {
+    void 'M05 : test multi-export DataModels with duplicates'() {
         given:
         setupData()
         DataModel.count() == 2

@@ -116,8 +116,8 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
 
     List<DataModel> clearExpectedDiffsFromModels(List<UUID> modelIds) {
         // Rules are not imported/exported and will therefore exist as diffs
-        Closure<Boolean> removeRule = { it.rules?.removeIf { rule -> rule.name == 'Bootstrapped Functional Test Rule' } }
-        modelIds.collect {
+        Closure<Boolean> removeRule = {it.rules?.removeIf {rule -> rule.name == 'Bootstrapped Functional Test Rule'}}
+        List<DataModel> dataModels = modelIds.collect {
             DataModel dataModel = dataModelService.get(it)
             removeRule(dataModel)
             ['dataClasses', 'allDataElements', 'dataTypes'].each {
@@ -125,6 +125,8 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
             }
             dataModel
         }
+        sessionFactory.currentSession.clear()
+        dataModels
     }
 
     void 'I01 : test empty data import'() {

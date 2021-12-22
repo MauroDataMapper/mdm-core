@@ -99,8 +99,8 @@ abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBind
 
     List<Terminology> clearExpectedDiffsFromModels(List<UUID> modelIds) {
         // Rules are not imported/exported and will therefore exist as diffs
-        Closure<Boolean> removeRule = { it.rules?.removeIf { rule -> rule.name == 'Bootstrapped Functional Test Rule' } }
-        modelIds.collect {
+        Closure<Boolean> removeRule = {it.rules?.removeIf {rule -> rule.name == 'Bootstrapped Functional Test Rule'}}
+        List<Terminology> terminologies = modelIds.collect {
             Terminology terminology = terminologyService.get(it)
             removeRule(terminology)
             ['terms', 'allTermRelationships', 'termRelationshipTypes'].each {
@@ -108,6 +108,8 @@ abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBind
             }
             terminology
         }
+        sessionFactory.currentSession.clear()
+        terminologies
     }
 
     void 'I01 : test empty data import'() {

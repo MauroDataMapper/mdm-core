@@ -50,7 +50,7 @@ class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderS
         'xml'
     }
 
-    void 'test multi-import invalid DataModel content'() {
+    void 'M01 : test multi-import invalid DataModel content'() {
         expect:
         importerService.canImportMultipleDomains()
 
@@ -84,7 +84,7 @@ class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderS
     }
 
     @PendingFeature
-    void 'test multi-import invalid DataModels'() {
+    void 'M02 : test multi-import invalid DataModels'() {
         given:
         setupData()
 
@@ -120,7 +120,7 @@ class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderS
         // exception.errorCode == 'TODO'
     }
 
-    void 'test multi-import single DataModel (backwards compatibility)'() {
+    void 'M03 : test multi-import single DataModel (backwards compatibility)'() {
         given:
         setupData()
         DataModel.count() == 2
@@ -147,7 +147,7 @@ class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderS
         basicParameters.importAsNewBranchModelVersion = false
     }
 
-    void 'test multi-import single DataModel'() {
+    void 'M04 : test multi-import single DataModel'() {
         given:
         setupData()
         DataModel.count() == 2
@@ -174,7 +174,7 @@ class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderS
         basicParameters.importAsNewBranchModelVersion = false
     }
 
-    void 'test multi-import multiple DataModels'() {
+    void 'M05 : test multi-import multiple DataModels'() {
         given:
         setupData()
         DataModel.count() == 2
@@ -204,7 +204,7 @@ class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderS
     }
 
     @PendingFeature
-    void 'test multi-import DataModels with invalid models'() {
+    void 'M06 : test multi-import DataModels with invalid models'() {
         given:
         setupData()
         DataModel.count() == 2
