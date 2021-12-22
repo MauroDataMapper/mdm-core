@@ -112,7 +112,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
     void cleanUpRoles(String... ids) {
         log.info('Cleaning up roles and groups')
         log.debug('Cleaning up {} roles for ids {}', SecurableResourceGroupRole.count(), ids)
-        SecurableResourceGroupRole.bySecurableResourceIds(ids.collect {Utils.toUuid(it)}).deleteAll()
+        SecurableResourceGroupRole.bySecurableResourceIds(ids.collect { Utils.toUuid(it) }).deleteAll()
         sessionFactory.currentSession.flush()
     }
 
@@ -663,7 +663,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
 
         when: 'The save action is executed with unreachable URL'
         Map invalidDomainMap = [
-            url: 'http://invalid.localhost:8080',
+            url  : 'http://invalid.localhost:8080',
             label: 'Invalid Domain'
         ]
         POST('', invalidDomainMap)
@@ -788,7 +788,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         then:
         verifyJsonResponse OK, '''
         {
-  "count": 2,
+  "count": 3,
   "items": [
     {
       "modelId": "${json-unit.matches:id}",
@@ -804,6 +804,17 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
       "modelId": "${json-unit.matches:id}",
       "title": "Simple Test CodeSet 1.0.0",
       "label": "Simple Test CodeSet",
+      "version": "1.0.0",
+      "modelType": "CodeSet",
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "dateCreated": "${json-unit.matches:offsetDateTime}",
+      "datePublished": "${json-unit.matches:offsetDateTime}",
+      "author": "Test Bootstrap"
+    },
+    {
+      "modelId": "${json-unit.matches:id}",
+      "title": "Complex Test CodeSet 1.0.0",
+      "label": "Complex Test CodeSet",
       "version": "1.0.0",
       "modelType": "CodeSet",
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
@@ -1090,5 +1101,4 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         removeValidIdObject(subscribedCatalogueId)
         cleanUpRoles(subscribedCatalogueId)
     }
-
 }

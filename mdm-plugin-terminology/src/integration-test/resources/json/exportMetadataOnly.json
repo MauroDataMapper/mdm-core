@@ -1,0 +1,11 @@
+{
+  "exportMetadata": {
+    "exportedBy": "Admin User",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
+      "name": "CodeSetJsonExporterService",
+      "version": "4.0"
+    }
+  }
+}

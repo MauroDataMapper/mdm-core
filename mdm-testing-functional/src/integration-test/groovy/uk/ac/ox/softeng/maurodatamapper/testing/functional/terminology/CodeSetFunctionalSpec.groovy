@@ -85,6 +85,11 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
     }
 
     @Transactional
+    String getComplexCodeSetId() {
+        CodeSet.findByLabel(BootstrapModels.COMPLEX_CODESET_NAME).id.toString()
+    }
+
+    @Transactional
     String getCodeSetFolderId(String id) {
         CodeSet.get(id).folder.id.toString()
     }
@@ -186,7 +191,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
     @Override
     String getEditorIndexJson() {
         '''{
-  "count": 2,
+  "count": 3,
   "items": [
     {
       "id": "${json-unit.matches:id}",
@@ -207,6 +212,29 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
       "id": "${json-unit.matches:id}",
       "domainType": "CodeSet",
       "label": "Simple Test CodeSet",
+      "branchName": "main",
+      "documentationVersion": "1.0.0",
+      "modelVersion": "1.0.0",
+      "classifiers": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "test classifier",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+        }
+      ],
+      "author": "Test Bootstrap",
+      "organisation": "Oxford BRC",
+      "authority": {
+        "id": "${json-unit.matches:id}",
+        "url": "http://localhost",
+        "label": "Mauro Data Mapper",
+        "defaultAuthority": true
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "CodeSet",
+      "label": "Complex Test CodeSet",
       "branchName": "main",
       "documentationVersion": "1.0.0",
       "modelVersion": "1.0.0",
@@ -274,7 +302,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
     "providerType": "CodeSetExporter",
     "fileExtension": "xml",
     "fileType": "text/xml",
-    "canExportMultipleDomains": false
+    "canExportMultipleDomains": true
   },
   {
     "name": "CodeSetJsonExporterService",
@@ -288,7 +316,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
     "providerType": "CodeSetExporter",
     "fileExtension": "json",
     "fileType": "text/json",
-    "canExportMultipleDomains": false
+    "canExportMultipleDomains": true
   }
 ]'''
     }
@@ -318,7 +346,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
     ],
     "providerType": "CodeSetImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters",
-    "canImportMultipleDomains": false
+    "canImportMultipleDomains": true
   },
   {
     "name": "CodeSetJsonImporterService",
@@ -331,10 +359,9 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
     ],
     "providerType": "CodeSetImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters",
-    "canImportMultipleDomains": false
+    "canImportMultipleDomains": true
   }
 ]'''
-
     }
 
     void 'L30 : test changing folder from CodeSet context (as not logged in)'() {
@@ -505,7 +532,6 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
         removeValidIdObject(id)
     }
 
-    @PendingFeature(reason = 'no 2nd model to diff against')
     void 'L32 : test diffing 2 CodeSets (as not logged in)'() {
 
         when: 'not logged in'
@@ -515,7 +541,6 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
         verifyNotFound response, getComplexCodeSetId()
     }
 
-    @PendingFeature(reason = 'no 2nd model to diff against')
     void 'N32 : test diffing 2 CodeSets (as authenticated/no access)'() {
         when:
         loginAuthenticated()
@@ -525,7 +550,6 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
         verifyNotFound response, getComplexCodeSetId()
     }
 
-    @PendingFeature(reason = 'no 2nd model to diff against')
     void 'R32A : test diffing 2 CodeSets (as reader of LH model)'() {
         given:
         String id = getValidId()
@@ -544,7 +568,6 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
         removeValidIdObject(id)
     }
 
-    @PendingFeature(reason = 'no 2nd model to diff against')
     void 'R32B : test diffing 2 CodeSets (as reader of RH model)'() {
         given:
         String id = getValidId()
@@ -563,7 +586,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
         removeValidIdObject(id)
     }
 
-    @PendingFeature(reason = 'no 2nd model to diff against')
+    @PendingFeature(reason = 'Need to update expected diff JSON')
     void 'R32C : test diffing 2 CodeSets (as reader of both models)'() {
         when:
         loginReader()
@@ -578,7 +601,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
         String id = getValidId()
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/3.0")
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0")
 
         then:
         verifyNotFound response, id
@@ -593,7 +616,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
 
         when:
         loginAuthenticated()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/3.0")
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0")
 
         then:
         verifyNotFound response, id
@@ -608,7 +631,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
 
         when:
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0", STRING_ARG)
 
         then:
         verifyJsonResponse OK, '''{
@@ -639,47 +662,13 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
         removeValidIdObject(id)
     }
 
-    void 'L34 : test export multiple CodeSets (json only exports first id) (as not logged in)'() {
+    void 'E33 : test export a single CodeSet (as reader)'() {
         given:
         String id = getValidId()
 
         when:
-        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/3.0',
-             [codeSetIds: [id, getSimpleCodeSetId()]]
-        )
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'N34 : test export multiple CodeSets (json only exports first id) (as authenticated/no access)'() {
-        given:
-        String id = getValidId()
-
-        when:
-        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/3.0',
-             [codeSetIds: [id, getSimpleCodeSetId()]]
-        )
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'R34 : test export multiple CodeSets (json only exports first id) (as reader)'() {
-        given:
-        String id = getValidId()
-
-        when:
-        loginReader()
-        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/3.0',
-             [codeSetIds: [id, getSimpleCodeSetId()]], STRING_ARG
-        )
+        loginEditor()
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0", STRING_ARG)
 
         then:
         verifyJsonResponse OK, '''{
@@ -696,7 +685,179 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
     }
   },
   "exportMetadata": {
+    "exportedBy": "editor User",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
+      "name": "CodeSetJsonExporterService",
+      "version": "${json-unit.matches:version}"
+    }
+  }
+}'''
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'L34 : test export multiple CodeSets (as not logged in)'() {
+        given:
+        String id = getValidId()
+
+        when:
+        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0',
+             [codeSetIds: [id, getSimpleCodeSetId()]])
+
+        then:
+        verifyNotFound response, id
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'N34 : test export multiple CodeSets (as authenticated/no access)'() {
+        given:
+        String id = getValidId()
+
+        when:
+        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0',
+             [codeSetIds: [id, getSimpleCodeSetId()]])
+
+        then:
+        verifyNotFound response, id
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'R34 : test export multiple CodeSets (as reader)'() {
+        given:
+        String id = getValidId()
+
+        when:
+        loginReader()
+        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0',
+             [codeSetIds: [id, getSimpleCodeSetId()]], STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "codeSets": [
+    {
+      "id": "${json-unit.matches:id}",
+      "label": "Functional Test CodeSet",
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "documentationVersion": "1.0.0",
+      "finalised": false,
+      "authority": {
+        "id": "${json-unit.matches:id}",
+        "url": "http://localhost",
+        "label": "Mauro Data Mapper"
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "label": "Simple Test CodeSet",
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "documentationVersion": "1.0.0",
+      "finalised": true,
+      "dateFinalised": "${json-unit.matches:offsetDateTime}",
+      "modelVersion": "1.0.0",
+      "author": "Test Bootstrap",
+      "organisation": "Oxford BRC",
+      "authority": {
+        "id": "${json-unit.matches:id}",
+        "url": "http://localhost",
+        "label": "Mauro Data Mapper"
+      },
+      "termPaths": [
+        {
+          "termPath": "te:Simple Test Terminology|tm:STT01: Simple Test Term 01"
+        },
+        {
+          "termPath": "te:Simple Test Terminology|tm:STT02: Simple Test Term 02"
+        }
+      ],
+      "classifiers": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "test classifier",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+        }
+      ]
+    }
+  ],
+  "exportMetadata": {
     "exportedBy": "reader User",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
+      "name": "CodeSetJsonExporterService",
+      "version": "${json-unit.matches:version}"
+    }
+  }
+}'''
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'E34 : test export multiple CodeSets (as reader)'() {
+        given:
+        String id = getValidId()
+
+        when:
+        loginEditor()
+        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0',
+             [codeSetIds: [id, getSimpleCodeSetId()]], STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "codeSets": [
+    {
+      "id": "${json-unit.matches:id}",
+      "label": "Functional Test CodeSet",
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "documentationVersion": "1.0.0",
+      "finalised": false,
+      "authority": {
+        "id": "${json-unit.matches:id}",
+        "url": "http://localhost",
+        "label": "Mauro Data Mapper"
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "label": "Simple Test CodeSet",
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "documentationVersion": "1.0.0",
+      "finalised": true,
+      "dateFinalised": "${json-unit.matches:offsetDateTime}",
+      "modelVersion": "1.0.0",
+      "author": "Test Bootstrap",
+      "organisation": "Oxford BRC",
+      "authority": {
+        "id": "${json-unit.matches:id}",
+        "url": "http://localhost",
+        "label": "Mauro Data Mapper"
+      },
+      "termPaths": [
+        {
+          "termPath": "te:Simple Test Terminology|tm:STT01: Simple Test Term 01"
+        },
+        {
+          "termPath": "te:Simple Test Terminology|tm:STT02: Simple Test Term 02"
+        }
+      ],
+      "classifiers": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "test classifier",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+        }
+      ]
+    }
+  ],
+  "exportMetadata": {
+    "exportedBy": "editor User",
     "exportedOn": "${json-unit.matches:offsetDateTime}",
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
@@ -714,7 +875,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -723,7 +884,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
         exportedJsonString
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/4.0', [
             finalised                      : false,
             modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
@@ -746,7 +907,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -756,7 +917,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
 
         when:
         loginAuthenticated()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/4.0', [
             finalised                      : false,
             modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
@@ -779,7 +940,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -789,7 +950,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
 
         when:
         loginReader()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/4.0', [
             finalised                      : false,
             modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
@@ -812,7 +973,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -822,7 +983,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
 
         when:
         loginEditor()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/4.0', [
             finalised                      : false,
             modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
@@ -852,7 +1013,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -862,7 +1023,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
 
         when:
         loginEditor()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/4.0', [
             finalised                      : false,
             folderId                       : testFolderId.toString(),
             importAsNewDocumentationVersion: true,
@@ -897,6 +1058,142 @@ class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioni
         removeValidIdObjectUsingTransaction(id)
         removeValidIdObject(newId, NOT_FOUND)
         removeValidIdObject(id, NOT_FOUND)
+    }
+
+    void 'L36 : test import multiple CodeSets (as not logged in)'() {
+        given:
+        loginReader()
+        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0',
+             [codeSetIds: [getSimpleCodeSetId(), getComplexCodeSetId()]], STRING_ARG)
+
+        expect:
+        verifyResponse OK, jsonCapableResponse
+        String exportedJsonString = jsonCapableResponse.body()
+        logout()
+
+        and:
+        exportedJsonString
+
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0', [
+            finalised                      : false,
+            folderId                       : testFolderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: exportedJsonString.bytes.toList()
+            ]
+        ])
+
+        then:
+        verifyForbidden response
+    }
+
+    void 'N36 : test import multiple CodeSets (as authenticated/no access)'() {
+        given:
+        loginReader()
+        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0',
+             [codeSetIds: [getSimpleCodeSetId(), getComplexCodeSetId()]], STRING_ARG)
+
+        expect:
+        verifyResponse OK, jsonCapableResponse
+        String exportedJsonString = jsonCapableResponse.body()
+        logout()
+
+        and:
+        exportedJsonString
+
+        when:
+        loginAuthenticated()
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0', [
+            finalised                      : false,
+            folderId                       : testFolderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: exportedJsonString.bytes.toList()
+            ]
+        ])
+
+        then:
+        verifyNotFound response, null
+    }
+
+    void 'R36 : test import multiple CodeSets (as reader)'() {
+        given:
+        loginReader()
+        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0',
+             [codeSetIds: [getSimpleCodeSetId(), getComplexCodeSetId()]], STRING_ARG)
+
+        expect:
+        verifyResponse OK, jsonCapableResponse
+        String exportedJsonString = jsonCapableResponse.body()
+        logout()
+
+        and:
+        exportedJsonString
+
+        when:
+        loginReader()
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0', [
+            finalised                      : false,
+            folderId                       : testFolderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: exportedJsonString.bytes.toList()
+            ]
+        ])
+
+        then:
+        verifyNotFound response, null
+    }
+
+    void 'E36 : test import multiple CodeSets (as editor)'() {
+        given:
+        loginReader()
+        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0',
+             [codeSetIds: [getSimpleCodeSetId(), getComplexCodeSetId()]], STRING_ARG)
+
+        expect:
+        verifyResponse OK, jsonCapableResponse
+        String exportedJsonString = jsonCapableResponse.body()
+        logout()
+
+        and:
+        exportedJsonString
+
+        when:
+        loginEditor()
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : testFolderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importAsNewBranchModelVersion  : true, // Needed to import models
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: exportedJsonString.bytes.toList()
+            ]
+        ])
+
+        then:
+        verifyResponse CREATED, response
+        response.body().count == 2
+
+        Object object = response.body().items[0]
+        Object object2 = response.body().items[1]
+        String id = object.id
+        String id2 = object2.id
+
+        object.label == 'Simple Test CodeSet'
+        object2.label == 'Complex Test CodeSet'
+        object.id != object2.id
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(id2)
+        removeValidIdObject(id, NOT_FOUND)
+        removeValidIdObject(id2, NOT_FOUND)
     }
 
     String getExpectedDiffJson() {

@@ -61,6 +61,10 @@ abstract class DataBindTerminologyImportAndDefaultExporterServiceSpec<I extends 
 
     abstract void validateExportedModel(String testName, String exportedModel)
 
+    void validateExportedModels(String testName, String exportedModels) {
+        validateExportedModel(testName, exportedModels)
+    }
+
     Terminology importAndConfirm(byte[] bytes) {
         def imported = importerService.importTerminology(admin, bytes)
 
@@ -75,9 +79,7 @@ abstract class DataBindTerminologyImportAndDefaultExporterServiceSpec<I extends 
         assert terminologyService.count() == 3
 
         Terminology tm = Terminology.listOrderByDateCreated().last()
-
         log.info('Confirming imported model')
-
         confirmTerminology(tm)
         tm
     }
@@ -87,10 +89,18 @@ abstract class DataBindTerminologyImportAndDefaultExporterServiceSpec<I extends 
         new String(byteArrayOutputStream.toByteArray(), Charset.defaultCharset())
     }
 
+    String exportModels(List<UUID> terminologyIds) {
+        new String(exporterService.exportDomains(admin, terminologyIds).toByteArray(), Charset.defaultCharset())
+    }
+
     String importAndExport(byte[] bytes) {
         Terminology tm = importAndConfirm(bytes)
         assert tm, 'Must have a datamodel imported to be able to export'
         exportModel(tm.id)
+    }
+
+    static String replaceWithTestAuthority(String exported) {
+        exported.replace(/Mauro Data Mapper/, 'Test Authority')
     }
 
     void 'E01 : test empty data import export'() {
@@ -103,7 +113,6 @@ abstract class DataBindTerminologyImportAndDefaultExporterServiceSpec<I extends 
         then:
         ApiInternalException exception = thrown(ApiInternalException)
         exception.errorCode == 'TEEP01'
-
     }
 
     @Unroll
@@ -193,5 +202,4 @@ abstract class DataBindTerminologyImportAndDefaultExporterServiceSpec<I extends 
         then:
         diff.objectsAreIdentical()
     }
-
 }

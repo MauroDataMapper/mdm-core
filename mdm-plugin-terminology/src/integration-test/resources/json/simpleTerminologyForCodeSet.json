@@ -1,7 +1,7 @@
 {
   "terminology": {
     "id": "${json-unit.matches:id}",
-    "label": "Simple Test Terminology For CodeSet",
+    "label": "Simple Test Terminology",
     "lastUpdated": "${json-unit.matches:offsetDateTime}",
     "documentationVersion": "1.0.0",
     "finalised": false,
@@ -13,20 +13,20 @@
     "terms": [
       {
         "id": "${json-unit.matches:id}",
-        "label": "CST01: Test Term 01",
+        "label": "STT01: Simple Test Term 01",
         "description": "This is a very important description",
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
-        "code": "CST01",
-        "definition": "Test Term 01",
+        "code": "STT01",
+        "definition": "Simple Test Term 01",
         "url": "https://example.com"
       },
       {
         "id": "${json-unit.matches:id}",
-        "label": "CST02: Test Term 02",
+        "label": "STT02: Simple Test Term 02",
         "description": "This is a very important description",
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
-        "code": "CST02",
-        "definition": "Test Term 02",
+        "code": "STT02",
+        "definition": "Simple Test Term 02",
         "url": "https://example.com"
       }
     ]
@@ -37,7 +37,7 @@
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
       "name": "TerminologyJsonExporterService",
-      "version": "3.0"
+      "version": "4.0"
     }
   }
 }

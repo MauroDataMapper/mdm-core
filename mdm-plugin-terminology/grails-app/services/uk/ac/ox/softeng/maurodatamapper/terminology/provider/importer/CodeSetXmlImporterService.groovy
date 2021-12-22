@@ -26,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.
 
 import groovy.util.logging.Slf4j
 import groovy.util.slurpersupport.GPathResult
+import groovy.util.slurpersupport.NodeChild
 
 import java.nio.charset.Charset
 
@@ -39,12 +40,12 @@ class CodeSetXmlImporterService extends DataBindCodeSetImporterProviderService<C
 
     @Override
     String getVersion() {
-        '3.0'
+        '4.0'
     }
 
     @Override
     Boolean canImportMultipleDomains() {
-        false
+        true
     }
 
     @Override
@@ -61,6 +62,37 @@ class CodeSetXmlImporterService extends DataBindCodeSetImporterProviderService<C
         Map map = convertToMap(result)
 
         log.debug('Importing CodeSet map')
-        bindMapToCodeSet currentUser, map.codeSet as Map
+        bindMapToCodeSet(currentUser, map.codeSet as Map)
+    }
+
+    @Override
+    List<CodeSet> importCodeSets(User currentUser, byte[] content) {
+        if (!currentUser) throw new ApiUnauthorizedException('XTIS01', 'User must be logged in to import model')
+        if (content.size() == 0) throw new ApiBadRequestException('XTIS02', 'Cannot import empty content')
+
+        String xml = new String(content, Charset.defaultCharset())
+
+        log.debug('Parsing in file content using XmlSlurper')
+        GPathResult result = new XmlSlurper().parseText(xml)
+        result = result.children()[0].name() == 'codeSets' ? result.children()[0] : result
+
+        if (result.name() == 'codeSets') {
+            log.debug('Importing CodeSet list')
+            return convertToList(result as NodeChild).collect { bindMapToCodeSet(currentUser, it) }
+        }
+
+        // Handle single CodeSet map or exportModel passed to this method, for backwards compatibility
+
+        log.debug('Converting result to Map')
+        Map map = convertToMap(result)
+
+        log.debug('Importing CodeSet map')
+        [bindMapToCodeSet(currentUser, backwardsCompatibleExtractCodeSetMap(result, map))]
+    }
+
+    private Map backwardsCompatibleExtractCodeSetMap(GPathResult result, Map map) {
+        if (result.name() == 'exportModel') return map.codeSet as Map
+        if (result.name() == 'codeSet') return map
+        throw new ApiBadRequestException('XIS03', 'Cannot import XML as codeSet is not present')
     }
 }

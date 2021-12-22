@@ -30,8 +30,7 @@ import groovy.util.logging.Slf4j
 import org.springframework.core.GenericTypeResolver
 
 @Slf4j
-abstract class DataBindTerminologyImporterProviderService<T extends TerminologyFileImporterProviderServiceParameters> extends
-    TerminologyImporterProviderService<T> {
+abstract class DataBindTerminologyImporterProviderService<T extends TerminologyFileImporterProviderServiceParameters> extends TerminologyImporterProviderService<T> {
 
     abstract Terminology importTerminology(User currentUser, byte[] content)
 
@@ -49,18 +48,18 @@ abstract class DataBindTerminologyImporterProviderService<T extends TerminologyF
         false
     }
 
-    List<Terminology> importModels(User currentUser, T params) {
-        if (!currentUser) throw new ApiUnauthorizedException('FBIP01', 'User must be logged in to import model')
-        if (params.importFile.fileContents.size() == 0) throw new ApiBadRequestException('FBIP02', 'Cannot import empty file')
-        log.info('Importing {} as {}', params.importFile.fileName, currentUser.emailAddress)
-        importTerminologies(currentUser, params.importFile.fileContents)
-    }
-
     Terminology importModel(User currentUser, T params) {
         if (!currentUser) throw new ApiUnauthorizedException('FBIP01', 'User must be logged in to import model')
         if (params.importFile.fileContents.size() == 0) throw new ApiBadRequestException('FBIP02', 'Cannot import empty file')
         log.info('Importing {} as {}', params.importFile.fileName, currentUser.emailAddress)
         importTerminology(currentUser, params.importFile.fileContents)
+    }
+
+    List<Terminology> importModels(User currentUser, T params) {
+        if (!currentUser) throw new ApiUnauthorizedException('FBIP01', 'User must be logged in to import model')
+        if (params.importFile.fileContents.size() == 0) throw new ApiBadRequestException('FBIP02', 'Cannot import empty file')
+        log.info('Importing {} as {}', params.importFile.fileName, currentUser.emailAddress)
+        importTerminologies(currentUser, params.importFile.fileContents)
     }
 
     Terminology bindMapToTerminology(User currentUser, Map terminologyMap) {
@@ -79,7 +78,7 @@ abstract class DataBindTerminologyImporterProviderService<T extends TerminologyF
     }
 
     void bindTermRelationships(Terminology terminology, List<Map<String, String>> termRelationships) {
-        termRelationships.each {tr ->
+        termRelationships.each { tr ->
             String sourceCode = tr.sourceTerm?.trim()
             String targetCode = tr.targetTerm?.trim()
             String relationshipType = tr.relationshipType?.trim()

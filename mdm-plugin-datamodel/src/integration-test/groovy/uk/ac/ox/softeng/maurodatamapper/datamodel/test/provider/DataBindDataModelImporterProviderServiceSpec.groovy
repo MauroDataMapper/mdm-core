@@ -21,10 +21,6 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
-import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
-import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FileParameter
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
@@ -48,10 +44,8 @@ import spock.lang.Shared
  */
 @Rollback
 @Slf4j
-@SuppressWarnings("DuplicatedCode")
+@SuppressWarnings('DuplicatedCode')
 abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDataModelImporterProviderService> extends BaseImportExportSpec {
-
-    abstract K getImporterService()
 
     @Autowired
     DataModelService dataModelService
@@ -64,6 +58,17 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
             importAsNewBranchModelVersion = false
             importAsNewDocumentationVersion = false
             finalised = false
+        }
+    }
+
+    abstract K getImporterService()
+
+    void cleanupParameters() {
+        basicParameters.tap {
+            importAsNewBranchModelVersion = false
+            importAsNewDocumentationVersion = false
+            finalised = false
+            propagateFromPreviousVersion = false
         }
     }
 
@@ -80,6 +85,21 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         dataModelService.get(imported.id)
     }
 
+    List<DataModel> importModels(byte[] bytes) {
+        log.trace('Importing:\n {}', new String(bytes))
+        basicParameters.importFile = new FileParameter(fileContents: bytes)
+
+        List<DataModel> imported = importerService.importDomains(admin, basicParameters) as List<DataModel>
+        imported.each {
+            it.folder = testFolder
+            check(it)
+            dataModelService.saveModelWithContent(it)
+        }
+        sessionFactory.currentSession.flush()
+        log.debug('DataModels saved')
+        imported.collect { dataModelService.get(it.id) }
+    }
+
     DataModel importAndConfirm(byte[] bytes) {
         DataModel dm = importModel(bytes)
         assert dataModelService.count() == 3
@@ -94,6 +114,21 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         dm
     }
 
+    List<DataModel> clearExpectedDiffsFromModels(List<UUID> modelIds) {
+        // Rules are not imported/exported and will therefore exist as diffs
+        Closure<Boolean> removeRule = {it.rules?.removeIf {rule -> rule.name == 'Bootstrapped Functional Test Rule'}}
+        List<DataModel> dataModels = modelIds.collect {
+            DataModel dataModel = dataModelService.get(it)
+            removeRule(dataModel)
+            ['dataClasses', 'allDataElements', 'dataTypes'].each {
+                dataModel.getProperty(it)?.each(removeRule)
+            }
+            dataModel
+        }
+        sessionFactory.currentSession.clear()
+        dataModels
+    }
+
     void 'I01 : test empty data import'() {
         given:
         setupData()
@@ -104,7 +139,6 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
 
         then:
         thrown(ApiBadRequestException)
-
     }
 
     void 'I02 : test simple data import'() {
@@ -123,7 +157,6 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         !dm.classifiers
         !dm.dataTypes
         !dm.dataClasses
-
     }
 
     void 'I03 : test inc classifiers import'() {
@@ -142,11 +175,9 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         dm.classifiers.size() == 2
         !dm.dataTypes
         !dm.dataClasses
-
     }
 
     void 'I04 : test importing aliases'() {
-
         given:
         setupData()
 
@@ -246,7 +277,6 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         (dataType as PrimitiveType).units == 'mg'
         !dataType.annotations
         !dataType.metadata
-
     }
 
     void 'I07a : test inc single primitive type with newline data import'() {
@@ -276,7 +306,6 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         (dataType as PrimitiveType).units == 'mg'
         !dataType.annotations
         !dataType.metadata
-
     }
 
     void 'I08 : test inc single primitive type with metadata data import'() {
@@ -316,7 +345,6 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         md.key == 'SCTSImport'
         md.value == '0.1'
         md.multiFacetAwareItemId == dataType.id
-
     }
 
     void 'I09 : test inc single primitive type with annotation data import'() {
@@ -355,7 +383,6 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         ann.description == 'http://www.datadictionary.nhs.uk/data_dictionary/attributes/a/at/attended_or_did_not_attend_de.asp?shownav=1'
         ann.label == 'Link to NHS Data Dictionary element'
         ann.multiFacetAwareItemId == dataType.id
-
     }
 
     void 'I10 : test inc single enumeration type data import'() {
@@ -389,8 +416,8 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         !dataType.metadata
 
         when:
-        EnumerationValue val1 = ((EnumerationType) dataType).enumerationValues.find {it.key == 'M'}
-        EnumerationValue val2 = ((EnumerationType) dataType).enumerationValues.find {it.key == 'F'}
+        EnumerationValue val1 = ((EnumerationType) dataType).enumerationValues.find { it.key == 'M' }
+        EnumerationValue val2 = ((EnumerationType) dataType).enumerationValues.find { it.key == 'F' }
 
         then:
         val1
@@ -450,8 +477,8 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         !dataType.annotations
 
         when:
-        EnumerationValue val1 = ((EnumerationType) dataType).enumerationValues.find {it.key == 'M'}
-        EnumerationValue val2 = ((EnumerationType) dataType).enumerationValues.find {it.key == 'F'}
+        EnumerationValue val1 = ((EnumerationType) dataType).enumerationValues.find { it.key == 'M' }
+        EnumerationValue val2 = ((EnumerationType) dataType).enumerationValues.find { it.key == 'F' }
 
         then:
         val1
@@ -496,7 +523,6 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         and:
         dataClass.breadcrumbTree.domainId == dataClass.id
         dataClass.breadcrumbTree.parent.domainId == dm.id
-
     }
 
     void 'I13 : test inc single empty dataclass with metadata data import'() {
@@ -543,7 +569,6 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         md.key == 'SCTSImport'
         md.value == '0.1'
         md.multiFacetAwareItemId == dataClass.id
-
     }
 
     void 'I14 : test inc single empty dataclass with annotation data import'() {
@@ -589,7 +614,6 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         ann.description == 'http://www.datadictionary.nhs.uk/data_dictionary/attributes/a/at/attended_or_did_not_attend_de.asp?shownav=1'
         ann.label == 'Link to NHS Data Dictionary element'
         ann.multiFacetAwareItemId == dataClass.id
-
     }
 
     void 'I15 : test inc single dataclass with empty child dataclass data import'() {
@@ -608,7 +632,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         !dm.dataTypes
 
         when:
-        DataClass dataClass = dm.dataClasses.find {it.label == 'Core'}
+        DataClass dataClass = dm.dataClasses.find { it.label == 'Core' }
 
         then:
         dm.childDataClasses.size() == 1
@@ -642,7 +666,6 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         child.breadcrumbTree.domainId == child.id
         child.breadcrumbTree.parent.domainId == dataClass.id
         child.breadcrumbTree.parent.parent.domainId == dm.id
-
     }
 
     void 'I16 : test inc single dataclass with data element type data import'() {
@@ -672,7 +695,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         !dataType.metadata
 
         when:
-        DataClass dataClass = dm.dataClasses.find {it.label == 'Core'}
+        DataClass dataClass = dm.dataClasses.find { it.label == 'Core' }
 
         then:
         dm.dataClasses.size() == 1
@@ -702,10 +725,10 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
 
         and:
         dataElement.metadata.size() == 2
-        dataElement.metadata.every {it.namespace == 'ox.softeng.maurodatamapper.dataloaders.cancer.audits'}
-        dataElement.metadata.every {it.multiFacetAwareItemId == dataElement.id}
-        dataElement.metadata.any {it.key == 'Number' && it.value == '93'}
-        dataElement.metadata.any {it.key == 'Notes'}
+        dataElement.metadata.every { it.namespace == 'ox.softeng.maurodatamapper.dataloaders.cancer.audits' }
+        dataElement.metadata.every { it.multiFacetAwareItemId == dataElement.id }
+        dataElement.metadata.any { it.key == 'Number' && it.value == '93' }
+        dataElement.metadata.any { it.key == 'Notes' }
 
         and:
         dataElement.dataType
@@ -715,7 +738,6 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         dataElement.breadcrumbTree.domainId == dataElement.id
         dataElement.breadcrumbTree.parent.domainId == dataClass.id
         dataElement.breadcrumbTree.parent.parent.domainId == dm.id
-
     }
 
     void 'I17 : test inc dataclass with data element and reference datatype data import'() {
@@ -746,7 +768,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         dataType.referenceClass.label == 'child'
 
         when:
-        DataClass dataClass = dm.dataClasses.find {it.label == 'parent'}
+        DataClass dataClass = dm.dataClasses.find { it.label == 'parent' }
 
         then:
         dm.dataClasses.size() == 2
@@ -799,7 +821,6 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         dataElement.breadcrumbTree.domainId == dataElement.id
         dataElement.breadcrumbTree.parent.domainId == dataClass.id
         dataElement.breadcrumbTree.parent.parent.domainId == dm.id
-
     }
 
     void 'I18 : test load datamodel with datatypes'() {
@@ -830,8 +851,8 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
 
         and:
         dm.dataTypes.size() == 10
-        dm.dataTypes.findAll {it.instanceOf(PrimitiveType)}.size() == 6
-        dm.dataTypes.findAll {it.instanceOf(EnumerationType)}.size() == 4
+        dm.dataTypes.findAll { it.instanceOf(PrimitiveType) }.size() == 6
+        dm.dataTypes.findAll { it.instanceOf(EnumerationType) }.size() == 4
 
         and:
         EnumerationType.count() == 5
@@ -866,8 +887,8 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
 
         and:
         dm.dataTypes.size() == 10
-        dm.dataTypes.findAll {it.instanceOf(PrimitiveType)}.size() == 6
-        dm.dataTypes.findAll {it.instanceOf(EnumerationType)}.size() == 4
+        dm.dataTypes.findAll { it.instanceOf(PrimitiveType) }.size() == 6
+        dm.dataTypes.findAll { it.instanceOf(EnumerationType) }.size() == 4
 
         and:
         EnumerationType.count() == 5
@@ -875,7 +896,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         EnumerationValue.count() == 20
 
         when:
-        DataClass dataClass = dm.dataClasses.find {it.label == 'Core'}
+        DataClass dataClass = dm.dataClasses.find { it.label == 'Core' }
 
         then:
         dm.childDataClasses.size() == 1
@@ -893,7 +914,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         dataClass.dataElements.size() == 14
 
         when:
-        DataClass child = dataClass.dataClasses.find {it.label == 'Pre-Operative primary lung cancer diagnostic staging tests'}
+        DataClass child = dataClass.dataClasses.find { it.label == 'Pre-Operative primary lung cancer diagnostic staging tests' }
 
         then:
         child

@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportMetadata
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportModel
@@ -34,8 +33,13 @@ class DataModelJsonExporterService extends DataModelExporterProviderService impl
     JsonViewTemplateEngine templateEngine
 
     @Override
-    String getFileExtension() {
-        'json'
+    String getDisplayName() {
+        'JSON DataModel Exporter'
+    }
+
+    @Override
+    String getVersion() {
+        '3.0'
     }
 
     @Override
@@ -44,23 +48,24 @@ class DataModelJsonExporterService extends DataModelExporterProviderService impl
     }
 
     @Override
-    String getDisplayName() {
-        'JSON DataModel Exporter'
+    String getFileExtension() {
+        'json'
     }
 
     @Override
-    String getVersion() {
-        '2.0'
+    Boolean canExportMultipleDomains() {
+        true
     }
 
     @Override
     ByteArrayOutputStream exportDataModel(User currentUser, DataModel dataModel) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel new ExportModel(dataModel, 'dataModel', version, exportMetadata), fileType
+        exportModel(new ExportModel(dataModel, 'dataModel', version, exportMetadata), fileType)
     }
 
     @Override
-    ByteArrayOutputStream exportDataModels(User currentUser, List<DataModel> dataModel) throws ApiException {
-        throw new ApiBadRequestException('JES01', "${getName()} cannot export multiple DataModels")
+    ByteArrayOutputStream exportDataModels(User currentUser, List<DataModel> dataModels) throws ApiException {
+        ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
+        exportModel(new ExportModel(dataModels, 'dataModel', 'dataModels', version, exportMetadata), fileType)
     }
 }

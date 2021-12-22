@@ -22,12 +22,14 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
+import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSetService
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.CodeSetXmlExporterService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.CodeSetXmlImporterService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.terminology.test.BaseCodeSetIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlValidator
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import com.google.common.base.CaseFormat
 import grails.gorm.transactions.Rollback
@@ -36,6 +38,8 @@ import grails.testing.spock.OnceBefore
 import grails.util.BuildSettings
 import groovy.util.logging.Slf4j
 import org.junit.Assert
+import org.springframework.beans.factory.annotation.Autowired
+import spock.lang.PendingFeature
 import spock.lang.Shared
 
 import java.nio.charset.Charset
@@ -51,14 +55,24 @@ import java.nio.file.Paths
 @Slf4j
 class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec implements XmlValidator {
 
+    private static final String CANNOT_IMPORT_EMPTY_CONTENT_CODE = 'XTIS02'
+    private static final String NO_CODESET_TO_IMPORT_CODE = 'FBIP03'
+    private static final String NO_CODESET_IDS_TO_EXPORT_CODE = 'CSEP01'
+
+    @Autowired
+    CodeSetService codeSetService
+
     @Shared
     Path resourcesPath
 
     @Shared
-    UUID simpleTerminologyId
+    UUID simpleCodeSetId
 
     @Shared
-    UUID simpleCodeSetId
+    UUID complexCodeSetId
+
+    @Shared
+    UUID simpleTerminologyId
 
     CodeSetXmlImporterService codeSetXmlImporterService
     CodeSetXmlExporterService codeSetXmlExporterService
@@ -74,16 +88,16 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         }
     }
 
-    String getImportType() {
-        'xml'
-    }
-
-    CodeSetXmlImporterService getCodeSetImporterService() {
+    CodeSetXmlImporterService getImporterService() {
         codeSetXmlImporterService
     }
 
-    CodeSetXmlExporterService getCodeSetExporterService() {
+    CodeSetXmlExporterService getExporterService() {
         codeSetXmlExporterService
+    }
+
+    String getImportType() {
+        'xml'
     }
 
     void validateExportedModel(String testName, String exportedModel) {
@@ -98,19 +112,23 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
                               codeSetXmlExporterService.version)
     }
 
+    void validateExportedModels(String testName, String exportedModels) {
+        validateExportedModel(testName, exportedModels)
+    }
 
     @OnceBefore
     void setupResourcesPath() {
         resourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', importType)
-        assert getCodeSetImporterService()
+        assert getImporterService()
     }
 
     @Override
     void setupDomainData() {
         log.debug('Setting up CodeSetServiceSpec unit')
 
-        simpleTerminologyId = simpleTerminology.id
         simpleCodeSetId = simpleCodeSet.id
+        complexCodeSetId = complexCodeSet.id
+        simpleTerminologyId = simpleTerminology.id
     }
 
     byte[] loadTestFile(String filename) {
@@ -120,22 +138,26 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
     }
 
     String exportModel(UUID codeSetId) {
-        ByteArrayOutputStream byteArrayOutputStream = codeSetExporterService.exportDomain(admin, codeSetId)
+        ByteArrayOutputStream byteArrayOutputStream = exporterService.exportDomain(admin, codeSetId)
         new String(byteArrayOutputStream.toByteArray(), Charset.defaultCharset())
     }
 
+    String exportModels(List<UUID> codeSetIds) {
+        new String(exporterService.exportDomains(admin, codeSetIds).toByteArray(), Charset.defaultCharset())
+    }
+
     CodeSet importAndConfirm(byte[] bytes) {
-        CodeSet imported = codeSetImporterService.importCodeSet(admin, bytes)
+        CodeSet imported = importerService.importCodeSet(admin, bytes)
 
         assert imported
         imported.folder = testFolder
         log.info('Checking imported model')
-        codeSetImporterService.checkImport(admin, imported, basicParameters)
+        importerService.checkImport(admin, imported, basicParameters)
         check(imported)
         log.info('Saving imported model')
         assert codeSetService.saveModelWithContent(imported)
         sessionFactory.currentSession.flush()
-        assert codeSetService.count() == 2
+        assert codeSetService.count() == 3
 
         CodeSet codeSet = codeSetService.get(imported.id)
 
@@ -145,10 +167,36 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         codeSet
     }
 
+    List<CodeSet> importModels(byte[] bytes) {
+        List<CodeSet> imported = importerService.importCodeSets(admin, bytes)
+        imported.each {
+            it.folder = testFolder
+            importerService.checkImport(admin, it, basicParameters)
+            check(it)
+            assert codeSetService.saveModelWithContent(it)
+        }
+        sessionFactory.currentSession.flush()
+        imported.collect { codeSetService.get(it.id) }
+    }
 
     void confirmCodeSet(codeSet) {
         assert codeSet
         assert codeSet.createdBy == admin.emailAddress
+    }
+
+    CodeSet clearExpectedDiffsFromImport(CodeSet codeSet) {
+        codeSet.tap {
+            finalised = true
+            modelVersion = new Version(major: 1, minor: 0, patch: 0)
+        }
+    }
+
+    List<CodeSet> clearExpectedDiffsFromModels(List<UUID> modelIds) {
+        modelIds.collect {
+            codeSetService.get(it).tap {
+                dateFinalised = null
+            }
+        }
     }
 
     void 'test that trying to export when specifying a null codeSetId fails with an exception'() {
@@ -163,27 +211,12 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         exception.errorCode == 'CSEP01'
     }
 
-    void 'test that trying to import multiple codeSets fails'() {
-        given:
-        setupData()
-
-        expect:
-        !codeSetImporterService.canImportMultipleDomains()
-
-        when:
-        codeSetImporterService.importCodeSets(admin, loadTestFile('codeSetSimple'))
-
-        then:
-        ApiBadRequestException exception = thrown(ApiBadRequestException)
-        exception.message.contains('cannot import multiple CodeSets')
-    }
-
     void 'test exporting and reimporting the simple bootstrapped codeset'() {
         given:
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String exported = exportModel(simpleCodeSetId)
@@ -193,7 +226,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
 
         //note: importing does not actually save
         when:
-        CodeSet imported = codeSetImporterService.importCodeSet(admin, exported.bytes)
+        CodeSet imported = importerService.importCodeSet(admin, exported.bytes)
 
         then:
         assert imported
@@ -211,14 +244,13 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         diff.objectsAreIdentical()
     }
 
-
     void 'test empty data import'() {
         given:
         setupData()
 
         when:
         String data = ''
-        codeSetImporterService.importCodeSet(admin, data.bytes)
+        importerService.importCodeSet(admin, data.bytes)
 
         then:
         thrown(ApiBadRequestException)
@@ -229,7 +261,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String data = new String(loadTestFile('codeSetSimple'))
@@ -263,7 +295,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String data = new String(loadTestFile('codeSetSimpleFinalised'))
@@ -298,7 +330,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String data = new String(loadTestFile('codeSetSimpleWithAliases'))
@@ -334,7 +366,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String data = new String(loadTestFile('codeSetSimpleWithAnnotations'))
@@ -375,7 +407,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String data = new String(loadTestFile('codeSetSimpleWithMetadata'))
@@ -409,7 +441,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String data = new String(loadTestFile('codeSetSimpleWithClassifiers'))
@@ -443,7 +475,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String data = new String(loadTestFile('codeSetSimpleWithKnownTerm'))
@@ -483,7 +515,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String data = new String(loadTestFile('codeSetSimpleWithTwoKnownTerms'))
@@ -526,7 +558,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String data = new String(loadTestFile('codeSetSimpleWithUnknownTerm'))
@@ -544,7 +576,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         setupData()
 
         expect:
-        CodeSet.count() == 1
+        CodeSet.count() == 2
 
         when:
         String data = new String(loadTestFile('codeSetSimpleWithUnknownTerminology'))
@@ -555,5 +587,321 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         then:
         ApiBadRequestException exception = thrown(ApiBadRequestException)
         exception.errorCode == 'CSS01'
+    }
+
+    void 'test multi-import invalid CodeSet content'() {
+        expect:
+        importerService.canImportMultipleDomains()
+
+        when: 'given empty content'
+        importModels(''.bytes)
+
+        then:
+        ApiBadRequestException exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_EMPTY_CONTENT_CODE
+
+        when: 'given neither models list or model map (backwards compatibility)'
+        importModels(loadTestFile('exportMetadataOnly'))
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == NO_CODESET_TO_IMPORT_CODE
+
+        when: 'given an empty model map (backwards compatibility)'
+        importModels(loadTestFile('emptyCodeSet'))
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == NO_CODESET_TO_IMPORT_CODE
+
+        // when: 'given an empty models list'
+        // importModels(loadTestFile('emptyCodeSetList'))
+        //
+        // then:
+        // exception = thrown(ApiBadRequestException)
+        // exception.errorCode == 'TODO'
+    }
+
+    @PendingFeature(reason = 'No exception was thrown')
+    void 'test multi-import invalid CodeSets'() {
+        given:
+        setupData()
+
+        expect:
+        importerService.canImportMultipleDomains()
+
+        when: 'given an invalid model map (backwards compatibility)'
+        importModels(loadTestFile('invalidCodeSet'))
+
+        then:
+        ApiBadRequestException exception = thrown(ApiBadRequestException)
+        exception.errorCode == NO_CODESET_TO_IMPORT_CODE
+
+        when: 'given a single invalid model'
+        importModels(loadTestFile('invalidCodeSetInList'))
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == NO_CODESET_TO_IMPORT_CODE
+
+        when: 'given multiple invalid models'
+        importModels(loadTestFile('invalidCodeSets'))
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == NO_CODESET_TO_IMPORT_CODE
+
+        // when: 'not given export metadata'
+        // importModels(loadTestFile('noExportMetadata'))
+        //
+        // then:
+        // exception = thrown(ApiBadRequestException)
+        // exception.errorCode == 'TODO'
+    }
+
+    void 'test multi-import single CodeSet (backwards compatibility)'() {
+        given:
+        setupData()
+        CodeSet.count() == 2
+        List<CodeSet> codeSets = clearExpectedDiffsFromModels([simpleCodeSetId])
+        basicParameters.importAsNewBranchModelVersion = true // Needed to import the same models
+
+        expect:
+        importerService.canImportMultipleDomains()
+
+        when:
+        List<CodeSet> imported = importModels(loadTestFile('bootstrappedSimpleCodeSet')).each {
+            clearExpectedDiffsFromImport(it)
+        }
+
+        then:
+        imported
+        imported.size() == 1
+
+        when:
+        ObjectDiff simpleDiff = codeSetService.getDiffForModels(codeSets.pop(), imported.pop())
+
+        then:
+        simpleDiff.objectsAreIdentical()
+
+        cleanup:
+        basicParameters.importAsNewBranchModelVersion = false
+    }
+
+    void 'test multi-import single CodeSet'() {
+        given:
+        setupData()
+        CodeSet.count() == 2
+        List<CodeSet> codeSets = clearExpectedDiffsFromModels([simpleCodeSetId])
+        basicParameters.importAsNewBranchModelVersion = true // Needed to import the same models
+
+        expect:
+        importerService.canImportMultipleDomains()
+
+        when:
+        List<CodeSet> imported = importModels(loadTestFile('simpleCodeSetInList')).each {
+            clearExpectedDiffsFromImport(it)
+        }
+
+        then:
+        imported
+        imported.size() == 1
+
+        when:
+        ObjectDiff simpleDiff = codeSetService.getDiffForModels(codeSets.pop(), imported.pop())
+
+        then:
+        simpleDiff.objectsAreIdentical()
+
+        cleanup:
+        basicParameters.importAsNewBranchModelVersion = false
+    }
+
+    void 'test multi-import multiple CodeSets'() {
+        given:
+        setupData()
+        CodeSet.count() == 2
+        List<CodeSet> codeSets = clearExpectedDiffsFromModels([simpleCodeSetId, complexCodeSetId])
+        basicParameters.importAsNewBranchModelVersion = true // Needed to import the same models
+
+        expect:
+        importerService.canImportMultipleDomains()
+
+        when:
+        List<CodeSet> imported = importModels(loadTestFile('simpleAndComplexCodeSets')).each {
+            clearExpectedDiffsFromImport(it)
+        }
+
+        then:
+        imported
+        imported.size() == 2
+
+        when:
+        ObjectDiff simpleDiff = codeSetService.getDiffForModels(codeSets[0], imported[0])
+        ObjectDiff complexDiff = codeSetService.getDiffForModels(codeSets[1], imported[1])
+
+        then:
+        simpleDiff.objectsAreIdentical()
+        complexDiff.objectsAreIdentical()
+
+        cleanup:
+        basicParameters.importAsNewBranchModelVersion = false
+    }
+
+    @PendingFeature(reason = 'Invalid models are imported')
+    void 'test multi-import CodeSets with invalid models'() {
+        given:
+        setupData()
+        CodeSet.count() == 2
+        List<CodeSet> codeSets = clearExpectedDiffsFromModels([simpleCodeSetId, complexCodeSetId])
+        basicParameters.importAsNewBranchModelVersion = true // Needed to import the same models
+
+        expect:
+        importerService.canImportMultipleDomains()
+
+        when:
+        List<CodeSet> imported = importModels(loadTestFile('simpleAndInvalidCodeSets')).each {
+            clearExpectedDiffsFromImport(it)
+        }
+
+        then:
+        imported
+        imported.size() == 1
+
+        when:
+        ObjectDiff simpleDiff = codeSetService.getDiffForModels(codeSets[0], imported.pop())
+
+        then:
+        simpleDiff.objectsAreIdentical()
+
+        when:
+        imported = importModels(loadTestFile('simpleComplexAndInvalidCodeSets'))
+
+        then:
+        imported
+        imported.size() == 2
+
+        when:
+        simpleDiff = codeSetService.getDiffForModels(codeSets[0], imported[0])
+        ObjectDiff complexDiff = codeSetService.getDiffForModels(codeSets[1], imported[1])
+
+        then:
+        simpleDiff.objectsAreIdentical()
+        complexDiff.objectsAreIdentical()
+
+        cleanup:
+        basicParameters.importAsNewBranchModelVersion = false
+    }
+
+    void 'test multi-export invalid CodeSets'() {
+        expect:
+        exporterService.canExportMultipleDomains()
+
+        when: 'given null'
+        exportModels(null)
+
+        then:
+        ApiBadRequestException exception = thrown(ApiBadRequestException)
+        exception.errorCode == NO_CODESET_IDS_TO_EXPORT_CODE
+
+        when: 'given an empty list'
+        exportModels([])
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == NO_CODESET_IDS_TO_EXPORT_CODE
+
+        when: 'given a null model'
+        exportModels([null])
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == NO_CODESET_IDS_TO_EXPORT_CODE
+
+        when: 'given a single invalid model'
+        exportModels([UUID.randomUUID()])
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == NO_CODESET_IDS_TO_EXPORT_CODE
+
+        when: 'given multiple invalid models'
+        exportModels([UUID.randomUUID(), UUID.randomUUID()])
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == NO_CODESET_IDS_TO_EXPORT_CODE
+    }
+
+    void 'test multi-export single CodeSet'() {
+        given:
+        setupData()
+        CodeSet.count() == 2
+
+        expect:
+        exporterService.canExportMultipleDomains()
+
+        when:
+        String exported = exportModels([simpleCodeSetId])
+
+        then:
+        validateExportedModels('simpleCodeSetInList', replaceWithTestAuthority(exported))
+    }
+
+    void 'test multi-export multiple CodeSets'() {
+        given:
+        setupData()
+        CodeSet.count() == 2
+
+        expect:
+        exporterService.canExportMultipleDomains()
+
+        when:
+        String exported = exportModels([simpleCodeSetId, complexCodeSetId])
+
+        then:
+        validateExportedModels('simpleAndComplexCodeSets', replaceWithTestAuthority(exported))
+    }
+
+    void 'test multi-export CodeSets with invalid models'() {
+        given:
+        setupData()
+        CodeSet.count() == 2
+
+        expect:
+        exporterService.canExportMultipleDomains()
+
+        when:
+        String exported = exportModels([UUID.randomUUID(), simpleCodeSetId])
+
+        then:
+        validateExportedModels('simpleCodeSetInList', replaceWithTestAuthority(exported))
+
+        when:
+        exported = exportModels([UUID.randomUUID(), simpleCodeSetId, UUID.randomUUID(), complexCodeSetId])
+
+        then:
+        validateExportedModels('simpleAndComplexCodeSets', replaceWithTestAuthority(exported))
+    }
+
+    void 'test multi-export CodeSets with duplicates'() {
+        given:
+        setupData()
+        CodeSet.count() == 2
+
+        expect:
+        exporterService.canExportMultipleDomains()
+
+        when:
+        String exported = exportModels([simpleCodeSetId, simpleCodeSetId])
+
+        then:
+        validateExportedModels('simpleCodeSetInList', replaceWithTestAuthority(exported))
+
+        when:
+        exported = exportModels([simpleCodeSetId, complexCodeSetId, complexCodeSetId, simpleCodeSetId])
+
+        then:
+        validateExportedModels('simpleAndComplexCodeSets', replaceWithTestAuthority(exported))
     }
 }

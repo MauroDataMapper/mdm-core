@@ -147,7 +147,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
                 currentUserSecurityPolicyManager = securityPolicyManagerService.retrieveUserSecurityPolicyManager(currentUser.emailAddress)
             }
             request.withFormat {
-                '*' {render status: NO_CONTENT} // NO CONTENT STATUS CODE
+                '*' { render status: NO_CONTENT } // NO CONTENT STATUS CODE
             }
             return
         }
@@ -621,9 +621,9 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(Folder, importerProviderServiceParameters.folderId)) {
             if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Folder, importerProviderServiceParameters.folderId)) {
-                return forbiddenDueToPermissions()
+                return notFound(Folder, importerProviderServiceParameters.folderId)
             }
-            return notFound(Folder, importerProviderServiceParameters.folderId)
+            return forbiddenDueToPermissions()
         }
         Folder folder = folderService.get(importerProviderServiceParameters.folderId)
 
@@ -634,17 +634,17 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             return errorResponse(UNPROCESSABLE_ENTITY, 'No model imported')
         }
 
-        if (versionedFolderService.isVersionedFolderFamily(folder) && result.any {it.finalised}) {
+        if (versionedFolderService.isVersionedFolderFamily(folder) && result.any { it.finalised }) {
             transactionStatus.setRollbackOnly()
             return forbidden('Cannot import finalised models into a VersionedFolder')
         }
 
-        result.each {m ->
+        result.each { m ->
             m.folder = folder
             getModelService().validate(m)
         }
 
-        if (result.any {it.hasErrors()}) {
+        if (result.any { it.hasErrors() }) {
             log.debug('Errors found in imported models')
             transactionStatus.setRollbackOnly()
             respond(getMultiErrorResponseMap(result), view: '/error', status: UNPROCESSABLE_ENTITY)
@@ -662,7 +662,6 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         log.info('Multi-Model Import complete')
 
         respond loadedModels, status: CREATED, view: 'index'
-
     }
 
     def modelVersionTree() {
@@ -722,7 +721,6 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
     void serviceDeleteResource(T resource) {
         throw new ApiNotYetImplementedException('MC01', 'serviceDeleteResource')
     }
-
 
     @Override
     protected void serviceInsertResource(T resource) {

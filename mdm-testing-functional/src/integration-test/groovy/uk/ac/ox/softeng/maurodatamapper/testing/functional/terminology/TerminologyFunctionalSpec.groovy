@@ -290,7 +290,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
                 "providerType": "TerminologyExporter",
                 "fileExtension": "json",
                 "fileType": "text/json",
-                "canExportMultipleDomains": false
+                "canExportMultipleDomains": true
             },
             {
                 "name": "TerminologyXmlExporterService",
@@ -302,7 +302,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
                 "providerType": "TerminologyExporter",
                 "fileExtension": "xml",
                 "fileType": "text/xml",
-                "canExportMultipleDomains": false
+                "canExportMultipleDomains": true
             }
         ]'''
     }
@@ -333,7 +333,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
                 "providerType": "TerminologyImporter",
                 "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter''' +
                                '''.TerminologyFileImporterProviderServiceParameters",
-                "canImportMultipleDomains": false
+                "canImportMultipleDomains": true
             },
             {
                 "name": "TerminologyJsonImporterService",
@@ -347,7 +347,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
                 "providerType": "TerminologyImporter",
                 "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter''' +
                                '''.TerminologyFileImporterProviderServiceParameters",
-                "canImportMultipleDomains": false
+                "canImportMultipleDomains": true
             }
         ]'''
     }
@@ -618,7 +618,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
 
         when:
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/4.0", STRING_ARG)
 
         then:
         verifyJsonResponse OK, '''{
@@ -649,47 +649,13 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
         removeValidIdObject(id)
     }
 
-    void 'L34 : test export multiple Terminologys (json only exports first id) (as not logged in)'() {
+    void 'E33 : test export a single Terminology (as editor)'() {
         given:
         String id = getValidId()
 
         when:
-        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/2.0',
-             [terminologyIds: [id, getSimpleTerminologyId()]]
-        )
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'N34 : test export multiple Terminologys (json only exports first id) (as authenticated/no access)'() {
-        given:
-        String id = getValidId()
-
-        when:
-        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/2.0',
-             [terminologyIds: [id, getSimpleTerminologyId()]]
-        )
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'R34 : test export multiple Terminologys (json only exports first id) (as reader)'() {
-        given:
-        String id = getValidId()
-
-        when:
-        loginReader()
-        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/3.0',
-             [terminologyIds: [id, getSimpleTerminologyId()]], STRING_ARG
-        )
+        loginEditor()
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/4.0", STRING_ARG)
 
         then:
         verifyJsonResponse OK, '''{
@@ -706,7 +672,241 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
                 }
             },
             "exportMetadata": {
+                "exportedBy": "editor User",
+                "exportedOn": "${json-unit.matches:offsetDateTime}",
+                "exporter": {
+                    "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
+                    "name": "TerminologyJsonExporterService",
+                    "version": "${json-unit.matches:version}"
+                }
+            }
+        }'''
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'L34 : test export multiple Terminologies (as not logged in)'() {
+        given:
+        String id = getValidId()
+
+        when:
+        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/2.0',
+             [terminologyIds: [id, getSimpleTerminologyId()]])
+
+        then:
+        verifyNotFound response, id
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'N34 : test export multiple Terminologies (as authenticated/no access)'() {
+        given:
+        String id = getValidId()
+
+        when:
+        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/2.0',
+             [terminologyIds: [id, getSimpleTerminologyId()]])
+
+        then:
+        verifyNotFound response, id
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'R34 : test export multiple Terminologies (as reader)'() {
+        given:
+        String id = getValidId()
+
+        when:
+        loginReader()
+        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/4.0',
+             [terminologyIds: [id, getSimpleTerminologyId()]], STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+            "terminologies": [
+                {
+                    "id": "${json-unit.matches:id}",
+                    "label": "Functional Test Terminology",
+                    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                    "documentationVersion": "1.0.0",
+                    "finalised": false,
+                    "authority": {
+                        "id": "${json-unit.matches:id}",
+                        "url": "http://localhost",
+                        "label": "Mauro Data Mapper"
+                    }
+                },
+                {
+                    "id": "${json-unit.matches:id}",
+                    "label": "Simple Test Terminology",
+                    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                    "documentationVersion": "1.0.0",
+                    "finalised": false,
+                    "author": "Test Bootstrap",
+                    "organisation": "Oxford BRC",
+                    "authority": {
+                        "id": "${json-unit.matches:id}",
+                        "url": "http://localhost",
+                        "label":"Mauro Data Mapper"
+                    },
+                    "terms": [
+                        {
+                            "id": "${json-unit.matches:id}",
+                            "label": "STT02: Simple Test Term 02",
+                            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                            "code": "STT02",
+                            "definition": "Simple Test Term 02",
+                            "depth": 1
+                        },
+                        {
+                            "id": "${json-unit.matches:id}",
+                            "label": "STT01: Simple Test Term 01",
+                            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                            "code": "STT01",
+                            "definition": "Simple Test Term 01",
+                            "depth": 1
+                        }
+                    ],
+                    "classifiers": [
+                        {
+                            "id": "${json-unit.matches:id}",
+                            "label": "test classifier simple",
+                            "lastUpdated": "${json-unit.matches:offsetDateTime}"
+                        }
+                    ],
+                    "metadata": [
+                        {
+                            "id": "${json-unit.matches:id}",
+                            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                            "namespace": "terminology.test.com/simple",
+                            "key": "mdk2",
+                            "value": "mdv2"
+                        },
+                        {
+                            "id": "${json-unit.matches:id}",
+                            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                            "namespace": "terminology.test.com/simple",
+                            "key": "mdk1",
+                            "value": "mdv1"
+                        },
+                        {
+                            "id": "${json-unit.matches:id}",
+                            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                            "namespace": "terminology.test.com",
+                            "key": "mdk2",
+                            "value": "mdv2"
+                        }
+                    ]
+                }
+            ],
+            "exportMetadata": {
             "exportedBy": "reader User",
+            "exportedOn": "${json-unit.matches:offsetDateTime}",
+                "exporter": {
+                    "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
+                    "name": "TerminologyJsonExporterService",
+                    "version": "${json-unit.matches:version}"
+                }
+            }
+        }'''
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'E34 : test export multiple Terminologies (as editor)'() {
+        given:
+        String id = getValidId()
+
+        when:
+        loginEditor()
+        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/4.0',
+             [terminologyIds: [id, getSimpleTerminologyId()]], STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+            "terminologies": [
+                {
+                    "id": "${json-unit.matches:id}",
+                    "label": "Functional Test Terminology",
+                    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                    "documentationVersion": "1.0.0",
+                    "finalised": false,
+                    "authority": {
+                        "id": "${json-unit.matches:id}",
+                        "url": "http://localhost",
+                        "label": "Mauro Data Mapper"
+                    }
+                },
+                {
+                    "id": "${json-unit.matches:id}",
+                    "label": "Simple Test Terminology",
+                    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                    "documentationVersion": "1.0.0",
+                    "finalised": false,
+                    "author": "Test Bootstrap",
+                    "organisation": "Oxford BRC",
+                    "authority": {
+                        "id": "${json-unit.matches:id}",
+                        "url": "http://localhost",
+                        "label":"Mauro Data Mapper"
+                    },
+                    "terms": [
+                        {
+                            "id": "${json-unit.matches:id}",
+                            "label": "STT02: Simple Test Term 02",
+                            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                            "code": "STT02",
+                            "definition": "Simple Test Term 02",
+                            "depth": 1
+                        },
+                        {
+                            "id": "${json-unit.matches:id}",
+                            "label": "STT01: Simple Test Term 01",
+                            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                            "code": "STT01",
+                            "definition": "Simple Test Term 01",
+                            "depth": 1
+                        }
+                    ],
+                    "classifiers": [
+                        {
+                            "id": "${json-unit.matches:id}",
+                            "label": "test classifier simple",
+                            "lastUpdated": "${json-unit.matches:offsetDateTime}"
+                        }
+                    ],
+                    "metadata": [
+                        {
+                            "id": "${json-unit.matches:id}",
+                            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                            "namespace": "terminology.test.com/simple",
+                            "key": "mdk2",
+                            "value": "mdv2"
+                        },
+                        {
+                            "id": "${json-unit.matches:id}",
+                            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                            "namespace": "terminology.test.com/simple",
+                            "key": "mdk1",
+                            "value": "mdv1"
+                        },
+                        {
+                            "id": "${json-unit.matches:id}",
+                            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                            "namespace": "terminology.test.com",
+                            "key": "mdk2",
+                            "value": "mdv2"
+                        }
+                    ]
+                }
+            ],
+            "exportMetadata": {
+            "exportedBy": "editor User",
             "exportedOn": "${json-unit.matches:offsetDateTime}",
                 "exporter": {
                     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
@@ -724,7 +924,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/4.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -733,7 +933,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
         exportedJsonString
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
             finalised                      : false,
             modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
@@ -756,7 +956,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/4.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -766,7 +966,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
 
         when:
         loginAuthenticated()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
             finalised                      : false,
             modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
@@ -789,7 +989,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/4.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -799,7 +999,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
 
         when:
         loginReader()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
             finalised                      : false,
             modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
@@ -822,7 +1022,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/4.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -832,7 +1032,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
 
         when:
         loginEditor()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
             finalised                      : false,
             modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
@@ -862,7 +1062,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/4.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -872,7 +1072,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
 
         when:
         loginEditor()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
             finalised                      : false,
             folderId                       : testFolderId.toString(),
             importAsNewDocumentationVersion: true,
@@ -907,6 +1107,142 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
         removeValidIdObjectUsingTransaction(id)
         removeValidIdObject(newId, NOT_FOUND)
         removeValidIdObject(id, NOT_FOUND)
+    }
+
+    void 'L36 : test import multiple Terminologies (as not logged in)'() {
+        given:
+        loginReader()
+        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/4.0',
+             [terminologyIds: [getSimpleTerminologyId(), getComplexTerminologyId()]], STRING_ARG)
+
+        expect:
+        verifyResponse OK, jsonCapableResponse
+        String exportedJsonString = jsonCapableResponse.body()
+        logout()
+
+        and:
+        exportedJsonString
+
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/4.0', [
+            finalised                      : false,
+            folderId                       : testFolderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: exportedJsonString.bytes.toList()
+            ]
+        ])
+
+        then:
+        verifyForbidden response
+    }
+
+    void 'N36 : test import multiple Terminologies (as authenticated/no access)'() {
+        given:
+        loginReader()
+        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/4.0',
+             [terminologyIds: [getSimpleTerminologyId(), getComplexTerminologyId()]], STRING_ARG)
+
+        expect:
+        verifyResponse OK, jsonCapableResponse
+        String exportedJsonString = jsonCapableResponse.body()
+        logout()
+
+        and:
+        exportedJsonString
+
+        when:
+        loginAuthenticated()
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/4.0', [
+            finalised                      : false,
+            folderId                       : testFolderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: exportedJsonString.bytes.toList()
+            ]
+        ])
+
+        then:
+        verifyNotFound response, null
+    }
+
+    void 'R36 : test import multiple Terminologies (as reader)'() {
+        given:
+        loginReader()
+        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/4.0',
+             [terminologyIds: [getSimpleTerminologyId(), getComplexTerminologyId()]], STRING_ARG)
+
+        expect:
+        verifyResponse OK, jsonCapableResponse
+        String exportedJsonString = jsonCapableResponse.body()
+        logout()
+
+        and:
+        exportedJsonString
+
+        when:
+        loginReader()
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/4.0', [
+            finalised                      : false,
+            folderId                       : testFolderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: exportedJsonString.bytes.toList()
+            ]
+        ])
+
+        then:
+        verifyNotFound response, null
+    }
+
+    void 'E36 : test import multiple Terminologies (as editor)'() {
+        given:
+        loginReader()
+        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/4.0',
+             [terminologyIds: [getSimpleTerminologyId(), getComplexTerminologyId()]], STRING_ARG)
+
+        expect:
+        verifyResponse OK, jsonCapableResponse
+        String exportedJsonString = jsonCapableResponse.body()
+        logout()
+
+        and:
+        exportedJsonString
+
+        when:
+        loginEditor()
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : testFolderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importAsNewBranchModelVersion  : true, // Needed to import models
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: exportedJsonString.bytes.toList()
+            ]
+        ])
+
+        then:
+        verifyResponse CREATED, response
+        response.body().count == 2
+
+        Object object = response.body().items[0]
+        Object object2 = response.body().items[1]
+        String id = object.id
+        String id2 = object2.id
+
+        object.label == 'Simple Test Terminology'
+        object2.label == 'Complex Test Terminology'
+        object.id != object2.id
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(id2)
+        removeValidIdObject(id, NOT_FOUND)
+        removeValidIdObject(id2, NOT_FOUND)
     }
 
     String getExpectedDiffJson() {

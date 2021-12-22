@@ -276,7 +276,6 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         verifyJsonResponse CREATED, getExpectedShowJson()
             .replaceFirst(/"label": "Functional Test Model",/, '"label": "Functional Test Terminology reader",')
 
-
         when:
         GET("$id/semanticLinks", STRING_ARG)
 
@@ -564,7 +563,6 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         cleanUpData()
     }
 
-
     void 'VB02 : test creating a main branch model version finalising and then creating another main branch of a DataModel'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
@@ -832,7 +830,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         verifyResponse OK, response
         GET("$id/terms")
         verifyResponse(OK, response)
-        List<String> finalisedTermIds = responseBody().items.collect {it.id}
+        List<String> finalisedTermIds = responseBody().items.collect { it.id }
 
         when:
         PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
@@ -846,19 +844,18 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
 
         then:
         verifyResponse(OK, response)
-        List<String> branchedTermIds = responseBody().items.collect {it.id}
-        !branchedTermIds.any {it in finalisedTermIds}
-
+        List<String> branchedTermIds = responseBody().items.collect { it.id }
+        !branchedTermIds.any { it in finalisedTermIds }
 
         when:
-        Map<String, String> terms = responseBody().items.collectEntries {[it.code, it.id]}
+        Map<String, String> terms = responseBody().items.collectEntries { [it.code, it.id] }
         GET("$branchId/termRelationshipTypes")
 
         then:
         verifyResponse(OK, response)
         responseBody().count == 5
-        responseBody().items.any {it.label == 'parentTo'}
-        Map<String, String> relationshipTypes = responseBody().items.collectEntries {[it.label, it.id]}
+        responseBody().items.any { it.label == 'parentTo' }
+        Map<String, String> relationshipTypes = responseBody().items.collectEntries { [it.label, it.id] }
 
         GET("$branchId/termRelationshipTypes/$relationshipTypes.parentTo")
 
@@ -1204,7 +1201,6 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
             ]
         ]
 
-
         PUT("$mergeData.source/mergeInto/$mergeData.target", requestBody)
 
         then:
@@ -1221,10 +1217,10 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                                               'MAD: modifyAndDelete', 'MAMRD: modifyAndModifyReturningDifference', 'MLO: modifyLeftOnly',
                                               'SMLO: secondModifyLeftOnly', 'ARO: addRightOnly',
                                               'ALOCS: addLeftOnlyCodeSet', 'DLOCS: deleteLeftOnlyCodeSet'] as Set
-        responseBody().items.find {term -> term.label == 'MAD: modifyAndDelete'}.description == 'Description'
-        responseBody().items.find {term -> term.label == 'AAARD: addAndAddReturningDifference'}.description == 'addedDescriptionSource'
-        responseBody().items.find {term -> term.label == 'MAMRD: modifyAndModifyReturningDifference'}.description == modifiedDescriptionSource
-        responseBody().items.find {term -> term.label == 'MLO: modifyLeftOnly'}.description == 'modifiedDescriptionSourceOnly'
+        responseBody().items.find { term -> term.label == 'MAD: modifyAndDelete' }.description == 'Description'
+        responseBody().items.find { term -> term.label == 'AAARD: addAndAddReturningDifference' }.description == 'addedDescriptionSource'
+        responseBody().items.find { term -> term.label == 'MAMRD: modifyAndModifyReturningDifference' }.description == modifiedDescriptionSource
+        responseBody().items.find { term -> term.label == 'MLO: modifyLeftOnly' }.description == 'modifiedDescriptionSourceOnly'
 
         when:
         GET("$mergeData.target/termRelationshipTypes")
@@ -1232,7 +1228,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         then:
         verifyResponse OK, response
         responseBody().items.label as Set == ['inverseOf', 'sameSourceActionType', 'similarSourceAction', 'sameActionAs', 'parentTo'] as Set
-        responseBody().items.find {term -> term.label == 'inverseOf'}.description == 'inverseOf(Modified)'
+        responseBody().items.find { term -> term.label == 'inverseOf' }.description == 'inverseOf(Modified)'
 
         when:
         GET("$mergeData.target/terms/$mergeData.targetMap.modifyLeftOnly/termRelationships")
@@ -1261,8 +1257,8 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         responseBody().items.label as Set == ['similarSourceAction', 'sameSourceActionType'] as Set
 
         when:
-        String sameSourceActionType = responseBody().items.find {it.label == 'sameSourceActionType'}.id
-        String similarSourceAction = responseBody().items.find {it.label == 'similarSourceAction'}.id
+        String sameSourceActionType = responseBody().items.find { it.label == 'sameSourceActionType' }.id
+        String similarSourceAction = responseBody().items.find { it.label == 'similarSourceAction' }.id
         GET("$mergeData.target/terms/$addLeftOnly/termRelationships/$sameSourceActionType")
 
         then:
@@ -1293,7 +1289,6 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         builder.cleanupTestMergeData mergeData
     }
 
-
     void 'MI04 : test merging into into draft model new style'() {
         given:
         TestMergeData mergeData = builder.buildComplexTerminologyModelsForMerging(folderId.toString())
@@ -1320,7 +1315,6 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         responseBody().id == mergeData.target
         responseBody().description == 'DescriptionLeft'
 
-
         when:
         GET("$mergeData.target/terms")
 
@@ -1330,10 +1324,10 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                                               'MAD: modifyAndDelete', 'MAMRD: modifyAndModifyReturningDifference', 'MLO: modifyLeftOnly',
                                               'SMLO: secondModifyLeftOnly', 'ARO: addRightOnly',
                                               'ALOCS: addLeftOnlyCodeSet', 'DLOCS: deleteLeftOnlyCodeSet'] as Set
-        responseBody().items.find {term -> term.label == 'MAD: modifyAndDelete'}.description == 'Description'
-        responseBody().items.find {term -> term.label == 'AAARD: addAndAddReturningDifference'}.description == 'DescriptionLeft'
-        responseBody().items.find {term -> term.label == 'MAMRD: modifyAndModifyReturningDifference'}.description == 'DescriptionLeft'
-        responseBody().items.find {term -> term.label == 'MLO: modifyLeftOnly'}.description == 'Description'
+        responseBody().items.find { term -> term.label == 'MAD: modifyAndDelete' }.description == 'Description'
+        responseBody().items.find { term -> term.label == 'AAARD: addAndAddReturningDifference' }.description == 'DescriptionLeft'
+        responseBody().items.find { term -> term.label == 'MAMRD: modifyAndModifyReturningDifference' }.description == 'DescriptionLeft'
+        responseBody().items.find { term -> term.label == 'MLO: modifyLeftOnly' }.description == 'Description'
 
         when:
         GET("$mergeData.target/termRelationshipTypes")
@@ -1341,7 +1335,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         then:
         verifyResponse OK, response
         responseBody().items.label as Set == ['inverseOf', 'sameSourceActionType', 'similarSourceAction', 'sameActionAs', 'parentTo'] as Set
-        responseBody().items.find {term -> term.label == 'inverseOf'}.description == 'inverseOf(Modified)'
+        responseBody().items.find { term -> term.label == 'inverseOf' }.description == 'inverseOf(Modified)'
 
         when:
         GET("$mergeData.target/terms/$mergeData.targetMap.modifyLeftOnly/termRelationships")
@@ -1370,8 +1364,8 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         responseBody().items.label as Set == ['similarSourceAction', 'sameSourceActionType'] as Set
 
         when:
-        String sameSourceActionType = responseBody().items.find {it.label == 'sameSourceActionType'}.id
-        String similarSourceAction = responseBody().items.find {it.label == 'similarSourceAction'}.id
+        String sameSourceActionType = responseBody().items.find { it.label == 'sameSourceActionType' }.id
+        String similarSourceAction = responseBody().items.find { it.label == 'similarSourceAction' }.id
         GET("$mergeData.target/terms/$addLeftOnly/termRelationships/$sameSourceActionType")
 
         then:
@@ -1391,10 +1385,10 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         GET("${mergeData.target}/metadata")
 
         then:
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyOnSource'}.value == 'source has modified this'
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyAndDelete'}.value == 'source has modified this also'
-        !responseBody().items.find {it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource'}
-        responseBody().items.find {it.namespace == 'functional.test' && it.key == 'addToSourceOnly'}
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyOnSource' }.value == 'source has modified this'
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyAndDelete' }.value == 'source has modified this also'
+        !responseBody().items.find { it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource' }
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'addToSourceOnly' }
 
         cleanup:
         builder.cleanupTestMergeData mergeData
@@ -1486,7 +1480,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
     void 'test delete multiple models'() {
         given:
         def idstoDelete = []
-        (1..4).each {n ->
+        (1..4).each { n ->
             idstoDelete << createNewItem([
                 folder: folderId,
                 label : UUID.randomUUID().toString()
@@ -1544,7 +1538,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         verifyResponse NO_CONTENT, response
     }
 
-    void 'EX01: test getting Terminology exporters'() {
+    void 'EX01 : test getting Terminology exporters'() {
         when:
         GET('providers/exporters', STRING_ARG)
 
@@ -1552,7 +1546,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         verifyJsonResponse OK, '''[
             {
                 "name": "TerminologyJsonExporterService",
-                "version": "3.0",
+                "version": "4.0",
                 "displayName": "JSON Terminology Exporter",
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
                 "allowsExtraMetadataKeys": true,
@@ -1560,11 +1554,11 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                 "providerType": "TerminologyExporter",
                 "fileExtension": "json",
                 "fileType": "text/json",
-                "canExportMultipleDomains": false
+                "canExportMultipleDomains": true
             },
             {
                 "name": "TerminologyXmlExporterService",
-                "version": "3.1",
+                "version": "4.0",
                 "displayName": "XML Terminology Exporter",
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
                 "allowsExtraMetadataKeys": true,
@@ -1572,52 +1566,17 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                 "providerType": "TerminologyExporter",
                 "fileExtension": "xml",
                 "fileType": "text/xml",
-                "canExportMultipleDomains": false
+                "canExportMultipleDomains": true
             }
         ]'''
     }
 
-    void 'IM01: test getting Terminology importers'() {
-        when:
-        GET('providers/importers', STRING_ARG)
-
-        then:
-        verifyJsonResponse OK, '''[
-            {
-                "name": "TerminologyXmlImporterService",
-                "version": "3.0",
-                "displayName": "XML Terminology Importer",
-                "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
-                "allowsExtraMetadataKeys": true,
-                "knownMetadataKeys": [
-      
-                ],
-                "providerType": "TerminologyImporter",
-                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters",
-                "canImportMultipleDomains": false
-            },
-            {
-                "name": "TerminologyJsonImporterService",
-                "version": "3.0",
-                "displayName": "JSON Terminology Importer",
-                "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
-                "allowsExtraMetadataKeys": true,
-                "knownMetadataKeys": [
-      
-                ],
-                "providerType": "TerminologyImporter",
-                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters",
-                "canImportMultipleDomains": false
-            }
-        ]'''
-    }
-
-    void 'EX02: test export a single Terminology'() {
+    void 'EX02 : test export a single Terminology'() {
         given:
         String id = createNewItem(validJson)
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/4.0", STRING_ARG)
 
         then:
         verifyJsonResponse OK, '''{
@@ -1639,7 +1598,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                 "exporter": {
                     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
                     "name": "TerminologyJsonExporterService",
-                    "version": "3.0"
+                    "version": "4.0"
                 }
             }
         }'''
@@ -1648,11 +1607,291 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         cleanUpData(id)
     }
 
-    void 'IM02: test import single a Terminology that was just exported'() {
+    void 'EX03A : test export simple Terminology JSON'() {
+        given:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('simpleTerminology').toList()
+            ]
+        ])
+        String expected = new String(loadTestFile('simpleTerminology')).replace(/Admin User/, 'Unlogged User')
+
+        expect:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+
+        and:
+        id
+
+        when:
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/4.0", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, expected
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    @PendingFeature(reason = 'No means to verify expected XML')
+    void 'EX03B : test export simple Terminology XML'() {
+        given:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyXmlImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.XML.name,
+                fileContents: loadTestFile('simpleTerminology', 'xml').toList()
+            ]
+        ])
+        String expected = new String(loadTestFile('simpleTerminology', 'xml')).replace(/Admin User/, 'Unlogged User')
+
+        expect:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+
+        and:
+        id
+
+        when:
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyXmlExporterService/4.0", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, expected
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'EX04A : test export complex Terminology JSON'() {
+        given:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('complexTerminology').toList()
+            ]
+        ])
+        String expected = new String(loadTestFile('complexTerminology')).replace(/Admin User/, 'Unlogged User')
+
+        expect:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+
+        and:
+        id
+
+        when:
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/4.0", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, expected
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    @PendingFeature(reason = 'No means to verify expected XML')
+    void 'EX04B : test export complex Terminology XML'() {
+        given:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyXmlImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.XML.name,
+                fileContents: loadTestFile('complexTerminology', 'xml').toList()
+            ]
+        ])
+        String expected = new String(loadTestFile('complexTerminology', 'xml')).replace(/Admin User/, 'Unlogged User')
+
+        expect:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+
+        and:
+        id
+
+        when:
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyXmlExporterService/4.0", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, expected
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'EX05 : test export multiple Terminologies'() {
+        given:
+        String id = createNewItem(validJson)
+        String id2 = createNewItem([label: 'Functional Test Model 2'])
+
+        when:
+        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/4.0',
+             [terminologyIds: [id, id2]], STRING_ARG
+        )
+
+        then:
+        verifyJsonResponse OK, '''{
+            "terminologies": [
+                {
+                    "id": "${json-unit.matches:id}",
+                    "label": "Functional Test Model",
+                    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                    "documentationVersion": "1.0.0",
+                    "finalised": false,
+                    "authority": {
+                        "id": "${json-unit.matches:id}",
+                        "url": "http://localhost",
+                        "label": "Test Authority"
+                    }
+                },
+                {
+                    "id": "${json-unit.matches:id}",
+                    "label": "Functional Test Model 2",
+                    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                    "documentationVersion": "1.0.0",
+                    "finalised": false,
+                    "authority": {
+                        "id": "${json-unit.matches:id}",
+                        "url": "http://localhost",
+                        "label": "Test Authority"
+                    }
+                }
+            ],
+            "exportMetadata": {
+                "exportedBy": "Unlogged User",
+                "exportedOn": "${json-unit.matches:offsetDateTime}",
+                "exporter": {
+                    "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
+                    "name": "TerminologyJsonExporterService",
+                    "version": "4.0"
+                }
+            }
+        }'''
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(id2)
+    }
+
+    void 'EX05A : test export multiple Terminologies JSON'() {
+        given:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('simpleAndComplexTerminologies').toList()
+            ]
+        ])
+        String expected = new String(loadTestFile('simpleAndComplexTerminologies')).replace(/Admin User/, 'Unlogged User')
+
+        expect:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+        String id2 = response.body().items[1].id
+
+        and:
+        id
+        id2
+
+        when:
+        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/4.0',
+             [terminologyIds: [id, id2]], STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, expected
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(id2)
+    }
+
+    @PendingFeature(reason = 'No means to verify expected XML')
+    void 'EX05B : test export multiple Terminologies XML'() {
+        given:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyXmlImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.XML.name,
+                fileContents: loadTestFile('simpleAndComplexTerminologies', 'xml').toList()
+            ]
+        ])
+        String expected = new String(loadTestFile('simpleAndComplexTerminologies', 'xml')).replace(/Admin User/, 'Unlogged User')
+
+        expect:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+        String id2 = response.body().items[1].id
+
+        and:
+        id
+        id2
+
+        when:
+        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyXmlExporterService/4.0',
+             [terminologyIds: [id, id2]], STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, expected
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(id2)
+    }
+
+    void 'IM01 : test getting Terminology importers'() {
+        when:
+        GET('providers/importers', STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''[
+            {
+                "name": "TerminologyXmlImporterService",
+                "version": "4.0",
+                "displayName": "XML Terminology Importer",
+                "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
+                "allowsExtraMetadataKeys": true,
+                "knownMetadataKeys": [
+      
+                ],
+                "providerType": "TerminologyImporter",
+                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters",
+                "canImportMultipleDomains": true
+            },
+            {
+                "name": "TerminologyJsonImporterService",
+                "version": "4.0",
+                "displayName": "JSON Terminology Importer",
+                "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
+                "allowsExtraMetadataKeys": true,
+                "knownMetadataKeys": [
+      
+                ],
+                "providerType": "TerminologyImporter",
+                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters",
+                "canImportMultipleDomains": true
+            }
+        ]'''
+    }
+
+    void 'IM02 : test import a single Terminology that was just exported'() {
         given:
         String id = createNewItem(validJson)
 
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/4.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
 
@@ -1660,7 +1899,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         exportedJsonString
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
             finalised                      : false,
             modelName                      : 'Functional Test Import',
             folderId                       : folderId.toString(),
@@ -1696,47 +1935,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         cleanUpData(id)
     }
 
-    void 'EX03: test export multiple Terminologies (json only exports first id)'() {
-        given:
-        String id = createNewItem(validJson)
-        String id2 = createNewItem([label: 'Functional Test Model 2'])
-
-        when:
-        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/3.0',
-             [terminologyIds: [id, id2]], STRING_ARG
-        )
-
-        then:
-        verifyJsonResponse OK, '''{
-            "terminology": {
-                "id": "${json-unit.matches:id}",
-                "label": "Functional Test Model",
-                "lastUpdated": "${json-unit.matches:offsetDateTime}",
-                "documentationVersion": "1.0.0",
-                "finalised": false,
-                "authority": {
-                    "id": "${json-unit.matches:id}",
-                    "url": "http://localhost",
-                    "label": "Test Authority"
-                }
-            },
-            "exportMetadata": {
-                "exportedBy": "Unlogged User",
-                "exportedOn": "${json-unit.matches:offsetDateTime}",
-                "exporter": {
-                    "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
-                    "name": "TerminologyJsonExporterService",
-                    "version": "3.0"
-                }
-            }
-        }'''
-
-        cleanup:
-        cleanUpData(id)
-        cleanUpData(id2)
-    }
-
-    void 'IM03: test import basic Terminology as new documentation version'() {
+    void 'IM03 : test import basic Terminology as new documentation version'() {
         given:
         String id = createNewItem([
             label       : 'Functional Test Model',
@@ -1744,7 +1943,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
             modelVersion: Version.from('1.0.0')
         ])
 
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/4.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
 
@@ -1752,7 +1951,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         exportedJsonString
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
             finalised                      : true,
             modelName                      : 'Functional Test Model',
             folderId                       : folderId.toString(),
@@ -1789,119 +1988,155 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         cleanUpData(id)
     }
 
+    void 'IM04A : test import simple Terminology JSON'() {
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('simpleTerminology').toList()
+            ]
+        ])
+
+        then:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+
+        and:
+        id
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'IM04B : test import simple Terminology XML'() {
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyXmlImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.XML.name,
+                fileContents: loadTestFile('simpleTerminology', 'xml').toList()
+            ]
+        ])
+
+        then:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+
+        and:
+        id
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'IM05A : test import complex Terminology JSON'() {
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('complexTerminology').toList()
+            ]
+        ])
+
+        then:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+
+        and:
+        id
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'IM05B : test import complex Terminology XML'() {
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyXmlImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.XML.name,
+                fileContents: loadTestFile('complexTerminology', 'xml').toList()
+            ]
+        ])
+
+        then:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+
+        and:
+        id
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'IM06A : test import multiple Terminologies JSON'() {
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('simpleAndComplexTerminologies').toList()
+            ]
+        ])
+
+        then:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+        String id2 = response.body().items[1].id
+
+        and:
+        id
+        id2
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(id2)
+    }
+
+    void 'IM06B : test import multiple Terminologies XML'() {
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyXmlImporterService/4.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.XML.name,
+                fileContents: loadTestFile('simpleAndComplexTerminologies', 'xml').toList()
+            ]
+        ])
+
+        then:
+        verifyResponse CREATED, response
+        String id = response.body().items[0].id
+        String id2 = response.body().items[1].id
+
+        and:
+        id
+        id2
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(id2)
+    }
+
     byte[] loadTestFile(String filename, String fileType = 'json') {
         Path testFilePath = fileType == 'json' ? resourcesPath.resolve('terminology').resolve("${filename}.json") :
                             xmlResourcesPath.resolve('terminology').resolve("${filename}.xml")
         assert Files.exists(testFilePath)
         Files.readAllBytes(testFilePath)
-    }
-
-    void 'EX04: test export simple Terminology'() {
-        given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/3.0', [
-            finalised                      : false,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('simpleTerminology').toList()
-            ]
-        ])
-
-        verifyResponse CREATED, response
-        def id = response.body().items[0].id
-        String expected = new String(loadTestFile('simpleTerminology')).replaceFirst('"exportedBy": "Admin User",',
-                                                                                     '"exportedBy": "Unlogged User",')
-
-
-        expect:
-        id
-
-        when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/3.0", STRING_ARG)
-
-        then:
-        verifyJsonResponse OK, expected
-
-        cleanup:
-        cleanUpData(id)
-    }
-
-
-    void 'IM04: test importing simple test Terminology'() {
-        when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/3.0', [
-            finalised                      : true,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('simpleTerminology').toList()
-            ]
-        ])
-        verifyResponse CREATED, response
-        def id = response.body().items[0].id
-
-        then:
-        id
-
-        cleanup:
-        cleanUpData(id)
-    }
-
-    void 'EX05: test export complex Terminology'() {
-        given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/3.0', [
-            finalised                      : false,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('complexTerminology').toList()
-            ]
-        ])
-
-        verifyResponse CREATED, response
-        def id = response.body().items[0].id
-        String expected = new String(loadTestFile('complexTerminology')).replaceFirst('"exportedBy": "Admin User",',
-                                                                                      '"exportedBy": "Unlogged User",')
-
-        expect:
-        id
-
-        when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/3.0", STRING_ARG)
-
-        then:
-        verifyJsonResponse OK, expected
-
-        cleanup:
-        cleanUpData(id)
-    }
-
-    void 'IM05: test importing complex test Terminology'() {
-        when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/3.0', [
-            finalised                      : true,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('complexTerminology').toList()
-            ]
-        ])
-        verifyResponse CREATED, response
-        def id = response.body().items[0].id
-
-        then:
-        id
-
-        cleanup:
-        cleanUpData(id)
     }
 
     String getExpectedLegacyMergeDiffJson() {

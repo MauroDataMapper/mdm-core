@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
@@ -58,6 +59,9 @@ import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddre
 @Slf4j
 class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProviderServiceSpec<DataModelJsonImporterService> {
 
+    private static final String CANNOT_IMPORT_EMPTY_FILE_CODE = 'FBIP02'
+    private static final String CANNOT_IMPORT_JSON_CODE = 'JIS03'
+
     DataModelJsonImporterService dataModelJsonImporterService
 
     @Override
@@ -68,21 +72,6 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
     @Override
     String getImportType() {
         'json'
-    }
-
-    void 'test multiple DataModel import fails'() {
-        given:
-        setupData()
-
-        expect:
-        !importerService.canImportMultipleDomains()
-
-        when:
-        importerService.importDataModels(admin, loadTestFile('simple'))
-
-        then:
-        ApiBadRequestException exception = thrown(ApiBadRequestException)
-        exception.message.contains('cannot import multiple DataModels')
     }
 
     void 'test parameters for federation'() {
@@ -104,27 +93,26 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         DataModel dm = importModel(loadTestFile('incDataClassWithChildrenAndMetadata'))
 
         then:
-        dm.dataClasses.find {it.label == 'parent'}.metadata.size() == 1
-        dm.dataClasses.find {it.label == 'content'}.metadata.size() == 1
+        dm.dataClasses.find { it.label == 'parent' }.metadata.size() == 1
+        dm.dataClasses.find { it.label == 'content' }.metadata.size() == 1
 
         when:
-        Metadata md = dm.dataClasses.find {it.label == 'parent'}.metadata[0]
+        Metadata md = dm.dataClasses.find { it.label == 'parent' }.metadata[0]
 
         then:
         md.namespace == 'ox.softeng.maurodatamapper.dataloaders.cancer.audits'
         md.key == 'SCTSImport'
         md.value == '0.1'
-        md.multiFacetAwareItemId == dm.dataClasses.find {it.label == 'parent'}.id
+        md.multiFacetAwareItemId == dm.dataClasses.find { it.label == 'parent' }.id
 
         when:
-        md = dm.dataClasses.find {it.label == 'content'}.metadata[0]
+        md = dm.dataClasses.find { it.label == 'content' }.metadata[0]
 
         then:
         md.namespace == 'ox.softeng.maurodatamapper.dataloaders.cancer.audits'
         md.key == 'SCTSImport'
         md.value == '0.1'
-        md.multiFacetAwareItemId == dm.dataClasses.find {it.label == 'content'}.id
-
+        md.multiFacetAwareItemId == dm.dataClasses.find { it.label == 'content' }.id
     }
 
     void 'F01 : test import as finalised'() {
@@ -146,7 +134,6 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
 
         cleanup:
         basicParameters.finalised = false
-
     }
 
     void 'F02 : test import as finalised when already imported as finalised'() {
@@ -164,7 +151,6 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
 
         cleanup:
         basicParameters.finalised = false
-
     }
 
     void 'F03 : test import as finalised when already imported as not finalised'() {
@@ -247,7 +233,6 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
 
         cleanup:
         basicParameters.importAsNewBranchModelVersion = false
-
     }
 
     void 'MV02 : test import as newBranchModelVersion with existing finalised model'() {
@@ -268,11 +253,10 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         !dm.modelVersion
         dm.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         dm.versionLinks.size() == 1
-        dm.versionLinks.find {it.targetModelId == v1.id}
+        dm.versionLinks.find { it.targetModelId == v1.id }
 
         cleanup:
         basicParameters.importAsNewBranchModelVersion = false
-
     }
 
     void 'MV03 : test import as newBranchModelVersion with existing non-finalised model'() {
@@ -291,7 +275,7 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         !dm.modelVersion
         dm.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         dm.versionLinks.size() == 1
-        dm.versionLinks.find {it.targetModelId == v1.id}
+        dm.versionLinks.find { it.targetModelId == v1.id }
 
         and:
         v1.finalised
@@ -299,7 +283,6 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
 
         cleanup:
         basicParameters.importAsNewBranchModelVersion = false
-
     }
 
     void 'MV04 : test import as finalised and newBranchModelVersion with no existing model'() {
@@ -321,7 +304,6 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         cleanup:
         basicParameters.finalised = false
         basicParameters.importAsNewBranchModelVersion = false
-
     }
 
     void 'MV05 : test import as finalised and newBranchModelVersion with existing finalised model'() {
@@ -341,12 +323,11 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         dm.modelVersion == Version.from('2')
         dm.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         dm.versionLinks.size() == 1
-        dm.versionLinks.find {it.targetModelId == v1.id}
+        dm.versionLinks.find { it.targetModelId == v1.id }
 
         cleanup:
         basicParameters.importAsNewBranchModelVersion = false
         basicParameters.finalised = false
-
     }
 
     void 'MV06 : test import as finalised and newBranchModelVersion with existing non-finalised model'() {
@@ -366,7 +347,7 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         dm.modelVersion == Version.from('2')
         dm.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         dm.versionLinks.size() == 1
-        dm.versionLinks.find {it.targetModelId == v1.id}
+        dm.versionLinks.find { it.targetModelId == v1.id }
 
         and:
         v1.modelVersion == Version.from('1')
@@ -375,7 +356,6 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         cleanup:
         basicParameters.importAsNewBranchModelVersion = false
         basicParameters.finalised = false
-
     }
 
     void 'PG01 : test propagatingCatalogueItemElements'() {
@@ -496,6 +476,8 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         SummaryMetadata foundDataTypeSummaryMetadata = dt.summaryMetadata.find {it.label == dataTypeSummaryMetadata.label}
         foundDataTypeSummaryMetadata.summaryMetadataReports.size() == 1
 
+        cleanup:
+        cleanupParameters()
     }
 
     void 'PG02 : test importing a dataModel making sure model items arent propagated'() {
@@ -537,8 +519,11 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         DataModel dm = importModel(loadTestFile('simpleDataModel'))
 
         then:
-        !dm.dataClasses.find {it.label == dataClass.label}
+        !dm.dataClasses.find { it.label == dataClass.label }
         dm.description == 'Some interesting thing we should preserve'
+
+        cleanup:
+        cleanupParameters()
     }
 
     void 'PG03 : test propagating child content'() {
@@ -550,7 +535,7 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         basicParameters.propagateFromPreviousVersion = true
 
         dataModel = DataModel.findById(complexDataModelId)
-        DataClass dataClass = dataModel.dataClasses.find {it.label == 'parent'}
+        DataClass dataClass = dataModel.dataClasses.find { it.label == 'parent' }
 
         Annotation testAnnotation = new Annotation(label: 'propagationTest', description: 'propagationTest', createdBy: admin.emailAddress)
         Classifier testClassifier = new Classifier(label: 'propagationTest', createdBy: admin.emailAddress).save()
@@ -571,39 +556,285 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
 
         checkAndSave(dataClass)
 
-        dataClass = dataModel.dataClasses.find {it.label == 'child'}
+        dataClass = dataModel.dataClasses.find { it.label == 'child' }
         dataClass.description = 'Some interesting thing we should preserve'
 
         checkAndSave(dataClass)
 
-        dataClass = dataModel.dataClasses.find {it.label == 'content'}
+        dataClass = dataModel.dataClasses.find { it.label == 'content' }
         dataClass.description = 'Some interesting thing we should lose'
 
         checkAndSave(dataClass)
 
         when:
         DataModel dm = importModel(loadTestFile('complexDataModel'))
-        dataClass = dm.dataClasses.find {it.label == 'parent'}
+        dataClass = dm.dataClasses.find { it.label == 'parent' }
 
         then:
-        dataClass.metadata.find {it.namespace == testMetadata.namespace}
-        dataClass.annotations.find {it.label == testAnnotation.label}
-        dataClass.classifiers.find {it.label == testClassifier.label}
-        dataClass.rules.find {it.name == testRule.name}
-        dataClass.semanticLinks.find {it.targetMultiFacetAwareItemId == testSemanticLink.targetMultiFacetAwareItemId}
-        dataClass.semanticLinks.find {it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType}
-        dataClass.referenceFiles.find {it.fileName == testReferenceFile.fileName}
+        dataClass.metadata.find { it.namespace == testMetadata.namespace }
+        dataClass.annotations.find { it.label == testAnnotation.label }
+        dataClass.classifiers.find { it.label == testClassifier.label }
+        dataClass.rules.find { it.name == testRule.name }
+        dataClass.semanticLinks.find { it.targetMultiFacetAwareItemId == testSemanticLink.targetMultiFacetAwareItemId }
+        dataClass.semanticLinks.find { it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType }
+        dataClass.referenceFiles.find { it.fileName == testReferenceFile.fileName }
 
         when:
-        dataClass = dm.dataClasses.find {it.label == 'child'}
+        dataClass = dm.dataClasses.find { it.label == 'child' }
 
         then:
         dataClass.description == 'Some interesting thing we should preserve'
 
         when:
-        dataClass = dm.dataClasses.find {it.label == 'content'}
+        dataClass = dm.dataClasses.find { it.label == 'content' }
 
         then: 'description is not overwritten as it was included in the import'
         dataClass.description == 'A dataclass with elements'
+
+        cleanup:
+        cleanupParameters()
+    }
+
+    void 'M01 : test multi-import invalid DataModel content'() {
+        expect:
+        importerService.canImportMultipleDomains()
+
+        when: 'given empty content'
+        importModels(''.bytes)
+
+        then:
+        ApiBadRequestException exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_EMPTY_FILE_CODE
+
+        when: 'given an empty JSON map'
+        importModels('{}'.bytes)
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_JSON_CODE
+
+        when: 'given neither models list or model map (backwards compatibility)'
+        importModels(loadTestFile('exportMetadataOnly'))
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_JSON_CODE
+
+        when: 'given an empty model map (backwards compatibility)'
+        importModels(loadTestFile('emptyDataModel'))
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_JSON_CODE
+
+        when: 'given an empty models list'
+        importModels(loadTestFile('emptyDataModelList'))
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_JSON_CODE
+    }
+
+    void 'M02 : test multi-import invalid DataModels'() {
+        given:
+        setupData()
+
+        expect:
+        importerService.canImportMultipleDomains()
+
+        when: 'given an invalid model map (backwards compatibility)'
+        importModels(loadTestFile('invalidDataModel'))
+
+        then:
+        ApiBadRequestException exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_JSON_CODE
+
+        when: 'given a single invalid model'
+        importModels(loadTestFile('invalidDataModelInList'))
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_JSON_CODE
+
+        when: 'given multiple invalid models'
+        importModels(loadTestFile('invalidDataModels'))
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_JSON_CODE
+
+        // when: 'not given export metadata'
+        // importModels(loadTestFile('noExportMetadata'))
+        //
+        // then:
+        // exception = thrown(ApiBadRequestException)
+        // exception.errorCode == 'TODO'
+    }
+
+    void 'M03 : test multi-import single DataModel (backwards compatibility)'() {
+        given:
+        setupData()
+        DataModel.count() == 2
+        List<DataModel> dataModels = clearExpectedDiffsFromModels([simpleDataModelId])
+        basicParameters.importAsNewBranchModelVersion = true // Needed to import the same models
+
+        expect:
+        importerService.canImportMultipleDomains()
+
+        when:
+        List<DataModel> imported = importModels(loadTestFile('simpleDataModel'))
+
+        then:
+        imported
+        imported.size() == 1
+
+        when:
+        ObjectDiff simpleDiff = dataModelService.getDiffForModels(dataModels.pop(), imported.pop())
+
+        then:
+        simpleDiff.objectsAreIdentical()
+
+        cleanup:
+        basicParameters.importAsNewBranchModelVersion = false
+    }
+
+    void 'M04 : test multi-import single DataModel'() {
+        given:
+        setupData()
+        DataModel.count() == 2
+        List<DataModel> dataModels = clearExpectedDiffsFromModels([simpleDataModelId])
+        basicParameters.importAsNewBranchModelVersion = true // Needed to import the same models
+
+        expect:
+        importerService.canImportMultipleDomains()
+
+        when:
+        List<DataModel> imported = importModels(loadTestFile('simpleDataModelInList'))
+
+        then:
+        imported
+        imported.size() == 1
+
+        when:
+        ObjectDiff simpleDiff = dataModelService.getDiffForModels(dataModels.pop(), imported.pop())
+
+        then:
+        simpleDiff.objectsAreIdentical()
+
+        cleanup:
+        basicParameters.importAsNewBranchModelVersion = false
+    }
+
+    void 'M05 : test multi-import multiple DataModels'() {
+        given:
+        setupData()
+        DataModel.count() == 2
+        List<DataModel> dataModels = clearExpectedDiffsFromModels([simpleDataModelId, complexDataModelId])
+        basicParameters.importAsNewBranchModelVersion = true // Needed to import the same models
+
+        expect:
+        importerService.canImportMultipleDomains()
+
+        when:
+        List<DataModel> imported = importModels(loadTestFile('simpleAndComplexDataModels'))
+
+        then:
+        imported
+        imported.size() == 2
+
+        when:
+        ObjectDiff simpleDiff = dataModelService.getDiffForModels(dataModels[0], imported[0])
+        ObjectDiff complexDiff = dataModelService.getDiffForModels(dataModels[1], imported[1])
+
+        then:
+        simpleDiff.objectsAreIdentical()
+        complexDiff.objectsAreIdentical()
+
+        cleanup:
+        basicParameters.importAsNewBranchModelVersion = false
+    }
+
+    void 'M06 : test multi-import DataModels with invalid models'() {
+        given:
+        setupData()
+        DataModel.count() == 2
+        List<DataModel> dataModels = clearExpectedDiffsFromModels([simpleDataModelId, complexDataModelId])
+        basicParameters.importAsNewBranchModelVersion = true // Needed to import the same models
+
+        expect:
+        importerService.canImportMultipleDomains()
+
+        when:
+        List<DataModel> imported = importModels(loadTestFile('simpleAndInvalidDataModels'))
+
+        then:
+        imported
+        imported.size() == 1
+
+        when:
+        ObjectDiff simpleDiff = dataModelService.getDiffForModels(dataModels[0], imported.pop())
+
+        then:
+        simpleDiff.objectsAreIdentical()
+
+        when:
+        imported = importModels(loadTestFile('simpleComplexAndInvalidDataModels'))
+
+        then:
+        imported
+        imported.size() == 2
+
+        when:
+        simpleDiff = dataModelService.getDiffForModels(dataModels[0], imported[0])
+        ObjectDiff complexDiff = dataModelService.getDiffForModels(dataModels[1], imported[1])
+
+        then:
+        simpleDiff.objectsAreIdentical()
+        complexDiff.objectsAreIdentical()
+
+        cleanup:
+        basicParameters.importAsNewBranchModelVersion = false
+    }
+
+    void 'M07 : test multi-import DataModels with duplicates'() {
+        given:
+        setupData()
+        DataModel.count() == 2
+        List<DataModel> dataModels = clearExpectedDiffsFromModels([simpleDataModelId, complexDataModelId])
+        basicParameters.importAsNewBranchModelVersion = true // Needed to import the same models
+
+        expect:
+        importerService.canImportMultipleDomains()
+
+        when:
+        List<DataModel> imported = importModels(loadTestFile('simpleDuplicateDataModels'))
+
+        then:
+        imported
+        imported.size() == 1
+
+        when:
+        ObjectDiff simpleDiff = dataModelService.getDiffForModels(dataModels[0], imported.pop())
+
+        then:
+        simpleDiff.objectsAreIdentical()
+
+        when:
+        imported = importModels(loadTestFile('simpleAndComplexDuplicateDataModels'))
+
+        then:
+        imported
+        imported.size() == 2
+
+        when:
+        simpleDiff = dataModelService.getDiffForModels(dataModels[0], imported[0])
+        ObjectDiff complexDiff = dataModelService.getDiffForModels(dataModels[1], imported[1])
+
+        then:
+        simpleDiff.objectsAreIdentical()
+        complexDiff.objectsAreIdentical()
+
+        cleanup:
+        basicParameters.importAsNewBranchModelVersion = false
     }
 }

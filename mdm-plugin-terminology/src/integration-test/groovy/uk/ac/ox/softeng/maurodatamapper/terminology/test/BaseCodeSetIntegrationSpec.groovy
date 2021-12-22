@@ -21,8 +21,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.admin.AdminService
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
-import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSetService
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
+import uk.ac.ox.softeng.maurodatamapper.terminology.TerminologyService
 import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.test.integration.BaseIntegrationSpec
 
@@ -34,11 +34,12 @@ import groovy.util.logging.Slf4j
 @Slf4j
 abstract class BaseCodeSetIntegrationSpec extends BaseIntegrationSpec {
 
-    CodeSet simpleCodeSet
-    CodeSetService codeSetService
-    AdminService adminService
-    Terminology simpleTerminology
     Authority testAuthority
+    AdminService adminService
+    TerminologyService terminologyService
+    CodeSet simpleCodeSet
+    CodeSet complexCodeSet
+    Terminology simpleTerminology
 
     Folder getTestFolder() {
         folder
@@ -51,6 +52,11 @@ abstract class BaseCodeSetIntegrationSpec extends BaseIntegrationSpec {
         testAuthority = Authority.findByLabel('Test Authority')
         checkAndSave(testAuthority)
         simpleCodeSet = BootstrapModels.buildAndSaveSimpleCodeSet(messageSource, folder, testAuthority)
+        complexCodeSet = BootstrapModels.buildAndSaveComplexCodeSet(messageSource, folder, terminologyService, testAuthority)
         simpleTerminology = Terminology.findByLabel(BootstrapModels.SIMPLE_TERMINOLOGY_NAME)
+    }
+
+    static String replaceWithTestAuthority(String exported) {
+        exported.replace(/Mauro Data Mapper/, 'Test Authority')
     }
 }

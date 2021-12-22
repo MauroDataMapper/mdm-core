@@ -26,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.
 
 import groovy.util.logging.Slf4j
 import groovy.util.slurpersupport.GPathResult
+import groovy.util.slurpersupport.NodeChild
 
 import java.nio.charset.Charset
 
@@ -39,12 +40,12 @@ class TerminologyXmlImporterService extends DataBindTerminologyImporterProviderS
 
     @Override
     String getVersion() {
-        '3.0'
+        '4.0'
     }
 
     @Override
     Boolean canImportMultipleDomains() {
-        false
+        true
     }
 
     @Override
@@ -61,17 +62,37 @@ class TerminologyXmlImporterService extends DataBindTerminologyImporterProviderS
         Map map = convertToMap(result)
 
         log.debug('Importing Terminology map')
-        bindMapToTerminology currentUser, backwardsCompatibleExtractTerminologyMap(result, map)
+        bindMapToTerminology(currentUser, backwardsCompatibleExtractTerminologyMap(result, map))
     }
 
-    Map backwardsCompatibleExtractTerminologyMap(GPathResult result, Map map) {
-        log.debug("backwardsCompatibleExtractTerminologyMap")
-        switch (result.name()) {
-            case 'exportModel':
-                return map.terminology as Map
-            case 'terminology':
-                return map
+    @Override
+    List<Terminology> importTerminologies(User currentUser, byte[] content) {
+        if (!currentUser) throw new ApiUnauthorizedException('XTIS01', 'User must be logged in to import model')
+        if (content.size() == 0) throw new ApiBadRequestException('XTIS02', 'Cannot import empty content')
+
+        String xml = new String(content, Charset.defaultCharset())
+
+        log.debug('Parsing in file content using XmlSlurper')
+        GPathResult result = new XmlSlurper().parseText(xml)
+        result = result.children()[0].name() == 'terminologies' ? result.children()[0] : result
+
+        if (result.name() == 'terminologies') {
+            log.debug('Importing Terminology list')
+            return convertToList(result as NodeChild).collect { bindMapToTerminology(currentUser, it) }
         }
+
+        // Handle single Terminology map or exportModel passed to this method, for backwards compatibility
+
+        log.debug('Converting result to Map')
+        Map map = convertToMap(result)
+
+        log.debug('Importing Terminology map')
+        [bindMapToTerminology(currentUser, backwardsCompatibleExtractTerminologyMap(result, map))]
+    }
+
+    private Map backwardsCompatibleExtractTerminologyMap(GPathResult result, Map map) {
+        if (result.name() == 'exportModel') return map.terminology as Map
+        if (result.name() == 'terminology') return map
         throw new ApiBadRequestException('XIS03', 'Cannot import XML as terminology is not present')
     }
 }

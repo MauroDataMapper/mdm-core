@@ -48,7 +48,6 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         'folders'
     }
 
-
     @Transactional
     String getFolderId() {
         Folder.findByLabel('Functional Test Folder').id.toString()
@@ -283,6 +282,25 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
     "documentationVersion": "1.0.0",
     "folder": "${json-unit.matches:id}",
     "type": "CodeSet"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "CodeSet",
+    "label": "Complex Test CodeSet",
+    "hasChildren": false,
+    "availableActions": [
+      "delete",
+      "moveToContainer",
+      "moveToFolder",
+      "softDelete"
+    ],
+    "deleted": false,
+    "finalised": true,
+    "superseded": false,
+    "documentationVersion": "1.0.0",
+    "folder": "${json-unit.matches:id}",
+    "type": "CodeSet",
+    "modelVersion": "1.0.0"
   }
 ]'''
     }
@@ -304,7 +322,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         verifyResponse(OK, localResponse)
 
         when:
-        Map vfTree = localResponse.body().find {it.id == vfId}
+        Map vfTree = localResponse.body().find { it.id == vfId }
 
         then: 'Both items have no option to create a VF'
         vfTree
@@ -543,6 +561,20 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
         "type": "CodeSet"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "CodeSet",
+        "label": "Complex Test CodeSet",
+        "hasChildren": false,
+        "availableActions": [],
+        "deleted": false,
+        "finalised": true,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "CodeSet",
+        "modelVersion": "1.0.0"
       }
       ]
       }
@@ -825,6 +857,25 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
             "documentationVersion": "1.0.0",
             "folder": "${json-unit.matches:id}",
             "type": "CodeSet"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "domainType": "CodeSet",
+            "label": "Complex Test CodeSet",
+            "hasChildren": false,
+            "availableActions": [
+              "delete",
+              "moveToContainer",
+              "moveToFolder",
+              "softDelete"
+            ],
+            "deleted": false,
+            "finalised": true,
+            "superseded": false,
+            "documentationVersion": "1.0.0",
+            "folder": "${json-unit.matches:id}",
+            "type": "CodeSet",
+            "modelVersion": "1.0.0"
           }
         ]
       }
@@ -1119,6 +1170,25 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
             "documentationVersion": "1.0.0",
             "folder": "${json-unit.matches:id}",
             "type": "CodeSet"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "domainType": "CodeSet",
+            "label": "Complex Test CodeSet",
+            "hasChildren": false,
+            "availableActions": [
+              "delete",
+              "moveToContainer",
+              "moveToFolder",
+              "softDelete"
+            ],
+            "deleted": false,
+            "finalised": true,
+            "superseded": false,
+            "documentationVersion": "1.0.0",
+            "folder": "${json-unit.matches:id}",
+            "type": "CodeSet",
+            "modelVersion": "1.0.0"
           }
         ]
       }

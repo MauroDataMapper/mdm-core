@@ -5,13 +5,13 @@
     "lastUpdated": "${json-unit.matches:offsetDateTime}",
     "annotations": [
       {
-          "id": "${json-unit.matches:id}",
-          "createdBy": "development@test.com",
-          "lastUpdated": "${json-unit.matches:offsetDateTime}",
-          "label": "test annotation 1 label",
-          "description": "test annotation 1 description"
+        "id": "${json-unit.matches:id}",
+        "createdBy": "development@test.com",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "label": "test annotation 1 label",
+        "description": "test annotation 1 description"
       }
-    ],     
+    ],
     "author": "Test Author",
     "organisation": "Test Organisation",
     "documentationVersion": "1.0.0",
@@ -28,7 +28,7 @@
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
       "name": "CodeSetJsonExporterService",
-      "version": "3.0"
+      "version": "4.0"
     }
   }
 }

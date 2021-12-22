@@ -1,0 +1,410 @@
+{
+  "codeSets": [
+    {
+      "id": "Invalid CodeSet"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "label": "Simple Test CodeSet",
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "classifiers": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "test classifier",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+        }
+      ],
+      "author": "Test Bootstrap",
+      "organisation": "Oxford BRC",
+      "documentationVersion": "1.0.0",
+      "finalised": true,
+      "dateFinalised": "2021-10-19T12:41:08.783Z",
+      "modelVersion": "1.0.0",
+      "authority": {
+        "id": "${json-unit.matches:id}",
+        "url": "http://localhost",
+        "label": "Test Authority"
+      },
+      "termPaths": [
+        {
+          "termPath": "te:Simple Test Terminology|tm:STT01: Simple Test Term 01"
+        },
+        {
+          "termPath": "te:Simple Test Terminology|tm:STT02: Simple Test Term 02"
+        }
+      ]
+    },
+    {
+      "id": "Invalid CodeSet"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "label": "Complex Test CodeSet",
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "classifiers": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "test classifier",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+        }
+      ],
+      "metadata": [
+        {
+          "id": "${json-unit.matches:id}",
+          "namespace": "terminology.test.com/simple",
+          "key": "mdk1",
+          "value": "mdv1",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+        },
+        {
+          "id": "${json-unit.matches:id}",
+          "namespace": "terminology.test.com",
+          "key": "mdk2",
+          "value": "mdv2",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+        },
+        {
+          "id": "${json-unit.matches:id}",
+          "namespace": "terminology.test.com/simple",
+          "key": "mdk2",
+          "value": "mdv2",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+        }
+      ],
+      "author": "Test Bootstrap",
+      "organisation": "Oxford BRC",
+      "documentationVersion": "1.0.0",
+      "finalised": true,
+      "dateFinalised": "2021-10-19T12:41:08.783Z",
+      "modelVersion": "1.0.0",
+      "authority": {
+        "id": "${json-unit.matches:id}",
+        "url": "http://localhost",
+        "label": "Test Authority"
+      },
+      "termPaths": [
+        {
+          "termPath": "te:Simple Test Terminology|tm:STT01: Simple Test Term 01"
+        },
+        {
+          "termPath": "te:Simple Test Terminology|tm:STT02: Simple Test Term 02"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT00: Complex Test Term 00"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT1: Complex Test Term 1"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT2: Complex Test Term 2"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT3: Complex Test Term 3"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT4: Complex Test Term 4"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT5: Complex Test Term 5"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT6: Complex Test Term 6"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT7: Complex Test Term 7"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT8: Complex Test Term 8"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT9: Complex Test Term 9"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT10: Complex Test Term 10"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT11: Complex Test Term 11"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT12: Complex Test Term 12"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT13: Complex Test Term 13"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT14: Complex Test Term 14"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT15: Complex Test Term 15"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT16: Complex Test Term 16"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT17: Complex Test Term 17"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT18: Complex Test Term 18"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT19: Complex Test Term 19"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT20: Complex Test Term 20"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT21: Complex Test Term 21"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT22: Complex Test Term 22"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT23: Complex Test Term 23"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT24: Complex Test Term 24"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT25: Complex Test Term 25"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT26: Complex Test Term 26"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT27: Complex Test Term 27"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT28: Complex Test Term 28"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT29: Complex Test Term 29"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT30: Complex Test Term 30"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT31: Complex Test Term 31"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT32: Complex Test Term 32"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT33: Complex Test Term 33"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT34: Complex Test Term 34"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT35: Complex Test Term 35"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT36: Complex Test Term 36"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT37: Complex Test Term 37"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT38: Complex Test Term 38"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT39: Complex Test Term 39"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT40: Complex Test Term 40"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT41: Complex Test Term 41"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT42: Complex Test Term 42"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT43: Complex Test Term 43"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT44: Complex Test Term 44"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT45: Complex Test Term 45"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT46: Complex Test Term 46"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT47: Complex Test Term 47"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT48: Complex Test Term 48"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT49: Complex Test Term 49"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT50: Complex Test Term 50"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT51: Complex Test Term 51"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT52: Complex Test Term 52"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT53: Complex Test Term 53"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT54: Complex Test Term 54"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT55: Complex Test Term 55"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT56: Complex Test Term 56"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT57: Complex Test Term 57"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT58: Complex Test Term 58"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT59: Complex Test Term 59"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT60: Complex Test Term 60"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT61: Complex Test Term 61"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT62: Complex Test Term 62"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT63: Complex Test Term 63"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT64: Complex Test Term 64"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT65: Complex Test Term 65"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT66: Complex Test Term 66"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT67: Complex Test Term 67"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT68: Complex Test Term 68"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT69: Complex Test Term 69"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT70: Complex Test Term 70"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT71: Complex Test Term 71"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT72: Complex Test Term 72"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT73: Complex Test Term 73"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT74: Complex Test Term 74"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT75: Complex Test Term 75"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT76: Complex Test Term 76"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT77: Complex Test Term 77"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT78: Complex Test Term 78"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT79: Complex Test Term 79"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT80: Complex Test Term 80"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT81: Complex Test Term 81"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT82: Complex Test Term 82"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT83: Complex Test Term 83"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT84: Complex Test Term 84"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT85: Complex Test Term 85"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT86: Complex Test Term 86"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT87: Complex Test Term 87"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT88: Complex Test Term 88"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT89: Complex Test Term 89"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT90: Complex Test Term 90"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT91: Complex Test Term 91"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT92: Complex Test Term 92"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT93: Complex Test Term 93"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT94: Complex Test Term 94"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT95: Complex Test Term 95"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT96: Complex Test Term 96"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT97: Complex Test Term 97"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT98: Complex Test Term 98"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT99: Complex Test Term 99"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT100: Complex Test Term 100"
+        },
+        {
+          "termPath": "te:Complex Test Terminology|tm:CTT101"
+        }
+      ]
+    }
+  ],
+  "exportMetadata": {
+    "exportedBy": "Admin User",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
+      "name": "CodeSetJsonExporterService",
+      "version": "4.0"
+    }
+  }
+}

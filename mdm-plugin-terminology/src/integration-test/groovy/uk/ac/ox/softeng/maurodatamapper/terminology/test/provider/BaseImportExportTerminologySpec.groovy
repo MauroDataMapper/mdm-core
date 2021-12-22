@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.test.provider
 
-
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.TerminologyImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.terminology.test.BaseTerminologyIntegrationSpec
@@ -41,10 +40,10 @@ abstract class BaseImportExportTerminologySpec extends BaseTerminologyIntegratio
     Path resourcesPath
 
     @Shared
-    UUID complexTerminologyId
+    UUID simpleTerminologyId
 
     @Shared
-    UUID simpleTerminologyId
+    UUID complexTerminologyId
 
     abstract TerminologyImporterProviderService getImporterService()
 
@@ -60,8 +59,8 @@ abstract class BaseImportExportTerminologySpec extends BaseTerminologyIntegratio
     void setupDomainData() {
         log.debug('Setting up TerminologyServiceSpec unit')
 
-        complexTerminologyId = complexTerminology.id
         simpleTerminologyId = simpleTerminology.id
+        complexTerminologyId = complexTerminology.id
     }
 
     byte[] loadTestFile(String filename) {

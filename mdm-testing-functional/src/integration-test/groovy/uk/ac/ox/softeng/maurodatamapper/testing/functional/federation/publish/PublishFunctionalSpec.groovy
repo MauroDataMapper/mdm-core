@@ -103,11 +103,11 @@ class PublishFunctionalSpec extends FunctionalSpec {
         responseBody().authority.label == 'Mauro Data Mapper'
         responseBody().authority.url == 'http://localhost'
         responseBody().lastUpdated
-        responseBody().publishedModels.size() == 2
-
+        responseBody().publishedModels.size() == 3
 
         and:
         verifyEntry(responseBody().publishedModels.find { it.title == 'Simple Test CodeSet 1.0.0' }, 'CodeSet')
+        verifyEntry(responseBody().publishedModels.find { it.title == 'Complex Test CodeSet 1.0.0' }, 'CodeSet')
         verifyEntry(responseBody().publishedModels.find { it.title == 'Finalised Example Test DataModel 1.0.0' }, 'DataModel')
     }
 

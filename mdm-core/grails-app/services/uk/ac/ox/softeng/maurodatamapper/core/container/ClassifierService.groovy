@@ -163,10 +163,6 @@ class ClassifierService extends ContainerService<Classifier> {
         Classifier.count()
     }
 
-    Classifier save(Classifier classifier) {
-        classifier.save()
-    }
-
     def saveAll(Collection<Classifier> classifiers) {
 
         Collection<Classifier> alreadySaved = classifiers.findAll { it.ident() && it.isDirty() }
@@ -246,7 +242,10 @@ class ClassifierService extends ContainerService<Classifier> {
 
     Classifier findOrCreateClassifier(User catalogueUser, Classifier classifier) {
         Classifier exists = Classifier.findByLabel(classifier.label)
-        if (exists) return exists
+        if (exists) {
+            classifier = null
+            return exists
+        }
         classifier.createdBy = catalogueUser.emailAddress
         classifier
     }
@@ -314,13 +313,16 @@ class ClassifierService extends ContainerService<Classifier> {
 
         classifiedItem.classifiers?.clear()
 
-        List<Classifier> foundOrCreated = classifiers.collect { cls ->
+        List<Classifier> foundOrCreated = classifiers.collect {cls ->
             findOrCreateClassifier(catalogueUser, cls)
         }
 
-        batchSave(foundOrCreated)
+        // Dont batch save as we dont want to clear or flush the session
+        foundOrCreated.each {
+            save(it, flush: true, validate: true)
+        }
 
-        foundOrCreated.each { cls ->
+        foundOrCreated.each {cls ->
             classifiedItem.addToClassifiers(cls)
         }
     }

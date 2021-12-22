@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportMetadata
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportModel
@@ -37,8 +36,13 @@ class DataModelXmlExporterService extends DataModelExporterProviderService imple
     MarkupViewTemplateEngine templateEngine
 
     @Override
-    String getFileExtension() {
-        'xml'
+    String getDisplayName() {
+        'XML DataModel Exporter'
+    }
+
+    @Override
+    String getVersion() {
+        '4.0'
     }
 
     @Override
@@ -47,23 +51,24 @@ class DataModelXmlExporterService extends DataModelExporterProviderService imple
     }
 
     @Override
-    String getDisplayName() {
-        'XML DataModel Exporter'
+    String getFileExtension() {
+        'xml'
     }
 
     @Override
-    String getVersion() {
-        '3.2'
+    Boolean canExportMultipleDomains() {
+        true
     }
 
     @Override
     ByteArrayOutputStream exportDataModel(User currentUser, DataModel dataModel) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel new ExportModel(dataModel, 'dataModel', version, 'gml', exportMetadata), fileType
+        exportModel(new ExportModel(dataModel, 'dataModel', version, '3.2', 'gml', exportMetadata), fileType)
     }
 
     @Override
-    ByteArrayOutputStream exportDataModels(User currentUser, List<DataModel> dataModel) throws ApiException {
-        throw new ApiBadRequestException('XES01', "${getName()} cannot export multiple DataModels")
+    ByteArrayOutputStream exportDataModels(User currentUser, List<DataModel> dataModels) throws ApiException {
+        ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
+        exportModel(new ExportModel(dataModels, 'dataModel', 'dataModels', version, '3.2', 'gml', exportMetadata), fileType)
     }
 }

@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportMetadata
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportModel
@@ -37,8 +36,13 @@ class TerminologyXmlExporterService extends TerminologyExporterProviderService i
     MarkupViewTemplateEngine templateEngine
 
     @Override
-    String getFileExtension() {
-        'xml'
+    String getDisplayName() {
+        'XML Terminology Exporter'
+    }
+
+    @Override
+    String getVersion() {
+        '4.0'
     }
 
     @Override
@@ -47,28 +51,29 @@ class TerminologyXmlExporterService extends TerminologyExporterProviderService i
     }
 
     @Override
-    String getDisplayName() {
-        'XML Terminology Exporter'
+    String getFileExtension() {
+        'xml'
     }
 
     @Override
-    String getVersion() {
-        '3.1'
-    }
-
-    @Override
-    ByteArrayOutputStream exportTerminology(User currentUser, Terminology terminology) throws ApiException {
-        ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel new ExportModel(terminology, 'terminology', version, 'gml', exportMetadata), fileType
-    }
-
-    @Override
-    ByteArrayOutputStream exportTerminologies(User currentUser, List<Terminology> terminologies) throws ApiException {
-        throw new ApiBadRequestException('XES01', "${getName()} cannot export multiple Terminologies")
+    Boolean canExportMultipleDomains() {
+        true
     }
 
     @Override
     String getExportViewPath() {
         '/exportModel/exportTerminology'
-    }    
+    }
+
+    @Override
+    ByteArrayOutputStream exportTerminology(User currentUser, Terminology terminology) throws ApiException {
+        ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
+        exportModel(new ExportModel(terminology, 'terminology', version, '3.2', 'gml', exportMetadata), fileType)
+    }
+
+    @Override
+    ByteArrayOutputStream exportTerminologies(User currentUser, List<Terminology> terminologies) throws ApiException {
+        ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
+        exportModel(new ExportModel(terminologies, 'terminology', 'terminologies', version, '3.2', 'gml', exportMetadata), fileType)
+    }
 }
