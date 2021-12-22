@@ -50,20 +50,27 @@ class ModelDataType extends DataType<ModelDataType> {
 
         GrailsApplication grailsApplication = Holders.getGrailsApplication()
 
-        Class thisResourceClass = Utils.lookupGrailsDomain(grailsApplication, this.modelResourceDomainType).getClazz()
-        Class otherResourceClass = Utils.lookupGrailsDomain(grailsApplication, otherDataType.modelResourceDomainType).getClazz()
+        Class thisResourceClass = Utils.lookupGrailsDomain(grailsApplication, this.modelResourceDomainType)?.getClazz()
+        Class otherResourceClass = Utils.lookupGrailsDomain(grailsApplication, otherDataType.modelResourceDomainType)?.getClazz()
 
-        Model thisResourceModel = thisResourceClass.byIdInList([this.modelResourceId]).first()
-        Model otherResourceModel = otherResourceClass.byIdInList([otherDataType.modelResourceId]).first()
+        if (thisResourceClass && otherResourceClass) {
+            List<Model> thisResourceModels = thisResourceClass.byIdInList([this.modelResourceId]).list()
+            List<Model> otherResourceModels = otherResourceClass.byIdInList([otherDataType.modelResourceId]).list()
 
-        // Aside from branch and version, is the model pointed to by the modelDataType really different by path?
-        Path thisResourcePath = Path.from(thisResourceModel.folder, thisResourceModel)
-        Path otherResourcePath = Path.from(otherResourceModel.folder, otherResourceModel)
-        if (!thisResourcePath.equalsIgnoringModelIdentifier(otherResourcePath)) {
-            diff.
-            appendString('modelResourceId', this.modelResourceId.toString(), otherDataType.modelResourceId.toString()).
-            appendString('modelResourceDomainType', this.modelResourceDomainType, otherDataType.modelResourceDomainType)
-            //.appendString('modelResourcePath', thisResourcePath.toString(), otherResourcePath.toString()) //TODO
+            if (thisResourceModels.size() == 1 && otherResourceModels.size() == 1) {
+                Model thisResourceModel = thisResourceModels.first()
+                Model otherResourceModel = otherResourceModels.first()
+
+                // Aside from branch and version, is the model pointed to by the modelDataType really different by path?
+                Path thisResourcePath = Path.from(thisResourceModel.folder, thisResourceModel)
+                Path otherResourcePath = Path.from(otherResourceModel.folder, otherResourceModel)
+                if (!thisResourcePath.equalsIgnoringModelIdentifier(otherResourcePath)) {
+                    diff.
+                    appendString('modelResourceId', this.modelResourceId.toString(), otherDataType.modelResourceId.toString()).
+                    appendString('modelResourceDomainType', this.modelResourceDomainType, otherDataType.modelResourceDomainType)
+                    //.appendString('modelResourcePath', thisResourcePath.toString(), otherResourcePath.toString()) //TODO
+                }
+            }
         }
 
         diff
