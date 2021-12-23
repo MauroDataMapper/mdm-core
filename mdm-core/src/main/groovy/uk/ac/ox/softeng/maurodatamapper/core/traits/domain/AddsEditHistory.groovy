@@ -17,35 +17,16 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.traits.domain
 
-import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import grails.compiler.GrailsCompileStatic
+import groovy.transform.CompileStatic
 
 /**
  * @since 01/12/2017
  */
 @SuppressFBWarnings('BC_IMPOSSIBLE_INSTANCEOF')
-@GrailsCompileStatic
+@CompileStatic
 trait AddsEditHistory {
 
-    public static final List<String> DIRTY_PROPERTY_NAMES_TO_IGNORE = ['version', 'lastUpdated']
 
-    abstract void addCreatedEdit(User creator)
-
-    abstract void addUpdatedEdit(User editor, List<String> dirtyPropertyNames)
-
-    abstract void addDeletedEdit(User deleter)
-
-    abstract void addChangeNoticeEdit(User changer,  String changeNotice)
-
-    abstract String getEditLabel()
-
-    boolean shouldAddEdit(List<String> dirtyPropertyNames) {
-        editedPropertyNames(dirtyPropertyNames)
-    }
-
-    List<String> editedPropertyNames(List<String> dirtyPropertyNames) {
-        dirtyPropertyNames - DIRTY_PROPERTY_NAMES_TO_IGNORE
-    }
 }

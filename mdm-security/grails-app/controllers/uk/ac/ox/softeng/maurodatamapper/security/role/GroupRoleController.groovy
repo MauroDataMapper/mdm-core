@@ -51,7 +51,7 @@ class GroupRoleController extends EditLoggingController<GroupRole> {
     protected GroupRole saveResource(GroupRole resource) {
         log.trace('save resource and refresh cache')
         groupRoleService.save(resource)
-        if (resource.instanceOf(AddsEditHistory) && !params.boolean('noHistory')) resource.addCreatedEdit(currentUser)
+        if (resource.instanceOf(EditHistoryAware) && !params.boolean('noHistory')) resource.addCreatedEdit(currentUser)
         resource
     }
 

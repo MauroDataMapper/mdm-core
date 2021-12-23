@@ -30,7 +30,19 @@ import groovy.transform.SelfType
  */
 @SelfType(MdmDomain)
 @GrailsCompileStatic
-trait EditHistoryAware extends AddsEditHistory {
+trait EditHistoryAware {
+
+    public static final List<String> DIRTY_PROPERTY_NAMES_TO_IGNORE = ['version', 'lastUpdated']
+
+    abstract String getEditLabel()
+
+    boolean shouldAddEdit(List<String> dirtyPropertyNames) {
+        editedPropertyNames(dirtyPropertyNames)
+    }
+
+    List<String> editedPropertyNames(List<String> dirtyPropertyNames) {
+        dirtyPropertyNames - DIRTY_PROPERTY_NAMES_TO_IGNORE
+    }
 
     void addToEditsTransactionally(EditTitle title, User createdBy, String description) {
         createAndSaveEditInsideNewTransaction title, createdBy, description
@@ -57,7 +69,6 @@ trait EditHistoryAware extends AddsEditHistory {
         }
     }
 
-    @Override
     void addCreatedEdit(User creator) {
         addToEditsTransactionally EditTitle.CREATE, creator, getCreatedEditDescription()
     }
@@ -66,17 +77,14 @@ trait EditHistoryAware extends AddsEditHistory {
         "[$editLabel] created"
     }
 
-    @Override
     void addUpdatedEdit(User editor, List<String> dirtyPropertyNames) {
         addToEditsTransactionally EditTitle.UPDATE, editor, editLabel, dirtyPropertyNames
     }
 
-    @Override
     void addDeletedEdit(User deleter) {
         // No-op
     }
 
-    @Override
     void addChangeNoticeEdit(User changer, String changeNotice) {
         addToEditsTransactionally EditTitle.CHANGENOTICE, changer, changeNotice
     }

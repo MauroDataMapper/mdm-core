@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security.basic
 
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
 /**
@@ -39,6 +40,11 @@ class AnonymousUser implements User {
 
     UUID ident() {
         id
+    }
+
+    @Override
+    Path getPath() {
+        Path.from('cu', emailAddress)
     }
 
     @Override
