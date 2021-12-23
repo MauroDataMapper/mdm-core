@@ -1,5 +1,7 @@
 dependencies {
-
+    // Required for compilation
+    api 'org.javassist:javassist:3.28.0-GA'
+    // -----
     api platform("org.springframework.boot:spring-boot-dependencies:$springBootVersion")
 
     implementation group: 'org.codehaus.groovy', name: 'groovy'
@@ -7,7 +9,7 @@ dependencies {
 
     // Logging
     api group: 'org.slf4j', name: 'slf4j-api'
-    implementation group: 'ch.qos.logback', name: 'logback-classic'
+    api group: 'ch.qos.logback', name: 'logback-classic'
 
     implementation group: 'org.grails', name: 'grails-core', version: grailsVersion
     implementation group: 'org.grails', name: 'grails-datastore-gorm'

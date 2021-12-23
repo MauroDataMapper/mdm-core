@@ -1,7 +1,7 @@
 dependencies {
 
     implementation project(':mdm-common')
-    //    api project(':mdm-core')
+    implementation project(':mdm-core')
 
     implementation group: 'org.codehaus.groovy', name: 'groovy'
 
@@ -10,6 +10,7 @@ dependencies {
     implementation group: 'ch.qos.logback', name: 'logback-classic'
 
     implementation "org.grails.plugins:views-json"
+    implementation group: 'org.apache.commons', name: 'commons-csv', version: commonsCsvVersion
 
     implementation "org.grails:grails-gorm-testing-support"
     implementation "org.mockito:mockito-core"
