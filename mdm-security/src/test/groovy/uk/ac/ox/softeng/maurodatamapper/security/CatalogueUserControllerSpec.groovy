@@ -83,7 +83,7 @@ class CatalogueUserControllerSpec extends ResourceControllerSpec<CatalogueUser> 
         controller.catalogueUserService = Stub(CatalogueUserService) {
             get(_) >> { UUID id -> CatalogueUser.get(id) }
             findAllByUser(_, _) >> CatalogueUser.list()
-            delete(_) >> { CatalogueUser catalogueUser -> catalogueUser.disabled = true }
+            delete(_, _) >> { CatalogueUser catalogueUser, boolean permanent -> catalogueUser.disabled = true }
             findAllByUserAndUserGroupId(_, _, _) >> { UserSecurityPolicyManager userSecurityPolicyManager, UUID userGroupId, Map pagination ->
                 if (userSecurityPolicyManager.isApplicationAdministrator()) {
                     return CatalogueUser.byUserGroupId(userGroupId).list(pagination)
