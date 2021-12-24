@@ -19,6 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.security.role
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.AnonymisableService
+import uk.ac.ox.softeng.maurodatamapper.security.basic.AnonymousUser
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
@@ -29,7 +31,7 @@ import grails.validation.ValidationException
 import org.springframework.beans.factory.annotation.Autowired
 
 @Transactional
-class SecurableResourceGroupRoleService {
+class SecurableResourceGroupRoleService implements AnonymisableService {
 
     @Autowired(required = false)
     List<SecurableResourceService> securableResourceServices
@@ -137,5 +139,12 @@ class SecurableResourceGroupRoleService {
                                                        "SecurableResourceGroupRole retrieval for securable resource [${domainType}] with no " +
                                                        "supporting service")
         service.get(id)
+    }
+
+    void anonymise(String createdBy) {
+        SecurableResourceGroupRole.findAllByCreatedBy(createdBy).each { securableResourceGroupRole ->
+            securableResourceGroupRole.createdBy = AnonymousUser.ANONYMOUS_EMAIL_ADDRESS
+            securableResourceGroupRole.save(validate: false)
+        }
     }
 }

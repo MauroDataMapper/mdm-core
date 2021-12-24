@@ -29,6 +29,7 @@ import io.micronaut.http.HttpResponse
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.METHOD_NOT_ALLOWED
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
@@ -574,6 +575,34 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
 
         cleanup:
         cleanupFunctionalSpecUser()
+    }
+
+    void "Test the permanent delete action correctly deletes an instance"() {
+        given:
+        String id = adminRegisterNewUser()
+        loginAdmin()
+
+        when: 'Get the user just created'
+        loginAdmin()
+        GET("$endpoint/$id")
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        when: "The permanent delete action is executed on an existing instance as admin"
+        DELETE("$endpoint/$id?permanent=true")
+
+        then: "The response is NO_CONTENT"
+        verifyResponse NO_CONTENT, response
+
+        when: 'Get the user again'
+        GET("$endpoint/$id")
+
+        then: 'The response is now NOT_FOUND'
+        verifyResponse NOT_FOUND, response
+
+        cleanup:
+        logout()
     }
 
     void "Test getting the user preferences"() {

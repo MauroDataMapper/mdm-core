@@ -29,6 +29,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FileParameter
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.AnonymisableService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -37,12 +38,13 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
+import uk.ac.ox.softeng.maurodatamapper.security.basic.AnonymousUser
 
 import java.time.OffsetDateTime
 
 @Slf4j
 @Transactional
-class SubscribedModelService implements SecurableResourceService<SubscribedModel> {
+class SubscribedModelService implements SecurableResourceService<SubscribedModel>, AnonymisableService {
 
     @Autowired(required = false)
     List<ModelService> modelServices
@@ -323,4 +325,10 @@ class SubscribedModelService implements SecurableResourceService<SubscribedModel
         exporterMap
     }
 
+    void anonymise(String createdBy) {
+        SubscribedModel.findAllByCreatedBy(createdBy).each { subscribedModel ->
+            subscribedModel.createdBy = AnonymousUser.ANONYMOUS_EMAIL_ADDRESS
+            subscribedModel.save(validate: false)
+        }
+    }
 }

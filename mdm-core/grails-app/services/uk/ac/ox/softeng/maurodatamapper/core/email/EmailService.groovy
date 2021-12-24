@@ -23,17 +23,19 @@ import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.email.EmailProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.AnonymisableService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.apache.commons.text.StringSubstitutor
+import uk.ac.ox.softeng.maurodatamapper.security.basic.AnonymousUser
 
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 @Slf4j
-class EmailService {
+class EmailService implements AnonymisableService {
 
     MauroDataMapperServiceProviderService mauroDataMapperServiceProviderService
     ApiPropertyService apiPropertyService
@@ -104,6 +106,16 @@ class EmailService {
             .body(getApiPropertyAndSubstitute(bodyProperty, propertiesMap))
 
         executorService.submit(task)
+    }
+
+    /**
+     * Delete all emails sent to the specified address
+     * @param sentTo
+     */
+    void anonymise(String sentTo) {
+        Email.findAllBySentToEmailAddress(sentTo).each { email ->
+            email.delete()
+        }
     }
 
     @Transactional

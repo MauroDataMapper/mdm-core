@@ -119,7 +119,7 @@ class CatalogueUserController extends EditLoggingController<CatalogueUser> /* im
 
     @Override
     void serviceDeleteResource(CatalogueUser resource) {
-        catalogueUserService.delete(resource)
+        catalogueUserService.delete(resource, params.boolean('permanent') ?: false)
     }
 
     @Override
@@ -137,7 +137,11 @@ class CatalogueUserController extends EditLoggingController<CatalogueUser> /* im
 
     @Override
     protected void deleteResponse(CatalogueUser instance) {
-        super.updateResponse(instance)
+        if (params.boolean('permanent')) {
+            super.deleteResponse(instance)
+        } else {
+            super.updateResponse(instance)
+        }
     }
 
     @Override

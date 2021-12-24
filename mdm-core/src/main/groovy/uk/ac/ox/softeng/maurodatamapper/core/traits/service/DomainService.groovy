@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.traits.service
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.security.basic.AnonymousUser
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -29,7 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 
-trait DomainService<K extends CreatorAware> {
+trait DomainService<K extends CreatorAware> implements AnonymisableService {
 
     @Autowired
     GrailsApplication grailsApplication
@@ -86,4 +87,12 @@ trait DomainService<K extends CreatorAware> {
 
     abstract K findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier)
 
+    void anonymise(String createdBy) {
+        getDomainClass()?.findAllByCreatedBy(createdBy).each {domain ->
+            domain.createdBy = AnonymousUser.ANONYMOUS_EMAIL_ADDRESS
+
+            // Don't validate because any existing errors in data can cause validations to fail
+            domain.save(validate: false)
+        }
+    }
 }
