@@ -21,11 +21,16 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataValue
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.DataModelPluginMergeBuilder
+import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.ReferenceDataPluginMergeBuilder
+import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.TestMergeData
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Transactional
@@ -89,6 +94,9 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
     @Shared
     Path csvResourcesPath
+
+    @Shared
+    ReferenceDataPluginMergeBuilder builder
 
     @RunOnce
     @Transactional
@@ -309,21 +317,61 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 ]'''
     }
 
-    @PendingFeature(reason = "Not yet implemented")
     void 'test finalising ReferenceData'() {
         given: 'The save action is executed with valid data'
         String id = createNewItem(validJson)
 
-        when:
-        PUT("$id/finalise", [:])
+        when: 'The ReferenceData is finalised'
+        PUT("$id/finalise", [versionChangeType: 'Major'])
 
-        then:
+        then: 'The response is OK'
         verifyResponse OK, response
 
-        and:
-        response.body().availableActions == ['delete', 'show', 'update'] //TODO can this be restricted by the core plugin?
+        and: 'as expected'
+        response.body().availableActions == ['delete', 'show', 'update']
         response.body().finalised
         response.body().dateFinalised
+
+        when: 'List edits for the ReferenceData'
+        GET("$id/edits", MAP_ARG)
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        and: 'There is not a CHANGE NOTICE edit'
+        !response.body().items.find {
+            it.description == "Functional Test Change Notice"
+        }
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'test finalising ReferenceData with a change notice'() {
+        given: 'The save action is executed with valid data'
+        String id = createNewItem(validJson)
+
+        when: 'The ReferenceData is finalised'
+        PUT("$id/finalise", [versionChangeType: 'Major', changeNotice: 'Functional Test Change Notice'])
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        and: 'as expected'
+        response.body().availableActions == ['delete', 'show', 'update']
+        response.body().finalised
+        response.body().dateFinalised
+
+        when: 'List edits for the ReferenceData'
+        GET("$id/edits", MAP_ARG)
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        and: 'There is a CHANGE NOTICE edit'
+        response.body().items.find {
+            it.description == "Functional Test Change Notice"
+        }
 
         cleanup:
         cleanUpData(id)
@@ -365,19 +413,18 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(id)
     }
 
-    @PendingFeature(reason = "Not yet implemented")
     void 'VF01 : test creating a new fork model of a ReferenceData'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [:])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
 
         when: 'adding one new model'
-        PUT("$id/newForkModel", [label: 'Functional Test DataModel reader'], STRING_ARG)
+        PUT("$id/newForkModel", [label: 'Functional Test ReferenceData reader'], STRING_ARG)
 
         then:
         verifyJsonResponse CREATED, getExpectedShowJson()
-            .replaceFirst(/"label": "Functional Test Model",/, '"label": "Functional Test DataModel reader",')
+            .replaceFirst(/"label": "Reference Data Functional Test Model",/, '"label": "Functional Test ReferenceData reader",')
 
 
         when:
@@ -393,14 +440,14 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
       "id": "${json-unit.matches:id}",
       "unconfirmed":false,
       "sourceMultiFacetAwareItem": {
-        "domainType": "DataModel",
+        "domainType": "ReferenceDataModel",
         "id": "${json-unit.matches:id}",
-        "label": "Functional Test DataModel reader"
+        "label": "Functional Test ReferenceData reader"
       },
       "targetMultiFacetAwareItem": {
-        "domainType": "DataModel",
+        "domainType": "ReferenceDataModel",
         "id": "${json-unit.matches:id}",
-        "label": "Functional Test Model"
+        "label": "Reference Data Functional Test Model"
       }
     }
   ]
@@ -418,25 +465,25 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
       "linkType": "New Fork Of",
       "id": "${json-unit.matches:id}",
       "sourceModel": {
-        "domainType": "DataModel",
+        "domainType": "ReferenceDataModel",
         "id": "${json-unit.matches:id}",
-        "label": "Functional Test DataModel reader"
+        "label": "Functional Test ReferenceData reader"
       },
       "targetModel": {
-        "domainType": "DataModel",
+        "domainType": "ReferenceDataModel",
         "id": "${json-unit.matches:id}",
-        "label": "Functional Test Model"
+        "label": "Reference Data Functional Test Model"
       }
     }
   ]
 }'''
 
         when: 'adding another'
-        PUT("$id/newForkModel", [label: 'Functional Test DataModel editor'], STRING_ARG)
+        PUT("$id/newForkModel", [label: 'Functional Test ReferenceData editor'], STRING_ARG)
 
         then:
         verifyJsonResponse CREATED, getExpectedShowJson()
-            .replaceFirst(/"label": "Functional Test Model",/, '"label": "Functional Test DataModel editor",')
+            .replaceFirst(/"label": "Reference Data Functional Test Model",/, '"label": "Functional Test ReferenceData editor",')
 
         when:
         GET("$id/semanticLinks", STRING_ARG)
@@ -451,14 +498,14 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
       "id": "${json-unit.matches:id}",
       "unconfirmed":false,
       "sourceMultiFacetAwareItem": {
-        "domainType": "DataModel",
+        "domainType": "ReferenceDataModel",
         "id": "${json-unit.matches:id}",
-        "label": "Functional Test DataModel reader"
+        "label": "Functional Test ReferenceData reader"
       },
       "targetMultiFacetAwareItem": {
-        "domainType": "DataModel",
+        "domainType": "ReferenceDataModel",
         "id": "${json-unit.matches:id}",
-        "label": "Functional Test Model"
+        "label": "Reference Data Functional Test Model"
       }
     },
     {
@@ -467,14 +514,14 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
       "id": "${json-unit.matches:id}",
       "unconfirmed":false,
       "sourceMultiFacetAwareItem": {
-        "domainType": "DataModel",
+        "domainType": "ReferenceDataModel",
         "id": "${json-unit.matches:id}",
-        "label": "Functional Test DataModel editor"
+        "label": "Functional Test ReferenceData editor"
       },
       "targetMultiFacetAwareItem": {
-        "domainType": "DataModel",
+        "domainType": "ReferenceDataModel",
         "id": "${json-unit.matches:id}",
-        "label": "Functional Test Model"
+        "label": "Reference Data Functional Test Model"
       }
     }
   ]
@@ -492,14 +539,14 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
       "linkType": "New Fork Of",
       "id": "${json-unit.matches:id}",
       "sourceModel": {
-        "domainType": "DataModel",
+        "domainType": "ReferenceDataModel",
         "id": "${json-unit.matches:id}",
-        "label": "Functional Test DataModel reader"
+        "label": "Functional Test ReferenceData reader"
       },
       "targetModel": {
-        "domainType": "DataModel",
+        "domainType": "ReferenceDataModel",
         "id": "${json-unit.matches:id}",
-        "label": "Functional Test Model"
+        "label": "Reference Data Functional Test Model"
       }
     },
      {
@@ -507,14 +554,14 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
       "linkType": "New Fork Of",
       "id": "${json-unit.matches:id}",
       "sourceModel": {
-        "domainType": "DataModel",
+        "domainType": "ReferenceDataModel",
         "id": "${json-unit.matches:id}",
-        "label": "Functional Test DataModel editor"
+        "label": "Functional Test ReferenceData editor"
       },
       "targetModel": {
-        "domainType": "DataModel",
+        "domainType": "ReferenceDataModel",
         "id": "${json-unit.matches:id}",
-        "label": "Functional Test Model"
+        "label": "Reference Data Functional Test Model"
       }
     }
   ]
@@ -524,11 +571,10 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData()
     }
 
-    @PendingFeature(reason = "Not yet implemented")
     void 'VD01 : test creating a new documentation version of a ReferenceData'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [:])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
 
         when:
@@ -551,14 +597,14 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
       "id": "${json-unit.matches:id}",
       "unconfirmed":false,
       "sourceMultiFacetAwareItem": {
-        "domainType": "DataModel",
+        "domainType": "ReferenceDataModel",
         "id": "${json-unit.matches:id}",
-        "label": "Functional Test Model"
+        "label": "Reference Data Functional Test Model"
       },
       "targetMultiFacetAwareItem": {
-        "domainType": "DataModel",
+        "domainType": "ReferenceDataModel",
         "id": "${json-unit.matches:id}",
-        "label": "Functional Test Model"
+        "label": "Reference Data Functional Test Model"
       }
     }
   ]
@@ -576,14 +622,14 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
       "linkType": "New Documentation Version Of",
       "id": "${json-unit.matches:id}",
       "sourceModel": {
-        "domainType": "DataModel",
+        "domainType": "ReferenceDataModel",
         "id": "${json-unit.matches:id}",
-        "label": "Functional Test Model"
+        "label": "Reference Data Functional Test Model"
       },
       "targetModel": {
-        "domainType": "DataModel",
+        "domainType": "ReferenceDataModel",
         "id": "${json-unit.matches:id}",
-        "label": "Functional Test Model"
+        "label": "Reference Data Functional Test Model"
       }
     }
   ]
@@ -596,17 +642,16 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         verifyResponse UNPROCESSABLE_ENTITY, response
         response.body().total == 1
         response.body().errors.size() == 1
-        response.body().errors[0].message.contains('cannot have a new version as it has been superseded by [Functional Test Model')
+        response.body().errors[0].message.contains('cannot have a new version as it has been superseded by [Reference Data Functional Test Model')
 
         cleanup:
         cleanUpData()
     }
 
-    @PendingFeature(reason = "Not yet implemented")
-    void 'VB01 : test creating a new main branch model version of a ReferenceData'() {
+    void 'VB01a : test creating a new main branch model version of a ReferenceData'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [:])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
 
         when:
@@ -628,14 +673,14 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
       "id": "${json-unit.matches:id}",
       "unconfirmed":false,
       "sourceMultiFacetAwareItem": {
-        "domainType": "DataModel",
+        "domainType": "ReferenceDataModel",
         "id": "${json-unit.matches:id}",
-        "label": "Functional Test Model"
+        "label": "Reference Data Functional Test Model"
       },
       "targetMultiFacetAwareItem": {
-        "domainType": "DataModel",
+        "domainType": "ReferenceDataModel",
         "id": "${json-unit.matches:id}",
-        "label": "Functional Test Model"
+        "label": "Reference Data Functional Test Model"
       }
     }
   ]
@@ -653,14 +698,14 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
       "linkType": "New Model Version Of",
       "id": "${json-unit.matches:id}",
       "sourceModel": {
-        "domainType": "DataModel",
+        "domainType": "ReferenceDataModel",
         "id": "${json-unit.matches:id}",
-        "label": "Functional Test Model"
+        "label": "Reference Data Functional Test Model"
       },
       "targetModel": {
-        "domainType": "DataModel",
+        "domainType": "ReferenceDataModel",
         "id": "${json-unit.matches:id}",
-        "label": "Functional Test Model"
+        "label": "Reference Data Functional Test Model"
       }
     }
   ]
@@ -669,11 +714,70 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData()
     }
 
-    @PendingFeature(reason = "Not yet implemented")
+    void 'VB01b : performance test creating a new main branch model version of a small ReferenceData'() {
+        given: 'finalised model is created'
+        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataCsvImporterService/4.0', [
+            finalised                      : true,
+            folderId                       : folderId.toString(),
+            modelName                      : 'FT Test Reference Data Model',
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : 'CSV',
+                fileContents: loadCsvFile('simpleCSV').toList()
+            ]
+        ])
+        verifyResponse CREATED, response
+        def id = response.body().items[0].id
+
+        when:
+        long start = System.currentTimeMillis()
+        PUT("$id/newBranchModelVersion", [:])
+        long newBranchModelVersionDuration = System.currentTimeMillis() - start
+        log.debug('newBranchModelVersion took {}', Utils.getTimeString(newBranchModelVersionDuration))
+
+        then:
+        verifyResponse CREATED, response
+        newBranchModelVersionDuration < 5000
+
+        cleanup:
+        cleanUpData()
+    }
+
+    void 'VB01c : performance test creating a new main branch model version of a big ReferenceData'() {
+        given: 'finalised model is created'
+        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataCsvImporterService/4.0', [
+            finalised                      : true,
+            folderId                       : folderId.toString(),
+            modelName                      : 'FT Test Reference Data Model',
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : 'CSV',
+                fileContents: loadCsvFile('bigCSV').toList()
+            ]
+        ])
+        verifyResponse CREATED, response
+        def id = response.body().items[0].id
+
+        when:
+        long start = System.currentTimeMillis()
+        PUT("$id/newBranchModelVersion", [:])
+        long newBranchModelVersionDuration = System.currentTimeMillis() - start
+        log.debug('newBranchModelVersion took {}', Utils.getTimeString(newBranchModelVersionDuration))
+
+        then:
+        verifyResponse CREATED, response
+        newBranchModelVersionDuration < 5000
+
+        cleanup:
+        cleanUpData()
+    }
+
     void 'VB02 : test creating a main branch model version finalising and then creating another main branch of a ReferenceData'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [:])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
 
         when: 'create second model'
@@ -684,7 +788,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
         when: 'finalising second model'
         String secondId = responseBody().id
-        PUT("$secondId/finalise", [:])
+        PUT("$secondId/finalise", [versionChangeType: 'Major'])
 
         then:
         verifyResponse OK, response
@@ -765,11 +869,10 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData()
     }
 
-    @PendingFeature(reason = "Not yet implemented")
     void 'VB03 : test creating a main branch model version when one already exists'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [:])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
 
         when: 'create default main'
@@ -783,18 +886,17 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
         then:
         verifyResponse UNPROCESSABLE_ENTITY, response
-        responseBody().errors.first().message == 'Property [branchName] of class [class uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel] ' +
-        'with value [main] already exists for label [Functional Test Model]'
+        responseBody().errors.first().message == 'Property [branchName] of class [class uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel] ' +
+        'with value [main] already exists for label [Reference Data Functional Test Model]'
 
         cleanup:
         cleanUpData()
     }
 
-    @PendingFeature(reason = "Not yet implemented")
     void 'VB04 : test creating a non-main branch model version without main existing'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [:])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
 
         when: 'create default main'
@@ -818,11 +920,10 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData()
     }
 
-    @PendingFeature(reason = "Not yet implemented")
     void 'VB05 : test finding common ancestor of two Model<T> (as editor)'() {
         given:
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [:])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
         PUT("$id/newBranchModelVersion", [branchName: 'left'])
         verifyResponse CREATED, response
@@ -837,7 +938,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         then:
         verifyResponse OK, response
         String mainId = responseBody().items.find {
-            it.label == 'Functional Test Model' &&
+            it.label == 'Reference Data Functional Test Model' &&
             !(it.id in [id, leftId, rightId])
         }?.id
         mainId
@@ -848,7 +949,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         then:
         verifyResponse OK, response
         responseBody().id == id
-        responseBody().label == 'Functional Test Model'
+        responseBody().label == 'Reference Data Functional Test Model'
 
         when: 'check CA between R and L'
         GET("$rightId/commonAncestor/$leftId")
@@ -856,7 +957,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         then:
         verifyResponse OK, response
         responseBody().id == id
-        responseBody().label == 'Functional Test Model'
+        responseBody().label == 'Reference Data Functional Test Model'
 
         when: 'check CA between L and M'
         GET("$leftId/commonAncestor/$mainId")
@@ -864,7 +965,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         then:
         verifyResponse OK, response
         responseBody().id == id
-        responseBody().label == 'Functional Test Model'
+        responseBody().label == 'Reference Data Functional Test Model'
 
         when: 'check CA between M and L'
         GET("$mainId/commonAncestor/$leftId")
@@ -872,7 +973,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         then:
         verifyResponse OK, response
         responseBody().id == id
-        responseBody().label == 'Functional Test Model'
+        responseBody().label == 'Reference Data Functional Test Model'
 
         when: 'check CA between M and R'
         GET("$mainId/commonAncestor/$rightId")
@@ -880,7 +981,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         then:
         verifyResponse OK, response
         responseBody().id == id
-        responseBody().label == 'Functional Test Model'
+        responseBody().label == 'Reference Data Functional Test Model'
 
         when: 'check CA between R and M'
         GET("$rightId/commonAncestor/$mainId")
@@ -888,7 +989,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         then:
         verifyResponse OK, response
         responseBody().id == id
-        responseBody().label == 'Functional Test Model'
+        responseBody().label == 'Reference Data Functional Test Model'
 
         cleanup:
         cleanUpData(leftId)
@@ -897,43 +998,44 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(id)
     }
 
-    @PendingFeature(reason = "Not yet implemented")
-    void 'VB06 : test finding latest (finalised) version of a Model<T> (as editor)'() {
-        //
-        //id (finalised) -- expectedId (finalised) -- latestDraftId (draft)
-        //  \_ newBranchId (draft)
-        //
+    void 'VB06 : test finding latest finalised model of a referencedata'() {
+        /*
+        id (finalised) -- expectedId (finalised) -- latestDraftId (draft)
+          \_ newBranchId (draft)
+        */
         given:
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [:])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
-        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String expectedId = responseBody().id
         PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
         verifyResponse CREATED, response
         String newBranchId = responseBody().id
-        PUT("$expectedId/finalise", [:])
+        PUT("$expectedId/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
-        PUT("$expectedId/newBranchModelVersion", [branchName: 'main'])
+        PUT("$expectedId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String latestDraftId = responseBody().id
 
         when:
-        GET("$newBranchId/latestVersion")
+        GET("$newBranchId/latestFinalisedModel")
 
         then:
         verifyResponse OK, response
         responseBody().id == expectedId
-        responseBody().label == 'Functional Test Model'
+        responseBody().label == 'Reference Data Functional Test Model'
+        responseBody().modelVersion == '2.0.0'
 
         when:
-        GET("$latestDraftId/latestVersion")
+        GET("$latestDraftId/latestFinalisedModel")
 
         then:
         verifyResponse OK, response
         responseBody().id == expectedId
-        responseBody().label == 'Functional Test Model'
+        responseBody().label == 'Reference Data Functional Test Model'
+        responseBody().modelVersion == '2.0.0'
 
         cleanup:
         cleanUpData(newBranchId)
@@ -942,12 +1044,56 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(id)
     }
 
-    @PendingFeature(reason = "Not yet implemented")
-    void 'VB07 : test finding merge difference of two Model<T> (as editor)'() {
+    void 'VB07 : test finding latest model version of a referencedata'() {
+        /*
+        id (finalised) -- expectedId (finalised) -- latestDraftId (draft)
+          \_ newBranchId (draft)
+        */
         given:
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [:])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String expectedId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
+        verifyResponse CREATED, response
+        String newBranchId = responseBody().id
+        PUT("$expectedId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$expectedId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String latestDraftId = responseBody().id
+
+        when:
+        GET("$newBranchId/latestModelVersion")
+
+        then:
+        verifyResponse OK, response
+        responseBody().modelVersion == '2.0.0'
+
+        when:
+        GET("$latestDraftId/latestModelVersion")
+
+        then:
+        verifyResponse OK, response
+        responseBody().modelVersion == '2.0.0'
+
+        cleanup:
+        cleanUpData(newBranchId)
+        cleanUpData(expectedId)
+        cleanUpData(latestDraftId)
+        cleanUpData(id)
+    }
+
+    void 'MD01 : test finding merge difference of two referencedata'() {
+        given:
+        String id = createNewItem(validJson)
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [:])
+        verifyResponse CREATED, response
+        String mainId = responseBody().id
         PUT("$id/newBranchModelVersion", [branchName: 'left'])
         verifyResponse CREATED, response
         String leftId = responseBody().id
@@ -956,51 +1102,48 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         String rightId = responseBody().id
 
         when:
-        GET('')
-
-        then:
-        verifyResponse OK, response
-        String mainId = responseBody().items.find {
-            it.label == 'Functional Test Model' &&
-            !(it.id in [id, leftId, rightId])
-        }?.id
-        mainId
-
-        when:
-        GET("$leftId/mergeDiff/$rightId")
-
-        then:
-        verifyResponse OK, response
-        responseBody().left.leftId == id
-        responseBody().left.rightId == leftId
-        responseBody().right.leftId == id
-        responseBody().right.rightId == rightId
-
-        when:
+        GET("$leftId/mergeDiff/$mainId", STRING_ARG)
+        log.debug('{}', jsonResponseBody())
         GET("$leftId/mergeDiff/$mainId")
 
         then:
         verifyResponse OK, response
-        responseBody().left.leftId == id
-        responseBody().left.rightId == leftId
-        responseBody().right.leftId == id
-        responseBody().right.rightId == mainId
+        responseBody().leftId == mainId
+        responseBody().rightId == leftId
 
         when:
+        GET("$rightId/mergeDiff/$mainId", STRING_ARG)
+        log.debug('{}', jsonResponseBody())
         GET("$rightId/mergeDiff/$mainId")
 
         then:
         verifyResponse OK, response
-        responseBody().left.leftId == id
-        responseBody().left.rightId == rightId
-        responseBody().right.leftId == id
-        responseBody().right.rightId == mainId
+        responseBody().leftId == mainId
+        responseBody().rightId == rightId
 
         cleanup:
         cleanUpData(mainId)
         cleanUpData(leftId)
         cleanUpData(rightId)
         cleanUpData(id)
+    }
+
+    @PendingFeature(reason = "Not yet implemented")
+    void 'MD02 : test finding merge difference of two complex referencedata'() {
+        given:
+        TestMergeData mergeData = builder.buildComplexModelsForMerging(folderId.toString())
+
+        when:
+        GET("$mergeData.source/mergeDiff/$mergeData.target", STRING_ARG)
+
+        then:
+        log.debug('{}', jsonResponseBody())
+        verifyJsonResponse OK, expectedLegacyMergeDiffJson
+
+        cleanup:
+        cleanUpData(mergeData.source)
+        cleanUpData(mergeData.target)
+        cleanUpData(mergeData.commonAncestor)
     }
 
     @PendingFeature(reason = "Not yet implemented")
