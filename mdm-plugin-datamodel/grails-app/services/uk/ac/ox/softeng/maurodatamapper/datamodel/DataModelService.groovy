@@ -348,8 +348,8 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     }
 
     @Override
-    void updateCopiedCrossModelLinks(DataModel copiedDataModel, DataModel originalDataModel, String branchName) {
-        super.updateCopiedCrossModelLinks(copiedDataModel, originalDataModel, branchName)
+    void updateCopiedCrossModelLinks(DataModel copiedDataModel, DataModel originalDataModel) {
+        super.updateCopiedCrossModelLinks(copiedDataModel, originalDataModel)
 
         copiedDataModel.modelDataTypes.each { mdt ->
 
@@ -374,7 +374,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
                 // Construct a path from the prefix and label of the model pointed to originally, but with the branch name now used,
                 // to get the copy of the model in the copied folder
-                CreatorAware replacementModelResource = pathService.findResourceByPathFromRootResource(copiedDataModel.folder, Path.from(branchName, originalModelResource))
+                CreatorAware replacementModelResource = pathService.findResourceByPathFromRootResource(copiedDataModel.folder, Path.from(copiedDataModel.branchName, originalModelResource))
 
                 // Update the model data type to point to the copy of the model
                 mdt.modelResourceId = replacementModelResource.id
