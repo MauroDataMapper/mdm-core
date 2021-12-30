@@ -142,6 +142,11 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
         domainType == ReferenceDataElement.simpleName
     }
 
+    @Override
+    ReferenceDataElement findByParentIdAndLabel(UUID parentId, String label) {
+        findByReferenceDataModelIdAndLabel(parentId, label)
+    }
+
 
     @Override
     List<ReferenceDataElement> findAllReadableTreeTypeCatalogueItemsBySearchTermAndDomain(UserSecurityPolicyManager userSecurityPolicyManager,
@@ -188,6 +193,10 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
 
     ReferenceDataElement findByReferenceDataModelIdAndId(Serializable referenceDataModelId, Serializable id) {
         ReferenceDataElement.byReferenceDataModelIdAndId(referenceDataModelId, id).find()
+    }
+
+    ReferenceDataElement findByReferenceDataModelIdAndLabel(Serializable referenceDataModelId, String label) {
+        ReferenceDataElement.byReferenceDataModelIdAndLabel(referenceDataModelId, label).find()
     }
 
     ReferenceDataElement findByReferenceDataTypeIdAndId(Serializable referenceDataTypeId, Serializable id) {
