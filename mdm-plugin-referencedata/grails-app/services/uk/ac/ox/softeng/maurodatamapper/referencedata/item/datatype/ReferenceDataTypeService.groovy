@@ -321,6 +321,10 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
         ReferenceDataType.byMetadataNamespace(namespace).list(pagination)
     }
 
+    ReferenceDataType findByReferenceDataModelIdAndLabel(Serializable referenceDataModelId, String label) {
+        ReferenceDataType.byReferenceDataModelIdAndLabel(referenceDataModelId, label).find()
+    }
+
     @Override
     ReferenceDataType findByParentIdAndLabel(UUID parentId, String label) {
         ReferenceDataType.byReferenceDataModelIdAndLabel(parentId, label).get()
