@@ -1146,6 +1146,387 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(mergeData.commonAncestor)
     }
 
+    void 'MD03 : test finding merge difference of two referencedata with the new style'() {
+        given:
+        String id = createNewItem(validJson)
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [:])
+        verifyResponse CREATED, response
+        String mainId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'left'])
+        verifyResponse CREATED, response
+        String leftId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'right'])
+        verifyResponse CREATED, response
+        String rightId = responseBody().id
+
+        when:
+        GET("$leftId/mergeDiff/$mainId?isLegacy=false", STRING_ARG)
+        log.debug('{}', jsonResponseBody())
+        GET("$leftId/mergeDiff/$mainId?isLegacy=false")
+
+        then:
+        verifyResponse OK, response
+        responseBody().targetId == mainId
+        responseBody().sourceId == leftId
+
+        when:
+        GET("$rightId/mergeDiff/$mainId?isLegacy=false", STRING_ARG)
+        log.debug('{}', jsonResponseBody())
+        GET("$rightId/mergeDiff/$mainId?isLegacy=false")
+
+        then:
+        verifyResponse OK, response
+        responseBody().targetId == mainId
+        responseBody().sourceId == rightId
+
+        cleanup:
+        cleanUpData(mainId)
+        cleanUpData(leftId)
+        cleanUpData(rightId)
+        cleanUpData(id)
+    }
+
+    void 'MD04 : test finding merge difference of two complex referencedata with the new style'() {
+        given:
+        TestMergeData mergeData = builder.buildComplexModelsForMerging(folderId.toString())
+
+        when:
+        GET("$mergeData.source/mergeDiff/$mergeData.target?isLegacy=false", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, expectedMergeDiffJson
+
+        cleanup:
+        cleanUpData(mergeData.source)
+        cleanUpData(mergeData.target)
+        cleanUpData(mergeData.commonAncestor)
+    }
+
+    void 'MD05 : test finding merge diff with new style diff with aliases gh-112'() {
+        given:
+        String id = createNewItem(validJson)
+
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String target = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'interestingBranch'])
+        verifyResponse CREATED, response
+        String source = responseBody().id
+        PUT(source, [aliases: ['not main branch', 'mergeInto']])
+        verifyResponse OK, response
+
+        when:
+        GET("$source/mergeDiff/$target?isLegacy=false", STRING_ARG)
+        log.warn('{}', jsonResponseBody())
+        GET("$source/mergeDiff/$target?isLegacy=false")
+
+        then:
+        verifyResponse OK, response
+        responseBody().targetId == target
+        responseBody().sourceId == source
+        responseBody().diffs.first().path == 'rdm:Reference Data Functional Test Model$interestingBranch@aliasesString'
+        responseBody().diffs.first().sourceValue == 'mergeInto|not main branch'
+        responseBody().diffs.first().type == 'modification'
+
+        cleanup:
+        cleanUpData(source)
+        cleanUpData(target)
+        cleanUpData(id)
+    }
+
+    @PendingFeature(reason = "No such property: referenceDataType.label at ModelDataService:968 See gh-222")
+    void 'MD06 : test finding merge diff on a branch which has already been merged'() {
+        given:
+        TestMergeData mergeData = builder.buildComplexModelsForMerging(folderId.toString())
+        GET("$mergeData.source/mergeDiff/$mergeData.target?isLegacy=false")
+        verifyResponse OK, response
+        List<Map> patches = responseBody().diffs
+        PUT("$mergeData.source/mergeInto/$mergeData.target?isLegacy=false", [
+            patch: [
+                targetId: responseBody().targetId,
+                sourceId: responseBody().sourceId,
+                label   : responseBody().label,
+                count   : patches.size(),
+                patches : patches]
+        ])
+        verifyResponse OK, response
+
+        when: 'add RDE to existing RDM after a merge'
+        POST("$mergeData.sourceMap.referenceDataModelId/referenceDataElements", [label: 'addAnotherLeftToAddLeftOnly', referenceDataType: sourceMap.commonReferenceDataTypeId])
+        verifyResponse CREATED, response
+
+        log.debug('-------------- Second Merge Request ------------------')
+
+        and:
+        GET("$mergeData.source/mergeDiff/$mergeData.target?isLegacy=false", STRING_ARG)
+
+        then: 'the merge diff is correct'
+        verifyJsonResponse OK, expectedMergeDiffJson
+
+        cleanup:
+        cleanUpData(mergeData.source)
+        cleanUpData(mergeData.target)
+        cleanUpData(mergeData.commonAncestor)
+    }
+
+    void 'MI01 : test merging diff with no patch data'() {
+        given:
+        String id = createNewItem(validJson)
+
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String target = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'source'])
+        verifyResponse CREATED, response
+        String source = responseBody().id
+
+        when:
+        PUT("$source/mergeInto/$target", [:])
+
+        then:
+        verifyResponse(UNPROCESSABLE_ENTITY, response)
+        responseBody().total == 1
+        responseBody().errors[0].message.contains('cannot be null')
+
+        cleanup:
+        cleanUpData(source)
+        cleanUpData(target)
+        cleanUpData(id)
+    }
+
+    void 'MI02 : test merging diff with URI id not matching body id'() {
+        given:
+        String id = createNewItem(validJson)
+
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String target = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'source'])
+        verifyResponse CREATED, response
+        String source = responseBody().id
+
+        when:
+        PUT("$source/mergeInto/$target", [patch:
+            [
+                leftId : "$target" as String,
+                rightId: "${UUID.randomUUID().toString()}" as String,
+                label  : "Reference Data Functional Test Model",
+                count  : 0,
+                diffs  : []
+            ]
+        ])
+
+        then:
+        verifyResponse(UNPROCESSABLE_ENTITY, response)
+        responseBody().message == 'Source model id passed in request body does not match source model id in URI.'
+
+        when:
+        PUT("$source/mergeInto/$target", [patch:
+            [
+                leftId : "${UUID.randomUUID().toString()}" as String,
+                rightId: "$source" as String,
+                label  : "Reference Data Functional Test Model",
+                count  : 0,
+                diffs  : []
+            ]
+        ])
+
+        then:
+        verifyResponse(UNPROCESSABLE_ENTITY, response)
+        responseBody().message == 'Target model id passed in request body does not match target model id in URI.'
+
+        cleanup:
+        cleanUpData(source)
+        cleanUpData(target)
+        cleanUpData(id)
+    }
+
+    @PendingFeature(reason = "Not yet working")
+    void 'MI03 : test merging diff into draft model'() {
+        given:
+        TestMergeData mergeData = builder.buildComplexModelsForMerging(folderId.toString())
+
+        when:
+        GET("$mergeData.source/mergeDiff/$mergeData.target", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, expectedLegacyMergeDiffJson
+
+        when:
+        String modifiedDescriptionSource = 'modifiedDescriptionSource'
+
+        def requestBody = [
+            changeNotice: 'Functional Test Merge Change Notice',
+            patch       : [
+                        leftId : mergeData.target,
+                        rightId: mergeData.source,
+                        label  : "Reference Data Functional Test Model",
+                        diffs  : [
+                                [
+                                        fieldName: "description",
+                                        value    : modifiedDescriptionSource
+                                ],
+                                [
+                                        fieldName: "dataClasses",
+
+                                        deleted  : [
+                                                [
+                                                        id   : mergeData.targetMap.deleteAndModify,
+                                                        label: "deleteAndModify"
+                                                ],
+                                                [
+                                                        id   : mergeData.targetMap.deleteLeftOnly,
+                                                        label: "deleteLeftOnly"
+                                                ]
+                                        ],
+                                        created  : [
+                                                [
+                                                        id   : mergeData.sourceMap.addLeftOnly,
+                                                        label: "addLeftOnly"
+                                                ],
+                                                [
+                                                        id   : mergeData.sourceMap.modifyAndDelete,
+                                                        label: "modifyAndDelete"
+                                                ]
+                                        ],
+                                        modified : [
+                                                [
+                                                        leftId: mergeData.targetMap.addAndAddReturningDifference,
+                                                        label : "addAndAddReturningDifference",
+                                                        diffs : [
+                                                                [
+                                                                        fieldName: "description",
+                                                                        value    : "addedDescriptionSource"
+                                                                ]
+                                                        ]
+                                                ],
+                                                [
+                                                        leftId: mergeData.targetMap.existingClass,
+                                                        label : "existingClass",
+                                                        diffs : [
+                                                                [
+                                                                        fieldName: "dataClasses",
+
+                                                                        deleted  : [
+                                                                                [
+                                                                                        id   : mergeData.targetMap.deleteLeftOnlyFromExistingClass,
+                                                                                        label: "deleteLeftOnlyFromExistingClass"
+                                                                                ]
+                                                                        ],
+                                                                        created  : [
+                                                                                [
+                                                                                        id   : mergeData.sourceMap.addLeftToExistingClass,
+                                                                                        label: "addLeftToExistingClass"
+                                                                                ]
+                                                                        ]
+
+                                                                ]
+                                                        ]
+                                                ],
+                                                [
+                                                        leftId: mergeData.targetMap.modifyAndModifyReturningDifference,
+                                                        label : "modifyAndModifyReturningDifference",
+                                                        diffs : [
+                                                                [
+                                                                        fieldName: "description",
+                                                                        value    : modifiedDescriptionSource
+                                                                ]
+                                                        ]
+                                                ],
+                                                [
+                                                        leftId: mergeData.targetMap.modifyLeftOnly,
+                                                        label : "modifyLeftOnly",
+                                                        diffs : [
+                                                                [
+                                                                        fieldName: "description",
+                                                                        value    : "modifiedDescriptionSourceOnly"
+                                                                ]
+                                                        ]
+                                                ]
+                                        ]
+                                ]
+                        ]
+                ]
+        ]
+
+        PUT("$mergeData.source/mergeInto/$mergeData.target", requestBody)
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == mergeData.target
+        responseBody().description == modifiedDescriptionSource
+
+        when:
+        GET("$mergeData.target/dataClasses")
+
+        then:
+        responseBody().items.label as Set == ['modifyAndModifyReturningDifference', 'modifyLeftOnly',
+                                              'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly',
+                                              'modifyRightOnly', 'addRightOnly', 'modifyAndModifyReturningNoDifference', 'addAndAddReturningNoDifference'] as Set
+        /*responseBody().items.find { dataClass -> dataClass.label == 'modifyAndDelete' }.description == 'Description'
+        responseBody().items.find { dataClass -> dataClass.label == 'addAndAddReturningDifference' }.description == 'addedDescriptionSource'
+        responseBody().items.find { dataClass -> dataClass.label == 'modifyAndModifyReturningDifference' }.description == modifiedDescriptionSource
+        responseBody().items.find { dataClass -> dataClass.label == 'modifyLeftOnly' }.description == 'modifiedDescriptionSourceOnly'*/
+
+        /*when:
+        GET("$mergeData.target/dataClasses/$mergeData.targetMap.existingClass/dataClasses")
+
+        then:
+        responseBody().items.label as Set == ['addRightToExistingClass', 'addLeftToExistingClass'] as Set*/
+
+        when: 'List edits for the Target ReferenceDataModel'
+        GET("$mergeData.target/edits", MAP_ARG)
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        and: 'There is a CHANGE NOTICE edit'
+        response.body().items.find {
+            it.title == "CHANGENOTICE" && it.description == "Functional Test Merge Change Notice"
+        }
+
+        cleanup:
+        cleanUpData(mergeData.source)
+        cleanUpData(mergeData.target)
+        cleanUpData(mergeData.commonAncestor)
+    }
+
+    void 'MI06 : test merging diff with no patch data with new style'() {
+        given:
+        String id = createNewItem(validJson)
+
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String target = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'source'])
+        verifyResponse CREATED, response
+        String source = responseBody().id
+
+        when:
+        PUT("$source/mergeInto/$target?isLegacy=false", [:])
+
+        then:
+        verifyResponse(UNPROCESSABLE_ENTITY, response)
+        responseBody().total == 1
+        responseBody().errors[0].message.contains('cannot be null')
+
+        cleanup:
+        cleanUpData(source)
+        cleanUpData(target)
+        cleanUpData(id)
+    }
+
+
     @PendingFeature(reason = "Not yet implemented")
     void 'test changing folder from ReferenceData context'() {
         given: 'The save action is executed with valid data'
@@ -3250,5 +3631,129 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     }
   ]
 }'''
+    }
+
+    String getExpectedMergeDiffJson() {
+        '''{
+  "sourceId": "${json-unit.matches:id}",
+  "targetId": "${json-unit.matches:id}",
+  "path": "rdm:Functional Test ReferenceData 1$source",
+  "label": "Functional Test ReferenceData 1",
+  "count": 15,
+  "diffs": [
+    {
+      "fieldName": "description",
+      "path": "rdm:Functional Test ReferenceData 1$source@description",
+      "sourceValue": "DescriptionLeft",
+      "targetValue": "DescriptionRight",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "path": "rdm:Functional Test ReferenceData 1$source|md:functional.test.addToSourceOnly",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "rdm:Functional Test ReferenceData 1$source|md:functional.test.modifyAndDelete",
+      "isMergeConflict": true,
+      "isSourceModificationAndTargetDeletion": true,
+      "type": "creation"
+    },
+    {
+      "path": "rdm:Functional Test ReferenceData 1$source|md:functional.test.deleteFromSource",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "fieldName": "value",
+      "path": "rdm:Functional Test ReferenceData 1$source|md:functional.test.modifyOnSource@value",
+      "sourceValue": "source has modified this",
+      "targetValue": "some original value",
+      "commonAncestorValue": "some original value",
+      "isMergeConflict": false,
+      "type": "modification"
+    },
+    {
+      "path": "rdm:Functional Test ReferenceData 1$source|rde:addLeftOnly",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    },
+    {
+      "path": "rdm:Functional Test ReferenceData 1$source|rde:modifyAndDelete",
+      "isMergeConflict": true,
+      "isSourceModificationAndTargetDeletion": true,
+      "type": "creation"
+    },
+    {
+      "path": "rdm:Functional Test ReferenceData 1$source|rde:deleteAndModify",
+      "isMergeConflict": true,
+      "isSourceDeletionAndTargetModification": true,
+      "type": "deletion"
+    },
+    {
+      "path": "rdm:Functional Test ReferenceData 1$source|rde:deleteLeftOnly",
+      "isMergeConflict": false,
+      "isSourceDeletionAndTargetModification": false,
+      "type": "deletion"
+    },
+    {
+      "fieldName": "description",
+      "path": "rdm:Functional Test ReferenceData 1$source|rde:addAndAddReturningDifference@description",
+      "sourceValue": "DescriptionLeft",
+      "targetValue": "DescriptionRight",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "fieldName": "referenceDataType.label",
+      "path": "rdm:Functional Test ReferenceData 1$source|rde:addAndAddReturningDifference@referenceDataType.label",
+      "sourceValue": "addLeftOnly",
+      "targetValue": "addRightOnly",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "fieldName": "referenceDataType.label",
+      "path": "rdm:Functional Test ReferenceData 1$source|rde:addAndAddReturningNoDifference@referenceDataType.label",
+      "sourceValue": "addLeftOnly",
+      "targetValue": "addRightOnly",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "fieldName": "description",
+      "path": "rdm:Functional Test ReferenceData 1$source|rde:modifyAndModifyReturningDifference@description",
+      "sourceValue": "DescriptionLeft",
+      "targetValue": "DescriptionRight",
+      "commonAncestorValue": null,
+      "isMergeConflict": true,
+      "type": "modification"
+    },
+    {
+      "fieldName": "description",
+      "path": "rdm:Functional Test ReferenceData 1$source|rde:modifyLeftOnly@description",
+      "sourceValue": "Description",
+      "targetValue": null,
+      "commonAncestorValue": null,
+      "isMergeConflict": false,
+      "type": "modification"
+    },
+    {
+      "path": "rdm:Functional Test ReferenceData 1$source|rdt:addLeftOnly",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    }
+  ]
+}
+'''
     }
 }

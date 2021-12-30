@@ -111,6 +111,7 @@ class ReferenceDataPluginMergeBuilder extends BaseTestMergeBuilder {
             metadataModifyOnSource              : getIdFromPath(source, "${pathing}rdm:Functional Test ReferenceData ${suffix}\$source|md:functional.test.modifyOnSource"),
             metadataDeleteFromSource            : getIdFromPath(source, "${pathing}rdm:Functional Test ReferenceData ${suffix}\$source|md:functional.test.deleteFromSource"),
             metadataModifyAndDelete             : getIdFromPath(source, "${pathing}rdm:Functional Test ReferenceData ${suffix}\$source|md:functional.test.modifyAndDelete"),
+            commonReferenceDataTypeId           : getIdFromPath(source, "${pathing}rdm:Functional Test ReferenceData ${suffix}\$source|rdt:commonReferenceDataType")
         ]
 
         DELETE("referenceDataModels/$sourceMap.referenceDataModelId/referenceDataElements/$sourceMap.deleteAndDelete")
@@ -172,6 +173,7 @@ class ReferenceDataPluginMergeBuilder extends BaseTestMergeBuilder {
             deleteLeftOnly                      : getIdFromPath(target, "${pathing}rdm:Functional Test ReferenceData ${suffix}\$main|rde:deleteLeftOnly"),
             modifyLeftOnly                      : getIdFromPath(target, "${pathing}rdm:Functional Test ReferenceData ${suffix}\$main|rde:modifyLeftOnly"),
             metadataModifyAndDelete             : getIdFromPath(target, "${pathing}rdm:Functional Test ReferenceData ${suffix}\$main|md:functional.test.modifyAndDelete"),
+            commonReferenceDataTypeId           : getIdFromPath(target, "${pathing}rdm:Functional Test ReferenceData ${suffix}\$main|rdt:commonReferenceDataType")
         ]
 
         DELETE("referenceDataModels/$targetMap.referenceDataModelId/referenceDataElements/$targetMap.deleteRightOnly")
