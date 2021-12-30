@@ -108,6 +108,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         movingFolderId = new Folder(label: 'Reference Data Functional Test Folder 2', createdBy: FUNCTIONAL_TEST).save(flush: true).id
         assert movingFolderId
         csvResourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', 'csv').toAbsolutePath()
+        builder = new ReferenceDataPluginMergeBuilder(this)
     }
 
     @Transactional
@@ -1128,7 +1129,6 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(id)
     }
 
-    @PendingFeature(reason = "Not yet implemented")
     void 'MD02 : test finding merge difference of two complex referencedata'() {
         given:
         TestMergeData mergeData = builder.buildComplexModelsForMerging(folderId.toString())
@@ -2922,5 +2922,333 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
         cleanup:
         cleanUpData(id)
+    }
+
+    String getExpectedLegacyMergeDiffJson() {
+        '''{
+  "leftId": "${json-unit.matches:id}",
+  "rightId": "${json-unit.matches:id}",
+  "label": "Functional Test ReferenceData 1",
+  "count": 15,
+  "diffs": [
+    {
+      "description": {
+        "left": "DescriptionRight",
+        "right": "DescriptionLeft",
+        "isMergeConflict": true,
+        "commonAncestorValue": null
+      }
+    },
+    {
+      "metadata": {
+        "deleted": [
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "namespace": "functional.test",
+              "key": "deleteFromSource",
+              "value": "some other original value"
+            },
+            "isMergeConflict": false
+          }
+        ],
+        "created": [
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "namespace": "functional.test",
+              "key": "addToSourceOnly",
+              "value": "adding to source only"
+            },
+            "isMergeConflict": false
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "namespace": "functional.test",
+              "key": "modifyAndDelete",
+              "value": "source has modified this also"
+            },
+            "isMergeConflict": true,
+            "commonAncestorValue": {
+              "id": "${json-unit.matches:id}",
+              "namespace": "functional.test",
+              "key": "modifyAndDelete",
+              "value": "some other original value 2"
+            }
+          }
+        ],
+        "modified": [
+          {
+            "leftId": "${json-unit.matches:id}",
+            "rightId": "${json-unit.matches:id}",
+            "namespace": "functional.test",
+            "key": "modifyOnSource",
+            "count": 1,
+            "diffs": [
+              {
+                "value": {
+                  "left": "some original value",
+                  "right": "source has modified this",
+                  "isMergeConflict": false
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "referenceDataElements": {
+        "deleted": [
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "deleteAndModify",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test ReferenceData 1",
+                  "domainType": "ReferenceDataModel",
+                  "finalised": true
+                }
+              ]
+            },
+            "isMergeConflict": true,
+            "commonAncestorValue": {
+              "id": "${json-unit.matches:id}",
+              "label": "deleteAndModify",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test ReferenceData 1",
+                  "domainType": "ReferenceDataModel",
+                  "finalised": true
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "deleteLeftOnly",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test ReferenceData 1",
+                  "domainType": "ReferenceDataModel",
+                  "finalised": true
+                }
+              ]
+            },
+            "isMergeConflict": false
+          }
+        ],
+        "created": [
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "addLeftOnly",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test ReferenceData 1",
+                  "domainType": "ReferenceDataModel",
+                  "finalised": false
+                }
+              ]
+            },
+            "isMergeConflict": false
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "modifyAndDelete",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test ReferenceData 1",
+                  "domainType": "ReferenceDataModel",
+                  "finalised": false
+                }
+              ]
+            },
+            "isMergeConflict": true,
+            "commonAncestorValue": {
+              "id": "${json-unit.matches:id}",
+              "label": "modifyAndDelete",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test ReferenceData 1",
+                  "domainType": "ReferenceDataModel",
+                  "finalised": true
+                }
+              ]
+            }
+          }
+        ],
+        "modified": [
+          {
+            "leftId": "${json-unit.matches:id}",
+            "rightId": "${json-unit.matches:id}",
+            "label": "modifyLeftOnly",
+            "leftBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test ReferenceData 1",
+                "domainType": "ReferenceDataModel",
+                "finalised": true
+              }
+            ],
+            "rightBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test ReferenceData 1",
+                "domainType": "ReferenceDataModel",
+                "finalised": true
+              }
+            ],
+            "count": 1,
+            "diffs": [
+              {
+                "description": {
+                  "left": null,
+                  "right": "Description",
+                  "isMergeConflict": false
+                }
+              }
+            ]
+          },
+          {
+            "leftId": "${json-unit.matches:id}",
+            "rightId": "${json-unit.matches:id}",
+            "label": "modifyAndModifyReturningDifference",
+            "leftBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test ReferenceData 1",
+                "domainType": "ReferenceDataModel",
+                "finalised": false
+              }
+            ],
+            "rightBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test ReferenceData 1",
+                "domainType": "ReferenceDataModel",
+                "finalised": false
+              }
+            ],
+            "count": 1,
+            "diffs": [
+              {
+                "description": {
+                  "left": "DescriptionRight",
+                  "right": "DescriptionLeft",
+                  "isMergeConflict": true,
+                  "commonAncestorValue": null
+                }
+              }
+            ]
+          },
+          {
+            "leftId": "${json-unit.matches:id}",
+            "rightId": "${json-unit.matches:id}",
+            "label": "addAndAddReturningDifference",
+            "leftBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test ReferenceData 1",
+                "domainType": "ReferenceDataModel",
+                "finalised": false
+              }
+            ],
+            "rightBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test ReferenceData 1",
+                "domainType": "ReferenceDataModel",
+                "finalised": false
+              }
+            ],
+            "count": 2,
+            "diffs": [
+              {
+                "description": {
+                  "left": "DescriptionRight",
+                  "right": "DescriptionLeft",
+                  "isMergeConflict": true,
+                  "commonAncestorValue": null
+                }
+              },
+              {
+                "referenceDataType.label": {
+                  "left": "addRightOnly",
+                  "right": "addLeftOnly",
+                  "isMergeConflict": true,
+                  "commonAncestorValue": null
+                }
+              }
+            ]
+          },
+          {
+            "leftId": "${json-unit.matches:id}",
+            "rightId": "${json-unit.matches:id}",
+            "label": "addAndAddReturningNoDifference",
+            "leftBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test ReferenceData 1",
+                "domainType": "ReferenceDataModel",
+                "finalised": false
+              }
+            ],
+            "rightBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test ReferenceData 1",
+                "domainType": "ReferenceDataModel",
+                "finalised": false
+              }
+            ],
+            "count": 1,
+            "diffs": [
+              {
+                "referenceDataType.label": {
+                  "left": "addRightOnly",
+                  "right": "addLeftOnly",
+                  "isMergeConflict": true,
+                  "commonAncestorValue": null
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "referenceDataTypes": {
+        "created": [
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "addLeftOnly",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test ReferenceData 1",
+                  "domainType": "ReferenceDataModel",
+                  "finalised": false
+                }
+              ]
+            },
+            "isMergeConflict": false
+          }
+        ]
+      }
+    }
+  ]
+}'''
     }
 }

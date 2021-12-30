@@ -128,19 +128,19 @@ class ReferenceDataPluginMergeBuilder extends BaseTestMergeBuilder {
         verifyResponse OK, response
         PUT("referenceDataModels/$sourceMap.referenceDataModelId/referenceDataElements/$sourceMap.modifyAndModifyReturningDifference", [description: 'DescriptionLeft'])
         verifyResponse OK, response
-        
-        POST("referenceDataModels/$sourceMap.referenceDataModelId/referenceDataElements", [label: 'addLeftOnly'])
-        verifyResponse CREATED, response
-        sourceMap.addLeftOnly = responseBody().id
-        POST("referenceDataModels/$sourceMap.referenceDataModelId/referenceDataElements", [label: 'addAndAddReturningNoDifference'])
-        verifyResponse CREATED, response
-        POST("referenceDataModels/$sourceMap.referenceDataModelId/referenceDataElements", [label: 'addAndAddReturningDifference', description: 'DescriptionLeft'])
-        verifyResponse CREATED, response
-        sourceMap.addAndAddReturningDifference = responseBody().id
 
         POST("referenceDataModels/$sourceMap.referenceDataModelId/referenceDataTypes", [label: 'addLeftOnly', domainType: 'ReferencePrimitiveType',])
         verifyResponse CREATED, response
         sourceMap.addLeftOnlyDataType = responseBody().id
+
+        POST("referenceDataModels/$sourceMap.referenceDataModelId/referenceDataElements", [label: 'addLeftOnly', referenceDataType: sourceMap.addLeftOnlyDataType])
+        verifyResponse CREATED, response
+        sourceMap.addLeftOnly = responseBody().id
+        POST("referenceDataModels/$sourceMap.referenceDataModelId/referenceDataElements", [label: 'addAndAddReturningNoDifference', referenceDataType: sourceMap.addLeftOnlyDataType])
+        verifyResponse CREATED, response
+        POST("referenceDataModels/$sourceMap.referenceDataModelId/referenceDataElements", [label: 'addAndAddReturningDifference', referenceDataType: sourceMap.addLeftOnlyDataType, description: 'DescriptionLeft'])
+        verifyResponse CREATED, response
+        sourceMap.addAndAddReturningDifference = responseBody().id
         
         PUT("referenceDataModels/$sourceMap.referenceDataModelId", [description: 'DescriptionLeft'])
         verifyResponse OK, response
@@ -174,33 +174,37 @@ class ReferenceDataPluginMergeBuilder extends BaseTestMergeBuilder {
             metadataModifyAndDelete             : getIdFromPath(target, "${pathing}rdm:Functional Test ReferenceData ${suffix}\$main|md:functional.test.modifyAndDelete"),
         ]
 
-        DELETE("referenceDataModels/$targetMap.dataModelId/referenceDataElements/$targetMap.deleteRightOnly")
+        DELETE("referenceDataModels/$targetMap.referenceDataModelId/referenceDataElements/$targetMap.deleteRightOnly")
         verifyResponse NO_CONTENT, response
-        DELETE("referenceDataModels/$targetMap.dataModelId/referenceDataElements/$targetMap.deleteAndDelete")
+        DELETE("referenceDataModels/$targetMap.referenceDataModelId/referenceDataElements/$targetMap.deleteAndDelete")
         verifyResponse NO_CONTENT, response
-        DELETE("referenceDataModels/$targetMap.dataModelId/referenceDataElements/$targetMap.modifyAndDelete")
+        DELETE("referenceDataModels/$targetMap.referenceDataModelId/referenceDataElements/$targetMap.modifyAndDelete")
         verifyResponse NO_CONTENT, response
 
-        PUT("referenceDataModels/$targetMap.dataModelId/referenceDataElements/$targetMap.modifyRightOnly", [description: 'Description'])
+        PUT("referenceDataModels/$targetMap.referenceDataModelId/referenceDataElements/$targetMap.modifyRightOnly", [description: 'Description'])
         verifyResponse OK, response
-        PUT("referenceDataModels/$targetMap.dataModelId/referenceDataElements/$targetMap.deleteAndModify", [description: 'Description'])
+        PUT("referenceDataModels/$targetMap.referenceDataModelId/referenceDataElements/$targetMap.deleteAndModify", [description: 'Description'])
         verifyResponse OK, response
-        PUT("referenceDataModels/$targetMap.dataModelId/referenceDataElements/$targetMap.modifyAndModifyReturningNoDifference", [description: 'Description'])
+        PUT("referenceDataModels/$targetMap.referenceDataModelId/referenceDataElements/$targetMap.modifyAndModifyReturningNoDifference", [description: 'Description'])
         verifyResponse OK, response
-        PUT("referenceDataModels/$targetMap.dataModelId/referenceDataElements/$targetMap.modifyAndModifyReturningDifference", [description: 'DescriptionRight'])
+        PUT("referenceDataModels/$targetMap.referenceDataModelId/referenceDataElements/$targetMap.modifyAndModifyReturningDifference", [description: 'DescriptionRight'])
         verifyResponse OK, response
 
-        POST("referenceDataModels/$targetMap.dataModelId/referenceDataElements", [label: 'addRightOnly'])
+        POST("referenceDataModels/$targetMap.referenceDataModelId/referenceDataTypes", [label: 'addRightOnly', domainType: 'ReferencePrimitiveType',])
         verifyResponse CREATED, response
-        POST("referenceDataModels/$targetMap.dataModelId/referenceDataElements", [label: 'addAndAddReturningNoDifference'])
+        targetMap.addRightOnlyDataType = responseBody().id
+
+        POST("referenceDataModels/$targetMap.referenceDataModelId/referenceDataElements", [label: 'addRightOnly', referenceDataType: targetMap.addRightOnlyDataType])
         verifyResponse CREATED, response
-        POST("referenceDataModels/$targetMap.dataModelId/referenceDataElements", [label: 'addAndAddReturningDifference', description: 'DescriptionRight'])
+        POST("referenceDataModels/$targetMap.referenceDataModelId/referenceDataElements", [label: 'addAndAddReturningNoDifference', referenceDataType: targetMap.addRightOnlyDataType])
+        verifyResponse CREATED, response
+        POST("referenceDataModels/$targetMap.referenceDataModelId/referenceDataElements", [label: 'addAndAddReturningDifference', referenceDataType: targetMap.addRightOnlyDataType, description: 'DescriptionRight'])
         verifyResponse CREATED, response
         targetMap.addAndAddReturningDifference = responseBody().id
 
-        PUT("referenceDataModels/$targetMap.dataModelId", [description: 'DescriptionRight'])
+        PUT("referenceDataModels/$targetMap.referenceDataModelId", [description: 'DescriptionRight'])
         verifyResponse OK, response
-        DELETE("referenceDataModels/$targetMap.dataModelId/metadata/$targetMap.metadataModifyAndDelete")
+        DELETE("referenceDataModels/$targetMap.referenceDataModelId/metadata/$targetMap.metadataModifyAndDelete")
         verifyResponse NO_CONTENT, response
 
         targetMap
