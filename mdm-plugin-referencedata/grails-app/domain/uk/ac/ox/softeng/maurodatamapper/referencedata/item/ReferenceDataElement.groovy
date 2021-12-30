@@ -146,11 +146,6 @@ class ReferenceDataElement implements ModelItem<ReferenceDataElement, ReferenceD
     }
 
     @Override
-    String getDiffIdentifier(String context) {
-        "${referenceDataModel.getDiffIdentifier(context)}/${pathIdentifier}"
-    }
-
-    @Override
     Boolean hasChildren() {
         false
     }

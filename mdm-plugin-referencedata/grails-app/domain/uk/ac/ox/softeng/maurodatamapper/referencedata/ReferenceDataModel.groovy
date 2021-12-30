@@ -123,7 +123,7 @@ class ReferenceDataModel implements Model<ReferenceDataModel>, ReferenceSummaryM
     ObjectDiff<ReferenceDataModel> diff(ReferenceDataModel otherDataModel, String context) {
         modelDiffBuilder(ReferenceDataModel, this, otherDataModel)
             .appendList(ReferenceDataType, 'referenceDataTypes', this.referenceDataTypes, otherDataModel.referenceDataTypes)
-            .appendList(ReferenceDataType, 'referenceDataElements', this.referenceDataElements, otherDataModel.referenceDataElements)
+            .appendList(ReferenceDataElement, 'referenceDataElements', this.referenceDataElements, otherDataModel.referenceDataElements)
     }
 
     def beforeValidate() {
