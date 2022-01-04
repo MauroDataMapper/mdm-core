@@ -1499,6 +1499,109 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(mergeData.commonAncestor)
     }
 
+    /**
+     * In this test we create a ReferenceDataModel containing one ReferenceDataElement. The ReferenceDataModel is finalised, and a new branch 'source'
+     * created. On the source branch, a second ReferenceDataElement is added to the ReferenceDataModel. The source branch is then merged
+     * back into main, and we check that the ReferenceDataElement which was created on the source branch is correctly added to the
+     * ReferenceDataModel on the main branch.
+     */
+    void 'MI05 : test merging diff in which a ReferenceDataElement has been created on a ReferenceDataModel'() {
+        given: 'A ReferenceDataModel is created'
+        String id = createNewItem(validJson)
+
+        and: 'A ReferenceDataType is added to the ReferenceDataModel'
+        POST("$id/referenceDataTypes", ["label": "A", "domainType": "ReferencePrimitiveType"])
+        String referenceDataTypeId = response.body().id
+
+        when: 'A ReferenceDataElement is added to the ReferenceDataModel'
+        POST("$id/referenceDataElements", ["label": "RDE1", "referenceDataType": referenceDataTypeId])
+
+        then: 'The response is CREATED'
+        verifyResponse CREATED, response
+        String referenceDataElement1Id = response.body().id
+
+        when: 'The ReferenceDataModel is finalised'
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        when: 'A new model version is created'
+        PUT("$id/newBranchModelVersion", [branchName: 'source'])
+
+        then: 'The response is CREATED'
+        verifyResponse CREATED, response
+        String sourceReferenceDataModelId = response.body().id
+
+        when: 'Get the ReferenceDataElements on the source model'
+        GET("$sourceReferenceDataModelId/referenceDataElements")
+
+        then: 'The result is OK with one ReferenceDataElement listed'
+        verifyResponse OK, response
+        response.body().count == 1
+        String sourceReferenceDataElementId = response.body().items[0].id
+
+        when: 'A new DataType is added to the source ReferenceDataModel'
+        POST("$sourceReferenceDataModelId/referenceDataTypes", ["label": "B", "domainType": "ReferencePrimitiveType"])
+
+        then: 'The response is CREATED'
+        verifyResponse CREATED, response
+        String dataTypeId = response.body().id
+
+        when: 'A new ReferenceDataElement is added to the source ReferenceDataModel'
+        POST("$sourceReferenceDataModelId/referenceDataElements", ["label": "RDE2", "referenceDataType": dataTypeId])
+
+        then: 'The response is CREATED'
+        verifyResponse CREATED, response
+        String sourceReferenceDataElement2Id = response.body().id
+
+        when:
+        def requestBody = [
+            patch: [
+                "rightId": sourceReferenceDataModelId,
+                "leftId" : id,
+                "diffs"  : [
+                        [
+                            "fieldName": "referenceDataTypes",
+                            "created"  : [["id": dataTypeId, "label": "B"]],
+                            "deleted"  : [],
+                            "modified" : []
+                        ],
+                        [
+                            "fieldName": "referenceDataElements",
+                            "created"  : [["id": sourceReferenceDataElement2Id, "label": "RDE2"]],
+                            "deleted"  : [],
+                            "modified" : []
+                        ],
+                        [
+                            "fieldName": "metadata",
+                            "created"  : [],
+                            "deleted"  : [],
+                            "modified" : []
+                        ]
+                ]
+            ]
+        ]
+
+        PUT("$sourceReferenceDataModelId/mergeInto/$id", requestBody)
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        when: 'Get the ReferenceDataElements on the main branch model'
+        GET("$id/referenceDataElements")
+
+        then: 'The response is OK and there are two ReferenceDataElements'
+        verifyResponse OK, response
+        response.body().count == 2
+        response.body().items.findAll{it.label == "RDE1"}.size() == 1
+        response.body().items.findAll{it.label == "RDE2"}.size() == 1
+
+        cleanup:
+        cleanUpData(sourceReferenceDataModelId)
+        cleanUpData(id)
+    }
+
     void 'MI06 : test merging diff with no patch data with new style'() {
         given:
         String id = createNewItem(validJson)
