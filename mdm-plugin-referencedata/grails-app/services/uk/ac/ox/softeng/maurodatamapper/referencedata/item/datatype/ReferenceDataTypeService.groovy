@@ -20,6 +20,8 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
@@ -218,6 +220,11 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
 
     def findAllByReferenceDataModelIdAndLabelIlikeOrDescriptionIlike(Serializable referenceDataModelId, String searchTerm, Map paginate = [:]) {
         ReferenceDataType.byReferenceDataModelIdAndLabelIlikeOrDescriptionIlike(referenceDataModelId, searchTerm).list(paginate)
+    }
+
+    @Override
+    ReferenceDataType copy(Model copiedDataModel, ReferenceDataType original, CatalogueItem nonModelParent, UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyReferenceDataType(copiedDataModel as ReferenceDataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
     }
 
     ReferenceDataType copyReferenceDataType(ReferenceDataModel copiedReferenceDataModel, ReferenceDataType original, User copier,

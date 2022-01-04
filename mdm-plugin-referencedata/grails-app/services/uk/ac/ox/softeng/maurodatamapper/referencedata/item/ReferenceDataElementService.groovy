@@ -21,6 +21,8 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityPair
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate.FilterFactory
@@ -261,6 +263,11 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
                                                                 maxMultiplicity)
         }
         dataElement
+    }
+
+    @Override
+    ReferenceDataElement copy(Model copiedReferenceDataModel, ReferenceDataElement original, CatalogueItem nonModelParent, UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyReferenceDataElement(copiedReferenceDataModel as ReferenceDataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
     }
 
     ReferenceDataElement copyReferenceDataElement(ReferenceDataModel copiedReferenceDataModel, ReferenceDataElement original, User copier,
