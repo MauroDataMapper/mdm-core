@@ -84,7 +84,7 @@ class Folder implements Container, Diffable<Folder> {
 
     static search = {
         label searchable: 'yes', analyzer: 'wordDelimiter'
-        path searchable: 'yes', analyzer: 'path'
+        path searchable: 'yes'
         description termVector: 'with_positions'
         lastUpdated searchable: 'yes'
         dateCreated searchable: 'yes'

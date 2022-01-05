@@ -63,6 +63,10 @@ trait MdmDomain {
         Path.from(pathPrefix, pathIdentifier)
     }
 
+    Path getUncheckedPath() {
+        this.@path
+    }
+
     void checkPath() {
         if (!this.@path) {
             if (!pathPrefix || !pathIdentifier) {
@@ -79,7 +83,7 @@ trait MdmDomain {
     }
 
     private void setBuiltPath(Path builtPath) {
-        Path newPath = buildPath()
+        Path newPath = builtPath
         Path oldPath = this.@path
         markDirty('path', newPath, oldPath)
         this.@path = newPath

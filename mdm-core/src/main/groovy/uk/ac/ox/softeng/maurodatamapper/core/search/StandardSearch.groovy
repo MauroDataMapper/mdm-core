@@ -32,6 +32,6 @@ class StandardSearch {
         classifiers indexingDependency: [reindexOnUpdate: 'shallow'], indexEmbedded: [includePaths: ['label', 'description']]
         lastUpdated searchable: 'yes'
         dateCreated searchable: 'yes'
-        path searchable: 'yes', analyzer: 'path'
+        path searchable: 'yes'
     }
 }

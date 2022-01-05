@@ -161,6 +161,9 @@ class PathNode {
             return matchesModelPathIdentifierFormat(otherPathNode.identifier, otherPathNode.modelIdentifier)
         }
 
+        // If either side has no identifier then they definitely cant equal each other
+        if (!identifier || !otherPathNode.identifier) return false
+
         // Some of the legacy paths included : so we handle submissions of this format
         String[] identifierSplit = identifier.split(/:/)
         if (identifierSplit[0] == otherPathNode.identifier) return true
