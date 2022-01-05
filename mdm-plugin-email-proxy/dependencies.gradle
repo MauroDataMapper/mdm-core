@@ -1,4 +1,4 @@
 dependencies {
-    compile project(':mdm-common')
+    implementation project(':mdm-common')
     testImplementation project(':mdm-testing-framework')
 }
