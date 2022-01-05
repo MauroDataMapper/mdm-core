@@ -21,7 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFile
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
 import spock.lang.Ignore
@@ -57,8 +57,8 @@ class UserImageFileFunctionalSpec extends ResourceFunctionalSpec<UserImageFile> 
         null
     }
 
-    @OnceBefore
-    void checkImageDataFileExists() {
+    @RunOnce
+    def setup() {
         assert Files.exists(Paths.get('src/integration-test/resources/image_data_file.txt'))
     }
 

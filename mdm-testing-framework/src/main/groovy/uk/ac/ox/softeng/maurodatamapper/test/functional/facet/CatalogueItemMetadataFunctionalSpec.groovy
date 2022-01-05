@@ -20,7 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.test.functional.facet
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 
 import grails.gorm.transactions.Transactional
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
@@ -42,8 +42,8 @@ abstract class CatalogueItemMetadataFunctionalSpec extends CatalogueItemFacetFun
 
     abstract String getDestinationDataModelId()
 
-    @OnceBefore
     @Transactional
+    @RunOnce
     def cleanUpMetadataBefore() {
         Metadata.deleteAll(Metadata.list())
         sessionFactory.currentSession.flush()

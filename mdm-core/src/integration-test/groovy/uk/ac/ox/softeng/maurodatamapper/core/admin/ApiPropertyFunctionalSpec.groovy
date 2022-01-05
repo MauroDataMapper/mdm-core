@@ -20,7 +20,9 @@ package uk.ac.ox.softeng.maurodatamapper.core.admin
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlComparer
 
+import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
 import org.junit.Assert
@@ -34,9 +36,15 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
 
     ApiPropertyService apiPropertyService
 
-    @Override
-    def checkResourceCount() {
+    @RunOnce
+    @Transactional
+    def setup() {
         assert apiPropertyService.count() == 15
+    }
+
+    @Override
+    int getExpectedInitialResourceCount() {
+        15
     }
 
     @Override

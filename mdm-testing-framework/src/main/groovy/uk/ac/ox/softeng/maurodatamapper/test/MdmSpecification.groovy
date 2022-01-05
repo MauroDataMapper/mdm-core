@@ -22,7 +22,6 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.test.unit.security.TestUser
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 
-import grails.testing.spock.OnceBefore
 import grails.validation.Validateable
 import grails.validation.ValidationException
 import groovy.transform.CompileStatic
@@ -47,8 +46,7 @@ abstract class MdmSpecification extends Specification {
     static UUID reader2Id
     static UUID pendingId
 
-    @OnceBefore
-    def setupUserIds() {
+    def setupSpec() {
         log.debug('Setup User Ids')
         adminId = UUID.randomUUID()
         editorId = UUID.randomUUID()

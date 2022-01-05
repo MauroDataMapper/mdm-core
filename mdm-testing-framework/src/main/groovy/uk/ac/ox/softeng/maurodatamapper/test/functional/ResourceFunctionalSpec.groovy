@@ -20,7 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.test.functional
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 
 import grails.gorm.transactions.Transactional
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import grails.util.BuildSettings
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
@@ -48,15 +48,15 @@ abstract class ResourceFunctionalSpec<D extends GormEntity> extends BaseFunction
         Authority.findByDefaultAuthority(true)
     }
 
-    @OnceBefore
-    void setupResourcesPath() {
+    def setupSpec() {
+        log.debug('Setup resources path')
         resourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', 'json').toAbsolutePath()
         xmlResourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', 'xml').toAbsolutePath()
     }
 
+    @RunOnce
     @Transactional
-    @OnceBefore
-    def checkResourceCount() {
+    def setup() {
         log.debug('Check resource count is {}', getExpectedInitialResourceCount())
         sessionFactory.currentSession.flush()
         if (getResource().count() != getExpectedInitialResourceCount()) {

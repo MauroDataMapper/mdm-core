@@ -17,13 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.test.functional
 
-
 import uk.ac.ox.softeng.maurodatamapper.test.MdmSpecification
 import uk.ac.ox.softeng.maurodatamapper.test.http.RestClientInterface
 import uk.ac.ox.softeng.maurodatamapper.test.json.ResponseComparer
 
 import grails.gorm.transactions.Transactional
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import io.micronaut.core.type.Argument
 import io.micronaut.http.HttpRequest
@@ -39,7 +38,6 @@ import io.netty.handler.codec.http.cookie.Cookie
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder
 import org.grails.datastore.gorm.GormEntity
 import org.hibernate.SessionFactory
-import org.junit.Before
 import org.spockframework.util.Assert
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
@@ -47,20 +45,19 @@ import spock.lang.AutoCleanup
 import spock.lang.Shared
 
 import java.time.Duration
-import java.time.OffsetDateTime
 
 /**
  * Important notes are the new Grails Annotations and use of JUnit Annotations
- * @OnceBefore , @Before. There is a difference between these and Spock setupSpec and setup, namely
+ * @Before. There is a difference between these and Spock setupSpec and setup, namely
  * dependency injection. The methods annotated will be run AFTER dependency injection and therefore if you
  * want/need autowired properties you need to use these.
  * It also means you can define multiple setup methods
  *
  * Use
  * <pre>
- * @OnceBefore
- *     @Transactional
- *     def checkAndSetupData() {*      log.debug('Check and setup test data')
+ * @RunOnce
+ * @Transactional
+ *     def setup() {*      log.debug('Check and setup test data')
  *      // Install all required domain data here
  *}* </pre>
  * and
@@ -93,26 +90,18 @@ abstract class BaseFunctionalSpec extends MdmSpecification implements ResponseCo
 
     NettyCookie currentCookie
 
-    OffsetDateTime startTime
-
     abstract String getResourcePath()
 
-    @OnceBefore
-    void init() {
+    @RunOnce
+    def setup() {
         log.debug('Initialise HttpClient')
         baseUrl = "http://localhost:$serverPort/api/"
-        this.client = new DefaultHttpClient(new URL(baseUrl),
+        this.client = new DefaultHttpClient(new URL(baseUrl).toURI(),
                                             new DefaultHttpClientConfiguration().with {
                                                 setReadTimeout(Duration.ofMinutes(30))
                                                 setReadIdleTimeout(Duration.ofMinutes(30))
                                                 it
                                             })
-    }
-
-    @Before
-    def setupStartTime() {
-        log.debug('Set start time for test')
-        startTime = OffsetDateTime.now()
     }
 
     def cleanup() {
@@ -136,7 +125,11 @@ abstract class BaseFunctionalSpec extends MdmSpecification implements ResponseCo
     /********** Rest Requests *******/
 
     def <O> HttpResponse<O> GET(String resourceEndpoint, Argument<O> bodyType = MAP_ARG, boolean cleanEndpoint = false) {
-        HttpResponse<O> localResponse = exchange(HttpRequest.GET(getUrl(resourceEndpoint, cleanEndpoint)), bodyType)
+        GET(resourceEndpoint, bodyType, cleanEndpoint, null)
+    }
+
+    def <O> HttpResponse<O> GET(String resourceEndpoint, Argument<O> bodyType, boolean cleanEndpoint, String contentType) {
+        HttpResponse<O> localResponse = exchange(HttpRequest.GET(getUrl(resourceEndpoint, cleanEndpoint)), bodyType, contentType)
         if (bodyType.type == String) jsonCapableResponse = localResponse as HttpResponse<String>
         else if (bodyType.type == Map) response = localResponse as HttpResponse<Map>
         localResponse

@@ -54,23 +54,23 @@ class MauroDataMapperProviderFunctionalSpec extends BaseFunctionalSpec {
   },
   {
     "name": "grails.assetPipeline",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "grails.cache",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "grails.codecs",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "grails.controllers",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "grails.controllersAsync",
-    "version": "SNAPSHOT"
+    "version": "${json-unit.matches:version}"
   },
   {
     "name": "grails.converters",
@@ -78,15 +78,15 @@ class MauroDataMapperProviderFunctionalSpec extends BaseFunctionalSpec {
   },
   {
     "name": "grails.core",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "grails.dataSource",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "grails.domainClass",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "grails.eventBus",
@@ -94,210 +94,218 @@ class MauroDataMapperProviderFunctionalSpec extends BaseFunctionalSpec {
   },
   {
     "name": "grails.groovyPages",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "grails.hibernate",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "grails.hibernateSearch",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "grails.i18n",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "grails.interceptors",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "grails.jsonView",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "grails.markupView",
     "version": "${json-unit.matches:version}"
   },
   {
-    "name": "grails.restResponder",
+    "name": "grails.mimeTypes",
     "version": "${json-unit.matches:version}"
+  },
+  {
+    "name": "grails.restResponder",
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "grails.services",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "grails.urlMappings",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "java.base",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "java.compiler",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "java.datatransfer",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "java.desktop",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "java.instrument",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "java.logging",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "java.management",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "java.management.rmi",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "java.naming",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "java.net.http",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "java.prefs",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "java.rmi",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "java.scripting",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "java.security.jgss",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "java.security.sasl",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "java.smartcardio",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "java.sql",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "java.sql.rowset",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "java.transaction.xa",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "java.xml",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "java.xml.crypto",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.accessibility",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.attach",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.charsets",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.compiler",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.crypto.cryptoki",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.crypto.ec",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.dynalink",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.editpad",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.httpserver",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.internal.ed",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.internal.jvmstat",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.internal.le",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.internal.opt",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.jartool",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.javadoc",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.jconsole",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.jdeps",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.jdi",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.jdwp.agent",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.jfr",
-    "version": "${json-unit.matches:version}"
+     "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.jlink",
+    "version": "${json-unit.matches:version}"
+  },
+  {
+    "name": "jdk.jpackage",
     "version": "${json-unit.matches:version}"
   },
   {
@@ -341,7 +349,11 @@ class MauroDataMapperProviderFunctionalSpec extends BaseFunctionalSpec {
     "version": "${json-unit.matches:version}"
   },
   {
-    "name": "jdk.scripting.nashorn",
+    "name": "jdk.nio.mapmode",
+    "version": "${json-unit.matches:version}"
+  },
+  {
+    "name": "jdk.random",
     "version": "${json-unit.matches:version}"
   },
   {
@@ -370,38 +382,6 @@ class MauroDataMapperProviderFunctionalSpec extends BaseFunctionalSpec {
   },
   {
     "name": "jdk.zipfs",
-    "version": "${json-unit.matches:version}"
-  },
-  {
-    "name": "openj9.cuda",
-    "version": "${json-unit.matches:version}"
-  },
-  {
-    "name": "openj9.dataaccess",
-    "version": "${json-unit.matches:version}"
-  },
-  {
-    "name": "openj9.dtfj",
-    "version": "${json-unit.matches:version}"
-  },
-  {
-    "name": "openj9.gpu",
-    "version": "${json-unit.matches:version}"
-  },
-  {
-    "name": "openj9.jvm",
-    "version": "${json-unit.matches:version}"
-  },
-  {
-    "name": "openj9.sharedclasses",
-    "version": "${json-unit.matches:version}"
-  },
-  {
-    "name": "openj9.traceformat",
-    "version": "${json-unit.matches:version}"
-  },
-  {
-    "name": "openj9.zosconditionhandling",
     "version": "${json-unit.matches:version}"
   }
 ]''')

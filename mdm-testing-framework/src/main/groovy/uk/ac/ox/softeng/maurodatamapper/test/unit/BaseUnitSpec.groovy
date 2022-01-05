@@ -21,7 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.test.MdmSpecification
 
 import grails.plugin.json.view.mvc.JsonViewResolver
 import grails.testing.gorm.DataTest
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import org.grails.testing.GrailsUnitTest
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
@@ -67,16 +67,14 @@ abstract class BaseUnitSpec extends MdmSpecification implements DataTest, Grails
         workingDirectory
     }
 
-    def setup() {
-        log.debug('Setting up base unit')
-    }
-
     def cleanup() {
         log.debug('Cleaning up base unit')
     }
 
-    @OnceBefore
-    def loadI18nMessages() {
+    @RunOnce
+    def setup() {
+        log.debug('Setting up base unit')
+        log.debug('Load I18n Messages')
         loadI18nMessagesFromPath(getRootGrailsDirectory(config).resolve('mdm-core/grails-app/i18n/messages.properties'))
         loadI18nMessagesFromPath(getGrailsDirectory(config).resolve('grails-app/i18n/messages.properties'))
 
@@ -87,6 +85,7 @@ abstract class BaseUnitSpec extends MdmSpecification implements DataTest, Grails
             JsonViewResolver resolver = applicationContext.getBean(JsonViewResolver)
             resolver.templateEngine.messageSource = applicationContext.getBean(MessageSource)
         } catch (NoSuchBeanDefinitionException ignored) {
+            log.warn 'Failed to load messages into json views'
         }
     }
 

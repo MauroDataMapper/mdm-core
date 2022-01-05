@@ -57,7 +57,7 @@ class BasicEmailProviderServiceSpec extends MdmSpecification implements JsonComp
         String res = basicEmailProviderService.sendEmail(task)
 
         then:
-        res == 'smtp host address not given and not configured in config file'
+        res == 'SMTP server host missing'
     }
 
 }

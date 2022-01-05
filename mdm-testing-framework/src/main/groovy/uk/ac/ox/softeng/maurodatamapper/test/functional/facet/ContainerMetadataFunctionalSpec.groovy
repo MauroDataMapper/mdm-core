@@ -20,7 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.test.functional.facet
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 
 import grails.gorm.transactions.Transactional
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 
 /**
@@ -36,10 +36,10 @@ import groovy.util.logging.Slf4j
 @Slf4j
 abstract class ContainerMetadataFunctionalSpec extends ContainerFacetFunctionalSpec<Metadata> {
 
-
-    @OnceBefore
     @Transactional
+    @RunOnce
     def cleanUpMetadataBefore() {
+        log.debug('Cleanup Metadata before')
         Metadata.deleteAll(Metadata.list())
         sessionFactory.currentSession.flush()
     }

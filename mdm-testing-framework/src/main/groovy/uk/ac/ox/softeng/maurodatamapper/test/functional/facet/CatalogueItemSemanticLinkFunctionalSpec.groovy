@@ -21,7 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 
 import grails.gorm.transactions.Transactional
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
@@ -53,9 +53,10 @@ abstract class CatalogueItemSemanticLinkFunctionalSpec extends CatalogueItemFace
 
     abstract String getDestinationDataModelId()
 
-    @OnceBefore
     @Transactional
+    @RunOnce
     def cleanUpSemanticLinksBefore() {
+        log.debug('Cleanup SemanticLinks before')
         SemanticLink.deleteAll(SemanticLink.list())
         sessionFactory.currentSession.flush()
     }

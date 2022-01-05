@@ -22,7 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import io.micronaut.core.type.Argument
 import io.micronaut.http.HttpStatus
@@ -47,9 +47,9 @@ import io.micronaut.http.HttpStatus
 @Slf4j
 class VersionedFolderFunctionalSpec extends ResourceFunctionalSpec<VersionedFolder> {
 
-    @OnceBefore
+    @RunOnce
     @Rollback
-    def check() {
+    def setup() {
         assert VersionedFolder.count() == 0
     }
 

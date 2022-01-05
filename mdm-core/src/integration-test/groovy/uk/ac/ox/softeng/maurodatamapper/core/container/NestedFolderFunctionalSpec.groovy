@@ -23,7 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 import grails.gorm.transactions.Rollback
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import io.micronaut.core.type.Argument
 import io.micronaut.http.HttpStatus
@@ -44,9 +44,9 @@ class NestedFolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
     @Shared
     UUID parentFolderId
 
-    @OnceBefore
+    @RunOnce
     @Rollback
-    def checkAndSetupData() {
+    def setup() {
         log.debug('Check and setup test data')
         Folder parent = new Folder(label: 'Parent Functional Test Folder', createdBy: 'functionalTest@test.com').save(flush: true)
         parentFolderId = parent.id
