@@ -1499,6 +1499,313 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(mergeData.commonAncestor)
     }
 
+    void 'MI04 : test merging metadata diff into draft model'() {
+        given: 'A ReferenceDataModel is created'
+        String id = createNewItem(validJson)
+
+        and: 'Metadata is added to the ReferenceDataModel'
+        POST("$id/metadata", [namespace: 'functional.test.namespace', key: 'deleteMetadataSource', value: 'original'])
+        verifyResponse CREATED, response
+        POST("$id/metadata", [namespace: 'functional.test.namespace', key: 'modifyMetadataSource', value: 'original'])
+        verifyResponse CREATED, response
+
+        and: 'A ReferenceDataType is added to the ReferenceDataModel'
+        POST("$id/referenceDataTypes", ["label": "A", "domainType": "ReferencePrimitiveType"])
+        verifyResponse CREATED, response
+        String referenceDataTypeId = response.body().id
+
+        and: 'A ReferenceDataElement is added to the ReferenceDataModel'
+        POST("$id/referenceDataElements", ["label": "modifyLeftOnly", "referenceDataType": referenceDataTypeId])
+        verifyResponse CREATED, response
+        String referenceDataElement1Id = response.body().id
+
+        and: 'The ReferenceDataModel is finalised'
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        and: 'A new model version is created'
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String target = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'source'])
+        verifyResponse CREATED, response
+        String source = responseBody().id
+
+        when:
+        //to modify
+        GET("$source/path/rde%3AmodifyLeftOnly")
+        verifyResponse OK, response
+        String modifyLeftOnly = responseBody().id
+
+        GET("$source/metadata")
+        verifyResponse OK, response
+        String deleteMetadataSource = responseBody().items.find { it.key == 'deleteMetadataSource' }.id
+        String modifyMetadataSource = responseBody().items.find { it.key == 'modifyMetadataSource' }.id
+
+        then:
+        //ReferenceDataModel description
+        PUT("$source", [description: 'DescriptionLeft'])
+        verifyResponse OK, response
+
+        //ReferenceDataElement
+        PUT("$source/referenceDataElements/$modifyLeftOnly", [description: 'Description'])
+        verifyResponse OK, response
+
+        //metadata
+        DELETE("$source/metadata/$deleteMetadataSource")
+        verifyResponse NO_CONTENT, response
+
+        PUT("$source/metadata/$modifyMetadataSource", [value: 'Modified Description'])
+        verifyResponse OK, response
+
+        POST("$source/metadata", [namespace: 'functional.test.namespace', key: 'addMetadataSource', value: 'original'])
+        verifyResponse CREATED, response
+        String addMetadataSource = responseBody().id
+
+        POST("referenceDataElements/$modifyLeftOnly/metadata", [
+            namespace: 'functional.test.namespace',
+            key      : 'addMetadataModifyLeftOnly',
+            value    : 'original'
+        ], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String addMetadataModifyLeftOnly = responseBody().id
+
+        //ReferenceDataModel description
+        PUT("$target", [description: 'DescriptionRight'])
+        verifyResponse OK, response
+
+        when:
+        // for mergeInto json
+        GET("$target/path/rde%3AmodifyLeftOnly")
+        verifyResponse OK, response
+        modifyLeftOnly = responseBody().id
+
+        GET("$target/metadata")
+        verifyResponse OK, response
+        deleteMetadataSource = responseBody().items.find { it.key == "deleteMetadataSource" }.id
+        modifyMetadataSource = responseBody().items.find { it.key == "modifyMetadataSource" }.id
+
+        GET("$source/mergeDiff/$target", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''
+{
+  "leftId": "${json-unit.matches:id}",
+  "rightId": "${json-unit.matches:id}",
+  "label": "Reference Data Functional Test Model",
+  "count": 6,
+  "diffs": [
+    {
+      "description": {
+        "left": "DescriptionRight",
+        "right": "DescriptionLeft",
+        "isMergeConflict": true,
+        "commonAncestorValue": null
+      }
+    },
+    {
+      "referenceDataElements": {
+        "modified": [
+          {
+            "leftId": "${json-unit.matches:id}",
+            "rightId": "${json-unit.matches:id}",
+            "label": "modifyLeftOnly",
+            "leftBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Reference Data Functional Test Model",
+                "domainType": "ReferenceDataModel",
+                "finalised": true
+              }
+            ],
+            "rightBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Reference Data Functional Test Model",
+                "domainType": "ReferenceDataModel",
+                "finalised": true
+              }
+            ],
+            "count": 2,
+            "diffs": [
+              {
+                "description": {
+                  "left": null,
+                  "right": "Description",
+                  "isMergeConflict": false
+                }
+              },
+              {
+                "metadata": {
+                  "created": [
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "namespace": "functional.test.namespace",
+                        "key": "addMetadataModifyLeftOnly",
+                        "value": "original"
+                      },
+                      "isMergeConflict": false
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "deleted": [
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "namespace": "functional.test.namespace",
+              "key": "deleteMetadataSource",
+              "value": "original"
+            },
+            "isMergeConflict": false
+          }
+        ],
+        "created": [
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "namespace": "functional.test.namespace",
+              "key": "addMetadataSource",
+              "value": "original"
+            },
+            "isMergeConflict": false
+          }
+        ],
+        "modified": [
+          {
+            "leftId": "${json-unit.matches:id}",
+            "rightId": "${json-unit.matches:id}",
+            "namespace": "functional.test.namespace",
+            "key": "modifyMetadataSource",
+            "count": 1,
+            "diffs": [
+              {
+                "value": {
+                  "left": "original",
+                  "right": "Modified Description",
+                  "isMergeConflict": false
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}'''
+
+        when:
+        String modifiedDescriptionSource = 'modifiedDescriptionSource'
+
+        def requestBody = [
+            patch: [
+                leftId : target,
+                rightId: source,
+                label  : "Reference Data Functional Test Model",
+                diffs  : [
+                    [
+                        fieldName: "description",
+                        value    : modifiedDescriptionSource
+                    ],
+                    [
+                        fieldName: "metadata",
+                        deleted  : [
+                            [
+                                id   : deleteMetadataSource,
+                                label: "deleteMetadataSource"
+                            ]
+                        ],
+                        created  : [
+                            [
+                                id   : addMetadataSource,
+                                label: "addMetadataSource"
+                            ]
+                        ],
+                        modified : [
+                            [
+                                leftId: modifyMetadataSource,
+                                label : "modifyMetadataSource",
+                                diffs : [
+                                    [
+                                        fieldName: "value",
+                                        value    : modifiedDescriptionSource
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ],
+                    [
+                        fieldName: "referenceDataElements",
+                        modified : [
+                            [
+                                leftId: modifyLeftOnly,
+                                label : "modifyLeftOnly",
+                                diffs : [
+                                    [
+                                        fieldName: "description",
+                                        value    : "modifiedDescriptionSourceOnly"
+                                    ],
+                                    [
+                                        fieldName: "metadata",
+                                        created  : [
+                                            [
+                                                id   : addMetadataModifyLeftOnly,
+                                                label: "addMetadataModifyLeftOnly"
+                                            ]
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]
+
+        PUT("$source/mergeInto/$target", requestBody)
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == target
+        responseBody().description == modifiedDescriptionSource
+
+        when:
+        GET("$target/referenceDataElements")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.label as Set == ['modifyLeftOnly'] as Set
+        responseBody().items.find { rde -> rde.label == 'modifyLeftOnly' }.description == 'modifiedDescriptionSourceOnly'
+
+        when:
+        verifyResponse OK, response
+        GET("$target/metadata")
+
+        then:
+        responseBody().items.key as Set == ['addMetadataSource', 'modifyMetadataSource'] as Set
+        responseBody().items.find { metadata -> metadata.key == 'modifyMetadataSource' }.value == 'modifiedDescriptionSource'
+
+        when:
+        GET("referenceDataElements/$modifyLeftOnly/metadata", MAP_ARG, true)
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.key as Set == ['addMetadataModifyLeftOnly'] as Set
+
+        cleanup:
+        cleanUpData(source)
+        cleanUpData(target)
+        cleanUpData(id)
+    }
+
     /**
      * In this test we create a ReferenceDataModel containing one ReferenceDataElement. The ReferenceDataModel is finalised, and a new branch 'source'
      * created. On the source branch, a second ReferenceDataElement is added to the ReferenceDataModel. The source branch is then merged
