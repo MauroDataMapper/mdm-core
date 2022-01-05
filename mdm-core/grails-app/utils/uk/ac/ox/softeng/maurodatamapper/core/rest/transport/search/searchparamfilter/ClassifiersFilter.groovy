@@ -30,7 +30,7 @@ class ClassifiersFilter implements SearchParamFilter {
         HibernateSearch.defineAdditionalLuceneQuery {
             must {
                 searchParams.classifiers.each {cl ->
-                    keyword 'classifiers.label', cl
+                    phrase 'classifiers.label', cl
                 }
             }
         }

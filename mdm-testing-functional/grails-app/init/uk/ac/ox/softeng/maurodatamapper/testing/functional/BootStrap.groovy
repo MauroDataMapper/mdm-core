@@ -152,6 +152,7 @@ class BootStrap implements SecurityDefinition {
                     Classifier classifier = new Classifier(label: 'Functional Test Classifier',
                                                            createdBy: userEmailAddresses.functionalTest)
                     checkAndSave(messageSource, classifier)
+
                     // Make editors container admin (existing permissions) of the test folder
                     checkAndSave(messageSource, new SecurableResourceGroupRole(
                         createdBy: userEmailAddresses.functionalTest,
