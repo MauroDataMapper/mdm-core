@@ -1905,6 +1905,331 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(id)
     }
 
+    void 'MI07 : test merging diff with URI id not matching body id with new style'() {
+        given:
+        String id = createNewItem(validJson)
+
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String target = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'source'])
+        verifyResponse CREATED, response
+        String source = responseBody().id
+
+        when:
+        PUT("$source/mergeInto/$target?isLegacy=false", [patch:
+                                                                 [
+                                                                     targetId: target,
+                                                                     sourceId: UUID.randomUUID().toString(),
+                                                                     label   : "Reference Data Functional Test Model",
+                                                                     count   : 0,
+                                                                     patches : []
+                                                                 ]
+        ])
+
+        then:
+        verifyResponse(UNPROCESSABLE_ENTITY, response)
+        responseBody().message == 'Source model id passed in request body does not match source model id in URI.'
+
+        when:
+        PUT("$source/mergeInto/$target", [patch:
+                                                  [
+                                                      targetId: UUID.randomUUID().toString(),
+                                                      sourceId: source,
+                                                      label   : "Reference Data Functional Test Model",
+                                                      count   : 0,
+                                                      patches : []
+                                                  ]
+        ])
+
+        then:
+        verifyResponse(UNPROCESSABLE_ENTITY, response)
+        responseBody().message == 'Target model id passed in request body does not match target model id in URI.'
+
+        when:
+        PUT("$source/mergeInto/$target", [patch:
+                                                  [
+                                                      targetId: target,
+                                                      sourceId: source,
+                                                      label   : "Reference Data Functional Test Model",
+                                                      count   : 0,
+                                                      patches : []
+                                                  ]
+        ])
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().id == target
+
+        cleanup:
+        cleanUpData(source)
+        cleanUpData(target)
+        cleanUpData(id)
+    }
+
+    @PendingFeature(reason = "No such property: referenceDataType.label at ModelDataService:568 See gh-222")
+    void 'MI08 : test merging diff into draft model using new style'() {
+        given:
+        TestMergeData mergeData = builder.buildComplexModelsForMerging(folderId.toString())
+
+        when:
+        GET("$mergeData.source/mergeDiff/$mergeData.target?isLegacy=false")
+
+        then:
+        verifyResponse OK, response
+        responseBody().diffs.size() == 15
+
+        when:
+        List<Map> patches = responseBody().diffs
+        PUT("$mergeData.source/mergeInto/$mergeData.target?isLegacy=false", [
+            patch: [
+                targetId: responseBody().targetId,
+                sourceId: responseBody().sourceId,
+                label   : responseBody().label,
+                count   : patches.size(),
+                patches : patches]
+        ])
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == mergeData.target
+        responseBody().description == 'DescriptionLeft'
+
+        when:
+        GET("$mergeData.target/referenceDataElements")
+
+        then:
+        responseBody().items.label as Set == ['modifyAndModifyReturningDifference', 'modifyLeftOnly',
+                                              'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly',
+                                              'modifyRightOnly', 'addRightOnly', 'modifyAndModifyReturningNoDifference',
+                                              'addAndAddReturningNoDifference'] as Set
+        responseBody().items.find { rde -> rde.label == 'modifyAndDelete' }.description == 'Description'
+        responseBody().items.find { rde -> rde.label == 'addAndAddReturningDifference' }.description == 'DescriptionLeft'
+        responseBody().items.find { rde -> rde.label == 'modifyAndModifyReturningDifference' }.description == 'DescriptionLeft'
+        responseBody().items.find { rde -> rde.label == 'modifyLeftOnly' }.description == 'Description'
+
+        /*when:
+        GET("$mergeData.target/dataClasses/$mergeData.targetMap.existingClass/dataClasses")
+
+        then:
+        responseBody().items.label as Set == ['addRightToExistingClass', 'addLeftToExistingClass'] as Set
+
+        when:
+        GET("$mergeData.target/dataClasses/$mergeData.targetMap.existingClass/dataElements")
+
+        then:
+        responseBody().items.label as Set == ['addLeftOnly'] as Set*/
+
+        when:
+        GET("$mergeData.target/referenceDataTypes")
+
+        then:
+        responseBody().items.label as Set == ['addLeftOnly'] as Set
+
+        when:
+        GET("${mergeData.target}/metadata")
+
+        then:
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyOnSource' }.value == 'source has modified this'
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyAndDelete' }.value == 'source has modified this also'
+        !responseBody().items.find { it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource' }
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'addToSourceOnly' }
+
+        cleanup:
+        cleanUpData(mergeData.source)
+        cleanUpData(mergeData.target)
+        cleanUpData(mergeData.commonAncestor)
+    }
+
+    void 'MI09 : test merging new style diff with metadata creation gh-111'() {
+        given:
+        String id = createNewItem(validJson)
+        POST("$id/rules", [name: 'Bootstrapped versioning V2Model Rule'])
+        verifyResponse(CREATED, response)
+
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String target = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'interestingBranch'])
+        verifyResponse CREATED, response
+        String source = responseBody().id
+
+        POST("$source/metadata", [namespace: 'test.com', key: 'testProperty', value: 'testValue'])
+        verifyResponse(CREATED, response)
+
+        String ruleId = builder.getIdFromPath(source, 'rdm:Reference Data Functional Test Model$interestingBranch|ru:Bootstrapped versioning V2Model Rule')
+        POST("$source/rules/${ruleId}/representations", [
+            language      : 'sql',
+            representation: 'testing'
+        ])
+        verifyResponse(CREATED, response)
+
+        when:
+        PUT("$source/mergeInto/$target?isLegacy=false", [
+            changeNotice: "Metadata test",
+            deleteBranch: false,
+            patch       : [
+                sourceId: source,
+                targetId: target,
+                count   : 2,
+                patches : [
+                    [
+                        path                                 : 'rdm:Reference Data Functional Test Model$interestingBranch|md:test.com.testProperty',
+                        isMergeConflict                      : false,
+                        isSourceModificationAndTargetDeletion: false,
+                        type                                 : 'creation',
+                        branchSelected                       : 'source',
+                        branchNameSelected                   : 'interestingBranch'
+                    ],
+                    [
+                        path                                 : 'rdm:Reference Data Functional Test Model$interestingBranch|ru:Bootstrapped versioning V2Model Rule|rr:sql',
+                        isMergeConflict                      : false,
+                        isSourceModificationAndTargetDeletion: false,
+                        type                                 : 'creation',
+                        branchSelected                       : 'source',
+                        branchNameSelected                   : 'interestingBranch'
+                    ]
+                ]
+            ]
+        ])
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().id == target
+
+        when:
+        GET("${target}/metadata")
+
+        then:
+        responseBody().items.find { it.namespace == 'test.com' && it.key == 'testProperty' }
+
+        cleanup:
+        cleanUpData(source)
+        cleanUpData(target)
+        cleanUpData(id)
+    }
+
+    void 'MI10 : test merge into with new style diff with aliases gh-112'() {
+        given:
+        String id = createNewItem(validJson)
+
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String target = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'interestingBranch'])
+        verifyResponse CREATED, response
+        String source = responseBody().id
+        PUT(source, [aliases: ['not main branch', 'mergeInto']])
+
+        when:
+        GET("$source/mergeDiff/$target?isLegacy=false")
+
+        then:
+        verifyResponse OK, response
+
+        when:
+        List<Map> patches = responseBody().diffs
+        PUT("$source/mergeInto/$target?isLegacy=false", [
+            patch: [
+                targetId: responseBody().targetId,
+                sourceId: responseBody().sourceId,
+                label   : responseBody().label,
+                count   : patches.size(),
+                patches : patches]
+        ])
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == target
+        responseBody().aliases.size() == 2
+        responseBody().aliases.any { it == 'mergeInto' }
+        responseBody().aliases.any { it == 'not main branch' }
+
+        cleanup:
+        cleanUpData(source)
+        cleanUpData(target)
+        cleanUpData(id)
+    }
+
+    @PendingFeature(reason = "No such property: referenceDataType.label at ModelDataService:568 See gh-222")
+    void 'MI11 : test merge into on a branch which has already been merged'() {
+        given:
+        TestMergeData mergeData = builder.buildComplexModelsForMerging(folderId.toString())
+        GET("$mergeData.source/mergeDiff/$mergeData.target?isLegacy=false")
+        verifyResponse OK, response
+        List<Map> patches = responseBody().diffs
+        PUT("$mergeData.source/mergeInto/$mergeData.target?isLegacy=false", [
+            patch: [
+                targetId: responseBody().targetId,
+                sourceId: responseBody().sourceId,
+                label   : responseBody().label,
+                count   : patches.size(),
+                patches : patches]
+        ])
+        verifyResponse OK, response
+
+        when: 'add RDE after a merge'
+        POST("$mergeData.sourceMap.referenceDataModelId/referenceDataElements", [
+                label   : 'addAnotherLeftReferenceDataElement',
+                referenceDataType: mergeData.sourceMap.commonReferenceDataTypeId
+        ])
+        verifyResponse CREATED, response
+        log.debug('-------------- Second Merge Request ------------------')
+
+        and:
+        GET("$mergeData.source/mergeDiff/$mergeData.target?isLegacy=false")
+
+        then:
+        verifyResponse OK, response
+
+        when:
+        patches = responseBody().diffs
+        PUT("$mergeData.source/mergeInto/$mergeData.target?isLegacy=false", [
+            patch: [
+                targetId: responseBody().targetId,
+                sourceId: responseBody().sourceId,
+                label   : responseBody().label,
+                count   : patches.size(),
+                patches : patches]
+        ])
+
+        then:
+        verifyResponse OK, response
+
+        when:
+        GET("$mergeData.target/referenceDataElements/$mergeData.targetMap.referenceDataElements")
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+
+        when:
+        GET("$mergeData.target/referenceDataElements")
+
+        then:
+        verifyResponse(OK, response)
+
+        when:
+        String addLeftOnly = responseBody().items.find { it.label == 'addLeftOnly' }.id
+        GET("$mergeData.targetMap.referenceDataModelId/referenceDataElements/$addLeftOnly/referenceDataElements")
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+        responseBody().items.any { it.label == 'addAnotherLeftToAddLeftOnly' }
+
+        cleanup:
+        cleanUpData(mergeData.source)
+        cleanUpData(mergeData.target)
+        cleanUpData(mergeData.commonAncestor)
+    }
+
 
     @PendingFeature(reason = "Not yet implemented")
     void 'test changing folder from ReferenceData context'() {
