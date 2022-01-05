@@ -1349,7 +1349,6 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(id)
     }
 
-    @PendingFeature(reason = "Not yet working")
     void 'MI03 : test merging diff into draft model'() {
         given:
         TestMergeData mergeData = builder.buildComplexModelsForMerging(folderId.toString())
@@ -1365,96 +1364,72 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
         def requestBody = [
             changeNotice: 'Functional Test Merge Change Notice',
-            patch       : [
-                        leftId : mergeData.target,
-                        rightId: mergeData.source,
-                        label  : "Reference Data Functional Test Model",
-                        diffs  : [
-                                [
+            patch : [
+                leftId : mergeData.target,
+                rightId: mergeData.source,
+                label  : "Reference Data Functional Test Model",
+                diffs  : [
+                    [
+                        fieldName: "description",
+                        value    : modifiedDescriptionSource
+                    ],
+                    [
+                        fieldName: "referenceDataElements",
+                        deleted  : [
+                            [
+                                id   : mergeData.targetMap.deleteAndModify,
+                                label: "deleteAndModify"
+                            ],
+                            [
+                                id   : mergeData.targetMap.deleteLeftOnly,
+                                label: "deleteLeftOnly"
+                            ]
+                        ],
+                        created  : [
+                            [
+                                id   : mergeData.sourceMap.addLeftOnly,
+                                label: "addLeftOnly"
+                            ],
+                            [
+                                id   : mergeData.sourceMap.modifyAndDelete,
+                                label: "modifyAndDelete"
+                            ]
+                        ],
+                        modified : [
+                            [
+                                leftId: mergeData.targetMap.addAndAddReturningDifference,
+                                label : "addAndAddReturningDifference",
+                                diffs : [
+                                    [
+                                        fieldName: "description",
+                                        value    : "addedDescriptionSource"
+                                    ]
+                                ]
+                            ],
+                            [
+                                leftId: mergeData.targetMap.modifyAndModifyReturningDifference,
+                                label : "modifyAndModifyReturningDifference",
+                                diffs : [
+                                    [
                                         fieldName: "description",
                                         value    : modifiedDescriptionSource
-                                ],
-                                [
-                                        fieldName: "dataClasses",
-
-                                        deleted  : [
-                                                [
-                                                        id   : mergeData.targetMap.deleteAndModify,
-                                                        label: "deleteAndModify"
-                                                ],
-                                                [
-                                                        id   : mergeData.targetMap.deleteLeftOnly,
-                                                        label: "deleteLeftOnly"
-                                                ]
-                                        ],
-                                        created  : [
-                                                [
-                                                        id   : mergeData.sourceMap.addLeftOnly,
-                                                        label: "addLeftOnly"
-                                                ],
-                                                [
-                                                        id   : mergeData.sourceMap.modifyAndDelete,
-                                                        label: "modifyAndDelete"
-                                                ]
-                                        ],
-                                        modified : [
-                                                [
-                                                        leftId: mergeData.targetMap.addAndAddReturningDifference,
-                                                        label : "addAndAddReturningDifference",
-                                                        diffs : [
-                                                                [
-                                                                        fieldName: "description",
-                                                                        value    : "addedDescriptionSource"
-                                                                ]
-                                                        ]
-                                                ],
-                                                [
-                                                        leftId: mergeData.targetMap.existingClass,
-                                                        label : "existingClass",
-                                                        diffs : [
-                                                                [
-                                                                        fieldName: "dataClasses",
-
-                                                                        deleted  : [
-                                                                                [
-                                                                                        id   : mergeData.targetMap.deleteLeftOnlyFromExistingClass,
-                                                                                        label: "deleteLeftOnlyFromExistingClass"
-                                                                                ]
-                                                                        ],
-                                                                        created  : [
-                                                                                [
-                                                                                        id   : mergeData.sourceMap.addLeftToExistingClass,
-                                                                                        label: "addLeftToExistingClass"
-                                                                                ]
-                                                                        ]
-
-                                                                ]
-                                                        ]
-                                                ],
-                                                [
-                                                        leftId: mergeData.targetMap.modifyAndModifyReturningDifference,
-                                                        label : "modifyAndModifyReturningDifference",
-                                                        diffs : [
-                                                                [
-                                                                        fieldName: "description",
-                                                                        value    : modifiedDescriptionSource
-                                                                ]
-                                                        ]
-                                                ],
-                                                [
-                                                        leftId: mergeData.targetMap.modifyLeftOnly,
-                                                        label : "modifyLeftOnly",
-                                                        diffs : [
-                                                                [
-                                                                        fieldName: "description",
-                                                                        value    : "modifiedDescriptionSourceOnly"
-                                                                ]
-                                                        ]
-                                                ]
-                                        ]
+                                    ]
                                 ]
+                            ],
+                            [
+                                leftId: mergeData.targetMap.modifyLeftOnly,
+                                label : "modifyLeftOnly",
+                                diffs : [
+                                    [
+                                        fieldName: "description",
+                                        value    : "modifiedDescriptionSourceOnly"
+                                    ]
+                                ]
+                            ]
                         ]
+                   ]
                 ]
+            ]
         ]
 
         PUT("$mergeData.source/mergeInto/$mergeData.target", requestBody)
@@ -1465,22 +1440,16 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         responseBody().description == modifiedDescriptionSource
 
         when:
-        GET("$mergeData.target/dataClasses")
+        GET("$mergeData.target/referenceDataElements")
 
         then:
         responseBody().items.label as Set == ['modifyAndModifyReturningDifference', 'modifyLeftOnly',
                                               'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly',
                                               'modifyRightOnly', 'addRightOnly', 'modifyAndModifyReturningNoDifference', 'addAndAddReturningNoDifference'] as Set
-        /*responseBody().items.find { dataClass -> dataClass.label == 'modifyAndDelete' }.description == 'Description'
-        responseBody().items.find { dataClass -> dataClass.label == 'addAndAddReturningDifference' }.description == 'addedDescriptionSource'
-        responseBody().items.find { dataClass -> dataClass.label == 'modifyAndModifyReturningDifference' }.description == modifiedDescriptionSource
-        responseBody().items.find { dataClass -> dataClass.label == 'modifyLeftOnly' }.description == 'modifiedDescriptionSourceOnly'*/
-
-        /*when:
-        GET("$mergeData.target/dataClasses/$mergeData.targetMap.existingClass/dataClasses")
-
-        then:
-        responseBody().items.label as Set == ['addRightToExistingClass', 'addLeftToExistingClass'] as Set*/
+        responseBody().items.find { rde -> rde.label == 'modifyAndDelete' }.description == 'Description'
+        responseBody().items.find { rde -> rde.label == 'addAndAddReturningDifference' }.description == 'addedDescriptionSource'
+        responseBody().items.find { rde -> rde.label == 'modifyAndModifyReturningDifference' }.description == modifiedDescriptionSource
+        responseBody().items.find { rde -> rde.label == 'modifyLeftOnly' }.description == 'modifiedDescriptionSourceOnly'
 
         when: 'List edits for the Target ReferenceDataModel'
         GET("$mergeData.target/edits", MAP_ARG)
