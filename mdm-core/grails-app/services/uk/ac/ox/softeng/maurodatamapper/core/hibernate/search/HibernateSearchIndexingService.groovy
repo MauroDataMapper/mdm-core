@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.hibernate.search
 
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.LuceneIndexParameters
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.LuceneIndexAwareService
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.core.GrailsApplication
 import groovy.util.logging.Slf4j
@@ -48,16 +49,16 @@ class HibernateSearchIndexingService {
     SessionFactory sessionFactory
 
     Map getHibernateSearchConfig() {
-        grailsApplication.config.getProperty('hibernate.search', Map)
+        Utils.getMapFromConfig(grailsApplication.config, 'hibernate.search')
     }
 
     Path getLuceneIndexPath() {
-        String luceneDir = hibernateSearchConfig.backend.directory.root
+        String luceneDir = hibernateSearchConfig['backend.directory.root']
         Paths.get(luceneDir).toAbsolutePath().normalize()
     }
 
     Map getMassIndexerConfig() {
-        hibernateSearchConfig.massindexer ?: [:]
+        Utils.cleanPrefixFromMap(hibernateSearchConfig, 'massindexer')
     }
 
     SearchSession getSearchSession() {

@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.util
 
+import grails.config.Config
 import grails.core.GrailsApplication
 import grails.core.GrailsClass
 import groovy.transform.CompileStatic
@@ -148,5 +149,19 @@ class Utils {
             cachedGrailsDomains[(gc.propertyName + 'es')] = gc
             cachedGrailsDomains[(gc.propertyName.replaceFirst(/y$/, 'ies'))] = gc
         }
+    }
+
+    /**
+     * Utility method to handle the issue where we need a map out of the grails config but they deprecated the navigable map.
+     */
+    static Map<String, Object> getMapFromConfig(Config config, String keyPrefix) {
+        cleanPrefixFromMap(
+            config.findAll {it.key.startsWith(keyPrefix) && !(it.value instanceof Map)}, keyPrefix
+        )
+    }
+
+    static Map<String, Object> cleanPrefixFromMap(Map<String, Object> map, String prefix) {
+        map.findAll {it.key.startsWith(prefix)}
+            .collectEntries {k, v -> [k.replace(/$prefix./, ''), v]}
     }
 }

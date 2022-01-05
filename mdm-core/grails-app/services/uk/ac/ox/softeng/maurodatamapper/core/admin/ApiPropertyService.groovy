@@ -119,7 +119,7 @@ class ApiPropertyService {
         grailsLinkGenerator.setConfiguredServerBaseURL(apiProperty.value)
     }
 
-    void checkAndSetSiteUrl(configServerUrl, configContextPath, User user) {
+    void checkAndSetSiteUrl(String configServerUrl, String configContextPath, User user) {
         ApiProperty siteUrlProperty = findByApiPropertyEnum(ApiPropertyEnum.SITE_URL)
         // If no site url property but a config server url then create a new property
         if (!siteUrlProperty && configServerUrl) {

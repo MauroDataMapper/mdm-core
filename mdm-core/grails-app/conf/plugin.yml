@@ -99,13 +99,17 @@ hibernate:
         batch_size: 30
     order_inserts: true
     order_updates: true
-grails:
-    plugins:
-        hibernatesearch:
-            rebuildIndexOnStart: true
 environments:
+    test:
+        grails:
+            plugins:
+                hibernatesearch:
+                    rebuildIndexOnStart: false
     development:
         grails:
+            plugins:
+                hibernatesearch:
+                    rebuildIndexOnStart: true
             views:
                 markup:
                     cacheTemplates: false

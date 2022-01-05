@@ -43,6 +43,7 @@ import uk.ac.ox.softeng.maurodatamapper.hibernate.search.mapper.orm.mapping.MdmH
 import uk.ac.ox.softeng.maurodatamapper.provider.plugin.MauroDataMapperPlugin
 import uk.ac.ox.softeng.maurodatamapper.security.basic.NoAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.plugin.markup.view.MarkupViewConfiguration
 import grails.plugins.Plugin
@@ -50,9 +51,6 @@ import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import org.grails.web.databinding.bindingsource.DataBindingSourceRegistry
 import org.springframework.boot.web.servlet.ServletListenerRegistrationBean
-
-import java.lang.management.ManagementFactory
-import java.lang.management.RuntimeMXBean
 
 /**
  * @since 01/11/2017
@@ -63,7 +61,7 @@ class MdmCoreGrailsPlugin extends Plugin {
     static String DEFAULT_USER_SECURITY_POLICY_MANAGER_BEAN_NAME = 'defaultUserSecurityPolicyManager'
 
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = "4.0.6 > *"
+    def grailsVersion = "5.1.1 > *"
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
         "grails-app/views/error.gsp"
@@ -99,12 +97,12 @@ This is basically the backend API.
     def scm = [url: "https://github.com/mauroDataMapper/mdm-core"]
 
     def dependsOn = [
-        hibernate      : '7.0.4 > *',
+        hibernate      : '7.2.0 > *',
         interceptors   : grailsVersion,
         services       : grailsVersion,
-        assetPipeline  : '3.3.2 > *',
-        jsonView       : '2.0.4 > *',
-        markupView     : '2.0.4 > *',
+        assetPipeline  : '3.3.6 > *',
+        jsonView       : '2.2.0 > *',
+        markupView     : '2.2.0 > *',
         hibernateSearch: '3.0.0-SNAPSHOT > *'
     ]
 
@@ -204,7 +202,8 @@ This is basically the backend API.
     }
 
     void doWithApplicationContext() {
-        if (config.env == 'live') outputRuntimeArgs()
+        if (config.getProperty('env', String) == 'live') outputRuntimeArgs()
+        else Utils.outputRuntimeArgs(MdmCoreGrailsPlugin)
 
         /*
          * Add custom data binding bean to the data binding registry
@@ -214,26 +213,7 @@ This is basically the backend API.
     }
 
     void outputRuntimeArgs() {
-        RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean()
-        List<String> arguments = runtimeMxBean.getInputArguments()
-
-        log.warn("Running with {} JVM args", arguments.size())
-        Map<String, String> map = arguments.collectEntries {arg ->
-            arg.split('=').toList()
-        }.sort() as Map<String, String>
-
-        map.findAll {k, v ->
-            k.startsWith('-Denv') ||
-            k.startsWith('-Dgrails') ||
-            k.startsWith('-Dinfo') ||
-            k.startsWith('-Djava.version') ||
-            k.startsWith('-Dspring') ||
-            k.startsWith('-Duser.timezone') ||
-            k.startsWith('-X')
-        }.each {k, v ->
-            if (v) log.warn('{}={}', k, v)
-            else log.warn('{}', k)
-        }
+        Utils.outputRuntimeArgs(MdmCoreGrailsPlugin)
 
         log.warn("Running with {} Grails config args", config.size())
         config.findAll {
