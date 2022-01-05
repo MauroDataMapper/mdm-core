@@ -122,9 +122,9 @@ This is basically the backend API.
             hibernateSearchMappingConfigurer(MdmHibernateSearchMappingConfigurer)
 
             // Ensure the uuid2 generator is used for mapping ids
-            grailsApplication.config.grails.gorm.default.mapping = {
+            grailsApplication.config.setAt('grails.gorm.default.mapping', {
                 id generator: 'uuid2'
-            }
+            })
 
             /*
              * Define the default user security policy manager
@@ -133,7 +133,7 @@ This is basically the backend API.
              * The default is either no access, or complete access (and that means complete unfettered access to everything
              * maurodatamapper.security.public property defines what the default is
              */
-            boolean publicAccess = grailsApplication.config.maurodatamapper.security.public
+            boolean publicAccess = grailsApplication.config.getProperty('maurodatamapper.security.public', Boolean)
             if (publicAccess) {
                 log.warn('Running in public access mode. All actions will be available to any user')
             }
@@ -182,7 +182,7 @@ This is basically the backend API.
 
             // If global exclude fields provided then we need to use the custom MDM port of the template engine as this is the only way
             // we can actually add the global exclusion fields to the generator
-            if (grailsApplication.config.getProperty('grails.views.excludeFields')) {
+            if (grailsApplication.config.containsProperty('grails.views.excludeFields')) {
                 jsonTemplateEngine(JsonViewTemplateEngine, grailsApplication, ref('jsonViewConfiguration'), applicationContext.classLoader)
             }
 
