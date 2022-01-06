@@ -39,7 +39,7 @@ class MdmHibernateSearchMappingConfigurer extends GrailsHibernateSearchMappingCo
         super.configure(context)
 
         log.info('Configuring Mauro HibernateSearch Mapping')
-        context.bridges().exactType(Path).valueBridge(new PathBridge())
+        context.bridges().exactType(Path).valueBridge(PathBridge.instance)
         context.bridges().exactType(GormEntity).valueBridge(new DomainClassBridge())
         context.bridges().exactType(OffsetDateTime).valueBridge(new OffsetDateTimeBridge())
     }

@@ -28,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstra
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.UniqueValuesValidator
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate.IdSecureFilterFactory
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.mapper.pojo.bridge.binder.PathBinder
 
 import grails.gorm.DetachedCriteria
 import grails.plugins.hibernate.search.HibernateSearchApi
@@ -77,7 +78,7 @@ class Classifier implements Container {
 
     static search = {
         label searchable: 'yes', analyzer: 'wordDelimiter'
-        path searchable: 'yes'
+        path valueBinder: new PathBinder()
         description termVector: 'with_positions'
         lastUpdated searchable: 'yes'
         dateCreated searchable: 'yes'

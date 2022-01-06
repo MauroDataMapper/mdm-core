@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.search
 
 import uk.ac.ox.softeng.maurodatamapper.core.hibernate.search.mapper.pojo.binder.MetadataBinder
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.mapper.pojo.bridge.binder.PathBinder
 
 /**
  * @since 27/02/2020
@@ -32,6 +33,6 @@ class StandardSearch {
         classifiers indexingDependency: [reindexOnUpdate: 'shallow'], indexEmbedded: [includePaths: ['label', 'description']]
         lastUpdated searchable: 'yes'
         dateCreated searchable: 'yes'
-        path searchable: 'yes'
+        path valueBinder: new PathBinder()
     }
 }

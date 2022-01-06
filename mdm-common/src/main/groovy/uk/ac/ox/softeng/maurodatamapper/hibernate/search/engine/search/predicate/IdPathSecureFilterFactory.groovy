@@ -17,8 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate
 
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 
+import groovy.transform.CompileStatic
 import org.hibernate.search.engine.search.predicate.SearchPredicate
 import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep
 import org.hibernate.search.engine.search.predicate.dsl.PredicateFinalStep
@@ -30,6 +32,7 @@ import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory
  * Path is tokenised on the | character so if you have a resource with path "mo:model|mi:model item 1|mi:model item 2" and the allowedPathNodes contains "mo:model" then the
  * resource will be allowed.
  */
+@CompileStatic
 class IdPathSecureFilterFactory extends FilterFactory {
 
     static PredicateFinalStep createFilter(SearchPredicateFactory factory, Collection<UUID> allowedIds, Collection<PathNode> allowedPathNodes) {
@@ -40,7 +43,7 @@ class IdPathSecureFilterFactory extends FilterFactory {
             step = step.should(factory.id().matching(id))
         }
         allowedPathNodes?.each {pn ->
-            step = step.should(factory.match().field('path').matching(pn))
+            step = step.should(factory.match().field('path').matching(Path.from(pn)))
         }
         step
     }

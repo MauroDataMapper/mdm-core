@@ -1,5 +1,5 @@
 dependencies {
-implementation 'org.javassist:javassist:3.28.0-GA'
+    implementation 'org.javassist:javassist:3.28.0-GA'
     implementation project(':mdm-common')
 
     implementation group: 'org.apache.commons', name: 'commons-text', version: commonsTextVersion

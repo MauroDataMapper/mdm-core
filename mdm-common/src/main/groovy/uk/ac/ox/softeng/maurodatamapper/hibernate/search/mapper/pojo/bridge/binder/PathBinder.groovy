@@ -15,29 +15,27 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.hibernate.search.mapper.pojo.bridge
+package uk.ac.ox.softeng.maurodatamapper.hibernate.search.mapper.pojo.bridge.binder
 
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.mapper.pojo.bridge.PathBridge
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 
-import groovy.util.logging.Slf4j
-import org.hibernate.search.mapper.pojo.bridge.ValueBridge
-import org.hibernate.search.mapper.pojo.bridge.runtime.ValueBridgeFromIndexedValueContext
-import org.hibernate.search.mapper.pojo.bridge.runtime.ValueBridgeToIndexedValueContext
+import org.hibernate.search.engine.backend.types.Searchable
+import org.hibernate.search.mapper.pojo.bridge.binding.ValueBindingContext
+import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.ValueBinder
 
 /**
- * @since 13/09/2021
+ * @since 06/01/2022
  */
-@Slf4j
-@Singleton
-class PathBridge implements ValueBridge<Path, String> {
+class PathBinder implements ValueBinder {
 
     @Override
-    String toIndexedValue(Path value, ValueBridgeToIndexedValueContext context) {
-        value.toString()
-    }
-
-    @Override
-    Path fromIndexedValue(String value, ValueBridgeFromIndexedValueContext context) {
-        Path.from(value)
+    void bind(ValueBindingContext<?> context) {
+        context.bridge(Path, PathBridge.instance,
+                       context.typeFactory()
+                           .asString()
+                           .searchable(Searchable.YES)
+                           .analyzer('pipe')
+        )
     }
 }

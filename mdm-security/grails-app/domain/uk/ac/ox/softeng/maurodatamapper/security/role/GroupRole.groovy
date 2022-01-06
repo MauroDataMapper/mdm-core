@@ -77,7 +77,7 @@ class GroupRole implements MdmDomain, EditHistoryAware, SecurableResource, Compa
 
     static search = {
         name searchable: 'yes'
-        path searchable: 'yes', analyzer: 'path'
+        path valueBinder: new PathBinder()
     }
 
     GroupRole() {

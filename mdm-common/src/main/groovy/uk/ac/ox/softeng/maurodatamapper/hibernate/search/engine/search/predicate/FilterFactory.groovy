@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate
 
+import groovy.transform.CompileStatic
 import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep
 import org.hibernate.search.engine.search.predicate.dsl.PredicateFinalStep
 import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory
@@ -24,6 +25,7 @@ import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory
 /**
  * @since 25/10/2021
  */
+@CompileStatic
 class FilterFactory {
 
     static BooleanPredicateClausesStep startFilter(SearchPredicateFactory factory) {

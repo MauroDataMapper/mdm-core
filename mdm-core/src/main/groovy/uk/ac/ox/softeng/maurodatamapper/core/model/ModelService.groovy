@@ -43,7 +43,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
-import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
@@ -254,6 +253,10 @@ abstract class ModelService<K extends Model>
         }
         if (!constrainedIds) return []
         findAllReadableModels(constrainedIds, includeDeleted)
+    }
+
+    List<PathNode> getAllReadablePathNodes(Collection<UUID> readableIds) {
+        getAll(readableIds).collect {it.path.last()}
     }
 
     @Override

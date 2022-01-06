@@ -123,6 +123,7 @@ class Path {
     }
 
     Path getChildPath() {
+        if (pathNodes.size() < 1) return null
         clone().tap {
             pathNodes.removeAt(0)
         }
@@ -207,7 +208,7 @@ class Path {
         // Allows us to add 2 paths together which may share the same some of the same nodes
         Path cleanPath = parentPath.clone()
 
-        int firstSharedNode = cleanPath.pathNodes.findIndexOf { pn ->
+        int firstSharedNode = cleanPath.pathNodes.findIndexOf {pn ->
             pn == childPath.first()
         }
 
@@ -248,6 +249,12 @@ class Path {
             domains.eachWithIndex {MdmDomain domain, int i ->
                 pathNodes << new PathNode(domain.pathPrefix, domain.pathIdentifier, false)
             }
+        }
+    }
+
+    static Path fromNodes(List<PathNode> nodes) {
+        new Path().tap {
+            nodes.each {nodes << it.clone()}
         }
     }
 

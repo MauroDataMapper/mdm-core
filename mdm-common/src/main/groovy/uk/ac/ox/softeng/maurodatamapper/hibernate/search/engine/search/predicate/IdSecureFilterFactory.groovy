@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicat
 
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import org.hibernate.search.engine.search.predicate.SearchPredicate
 import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep
@@ -29,6 +30,7 @@ import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory
  * @since 27/04/2018
  */
 @Slf4j
+@CompileStatic
 class IdSecureFilterFactory extends FilterFactory {
 
     static PredicateFinalStep createFilter(SearchPredicateFactory factory, Collection<UUID> allowedIds) {
