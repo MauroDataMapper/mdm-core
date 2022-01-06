@@ -1,6 +1,10 @@
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 
+model {
+    DataModel dataModel
+}
+
 DataModel dm = dataModel as DataModel
 
 'mdm:dataModel' {
@@ -17,7 +21,7 @@ DataModel dm = dataModel as DataModel
     if (dm.finalised) 'mdm:dateFinalised'(OffsetDateTimeConverter.toString(dm.dateFinalised))
     if (dm.modelVersion) 'mdm:modelVersion' dm.modelVersion.toString()
 
-    layout '/authority/export.gml', authority: dm.authority, ns: 'mdm'
+    layout '/authority/exportAuthority.gml', authority: dm.authority, ns: 'mdm'
 
     if (dm.dataTypes) {
         'mdm:dataTypes' {
