@@ -32,7 +32,7 @@ import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import spock.lang.PendingFeature
@@ -89,9 +89,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     @Shared
     DataModelPluginMergeBuilder builder
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def checkAndSetupData() {
+    def setup() {
         log.debug('Check and setup test data')
         sessionFactory.currentSession.flush()
         folderId = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST).save(flush: true).id

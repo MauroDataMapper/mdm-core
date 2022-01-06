@@ -130,17 +130,17 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         //This is to test that when we have duplicate labels ("data class 1") at different levels then the correct
         //class is retrieved. We intentionally add the core class and its children first.
 
-        dataModel3 = new DataModel(createdByUser: admin, label: 'data model 3', folder: testFolder, authority: testAuthority)
+        dataModel3 = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'data model 3', folder: testFolder, authority: testAuthority)
         checkAndSave(dataModel3)
 
-        dataClass3_core = new DataClass(createdByUser: admin, label: 'data class core')
-        dataClass3_core_1 = new DataClass(createdByUser: admin, label: 'data class 1')
-        dataClass3_core_2 = new DataClass(createdByUser: admin, label: 'data class 2')
+        dataClass3_core = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'data class core')
+        dataClass3_core_1 = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'data class 1')
+        dataClass3_core_2 = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'data class 2')
         dataClass3_core.addToDataClasses(dataClass3_core_1)
         dataClass3_core.addToDataClasses(dataClass3_core_2)
         dataModel3.addToDataClasses(dataClass3_core)
 
-        dataClass3_1 = new DataClass(createdByUser: admin, label: 'data class 1')
+        dataClass3_1 = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'data class 1')
         dataModel3.addToDataClasses(dataClass3_1)
 
         checkAndSave(dataModel3)

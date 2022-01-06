@@ -17,8 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -387,16 +387,16 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         given:
         setupData()
 
-        DataModel copyModel = new DataModel(label: 'test', createdByUser: editor, folder: testFolder, authority: testAuthority)
+        DataModel copyModel = new DataModel(label: 'test', createdBy: StandardEmailAddress.INTEGRATION_TEST, folder: testFolder, authority: testAuthority)
 
-        DataClass top = new DataClass(createdByUser: reader1, label: 'Top', minMultiplicity: 1, maxMultiplicity: 1)
+        DataClass top = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Top', minMultiplicity: 1, maxMultiplicity: 1)
 
         Metadata metadata = new Metadata(namespace: 'Test', key: 'key', value: '1')
 
         copyModel.addToDataClasses(top)
         top.addToMetadata(metadata)
 
-        DataClass middle = new DataClass(createdByUser: reader1, label: 'Middle', minMultiplicity: 1, maxMultiplicity: 1)
+        DataClass middle = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Middle', minMultiplicity: 1, maxMultiplicity: 1)
         top.addToDataClasses(middle)
         copyModel.addToDataClasses(middle)
 
@@ -491,15 +491,15 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         //          DataClass: Integration Test Imported DataClass 2 (imported)
         //              DataClass: Integration Test Imported Child DataClass 1 (imported)
 
-        DataClass importedChild1 = new DataClass(createdByUser: reader1, label: 'Integration Test Imported Child DataClass 1', dataModel: dataModel)
+        DataClass importedChild1 = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Integration Test Imported Child DataClass 1', dataModel: dataModel)
         checkAndSave(importedChild1)
 
-        DataClass imported1 = new DataClass(createdByUser: reader1, label: 'Integration Test Imported DataClass 1', dataModel: dataModel)
-        DataClass imported2 = new DataClass(createdByUser: reader1, label: 'Integration Test Imported DataClass 2', dataModel: dataModel)
+        DataClass imported1 = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Integration Test Imported DataClass 1', dataModel: dataModel)
+        DataClass imported2 = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Integration Test Imported DataClass 2', dataModel: dataModel)
         imported2.addToImportedDataClasses(importedChild1)
         [imported1, imported2].each {checkAndSave(it)}
 
-        DataClass importingParent = new DataClass(createdByUser: editor, label: 'Integration Test Importing Parent DataClass', dataModel: dataModel)
+        DataClass importingParent = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Integration Test Importing Parent DataClass', dataModel: dataModel)
         [imported1, imported2].each {importingParent.addToImportedDataClasses(it)}
         checkAndSave(importingParent)
         dataModel.addToDataClasses(importingParent)

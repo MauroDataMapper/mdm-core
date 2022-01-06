@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
+import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
@@ -27,7 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.version.Version
 import grails.gorm.transactions.Rollback
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
@@ -84,9 +85,9 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
     @Shared
     Folder folder
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def checkAndSetupData() {
+    def setup() {
         log.debug('Check and setup test data')
         folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
         checkAndSave(folder)
@@ -116,7 +117,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
     @Transactional
     def cleanupSpec() {
         log.debug('CleanupSpec DataClassFunctionalSpec')
-        cleanUpResources(DataType, DataModel, Folder)
+        cleanUpResources(DataType, DataModel, Folder, Classifier)
     }
 
     @Override

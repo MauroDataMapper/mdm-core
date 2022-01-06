@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
@@ -48,8 +49,6 @@ import groovy.json.JsonBuilder
 import groovy.util.logging.Slf4j
 
 import java.time.OffsetDateTime
-
-import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getDEVELOPMENT
 
 /**
  * @since 15/11/2017
@@ -368,23 +367,23 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
 
         dataModel = DataModel.findById(complexDataModelId)
 
-        Annotation testAnnotation = new Annotation(label: 'propagationTest', description: 'propagationTest', createdBy: admin.emailAddress)
-        Classifier testClassifier = new Classifier(label: 'propagationTest', createdBy: admin.emailAddress).save()
-        Metadata testMetadata = new Metadata(namespace: 'propagationTest', key: 'key', value: 'value', createdBy: admin.emailAddress)
-        Rule testRule = new Rule(name: 'propagationTest', createdBy: admin.emailAddress).addToRuleRepresentations(language: 'e', representation:
-            'a+b', createdBy: admin.emailAddress)
-        SemanticLink testSemanticLink = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdByUser: admin,
+        Annotation testAnnotation = new Annotation(label: 'propagationTest', description: 'propagationTest', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        Classifier testClassifier = new Classifier(label: 'propagationTest', createdBy: StandardEmailAddress.INTEGRATION_TEST).save()
+        Metadata testMetadata = new Metadata(namespace: 'propagationTest', key: 'key', value: 'value', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        Rule testRule = new Rule(name: 'propagationTest', createdBy: StandardEmailAddress.INTEGRATION_TEST).addToRuleRepresentations(language: 'e', representation:
+            'a+b', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        SemanticLink testSemanticLink = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdBy: StandardEmailAddress.INTEGRATION_TEST,
                                                          targetMultiFacetAwareItem: DataClass.findByLabel('parent'))
         ReferenceFile testReferenceFile = new ReferenceFile(fileName: 'propagationTest', fileType: 'text', fileContents: 'hello'.bytes, fileSize:
-            'hello'.bytes.size(), createdBy: admin.emailAddress)
+            'hello'.bytes.size(), createdBy: StandardEmailAddress.INTEGRATION_TEST)
 
         // Add summary metadata with a report to the Data Model
-        SummaryMetadata dataModelSummaryMetadata = new SummaryMetadata(label: 'PropagationTest: Data Model Summary Metadata', createdBy: admin.emailAddress,
-            summaryMetadataType: SummaryMetadataType.MAP)
+        SummaryMetadata dataModelSummaryMetadata = new SummaryMetadata(label: 'PropagationTest: Data Model Summary Metadata', createdBy: StandardEmailAddress.INTEGRATION_TEST,
+                                                                       summaryMetadataType: SummaryMetadataType.MAP)
         SummaryMetadataReport dataModelSummaryMetadataReport = new SummaryMetadataReport(
             reportDate: OffsetDateTime.now(),
             reportValue: new JsonBuilder([A: 1, B: 2]).toString(),
-            createdBy: admin.emailAddress
+            createdBy: StandardEmailAddress.INTEGRATION_TEST
         )
         dataModelSummaryMetadata.addToSummaryMetadataReports(dataModelSummaryMetadataReport)
 
@@ -401,12 +400,13 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
             it.label == 'parent'
         }
 
-        SummaryMetadata parentDataClassSummaryMetadata = new SummaryMetadata(label: 'PropagationTest: Parent Data Class Summary Metadata', createdBy: admin.emailAddress,
-            summaryMetadataType: SummaryMetadataType.MAP)
+        SummaryMetadata parentDataClassSummaryMetadata = new SummaryMetadata(label: 'PropagationTest: Parent Data Class Summary Metadata',
+                                                                             createdBy: StandardEmailAddress.INTEGRATION_TEST,
+                                                                             summaryMetadataType: SummaryMetadataType.MAP)
         SummaryMetadataReport parentDataClassSummaryMetadataReport = new SummaryMetadataReport(
             reportDate: OffsetDateTime.now(),
             reportValue: new JsonBuilder([C: 3, D: 4]).toString(),
-            createdBy: admin.emailAddress
+            createdBy: StandardEmailAddress.INTEGRATION_TEST
         )
         parentDataClassSummaryMetadata.addToSummaryMetadataReports(parentDataClassSummaryMetadataReport)
         parentDataClass.addToSummaryMetadata(parentDataClassSummaryMetadata)
@@ -416,12 +416,13 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
             it.label == 'child'
         }
 
-        SummaryMetadata dataElementSummaryMetadata = new SummaryMetadata(label: 'PropagationTest: Data Element Summary Metadata', createdBy: admin.emailAddress,
-            summaryMetadataType: SummaryMetadataType.MAP)
+        SummaryMetadata dataElementSummaryMetadata = new SummaryMetadata(label: 'PropagationTest: Data Element Summary Metadata',
+                                                                         createdBy: StandardEmailAddress.INTEGRATION_TEST,
+                                                                         summaryMetadataType: SummaryMetadataType.MAP)
         SummaryMetadataReport dataElementSummaryMetadataReport = new SummaryMetadataReport(
             reportDate: OffsetDateTime.now(),
             reportValue: new JsonBuilder([E: 5, F: 6]).toString(),
-            createdBy: admin.emailAddress
+            createdBy: StandardEmailAddress.INTEGRATION_TEST
         )
         dataElementSummaryMetadata.addToSummaryMetadataReports(dataElementSummaryMetadataReport)
         dataElement.addToSummaryMetadata(dataElementSummaryMetadata)
@@ -431,12 +432,12 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
             it.label == 'string'
         }
 
-        SummaryMetadata dataTypeSummaryMetadata = new SummaryMetadata(label: 'PropagationTest: Data Type Summary Metadata', createdBy: admin.emailAddress,
-            summaryMetadataType: SummaryMetadataType.MAP)
+        SummaryMetadata dataTypeSummaryMetadata = new SummaryMetadata(label: 'PropagationTest: Data Type Summary Metadata', createdBy: StandardEmailAddress.INTEGRATION_TEST,
+                                                                      summaryMetadataType: SummaryMetadataType.MAP)
         SummaryMetadataReport dataTypeSummaryMetadataReport = new SummaryMetadataReport(
             reportDate: OffsetDateTime.now(),
             reportValue: new JsonBuilder([G: 7, H: 8]).toString(),
-            createdBy: admin.emailAddress
+            createdBy: StandardEmailAddress.INTEGRATION_TEST
         )
         dataTypeSummaryMetadata.addToSummaryMetadataReports(dataTypeSummaryMetadataReport)
         dataType.addToSummaryMetadata(dataTypeSummaryMetadata)
@@ -493,24 +494,24 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
 
         DataModel dataModel = DataModel.get(simpleDataModelId)
         dataModel.description = 'Some interesting thing we should preserve'
-        DataClass dataClass = new DataClass(createdByUser: editor, label: 'propagation parent', dataModel: dataModel, minMultiplicity: 0,
+        DataClass dataClass = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'propagation parent', dataModel: dataModel, minMultiplicity: 0,
                                             maxMultiplicity: 1)
-        DataClass dataClassChild = new DataClass(createdByUser: editor, label: 'propagation child', dataModel: dataModel, minMultiplicity: 0,
+        DataClass dataClassChild = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'propagation child', dataModel: dataModel, minMultiplicity: 0,
                                                  maxMultiplicity: 1)
         dataModel.addToDataClasses(dataClass)
         dataClass.addToDataClasses(dataClassChild)
 
-        DataType dataType = new PrimitiveType(createdBy: DEVELOPMENT, label: 'integer')
+        DataType dataType = new PrimitiveType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'integer')
         dataModel.addToDataTypes(dataType)
-        EnumerationType enumType = new EnumerationType(createdBy: DEVELOPMENT, label: 'yesnounknown')
+        EnumerationType enumType = new EnumerationType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'yesnounknown')
             .addToEnumerationValues(key: 'Y', value: 'Yes', idx: 0)
             .addToEnumerationValues(key: 'N', value: 'No', idx: 1)
             .addToEnumerationValues(key: 'U', value: 'Unknown', idx: 2)
         dataModel.addToEnumerationTypes(enumType)
-        ReferenceType refType = new ReferenceType(createdBy: DEVELOPMENT, label: 'child', referenceClass: dataClass)
+        ReferenceType refType = new ReferenceType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'child', referenceClass: dataClass)
         dataModel.addToReferenceTypes(refType)
 
-        dataClass.addToDataElements(label: 'Propagation Test DataElement', createdBy: editor.emailAddress,
+        dataClass.addToDataElements(label: 'Propagation Test DataElement', createdBy: StandardEmailAddress.INTEGRATION_TEST,
                                     dataModel: dataModel, dataClass: dataClass, dataType: dataType)
 
         checkAndSave(dataModel)
@@ -535,17 +536,17 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         basicParameters.propagateFromPreviousVersion = true
 
         dataModel = DataModel.findById(complexDataModelId)
-        DataClass dataClass = dataModel.dataClasses.find { it.label == 'parent' }
+        DataClass dataClass = dataModel.dataClasses.find {it.label == 'parent'}
 
-        Annotation testAnnotation = new Annotation(label: 'propagationTest', description: 'propagationTest', createdBy: admin.emailAddress)
-        Classifier testClassifier = new Classifier(label: 'propagationTest', createdBy: admin.emailAddress).save()
-        Metadata testMetadata = new Metadata(namespace: 'propagationTest', key: 'key', value: 'value', createdBy: admin.emailAddress)
-        Rule testRule = new Rule(name: 'propagationTest', createdBy: admin.emailAddress).addToRuleRepresentations(language: 'e', representation:
-            'a+b', createdBy: admin.emailAddress)
-        SemanticLink testSemanticLink = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdByUser: admin,
+        Annotation testAnnotation = new Annotation(label: 'propagationTest', description: 'propagationTest', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        Classifier testClassifier = new Classifier(label: 'propagationTest', createdBy: StandardEmailAddress.INTEGRATION_TEST).save()
+        Metadata testMetadata = new Metadata(namespace: 'propagationTest', key: 'key', value: 'value', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        Rule testRule = new Rule(name: 'propagationTest', createdBy: StandardEmailAddress.INTEGRATION_TEST).addToRuleRepresentations(language: 'e', representation:
+            'a+b', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        SemanticLink testSemanticLink = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdBy: StandardEmailAddress.INTEGRATION_TEST,
                                                          targetMultiFacetAwareItem: DataClass.findByLabel('child'))
         ReferenceFile testReferenceFile = new ReferenceFile(fileName: 'propagationTest', fileType: 'text', fileContents: 'hello'.bytes, fileSize:
-            'hello'.bytes.size(), createdBy: admin.emailAddress)
+            'hello'.bytes.size(), createdBy: StandardEmailAddress.INTEGRATION_TEST)
 
         dataClass.addToAnnotations(testAnnotation)
         dataClass.addToClassifiers(testClassifier)

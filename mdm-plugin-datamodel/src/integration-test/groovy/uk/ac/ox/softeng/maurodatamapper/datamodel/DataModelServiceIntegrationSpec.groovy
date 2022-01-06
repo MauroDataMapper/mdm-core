@@ -94,7 +94,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     }
 
     void setupDataModelWithSummaryMetadata() {
-        DataModel dataModel = new DataModel(createdByUser: editor, label: 'Data Model having Summary Metadata', type: DataModelType.DATA_ASSET, folder: testFolder,
+        DataModel dataModel = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Data Model having Summary Metadata', type: DataModelType.DATA_ASSET, folder: testFolder,
             authority: testAuthority)
 
         checkAndSave(dataModel)
@@ -111,7 +111,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dataModel.addToSummaryMetadata(dataModelSummaryMetadata)
 
         // Add summary metadata with report to data type
-        DataType dataType = new PrimitiveType(createdByUser: admin, label: 'Data Type having Summary Metadata')
+        DataType dataType = new PrimitiveType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Data Type having Summary Metadata')
         dataModel.addToDataTypes(dataType)
         checkAndSave(dataModel)
         SummaryMetadata dataTypeSummaryMetadata = new SummaryMetadata(label: 'Data Type Summary Metadata', createdBy: editor.emailAddress,
@@ -125,7 +125,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dataType.addToSummaryMetadata(dataTypeSummaryMetadata)
 
         // Add summary metadata with report to data class
-        DataClass dataClass = new DataClass(createdByUser: editor, label: 'Data Class having Summary Metadata', dataModel: dataModel)
+        DataClass dataClass = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Data Class having Summary Metadata', dataModel: dataModel)
         checkAndSave(dataClass)
         SummaryMetadata dataClassSummaryMetadata = new SummaryMetadata(label: 'Data Class Summary Metadata', createdBy: editor.emailAddress,
             summaryMetadataType: SummaryMetadataType.MAP)
@@ -141,7 +141,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         checkAndSave(dataModel)
 
         // Add summary metadata with report to data element
-        DataElement dataElement = new DataElement(createdByUser: editor, label: 'Data Element having Summary Metadata', dataType: dataType)
+        DataElement dataElement = new DataElement(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Data Element having Summary Metadata', dataType: dataType)
         dataClass.addToDataElements(dataElement)
         checkAndSave(dataElement)
 
