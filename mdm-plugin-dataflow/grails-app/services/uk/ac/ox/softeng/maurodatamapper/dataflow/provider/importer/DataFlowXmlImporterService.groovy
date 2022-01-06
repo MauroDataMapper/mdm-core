@@ -26,9 +26,9 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import asset.pipeline.grails.AssetResourceLocator
 import groovy.util.logging.Slf4j
-import groovy.util.slurpersupport.GPathResult
-import groovy.util.slurpersupport.NodeChild
-import groovy.util.slurpersupport.NodeChildren
+import groovy.xml.slurpersupport.GPathResult
+import groovy.xml.slurpersupport.NodeChild
+import groovy.xml.slurpersupport.NodeChildren
 import org.springframework.core.io.Resource
 
 import java.nio.charset.Charset

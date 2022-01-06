@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.test.xml.evalutator.IgnoreOrderDifferenc
 import uk.ac.ox.softeng.maurodatamapper.test.xml.selector.CustomElementSelector
 
 import groovy.util.logging.Slf4j
+import groovy.xml.XmlParser
 import groovy.xml.XmlUtil
 import org.xmlunit.builder.DiffBuilder
 import org.xmlunit.builder.Input

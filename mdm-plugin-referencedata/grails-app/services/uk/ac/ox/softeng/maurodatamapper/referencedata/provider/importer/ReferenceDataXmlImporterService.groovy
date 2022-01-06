@@ -25,7 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.paramete
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import groovy.util.logging.Slf4j
-import groovy.util.slurpersupport.GPathResult
+import groovy.xml.slurpersupport.GPathResult
 
 import java.nio.charset.Charset
 

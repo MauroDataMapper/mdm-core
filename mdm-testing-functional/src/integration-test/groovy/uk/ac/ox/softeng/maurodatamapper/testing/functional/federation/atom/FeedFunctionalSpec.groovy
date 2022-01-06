@@ -22,7 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
-import groovy.util.slurpersupport.GPathResult
+import groovy.xml.slurpersupport.GPathResult
 import io.micronaut.http.HttpResponse
 
 import static io.micronaut.http.HttpStatus.CREATED

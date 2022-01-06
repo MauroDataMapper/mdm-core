@@ -17,8 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer
 
-import groovy.util.slurpersupport.NodeChild
-import groovy.util.slurpersupport.NodeChildren
+import groovy.xml.slurpersupport.NodeChild
+import groovy.xml.slurpersupport.NodeChildren
 
 /**
  * @since 08/10/2020
