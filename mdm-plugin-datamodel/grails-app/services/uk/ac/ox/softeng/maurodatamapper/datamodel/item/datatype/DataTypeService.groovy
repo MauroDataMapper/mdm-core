@@ -26,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -56,6 +57,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     ModelDataTypeService modelDataTypeService
     SummaryMetadataService summaryMetadataService
     EnumerationValueService enumerationValueService
+    DataModelService dataModelService
 
     @Override
     DataType get(Serializable id) {
@@ -211,7 +213,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
             log.debug('Performing lucene label search')
             long start = System.currentTimeMillis()
-            results = DataType.luceneLabelSearch(DataType, searchTerm, readableIds.toList()).results
+            results = DataType.luceneLabelSearch(DataType, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds)).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
         results

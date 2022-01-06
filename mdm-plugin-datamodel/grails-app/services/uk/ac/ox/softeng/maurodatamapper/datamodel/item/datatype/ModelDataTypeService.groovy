@@ -26,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
 import uk.ac.ox.softeng.maurodatamapper.path.Path
@@ -44,6 +45,7 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> implements Su
 
     SummaryMetadataService summaryMetadataService
     DataTypeService dataTypeService
+    DataModelService dataModelService
     PathService pathService
 
     @Override
@@ -129,7 +131,7 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> implements Su
         long start = System.currentTimeMillis()
         List<ModelDataType> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            results = ModelDataType.luceneLabelSearch(ModelDataType, searchTerm, readableIds.toList()).results
+            results = ModelDataType.luceneLabelSearch(ModelDataType, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds)).results
         }
         log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         results

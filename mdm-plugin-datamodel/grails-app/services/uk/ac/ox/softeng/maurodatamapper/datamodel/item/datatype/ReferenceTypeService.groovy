@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -40,6 +41,7 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> implements Su
 
     SummaryMetadataService summaryMetadataService
     DataTypeService dataTypeService
+    DataModelService dataModelService
 
     @Override
     boolean handlesPathPrefix(String pathPrefix) {
@@ -160,7 +162,7 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> implements Su
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
             log.debug('Performing lucene label search')
             long start = System.currentTimeMillis()
-            results = ReferenceType.luceneLabelSearch(ReferenceType, searchTerm, readableIds.toList()).results
+            results = ReferenceType.luceneLabelSearch(ReferenceType, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds)).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
         results

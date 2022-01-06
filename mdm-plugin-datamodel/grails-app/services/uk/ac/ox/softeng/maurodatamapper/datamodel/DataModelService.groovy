@@ -812,7 +812,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
             log.debug('Performing lucene label search')
             long start = System.currentTimeMillis()
-            results = DataModel.luceneLabelSearch(DataModel, searchTerm, readableIds.toList()).results
+            results = DataModel.luceneLabelSearch(DataModel, searchTerm, readableIds.toList(), []).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
 

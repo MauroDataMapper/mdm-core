@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
@@ -36,6 +37,7 @@ import groovy.util.logging.Slf4j
 class EnumerationValueService extends ModelItemService<EnumerationValue> implements SummaryMetadataAwareService {
 
     SummaryMetadataService summaryMetadataService
+    DataModelService dataModelService
 
     @Override
     EnumerationValue get(Serializable id) {
@@ -144,7 +146,7 @@ class EnumerationValueService extends ModelItemService<EnumerationValue> impleme
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
             log.debug('Performing lucene label search')
             long start = System.currentTimeMillis()
-            results = EnumerationValue.luceneLabelSearch(EnumerationValue, searchTerm, readableIds.toList()).results
+            results = EnumerationValue.luceneLabelSearch(EnumerationValue, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds)).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
 

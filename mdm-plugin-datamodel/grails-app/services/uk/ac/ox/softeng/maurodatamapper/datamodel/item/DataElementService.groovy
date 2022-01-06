@@ -24,10 +24,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
-import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityPair
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
@@ -63,7 +63,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     DataClassService dataClassService
     DataTypeService dataTypeService
     SummaryMetadataService summaryMetadataService
-    PathService pathService
+    DataModelService dataModelService
 
     @Override
     DataElement get(Serializable id) {
@@ -208,7 +208,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
             log.debug('Performing lucene label search')
             long start = System.currentTimeMillis()
-            results = DataElement.luceneLabelSearch(DataElement, searchTerm, readableIds.toList()).results
+            results = DataElement.luceneLabelSearch(DataElement, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds)).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
 
@@ -443,7 +443,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
             .where { lsf ->
                 BooleanPredicateClausesStep boolStep = lsf
                     .bool()
-                    .filter(IdPathSecureFilterFactory.createFilter(lsf, [dataModelToSearch.id]))
+                    .filter(IdPathSecureFilterFactory.createFilter(lsf, [dataModelToSearch.id], [dataModelToSearch.path.last()]))
                     .filter(FilterFactory.mustNot(lsf, lsf.id().matching(dataElementToCompare.id)))
 
                 moreLikeThisQueries.each { mlt ->
