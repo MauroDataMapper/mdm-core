@@ -2588,6 +2588,41 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         !responseBody().items.find {it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource'}
         responseBody().items.find {it.namespace == 'functional.test' && it.key == 'addToSourceOnly'}
 
+        when:
+        Map targetReferenceDataModelMap = mergeData.targetMap.referenceDataModel
+        GET("referenceDataModels/$targetReferenceDataModelMap.referenceDataModelId", MAP_ARG, true)
+
+        then:
+        responseBody().description == 'DescriptionLeft'
+
+        when:
+        GET("referenceDataModels/$targetReferenceDataModelMap.referenceDataModelId/referenceDataElements", MAP_ARG, true)
+
+        then:
+        responseBody().items.label as Set == ['modifyAndModifyReturningDifference', 'modifyLeftOnly',
+                                              'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly',
+                                              'modifyRightOnly', 'addRightOnly', 'modifyAndModifyReturningNoDifference',
+                                              'addAndAddReturningNoDifference'] as Set
+        responseBody().items.find { rde -> rde.label == 'modifyAndDelete' }.description == 'Description'
+        responseBody().items.find { rde -> rde.label == 'addAndAddReturningDifference' }.description == 'DescriptionLeft'
+        responseBody().items.find { rde -> rde.label == 'modifyAndModifyReturningDifference' }.description == 'DescriptionLeft'
+        responseBody().items.find { rde -> rde.label == 'modifyLeftOnly' }.description == 'Description'
+
+        when:
+        GET("referenceDataModels/$targetReferenceDataModelMap.referenceDataModelId/referenceDataTypes", MAP_ARG, true)
+
+        then:
+        responseBody().items.label as Set == ['addLeftOnly', 'commonReferenceDataType'] as Set
+
+        when:
+        GET("referenceDataModels/$targetReferenceDataModelMap.referenceDataModelId/metadata", MAP_ARG, true)
+
+        then:
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyOnSource' }.value == 'source has modified this'
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyAndDelete' }.value == 'source has modified this also'
+        !responseBody().items.find { it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource' }
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'addToSourceOnly' }
+
         cleanup:
         builder.cleanupTestMergeData(mergeData)
     }
@@ -2774,6 +2809,41 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         responseBody().items.find {it.namespace == 'functional.test' && it.key == 'modifyAndDelete'}.value == 'source has modified this also'
         !responseBody().items.find {it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource'}
         responseBody().items.find {it.namespace == 'functional.test' && it.key == 'addToSourceOnly'}
+
+        when:
+        Map targetReferenceDataModelMap = mergeData.targetMap.referenceDataModel
+        GET("referenceDataModels/$targetReferenceDataModelMap.referenceDataModelId", MAP_ARG, true)
+
+        then:
+        responseBody().description == 'DescriptionLeft'
+
+        when:
+        GET("referenceDataModels/$targetReferenceDataModelMap.referenceDataModelId/referenceDataElements", MAP_ARG, true)
+
+        then:
+        responseBody().items.label as Set == ['modifyAndModifyReturningDifference', 'modifyLeftOnly',
+                                              'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly',
+                                              'modifyRightOnly', 'addRightOnly', 'modifyAndModifyReturningNoDifference',
+                                              'addAndAddReturningNoDifference'] as Set
+        responseBody().items.find { rde -> rde.label == 'modifyAndDelete' }.description == 'Description'
+        responseBody().items.find { rde -> rde.label == 'addAndAddReturningDifference' }.description == 'DescriptionLeft'
+        responseBody().items.find { rde -> rde.label == 'modifyAndModifyReturningDifference' }.description == 'DescriptionLeft'
+        responseBody().items.find { rde -> rde.label == 'modifyLeftOnly' }.description == 'Description'
+
+        when:
+        GET("referenceDataModels/$targetReferenceDataModelMap.referenceDataModelId/referenceDataTypes", MAP_ARG, true)
+
+        then:
+        responseBody().items.label as Set == ['addLeftOnly', 'commonReferenceDataType'] as Set
+
+        when:
+        GET("referenceDataModels/$targetReferenceDataModelMap.referenceDataModelId/metadata", MAP_ARG, true)
+
+        then:
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyOnSource' }.value == 'source has modified this'
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'modifyAndDelete' }.value == 'source has modified this also'
+        !responseBody().items.find { it.namespace == 'functional.test' && it.key == 'metadataDeleteFromSource' }
+        responseBody().items.find { it.namespace == 'functional.test' && it.key == 'addToSourceOnly' }
 
         cleanup:
         builder.cleanupTestMergeData(mergeData)

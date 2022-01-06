@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.testing.functional.merge
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.BaseTestMergeBuilder
 import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.DataModelPluginMergeBuilder
+import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.ReferenceDataPluginMergeBuilder
 import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.TerminologyPluginMergeBuilder
 import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.TestMergeData
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
@@ -36,6 +37,7 @@ import static io.micronaut.http.HttpStatus.OK
 class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
 
     DataModelPluginMergeBuilder dataModelPluginMergeBuilder
+    ReferenceDataPluginMergeBuilder referenceDataPluginMergeBuilder
     TerminologyPluginMergeBuilder terminologyPluginMergeBuilder
 
     UserAccessAndPermissionChangingFunctionalSpec fullFunctionalSpec
@@ -45,6 +47,7 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         this.fullFunctionalSpec = functionalSpec
         dataModelPluginMergeBuilder = new DataModelPluginMergeBuilder(functionalSpec)
         terminologyPluginMergeBuilder = new TerminologyPluginMergeBuilder(functionalSpec)
+        referenceDataPluginMergeBuilder = new ReferenceDataPluginMergeBuilder(functionalSpec)
     }
 
     Map buildComplexModelsForBranching() {
@@ -72,16 +75,18 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         String terminologyCa = terminologyPluginMergeBuilder.buildCommonAncestorTerminology(commonAncestorId)
         String codeSetCa = terminologyPluginMergeBuilder.buildCommonAncestorCodeSet(commonAncestorId, terminologyCa)
         dataModelPluginMergeBuilder.buildCommonAncestorModelDataType(dataModelCa, terminologyCa)
+        String referenceDataModelCa = referenceDataPluginMergeBuilder.buildCommonAncestorReferenceDataModel(commonAncestorId)
 
         // Finalise
         PUT("versionedFolders/$commonAncestorId/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
 
         [
-            commonAncestorId: commonAncestorId,
-            dataModelCaId   : dataModelCa,
-            terminologyCaId : terminologyCa,
-            codeSetCaId     : codeSetCa
+            commonAncestorId     : commonAncestorId,
+            dataModelCaId        : dataModelCa,
+            terminologyCaId      : terminologyCa,
+            codeSetCaId          : codeSetCa,
+            referenceDataModelCa : referenceDataModelCa
         ]
     }
 
@@ -120,6 +125,7 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         dataModelPluginMergeBuilder.buildCommonAncestorModelDataType(dataModelCaId, terminologyCa)
         dataModelPluginMergeBuilder.buildCommonAncestorModelDataType(dataModel2Id, terminologyCa)
         dataModelPluginMergeBuilder.buildCommonAncestorModelDataType(dataModel3Id, terminologyCa)
+        String referenceDataModelCaId = referenceDataPluginMergeBuilder.buildCommonAncestorReferenceDataModel(commonAncestorId)
 
         // Finalise
         PUT("versionedFolders/$commonAncestorId/finalise", [versionChangeType: 'Major'])
@@ -131,7 +137,8 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
             terminologyCaId : terminologyCa,
             codeSetCaId     : codeSetCa,
             dataModel2Id    : dataModel2Id,
-            dataModel3Id    : dataModel3Id
+            dataModel3Id    : dataModel3Id,
+            referenceDataModelCaId:     referenceDataModelCaId
         ]
     }
 
@@ -197,6 +204,10 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         targetMap.codeSet = terminologyPluginMergeBuilder.modifyTargetCodeSet(target, '$main', true,
                                                                               'fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|',
                                                                               'fo:Sub Folder in VersionedFolder|')
+
+        sourceMap.referenceDataModel = referenceDataPluginMergeBuilder.modifySourceReferenceDataModel(source)
+        targetMap.referenceDataModel = referenceDataPluginMergeBuilder.modifyTargetReferenceDataModel(target)
+
         sourceMap.subFolderId = getIdFromPath(source, 'fo:Sub Folder in VersionedFolder')
         sourceMap.subFolder2Id = getIdFromPath(source, 'fo:Sub Folder 2 in VersionedFolder')
         sourceMap.subSubFolderId = getIdFromPath(source, 'fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder')
@@ -278,6 +289,9 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
 
         sourceMap.dataModel = dataModelPluginMergeBuilder.modifySourceDataModel(source, '1', '', simpleTerminologyId, complexTerminologyId)
         targetMap.dataModel = dataModelPluginMergeBuilder.modifyTargetDataModel(target)
+
+        sourceMap.referenceDataModel = referenceDataPluginMergeBuilder.modifySourceReferenceDataModel(source)
+        targetMap.referenceDataModel = referenceDataPluginMergeBuilder.modifyTargetReferenceDataModel(target)
 
         sourceMap.terminology = terminologyPluginMergeBuilder.modifySourceTerminology(source)
         targetMap.terminology = terminologyPluginMergeBuilder.modifyTargetTerminology(target)
