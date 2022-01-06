@@ -1238,7 +1238,6 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(id)
     }
 
-    @PendingFeature(reason = "No such property: referenceDataType.label at ModelDataService:968 See gh-222")
     void 'MD06 : test finding merge diff on a branch which has already been merged'() {
         given:
         TestMergeData mergeData = builder.buildComplexModelsForMerging(folderId.toString())
@@ -1256,7 +1255,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         verifyResponse OK, response
 
         when: 'add RDE to existing RDM after a merge'
-        POST("$mergeData.sourceMap.referenceDataModelId/referenceDataElements", [label: 'addAnotherLeftToAddLeftOnly', referenceDataType: sourceMap.commonReferenceDataTypeId])
+        POST("$mergeData.sourceMap.referenceDataModelId/referenceDataElements", [label: 'addAnotherLeftToAddLeftOnly', referenceDataType: mergeData.sourceMap.commonReferenceDataTypeId])
         verifyResponse CREATED, response
 
         log.debug('-------------- Second Merge Request ------------------')
@@ -1265,7 +1264,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         GET("$mergeData.source/mergeDiff/$mergeData.target?isLegacy=false", STRING_ARG)
 
         then: 'the merge diff is correct'
-        verifyJsonResponse OK, expectedMergeDiffJson
+        verifyJsonResponse OK, expectedSecondMergeDiffJson
 
         cleanup:
         cleanUpData(mergeData.source)
@@ -1969,7 +1968,6 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(id)
     }
 
-    @PendingFeature(reason = "No such property: referenceDataType.label at ModelDataService:568 See gh-222")
     void 'MI08 : test merging diff into draft model using new style'() {
         given:
         TestMergeData mergeData = builder.buildComplexModelsForMerging(folderId.toString())
@@ -2010,23 +2008,11 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         responseBody().items.find { rde -> rde.label == 'modifyAndModifyReturningDifference' }.description == 'DescriptionLeft'
         responseBody().items.find { rde -> rde.label == 'modifyLeftOnly' }.description == 'Description'
 
-        /*when:
-        GET("$mergeData.target/dataClasses/$mergeData.targetMap.existingClass/dataClasses")
-
-        then:
-        responseBody().items.label as Set == ['addRightToExistingClass', 'addLeftToExistingClass'] as Set
-
-        when:
-        GET("$mergeData.target/dataClasses/$mergeData.targetMap.existingClass/dataElements")
-
-        then:
-        responseBody().items.label as Set == ['addLeftOnly'] as Set*/
-
         when:
         GET("$mergeData.target/referenceDataTypes")
 
         then:
-        responseBody().items.label as Set == ['addLeftOnly'] as Set
+        responseBody().items.label as Set == ['addLeftOnly', 'commonReferenceDataType'] as Set
 
         when:
         GET("${mergeData.target}/metadata")
@@ -2157,7 +2143,6 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(id)
     }
 
-    @PendingFeature(reason = "No such property: referenceDataType.label at ModelDataService:568 See gh-222")
     void 'MI11 : test merge into on a branch which has already been merged'() {
         given:
         TestMergeData mergeData = builder.buildComplexModelsForMerging(folderId.toString())
@@ -2173,6 +2158,13 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
                 patches : patches]
         ])
         verifyResponse OK, response
+
+        when: 'get the RDEs on the target after the first merge'
+        GET("$mergeData.target/referenceDataElements")
+
+        then: 'there are 9 RDEs'
+        verifyResponse(OK, response)
+        responseBody().count == 9
 
         when: 'add RDE after a merge'
         POST("$mergeData.sourceMap.referenceDataModelId/referenceDataElements", [
@@ -2202,27 +2194,20 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         then:
         verifyResponse OK, response
 
-        when:
-        GET("$mergeData.target/referenceDataElements/$mergeData.targetMap.referenceDataElements")
-
-        then:
-        verifyResponse(OK, response)
-        responseBody().count == 1
-
-        when:
+        when: 'get the RDEs on the target after the second merge'
         GET("$mergeData.target/referenceDataElements")
 
-        then:
+        then: 'there are now 10 RDEs'
         verifyResponse(OK, response)
+        responseBody().count == 10
 
         when:
-        String addLeftOnly = responseBody().items.find { it.label == 'addLeftOnly' }.id
-        GET("$mergeData.targetMap.referenceDataModelId/referenceDataElements/$addLeftOnly/referenceDataElements")
+        String addLeftOnly = responseBody().items.find { it.label == 'addAnotherLeftReferenceDataElement' }.id
+        GET("$mergeData.targetMap.referenceDataModelId/referenceDataElements/$addLeftOnly")
 
         then:
         verifyResponse(OK, response)
-        responseBody().count == 1
-        responseBody().items.any { it.label == 'addAnotherLeftToAddLeftOnly' }
+        responseBody().label == 'addAnotherLeftReferenceDataElement'
 
         cleanup:
         cleanUpData(mergeData.source)
@@ -4459,5 +4444,23 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
   ]
 }
 '''
+    }
+
+    String getExpectedSecondMergeDiffJson() {
+        '''{
+  "sourceId": "${json-unit.matches:id}",
+  "targetId": "${json-unit.matches:id}",
+  "path": "rdm:Functional Test ReferenceData 1$source",
+  "label": "Functional Test ReferenceData 1",
+  "count": 1,
+  "diffs": [
+    {
+      "path": "rdm:Functional Test ReferenceData 1$source|rde:addAnotherLeftToAddLeftOnly",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
+    }
+  ]
+}'''
     }
 }
