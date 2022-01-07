@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.version.Version
 import groovy.transform.Sortable
 
 import java.time.OffsetDateTime
+import java.util.regex.Pattern
 
 @Sortable(includes = ['modelLabel', 'modelVersion'])
 class PublishedModel {
@@ -58,9 +59,10 @@ class PublishedModel {
     }
 
     void setTitle(String label) {
-        String version = label.find(Version.VERSION_PATTERN)
+        Pattern titleVersionPattern = ~/ $Version.VERSION_PATTERN$/
+        String version = label.find(titleVersionPattern)
         if (version) {
-            modelVersion = Version.from(version)
+            modelVersion = Version.from(version.trim())
             modelLabel = (label - version).trim()
         } else {
             modelLabel = label
