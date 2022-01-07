@@ -38,6 +38,11 @@ class SemanticLinkService implements MultiFacetItemAwareService<SemanticLink> {
         SemanticLink.get(id)
     }
 
+    @Override
+    List<SemanticLink> getAll(Collection<UUID> resourceIds) {
+        SemanticLink.getAll(resourceIds)
+    }
+
     List<SemanticLink> list(Map args) {
         SemanticLink.list(args)
     }

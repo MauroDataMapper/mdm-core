@@ -46,6 +46,11 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
         VersionLink.get(id)
     }
 
+    @Override
+    List<VersionLink> getAll(Collection<UUID> resourceIds) {
+        VersionLink.getAll(resourceIds)
+    }
+
     List<VersionLink> list(Map args) {
         VersionLink.list(args)
     }

@@ -41,6 +41,8 @@ trait MdmDomainService<K extends MdmDomain> implements AnonymisableService{
 
     abstract K get(Serializable id)
 
+    abstract List<K> getAll(Collection<UUID> resourceIds)
+
     abstract List<K> list(Map args)
 
     abstract Long count()

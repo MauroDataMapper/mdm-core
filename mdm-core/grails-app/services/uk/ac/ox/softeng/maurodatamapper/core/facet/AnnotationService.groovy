@@ -41,6 +41,11 @@ class AnnotationService implements MultiFacetItemAwareService<Annotation> {
         Annotation.get(id)
     }
 
+    @Override
+    List<Annotation> getAll(Collection<UUID> resourceIds) {
+        Annotation.getAll(resourceIds)
+    }
+
     List<Annotation> list(Map args) {
         Annotation.list(args)
     }

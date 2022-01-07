@@ -192,11 +192,11 @@ class PathService {
         ids
     }
 
-    List<Path> findAllSecuredPathsForIds(List<UUID> ids) {
-        securableResourceServices
+    List<Path> findAllPathsForIds(List<UUID> ids) {
+        domainServices
             .collectMany {it.getAll(ids) ?: []}
             .findAll()
-            .collect {SecurableResource sr -> sr.path}
+            .collect {MdmDomain d -> d.path}
     }
 
     MdmDomainService findDomainServiceForPrefix(String prefix) {

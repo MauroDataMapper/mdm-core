@@ -31,6 +31,11 @@ class RuleRepresentationService implements MdmDomainService<RuleRepresentation> 
         RuleRepresentation.get(id)
     }
 
+    @Override
+    List<RuleRepresentation> getAll(Collection<UUID> resourceIds) {
+        RuleRepresentation.getAll(resourceIds)
+    }
+
     List<RuleRepresentation> list(Map args) {
         RuleRepresentation.list(args)
     }

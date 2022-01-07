@@ -31,6 +31,11 @@ class ReferenceFileService implements CatalogueFileService<ReferenceFile>, Multi
         ReferenceFile.get(id)
     }
 
+    @Override
+    List<ReferenceFile> getAll(Collection<UUID> resourceIds) {
+        ReferenceFile.getAll(resourceIds)
+    }
+
     List<ReferenceFile> list(Map args) {
         ReferenceFile.list(args)
     }

@@ -36,6 +36,11 @@ class SummaryMetadataService implements MultiFacetItemAwareService<SummaryMetada
         SummaryMetadata.get(id)
     }
 
+    @Override
+    List<SummaryMetadata> getAll(Collection<UUID> resourceIds) {
+        SummaryMetadata.getAll(resourceIds)
+    }
+
     List<SummaryMetadata> list(Map args) {
         SummaryMetadata.list(args)
     }

@@ -131,7 +131,7 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
 
         domainsToSearch.collect { domain ->
             log.debug('Domain searching {}', domain)
-            domain.luceneLabelSearch(domain, searchTerm, owningIds, pathService.findAllSecuredPathsForIds(owningIds).collect {it.last()}, [:], additional).results
+            domain.luceneLabelSearch(domain, searchTerm, owningIds, pathService.findAllPathsForIds(owningIds).collect {it.last()}, [:], additional).results
         }.flatten().findAll() as List<K>
 
     }
@@ -141,7 +141,7 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
                                             @DelegatesTo(HibernateSearchApi) Closure additional = null) {
         domainsToSearch.collect { domain ->
             log.debug('Domain searching {}', domain)
-            domain.luceneStandardSearch(domain, searchTerm, owningIds, pathService.findAllSecuredPathsForIds(owningIds).collect {it.last()}, [:], additional).results
+            domain.luceneStandardSearch(domain, searchTerm, owningIds, pathService.findAllPathsForIds(owningIds).collect {it.last()}, [:], additional).results
         }.flatten().findAll() as List<K>
     }
 
@@ -151,7 +151,7 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
                                           @DelegatesTo(HibernateSearchApi) Closure customSearch) {
         domainsToSearch.collect { domain ->
             log.debug('Domain searching {}', domain)
-            domain.luceneCustomSearch(domain, owningIds, pathService.findAllSecuredPathsForIds(owningIds).collect {it.last()}, [:], additional, customSearch).results
+            domain.luceneCustomSearch(domain, owningIds, pathService.findAllPathsForIds(owningIds).collect {it.last()}, [:], additional, customSearch).results
         }.flatten().findAll() as List<K>
     }
 }

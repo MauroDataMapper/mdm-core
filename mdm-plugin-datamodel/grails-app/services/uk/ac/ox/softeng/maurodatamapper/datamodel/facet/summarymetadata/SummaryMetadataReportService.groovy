@@ -41,6 +41,11 @@ class SummaryMetadataReportService implements MdmDomainService<SummaryMetadataRe
         SummaryMetadataReport.get(id)
     }
 
+    @Override
+    List<SummaryMetadataReport> getAll(Collection<UUID> resourceIds) {
+        SummaryMetadataReport.getAll(resourceIds)
+    }
+
     List<SummaryMetadataReport> list(Map args) {
         SummaryMetadataReport.list(args)
     }

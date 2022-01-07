@@ -40,6 +40,11 @@ class RuleService implements MultiFacetItemAwareService<Rule> {
         Rule.get(id)
     }
 
+    @Override
+    List<Rule> getAll(Collection<UUID> resourceIds) {
+        Rule.getAll(resourceIds)
+    }
+
     List<Rule> list(Map args) {
         Rule.list(args)
     }

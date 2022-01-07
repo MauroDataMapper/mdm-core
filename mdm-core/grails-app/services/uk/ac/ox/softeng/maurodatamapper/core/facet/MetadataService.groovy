@@ -46,6 +46,11 @@ class MetadataService implements MultiFacetItemAwareService<Metadata> {
         Metadata.get(id)
     }
 
+    @Override
+    List<Metadata> getAll(Collection<UUID> resourceIds) {
+        Metadata.getAll(resourceIds)
+    }
+
     List<Metadata> list(Map args) {
         Metadata.list(args)
     }
