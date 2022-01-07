@@ -64,11 +64,10 @@ class ModelDataType extends DataType<ModelDataType> {
                 // Aside from branch and version, is the model pointed to by the modelDataType really different by path?
                 Path thisResourcePath = Path.from(thisResourceModel.folder, thisResourceModel)
                 Path otherResourcePath = Path.from(otherResourceModel.folder, otherResourceModel)
-                if (!thisResourcePath.equalsIgnoringModelIdentifier(otherResourcePath)) {
+                if (!thisResourcePath.matches(otherResourcePath, thisResourceModel.modelIdentifier)) {
                     diff.
                     appendString('modelResourceId', this.modelResourceId.toString(), otherDataType.modelResourceId.toString()).
                     appendString('modelResourceDomainType', this.modelResourceDomainType, otherDataType.modelResourceDomainType)
-                    //.appendString('modelResourcePath', thisResourcePath.toString(), otherResourcePath.toString()) //TODO
                 }
             }
         }

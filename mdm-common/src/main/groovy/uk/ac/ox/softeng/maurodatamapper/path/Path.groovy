@@ -138,10 +138,10 @@ class Path {
         }
     }
 
-    boolean matches(Path otherPath) {
+    boolean matches(Path otherPath, String modelIdentifierOverride = null) {
         if (size() != otherPath.size()) return false
         for (i in 0..<size()) {
-            if (!this[i].matches(otherPath[i])) return false
+            if (!this[i].matches(otherPath[i], modelIdentifierOverride)) return false
         }
         true
     }
@@ -153,19 +153,6 @@ class Path {
         Path path = (Path) o
 
         if (pathNodes != path.pathNodes) return false
-
-        return true
-    }
-
-    boolean equalsIgnoringModelIdentifier(o) {
-        if (this.is(o)) return true
-        if (getClass() != o.class) return false
-
-        if (size() != o.size()) return false
-
-        for (i in 0..<size()) {
-            if (!this[i].equalsIgnoringModelIdentifier(o[i])) return false
-        }
 
         return true
     }

@@ -49,4 +49,8 @@ trait VersionAware {
         finalised = false
         branchName = VersionAwareConstraints.DEFAULT_BRANCH_NAME
     }
+
+    String getModelIdentifier() {
+        "${modelVersion ?: branchName}"
+    }
 }
