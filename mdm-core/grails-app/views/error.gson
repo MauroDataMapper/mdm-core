@@ -14,11 +14,11 @@ model {
     Exception exception
     Errors errors
     List<Errors> errorsList
-
+    HttpStatus httpStatus
 }
 
 Throwable extractedException = findCoreException(exception)
-HttpStatus httpStatus = getExceptionStatus(extractedException) ?: INTERNAL_SERVER_ERROR
+HttpStatus determinedHttpStatus = getExceptionStatus(extractedException) ?: httpStatus ?: INTERNAL_SERVER_ERROR
 
 if (!errors) {
     if (extractedException instanceof ValidationException) errors = ((ValidationException) extractedException).errors
@@ -27,19 +27,19 @@ if (!errors) {
     }
 }
 
-if (errors || errorsList) httpStatus = UNPROCESSABLE_ENTITY
+if (errors || errorsList) determinedHttpStatus = UNPROCESSABLE_ENTITY
 
-response.status httpStatus
+response.status determinedHttpStatus
 
 json {
-    status httpStatus.value()
-    reason httpStatus.reasonPhrase
+    status determinedHttpStatus.value()
+    reason determinedHttpStatus.reasonPhrase
 
     errorCode errorCode ?: getExceptionErrorCode(extractedException) ?: 'JS--'
     message message ?: getExceptionMessage(extractedException) ?: 'JS-- - Unknown error'
     path request.getUri()
 
-    devMode Environment.isDevelopmentMode()
+    if (Environment.current != Environment.PRODUCTION) environment Environment.current
 
     version Holders.getPluginManager()?.getGrailsPlugin('mdmCore')?.version ?: 'Unknown Version'
 
@@ -47,7 +47,7 @@ json {
     if (errors) validationErrors tmpl."/errors/errors"(errors)
     else if (errorsList) validationErrors tmpl."/errors/errors"(errorsList)
 
-    else if (httpStatus != BAD_REQUEST) {
+    else if (determinedHttpStatus != BAD_REQUEST) {
         // SQL Exceptions are iterable so we need to only show the first
         if (extractedException instanceof SQLException) {
             exception tmpl.'/errors/exception'(exception: extractedException)

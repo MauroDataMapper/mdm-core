@@ -42,7 +42,7 @@ class ImporterControllerSpec extends BaseUnitSpec implements ControllerUnitTest<
 
         then:
         verifyResponse(HttpStatus.BAD_REQUEST)
-        response.errorMessage == 'Namespace, name and version must be provided to identify individual importers'
+        model.message == 'Namespace, name and version must be provided to identify individual importers'
     }
 
     void 'test the importer parameters are returned correctly'() {

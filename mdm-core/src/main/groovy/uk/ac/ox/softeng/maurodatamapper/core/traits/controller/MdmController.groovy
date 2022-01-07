@@ -37,11 +37,11 @@ trait MdmController implements UserSecurityPolicyManagerAware {
     }
 
     void notYetImplemented() {
-        render status: NOT_IMPLEMENTED
+        errorResponse NOT_IMPLEMENTED, null
     }
 
     void gone() {
-        render status: GONE
+        errorResponse GONE, null
     }
 
     void done() {
@@ -57,7 +57,11 @@ trait MdmController implements UserSecurityPolicyManagerAware {
     }
 
     void errorResponse(HttpStatus status, String message) {
-        render status: status, message: message
+        renderMapForResponse(status: status, view: '/error', model: [
+            httpStatus: status,
+            message   : message,
+            errorCode : 'ERXX'
+        ],)
     }
 
     Map getMultiErrorResponseMap(List<GormEntity> result) {
