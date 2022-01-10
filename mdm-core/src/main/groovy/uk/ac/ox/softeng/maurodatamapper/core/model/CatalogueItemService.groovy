@@ -26,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFileService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.RuleService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.legacy.LegacyFieldPatchData
@@ -151,25 +152,44 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
             copy.label = original.label
         }
 
-        classifierService.findAllByCatalogueItemId(userSecurityPolicyManager, original.id).each {copy.addToClassifiers(it)}
-        metadataService.findAllByMultiFacetAwareItemId(original.id).each {copy.addToMetadata(it.namespace, it.key, it.value, copier.emailAddress)}
-        ruleService.findAllByMultiFacetAwareItemId(original.id).each {rule ->
+        classifierService.findAllReadableByCatalogueItem(userSecurityPolicyManager, original).each { copy.addToClassifiers(it) }
+
+        // Allow facets to be preloaded from the db and passed in via the copy information
+        // Facets loaded in this way could be more than just those belonging to the item being copied so we need to extract only those relevant
+        List<Metadata> metadata
+        List<Rule> rules
+        List<SemanticLink> semanticLinks
+        if (copyInformation) {
+            metadata =
+                copyInformation.hasFacetData('metadata') ? copyInformation.extractPreloadedFacetsForTypeAndId(Metadata, 'metadata', original.id) :
+                metadataService.findAllByMultiFacetAwareItemId(original.id)
+            rules = copyInformation.hasFacetData('rules') ? copyInformation.extractPreloadedFacetsForTypeAndId(Rule, 'rules', original.id) :
+                    ruleService.findAllByMultiFacetAwareItemId(original.id)
+            semanticLinks = copyInformation.hasFacetData('semanticLinks') ?
+                            copyInformation.extractPreloadedFacetsForTypeAndId(SemanticLink, 'semanticLinks', original.id) :
+                            semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id)
+        } else {
+            metadata = metadataService.findAllByMultiFacetAwareItemId(original.id)
+            rules = ruleService.findAllByMultiFacetAwareItemId(original.id)
+            semanticLinks = semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id)
+        }
+
+        metadata.each { copy.addToMetadata(it.namespace, it.key, it.value, copier.emailAddress) }
+        rules.each { rule ->
             Rule copiedRule = new Rule(name: rule.name, description: rule.description, createdBy: copier.emailAddress)
-            rule.ruleRepresentations.each {ruleRepresentation ->
+            rule.ruleRepresentations.each { ruleRepresentation ->
                 copiedRule.addToRuleRepresentations(language: ruleRepresentation.language,
                                                     representation: ruleRepresentation.representation,
                                                     createdBy: copier.emailAddress)
             }
             copy.addToRules(copiedRule)
         }
-
-        semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id).each {link ->
+        semanticLinks.each { link ->
             copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
                                     targetMultiFacetAwareItemId: link.targetMultiFacetAwareItemId,
                                     targetMultiFacetAwareItemDomainType: link.targetMultiFacetAwareItemDomainType,
                                     unconfirmed: true)
         }
-
         copy
     }
 

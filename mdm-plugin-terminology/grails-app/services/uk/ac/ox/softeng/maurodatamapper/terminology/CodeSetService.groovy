@@ -283,6 +283,7 @@ class CodeSetService extends ModelService<CodeSet> {
 
     CodeSet copyModel(CodeSet original, Folder folderToCopyTo, User copier, boolean copyPermissions, String label, Version copyDocVersion,
                       String branchName, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
+        long start = System.currentTimeMillis()
         log.debug('Creating a new copy of {} with branch name {}', original.label, branchName)
         CodeSet copy = new CodeSet(author: original.author,
                                    organisation: original.organisation,
@@ -313,11 +314,11 @@ class CodeSetService extends ModelService<CodeSet> {
 
         copy.trackChanges()
 
-        // Copy all the terms
-        original.terms?.each { term ->
+        List<Term> terms = termService.findAllByCodeSetId(original.id)
+        terms.each { term ->
             copy.addToTerms(term)
         }
-
+        log.debug('Copy of codeset took {}', Utils.timeTaken(start))
         copy
     }
 
@@ -360,12 +361,18 @@ class CodeSetService extends ModelService<CodeSet> {
 
     @Override
     List<CodeSet> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        findAllByClassifier(classifier).findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(CodeSet, it.id)}
+        findAllByClassifier(classifier).findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(CodeSet, it.id) }
     }
 
     @Override
     Class<CodeSet> getModelClass() {
         CodeSet
+    }
+
+    @Override
+    Integer countByContainerId(UUID containerId) {
+        // We do not concern ourselves any other types of containers for CodeSets at this time
+        CodeSet.byFolderId(containerId).count()
     }
 
     @Override

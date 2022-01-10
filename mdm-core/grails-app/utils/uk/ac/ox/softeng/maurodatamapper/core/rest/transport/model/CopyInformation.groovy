@@ -17,13 +17,31 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model
 
-import grails.validation.Validateable
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 
+import grails.validation.Validateable
+import groovy.util.logging.Slf4j
+
+@Slf4j
 class CopyInformation implements Validateable {
 
     String copyLabel
 
+    Map<String, TreeMap<UUID, List<MultiFacetItemAware>>> preloadedFacets = [:]
+
     static constraints = {
         copyLabel blank: false
+    }
+
+    // Allow facets to be preloaded from the db and passed in via the copy information
+    // Facets loaded in this way could be more than just those belonging to the item being copied so we need to extract only those relevant
+    public <K extends MultiFacetItemAware> List<K> extractPreloadedFacetsForTypeAndId(Class<K> clazz, String mapKey, UUID multiFacetAwareItemId) {
+        TreeMap<UUID, List<MultiFacetItemAware>> groupedFacets = preloadedFacets[mapKey]
+        if (!groupedFacets) return []
+        groupedFacets[multiFacetAwareItemId] as List<K>
+    }
+
+    boolean hasFacetData(String mapKey) {
+        preloadedFacets.containsKey(mapKey)
     }
 }

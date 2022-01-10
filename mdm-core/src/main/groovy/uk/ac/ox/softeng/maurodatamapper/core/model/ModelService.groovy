@@ -133,6 +133,8 @@ abstract class ModelService<K extends Model>
 
     abstract String getUrlResourceName()
 
+    abstract Integer countByContainerId(UUID containerId)
+
     abstract List<K> findAllByContainerId(UUID containerId)
 
     abstract void deleteAllInContainer(Container container)

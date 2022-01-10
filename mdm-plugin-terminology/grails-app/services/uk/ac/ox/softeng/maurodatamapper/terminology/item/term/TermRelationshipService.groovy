@@ -119,6 +119,10 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
         TermRelationship.byRelationshipTypeIdAndId(relationshipTypeId, Utils.toUuid(id)).get()
     }
 
+    List<TermRelationship> findAllBySourceTermIdInList(Collection<UUID> termIds) {
+        TermRelationship.by().inList('sourceTerm.id', termIds).list()
+    }
+
     Long countByTermIdIsParent(UUID termId) {
         TermRelationship.byTermIdIsParent(termId).count()
     }
@@ -132,14 +136,19 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
     }
 
     @Override
-    TermRelationship copy(Model terminology, TermRelationship original, CatalogueItem nonModelParent, UserSecurityPolicyManager userSecurityPolicyManager) {
+    TermRelationship copy(Model terminology, TermRelationship original, CatalogueItem nonModelParent,
+                          UserSecurityPolicyManager userSecurityPolicyManager) {
         copyTermRelationship(terminology as Terminology, original, userSecurityPolicyManager.user)
     }
 
     TermRelationship copyTermRelationship(Terminology terminology, TermRelationship original, User copier) {
+        copyTermRelationship(terminology, original, new TreeMap(terminology.terms.collectEntries {[it.code, it]}), copier)
+    }
 
-        Term source = terminology.findTermByCode(original.sourceTerm.code)
-        Term target = terminology.findTermByCode(original.targetTerm.code)
+    TermRelationship copyTermRelationship(Terminology terminology, TermRelationship original, TreeMap<String, Term> terms, User copier) {
+
+        Term source = terms[original.sourceTerm.code]
+        Term target = terms[original.targetTerm.code]
         TermRelationshipType termRelationshipType = terminology.findRelationshipTypeByLabel(original.relationshipType.label)
 
         TermRelationship copy = new TermRelationship(createdBy: copier.emailAddress, relationshipType: termRelationshipType, sourceTerm: source,

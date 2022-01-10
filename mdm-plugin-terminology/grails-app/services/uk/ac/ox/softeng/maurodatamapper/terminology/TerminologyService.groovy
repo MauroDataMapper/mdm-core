@@ -30,6 +30,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -69,7 +70,7 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     List<Terminology> getAll(Collection<UUID> ids) {
-        Terminology.getAll(ids).findAll().collect {unwrapIfProxy(it)}
+        Terminology.getAll(ids).findAll().collect { unwrapIfProxy(it) }
     }
 
     @Override
@@ -79,7 +80,7 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     List<Terminology> list() {
-        Terminology.list().collect {unwrapIfProxy(it)}
+        Terminology.list().collect { unwrapIfProxy(it) }
     }
 
     @Override
@@ -129,7 +130,7 @@ class TerminologyService extends ModelService<Terminology> {
     @Override
     Terminology saveModelWithContent(Terminology terminology) {
 
-        if (terminology.terms.any {it.id} || terminology.termRelationshipTypes.any {it.id}) {
+        if (terminology.terms.any { it.id } || terminology.termRelationshipTypes.any { it.id }) {
             throw new ApiInternalException('TMSXX', 'Cannot use saveModelWithContent method to save Terminology',
                                            new IllegalStateException('Terminology has previously saved content'))
         }
@@ -156,7 +157,7 @@ class TerminologyService extends ModelService<Terminology> {
         }
 
         if (terminology.breadcrumbTree.children) {
-            terminology.breadcrumbTree.children.each {it.skipValidation(true)}
+            terminology.breadcrumbTree.children.each { it.skipValidation(true) }
         }
 
         save(terminology)
@@ -181,14 +182,14 @@ class TerminologyService extends ModelService<Terminology> {
         sessionFactory.currentSession.clear()
         long start = System.currentTimeMillis()
         log.debug('Disabling validation on contents')
-        termRelationshipTypes.each {trt ->
+        termRelationshipTypes.each { trt ->
             trt.skipValidation(true)
         }
 
-        terms.each {t ->
+        terms.each { t ->
             t.skipValidation(true)
-            t.sourceTermRelationships.each {tr -> tr.skipValidation(true)}
-            t.targetTermRelationships.each {tr -> tr.skipValidation(true)}
+            t.sourceTermRelationships.each { tr -> tr.skipValidation(true) }
+            t.targetTermRelationships.each { tr -> tr.skipValidation(true) }
         }
 
         // During testing its very important that we dont disable constraints otherwise we may miss an invalid model,
@@ -240,7 +241,7 @@ class TerminologyService extends ModelService<Terminology> {
         log.trace('Terminologies removed')
 
         sessionFactory.currentSession
-            .createSQLQuery('DELETE FROM core.breadcrumb_tree WHERE domain_id in :ids')
+            .createSQLQuery('DELETE FROM core.breadcrumb_tree WHERE domain_id IN :ids')
             .setParameter('ids', idsToDelete)
             .executeUpdate()
 
@@ -319,6 +320,7 @@ class TerminologyService extends ModelService<Terminology> {
 
     Terminology copyModel(Terminology original, Folder folderToCopyTo, User copier, boolean copyPermissions, String label, Version copyVersion,
                           String branchName, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
+        long start = System.currentTimeMillis()
         log.debug('Creating a new copy of {} with branch name {}', original.label, branchName)
         Terminology copy = new Terminology(author: original.author,
                                            organisation: original.organisation,
@@ -347,25 +349,35 @@ class TerminologyService extends ModelService<Terminology> {
 
         copy.trackChanges()
 
+        // Preload all the model items with classifiers joined to reduce the number of DB calls made
+        List<TermRelationshipType> termRelationshipTypes = TermRelationshipType.byTerminologyId(original.id).join('classifiers').list()
+        List<Term> originalTerms = Term.byTerminologyId(original.id).join('classifiers').list()
+        List<TermRelationship> termRelationships = []
+        CopyInformation termsCachedInformation = new CopyInformation()
+
+        if (originalTerms) {
+            List<UUID> originalTermIds = originalTerms.collect { it.id }
+            termRelationships = TermRelationship.by().inList('sourceTerm.id', originalTermIds).join('classifiers').list()
+            termsCachedInformation = cacheFacetInformationForCopy(originalTermIds)
+        }
+
         // Copy all the TermRelationshipType
-        original.termRelationshipTypes?.each {trt ->
+        termRelationshipTypes.each { trt ->
             termRelationshipTypeService.copyTermRelationshipType(copy, trt, copier)
         }
 
         // Copy all the terms
-        original.terms?.each {term ->
-            termService.copyTerm(copy, term, copier, userSecurityPolicyManager)
+        originalTerms.each { term ->
+            termService.copyTerm(copy, term, copier, userSecurityPolicyManager, termsCachedInformation)
         }
 
         // Copy all the term relationships
         // We need all the terms to exist so we can create the links
-        // Only copy source relationships as this will propgate the target relationships
-        original.terms?.each {term ->
-            term.sourceTermRelationships.each {relationship ->
-                termRelationshipService.copyTermRelationship(copy, relationship, copier)
-            }
+        // Only copy source relationships as this will propagate the target relationships
+        termRelationships.each { relationship ->
+            termRelationshipService.copyTermRelationship(copy, relationship, new TreeMap(copy.terms.collectEntries {[it.code, it]}), copier)
         }
-
+        log.debug('Copy of terminology took {}', Utils.timeTaken(start))
         copy
     }
 
@@ -384,14 +396,14 @@ class TerminologyService extends ModelService<Terminology> {
         // No parental or child relationships then ensure all depths are 1
         if (hasNoValidRelationships) {
             log.debug('No parent/child relationships so all terms are depth 1')
-            terminology.terms.each {it.depth = 1}
+            terminology.terms.each { it.depth = 1 }
             return terminology
         }
 
         log.debug('Updating all term depths')
         // Reset all track changes, as this whole process needs to be done AFTER insert into database
         // the only changes here should be depths
-        terminology.terms.each {it.trackChanges()}
+        terminology.terms.each { it.trackChanges() }
         terminology.terms.each {
             termService.updateDepth(it, inMemory)
         }
@@ -460,12 +472,18 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     List<Terminology> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        findAllByClassifier(classifier).findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.id)}
+        findAllByClassifier(classifier).findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.id) }
     }
 
     @Override
     Class<Terminology> getModelClass() {
         Terminology
+    }
+
+    @Override
+    Integer countByContainerId(UUID containerId) {
+        // We do not concern ourselves any other types of containers for CodeSets at this time
+        Terminology.byFolderId(containerId).count()
     }
 
     @Override
@@ -500,7 +518,7 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     List<UUID> findAllModelIdsWithTreeChildren(List<Terminology> models) {
-        models.findAll {isTreeStructureCapableTerminology(it)}.collect {it.id}
+        models.findAll { isTreeStructureCapableTerminology(it) }.collect { it.id }
     }
 
     @Override
@@ -566,12 +584,12 @@ class TerminologyService extends ModelService<Terminology> {
         }
 
         if (terminology.terms) {
-            terminology.terms.each {term ->
+            terminology.terms.each { term ->
                 term.createdBy = term.createdBy ?: terminology.createdBy
             }
         }
 
-        terminology.getAllTermRelationships().each {tr ->
+        terminology.getAllTermRelationships().each { tr ->
             tr.createdBy = tr.createdBy ?: terminology.createdBy
         }
 
@@ -590,15 +608,15 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     void propagateContentsInformation(Terminology catalogueItem, Terminology previousVersionCatalogueItem) {
-        previousVersionCatalogueItem.terms.each {previousTerm ->
-            Term term = catalogueItem.terms.find {it.label == previousTerm.label}
+        previousVersionCatalogueItem.terms.each { previousTerm ->
+            Term term = catalogueItem.terms.find { it.label == previousTerm.label }
             if (term) {
                 termService.propagateDataFromPreviousVersion(term, previousTerm)
             }
         }
 
-        previousVersionCatalogueItem.termRelationshipTypes.each {previousTermRelationshipType ->
-            TermRelationshipType termRelationshipType = catalogueItem.termRelationshipTypes.find {it.label == previousTermRelationshipType.label}
+        previousVersionCatalogueItem.termRelationshipTypes.each { previousTermRelationshipType ->
+            TermRelationshipType termRelationshipType = catalogueItem.termRelationshipTypes.find { it.label == previousTermRelationshipType.label }
             if (termRelationshipType) {
                 termRelationshipTypeService.propagateDataFromPreviousVersion(termRelationshipType, previousTermRelationshipType)
             }
@@ -608,7 +626,7 @@ class TerminologyService extends ModelService<Terminology> {
     @Override
     boolean useParentIdForSearching(UUID parentId) {
         if (!parentId || codeSetService.get(parentId)) {
-            log.debug('Accessing terminology from context of CodeSet will ignore parentId')
+            log.trace('Accessing terminology from context of CodeSet will ignore parentId')
             return false
         }
         true
@@ -616,11 +634,11 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     int getSortResultForFieldPatchPath(Path leftPath, Path rightPath) {
-        if (leftPath.any {it.prefix == 'cs'}) {
-            if (rightPath.any {it.prefix == 'cs'}) return 0
+        if (leftPath.any { it.prefix == 'cs' }) {
+            if (rightPath.any { it.prefix == 'cs' }) return 0
             return 1
         }
-        if (rightPath.any {it.prefix == 'cs'}) return -1
+        if (rightPath.any { it.prefix == 'cs' }) return -1
         PathNode leftLastNode = leftPath.last()
         PathNode rightLastNode = rightPath.last()
         if (leftLastNode.prefix == 'tm') {

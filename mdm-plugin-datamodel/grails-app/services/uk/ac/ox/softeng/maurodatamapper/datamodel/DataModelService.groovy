@@ -33,6 +33,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataAware
@@ -124,10 +125,10 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     }
 
     void validateModelItemsForDataModel(Collection<ModelItem> modelItems, DataModel dataModel, String associationName, ModelItemService service) {
-        modelItems.eachWithIndex {et, i ->
+        modelItems.eachWithIndex { et, i ->
             service.validate(et)
             if (et.hasErrors()) {
-                et.errors.fieldErrors.each {err ->
+                et.errors.fieldErrors.each { err ->
                     dataModel.errors.rejectValue("${associationName}[${i}].${err.field}", err.code, err.arguments, err.defaultMessage)
                 }
             }
@@ -138,16 +139,16 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     void validateDataClassesForDataModel(Collection<DataClass> allDataClasses, DataModel dataModel) {
         if (!allDataClasses) return
 
-        log.trace('{} dataclasses to validate', allDataClasses.count {!it.parentDataClass}, allDataClasses.size())
+        log.trace('{} dataclasses to validate', allDataClasses.count { !it.parentDataClass }, allDataClasses.size())
 
-        dataModel.fullSortOfChildren(allDataClasses.findAll {!it.parentDataClass})
+        dataModel.fullSortOfChildren(allDataClasses.findAll { !it.parentDataClass })
 
         allDataClasses.each {
             it.dataModel.skipValidation(true)
             it.skipValidation(true)
         }
-        dataModel.dataTypes.each {it.skipValidation(true)}
-        allDataClasses.eachWithIndex {dc, i ->
+        dataModel.dataTypes.each { it.skipValidation(true) }
+        allDataClasses.eachWithIndex { dc, i ->
             long st = System.currentTimeMillis()
             dc.skipValidation(false)
             dataClassService.validate(dc)
@@ -160,7 +161,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         // To be able to register the errors in the DM we need to add the DCs back to the DM
         allDataClasses.eachWithIndex { dc, i ->
             if (dc.hasErrors()) {
-                dc.errors.fieldErrors.each {err ->
+                dc.errors.fieldErrors.each { err ->
                     dataModel.errors.rejectValue("dataClasses[${i}].${err.field}", err.code, err.arguments, err.defaultMessage)
                 }
             }
@@ -189,7 +190,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         if (dataModel.hasErrors()) {
             Errors existingErrors = dataModel.errors
             Errors cleanedErrors = new ValidationErrors(dataModel)
-            existingErrors.fieldErrors.each {fe ->
+            existingErrors.fieldErrors.each { fe ->
                 if (!fe.field.contains('dataModel')) {
                     cleanedErrors.rejectValue(fe.field, fe.code, fe.arguments, fe.defaultMessage)
                 }
@@ -354,9 +355,9 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         sessionFactory.currentSession.clear()
         long start = System.currentTimeMillis()
         log.trace('Disabling validation on contents')
-        enumerationTypes.each {dt ->
+        enumerationTypes.each { dt ->
             dt.skipValidation(true)
-            dt.enumerationValues.each {ev -> ev.skipValidation(true)}
+            dt.enumerationValues.each { ev -> ev.skipValidation(true) }
             dt.dataElements?.clear()
         }
         primitiveTypes.each {
@@ -371,11 +372,11 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             it.skipValidation(true)
             it.dataElements?.clear()
         }
-        dataClasses.each {dc ->
+        dataClasses.each { dc ->
             dc.skipValidation(true)
-            dc.dataElements.each {de -> de.skipValidation(true)}
+            dc.dataElements.each { de -> de.skipValidation(true) }
         }
-        referenceTypes.each {it.skipValidation(true)}
+        referenceTypes.each { it.skipValidation(true) }
 
         long subStart = System.currentTimeMillis()
         dataTypeService.saveAll(enumerationTypes)
@@ -397,7 +398,6 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         log.trace('Saved {} dataElements in {}', dataElements.size(), Utils.timeTaken(subStart))
 
 
-
         log.trace('Content save of DataModel complete in {}', Utils.timeTaken(start))
     }
 
@@ -410,7 +410,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         modelItemServices.findAll {
             !(it.modelItemClass in [DataClass, DataElement, DataType, EnumerationType, ModelDataType, PrimitiveType,
                                     ReferenceType, EnumerationValue])
-        }.each {modelItemService ->
+        }.each { modelItemService ->
             try {
                 modelItemService.deleteAllByModelIds(idsToDelete)
             } catch (ApiNotYetImplementedException ignored) {
@@ -642,6 +642,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
     DataModel copyModel(DataModel original, Folder folderToCopyInto, User copier, boolean copyPermissions, String label, Version copyDocVersion,
                         String branchName, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata) {
+        long start = System.currentTimeMillis()
         log.debug('Creating a new copy of {} with branch name {}', original.label, branchName)
         DataModel copy = new DataModel(author: original.author, organisation: original.organisation, modelType: original.modelType, finalised: false,
                                        deleted: false, documentationVersion: copyDocVersion, folder: folderToCopyInto,
@@ -649,7 +650,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
                                        branchName: branchName
         )
 
-        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata)
+        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata, null)
         copy.label = label
 
         if (copyPermissions) {
@@ -671,20 +672,21 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
         copy.trackChanges()
 
-        if (original.dataTypes) {
-            // Copy all the datatypes
-            original.dataTypes.each { dt ->
-                dataTypeService.copyDataType(copy, dt, copier, userSecurityPolicyManager, copySummaryMetadata)
-            }
+        List<DataType> dataTypes = DataType.byDataModelId(original.id).join('classifiers').list()
+        List<DataClass> rootDataClasses = DataClass.byRootDataClassOfDataModelId(original.id).join('classifiers').list()
+        CopyInformation dataClassCache = cacheFacetInformationForCopy(rootDataClasses.collect { it.id })
+        CopyInformation dataTypeCache = cacheFacetInformationForCopy(dataTypes.collect { it.id })
+
+        // Copy all the datatypes
+        dataTypes.each { dt ->
+            dataTypeService.copyDataType(copy, dt, copier, userSecurityPolicyManager, copySummaryMetadata, dataTypeCache)
         }
 
-        if (original.childDataClasses) {
-            // Copy all the dataclasses (this will also match up the reference types)
-            original.childDataClasses.each { dc ->
-                dataClassService.copyDataClass(copy, dc, copier, userSecurityPolicyManager, null, copySummaryMetadata, null)
-            }
+        // Copy all the dataclasses (this will also match up the reference types)
+        rootDataClasses.each { dc ->
+            dataClassService.copyDataClass(copy, dc, copier, userSecurityPolicyManager, null, copySummaryMetadata, dataClassCache)
         }
-
+        log.debug('Copy of datamodel took {}', Utils.timeTaken(start))
         copy
     }
 
@@ -692,18 +694,20 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     DataModel copyCatalogueItemInformation(DataModel original,
                                            DataModel copy,
                                            User copier,
-                                           UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, false)
+                                           UserSecurityPolicyManager userSecurityPolicyManager,
+                                           CopyInformation copyInformation = null) {
+        copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, false, copyInformation)
     }
 
     DataModel copyCatalogueItemInformation(DataModel original,
                                            DataModel copy,
                                            User copier,
                                            UserSecurityPolicyManager userSecurityPolicyManager,
-                                           boolean copySummaryMetadata) {
-        copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager) as DataModel
+                                           boolean copySummaryMetadata,
+                                           CopyInformation copyInformation) {
+        copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation) as DataModel
         if (copySummaryMetadata) {
-            copy = copySummaryMetadataFromOriginal(original, copy, copier)
+            copy = copySummaryMetadataFromOriginal(original, copy, copier, copyInformation)
         }
         copy
     }
@@ -784,12 +788,17 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     @Override
     List<DataModel> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
         findAllByClassifier(classifier)
-            .findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.id)} as List<DataModel>
+            .findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.id) } as List<DataModel>
     }
 
     @Override
     Class<DataModel> getModelClass() {
         DataModel
+    }
+
+    @Override
+    Integer countByContainerId(UUID containerId) {
+        DataModel.byFolderId(containerId).count()
     }
 
     @Override
@@ -896,30 +905,30 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     @Override
     void propagateContentsInformation(DataModel catalogueItem, DataModel previousVersionCatalogueItem) {
 
-        previousVersionCatalogueItem.dataTypes.each {previousDataType ->
-            DataType dataType = catalogueItem.dataTypes.find {it.label == previousDataType.label}
+        previousVersionCatalogueItem.dataTypes.each { previousDataType ->
+            DataType dataType = catalogueItem.dataTypes.find { it.label == previousDataType.label }
             if (dataType) {
                 dataTypeService.propagateDataFromPreviousVersion(dataType, previousDataType)
             }
         }
 
-        previousVersionCatalogueItem.childDataClasses.each {previousDataClass ->
-            DataClass dataClass = catalogueItem.childDataClasses.find {it.label == previousDataClass.label}
+        previousVersionCatalogueItem.childDataClasses.each { previousDataClass ->
+            DataClass dataClass = catalogueItem.childDataClasses.find { it.label == previousDataClass.label }
             if (dataClass) {
                 dataClassService.propagateDataFromPreviousVersion(dataClass, previousDataClass)
             }
         }
 
-        previousVersionCatalogueItem.summaryMetadata.each {previousSummaryMetadata ->
-            if (catalogueItem.summaryMetadata.any {it.label == previousSummaryMetadata.label}) return
+        previousVersionCatalogueItem.summaryMetadata.each { previousSummaryMetadata ->
+            if (catalogueItem.summaryMetadata.any { it.label == previousSummaryMetadata.label }) return
             SummaryMetadata summaryMetadata = new SummaryMetadata(label: previousSummaryMetadata.label,
-                description: previousSummaryMetadata.description,
-                summaryMetadataType: previousSummaryMetadata.summaryMetadataType)
+                                                                  description: previousSummaryMetadata.description,
+                                                                  summaryMetadataType: previousSummaryMetadata.summaryMetadataType)
 
-            previousSummaryMetadata.summaryMetadataReports.each {previousSummaryMetadataReport ->
+            previousSummaryMetadata.summaryMetadataReports.each { previousSummaryMetadataReport ->
                 summaryMetadata.addToSummaryMetadataReports(reportDate: previousSummaryMetadataReport.reportDate,
-                    reportValue: previousSummaryMetadataReport.reportValue,
-                    createdBy: previousSummaryMetadataReport.createdBy
+                                                            reportValue: previousSummaryMetadataReport.reportValue,
+                                                            createdBy: previousSummaryMetadataReport.createdBy
                 )
             }
             catalogueItem.addToSummaryMetadata(summaryMetadata)
@@ -959,5 +968,11 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             return 0
         }
         0
+    }
+
+    @Override
+    CopyInformation cacheFacetInformationForCopy(List<UUID> originalIds, CopyInformation copyInformation = null) {
+        CopyInformation cachedInformation = super.cacheFacetInformationForCopy(originalIds, copyInformation)
+        cacheSummaryMetadataInformationForCopy(originalIds, cachedInformation)
     }
 }

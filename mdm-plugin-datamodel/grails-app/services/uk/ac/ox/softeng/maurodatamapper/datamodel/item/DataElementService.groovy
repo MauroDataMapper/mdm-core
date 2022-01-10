@@ -396,7 +396,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
                                              CopyInformation copyInformation) {
         copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
         if (copySummaryMetadata) {
-            copySummaryMetadataFromOriginal(original, copy, copier)
+            copySummaryMetadataFromOriginal(original, copy, copier, copyInformation)
         }
         copy
     }
@@ -557,13 +557,19 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
                 description: previousSummaryMetadata.description,
                 summaryMetadataType: previousSummaryMetadata.summaryMetadataType)
 
-            previousSummaryMetadata.summaryMetadataReports.each {previousSummaryMetadataReport ->
+            previousSummaryMetadata.summaryMetadataReports.each { previousSummaryMetadataReport ->
                 summaryMetadata.addToSummaryMetadataReports(reportDate: previousSummaryMetadataReport.reportDate,
-                    reportValue: previousSummaryMetadataReport.reportValue,
-                    createdBy: previousSummaryMetadataReport.createdBy
+                                                            reportValue: previousSummaryMetadataReport.reportValue,
+                                                            createdBy: previousSummaryMetadataReport.createdBy
                 )
             }
             catalogueItem.addToSummaryMetadata(summaryMetadata)
         }
+    }
+
+    @Override
+    CopyInformation cacheFacetInformationForCopy(List<UUID> originalIds, CopyInformation copyInformation = null) {
+        CopyInformation cachedInformation = super.cacheFacetInformationForCopy(originalIds, copyInformation)
+        cacheSummaryMetadataInformationForCopy(originalIds, cachedInformation)
     }
 }

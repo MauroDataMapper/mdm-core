@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service
 
 
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataAware
@@ -38,6 +39,16 @@ trait SummaryMetadataAwareService {
         removeFacetFromDomain(multiFacetAwareId, summaryMetadata.id, 'summaryMetadata')
     }
 
+    CopyInformation cacheSummaryMetadataInformationForCopy(List<UUID> originalIds, CopyInformation cachedInformation) {
+        if (!cachedInformation || !originalIds || originalIds.size() == 1) return cachedInformation
+        List<SummaryMetadata> md = SummaryMetadata
+            .byMultiFacetAwareItemIdInList(originalIds)
+            .join('summaryMetadataReports')
+            .list()
+        cachedInformation.preloadedFacets.summaryMetadata = new TreeMap(md.groupBy { it.multiFacetAwareItemId })
+        cachedInformation
+    }
+
     /**
      * Copy the summary metadata and summary metadata reports from original to copy
      * @param original
@@ -45,17 +56,28 @@ trait SummaryMetadataAwareService {
      * @param copier
      * @return
      */
-    SummaryMetadataAware copySummaryMetadataFromOriginal(SummaryMetadataAware original, SummaryMetadataAware copy, User copier) {
-        summaryMetadataService.findAllByMultiFacetAwareItemId(original.id).each {sm ->
+    SummaryMetadataAware copySummaryMetadataFromOriginal(SummaryMetadataAware original, SummaryMetadataAware copy, User copier,
+                                                         CopyInformation copyInformation) {
+        // Allow facets to be preloaded from the db and passed in via the copy information
+        // Facets loaded in this way could be more than just those belonging to the item being copied so we need to extract only those relevant
+        List<SummaryMetadata> summaryMetadataList
+        if (copyInformation) {
+            summaryMetadataList = copyInformation.hasFacetData('summaryMetadata') ?
+                                  copyInformation.extractPreloadedFacetsForTypeAndId(SummaryMetadata, 'summaryMetadata', original.id) :
+                                  summaryMetadataService.findAllByMultiFacetAwareItemId(original.id)
+        } else {
+            summaryMetadataList = summaryMetadataService.findAllByMultiFacetAwareItemId(original.id)
+        }
+        summaryMetadataList.each { sm ->
             SummaryMetadata summaryMetadata = new SummaryMetadata(label: sm.label,
-                description: sm.description,
-                summaryMetadataType: sm.summaryMetadataType,
-                createdBy: copier.emailAddress)
+                                                                  description: sm.description,
+                                                                  summaryMetadataType: sm.summaryMetadataType,
+                                                                  createdBy: copier.emailAddress)
 
-            sm.summaryMetadataReports.each {smr ->
+            sm.summaryMetadataReports.each { smr ->
                 summaryMetadata.addToSummaryMetadataReports(reportDate: smr.reportDate,
-                    reportValue: smr.reportValue,
-                    createdBy: copier.emailAddress
+                                                            reportValue: smr.reportValue,
+                                                            createdBy: copier.emailAddress
                 )
             }
             copy.addToSummaryMetadata(summaryMetadata)

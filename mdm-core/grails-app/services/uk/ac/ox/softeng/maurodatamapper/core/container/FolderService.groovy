@@ -426,7 +426,7 @@ class FolderService extends ContainerService<Folder> {
         copyFolderContents(original, copiedFolder, copier, copyPassType, copyPermissions, modelCopyDocVersion, modelBranchName, throwErrors,
                            userSecurityPolicyManager)
 
-        log.debug('{} folder copy complete in {}', copyPassType, Utils.timeTaken(start))
+        log.debug('{} folder copy complete for {}[{}] in {}', copyPassType, original.id, original.label, Utils.timeTaken(start))
         copiedFolder
     }
 
@@ -466,7 +466,6 @@ class FolderService extends ContainerService<Folder> {
         // If changing label then we need to prefix all the new models so the names dont introduce label conflicts as this situation arises in forking
         String labelSuffix = folderCopy.label == original.label ? '' : " (${folderCopy.label})"
 
-        log.debug('{} copying models from original folder into copied folder', copyPassType)
         copyModelsInFolder(original, folderCopy, copier, copyPassType, labelSuffix, copyPermissions, copyDocVersion, branchName,
                            throwErrors, userSecurityPolicyManager)
 
@@ -495,36 +494,44 @@ class FolderService extends ContainerService<Folder> {
                             Version copyDocVersion,
                             String branchName,
                             boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
-        modelServices.each {service ->
-            List<Model> originalModels = service.findAllByContainerId(originalFolder.id) as List<Model>
+        modelServices.each { service ->
 
-            originalModels.each {Model originalModel ->
-                Model workingModel = service.get(originalModel.id) as Model
-                switch (copyPassType) {
-                    case CopyPassType.FIRST_PASS:
-                        Folder workingFolder = get(copiedFolder.id)
-                        // First pass copy/create all the models
-                        // Any links across models will remain pointing to the original VF models
-                        Model copiedModel = service.copyModel(workingModel, workingFolder, copier, copyPermissions,
-                                                              "${workingModel.label}${labelSuffix}",
-                                                              copyDocVersion, branchName, throwErrors,
-                                                              userSecurityPolicyManager)
-                        log.debug('Validating and saving model copy')
-                        service.validate(copiedModel)
-                        if (copiedModel.hasErrors()) {
-                            throw new ApiInvalidModelException('VFS02', 'Copied Model is invalid', copiedModel.errors, messageSource)
-                        }
-                        service.saveModelWithContent(copiedModel)
-                        return copiedModel
-                    case CopyPassType.SECOND_PASS:
-                        // Second pass work through all the models and update the links across models
-                        Model copiedModel = service.findByFolderIdAndLabel(copiedFolder.id, "${workingModel.label}${labelSuffix}")
-                        if (!copiedModel) {
-                            throw new ApiInternalException('FSXX', "${workingModel.label}${labelSuffix} does not exist inside ${copiedFolder.label}")
-                        }
-                        return service.updateCopiedCrossModelLinks(copiedModel, workingModel)
+            if (service.countByContainerId(originalFolder.id)) {
+
+                List<Model> originalModels = service.findAllByContainerId(originalFolder.id) as List<Model>
+
+                log.debug('{} copying {} {} models from original folder into copied folder', copyPassType, originalModels.size(),
+                          service.getDomainClass().simpleName)
+
+                originalModels.each { Model originalModel ->
+                    Model workingModel = service.get(originalModel.id) as Model
+                    switch (copyPassType) {
+                        case CopyPassType.FIRST_PASS:
+                            Folder workingFolder = get(copiedFolder.id)
+                            // First pass copy/create all the models
+                            // Any links across models will remain pointing to the original VF models
+                            Model copiedModel = service.copyModel(workingModel, workingFolder, copier, copyPermissions,
+                                                                  "${workingModel.label}${labelSuffix}",
+                                                                  copyDocVersion, branchName, throwErrors,
+                                                                  userSecurityPolicyManager)
+                            log.debug('Validating and saving model copy')
+                            service.validate(copiedModel)
+                            if (copiedModel.hasErrors()) {
+                                throw new ApiInvalidModelException('VFS02', 'Copied Model is invalid', copiedModel.errors, messageSource)
+                            }
+                            service.saveModelWithContent(copiedModel)
+                            return copiedModel
+                        case CopyPassType.SECOND_PASS:
+                            // Second pass work through all the models and update the links across models
+                            Model copiedModel = service.findByFolderIdAndLabel(copiedFolder.id, "${workingModel.label}${labelSuffix}")
+                            if (!copiedModel) {
+                                throw new ApiInternalException('FSXX',
+                                                               "${workingModel.label}${labelSuffix} does not exist inside ${copiedFolder.label}")
+                            }
+                            return service.updateCopiedCrossModelLinks(copiedModel, workingModel)
+                    }
+                    null
                 }
-                null
             }
 
             if (copyPassType == CopyPassType.THIRD_PASS) {

@@ -93,7 +93,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         dataType.breadcrumbTree.removeFromParent()
 
         List<DataElement> dataElements = dataElementService.findAllByDataType(dataType)
-        dataElements.each {dataElementService.delete(it)}
+        dataElements.each { dataElementService.delete(it) }
 
         switch (dataType.domainType) {
             case DataType.PRIMITIVE_DOMAIN_TYPE:
@@ -126,7 +126,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
             log.trace('Removing {} DataTypes', dataTypeIds.size())
 
             sessionFactory.currentSession
-                .createSQLQuery('DELETE FROM datamodel.data_type WHERE data_model_id in :ids')
+                .createSQLQuery('DELETE FROM datamodel.data_type WHERE data_model_id IN :ids')
                 .setParameter('ids', dataModelIds)
                 .executeUpdate()
 
@@ -190,16 +190,16 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
             enumerationTypeService.propagateContentsInformation(catalogueItem as EnumerationType, previousVersionCatalogueItem as EnumerationType)
         }
 
-        previousVersionCatalogueItem.summaryMetadata.each {previousSummaryMetadata ->
-            if (catalogueItem.summaryMetadata.any {it.label == previousSummaryMetadata.label}) return
+        previousVersionCatalogueItem.summaryMetadata.each { previousSummaryMetadata ->
+            if (catalogueItem.summaryMetadata.any { it.label == previousSummaryMetadata.label }) return
             SummaryMetadata summaryMetadata = new SummaryMetadata(label: previousSummaryMetadata.label,
-                description: previousSummaryMetadata.description,
-                summaryMetadataType: previousSummaryMetadata.summaryMetadataType)
+                                                                  description: previousSummaryMetadata.description,
+                                                                  summaryMetadataType: previousSummaryMetadata.summaryMetadataType)
 
-            previousSummaryMetadata.summaryMetadataReports.each {previousSummaryMetadataReport ->
+            previousSummaryMetadata.summaryMetadataReports.each { previousSummaryMetadataReport ->
                 summaryMetadata.addToSummaryMetadataReports(reportDate: previousSummaryMetadataReport.reportDate,
-                    reportValue: previousSummaryMetadataReport.reportValue,
-                    createdBy: previousSummaryMetadataReport.createdBy
+                                                            reportValue: previousSummaryMetadataReport.reportValue,
+                                                            createdBy: previousSummaryMetadataReport.createdBy
                 )
             }
             catalogueItem.addToSummaryMetadata(summaryMetadata)
@@ -233,7 +233,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
             new PrimitiveType(label: 'Timestamp', description: 'A timestamp'),
             new PrimitiveType(label: 'Boolean', description: 'A true or false value'),
             new PrimitiveType(label: 'Duration', description: 'A time period in arbitrary units')
-        ].collect {new DefaultDataType(it)}
+        ].collect { new DefaultDataType(it) }
     }
 
     @Override
@@ -298,10 +298,10 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     @Override
     DataType checkFacetsAfterImportingCatalogueItem(DataType catalogueItem) {
         if (catalogueItem.summaryMetadata) {
-            catalogueItem.summaryMetadata.each {sm ->
+            catalogueItem.summaryMetadata.each { sm ->
                 sm.multiFacetAwareItemId = catalogueItem.id
                 sm.createdBy = sm.createdBy ?: catalogueItem.createdBy
-                sm.summaryMetadataReports.each {smr ->
+                sm.summaryMetadataReports.each { smr ->
                     smr.createdBy = catalogueItem.createdBy
                 }
             }
@@ -324,7 +324,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         if (dataType.instanceOf(EnumerationType)) {
             EnumerationType enumerationType = (dataType as EnumerationType)
             enumerationType.fullSortOfChildren(enumerationType.enumerationValues)
-            enumerationType.enumerationValues.each {ev ->
+            enumerationType.enumerationValues.each { ev ->
                 ev.createdBy = importingUser.emailAddress
                 ev.buildPath()
             }
@@ -349,8 +349,8 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     }
 
     void matchReferenceClasses(DataModel dataModel, Collection<ReferenceType> referenceTypes, Collection<Map> bindingMaps = []) {
-        referenceTypes.sort {it.label}.each {rdt ->
-            Map dataTypeBindingMap = bindingMaps.find {it.label == rdt.label} ?: [:]
+        referenceTypes.sort { it.label }.each { rdt ->
+            Map dataTypeBindingMap = bindingMaps.find { it.label == rdt.label } ?: [:]
             Map refClassBindingMap = dataTypeBindingMap.referenceClass ?: [:]
             matchReferenceClass(dataModel, rdt, refClassBindingMap)
         }
@@ -369,7 +369,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
             else {
                 log.
                     trace('No referenceClass could be found to match label tree for {}, attempting no label tree', referenceType.referenceClass.label)
-                def possibles = dataModel.dataClasses.findAll {it.label == referenceType.referenceClass.label}
+                def possibles = dataModel.dataClasses.findAll { it.label == referenceType.referenceClass.label }
                 if (possibles.size() == 1) {
                     log.trace('Single possible referenceClass found, safely using')
                     possibles.first().addToReferenceTypes(referenceType)
@@ -383,7 +383,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
             }
         } else {
             log.trace('Making best guess for matching reference class as no path nor bound class')
-            DataClass dataClass = dataModel.dataClasses.find {it.label == bindingMap.referenceClass.label}
+            DataClass dataClass = dataModel.dataClasses.find { it.label == bindingMap.referenceClass.label }
             if (dataClass) dataClass.addToReferenceTypes(referenceType)
         }
     }
@@ -416,7 +416,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
                 break
             case DataType.ENUMERATION_DOMAIN_TYPE:
                 copy = new EnumerationType()
-                original.enumerationValues.each {ev ->
+                original.enumerationValues.each { ev ->
                     copy.addToEnumerationValues(key: ev.key, value: ev.value, category: ev.category)
                 }
                 break
@@ -439,10 +439,10 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
                                           User copier,
                                           UserSecurityPolicyManager userSecurityPolicyManager,
                                           boolean copySummaryMetadata,
-                                          copyInformation = new CopyInformation()) {
+                                          copyInformation) {
         copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
         if (copySummaryMetadata) {
-            copy = copySummaryMetadataFromOriginal(original, copy, copier)
+            copy = copySummaryMetadataFromOriginal(original, copy, copier, copyInformation)
         }
         copy
     }
@@ -451,8 +451,8 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     DataType copyCatalogueItemInformation(DataType original,
                                           DataType copy,
                                           User copier,
-                                          UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, false)
+                                          UserSecurityPolicyManager userSecurityPolicyManager, CopyInformation copyInformation) {
+        copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, false, copyInformation)
     }
 
     DataModel addDefaultListOfDataTypesToDataModel(DataModel dataModel, List<DefaultDataType> defaultDataTypes) {
@@ -489,19 +489,19 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     }
 
     private void mergeDataTypes(DataType keep, DataType replace) {
-        replace.dataElements?.each {de ->
+        replace.dataElements?.each { de ->
             keep.addToDataElements(de)
         }
         List<Metadata> mds = []
         mds += replace.metadata ?: []
-        mds.findAll {!keep.findMetadataByNamespaceAndKey(it.namespace, it.key)}.each {md ->
+        mds.findAll { !keep.findMetadataByNamespaceAndKey(it.namespace, it.key) }.each { md ->
             replace.removeFromMetadata(md)
             keep.addToMetadata(md.namespace, md.key, md.value, md.createdBy)
         }
     }
 
     DataType findDataType(DataModel dataModel, String label) {
-        dataModel.dataTypes.find {it.label == label.trim()}
+        dataModel.dataTypes.find { it.label == label.trim() }
     }
 
     /*
@@ -528,5 +528,11 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
 
     boolean isDataTypeBeingUsedAsImport(DataType dataType) {
         DataModel.byImportedDataTypeId(dataType.id).count()
+    }
+
+    @Override
+    CopyInformation cacheFacetInformationForCopy(List<UUID> originalIds, CopyInformation copyInformation = null) {
+        CopyInformation cachedInformation = super.cacheFacetInformationForCopy(originalIds, copyInformation)
+        cacheSummaryMetadataInformationForCopy(originalIds, cachedInformation)
     }
 }
