@@ -227,7 +227,7 @@ TODO data flow copying
         Set<DataElement> resolvedSourceDataElements = []
 
         rawSourceDataElements.each {sde ->
-            Path path = Path.from(sde.path)
+            Path path = sde.uncheckedPath
             DataElement sourceDataElement = pathService.findResourceByPathFromRootClass(DataModel, path) as DataElement
 
             if (sourceDataElement) {
@@ -243,7 +243,7 @@ TODO data flow copying
         Set<DataElement> resolvedTargetDataElements = []
 
         rawTargetDataElements.each {tde ->
-            Path path = Path.from(tde.path)
+            Path path = tde.uncheckedPath
             DataElement targetDataElement = pathService.findResourceByPathFromRootClass(DataModel, path) as DataElement
 
             if (targetDataElement) {

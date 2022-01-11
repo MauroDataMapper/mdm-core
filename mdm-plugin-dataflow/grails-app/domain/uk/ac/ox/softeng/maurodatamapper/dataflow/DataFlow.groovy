@@ -99,20 +99,9 @@ class DataFlow implements ModelItem<DataFlow, DataModel> {
         target
     }
 
-    @Override
     def beforeValidate() {
         beforeValidateModelItem()
         dataClassComponents.each {it.beforeValidate()}
-    }
-
-    @Override
-    def beforeInsert() {
-        buildPathString()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPathString()
     }
 
     @Override

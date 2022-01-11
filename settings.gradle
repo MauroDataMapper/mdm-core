@@ -13,7 +13,7 @@ include(
     //    'mdm-plugin-authentication-basic',
     //    'mdm-plugin-authentication-apikey',
     //    'mdm-plugin-terminology',
-    //    'mdm-plugin-dataflow',
+    'mdm-plugin-dataflow',
     //    'mdm-plugin-referencedata',
     //    'mdm-plugin-profile',
     //    'mdm-plugin-federation',

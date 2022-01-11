@@ -9,20 +9,20 @@ DataFlow df = dataFlow as DataFlow
 
     if (df.source) {
         'mdm:source' {
-            layout '/dataModel/_export.gml', dataModel: df.source
+            layout '/dataModel/_dataflow_export.gml', dataModel: df.source
         }
     }
 
     if (df.target) {
         'mdm:target' {
-            layout '/dataModel/_export.gml', dataModel: df.target
+            layout '/dataModel/_dataflow_export.gml', dataModel: df.target
         }
-    }    
-    
+    }
+
     if (df.dataClassComponents) {
         'mdm:dataClassComponents' {
-            df.dataClassComponents.sort{it.label}.each {dcc ->
-                layout '/dataClassComponent/_export.gml', dataClassComponent: dcc 
+            df.dataClassComponents.sort { it.label }.each { dcc ->
+                layout '/dataClassComponent/_export.gml', dataClassComponent: dcc
             }
         }
     }

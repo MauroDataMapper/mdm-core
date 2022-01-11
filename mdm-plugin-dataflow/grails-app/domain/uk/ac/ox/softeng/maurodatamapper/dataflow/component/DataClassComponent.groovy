@@ -97,20 +97,9 @@ class DataClassComponent implements ModelItem<DataClassComponent, DataModel> {
         dataFlow
     }
 
-    @Override
     def beforeValidate() {
         beforeValidateModelItem()
         dataElementComponents.each {it.beforeValidate()}
-    }
-
-    @Override
-    def beforeInsert() {
-        buildPathString()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPathString()
     }
 
     @Override

@@ -211,7 +211,7 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
 
         if (rawSourceDataClasses) {
             rawSourceDataClasses.each {sdc ->
-                Path path = Path.from(sdc.path)
+                Path path = sdc.uncheckedPath
                 DataClass sourceDataClass = pathService.findResourceByPathFromRootClass(DataModel, path) as DataClass
 
                 if (sourceDataClass) {
@@ -230,7 +230,7 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
 
         if (rawTargetDataClasses) {
             rawTargetDataClasses.each {tdc ->
-                Path path = Path.from(tdc.path)
+                Path path = tdc.uncheckedPath
                 DataClass targetDataClass = pathService.findResourceByPathFromRootClass(DataModel, path) as DataClass
 
                 if (targetDataClass) {

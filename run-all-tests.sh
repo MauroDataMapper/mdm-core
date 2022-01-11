@@ -65,43 +65,45 @@ function integrationTest(){
   echo ">> Integration Tests <<"
 ./gradlew --build-cache -Dgradle.integrationTest=true \
   :mdm-core:integrationTest \
-  :mdm-security:integrationTest \
-  :mdm-plugin-email-proxy:integrationTest \
   :mdm-plugin-datamodel:integrationTest \
-  :mdm-plugin-terminology:integrationTest \
-  :mdm-plugin-referencedata:integrationTest \
-  :mdm-plugin-dataflow:integrationTest \
-  :mdm-plugin-federation:integrationTest \
-  :mdm-plugin-profile:integrationTest
+  :mdm-plugin-email-proxy:integrationTest \
+  :mdm-plugin-dataflow:integrationTest
+  #  :mdm-security:integrationTest \
+#  :mdm-plugin-terminology:integrationTest \
+#  :mdm-plugin-referencedata:integrationTest \
+
+#  :mdm-plugin-federation:integrationTest \
+#  :mdm-plugin-profile:integrationTest
 }
 
 function functionalTest(){
   echo ">> Functional Tests <<"
 ./gradlew --build-cache -Dgradle.functionalTest=true \
   :mdm-core:integrationTest \
-  :mdm-security:integrationTest \
-  :mdm-plugin-authentication-apikey:integrationTest \
-  :mdm-plugin-authentication-basic:integrationTest \
   :mdm-plugin-datamodel:integrationTest \
-  :mdm-plugin-terminology:integrationTest \
-  :mdm-plugin-dataflow:integrationTest \
-  :mdm-plugin-referencedata:integrationTest \
-  :mdm-plugin-profile:integrationTest \
-  :mdm-plugin-federation:integrationTest
+  :mdm-plugin-dataflow:integrationTest
+#  :mdm-security:integrationTest \
+#  :mdm-plugin-authentication-apikey:integrationTest \
+#  :mdm-plugin-authentication-basic:integrationTest \
+#  :mdm-plugin-terminology:integrationTest \
+ \
+#  :mdm-plugin-referencedata:integrationTest \
+#  :mdm-plugin-profile:integrationTest \
+#  :mdm-plugin-federation:integrationTest
 
 }
 
 function e2eTest(){
   echo ">> E2E Tests <<"
-  ./gradlew --build-cache -Dgradle.test.package=core :mdm-testing-functional:integrationTest
-  ./gradlew --build-cache -Dgradle.test.package=security :mdm-testing-functional:integrationTest
-  ./gradlew --build-cache -Dgradle.test.package=authentication :mdm-testing-functional:integrationTest
-  ./gradlew --build-cache -Dgradle.test.package=datamodel :mdm-testing-functional:integrationTest
-  ./gradlew --build-cache -Dgradle.test.package=terminology :mdm-testing-functional:integrationTest
-  ./gradlew --build-cache -Dgradle.test.package=dataflow :mdm-testing-functional:integrationTest
-  ./gradlew --build-cache -Dgradle.test.package=referencedata :mdm-testing-functional:integrationTest
-  ./gradlew --build-cache -Dgradle.test.package=federation :mdm-testing-functional:integrationTest
-  ./gradlew --build-cache -Dgradle.test.package=profile :mdm-testing-functional:integrationTest
+#  ./gradlew --build-cache -Dgradle.test.package=core :mdm-testing-functional:integrationTest
+#  ./gradlew --build-cache -Dgradle.test.package=security :mdm-testing-functional:integrationTest
+#  ./gradlew --build-cache -Dgradle.test.package=authentication :mdm-testing-functional:integrationTest
+#  ./gradlew --build-cache -Dgradle.test.package=datamodel :mdm-testing-functional:integrationTest
+#  ./gradlew --build-cache -Dgradle.test.package=terminology :mdm-testing-functional:integrationTest
+#  ./gradlew --build-cache -Dgradle.test.package=dataflow :mdm-testing-functional:integrationTest
+#  ./gradlew --build-cache -Dgradle.test.package=referencedata :mdm-testing-functional:integrationTest
+#  ./gradlew --build-cache -Dgradle.test.package=federation :mdm-testing-functional:integrationTest
+#  ./gradlew --build-cache -Dgradle.test.package=profile :mdm-testing-functional:integrationTest
 }
 
 function initialReport(){

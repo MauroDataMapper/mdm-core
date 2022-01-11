@@ -21,10 +21,6 @@ database:
     port: 5432
     name: maurodatamapper
 ---
-apiUser:
-    username: admin@maurodatamapper.com
-    password: password
----
 #Default for plugins/applications
 ---
 maurodatamapper:
@@ -164,7 +160,9 @@ hibernate:
             provider: org.ehcache.jsr107.EhcacheCachingProvider
             missing_cache_strategy: create
     search:
-        default.indexBase: '/tmp/lucene/plugin/dataflow'
+        backend:
+            directory:
+                root: '/tmp/lucene/plugin/dataflow'
 
 ---
 dataSource:

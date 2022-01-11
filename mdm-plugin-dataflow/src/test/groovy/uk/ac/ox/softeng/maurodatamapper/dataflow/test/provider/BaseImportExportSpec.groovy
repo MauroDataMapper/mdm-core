@@ -17,13 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.dataflow.test.provider
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlow
 import uk.ac.ox.softeng.maurodatamapper.dataflow.test.BaseDataFlowIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelType
 
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import grails.util.BuildSettings
 import groovy.util.logging.Slf4j
 import spock.lang.Shared
@@ -48,8 +47,8 @@ abstract class BaseImportExportSpec extends BaseDataFlowIntegrationSpec {
 
     abstract String getImportType()
 
-    @OnceBefore
-    void setupResourcesPath() {
+    @RunOnce
+    def setup() {
         resourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', importType)
         assert getDataFlowImporterService()
     }

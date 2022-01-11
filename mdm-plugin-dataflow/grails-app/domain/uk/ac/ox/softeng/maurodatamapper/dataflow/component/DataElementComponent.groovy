@@ -96,19 +96,8 @@ class DataElementComponent implements ModelItem<DataElementComponent, DataModel>
         dataClassComponent
     }
 
-    @Override
     def beforeValidate() {
         beforeValidateModelItem()
-    }
-
-    @Override
-    def beforeInsert() {
-        buildPathString()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPathString()
     }
 
     @Override

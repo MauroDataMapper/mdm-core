@@ -6,8 +6,20 @@ model {
     String id
 }
 
-json {
-    path path
-    if (resource) resource resource
-    if (id) id id
+// Handle the notFound url response and any other potential unhandled errors which come out
+if (request.getUri() == '/error') {
+    int statusCode = request.getAttribute('javax.servlet.error.status_code') as int
+    String msg = request.getAttribute('javax.servlet.error.message')
+
+    response.status(statusCode)
+    json {
+        path request.getAttribute('javax.servlet.error.request_uri')
+        if (msg) message msg
+    }
+} else {
+    json {
+        if (path) path path
+        if (resource) resource resource
+        if (id) id id
+    }
 }
