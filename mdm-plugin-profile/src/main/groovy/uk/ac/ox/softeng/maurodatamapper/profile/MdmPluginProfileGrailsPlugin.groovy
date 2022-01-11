@@ -24,10 +24,9 @@ import grails.plugins.Plugin
 class MdmPluginProfileGrailsPlugin extends Plugin {
 
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = "4.0.0 > *"
+    def grailsVersion = "5.1.1 > *"
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
-        "grails-app/views/error.gsp"
     ]
 
     def title = "Mauro Data Mapper Profile Plugin"
@@ -59,8 +58,8 @@ The profile services and controllers for the Mauro Data Mapper backend.
     def scm = [url: "https://github.com/mauroDataMapper-plugins/mdm-core"]
 
     def dependsOn = [
-        mdmCore           : '4.0.0 > *',
-        mdmPluginDatamodel: '4.0.0 > *',
+        mdmCore           : '5.0.0 > *',
+        mdmPluginDatamodel: '5.0.0 > *',
     ]
 
     Closure doWithSpring() {

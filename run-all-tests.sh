@@ -26,6 +26,11 @@ case $key in
     E2E=true
     shift # past argument
     ;;
+    -p|--plugin)
+    PLUGIN="$2"
+    shift # past argument
+    shift # past value
+    ;;
     -h|--help)
     USAGE=true
     shift # past argument
@@ -67,13 +72,14 @@ function integrationTest(){
   :mdm-core:integrationTest \
   :mdm-plugin-datamodel:integrationTest \
   :mdm-plugin-email-proxy:integrationTest \
-  :mdm-plugin-dataflow:integrationTest
+  :mdm-plugin-dataflow:integrationTest \
+  :mdm-plugin-profile:integrationTest
   #  :mdm-security:integrationTest \
 #  :mdm-plugin-terminology:integrationTest \
 #  :mdm-plugin-referencedata:integrationTest \
 
 #  :mdm-plugin-federation:integrationTest \
-#  :mdm-plugin-profile:integrationTest
+#
 }
 
 function functionalTest(){
@@ -81,14 +87,15 @@ function functionalTest(){
 ./gradlew --build-cache -Dgradle.functionalTest=true \
   :mdm-core:integrationTest \
   :mdm-plugin-datamodel:integrationTest \
-  :mdm-plugin-dataflow:integrationTest
+  :mdm-plugin-dataflow:integrationTest \
+  :mdm-plugin-profile:integrationTest
 #  :mdm-security:integrationTest \
 #  :mdm-plugin-authentication-apikey:integrationTest \
 #  :mdm-plugin-authentication-basic:integrationTest \
 #  :mdm-plugin-terminology:integrationTest \
  \
 #  :mdm-plugin-referencedata:integrationTest \
-#  :mdm-plugin-profile:integrationTest \
+#   \
 #  :mdm-plugin-federation:integrationTest
 
 }
@@ -170,20 +177,25 @@ else
     compile
   fi
 
-  if $UNIT; then unitTest; fi;
 
-  if $INTEGRATION; then integrationTest; fi;
-
-  if $FUNCTIONAL; then functionalTest; fi;
-
-  if $E2E; then e2eTest; fi;
-
-  if $UNIT || $INTEGRATION || $FUNCTIONAL || $E2E
+  if [ -n "$PLUGIN" ]
   then
-    echo ">> Root Test Report <<"
-    ./gradlew --build-cache rootTestReport
+    echo "Testing plugin $PLUGIN only"
+    if $UNIT; then ./gradlew --build-cache -Dgradle.integrationTest=true ":${PLUGIN}:test"; fi;
+    if $INTEGRATION; then ./gradlew --build-cache -Dgradle.integrationTest=true ":${PLUGIN}:integrationTest"; fi;
+    if $FUNCTIONAL; then ./gradlew --build-cache -Dgradle.functionalTest=true ":${PLUGIN}:integrationTest"; fi;
+  else
+    if $UNIT; then unitTest; fi;
+    if $INTEGRATION; then integrationTest; fi;
+    if $FUNCTIONAL; then functionalTest; fi;
+    if $E2E; then e2eTest; fi;
   fi
 
+   if $UNIT || $INTEGRATION || $FUNCTIONAL || $E2E
+      then
+        echo ">> Root Test Report <<"
+        ./gradlew --build-cache rootTestReport
+      fi
 fi
 #./gradlew --build-cache jacocoTestReport
 #./gradlew --build-cache staticCodeAnalysis
