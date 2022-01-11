@@ -17,11 +17,17 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.search
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels as DataModelBootstrapModels
+
+import io.micronaut.http.HttpStatus
 
 import static io.micronaut.http.HttpStatus.OK
 
@@ -39,6 +45,8 @@ import static io.micronaut.http.HttpStatus.OK
 @Integration
 @Slf4j
 class SearchFunctionalSpec extends FunctionalSpec {
+
+    AuthorityService authorityService
 
     @Override
     String getResourcePath() {
@@ -367,4 +375,42 @@ class SearchFunctionalSpec extends FunctionalSpec {
   ]
 }'''
     }
+
+    void 'S08 : test searching for "simple" using POST with pagination and classifier'() {
+        given:
+        String term = 'simple'
+        def dm1Id, dm2Id
+
+        Folder.withNewTransaction {
+            Folder folder = Folder.findByLabel('Functional Test Folder')
+            Authority authority = authorityService.getDefaultAuthority()
+            dm1Id = DataModelBootstrapModels.buildAndSaveSimpleDataModelWithClassifier(messageSource, folder, 'test simple A', 'Environment A', authority).id
+            dm2Id = DataModelBootstrapModels.buildAndSaveSimpleDataModelWithClassifier(messageSource, folder, 'test simple B', 'Environment B', authority).id
+        }
+
+        when: 'logged in as reader user'
+        loginReader()
+        POST('', [searchTerm: term,
+                  classifiers: ['Environment A'],
+                  sort: 'label', max: 15], STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 1,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "test simple A"
+    }
+  ]
+}'''
+        cleanup:
+        loginAdmin()
+        DELETE("/api/dataModels/${dm1Id}?permanent=true", MAP_ARG, true)
+        assert response.status() == HttpStatus.NO_CONTENT
+        DELETE("/api/dataModels/${dm2Id}?permanent=true", MAP_ARG, true)
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
+
 }

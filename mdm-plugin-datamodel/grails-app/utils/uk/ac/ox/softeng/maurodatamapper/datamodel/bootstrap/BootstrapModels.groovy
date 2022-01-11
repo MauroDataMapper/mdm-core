@@ -107,6 +107,47 @@ class BootstrapModels {
         simpleDataModel
     }
 
+    static DataModel buildAndSaveSimpleDataModelWithClassifier(MessageSource messageSource, Folder folder, String dataModelName, String classifierName, Authority authority) {
+        DataModel simpleDataModel = DataModel.findByLabel(dataModelName)
+
+        if (!simpleDataModel) {
+            log.debug("Creating simple datamodel")
+            simpleDataModel = new DataModel(createdBy: DEVELOPMENT, label: dataModelName, folder: folder, authority: authority)
+
+            Classifier classifier
+
+            classifier = Classifier.findByLabel(classifierName)
+
+            if (!classifier) {
+                log.debug("creating ${classifierName}")
+                classifier = new Classifier(createdBy: DEVELOPMENT, label: classifierName, readableByAuthenticatedUsers: true)
+                checkAndSave(messageSource, classifier)
+            } else {
+                log.debug("${classifierName} already exists")
+            }
+            simpleDataModel.addToClassifiers(classifier)
+            checkAndSave(messageSource, simpleDataModel)
+
+            DataClass dataClass = new DataClass(createdBy: DEVELOPMENT, label: 'simple')
+
+            simpleDataModel
+                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'test.com/simple', key: 'mdk1', value: 'mdv1')
+                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'test.com', key: 'mdk2', value: 'mdv2')
+                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'test.com/simple', key: 'mdk2', value: 'mdv2')
+                .addToDataClasses(dataClass)
+
+            checkAndSave(messageSource, simpleDataModel)
+
+            dataClass.addToMetadata(createdBy: DEVELOPMENT, namespace: 'test.com/simple', key: 'mdk1', value: 'mdv1')
+
+            checkAndSave(messageSource, simpleDataModel)
+        }
+
+        log.debug("${dataModelName} DataModel id = {}", simpleDataModel.id.toString())
+        log.debug("${classifierName} id = {}", simpleDataModel.classifiers[0].id.toString())
+        simpleDataModel
+    }
+
     static DataModel buildAndSaveComplexDataModel(MessageSource messageSource, Folder folder, Authority authority) {
         DataModel dataModel = DataModel.findByLabel(COMPLEX_DATAMODEL_NAME)
 

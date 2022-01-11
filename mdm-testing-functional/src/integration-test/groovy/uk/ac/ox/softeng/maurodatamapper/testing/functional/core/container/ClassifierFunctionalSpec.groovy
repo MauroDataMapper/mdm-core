@@ -154,7 +154,7 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
     @Override
     String getEditorIndexJson() {
         '''{
-  "count": 4,
+  "count": 6,
   "items": [
     {
       "id": "${json-unit.matches:id}",
@@ -174,6 +174,16 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
     {
       "id": "${json-unit.matches:id}",
       "label": "test classifier2",
+      "lastUpdated": "${json-unit.matches:offsetDateTime}"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "label": "Environment A",
+      "lastUpdated": "${json-unit.matches:offsetDateTime}"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "label": "Environment B",
       "lastUpdated": "${json-unit.matches:offsetDateTime}"
     }
   ]
