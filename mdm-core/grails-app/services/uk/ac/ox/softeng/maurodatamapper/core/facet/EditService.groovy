@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.security.UserService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.AnonymisableService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.basic.AnonymousUser
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -29,7 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 
 @Slf4j
-class EditService {
+class EditService implements AnonymisableService {
 
     @Autowired(required = false)
     UserService userService
@@ -76,5 +77,12 @@ class EditService {
         if (!edit) return null
         edit.user = userService ? userService.findUser(edit.createdBy) ?: AnonymousUser.instance : AnonymousUser.instance
         edit
+    }
+
+    void anonymise(String createdBy) {
+        Edit.findAllByCreatedBy(createdBy).each {edit ->
+            edit.createdBy = AnonymousUser.ANONYMOUS_EMAIL_ADDRESS
+            edit.save(validate: false)
+        }
     }
 }

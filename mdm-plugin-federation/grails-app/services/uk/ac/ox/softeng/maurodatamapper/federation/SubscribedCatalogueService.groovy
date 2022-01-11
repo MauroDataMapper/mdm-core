@@ -21,7 +21,9 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.XmlImportMapping
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.AnonymisableService
 import uk.ac.ox.softeng.maurodatamapper.federation.web.FederationClient
+import uk.ac.ox.softeng.maurodatamapper.security.basic.AnonymousUser
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
@@ -40,7 +42,7 @@ import java.time.format.DateTimeFormatter
 
 @Transactional
 @Slf4j
-class SubscribedCatalogueService implements XmlImportMapping {
+class SubscribedCatalogueService implements XmlImportMapping, AnonymisableService {
 
     @Autowired
     HttpClientConfiguration httpClientConfiguration
@@ -192,5 +194,12 @@ class SubscribedCatalogueService implements XmlImportMapping {
         int lastPos = url.lastIndexOf(separator)
 
         return url.substring(lastPos + 1)
+    }
+
+    void anonymise(String createdBy) {
+        SubscribedCatalogue.findAllByCreatedBy(createdBy).each { subscribedCatalogue ->
+            subscribedCatalogue.createdBy = AnonymousUser.ANONYMOUS_EMAIL_ADDRESS
+            subscribedCatalogue.save(validate: false)
+        }
     }
 }

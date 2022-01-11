@@ -22,6 +22,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFile
 import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFileService
 import uk.ac.ox.softeng.maurodatamapper.core.security.UserService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.AnonymisableService
+import uk.ac.ox.softeng.maurodatamapper.security.basic.AnonymousUser
 import uk.ac.ox.softeng.maurodatamapper.security.rest.transport.UserProfilePicture
 import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityUtils
 
@@ -31,11 +33,16 @@ import grails.gorm.transactions.Transactional
 import java.security.NoSuchAlgorithmException
 import java.time.OffsetDateTime
 
+import org.springframework.beans.factory.annotation.Autowired
+
 @Transactional
 class CatalogueUserService implements UserService {
 
     UserImageFileService userImageFileService
     UserGroupService userGroupService
+
+    @Autowired(required = false)
+    List<AnonymisableService> anonymisableServices
 
     CatalogueUser get(Serializable id) {
         CatalogueUser.get(id) ?: id instanceof String ? findByEmailAddress(id) : null
@@ -53,8 +60,43 @@ class CatalogueUserService implements UserService {
         delete(get(id))
     }
 
-    void delete(CatalogueUser catalogueUser) {
-        catalogueUser.disabled = true
+    void delete(CatalogueUser catalogueUser, boolean permanent = false) {
+        if (permanent) {
+            anonymiseAndPermanentlyDelete(catalogueUser)
+        } else {
+            catalogueUser.disabled = true
+        }
+    }
+
+    /**
+     * When it is necessary to completely scrub the user's name and email address from the database,
+     * this method:
+     * - Use the anonymise method on every AnonymisableService
+     * - Explicitly anonymise the CatalogueUser table
+     * - Removes the CatalogueUser from any UserGroups
+     * - Finally, permanently delete the CatalogueUser.
+     *
+     * @param catalogueUser
+     */
+    void anonymiseAndPermanentlyDelete(CatalogueUser catalogueUser) {
+        // Anonymise everything
+        anonymisableServices.each {
+            it.anonymise(catalogueUser.emailAddress)
+        }
+
+        // Anonymise Catalogue Users
+        CatalogueUser.findAllByCreatedBy(catalogueUser.emailAddress).each { cu ->
+            cu.createdBy = AnonymousUser.ANONYMOUS_EMAIL_ADDRESS
+            cu.save(validate: false)
+        }
+
+        // Remove user from any user groups
+        catalogueUser.groups.each {group ->
+            catalogueUser.removeFromGroups(group)
+        }
+
+        // Delete
+        catalogueUser.delete(flush: true)
     }
 
     CatalogueUser findByEmailAddress(String emailAddress) {
