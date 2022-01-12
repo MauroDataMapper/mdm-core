@@ -60,7 +60,7 @@ trait XmlValidator extends XmlComparer {
 
         def config = Holders.findApplication().config
 
-        Path userDir = Paths.get(config."user.dir" as String)
+        Path userDir = Paths.get(config.getProperty('user.dir', String))
         Path schemaFolderPath = userDir.resolve('grails-app/assets/xsd')
 
         Path schemaFilePath = schemaFolderPath.resolve("${xsdFileName}_${xsdVersion}.xsd")

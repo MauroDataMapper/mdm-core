@@ -46,9 +46,9 @@ abstract class BaseUnitSpec extends MdmSpecification implements DataTest, Grails
     static Path workingDirectory
 
     static Path getGrailsDirectory(def config) {
-        workingDirectory = Paths.get(config.'user.dir' as String)
-        if (config.'grails.project.base.dir' as String) {
-            Path projectDir = Paths.get(config.'grails.project.base.dir' as String)
+        workingDirectory = Paths.get(config.getProperty('user.dir', String))
+        if (config.getProperty('grails.project.base.dir', String)) {
+            Path projectDir = Paths.get(config.getProperty('grails.project.base.dir', String))
             if (projectDir) {
                 workingDirectory = (projectDir.fileName == workingDirectory.fileName) ? workingDirectory : workingDirectory.resolve(projectDir)
             }
@@ -57,9 +57,9 @@ abstract class BaseUnitSpec extends MdmSpecification implements DataTest, Grails
     }
 
     static Path getRootGrailsDirectory(def config) {
-        workingDirectory = Paths.get(config.'user.dir' as String)
-        if (config.'grails.root.base.dir' as String) {
-            Path projectDir = Paths.get(config.'grails.root.base.dir' as String)
+        workingDirectory = Paths.get(config.getProperty('user.dir', String))
+        if (config.getProperty('grails.root.base.dir', String)) {
+            Path projectDir = Paths.get(config.getProperty('grails.root.base.dir', String))
             if (projectDir) {
                 workingDirectory = (projectDir.fileName == workingDirectory.fileName) ? workingDirectory : workingDirectory.resolve(projectDir)
             }
@@ -73,7 +73,7 @@ abstract class BaseUnitSpec extends MdmSpecification implements DataTest, Grails
 
     @RunOnce
     def setup() {
-        log.debug('Setting up base unit')
+        log.debug('Run Once setting up base unit')
         log.debug('Load I18n Messages')
         loadI18nMessagesFromPath(getRootGrailsDirectory(config).resolve('mdm-core/grails-app/i18n/messages.properties'))
         loadI18nMessagesFromPath(getGrailsDirectory(config).resolve('grails-app/i18n/messages.properties'))

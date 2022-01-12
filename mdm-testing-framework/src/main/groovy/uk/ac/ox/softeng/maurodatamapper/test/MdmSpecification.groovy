@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.test.unit.security.TestUser
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.validation.Validateable
 import grails.validation.ValidationException
@@ -46,6 +47,8 @@ abstract class MdmSpecification extends Specification {
     static UUID reader2Id
     static UUID pendingId
 
+    long startTime
+
     def setupSpec() {
         log.debug('Setup User Ids')
         adminId = UUID.randomUUID()
@@ -56,7 +59,12 @@ abstract class MdmSpecification extends Specification {
     }
 
     def setup() {
-        log.warn('--- {} --- {} ---', getClass().simpleName, specificationContext.currentIteration.name)
+        startTime = System.currentTimeMillis()
+        log.warn('--- {} --- {} ---', specificationContext.currentSpec.displayName, specificationContext.currentIteration.displayName)
+    }
+
+    def cleanup() {
+        log.warn('--- Test complete took {} ---', Utils.timeTaken(startTime))
     }
 
     void check(GormEntity domainObj) {

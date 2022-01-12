@@ -57,6 +57,17 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
     DataModel complexDataModel
     DataModel simpleDataModel
 
+    @Override
+    void preDomainDataSetup() {
+        super.preDomainDataSetup()
+        hibernateSearchIndexingService.purgeAllIndexes()
+    }
+
+    @Override
+    void postDomainDataSetup() {
+        hibernateSearchIndexingService.flushIndexes()
+    }
+
     @SuppressWarnings('GroovyAssignabilityCheck')
     @Override
     void setupDomainData() {

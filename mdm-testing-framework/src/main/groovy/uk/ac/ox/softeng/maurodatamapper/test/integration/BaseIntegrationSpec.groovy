@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.hibernate.search.HibernateSearchIndexingService
 import uk.ac.ox.softeng.maurodatamapper.test.MdmSpecification
 import uk.ac.ox.softeng.maurodatamapper.test.unit.security.IdSecuredUserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.core.GrailsApplication
 import groovy.util.logging.Slf4j
@@ -50,9 +51,7 @@ abstract class BaseIntegrationSpec extends MdmSpecification {
     abstract void setupDomainData()
 
     void setupData() {
-
-        // Remove any indexes which currently exist from previous tests
-        hibernateSearchIndexingService.purgeAllIndexes()
+        long start = System.currentTimeMillis()
 
         preDomainDataSetup()
 
@@ -60,12 +59,9 @@ abstract class BaseIntegrationSpec extends MdmSpecification {
 
         postDomainDataSetup()
 
-        // Flush all the new data indexes to the files
-        hibernateSearchIndexingService.flushIndexes()
-
         // This log marker allows us to ignore all the inserts and DB queries in the logs prior,
         // thus allowing analysis of the SQL actioned for each test
-        log.debug("==> Test data setup and inserted into database <==")
+        log.debug("==> Test data setup and inserted into database took {} <==", Utils.timeTaken(start))
     }
 
     void preDomainDataSetup() {

@@ -367,7 +367,9 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     void 'test finding all similar DataElements in another model'() {
         given:
         buildComplex = true
+        hibernateSearchIndexingService.purgeAllIndexes()
         setupData()
+        hibernateSearchIndexingService.flushIndexes()
         DataElement original = dataElementService.get(id)
 
         when:

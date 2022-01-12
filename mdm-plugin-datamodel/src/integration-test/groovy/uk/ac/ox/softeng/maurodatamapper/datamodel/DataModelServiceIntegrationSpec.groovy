@@ -1875,7 +1875,9 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
     void 'test suggesting links between models'() {
         given:
+        hibernateSearchIndexingService.purgeAllIndexes()
         setupData()
+        hibernateSearchIndexingService.flushIndexes()
         DataModel dataModel = dataModelService.get(id)
 
         when:

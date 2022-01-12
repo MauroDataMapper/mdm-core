@@ -23,8 +23,10 @@ import uk.ac.ox.softeng.maurodatamapper.test.xml.evalutator.IgnoreOrderDifferenc
 import uk.ac.ox.softeng.maurodatamapper.test.xml.selector.CustomElementSelector
 
 import groovy.util.logging.Slf4j
-import groovy.xml.XmlParser
-import groovy.xml.XmlUtil
+import org.dom4j.Document
+import org.dom4j.DocumentHelper
+import org.dom4j.io.OutputFormat
+import org.dom4j.io.XMLWriter
 import org.xmlunit.builder.DiffBuilder
 import org.xmlunit.builder.Input
 import org.xmlunit.diff.DefaultNodeMatcher
@@ -92,10 +94,11 @@ trait XmlComparer {
     }
 
     String prettyPrint(String xml) {
-        try {
-            XmlUtil.serialize(new XmlParser().parseText(xml))
-        } catch (Exception ignored) {
-            xml
-        }
+        Document document = DocumentHelper.parseText(xml)
+        OutputFormat format = OutputFormat.createPrettyPrint()
+        StringWriter stringWriter = new StringWriter()
+        XMLWriter writer = new XMLWriter(stringWriter, format)
+        writer.write(document)
+        stringWriter.toString()
     }
 }
