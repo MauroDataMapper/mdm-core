@@ -183,14 +183,22 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     @Override
     VersionedFolder findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
-        String split = pathIdentifier.split(/\./)
-        DetachedCriteria criteria = VersionedFolder.byParentFolderId(parentId).eq('label', split[0])
+        String[] split = pathIdentifier.split(PathNode.ESCAPED_MODEL_PATH_IDENTIFIER_SEPARATOR)
+        DetachedCriteria criteria = parentId ? VersionedFolder.byParentFolderId(parentId) : VersionedFolder.byNoParentFolder()
 
-        if (Version.isVersionable(split[1])) {
-            criteria.eq('modelVersion', Version.from(split[1]))
-        } else {
-            criteria.eq('branchName', split[1])
+        String label = split[0]
+        criteria.eq('label', label)
+
+        if (split.size() == 2) {
+            String modelIdentifier = split[1]
+
+            if (Version.isVersionable(modelIdentifier)) {
+                criteria.eq('modelVersion', Version.from(modelIdentifier))
+            } else {
+                criteria.eq('branchName', modelIdentifier).isNull('modelVersion')
+            }
         }
+
         criteria.get()
     }
 
@@ -875,9 +883,15 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         }
         String fieldName = modificationPatch.fieldName
         log.debug('Modifying [{}] in [{}]', fieldName, modificationPatch.path.toString(getModelIdentifier(targetVersionedFolder)))
-        domain."${fieldName}" = modificationPatch.sourceValue
+
         DomainService domainService = getDomainServices().find {it.handles(domain.class)}
         if (!domainService) throw new ApiInternalException('MSXX', "No domain service to handle modification of [${domain.domainType}]")
+
+        // If the domainService provides a special handler for modifying this field then use it,
+        // otherwise just set the value directly
+        if (!domainService.handlesModificationPatchOfFieldIntoVersionedFolder(modificationPatch, targetVersionedFolder, domain, fieldName)) {
+            domain."${fieldName}" = modificationPatch.sourceValue
+        }
 
         if (!domain.validate())
             throw new ApiInvalidModelException('MS01', 'Modified domain is invalid', domain.errors, messageSource)

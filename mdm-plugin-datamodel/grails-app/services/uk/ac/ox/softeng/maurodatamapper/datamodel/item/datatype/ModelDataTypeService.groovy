@@ -18,14 +18,19 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
+import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
@@ -38,6 +43,7 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> implements Su
 
     SummaryMetadataService summaryMetadataService
     DataTypeService dataTypeService
+    PathService pathService
 
     @Override
     boolean handlesPathPrefix(String pathPrefix) {
@@ -172,5 +178,33 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> implements Su
     @Override
     List<ModelDataType> findAllByMetadataNamespace(String namespace, Map pagination) {
         ModelDataType.byMetadataNamespace(namespace).list(pagination)
+    }
+
+    /**
+     * Special handler to apply a modification patch to a ModelDataType.modelResourceId and ModelDataType.modelResourceDomainType.
+     * See ModelDataType.diff for how the MergeDiff is constructed. We want to set the correct modelResourceId, but this is difficult
+     * when merging the MDT. In the diff we set a mergeField called modelResourcePath. In this method we use that modelResourcePath
+     * to determine the ID of the correct model to point to.
+     * @param modificationPatch
+     * @param targetVersionedFolder
+     * @param targetDomain
+     * @param fieldName
+     * @return
+     */
+    @Override
+    boolean handlesModificationPatchOfFieldIntoVersionedFolder(FieldPatchData modificationPatch, VersionedFolder targetVersionedFolder, ModelDataType targetDomain, String fieldName) {
+        if (fieldName == 'modelResourcePath') {
+            // If the modelResourcePath is a path to something internal to the source VF then this should also exist in the
+            // target VF, either because it existed in the target VF before branching occurred, or because it has already been merged from
+            // the source VF to target VF. So find a resource with the same label in the target VF, and use this.
+            CreatorAware modelResource = pathService.findResourceByPathFromRootResource(targetVersionedFolder, Path.from(modificationPatch.sourceValue), targetVersionedFolder.modelIdentifier)
+            targetDomain.modelResourceId = modelResource.id
+            targetDomain.modelResourceDomainType = modelResource.domainType
+
+            // TODO other scenario where the modelResourcePath points to something external to the source VF
+            return true
+        }
+
+        false
     }
 }

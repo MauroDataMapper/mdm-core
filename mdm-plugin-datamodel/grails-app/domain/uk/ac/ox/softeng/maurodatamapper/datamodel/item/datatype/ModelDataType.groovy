@@ -66,8 +66,7 @@ class ModelDataType extends DataType<ModelDataType> {
                 Path otherResourcePath = Path.from(otherResourceModel.folder, otherResourceModel)
                 if (!thisResourcePath.matches(otherResourcePath, thisResourceModel.modelIdentifier)) {
                     diff.
-                    appendString('modelResourceId', this.modelResourceId.toString(), otherDataType.modelResourceId.toString()).
-                    appendString('modelResourceDomainType', this.modelResourceDomainType, otherDataType.modelResourceDomainType)
+                    appendString('modelResourcePath', thisResourcePath.toString(), otherResourcePath.toString())
                 }
             }
         }

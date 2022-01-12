@@ -2777,6 +2777,122 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         builder.cleanupTestMergeData(mergeData)
     }
 
+    void 'MI09 : test branch and merge the complex VersionedFolder when a Model Data Type has differences (as editor)'() {
+        given:
+        Map data = builder.buildComplexModelsForBranching()
+        loginEditor()
+        String id = data.commonAncestorId
+
+        when: 'logged in as editor we create a new main branch of the VF'
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+
+        then: 'the branch is created'
+        verifyResponse CREATED, response
+        responseBody().id != id
+        responseBody().label == 'Functional Test VersionedFolder Complex'
+        responseBody().documentationVersion == '1.0.0'
+        responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+        !responseBody().modelVersion
+        String targetId = responseBody().id
+
+        when: 'logged in as editor we create a new branch of the VF'
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: 'source'])
+
+        then: 'the branch is created'
+        verifyResponse CREATED, response
+        responseBody().id != id
+        responseBody().label == 'Functional Test VersionedFolder Complex'
+        responseBody().documentationVersion == '1.0.0'
+        responseBody().branchName == 'source'
+        !responseBody().modelVersion
+        String sourceId = responseBody().id
+
+        when: 'getting the data models inside the main folder'
+        GET("folders/$targetId/dataModels", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+        String targetDataModelId = responseBody().items[0].id
+
+        when: 'getting the data models inside the branched folder'
+        GET("folders/$sourceId/dataModels", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+        String sourceDataModelId = responseBody().items[0].id
+
+        when: 'getting the code sets inside the branched folder'
+        GET("folders/$sourceId/codeSets", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+        String sourceCodeSetId = responseBody().items[0].id
+
+        when: 'getting the code sets inside the main folder'
+        GET("folders/$targetId/codeSets", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+        String targetCodeSetId = responseBody().items[0].id
+
+        when: 'get the dataTypes on the branched Data Model'
+        GET("dataModels/$sourceDataModelId/dataTypes", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+        String modelDataTypeId = responseBody().items.find{it.label == 'Functional Test Model Data Type'}.id
+
+        when: 'Update the model data type in the source branch to point at the CodeSet rather than Terminology'
+        PUT("dataModels/$sourceDataModelId/dataTypes/$modelDataTypeId", [modelResourceDomainType: 'CodeSet', modelResourceId: sourceCodeSetId], MAP_ARG, true)
+
+        then: 'The response is updated'
+        verifyResponse(OK, response)
+
+        when: 'Get the diffs between the branch and main'
+        GET("$sourceId/mergeDiff/$targetId")
+
+        then:
+        verifyResponse(OK, response)
+        def diffs = responseBody().diffs
+
+        when: 'Merge the diffs between the branch and main'
+        PUT("$sourceId/mergeInto/$targetId", [
+            patch:
+                [
+                    targetId: targetId,
+                    sourceId: sourceId,
+                    label   : "Functional Test Model",
+                    count   : diffs.size(),
+                    patches : diffs
+                ]
+        ])
+
+        then: 'The response is OK'
+        verifyResponse(OK, response)
+
+        when: 'get the dataTypes on the main branch Data Model'
+        GET("dataModels/$targetDataModelId/dataTypes", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+        responseBody().items[0].modelResourceDomainType == 'CodeSet'
+        responseBody().items[0].modelResourceId == targetCodeSetId
+
+
+        cleanup:
+        cleanupIds(id, sourceId, targetId)
+    }
+
+
+
     void 'MP01 : test model permissions'() {
         given:
         TestMergeData mergeData = builder.buildComplexModelsForMerging()

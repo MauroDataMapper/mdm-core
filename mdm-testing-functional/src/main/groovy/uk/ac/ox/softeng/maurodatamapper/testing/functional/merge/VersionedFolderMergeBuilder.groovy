@@ -79,7 +79,8 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
             commonAncestorId: commonAncestorId,
             dataModelCaId   : dataModelCa,
             terminologyCaId : terminologyCa,
-            codeSetCaId     : codeSetCa
+            codeSetCaId     : codeSetCa,
+            modelDataTypeCaId: modelDataTypeCa
         ]
     }
 
