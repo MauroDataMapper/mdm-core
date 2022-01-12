@@ -42,7 +42,7 @@ class CodeSetXmlExporterService extends CodeSetExporterProviderService implement
 
     @Override
     String getVersion() {
-        '4.0'
+        '5.0'
     }
 
     @Override
@@ -68,12 +68,12 @@ class CodeSetXmlExporterService extends CodeSetExporterProviderService implement
     @Override
     ByteArrayOutputStream exportCodeSet(User currentUser, CodeSet codeSet) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(codeSet, 'codeSet', version, '3.0', 'gml', exportMetadata), fileType)
+        exportModel(new ExportModel(codeSet, 'codeSet', version, '4.0', 'gml', exportMetadata), fileType)
     }
 
     @Override
     ByteArrayOutputStream exportCodeSets(User currentUser, List<CodeSet> codeSets) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(codeSets, 'codeSet', 'codeSets', version, '3.0', 'gml', exportMetadata), fileType)
+        exportModel(new ExportModel(codeSets, 'codeSet', 'codeSets', version, '4.0', 'gml', exportMetadata), fileType)
     }
 }

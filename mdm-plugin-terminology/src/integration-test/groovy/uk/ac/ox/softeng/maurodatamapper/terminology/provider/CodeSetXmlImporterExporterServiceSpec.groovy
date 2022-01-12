@@ -34,7 +34,7 @@ import uk.ac.ox.softeng.maurodatamapper.version.Version
 import com.google.common.base.CaseFormat
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import grails.util.BuildSettings
 import groovy.util.logging.Slf4j
 import org.junit.Assert
@@ -108,7 +108,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
             Files.writeString(expectedPath, (prettyPrint(exportedModel)))
             Assert.fail("Expected export file ${expectedPath} does not exist")
         }
-        validateAndCompareXml(Files.readString(expectedPath), exportedModel.replace(/Mauro Data Mapper/, 'Test Authority'), 'export',
+        validateAndCompareXml(Files.readString(expectedPath), exportedModel, 'export',
                               codeSetXmlExporterService.version)
     }
 
@@ -116,15 +116,15 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         validateExportedModel(testName, exportedModels)
     }
 
-    @OnceBefore
-    void setupResourcesPath() {
-        resourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', importType)
+    @RunOnce
+    def setup() {
+        resourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', importType, 'codeset')
         assert getImporterService()
     }
 
     @Override
     void setupDomainData() {
-        log.debug('Setting up CodeSetServiceSpec unit')
+        log.debug('Setting up CodeSetXmlImporterExporterServiceSpec')
 
         simpleCodeSetId = simpleCodeSet.id
         complexCodeSetId = complexCodeSet.id
@@ -605,14 +605,14 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
 
         then:
         exception = thrown(ApiBadRequestException)
-        exception.errorCode == NO_CODESET_TO_IMPORT_CODE
+        exception.errorCode == 'XIS03'
 
         when: 'given an empty model map (backwards compatibility)'
         importModels(loadTestFile('emptyCodeSet'))
 
         then:
         exception = thrown(ApiBadRequestException)
-        exception.errorCode == NO_CODESET_TO_IMPORT_CODE
+        exception.errorCode == 'XIS03'
 
         // when: 'given an empty models list'
         // importModels(loadTestFile('emptyCodeSetList'))

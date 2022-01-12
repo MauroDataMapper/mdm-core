@@ -17,8 +17,9 @@ Terminology export = terminology as Terminology
     'mdm:finalised'(export.finalised)
      if (export.finalised) 'mdm:dateFinalised'(convertDate(export.dateFinalised))
      if (export.modelVersion) 'mdm:modelVersion' export.modelVersion.toString()
+     else 'mdm:branchName' export.branchName
 
-     layout '/authority/export.gml', authority: export.authority, ns: 'mdm'
+    layout '/authority/exportAuthority.gml', authority: export.authority
 
     if (export.termRelationshipTypes) {
         'mdm:termRelationshipTypes' {
@@ -27,7 +28,7 @@ Terminology export = terminology as Terminology
             }
         }
     }
-    
+
     if (export.terms) {
         'mdm:terms' {
             export.terms.each {t ->
@@ -46,7 +47,7 @@ Terminology export = terminology as Terminology
                 }
             }
         }
-    }     
+    }
 
 }
 

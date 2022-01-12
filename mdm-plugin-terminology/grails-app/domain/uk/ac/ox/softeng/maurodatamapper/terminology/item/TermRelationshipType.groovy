@@ -35,7 +35,6 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
 
 import com.google.common.base.CaseFormat
 import grails.gorm.DetachedCriteria
-import org.grails.datastore.gorm.GormEntity
 
 class TermRelationshipType implements ModelItem<TermRelationshipType, Terminology> {
 
@@ -103,16 +102,6 @@ class TermRelationshipType implements ModelItem<TermRelationshipType, Terminolog
     def beforeValidate() {
         if (!displayLabel) createDisplayLabel(label)
         beforeValidateModelItem()
-    }
-
-    @Override
-    def beforeInsert() {
-        buildPathString()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPathString()
     }
 
     String getEditLabel() {

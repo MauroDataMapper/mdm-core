@@ -73,9 +73,10 @@ function integrationTest(){
   :mdm-plugin-datamodel:integrationTest \
   :mdm-plugin-email-proxy:integrationTest \
   :mdm-plugin-dataflow:integrationTest \
-  :mdm-plugin-profile:integrationTest
+  :mdm-plugin-profile:integrationTest \
+  :mdm-plugin-terminology:integrationTest
   #  :mdm-security:integrationTest \
-#  :mdm-plugin-terminology:integrationTest \
+#
 #  :mdm-plugin-referencedata:integrationTest \
 
 #  :mdm-plugin-federation:integrationTest \
@@ -88,11 +89,12 @@ function functionalTest(){
   :mdm-core:integrationTest \
   :mdm-plugin-datamodel:integrationTest \
   :mdm-plugin-dataflow:integrationTest \
-  :mdm-plugin-profile:integrationTest
+  :mdm-plugin-profile:integrationTest \
+  :mdm-plugin-terminology:integrationTest
 #  :mdm-security:integrationTest \
 #  :mdm-plugin-authentication-apikey:integrationTest \
 #  :mdm-plugin-authentication-basic:integrationTest \
-#  :mdm-plugin-terminology:integrationTest \
+#
  \
 #  :mdm-plugin-referencedata:integrationTest \
 #   \
@@ -168,34 +170,35 @@ if $USAGE
 then
   usage
 else
-
-  if $REPORT; then initialReport; fi;
-
-  if $UNIT || $INTEGRATION || $FUNCTIONAL || $E2E
-  then
-    ./gradlew jenkinsClean
-    compile
-  fi
-
-
-  if [ -n "$PLUGIN" ]
+ if [ -n "$PLUGIN" ]
   then
     echo "Testing plugin $PLUGIN only"
+     ./gradlew jenkinsClean
     if $UNIT; then ./gradlew --build-cache -Dgradle.integrationTest=true ":${PLUGIN}:test"; fi;
     if $INTEGRATION; then ./gradlew --build-cache -Dgradle.integrationTest=true ":${PLUGIN}:integrationTest"; fi;
     if $FUNCTIONAL; then ./gradlew --build-cache -Dgradle.functionalTest=true ":${PLUGIN}:integrationTest"; fi;
+     ./gradlew --build-cache rootTestReport
   else
+
+    if $REPORT; then initialReport; fi;
+
+    if $UNIT || $INTEGRATION || $FUNCTIONAL || $E2E
+    then
+      ./gradlew jenkinsClean
+      compile
+    fi
+
     if $UNIT; then unitTest; fi;
     if $INTEGRATION; then integrationTest; fi;
     if $FUNCTIONAL; then functionalTest; fi;
     if $E2E; then e2eTest; fi;
   fi
 
-   if $UNIT || $INTEGRATION || $FUNCTIONAL || $E2E
+  if $UNIT || $INTEGRATION || $FUNCTIONAL || $E2E
       then
         echo ">> Root Test Report <<"
         ./gradlew --build-cache rootTestReport
-      fi
+  fi
 fi
 #./gradlew --build-cache jacocoTestReport
 #./gradlew --build-cache staticCodeAnalysis

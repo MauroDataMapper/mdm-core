@@ -93,6 +93,7 @@ class TermRelationshipSpec extends ModelItemSpec<TermRelationship> implements Do
 
     @Override
     void wipeBasicConstrained() {
+        super.wipeBasicConstrained()
         domain.aliasesString = null
         domain.relationshipType = null
     }
@@ -106,12 +107,12 @@ class TermRelationshipSpec extends ModelItemSpec<TermRelationship> implements Do
 
     @Override
     int getExpectedConstrainedBlankErrors() {
-        4
+        5
     }
 
     @Override
     int getExpectedConstrainedErrors() {
-        2
+        3 // label, path, relationshiptype
     }
 
     @Override

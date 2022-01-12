@@ -184,7 +184,7 @@ subprojects {
     }
 
     afterEvaluate {
-        def addtlJvmArgs = ['-Xmx8g', '-XX:+UseG1GC', '-XX:+UseStringDeduplication', '-XX:+UseCompressedOops', '-Dfile.encoding=UTF-8']
+        def addtlJvmArgs = ['-Xms2g', '-Xmx8g', '-XX:+UseG1GC', '-XX:+UseStringDeduplication', '-XX:+UseCompressedOops', '-Dfile.encoding=UTF-8']
         // Make sure bootRun runs with the required arguments
         project.tasks.findByName('bootRun')?.jvmArgs(addtlJvmArgs)
 

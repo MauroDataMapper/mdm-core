@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.facet.rule
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
@@ -26,7 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.test.functional.facet.CatalogueItemRuleF
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import spock.lang.Shared
@@ -44,7 +44,7 @@ class TermRelationshipRuleFunctionalSpec extends CatalogueItemRuleFunctionalSpec
     Terminology terminology
 
     @Shared
-    TermRelationship termRelationship      
+    TermRelationship termRelationship
 
     String getCatalogueItemCopyPath() {
         "termRelationships/${sourceCatalogueItemId}/newForkModel"
@@ -60,23 +60,26 @@ class TermRelationshipRuleFunctionalSpec extends CatalogueItemRuleFunctionalSpec
         // newForkModel doesn't require a destination terminology
     }
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def checkAndSetupData() {
+    def setup() {
         log.debug('Check and setup test data')
-        terminology = new Terminology(label: 'Functional Test Terminology', createdBy: 'functionalTest@test.com',
-                                  folder: folder, authority: testAuthority).save(flush: true)
+        terminology = new Terminology(label: 'Functional Test Terminology', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
+                                      folder: folder, authority: testAuthority).save(flush: true)
 
         Term term1 = new Term(code: 'Functional Test Code Source', definition: 'Functional Test Definition',
-                              terminology: terminology, createdBy: 'functionalTest@test.com').save(flush: true)
+                              terminology: terminology, createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true)
 
         Term term2 = new Term(code: 'Functional Test Code Target', definition: 'Functional Test Definition',
-                              terminology: terminology, createdBy: 'functionalTest@test.com').save(flush: true)   
+                              terminology: terminology, createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true)
 
         TermRelationshipType termRelationshipType = new TermRelationshipType(label: 'Functional Test TermRelationshipType',
-                             terminology: terminology, createdBy: 'functionalTest@test.com').save(flush: true)
+                                                                             terminology: terminology,
+                                                                             createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true)
 
-        termRelationship = new TermRelationship(label: 'Functional Test TermRelationship', sourceTerm: term1, targetTerm: term2, relationshipType: termRelationshipType, , createdBy: 'functionalTest@test.com').save(flush: true)        
+        termRelationship = new TermRelationship(label: 'Functional Test TermRelationship', sourceTerm: term1, targetTerm: term2,
+                                                relationshipType: termRelationshipType, createdBy: StandardEmailAddress.FUNCTIONAL_TEST)
+            .save(flush: true)
         sessionFactory.currentSession.flush()
     }
 

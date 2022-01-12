@@ -17,14 +17,14 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.facet.rule
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.test.functional.facet.CatalogueItemRuleFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import spock.lang.Shared
@@ -42,7 +42,7 @@ class TermRuleFunctionalSpec extends CatalogueItemRuleFunctionalSpec {
     Terminology terminology
 
     @Shared
-    Term term  
+    Term term
 
     String getCatalogueItemCopyPath() {
         "terms/${sourceCatalogueItemId}/newForkModel"
@@ -58,15 +58,15 @@ class TermRuleFunctionalSpec extends CatalogueItemRuleFunctionalSpec {
         // newForkModel doesn't require a destination terminology
     }
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def checkAndSetupData() {
+    def setup() {
         log.debug('Check and setup test data')
-        terminology = new Terminology(label: 'Functional Test Terminology', createdBy: 'functionalTest@test.com',
-                                  folder: folder, authority: testAuthority).save(flush: true)
+        terminology = new Terminology(label: 'Functional Test Terminology', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
+                                      folder: folder, authority: testAuthority).save(flush: true)
 
         term = new Term(code: 'Functional Test Code', definition: 'Functional Test Definition',
-                        createdBy: 'functionalTest@test.com', terminology: terminology).save(flush: true)
+                        createdBy: StandardEmailAddress.FUNCTIONAL_TEST, terminology: terminology).save(flush: true)
         sessionFactory.currentSession.flush()
     }
 

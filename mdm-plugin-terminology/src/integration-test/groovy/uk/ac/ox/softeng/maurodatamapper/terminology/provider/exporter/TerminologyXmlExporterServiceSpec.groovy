@@ -28,7 +28,6 @@ import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import org.junit.Assert
-import spock.lang.Unroll
 
 import java.nio.file.Files
 import java.nio.file.Path
@@ -73,8 +72,7 @@ class TerminologyXmlExporterServiceSpec extends DataBindTerminologyImportAndDefa
         validateAndCompareXml(Files.readString(expectedPath), exportedModel, 'export', exporterService.version)
     }
 
-    @Unroll
-    void 'test "#testName" xml files are valid'() {
+    void 'test #testName xml files are valid'() {
         given:
         setupData()
 

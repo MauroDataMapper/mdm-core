@@ -1,0 +1,22 @@
+import org.springframework.validation.Errors
+import org.springframework.validation.ObjectError
+
+/**
+ * Renders validation errors according to vnd.error: https://github.com/blongden/vnd.error
+ */
+model {
+    Errors errors
+}
+
+response.status UNPROCESSABLE_ENTITY
+locale = Locale.UK
+
+json {
+    def allErrors = errors.allErrors
+    int errorCount = allErrors.size()
+
+    total errorCount
+    errors(allErrors) { ObjectError error ->
+        message messageSource.getMessage(error, locale)
+    }
+}

@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters
 
 import groovy.util.logging.Slf4j
+import groovy.xml.XmlSlurper
 import groovy.xml.slurpersupport.GPathResult
 import groovy.xml.slurpersupport.NodeChild
 
@@ -40,7 +41,7 @@ class TerminologyXmlImporterService extends DataBindTerminologyImporterProviderS
 
     @Override
     String getVersion() {
-        '4.0'
+        '5.0'
     }
 
     @Override
@@ -91,7 +92,7 @@ class TerminologyXmlImporterService extends DataBindTerminologyImporterProviderS
     }
 
     private Map backwardsCompatibleExtractTerminologyMap(GPathResult result, Map map) {
-        if (result.name() == 'exportModel') return map.terminology as Map
+        if (result.name() == 'exportModel' && map.terminology && map.terminology instanceof Map) return map.terminology as Map
         if (result.name() == 'terminology') return map
         throw new ApiBadRequestException('XIS03', 'Cannot import XML as terminology is not present')
     }

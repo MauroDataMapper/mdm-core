@@ -65,14 +65,14 @@ class TerminologyXmlImporterServiceSpec extends DataBindTerminologyImporterProvi
 
         then:
         exception = thrown(ApiBadRequestException)
-        exception.errorCode == NO_TERMINOLOGY_TO_IMPORT_CODE
+        exception.errorCode == 'XIS03'
 
         when: 'given an empty model map (backwards compatibility)'
         importModels(loadTestFile('emptyTerminology'))
 
         then:
         exception = thrown(ApiBadRequestException)
-        exception.errorCode == NO_TERMINOLOGY_TO_IMPORT_CODE
+        exception.errorCode == 'XIS03'
 
         // when: 'given an empty models list'
         // importModels(loadTestFile('emptyTerminologyList'))

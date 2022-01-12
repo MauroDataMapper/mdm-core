@@ -17,13 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.facet.rule
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
 import uk.ac.ox.softeng.maurodatamapper.test.functional.facet.CatalogueItemRuleFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import spock.lang.Shared
@@ -54,12 +54,12 @@ class CodeSetRuleFunctionalSpec extends CatalogueItemRuleFunctionalSpec {
         // newForkModel doesn't require a destination CodeSet
     }
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def checkAndSetupData() {
+    def setup() {
         log.debug('Check and setup test data')
-        codeSet = new CodeSet(label: 'Functional Test CodeSet', createdBy: 'functionalTest@test.com',
-                                  folder: folder, authority: testAuthority).save(flush: true)
+        codeSet = new CodeSet(label: 'Functional Test CodeSet', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
+                              folder: folder, authority: testAuthority).save(flush: true)
         sessionFactory.currentSession.flush()
     }
 

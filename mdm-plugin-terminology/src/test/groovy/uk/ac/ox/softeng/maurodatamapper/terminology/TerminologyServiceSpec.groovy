@@ -188,10 +188,11 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 1
+        invalid.errors.errorCount == 2
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 1
+        invalid.errors.fieldErrorCount == 2
         invalid.errors.getFieldError('label')
+        invalid.errors.getFieldError('path')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)

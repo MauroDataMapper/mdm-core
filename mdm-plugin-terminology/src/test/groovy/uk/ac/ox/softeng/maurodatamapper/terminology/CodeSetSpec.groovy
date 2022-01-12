@@ -46,9 +46,4 @@ class CodeSetSpec extends ModelSpec<CodeSet> implements DomainUnitTest<CodeSet> 
     CodeSet findById() {
         CodeSet.findById(domain.id)
     }
-
-    @Override
-    int getExpectedConstrainedBlankErrors() {
-        3 // No breadcrumbtree.label
-    }
 }

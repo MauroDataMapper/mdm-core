@@ -29,7 +29,6 @@ import grails.gorm.transactions.Rollback
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Shared
-import spock.lang.Unroll
 
 import java.nio.charset.Charset
 
@@ -115,8 +114,7 @@ abstract class DataBindTerminologyImportAndDefaultExporterServiceSpec<I extends 
         exception.errorCode == 'TEEP01'
     }
 
-    @Unroll
-    void 'E02 : test "#testName" data export'() {
+    void 'E02 : test #testName data export'() {
         given:
         setupData()
 
@@ -164,7 +162,7 @@ abstract class DataBindTerminologyImportAndDefaultExporterServiceSpec<I extends 
         ObjectDiff diff = terminologyService.getDiffForModels(terminologyService.get(complexTerminologyId), imported)
 
         then:
-        if (!diff.objectsAreIdentical()) {
+        if (!diff.objectsAreIdentical() && diff.numberOfDiffs != 4) {
             log.error('{}', diff.toString())
         }
         // Rules are not exported/imported and therefore will exist as diffs

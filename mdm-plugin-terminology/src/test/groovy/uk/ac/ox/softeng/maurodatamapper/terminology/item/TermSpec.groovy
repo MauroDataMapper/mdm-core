@@ -123,12 +123,12 @@ class TermSpec extends ModelItemSpec<Term> implements DomainUnitTest<Term> {
 
     @Override
     int getExpectedConstrainedErrors() {
-        3 // code and definition and label
+        4 // code and definition and label
     }
 
     @Override
     int getExpectedConstrainedBlankErrors() {
-        5
+        6
     }
 
     @Override

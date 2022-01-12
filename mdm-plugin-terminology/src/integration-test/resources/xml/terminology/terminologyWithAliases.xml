@@ -1,31 +1,32 @@
-<?xml version='1.0'?>
-<exp:exportModel xmlns:exp='http://maurodatamapper.com/export/4.0' xmlns:mdm='http://maurodatamapper.com/terminology/3.2'>
-    <mdm:terminology>
-        <mdm:id>9bde38fe-d4b6-4dbd-a5b9-061b606a7e23</mdm:id>
+<?xml version="1.0" encoding="UTF-8"?>
+<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/5.0">
+    <mdm:terminology xmlns:mdm="http://maurodatamapper.com/terminology/4.0">
+        <mdm:id>7928fcee-ac79-4995-aefd-2e68ddcf4a45</mdm:id>
         <mdm:label>Imported Test Terminology</mdm:label>
-        <mdm:lastUpdated>2020-08-20T15:37:21.8Z</mdm:lastUpdated>
         <mdm:aliases>
             <mdm:alias>Alias 1</mdm:alias>
             <mdm:alias>Alias 2</mdm:alias>
         </mdm:aliases>
+        <mdm:lastUpdated>2022-01-11T15:51:13.69Z</mdm:lastUpdated>
         <mdm:author>Test Author</mdm:author>
         <mdm:organisation>Test Organisation</mdm:organisation>
         <mdm:documentationVersion>1.0.0</mdm:documentationVersion>
         <mdm:finalised>false</mdm:finalised>
+        <mdm:branchName>main</mdm:branchName>
         <mdm:authority>
-            <mdm:id>107adf2e-7051-4ffc-b785-1122f598f13a</mdm:id>
+            <mdm:id>b2a022f7-0b49-4517-b472-d65d601a82d6</mdm:id>
             <mdm:label>Test Authority</mdm:label>
             <mdm:url>http://localhost</mdm:url>
-            <mdm:lastUpdated>2020-07-21T12:24:44.612Z</mdm:lastUpdated>
+            <mdm:lastUpdated>2022-01-11T15:50:43.359Z</mdm:lastUpdated>
         </mdm:authority>
     </mdm:terminology>
     <exp:exportMetadata>
-      <exp:exportedBy>Admin User</exp:exportedBy>
-      <exp:exportedOn>2017-11-21T13:17:00.559Z</exp:exportedOn>
-      <exp:exporter>
-        <exp:namespace>uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter</exp:namespace>
-        <exp:name>TerminologyXmlExporterService</exp:name>
-        <exp:version>4.0</exp:version>
-      </exp:exporter>
+        <exp:exportedBy>Admin User</exp:exportedBy>
+        <exp:exportedOn>2022-01-11T15:51:13.697246Z</exp:exportedOn>
+        <exp:exporter>
+            <exp:namespace>uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter</exp:namespace>
+            <exp:name>TerminologyXmlExporterService</exp:name>
+            <exp:version>5.0</exp:version>
+        </exp:exporter>
     </exp:exportMetadata>
 </exp:exportModel>

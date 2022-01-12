@@ -81,16 +81,6 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
         beforeValidateModelItem()
     }
 
-    @Override
-    def beforeInsert() {
-        buildPathString()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPathString()
-    }
-
     String getEditLabel() {
         "TermRelationship:${relationshipType.label}"
     }
@@ -121,6 +111,7 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
     @Override
     String getPathIdentifier() {
         if (!label) label = relationshipType?.label
+        if (!label || !sourceTerm || !targetTerm) return null
         "$sourceTerm.code.$label.$targetTerm.code"
     }
 
