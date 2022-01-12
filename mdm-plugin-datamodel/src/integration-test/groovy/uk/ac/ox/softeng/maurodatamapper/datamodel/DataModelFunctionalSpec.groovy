@@ -27,6 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.DataModelPluginMergeBuilder
 import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.TestMergeData
+import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlComparer
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
@@ -35,7 +36,8 @@ import grails.testing.mixin.integration.Integration
 import grails.testing.spock.RunOnce
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
-import spock.lang.PendingFeature
+import io.micronaut.http.HttpResponse
+import spock.lang.Requires
 import spock.lang.Shared
 import spock.lang.Unroll
 
@@ -78,7 +80,7 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
  */
 @Integration
 @Slf4j
-class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
+class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implements XmlComparer {
 
     @Shared
     UUID folderId
@@ -694,6 +696,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData()
     }
 
+    @Requires({
+        // Only run on jenkins
+        env.containsKey('JENKINS')
+    })
     void 'VB01b : performance test creating a new main branch model version of a simple DataModel'() {
         given: 'finalised model is created'
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.0', [
@@ -723,6 +729,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData()
     }
 
+    @Requires({
+        // Only run on jenkins
+        env.containsKey('JENKINS')
+    })
     void 'VB01c : performance test creating a new main branch model version of a complex DataModel'() {
         given: 'finalised model is created'
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.0', [
@@ -2140,10 +2150,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
-    @PendingFeature(reason = 'No means to verify expected XML')
     void 'E02B : test export simple DataModel XML'() {
         given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelXmlImporterService/4.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelXmlImporterService/5.0', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -2162,10 +2171,12 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         id
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/4.0", STRING_ARG)
+        HttpResponse<String> xmlResponse =
+            GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.0", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, expected
+        verifyResponse OK, xmlResponse
+        compareXml(expected, xmlResponse.body())
 
         cleanup:
         cleanUpData(id)
@@ -2201,10 +2212,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
-    @PendingFeature(reason = 'No means to verify expected XML')
     void 'E03B : test export complex DataModel XML'() {
         given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelXmlImporterService/4.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelXmlImporterService/5.0', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -2223,10 +2233,12 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         id
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/4.0", STRING_ARG)
+        HttpResponse<String> xmlResponse =
+            GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.0", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, expected
+        verifyResponse OK, xmlResponse
+        compareXml(expected, xmlResponse.body())
 
         cleanup:
         cleanUpData(id)
@@ -2321,10 +2333,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id2)
     }
 
-    @PendingFeature(reason = 'No means to verify expected XML')
     void 'E04B : test export multiple DataModels XML'() {
         given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelXmlImporterService/4.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelXmlImporterService/5.0', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -2345,11 +2356,12 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         id2
 
         when:
-        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/4.0',
-             [dataModelIds: [id, id2]], STRING_ARG)
+        HttpResponse<String> xmlResponse = POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.0',
+                                                [dataModelIds: [id, id2]], STRING_ARG)
 
         then:
-        verifyJsonResponse OK, expected
+        verifyResponse OK, xmlResponse
+        compareXml(expected, xmlResponse.body())
 
         cleanup:
         cleanUpData(id)
@@ -2638,7 +2650,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
     void 'I06B : test importing simple DataModel XML'() {
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelXmlImporterService/4.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelXmlImporterService/5.0', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -2684,7 +2696,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
     void 'I07B : test import complex DataModel XML'() {
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelXmlImporterService/4.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelXmlImporterService/5.0', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -2733,7 +2745,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
     void 'I08B : test import multiple DataModels XML'() {
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelXmlImporterService/4.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelXmlImporterService/5.0', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -3981,6 +3993,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     }
 
     @Unroll
+    @Requires({
+        // Only run on jenkins
+        env.containsKey('JENKINS')
+    })
     void 'DC01 : test breaking dataclasses [Attempt #i]'() {
         given:
         String ca = builder.buildCommonAncestorDataModel(folderId.toString())

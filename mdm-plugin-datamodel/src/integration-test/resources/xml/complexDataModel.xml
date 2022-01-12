@@ -18,7 +18,7 @@
     SPDX-License-Identifier: Apache-2.0
 
 -->
-<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/4.0" xmlns:mdm="http://maurodatamapper.com/dataModel/3.2">
+<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/5.0" xmlns:mdm="http://maurodatamapper.com/dataModel/4.0">
   <mdm:dataModel>
     <mdm:id>412d7b5f-247b-4136-a663-584610ad491b</mdm:id>
     <mdm:label>Complex Test DataModel</mdm:label>
@@ -73,17 +73,18 @@
         <mdm:description>with description</mdm:description>
       </mdm:annotation>
     </mdm:annotations>
-    <mdm:type>Data Standard</mdm:type>
     <mdm:author>admin person</mdm:author>
     <mdm:organisation>brc</mdm:organisation>
     <mdm:documentationVersion>1.0.0</mdm:documentationVersion>
     <mdm:finalised>false</mdm:finalised>
+    <mdm:branchName>main</mdm:branchName>
     <mdm:authority>
       <mdm:id>04b2fb71-539b-4273-988b-6f440d0139ce</mdm:id>
       <mdm:label>Test Authority</mdm:label>
       <mdm:url>http://localhost</mdm:url>
       <mdm:lastUpdated>2020-08-12T11:40:05.038Z</mdm:lastUpdated>
     </mdm:authority>
+    <mdm:type>Data Standard</mdm:type>
     <mdm:dataTypes>
       <mdm:dataType>
         <mdm:id>554c36e4-19f6-4491-a3bd-8290ceef54a5</mdm:id>
@@ -241,7 +242,7 @@
     <exp:exporter>
       <exp:namespace>uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter</exp:namespace>
       <exp:name>DataModelXmlExporterService</exp:name>
-      <exp:version>4.0</exp:version>
+      <exp:version>5.0</exp:version>
     </exp:exporter>
   </exp:exportMetadata>
 </exp:exportModel>
