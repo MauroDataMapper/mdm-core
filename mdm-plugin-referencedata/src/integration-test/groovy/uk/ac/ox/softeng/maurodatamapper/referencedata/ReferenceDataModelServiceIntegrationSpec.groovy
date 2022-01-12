@@ -838,10 +838,12 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 1
+        invalid.errors.errorCount == 3
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 1
+        invalid.errors.fieldErrorCount == 3
         invalid.errors.getFieldError('label')
+        invalid.errors.getFieldError('path')
+        invalid.errors.getFieldError('breadcrumbTree.path')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -859,10 +861,12 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 1
+        invalid.errors.errorCount == 3
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 1
+        invalid.errors.fieldErrorCount == 3
         invalid.errors.getFieldError('referenceDataTypes[0].label')
+        invalid.errors.getFieldError('referenceDataTypes[0].path')
+        invalid.errors.getFieldError('referenceDataTypes[0].breadcrumbTree.path')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -870,7 +874,9 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
 
     void 'test suggesting links between models'() {
         given:
+        hibernateSearchIndexingService.purgeAllIndexes()
         setupData()
+        hibernateSearchIndexingService.flushIndexes()
         ReferenceDataModel dataModel = referenceDataModelService.get(id)
 
         when:

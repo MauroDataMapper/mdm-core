@@ -546,7 +546,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
             log.debug('Performing lucene label search')
             long start = System.currentTimeMillis()
-            results = ReferenceDataModel.luceneLabelSearch(ReferenceDataModel, searchTerm, readableIds.toList()).results
+            results = ReferenceDataModel.luceneLabelSearch(ReferenceDataModel, searchTerm, readableIds.toList(),[]).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
 

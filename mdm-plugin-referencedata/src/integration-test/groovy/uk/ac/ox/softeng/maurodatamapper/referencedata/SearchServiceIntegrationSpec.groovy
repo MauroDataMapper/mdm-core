@@ -44,6 +44,17 @@ class SearchServiceIntegrationSpec extends BaseReferenceDataModelIntegrationSpec
     }
 
     @Override
+    void preDomainDataSetup() {
+        super.preDomainDataSetup()
+        hibernateSearchIndexingService.purgeAllIndexes()
+    }
+
+    @Override
+    void postDomainDataSetup() {
+        hibernateSearchIndexingService.flushIndexes()
+    }
+
+    @Override
     void setupDomainData() {
         log.debug('Setting up ReferenceDataModelServiceSpec unit')
 

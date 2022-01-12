@@ -35,6 +35,11 @@ class ReferenceSummaryMetadataService implements MultiFacetItemAwareService<Refe
         ReferenceSummaryMetadata.get(id)
     }
 
+    @Override
+    List<ReferenceSummaryMetadata> getAll(Collection<UUID> resourceIds) {
+        ReferenceSummaryMetadata.getAll(resourceIds)
+    }
+
     List<ReferenceSummaryMetadata> list(Map args) {
         ReferenceSummaryMetadata.list(args)
     }

@@ -14,7 +14,7 @@ include(
     //    'mdm-plugin-authentication-apikey',
     'mdm-plugin-terminology',
     'mdm-plugin-dataflow',
-    //    'mdm-plugin-referencedata',
+    'mdm-plugin-referencedata',
     'mdm-plugin-profile',
     //    'mdm-plugin-federation',
 )

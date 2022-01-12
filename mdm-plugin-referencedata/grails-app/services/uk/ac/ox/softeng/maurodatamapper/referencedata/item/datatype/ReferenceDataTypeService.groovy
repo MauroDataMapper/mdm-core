@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
@@ -46,6 +47,7 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
     ReferencePrimitiveTypeService referencePrimitiveTypeService
     ReferenceEnumerationTypeService referenceEnumerationTypeService
     ReferenceSummaryMetadataService referenceSummaryMetadataService
+    ReferenceDataModelService referenceDataModelService
 
     @Override
     ReferenceDataType get(Serializable id) {
@@ -63,7 +65,7 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
     }
 
     @Override
-    List<ReferenceDataType> list(Map args) {
+    List<ReferenceDataType> list(Map args=[:]) {
         ReferenceDataType.list(args)
     }
 
@@ -133,7 +135,8 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
             log.debug('Performing lucene label search')
             long start = System.currentTimeMillis()
-            results = ReferenceDataType.luceneLabelSearch(ReferenceDataType, searchTerm, readableIds.toList()).results
+            results = ReferenceDataType.luceneLabelSearch(ReferenceDataType, searchTerm, readableIds.toList(),
+                                                          referenceDataModelService.getAllReadablePathNodes (readableIds)).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
         results
@@ -296,8 +299,8 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
     }
 
     private void mergeDataTypes(ReferenceDataType keep, ReferenceDataType replace) {
-        replace.dataElements?.each { de ->
-            keep.addToDataElements(de)
+        replace.referenceDataElements?.each { de ->
+            keep.addToReferenceDataElements(de)
         }
         List<Metadata> mds = []
         mds += replace.metadata ?: []
@@ -316,5 +319,10 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
     @Override
     List<ReferenceDataType> findAllByMetadataNamespace(String namespace, Map pagination) {
         ReferenceDataType.byMetadataNamespace(namespace).list(pagination)
+    }
+
+    @Override
+    ReferenceDataType findByParentIdAndLabel(UUID parentId, String label) {
+        ReferenceDataType.byReferenceDataModelIdAndLabel(parentId, label).get()
     }
 }

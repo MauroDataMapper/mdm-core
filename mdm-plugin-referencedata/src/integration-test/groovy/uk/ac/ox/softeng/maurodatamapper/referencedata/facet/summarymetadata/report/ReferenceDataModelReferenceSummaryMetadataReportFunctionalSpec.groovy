@@ -29,7 +29,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.test.functional.CatalogueI
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import spock.lang.Shared
@@ -67,11 +67,11 @@ class ReferenceDataModelReferenceSummaryMetadataReportFunctionalSpec extends Cat
     @Override
     String getFacetResourcePath() {
         "referenceSummaryMetadata/${summaryMetadata.id}/summaryMetadataReports"
-    }      
+    }
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def checkAndSetupData() {
+    def setup() {
         log.debug('Check and setup test data')
         referenceDataModel = new ReferenceDataModel(label: 'Functional Test DataModel', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
                                   folder: folder, authority: testAuthority).save(flush: true)

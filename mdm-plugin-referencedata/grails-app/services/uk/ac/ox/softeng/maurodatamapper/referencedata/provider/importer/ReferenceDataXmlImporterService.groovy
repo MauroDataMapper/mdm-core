@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.paramete
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import groovy.util.logging.Slf4j
+import groovy.xml.XmlSlurper
 import groovy.xml.slurpersupport.GPathResult
 
 import java.nio.charset.Charset
@@ -40,7 +41,7 @@ class ReferenceDataXmlImporterService
 
     @Override
     String getVersion() {
-        '4.0'
+        '5.0'
     }
 
     @Override

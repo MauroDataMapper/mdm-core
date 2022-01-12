@@ -97,7 +97,7 @@ class ReferenceEnumerationValueSpec extends ModelItemSpec<ReferenceEnumerationVa
 
     @Override
     int getExpectedConstrainedErrors() {
-        2
+        3 // key label path
     }
 
     @Override
@@ -109,11 +109,11 @@ class ReferenceEnumerationValueSpec extends ModelItemSpec<ReferenceEnumerationVa
 
     @Override
     int getExpectedConstrainedBlankErrors() {
-        6
+        7
     }
 
     @Override
     String getExpectedNewlineLabel() {
         'ev_key'
-    }    
+    }
 }

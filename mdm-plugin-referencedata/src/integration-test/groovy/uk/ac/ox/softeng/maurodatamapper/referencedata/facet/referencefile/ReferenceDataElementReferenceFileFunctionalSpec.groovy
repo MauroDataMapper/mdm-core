@@ -26,7 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.test.functional.facet.CatalogueItemRefer
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import spock.lang.Shared
 
@@ -46,9 +46,9 @@ class ReferenceDataElementReferenceFileFunctionalSpec extends CatalogueItemRefer
     @Shared
     ReferenceDataType referenceDataType
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def checkAndSetupData() {
+    def setup() {
         log.debug('Check and setup test data')
         referenceDataModel = new ReferenceDataModel(label: 'Functional Test ReferenceDataModel', createdBy: 'functionalTest@test.com',
                                   folder: folder, authority: testAuthority).save(flush: true)

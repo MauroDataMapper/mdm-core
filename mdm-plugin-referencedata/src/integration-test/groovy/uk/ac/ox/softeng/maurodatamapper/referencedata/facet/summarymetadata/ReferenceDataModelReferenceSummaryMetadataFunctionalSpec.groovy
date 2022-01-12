@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
@@ -27,7 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.test.functional.CatalogueI
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import spock.lang.Shared
@@ -64,11 +63,11 @@ class ReferenceDataModelReferenceSummaryMetadataFunctionalSpec extends Catalogue
     @Override
     String getFacetResourcePath() {
         'referenceSummaryMetadata'
-    }      
+    }
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def checkAndSetupData() {
+    def setup() {
         log.debug('Check and setup test data')
         referenceDataModel = new ReferenceDataModel(label: 'Functional Test ReferenceDataModel', createdBy: 'functionalTest@test.com',
                                   folder: folder, authority: testAuthority).save(flush: true)

@@ -53,6 +53,17 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
     ReferenceDataModel simpleDataModel
     ReferenceDataModel complexDataModel
 
+    @Override
+    void preDomainDataSetup() {
+        super.preDomainDataSetup()
+        hibernateSearchIndexingService.purgeAllIndexes()
+    }
+
+    @Override
+    void postDomainDataSetup() {
+        hibernateSearchIndexingService.flushIndexes()
+    }
+
     @SuppressWarnings('GroovyAssignabilityCheck')
     @Override
     void setupDomainData() {
@@ -528,7 +539,7 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
 
         when:
         def tf = treeItems.find { it.label == testFolder.label }
-        
+
         then:
         tf
         tf.hasChildren()
@@ -536,7 +547,7 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
         !tf.find { it.label == 'Simple Reference Data Model' }
         tf.find { it.label == 'Second Simple Reference Data Model' }
 
-        when:        
+        when:
         def tree2 = tf.find { it.label == 'Second Simple Reference Data Model' }
 
         then:
@@ -578,7 +589,7 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
         TreeItem tree1 = tf.find { it.label == 'dm1' }
 
         then:
-        tree1        
-    }    
+        tree1
+    }
 
 }

@@ -42,7 +42,6 @@ import grails.databinding.BindUsing
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 import groovy.util.logging.Slf4j
-import org.grails.datastore.gorm.GormEntity
 
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
 @Resource(readOnly = false, formats = ['json', 'xml'])
@@ -123,7 +122,6 @@ class ReferenceDataElement implements ModelItem<ReferenceDataElement, ReferenceD
         referenceDataModel
     }
 
-    @Override
     def beforeValidate() {
         beforeValidateModelItem()
         this.referenceSummaryMetadata?.each {
@@ -135,16 +133,6 @@ class ReferenceDataElement implements ModelItem<ReferenceDataElement, ReferenceD
             referenceDataType.createdBy = createdBy
             referenceDataType.beforeValidate()
         }
-    }
-
-    @Override
-    def beforeInsert() {
-        buildPathString()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPathString()
     }
 
     @Override

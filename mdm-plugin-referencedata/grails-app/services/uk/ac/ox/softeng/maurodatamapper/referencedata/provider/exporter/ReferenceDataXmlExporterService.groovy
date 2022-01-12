@@ -50,7 +50,7 @@ class ReferenceDataXmlExporterService extends ReferenceDataModelExporterProvider
 
     @Override
     String getVersion() {
-        '4.0'
+        '5.0'
     }
 
     @Override

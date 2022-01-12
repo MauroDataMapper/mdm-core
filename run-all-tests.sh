@@ -74,13 +74,10 @@ function integrationTest(){
   :mdm-plugin-email-proxy:integrationTest \
   :mdm-plugin-dataflow:integrationTest \
   :mdm-plugin-profile:integrationTest \
-  :mdm-plugin-terminology:integrationTest
+  :mdm-plugin-terminology:integrationTest \
+  :mdm-plugin-referencedata:integrationTest
   #  :mdm-security:integrationTest \
-#
-#  :mdm-plugin-referencedata:integrationTest \
-
 #  :mdm-plugin-federation:integrationTest \
-#
 }
 
 function functionalTest(){
@@ -90,14 +87,11 @@ function functionalTest(){
   :mdm-plugin-datamodel:integrationTest \
   :mdm-plugin-dataflow:integrationTest \
   :mdm-plugin-profile:integrationTest \
-  :mdm-plugin-terminology:integrationTest
+  :mdm-plugin-terminology:integrationTest \
+  :mdm-plugin-referencedata:integrationTest \
 #  :mdm-security:integrationTest \
 #  :mdm-plugin-authentication-apikey:integrationTest \
 #  :mdm-plugin-authentication-basic:integrationTest \
-#
- \
-#  :mdm-plugin-referencedata:integrationTest \
-#   \
 #  :mdm-plugin-federation:integrationTest
 
 }

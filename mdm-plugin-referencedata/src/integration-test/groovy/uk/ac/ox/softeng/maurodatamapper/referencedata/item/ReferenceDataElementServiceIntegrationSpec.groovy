@@ -260,7 +260,9 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
     void 'test finding all similar DataElements in another model'() {
         given:
         buildComplex = true
+        hibernateSearchIndexingService.purgeAllIndexes()
         setupData()
+        hibernateSearchIndexingService.flushIndexes()
         ReferenceDataElement original = referenceDataElementService.get(id)
 
         when:

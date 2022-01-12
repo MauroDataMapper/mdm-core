@@ -66,7 +66,7 @@ class ReferenceDataModelInterceptorSpec extends TieredAccessCheckResourceInterce
     }
 
     @Unroll
-    void 'test access to changeFolder using folder: #folderIdStr datamodel: #dataModelIdStr is #allowedStr'() {
+    void 'test access to changeFolder using folder: #folderIdStr datamodel: #referenceDataModelIdStr is #allowedStr'() {
 
         given:
         params.referenceDataModelId = referenceDataModelId
@@ -124,7 +124,7 @@ class ReferenceDataModelInterceptorSpec extends TieredAccessCheckResourceInterce
     }
 
     @Unroll
-    void 'test access to #action using datamodel: #dataModelIdStr other datamodel: #otherDataModelIdStr is #allowedStr'() {
+    void 'test access to #action using datamodel: #referenceDataModelIdStr other datamodel: #otherDataModelIdStr is #allowedStr'() {
 
         given:
         params.referenceDataModelId = referenceDataModelId

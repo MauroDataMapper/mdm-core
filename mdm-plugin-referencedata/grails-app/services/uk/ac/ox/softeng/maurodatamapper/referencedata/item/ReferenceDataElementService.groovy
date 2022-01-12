@@ -330,7 +330,7 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
             .where {lsf ->
                 BooleanPredicateClausesStep boolStep = lsf
                     .bool()
-                    .filter(IdPathSecureFilterFactory.createFilter(lsf, [referenceDataModelToSearch.id]))
+                    .filter(IdPathSecureFilterFactory.createFilter(lsf, [referenceDataModelToSearch.id],  [referenceDataModelToSearch.path.last()]))
                     .filter(FilterFactory.mustNot(lsf, lsf.id().matching(referenceDataElementToCompare.id)))
 
                 moreLikeThisQueries.each {mlt ->

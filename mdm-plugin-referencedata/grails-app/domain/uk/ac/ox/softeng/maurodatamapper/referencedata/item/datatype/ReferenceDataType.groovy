@@ -38,7 +38,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
-import org.grails.datastore.gorm.GormEntity
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
 abstract class ReferenceDataType<D> implements ModelItem<D, ReferenceDataModel>, ReferenceSummaryMetadataAware {
@@ -74,7 +73,7 @@ abstract class ReferenceDataType<D> implements ModelItem<D, ReferenceDataModel>,
 
     static mapping = {
         referenceDataElements cascade: 'delete,lock,refresh,evict,replicate'
-        summaryMetadata cascade: 'all-delete-orphan'
+        referenceSummaryMetadata cascade: 'all-delete-orphan'
         referenceDataModel index: 'data_type_reference_data_model_idx', cascade: 'none'
     }
 
@@ -104,23 +103,12 @@ abstract class ReferenceDataType<D> implements ModelItem<D, ReferenceDataModel>,
         referenceDataModel
     }
 
-    @Override
     def beforeValidate() {
         beforeValidateModelItem()
         referenceSummaryMetadata?.each {
             if (!it.createdBy) it.createdBy = createdBy
             it.multiFacetAwareItem = this
         }
-    }
-
-    @Override
-    def beforeInsert() {
-        buildPathString()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPathString()
     }
 
     @Override
@@ -139,11 +127,11 @@ abstract class ReferenceDataType<D> implements ModelItem<D, ReferenceDataModel>,
     }
 
     Set<UUID> getDataElementIds() {
-        ReferenceDataElement.byDataTypeId(this.id).id().list() as Set<UUID>
+        ReferenceDataElement.byReferenceDataTypeId(this.id).id().list() as Set<UUID>
     }
 
     boolean hasDataElements() {
-        ReferenceDataElement.byDataTypeId(this.id).count()
+        ReferenceDataElement.byReferenceDataTypeId(this.id).count()
     }
 
     @Override

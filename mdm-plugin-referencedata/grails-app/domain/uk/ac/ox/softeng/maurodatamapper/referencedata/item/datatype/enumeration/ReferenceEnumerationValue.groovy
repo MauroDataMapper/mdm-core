@@ -99,21 +99,10 @@ class ReferenceEnumerationValue implements ModelItem<ReferenceEnumerationValue, 
         referenceEnumerationType
     }
 
-    @Override
     def beforeValidate() {
         label = key
         description = value
         beforeValidateModelItem()
-    }
-
-    @Override
-    def beforeInsert() {
-        buildPathString()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPathString()
     }
 
     @Override

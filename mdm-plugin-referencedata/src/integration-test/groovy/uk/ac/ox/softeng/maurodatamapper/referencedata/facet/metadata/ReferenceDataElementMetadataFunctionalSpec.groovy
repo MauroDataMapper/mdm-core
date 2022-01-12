@@ -26,7 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.test.functional.facet.CatalogueItemMetad
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import spock.lang.Shared
 
@@ -45,7 +45,7 @@ class ReferenceDataElementMetadataFunctionalSpec extends CatalogueItemMetadataFu
     ReferenceDataModel destinationReferenceDataModel
     @Shared
     ReferenceDataElement referenceDataElement
-    @Shared    
+    @Shared
     ReferenceDataType referenceDataType
 
     String getCatalogueItemCopyPath() {
@@ -61,10 +61,10 @@ class ReferenceDataElementMetadataFunctionalSpec extends CatalogueItemMetadataFu
     String getDestinationDataModelId() {
         ReferenceDataModel.findByLabel('Destination Test ReferenceDataModel').id.toString()
     }
-   
-    @OnceBefore
+
+    @RunOnce
     @Transactional
-    def checkAndSetupData() {
+    def setup() {
         log.debug('Check and setup test data')
         referenceDataModel = new ReferenceDataModel(label: 'Functional Test ReferenceDataModel', createdBy: 'functionalTest@test.com',
                                   folder: folder, authority: testAuthority).save(flush: true)
@@ -73,7 +73,7 @@ class ReferenceDataElementMetadataFunctionalSpec extends CatalogueItemMetadataFu
         referenceDataType = new ReferencePrimitiveType(label: 'string', createdBy: 'functionalTest@test.com',
                                      referenceDataModel: referenceDataModel).save(flush: true)
         referenceDataElement = new ReferenceDataElement(label: 'Functional Test ReferenceDataElement', createdBy: 'functionalTest@test.com',
-                                      referenceDataModel: referenceDataModel, referenceDataType: referenceDataType).save(flush: true)                                     
+                                      referenceDataModel: referenceDataModel, referenceDataType: referenceDataType).save(flush: true)
         sessionFactory.currentSession.flush()
     }
 

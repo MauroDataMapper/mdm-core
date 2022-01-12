@@ -50,8 +50,6 @@ class ReferenceDataValue implements MdmDomain, Diffable<ReferenceDataValue> {
         referenceDataElement index: 'reference_data_value_reference_data_element_idx', cascade: 'save-update', fetch: 'join'
     }
 
-    static mappedBy = [:]
-
     ReferenceDataValue() {
     }
 
@@ -72,6 +70,10 @@ class ReferenceDataValue implements MdmDomain, Diffable<ReferenceDataValue> {
 
     String getEditLabel() {
         "$domainType:$value"
+    }
+
+    def beforeValidate() {
+        checkPath() // get path to ensure its built
     }
 
     ObjectDiff<ReferenceDataValue> diff(ReferenceDataValue otherValue, String context) {

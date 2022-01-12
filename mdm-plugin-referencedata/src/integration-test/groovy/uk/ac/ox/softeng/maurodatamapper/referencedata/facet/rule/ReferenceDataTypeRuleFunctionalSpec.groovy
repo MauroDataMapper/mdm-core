@@ -26,7 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.test.functional.facet.CatalogueItemRuleF
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import spock.lang.Shared
 
@@ -62,9 +62,9 @@ class ReferenceDataTypeRuleFunctionalSpec extends CatalogueItemRuleFunctionalSpe
         ReferenceDataModel.findByLabel('Destination Test ReferenceDataModel').id.toString()
     }
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def checkAndSetupData() {
+    def setup() {
         log.debug('Check and setup test data')
         referenceDataModel = new ReferenceDataModel(label: 'Functional Test ReferenceDataModel', createdBy: 'functionalTest@test.com',
                                   folder: folder, authority: testAuthority).save(flush: true)
@@ -91,5 +91,5 @@ class ReferenceDataTypeRuleFunctionalSpec extends CatalogueItemRuleFunctionalSpe
     @Override
     String getCatalogueItemDomainResourcePath() {
         'referenceDataTypes'
-    }  
+    }
 }
