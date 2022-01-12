@@ -162,7 +162,7 @@ hibernate:
     search:
         backend:
             directory:
-                root: '/tmp/lucene/plugin/dataflow'
+                root: 'build/lucene'
 
 ---
 dataSource:

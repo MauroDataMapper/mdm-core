@@ -158,7 +158,7 @@ hibernate:
     search:
         backend:
             directory:
-                root: '/tmp/lucene/plugin/email/proxy'
+                root: 'build/lucene'
 
 ---
 dataSource:

@@ -64,7 +64,8 @@ abstract class MdmSpecification extends Specification {
     }
 
     def cleanup() {
-        log.warn('--- Test complete took {} ---', Utils.timeTaken(startTime))
+        log.warn('--- {} --- {} >>> {} ---', specificationContext.currentSpec.displayName, specificationContext.currentIteration.displayName,
+                 Utils.timeTaken(startTime))
     }
 
     void check(GormEntity domainObj) {

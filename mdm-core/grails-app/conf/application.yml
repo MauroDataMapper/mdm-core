@@ -134,7 +134,7 @@ hibernate:
     search:
         backend:
             directory:
-                root: '/tmp/lucene/core'
+                root: 'build/lucene'
 
 ---
 dataSource:
