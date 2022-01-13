@@ -86,7 +86,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
 
     @Override
     void deleteAll(Collection<DataElement> dataElements) {
-        dataElements.each {delete(it)}
+        dataElements.each { delete(it) }
     }
 
     void delete(UUID id) {
@@ -159,10 +159,10 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     DataElement checkFacetsAfterImportingCatalogueItem(DataElement catalogueItem) {
         super.checkFacetsAfterImportingCatalogueItem(catalogueItem)
         if (catalogueItem.summaryMetadata) {
-            catalogueItem.summaryMetadata.each {sm ->
+            catalogueItem.summaryMetadata.each { sm ->
                 sm.multiFacetAwareItemId = catalogueItem.id
                 sm.createdBy = sm.createdBy ?: catalogueItem.createdBy
-                sm.summaryMetadataReports.each {smr ->
+                sm.summaryMetadataReports.each { smr ->
                     smr.createdBy = catalogueItem.createdBy
                 }
             }
@@ -189,7 +189,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
 
     @Override
     List<DataElement> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        findAllByClassifier(classifier).findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)}
+        findAllByClassifier(classifier).findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id) }
     }
 
     @Override
@@ -223,13 +223,13 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     void matchUpDataTypes(DataModel dataModel, Collection<DataElement> dataElements) {
         if (dataElements) {
             log.debug("Matching up {} DataElements to a possible {} DataTypes", dataElements.size(), dataModel.dataTypes.size())
-            def grouped = dataElements.groupBy {it.dataType.label}.sort {a, b ->
+            def grouped = dataElements.groupBy { it.dataType.label }.sort { a, b ->
                 def res = a.value.size() <=> b.value.size()
                 if (res == 0) res = a.key <=> b.key
                 res
             }
             log.debug('Grouped {} DataElements by DataType label', grouped.size())
-            grouped.each {label, elements ->
+            grouped.each { label, elements ->
                 log.trace('Matching {} elements to DataType label {}', elements.size(), label)
                 DataType dataType = dataModel.findDataTypeByLabel(label)
 
@@ -240,7 +240,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
                     dataType.createdBy = dataElement.createdBy
                     dataModel.addToDataTypes(dataType)
                 }
-                elements.each {dataType.addToDataElements(it)}
+                elements.each { dataType.addToDataElements(it) }
             }
         }
     }
@@ -358,7 +358,8 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     }
 
     @Override
-    DataElement copy(Model copiedDataModel, DataElement original, CatalogueItem parentDataClass, UserSecurityPolicyManager userSecurityPolicyManager) {
+    DataElement copy(Model copiedDataModel, DataElement original, CatalogueItem parentDataClass,
+                     UserSecurityPolicyManager userSecurityPolicyManager) {
         DataElement copy = copyDataElement(copiedDataModel as DataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
         if (parentDataClass) {
             (parentDataClass as DataClass).addToDataElements(copy)
@@ -433,14 +434,15 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
                 .withMinWordLength(2)
                 .withMinDocFrequency(2),
         ]
-        if (dataElementToCompare.description) moreLikeThisQueries.add(new BoostedMoreLikeThisQuery(standard, 'description', dataElementToCompare.description, fields)
-                                                                          .boostedTo(1f)
-                                                                          .withMinWordLength(2)
-        )
+        if (dataElementToCompare.description)
+            moreLikeThisQueries.add(new BoostedMoreLikeThisQuery(standard, 'description', dataElementToCompare.description, fields)
+                                        .boostedTo(1f)
+                                        .withMinWordLength(2)
+            )
 
         SearchResult<SimilarityPair<DataElement>> searchResult = searchSession.search(DataElement)
             .extension(LuceneExtension.get())
-            .select {pf ->
+            .select { pf ->
                 pf.composite(new BiFunction<DataElement, Float, SimilarityPair<DataElement>>() {
 
                     @Override
@@ -452,13 +454,13 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
                     }
                 }, pf.entity(), pf.score())
             }
-            .where {lsf ->
+            .where { lsf ->
                 BooleanPredicateClausesStep boolStep = lsf
                     .bool()
                     .filter(IdPathSecureFilterFactory.createFilter(lsf, [dataModelToSearch.id]))
                     .filter(FilterFactory.mustNot(lsf, lsf.id().matching(dataElementToCompare.id)))
 
-                moreLikeThisQueries.each {mlt ->
+                moreLikeThisQueries.each { mlt ->
                     boolStep.should(lsf.bool().must(lsf.fromLuceneQuery(mlt)).boost(mlt.boost))
                 }
 
@@ -490,10 +492,10 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
         List<SemanticLink> alreadyExistingLinks =
             semanticLinkService.findAllBySourceMultiFacetAwareItemIdInListAndTargetMultiFacetAwareItemIdInListAndLinkType(
                 dataElements*.id, fromDataElements*.id, SemanticLinkType.IS_FROM)
-        dataElements.each {de ->
-            fromDataElements.each {fde ->
+        dataElements.each { de ->
+            fromDataElements.each { fde ->
                 // If no link already exists then add a new one
-                if (!alreadyExistingLinks.any {it.multiFacetAwareItemId == de.id && it.targetMultiFacetAwareItemId == fde.id}) {
+                if (!alreadyExistingLinks.any { it.multiFacetAwareItemId == de.id && it.targetMultiFacetAwareItemId == fde.id }) {
                     setDataElementIsFromDataElement(de, fde, user)
                 }
             }
@@ -525,7 +527,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
      * @param label The label of the DataElement being sought
      */
     DataElement findDataElement(DataClass dataClass, String label) {
-        dataClass.dataElements.find {it.label == label.trim()}
+        dataClass.dataElements.find { it.label == label.trim() }
     }
 
     /**
@@ -551,11 +553,11 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
 
     @Override
     void propagateContentsInformation(DataElement catalogueItem, DataElement previousVersionCatalogueItem) {
-        previousVersionCatalogueItem.summaryMetadata.each {previousSummaryMetadata ->
-            if (catalogueItem.summaryMetadata.any {it.label == previousSummaryMetadata.label}) return
+        previousVersionCatalogueItem.summaryMetadata.each { previousSummaryMetadata ->
+            if (catalogueItem.summaryMetadata.any { it.label == previousSummaryMetadata.label }) return
             SummaryMetadata summaryMetadata = new SummaryMetadata(label: previousSummaryMetadata.label,
-                description: previousSummaryMetadata.description,
-                summaryMetadataType: previousSummaryMetadata.summaryMetadataType)
+                                                                  description: previousSummaryMetadata.description,
+                                                                  summaryMetadataType: previousSummaryMetadata.summaryMetadataType)
 
             previousSummaryMetadata.summaryMetadataReports.each { previousSummaryMetadataReport ->
                 summaryMetadata.addToSummaryMetadataReports(reportDate: previousSummaryMetadataReport.reportDate,
@@ -571,5 +573,12 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     CopyInformation cacheFacetInformationForCopy(List<UUID> originalIds, CopyInformation copyInformation = null) {
         CopyInformation cachedInformation = super.cacheFacetInformationForCopy(originalIds, copyInformation)
         cacheSummaryMetadataInformationForCopy(originalIds, cachedInformation)
+    }
+
+    @Override
+    void preBatchSaveHandling(List<DataElement> modelItems) {
+        // Fix HS issue around non-session loaded DT.
+        // This may have an adverse effect on saving, which will need to be tested
+        dataTypeService.getAll(modelItems.collect { it.dataType.id })
     }
 }

@@ -214,7 +214,7 @@ class FolderController extends EditLoggingController<Folder> {
     @Override
     protected void serviceDeleteResource(Folder resource) {
         if (securityPolicyManagerService) {
-            currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(resource, currentUser)
+            currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(resource, currentUser, resource.label)
         }
         folderService.delete(resource)
     }

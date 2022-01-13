@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.testing.functional.datamodel
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.ModelUserAccessPermissionChangingAndVersioningFunctionalSpec
 
@@ -2086,10 +2087,10 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
             finalised                      : false,
             folderId                       : testFolderId.toString(),
             importAsNewDocumentationVersion: false,
-            importAsNewBranchModelVersion  : true, // Needed to import models
             importFile                     : [
                 fileType    : MimeType.JSON_API.name,
-                fileContents: exportedJsonString.bytes.toList()
+                fileContents: exportedJsonString.replace(/${BootstrapModels.SIMPLE_DATAMODEL_NAME}/, 'Simple Test DataModel 2')
+                    .replace(/${BootstrapModels.COMPLEX_DATAMODEL_NAME}/, 'Complex Test DataModel 2').bytes.toList()
             ]
         ])
 
@@ -2102,8 +2103,8 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         String id = object.id
         String id2 = object2.id
 
-        object.label == 'Simple Test DataModel'
-        object2.label == 'Complex Test DataModel'
+        object.label == 'Simple Test DataModel 2'
+        object2.label == 'Complex Test DataModel 2'
         object.id != object2.id
 
         cleanup:

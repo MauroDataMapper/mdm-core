@@ -182,6 +182,7 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
         long start = System.currentTimeMillis()
         log.debug('Performing batch save of {} {}', modelItems.size(), getModelItemClass().simpleName)
         List<Boolean> inserts = modelItems.collect { !it.id }
+        preBatchSaveHandling(modelItems)
         getModelItemClass().saveAll(modelItems)
         modelItems.eachWithIndex { mi, i ->
             if (inserts[i]) updateFacetsAfterInsertingCatalogueItem(mi)
@@ -192,6 +193,10 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
         sessionFactory.currentSession.clear()
 
         log.debug('Batch save took {}', Utils.timeTaken(start))
+    }
+
+    void preBatchSaveHandling(List<K> modelItems) {
+        //noop
     }
 
     @Override
