@@ -902,11 +902,11 @@ json {
     }
 
     @Unroll
-    void "test rejectRegistration for #userName when logged in as #actorName"() {
+    void "test rejectRegistration for #userName"() {
         given:
         def user = CatalogueUser.findByEmailAddress(userEmail)
         controller.catalogueUserService = Mock(CatalogueUserService) {
-            rejectUserRegistration(_, _) >> {a, u ->
+            rejectUserRegistration(_, _) >> { a, u ->
                 if (!u.pending) {
                     u.errors.reject('invalid.already.registered.message', [u.emailAddress].toArray(),
                                     'Cannot approve or reject user registration for [{0}] as user is already registered')

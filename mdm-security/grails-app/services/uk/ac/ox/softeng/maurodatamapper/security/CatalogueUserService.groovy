@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFile
 import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFileService
 import uk.ac.ox.softeng.maurodatamapper.core.security.UserService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.AnonymisableService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.security.basic.AnonymousUser
 import uk.ac.ox.softeng.maurodatamapper.security.rest.transport.UserProfilePicture
 import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityUtils
@@ -36,7 +37,7 @@ import java.time.OffsetDateTime
 import org.springframework.beans.factory.annotation.Autowired
 
 @Transactional
-class CatalogueUserService implements UserService {
+class CatalogueUserService implements UserService, MdmDomainService<CatalogueUser> {
 
     UserImageFileService userImageFileService
     UserGroupService userGroupService
@@ -46,6 +47,11 @@ class CatalogueUserService implements UserService {
 
     CatalogueUser get(Serializable id) {
         CatalogueUser.get(id) ?: id instanceof String ? findByEmailAddress(id) : null
+    }
+
+    @Override
+    List<CatalogueUser> getAll(Collection<UUID> resourceIds) {
+        CatalogueUser.getAll(resourceIds)
     }
 
     List<CatalogueUser> list(Map pagination) {
@@ -84,11 +90,7 @@ class CatalogueUserService implements UserService {
             it.anonymise(catalogueUser.emailAddress)
         }
 
-        // Anonymise Catalogue Users
-        CatalogueUser.findAllByCreatedBy(catalogueUser.emailAddress).each { cu ->
-            cu.createdBy = AnonymousUser.ANONYMOUS_EMAIL_ADDRESS
-            cu.save(validate: false)
-        }
+        anonymise(catalogueUser.emailAddress)
 
         // Remove user from any user groups
         catalogueUser.groups.each {group ->
@@ -97,6 +99,11 @@ class CatalogueUserService implements UserService {
 
         // Delete
         catalogueUser.delete(flush: true)
+    }
+
+    @Override
+    CatalogueUser findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        return null
     }
 
     CatalogueUser findByEmailAddress(String emailAddress) {

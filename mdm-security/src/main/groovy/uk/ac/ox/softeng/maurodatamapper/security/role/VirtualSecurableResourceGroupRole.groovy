@@ -70,7 +70,7 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
 
     VirtualSecurableResourceGroupRole withAccessLevel(GroupRole groupRole) {
         this.groupRole = groupRole
-        this.order = groupRole.pathString ? groupRole.pathString.split('/').size() : 0
+        this.order = groupRole.path?.size()
         this
     }
 

@@ -128,7 +128,7 @@ class UserSecurityPolicy {
     }
 
     UserSecurityPolicy inGroups(Set<UserGroup> userGroups) {
-        this.userGroups = userGroups
+        this.userGroups = userGroups == null ? new HashSet<UserGroup>() : userGroups
         this
     }
 

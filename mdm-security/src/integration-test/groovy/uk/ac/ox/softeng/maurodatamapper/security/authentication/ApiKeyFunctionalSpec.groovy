@@ -33,7 +33,6 @@ import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
 import org.spockframework.util.Assert
@@ -67,16 +66,6 @@ class ApiKeyFunctionalSpec extends ResourceFunctionalSpec<ApiKey> implements Sec
     UserSecurityPolicyService userSecurityPolicyService
     @Autowired
     GroupRoleService groupRoleService
-
-    @OnceBefore
-    @Transactional
-    def checkAndSetupData() {
-        log.debug('Check and setup test data')
-        sessionFactory.currentSession.flush()
-        assert CatalogueUser.count() == 2 // Unlogged user & admin user
-        implementSecurityUsers('functionalTest')
-        assert CatalogueUser.count() == 9
-    }
 
     @Transactional
     def cleanupSpec() {
@@ -142,8 +131,15 @@ class ApiKeyFunctionalSpec extends ResourceFunctionalSpec<ApiKey> implements Sec
         verifyResponse(HttpStatus.NOT_FOUND, jsonCapableResponse)
     }
 
+    @Transactional
     @Override
     def setup() {
+        log.debug('Check and setup test data')
+        sessionFactory.currentSession.flush()
+        if (CatalogueUser.count() == 2) {
+            implementSecurityUsers('functionalTest')
+        }
+        assert CatalogueUser.count() == 9
         reconfigureDefaultUserPrivileges(true)
     }
 

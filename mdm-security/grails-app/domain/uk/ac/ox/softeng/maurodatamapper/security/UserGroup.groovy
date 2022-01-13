@@ -68,6 +68,10 @@ class UserGroup implements MdmDomain, EditHistoryAware, SecurableResource, Princ
         undeleteable = false
     }
 
+    def beforeValidate() {
+        checkPath()
+    }
+
     @Override
     String getDomainType() {
         UserGroup.simpleName

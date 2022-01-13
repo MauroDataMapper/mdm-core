@@ -34,6 +34,11 @@ class UserGroupService implements MdmDomainService<UserGroup> {
         UserGroup.get(id)
     }
 
+    @Override
+    List<UserGroup> getAll(Collection<UUID> resourceIds) {
+        UserGroup.getAll(resourceIds)
+    }
+
     List<UserGroup> list(Map pagination) {
         pagination ? UserGroup.withFilter(pagination).list(pagination) : UserGroup.list()
     }

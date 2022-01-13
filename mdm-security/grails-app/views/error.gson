@@ -1,0 +1,104 @@
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
+
+import grails.util.Environment
+import grails.util.Holders
+import org.grails.datastore.mapping.validation.ValidationException
+import org.springframework.http.HttpStatus
+import org.springframework.validation.Errors
+
+import java.sql.SQLException
+
+model {
+    String errorCode
+    String message
+    Exception exception
+    Errors errors
+    List<Errors> errorsList
+    HttpStatus httpStatus
+}
+
+Throwable extractedException = findCoreException(exception)
+HttpStatus determinedHttpStatus = getExceptionStatus(extractedException) ?: httpStatus ?: INTERNAL_SERVER_ERROR
+
+if (!errors) {
+    if (extractedException instanceof ValidationException) errors = ((ValidationException) extractedException).errors
+    else if (extractedException instanceof grails.validation.ValidationException) {
+        errors = ((grails.validation.ValidationException) extractedException).errors
+    }
+}
+
+if (errors || errorsList) determinedHttpStatus = UNPROCESSABLE_ENTITY
+
+response.status determinedHttpStatus
+
+json {
+    status determinedHttpStatus.value()
+    reason determinedHttpStatus.reasonPhrase
+
+    errorCode errorCode ?: getExceptionErrorCode(extractedException) ?: 'JS--'
+    message message ?: getExceptionMessage(extractedException) ?: 'JS-- - Unknown error'
+    path request.getUri()
+
+    if (Environment.current != Environment.PRODUCTION) environment Environment.current
+
+    version Holders.getPluginManager()?.getGrailsPlugin('mdmCore')?.version ?: 'Unknown Version'
+
+    // If there are errors then render those
+    if (errors) validationErrors tmpl."/errors/errors"(errors)
+    else if (errorsList) validationErrors tmpl."/errors/errors"(errorsList)
+
+    else if (determinedHttpStatus != BAD_REQUEST) {
+        // SQL Exceptions are iterable so we need to only show the first
+        if (extractedException instanceof SQLException) {
+            exception tmpl.'/errors/exception'(exception: extractedException)
+        } else if (extractedException instanceof Error) {
+            exception tmpl.'/errors/throwableError'(error: extractedException)
+        }
+        // If internal server error then render everything we have
+        else if (extractedException) {
+            exception tmpl.'/errors/exception'(extractedException)
+        }
+    }
+}
+
+static Throwable findCoreException(Throwable throwable) {
+    if (!throwable) return null
+    if (throwable instanceof ApiException || !throwable.cause) return throwable
+    findCoreException(throwable.cause)
+}
+
+static String getExceptionMessage(Throwable throwable) {
+    if (!throwable) return null
+    if (throwable instanceof ApiException || !throwable.cause) return cleanExceptionMessage(throwable)
+    if (!throwable.message) {
+        return findBaseThrowableMessage(throwable)
+    }
+    cleanExceptionMessage(throwable)
+}
+
+static String findBaseThrowableMessage(Throwable throwable) {
+    if (!throwable) return null
+    findBaseThrowableMessage(throwable.cause) ?: cleanExceptionMessage(throwable)
+}
+
+static String getExceptionErrorCode(Throwable throwable) {
+    throwable instanceof ApiException ? throwable.errorCode : 'UEX--'
+}
+
+static String cleanExceptionMessage(Throwable throwable) {
+    if (throwable instanceof ValidationException) {
+        (throwable.message - throwable.formatErrors(throwable.errors, null)).trim()
+    } else if (throwable instanceof grails.validation.ValidationException) {
+        (throwable.message - throwable.formatErrors(throwable.errors, null)).trim()
+    } else throwable.getMessage()
+}
+
+static HttpStatus getExceptionStatus(Throwable exception) {
+    if (!exception) return null
+    try {
+        if (exception instanceof ApiException) return HttpStatus.resolve(exception.status.code)
+        return getExceptionStatus(exception.cause)
+    } catch (NullPointerException ignored) {
+        return null
+    }
+}

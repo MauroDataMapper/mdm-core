@@ -19,8 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.security.role
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.AnonymisableService
-import uk.ac.ox.softeng.maurodatamapper.security.basic.AnonymousUser
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
@@ -31,7 +30,7 @@ import grails.validation.ValidationException
 import org.springframework.beans.factory.annotation.Autowired
 
 @Transactional
-class SecurableResourceGroupRoleService implements AnonymisableService {
+class SecurableResourceGroupRoleService implements MdmDomainService<SecurableResourceGroupRole> {
 
     @Autowired(required = false)
     List<SecurableResourceService> securableResourceServices
@@ -41,6 +40,11 @@ class SecurableResourceGroupRoleService implements AnonymisableService {
 
     SecurableResourceGroupRole get(Serializable id) {
         SecurableResourceGroupRole.get(id)
+    }
+
+    @Override
+    List<SecurableResourceGroupRole> getAll(Collection<UUID> resourceIds) {
+        SecurableResourceGroupRole.getAll(resourceIds)
     }
 
     List<SecurableResourceGroupRole> list(Map pagination) {
@@ -57,6 +61,11 @@ class SecurableResourceGroupRoleService implements AnonymisableService {
 
     void delete(SecurableResourceGroupRole securableResourceGroupRole) {
         securableResourceGroupRole.delete(flush: true)
+    }
+
+    @Override
+    SecurableResourceGroupRole findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        return null
     }
 
     void deleteAllForSecurableResource(SecurableResource securableResource) {
@@ -143,12 +152,5 @@ class SecurableResourceGroupRoleService implements AnonymisableService {
                                                        "SecurableResourceGroupRole retrieval for securable resource [${domainType}] with no " +
                                                        "supporting service")
         service.get(id)
-    }
-
-    void anonymise(String createdBy) {
-        SecurableResourceGroupRole.findAllByCreatedBy(createdBy).each { securableResourceGroupRole ->
-            securableResourceGroupRole.createdBy = AnonymousUser.ANONYMOUS_EMAIL_ADDRESS
-            securableResourceGroupRole.save(validate: false)
-        }
     }
 }

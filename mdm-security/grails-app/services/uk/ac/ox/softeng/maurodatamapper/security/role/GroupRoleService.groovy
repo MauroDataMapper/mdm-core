@@ -61,6 +61,11 @@ class GroupRoleService implements MdmDomainService<GroupRole> {
         GroupRole.get(id) ?: id instanceof String ? getFromCache(id)?.groupRole : null
     }
 
+    @Override
+    List<GroupRole> getAll(Collection<UUID> resourceIds) {
+        GroupRole.getAll(resourceIds)
+    }
+
     List<GroupRole> list(Map pagination) {
         GroupRole.list(pagination)
     }

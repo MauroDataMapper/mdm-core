@@ -41,7 +41,7 @@ class BasicModelItem implements ModelItem<BasicModelItem, BasicModel>, GormEntit
 
     UUID id
     BasicModel model
-    BasicModelItem parent
+    BasicModelItem parentItem
 
     static constraints = {
         CallableConstraints.call(ModelItemConstraints, delegate)
@@ -61,7 +61,7 @@ class BasicModelItem implements ModelItem<BasicModelItem, BasicModel>, GormEntit
     ]
 
     static mappedBy = [
-        childModelItems: 'parent'
+        childModelItems: 'parentItem'
     ]
 
     static mapping = {
@@ -87,26 +87,15 @@ class BasicModelItem implements ModelItem<BasicModelItem, BasicModel>, GormEntit
         null
     }
 
-    @Override
     def beforeValidate() {
         idx = 0
-        if (!model) this.model = parent?.model
+        if (!model) this.model = parentItem?.model
         beforeValidateModelItem()
     }
 
     @Override
-    def beforeInsert() {
-        buildPathString()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPathString()
-    }
-
-    @Override
     CatalogueItem getParent() {
-        parent ?: model
+        parentItem ?: model
     }
 
     BasicModelItem addToChildModelItems(Map map) {
@@ -114,7 +103,7 @@ class BasicModelItem implements ModelItem<BasicModelItem, BasicModel>, GormEntit
     }
 
     BasicModelItem addToChildModelItems(BasicModelItem basicModelItem) {
-        basicModelItem.parent = this
+        basicModelItem.parentItem = this
         basicModelItem.model = this.model
         addTo('childModelItems', basicModelItem)
     }

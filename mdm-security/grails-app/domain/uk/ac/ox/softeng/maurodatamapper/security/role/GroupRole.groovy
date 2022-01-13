@@ -23,6 +23,8 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstra
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.HibernateSearch
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.mapper.pojo.bridge.binder.PathBinder
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
@@ -58,11 +60,11 @@ class GroupRole implements MdmDomain, EditHistoryAware, SecurableResource, Compa
     static constraints = {
         CallableConstraints.call(MdmDomainConstraints, delegate)
         parent nullable: true
-        name blank: false, validator: {val -> if (val.find(/\s/)) ['invalid.grouprole.name.message']}, unique: true
+        name blank: false, validator: { val -> if (val.find(/\s/)) ['invalid.grouprole.name.message'] }, unique: true
         displayName blank: false
         children nullable: false, minSize: 0
         securedResourceGroupRoles nullable: false, minSize: 0
-        userGroups nullable: false, minSize: 0, validator: {val, obj ->
+        userGroups nullable: false, minSize: 0, validator: { val, obj ->
             if (val && !obj.applicationLevelRole) ['invalid.grouprole.application.level.sergroups.message']
         }
     }
@@ -86,13 +88,9 @@ class GroupRole implements MdmDomain, EditHistoryAware, SecurableResource, Compa
         userGroups = []
     }
 
-    GroupRole getParent() {
-        parent
-    }
-
-    @Override
     def beforeValidate() {
-        children.each {it.beforeValidate()}
+        checkPath()
+        children.each { it.beforeValidate() }
     }
 
     @Override
@@ -108,6 +106,11 @@ class GroupRole implements MdmDomain, EditHistoryAware, SecurableResource, Compa
     @Override
     String getPathIdentifier() {
         name
+    }
+
+    @Override
+    Path buildPath() {
+        parent ? Path.from(parent.path, pathPrefix, pathIdentifier) : Path.from(pathPrefix, pathIdentifier)
     }
 
     @Override
@@ -132,11 +135,6 @@ class GroupRole implements MdmDomain, EditHistoryAware, SecurableResource, Compa
         "${getEditLabel()} : unsaved"
     }
 
-    @Deprecated
-    Integer getDepth() {
-        path.size() - 1
-    }
-
     /**
      * @return All allowed GroupRoles which are part of this role, will include this role
      */
@@ -157,7 +155,7 @@ class GroupRole implements MdmDomain, EditHistoryAware, SecurableResource, Compa
         if (this.applicationLevelRole != that.applicationLevelRole) {
             throw new ApiInternalException('GR01', 'Incomparable group roles')
         }
-        this.depth <=> that.depth
+        this.path.size() <=> that.path.size()
     }
 
     static GroupRole findByName(String name) {
@@ -172,7 +170,7 @@ class GroupRole implements MdmDomain, EditHistoryAware, SecurableResource, Compa
         HibernateSearch.paginatedList(GroupRole, pagination) {
             should {
                 keyword 'id', groupRole.id.toString()
-                keyword 'path', groupRole.id.toString()
+                //                keyword 'path', groupRole.id.toString()
             }
         }
     }
@@ -182,7 +180,7 @@ class GroupRole implements MdmDomain, EditHistoryAware, SecurableResource, Compa
             should {
                 keyword 'name', 'container_group_admin'
                 keyword 'id', topLevelFolderRole.id.toString()
-                keyword 'path', topLevelFolderRole.id.toString()
+                //                keyword 'path', topLevelFolderRole.id.toString()
 
             }
         }

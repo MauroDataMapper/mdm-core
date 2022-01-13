@@ -18,9 +18,12 @@
 package uk.ac.ox.softeng.maurodatamapper.security.role
 
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
-import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.AddsEditHistory
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.security.policy.GroupBasedUserSecurityPolicyManager
 
+import groovy.util.logging.Slf4j
+
+@Slf4j
 class GroupRoleController extends EditLoggingController<GroupRole> {
     static responseFormats = ['json', 'xml']
 

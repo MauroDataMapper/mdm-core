@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.MdmCoreGrailsPlugin
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.security.basic.UnloggedUser
@@ -33,7 +32,6 @@ import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
 import org.spockframework.util.Assert
 import org.springframework.beans.factory.annotation.Autowired
@@ -118,6 +116,12 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
 
     @Transactional
     def setup() {
+        log.debug('Check and setup test data')
+        sessionFactory.currentSession.flush()
+        if (CatalogueUser.count() == 2) {
+            implementSecurityUsers('functionalTest')
+        }
+        assert CatalogueUser.count() == 9
         reconfigureDefaultUserPrivileges(true)
     }
 
@@ -152,16 +156,6 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
         groupBasedSecurityPolicyManagerService.storeUserSecurityPolicyManager(defaultUserSecurityPolicyManager)
     }
 
-    @OnceBefore
-    @Transactional
-    def checkAndSetupData() {
-        log.debug('Check and setup test data')
-        sessionFactory.currentSession.flush()
-        assert CatalogueUser.count() == 2 // Unlogged user & admin user
-        implementSecurityUsers('functionalTest')
-        assert CatalogueUser.count() == 9
-    }
-
     @Transactional
     def cleanupSpec() {
         CatalogueUser.list().findAll {
@@ -180,6 +174,11 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
     @Transactional
     CatalogueUser getUser(String id) {
         CatalogueUser.get(id)
+    }
+
+    @Transactional
+    void cleanupUser(String id) {
+        (CatalogueUser.findByEmailAddress(id) ?: CatalogueUser.get(id)).delete(flush: true)
     }
 
     String getSelfRegisteredJson(String emailId) {
@@ -344,6 +343,9 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
 
         then: "The response is correct"
         verifyJsonResponse CREATED, getSelfRegisteredJson(emailId)
+
+        cleanup:
+        cleanupUser("${emailId}@functional-test.com")
     }
 
     void "3 : Test the admin registration action correctly persists an instance"() {
@@ -379,6 +381,9 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
   "creationMethod": "Standard",
   "pending": false
 }'''
+
+        cleanup:
+        cleanupUser("${emailId}@functional-test.com")
     }
 
     void "4 : Test the update action correctly updates an instance"() {
@@ -394,6 +399,9 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
 
         and:
         response.body().firstName == 'hello'
+
+        cleanup:
+        cleanupUser(id)
     }
 
     void "5 : Test the show action correctly renders an instance"() {
@@ -435,6 +443,9 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
 
         and:
         response.body().disabled == true
+
+        cleanup:
+        cleanupUser(id)
     }
 
     void "7 : Test getting the user preferences"() {
@@ -446,6 +457,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
 
         then: "The response is correct"
         verifyResponse OK, response
+
     }
 
     void "8 : Test updating the user preferences"() {
@@ -472,6 +484,8 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
         then: "The response is correct"
         verifyJsonResponse OK, '''{"something":"hello","anotherThing":"wibble"}'''
 
+        cleanup:
+        cleanupUser(id)
     }
 
     void '9 : Test user exists'() {
@@ -514,6 +528,9 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
 
         then:
         verifyResponse UNPROCESSABLE_ENTITY, response
+
+        cleanup:
+        cleanupUser(id)
     }
 
     void "11 : Test the approve registration works"() {
@@ -528,6 +545,9 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
 
         and:
         !response.body().pending
+
+        cleanup:
+        cleanupUser(id)
     }
 
     void "12 : Test the reject registration works"() {
@@ -543,6 +563,9 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
         and:
         response.body().pending == true
         response.body().disabled == true
+
+        cleanup:
+        cleanupUser(id)
     }
 
     void '13 : Test getting list of pending users'() {
@@ -590,13 +613,16 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
         response.body().count >= 1
 
         when:
-        newPending = response.body().items.find {it.emailAddress == "$emailId@functional-test.com".toString()}
+        newPending = response.body().items.find { it.emailAddress == "$emailId@functional-test.com".toString() }
 
         then:
         newPending
 
         and:
         newPending.disabled == true
+
+        cleanup:
+        cleanupUser(id)
 
     }
 
@@ -652,6 +678,9 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
         then:
         updated.tempPassword
         updated.password
+
+        cleanup:
+        cleanupUser(id)
     }
 
     void '16 : Test user requesting reset link'() {
@@ -677,5 +706,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
         updated.password
         updated.resetToken
 
+        cleanup:
+        cleanupUser(id)
     }
 }

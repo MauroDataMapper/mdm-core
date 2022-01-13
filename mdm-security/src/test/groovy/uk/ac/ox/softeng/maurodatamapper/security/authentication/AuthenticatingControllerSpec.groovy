@@ -68,7 +68,7 @@ class AuthenticatingControllerSpec extends BaseUnitSpec implements ControllerUni
 
         then:
         response.status == BAD_REQUEST.value()
-        response.errorMessage == 'Authentication Information not provided'
+        model.message == 'Authentication Information not provided'
 
         and:
         !sessionService.isAuthenticatedSession(session.id)

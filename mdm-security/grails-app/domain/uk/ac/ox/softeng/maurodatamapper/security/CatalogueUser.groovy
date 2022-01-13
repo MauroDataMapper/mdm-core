@@ -106,6 +106,7 @@ class CatalogueUser implements Principal, MdmDomain, EditHistoryAware, User {
     }
 
     def beforeValidate() {
+        checkPath()
         if (!creationMethod) creationMethod = 'Standard'
         if (pending == null) pending = false
         if (disabled == null) disabled = false

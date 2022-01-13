@@ -24,10 +24,9 @@ import uk.ac.ox.softeng.maurodatamapper.security.basic.UnloggedUser
 import uk.ac.ox.softeng.maurodatamapper.security.test.SecurityUsers
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 
-import grails.gorm.transactions.Rollback
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import grails.util.BuildSettings
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
@@ -55,14 +54,15 @@ class UserImageFileFunctionalSpec extends BaseFunctionalSpec implements Security
         "catalogueUsers/${userId}/image"
     }
 
-    @OnceBefore
-    void setupResourcesPath() {
+    @RunOnce
+    def setup() {
         resourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources').toAbsolutePath()
         assert Files.exists(resourcesPath.resolve('image_data_file.txt'))
+        checkResourceCount()
+        checkAndSetupData()
     }
 
-    @Rollback
-    @OnceBefore
+    @Transactional
     def checkResourceCount() {
         log.debug('Check resource count is {}', getExpectedInitialResourceCount())
         sessionFactory.currentSession.flush()
@@ -72,7 +72,6 @@ class UserImageFileFunctionalSpec extends BaseFunctionalSpec implements Security
         }
     }
 
-    @OnceBefore
     @Transactional
     def checkAndSetupData() {
         log.debug('Check and setup test data')

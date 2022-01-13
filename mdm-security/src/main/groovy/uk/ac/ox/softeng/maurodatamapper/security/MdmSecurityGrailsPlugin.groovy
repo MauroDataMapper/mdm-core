@@ -26,10 +26,14 @@ import grails.plugins.Plugin
 class MdmSecurityGrailsPlugin extends Plugin {
 
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = "4.0.0 > *"
+    def grailsVersion = "5.1.1 > *"
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
-        "grails-app/views/error.gsp"
+        "grails-app/views/forbidden.gson",
+        "grails-app/views/notFound.gson",
+        "grails-app/views/error.gson",
+        "grails-app/views/methodNotAllowed.gson",
+        "grails-app/views/errors/_errors.gson",
     ]
 
     def title = "Mauro Data Mapper Security Plugin"
@@ -61,7 +65,7 @@ The security domain, services and controllers for the Mauro Data Mapper backend.
     def scm = [url: "https://github.com/mauroDataMapper/mdm-core"]
 
     def dependsOn = [
-        mdmCore: '4.0.0 > *'
+        mdmCore: '5.0.0 > *'
     ]
 
     Closure doWithSpring() {

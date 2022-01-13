@@ -39,7 +39,6 @@ import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.VirtualGroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.VirtualSecurableResourceGroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.VirtualSecurableResourceGroupRoleService
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.core.GrailsApplication
 import grails.gorm.transactions.Transactional
@@ -276,7 +275,7 @@ class UserSecurityPolicyService {
         } else virtualSecurableResourceGroupRoles = [] as HashSet
 
         // Load sub containers
-        List<Container> subContainers = containerService.findAllContainersInside(container.id) as List<Container>
+        List<Container> subContainers = containerService.findAllContainersInside(container.path.last()) as List<Container>
         subContainers.each {subContainer ->
             virtualSecurableResourceGroupRoles.addAll(
                 accessRoles.collect {igr ->
