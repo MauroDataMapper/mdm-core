@@ -7,8 +7,8 @@ import java.util.concurrent.TimeUnit
 buildscript {
     repositories {
         mavenLocal()
-        maven {url 'https://jenkins.cs.ox.ac.uk/artifactory/plugins-snapshot'}
-        maven {url 'https://jenkins.cs.ox.ac.uk/artifactory/plugins-release'}
+        maven { url 'https://jenkins.cs.ox.ac.uk/artifactory/plugins-snapshot' }
+        maven { url 'https://jenkins.cs.ox.ac.uk/artifactory/plugins-release' }
 
     }
     dependencies {
@@ -68,7 +68,7 @@ check {
 task('sysProps') {
     group 'help'
     doLast {
-        logger.quiet('{}', System.properties.collect {"${it.key}:${it.value}"}.sort().join('\n'))
+        logger.quiet('{}', System.properties.collect { "${it.key}:${it.value}" }.sort().join('\n'))
     }
 }
 
@@ -94,10 +94,10 @@ task rootTestReport(type: TestReport) {
     destinationDir = file("${buildDir}/reports/tests")
     testResultDirs = files("${buildDir}/test-results")
     FileCollection testResultContentDir = files("${buildDir}/test-results")
-    outputs.upToDateWhen {false}
+    outputs.upToDateWhen { false }
 
     doFirst {
-        (testResultContentDir.getAsFileTree().visit {FileVisitDetails details ->
+        (testResultContentDir.getAsFileTree().visit { FileVisitDetails details ->
             if (details.directory && details.name == 'binary') {
                 logger.info("Reporting on ${details.path}")
                 reportOn files(details.file)
@@ -119,22 +119,44 @@ tasks.register('outputRuntimeArgs') {
         List<String> arguments = runtimeMxBean.getInputArguments()
 
         logger.warn("Running with JVM args : {}", arguments.size())
-        Map<String, String> map = arguments.collectEntries {arg ->
+        Map<String, String> map = arguments.collectEntries { arg ->
             arg.split('=').toList()
         }.sort() as Map<String, String>
 
-        map.each {k, v ->
+        map.each { k, v ->
             if (v) logger.quiet('{}={}', k, v)
             else logger.quiet('{}', k)
         }
     }
 }
 
+tasks.register('outputIntegrationTestShell') {
+    doLast {
+        StringBuilder sb = new StringBuilder('./gradlew --build-cache -Dgradle.integrationTest=true \\')
+        subprojects.each {
+            if (it.name != 'mdm-testing-functional' &&
+                it.file('src/integration-test').exists()) sb.append('\n   ').append(it.path).append(':integrationTest \\')
+        }
+        logger.quiet '{}', sb.toString()
+    }
+}
+
+tasks.register('outputFunctionalTestShell') {
+    doLast {
+        StringBuilder sb = new StringBuilder('./gradlew --build-cache -Dgradle.functionalTest=true \\')
+        subprojects.each {
+            if (it.name != 'mdm-testing-functional' &&
+                it.file('src/integration-test').exists()) sb.append('\n   ').append(it.path).append(':integrationTest \\')
+        }
+        logger.quiet '{}', sb.toString()
+    }
+}
+
 allprojects {
     repositories {
         mavenLocal()
-        maven {url "https://jenkins.cs.ox.ac.uk/artifactory/libs-release"}
-        maven {url "https://jenkins.cs.ox.ac.uk/artifactory/libs-snapshot"}
+        maven { url "https://jenkins.cs.ox.ac.uk/artifactory/libs-release" }
+        maven { url "https://jenkins.cs.ox.ac.uk/artifactory/libs-snapshot" }
     }
 }
 
@@ -166,7 +188,7 @@ subprojects {
         doLast {
             if (project.hasProperty('dependencyManagement')) {
                 Map imported = dependencyManagement.importedProperties
-                logger.quiet 'Project :: {}\n  {}', project.name, imported.collect {k, v ->
+                logger.quiet 'Project :: {}\n  {}', project.name, imported.collect { k, v ->
                     def projProp = project.hasProperty(k) ? project.getProperty(k) : null
                     "$k,$v,${projProp ?: ''}"
                 }.sort().join('\n  ')
@@ -188,7 +210,7 @@ subprojects {
         // Make sure bootRun runs with the required arguments
         project.tasks.findByName('bootRun')?.jvmArgs(addtlJvmArgs)
 
-        project.tasks.withType(Test) {testTask ->
+        project.tasks.withType(Test) { testTask ->
             useJUnitPlatform()
             ignoreFailures = System.getenv().containsKey('JENKINS')
             jvmArgs(addtlJvmArgs)
@@ -208,21 +230,21 @@ afterEvaluate {
     Make sure that each task mustRunAfter another assetCompile task, this ensures none of them can run at the same time
     We have to allow for project dependencies so make sure thats accounted for manually
     */
-    List<Task> assetCompileTasks = it.getTasksByName('assetCompile', true).toList().sort{it.path}
+    List<Task> assetCompileTasks = it.getTasksByName('assetCompile', true).toList().sort { it.path }
 
-    Task coreTask = assetCompileTasks.find {it.path.startsWith(':mdm-core')}
-    Task dataModelTask = assetCompileTasks.find {it.path.startsWith(':mdm-plugin-datamodel')}
+    Task coreTask = assetCompileTasks.find { it.path.startsWith(':mdm-core') }
+    Task dataModelTask = assetCompileTasks.find { it.path.startsWith(':mdm-plugin-datamodel') }
 
     assetCompileTasks.remove(coreTask)
     assetCompileTasks.remove(dataModelTask)
 
-//    dataModelTask.mustRunAfter coreTask
-    assetCompileTasks.each{
+    //    dataModelTask.mustRunAfter coreTask
+    assetCompileTasks.each {
         it.mustRunAfter coreTask, dataModelTask
     }
 
     for (int i = 1; i < assetCompileTasks.size(); i++) {
-        assetCompileTasks[i].mustRunAfter assetCompileTasks[i-1]
+        assetCompileTasks[i].mustRunAfter assetCompileTasks[i - 1]
     }
 }
 

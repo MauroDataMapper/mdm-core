@@ -23,10 +23,9 @@ import grails.plugins.Plugin
 class MdmPluginAuthenticationApiKeyGrailsPlugin extends Plugin {
 
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = "4.0.0 > *"
+    def grailsVersion = "5.1.1 > *"
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
-        "grails-app/views/error.gsp"
     ]
 
     def title = "Mauro Data Mapper Api Key Authentication Plugin"
@@ -58,8 +57,8 @@ The apikey authentication services and controllers for the Mauro Data Mapper bac
     def scm = [url: "https://github.com/mauroDataMapper/mdm-core"]
 
     def dependsOn = [
-        mdmCore    : '4.0.0 > *',
-        mdmSecurity: '4.0.0 > *',
+        mdmCore    : '5.0.0 > *',
+        mdmSecurity: '5.0.0 > *',
     ]
 
     Closure doWithSpring() {

@@ -68,32 +68,36 @@ function unitTest(){
 
 function integrationTest(){
   echo ">> Integration Tests <<"
+> Task :outputIntegrationTestShell
 ./gradlew --build-cache -Dgradle.integrationTest=true \
-  :mdm-core:integrationTest \
-  :mdm-plugin-datamodel:integrationTest \
-  :mdm-plugin-email-proxy:integrationTest \
-  :mdm-plugin-dataflow:integrationTest \
-  :mdm-plugin-profile:integrationTest \
-  :mdm-plugin-terminology:integrationTest \
-  :mdm-plugin-referencedata:integrationTest \
-  :mdm-plugin-federation:integrationTest  \
-  :mdm-security:integrationTest \
-  :mdm-plugin-authentication-basic:integrationTest
+   :mdm-core:integrationTest \
+   :mdm-plugin-authentication-apikey:integrationTest \
+   :mdm-plugin-authentication-basic:integrationTest \
+   :mdm-plugin-dataflow:integrationTest \
+   :mdm-plugin-datamodel:integrationTest \
+   :mdm-plugin-email-proxy:integrationTest \
+   :mdm-plugin-federation:integrationTest \
+   :mdm-plugin-profile:integrationTest \
+   :mdm-plugin-referencedata:integrationTest \
+   :mdm-plugin-terminology:integrationTest \
+   :mdm-security:integrationTest
 
 }
 
 function functionalTest(){
   echo ">> Functional Tests <<"
 ./gradlew --build-cache -Dgradle.functionalTest=true \
-  :mdm-core:integrationTest \
-  :mdm-plugin-datamodel:integrationTest \
-  :mdm-plugin-dataflow:integrationTest \
-  :mdm-plugin-profile:integrationTest \
-  :mdm-plugin-terminology:integrationTest \
-  :mdm-plugin-referencedata:integrationTest \
-  :mdm-plugin-federation:integrationTest \
-  :mdm-security:integrationTest
-#  :mdm-plugin-authentication-apikey:integrationTest \
+   :mdm-core:integrationTest \
+   :mdm-plugin-authentication-apikey:integrationTest \
+   :mdm-plugin-authentication-basic:integrationTest \
+   :mdm-plugin-dataflow:integrationTest \
+   :mdm-plugin-datamodel:integrationTest \
+   :mdm-plugin-email-proxy:integrationTest \
+   :mdm-plugin-federation:integrationTest \
+   :mdm-plugin-profile:integrationTest \
+   :mdm-plugin-referencedata:integrationTest \
+   :mdm-plugin-terminology:integrationTest \
+   :mdm-security:integrationTest
 
 }
 
