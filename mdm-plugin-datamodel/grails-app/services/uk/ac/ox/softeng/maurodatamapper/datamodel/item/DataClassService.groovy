@@ -789,9 +789,11 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
 
         List<DataClass> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            log.debug('Performing lucene label search')
+            log.debug('Performing hs label search')
             long start = System.currentTimeMillis()
-            results = DataClass.luceneLabelSearch(DataClass, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds)).results
+            results =
+                DataClass
+                    .labelHibernateSearch(DataClass, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds)).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
 

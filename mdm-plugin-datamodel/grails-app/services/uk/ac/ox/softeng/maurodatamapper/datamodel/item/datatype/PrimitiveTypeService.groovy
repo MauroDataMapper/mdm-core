@@ -123,11 +123,14 @@ class PrimitiveTypeService extends ModelItemService<PrimitiveType> implements Su
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(DataModel)
         if (!readableIds) return []
 
-        log.debug('Performing lucene label search')
+        log.debug('Performing hs label search')
         long start = System.currentTimeMillis()
         List<PrimitiveType> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            results = PrimitiveType.luceneLabelSearch(PrimitiveType, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds)).results
+            results =
+                PrimitiveType
+                    .labelHibernateSearch(PrimitiveType, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds))
+                    .results
         }
         log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         results

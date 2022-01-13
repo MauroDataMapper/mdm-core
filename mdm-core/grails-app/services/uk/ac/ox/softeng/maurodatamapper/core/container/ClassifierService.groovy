@@ -113,7 +113,7 @@ class ClassifierService extends ContainerService<Classifier> {
     List<Classifier> findAllReadableContainersBySearchTerm(UserSecurityPolicyManager userSecurityPolicyManager, String searchTerm) {
         log.debug('Searching readable classifiers for search term in label')
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Classifier)
-        Classifier.luceneTreeLabelSearch(readableIds.collect { it.toString() }, searchTerm)
+        Classifier.treeLabelHibernateSearch(readableIds.collect { it.toString() }, searchTerm)
     }
 
     @Override

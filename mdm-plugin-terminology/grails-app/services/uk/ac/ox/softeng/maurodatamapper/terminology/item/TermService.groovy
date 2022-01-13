@@ -281,9 +281,10 @@ class TermService extends ModelItemService<Term> {
 
         List<Term> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            log.debug('Performing lucene label search')
+            log.debug('Performing hs label search')
             long start = System.currentTimeMillis()
-            results = Term.luceneLabelSearch(Term, searchTerm, readableIds.toList()).results
+            results = Term.labelHibernateSearch(Term, searchTerm, readableIds.toList(),
+                                                terminologyService.getAllReadablePathNodes(readableIds)).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
 

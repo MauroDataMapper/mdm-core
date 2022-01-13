@@ -75,7 +75,7 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
         }
 
         PaginatedHibernateSearchResult<CatalogueItem> result =
-            mdmCoreSearchService.findAllByFolderIdByLuceneSearch(params.versionedFolderId, searchParams, params)
+            mdmCoreSearchService.findAllByFolderIdByHibernateSearch(params.versionedFolderId, searchParams, params)
         respond result
     }
 

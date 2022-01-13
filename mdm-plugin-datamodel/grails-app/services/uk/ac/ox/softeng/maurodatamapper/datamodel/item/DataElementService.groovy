@@ -206,9 +206,12 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
 
         List<DataElement> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            log.debug('Performing lucene label search')
+            log.debug('Performing hs label search')
             long start = System.currentTimeMillis()
-            results = DataElement.luceneLabelSearch(DataElement, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds)).results
+            results =
+                DataElement
+                    .labelHibernateSearch(DataElement, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds))
+                    .results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
 

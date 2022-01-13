@@ -18,7 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter
 
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
-import uk.ac.ox.softeng.maurodatamapper.hibernate.search.HibernateSearch
+
+import grails.plugins.hibernate.search.HibernateSearchApi
 
 class ClassifierFilterFilter implements SearchParamFilter {
 
@@ -27,11 +28,11 @@ class ClassifierFilterFilter implements SearchParamFilter {
     }
 
     Closure getClosure(SearchParams searchParams) {
-        HibernateSearch.defineAdditionalLuceneQuery {
+        HibernateSearchApi.defineSearchQuery {
             must {
-                searchParams.classifierFilter.each {clList ->
+                searchParams.classifierFilter.each { clList ->
                     should {
-                        clList.each {cl ->
+                        clList.each { cl ->
                             keyword 'classifiers.label', cl.toString()
                         }
                     }

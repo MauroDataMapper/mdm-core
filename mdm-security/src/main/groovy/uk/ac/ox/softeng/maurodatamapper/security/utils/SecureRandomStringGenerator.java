@@ -47,7 +47,7 @@ public class SecureRandomStringGenerator {
      * @return RandomStringGenerator for generating alphanumeric strings.
      */
     public static RandomStringGenerator alphanumericGenerator() {
-        UniformRandomProvider rng = RandomSource.create(RandomSource.MT);
+        UniformRandomProvider rng = RandomSource.MT.create();
         return new RandomStringGenerator.Builder()
             .withinRange(MINIMUM_CODEPOINT, MAXIMUM_CODEPOINT)
             .usingRandom(rng::nextInt)
@@ -62,7 +62,7 @@ public class SecureRandomStringGenerator {
      * @return RandomStringGenerator for generating alphanumeric strings including punctuation.
      */
     public static RandomStringGenerator fullGenerator() {
-        UniformRandomProvider rng = RandomSource.create(RandomSource.MT);
+        UniformRandomProvider rng = RandomSource.MT.create();
         return new RandomStringGenerator.Builder()
             .withinRange(MINIMUM_CODEPOINT, MAXIMUM_CODEPOINT)
             .usingRandom(rng::nextInt)

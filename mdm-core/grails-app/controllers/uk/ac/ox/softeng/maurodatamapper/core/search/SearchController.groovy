@@ -43,9 +43,10 @@ class SearchController implements ResourcelessMdmController {
             params.order = searchParams.order
         }
 
-        PaginatedHibernateSearchResult<CatalogueItem> results = mdmCoreSearchService.findAllReadableByLuceneSearch(currentUserSecurityPolicyManager,
-                                                                                                                   searchParams,
-                                                                                                                   params)
+        PaginatedHibernateSearchResult<CatalogueItem> results =
+            mdmCoreSearchService.findAllReadableByHibernateSearch(currentUserSecurityPolicyManager,
+                                                                  searchParams,
+                                                                  params)
 
         respond results
     }

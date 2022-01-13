@@ -115,7 +115,7 @@ This is basically the backend API.
             boolean rebuildIndexes = grailsApplication.config.getProperty('grails.plugins.hibernatesearch.rebuildIndexOnStart', Boolean, false)
             if (rebuildIndexes) log.warn('Rebuilding search indexes')
             /*
-             * Load in the Lucene analysers used by the hibernate search functionality
+             * Load in the HS analysers used by the hibernate search functionality
              */
             hibernateSearchMappingConfigurer(MdmHibernateSearchMappingConfigurer)
 

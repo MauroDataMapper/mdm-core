@@ -29,7 +29,7 @@ class AdminInterceptorSpec extends SimpleInterceptorUnitSpec implements Intercep
     @Shared
     List<String> actions = [
         'status',
-        'rebuildLuceneIndexes',
+        'rebuildHibernateSearchIndexes',
     ]
 
     @Override

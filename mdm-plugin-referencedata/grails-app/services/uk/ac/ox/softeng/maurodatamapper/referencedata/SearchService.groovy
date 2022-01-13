@@ -31,7 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.
 class SearchService extends AbstractCatalogueItemSearchService<ModelItem> implements CatalogueItemSearchDomainProvider {
 
     PaginatedHibernateSearchResult<ModelItem> findAllByReferenceDataModelIdByHibernateSearch(UUID dataModelId, SearchParams searchParams, Map pagination = [:]) {
-        findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch([dataModelId], searchParams, true, pagination)
+        findAllCatalogueItemsOfTypeByOwningIdsByHibernateSearch([dataModelId], searchParams, true, pagination)
     }
 
     @Override

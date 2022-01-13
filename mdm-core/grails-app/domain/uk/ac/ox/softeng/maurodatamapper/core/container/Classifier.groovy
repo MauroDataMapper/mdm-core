@@ -155,19 +155,19 @@ class Classifier implements Container {
         byParentClassifierId(id).eq('label', label)
     }
 
-    static List<Classifier> luceneList(@DelegatesTo(HibernateSearchApi) Closure closure) {
+    static List<Classifier> hibernateSearchList(@DelegatesTo(HibernateSearchApi) Closure closure) {
         Classifier.search().list closure
     }
 
-    static List<Classifier> luceneTreeLabelSearch(List<String> allowedIds, String searchTerm) {
-        luceneList {
+    static List<Classifier> treeLabelHibernateSearch(List<String> allowedIds, String searchTerm) {
+        hibernateSearchList {
             keyword 'label', searchTerm
             filter IdSecureFilterFactory.createFilterPredicate(searchPredicateFactory, allowedIds)
         }
     }
 
     static List<Classifier> findAllContainedInClassifierPathNode(PathNode pathNode) {
-        luceneList {
+        hibernateSearchList {
             should {
                 keyword 'path', Path.from(pathNode)
             }

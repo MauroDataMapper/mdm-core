@@ -155,8 +155,8 @@ class DataModelController extends ModelController<DataModel> {
             params.order = searchParams.order
         }
 
-        PaginatedHibernateSearchResult<ModelItem> result = mdmPluginDataModelSearchService.findAllByDataModelIdByLuceneSearch(params.dataModelId,
-                                                                                                                              searchParams, params)
+        PaginatedHibernateSearchResult<ModelItem> result = mdmPluginDataModelSearchService.findAllByDataModelIdByHibernateSearch(params.dataModelId,
+                                                                                                                                 searchParams, params)
         respond result
     }
 

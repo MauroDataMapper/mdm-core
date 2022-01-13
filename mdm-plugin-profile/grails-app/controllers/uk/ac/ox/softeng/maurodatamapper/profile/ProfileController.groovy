@@ -29,8 +29,8 @@ import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ItemsProfilesDataBinding
 import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ProfileProvidedCollection
 
-import grails.web.databinding.DataBinder
 import grails.gorm.transactions.Transactional
+import grails.web.databinding.DataBinder
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -275,7 +275,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
         params.offset = 0
         params.max = null
 
-        List<Profile> profileObjects = mdmPluginProfileSearchService.findAllDataModelProfileObjectsForProfileProviderByLuceneSearch(
+        List<Profile> profileObjects = mdmPluginProfileSearchService.findAllDataModelProfileObjectsForProfileProviderByHibernateSearch(
             currentUserSecurityPolicyManager, profileProviderService, searchParams, params
         )
 

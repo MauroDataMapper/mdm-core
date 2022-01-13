@@ -148,7 +148,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     List<VersionedFolder> findAllReadableContainersBySearchTerm(UserSecurityPolicyManager userSecurityPolicyManager, String searchTerm) {
         log.debug('Searching readable folders for search term in label')
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Folder)
-        VersionedFolder.luceneTreeLabelSearch(readableIds.collect {it.toString()}, searchTerm)
+        VersionedFolder.treeLabelHibernateSearch(readableIds.collect { it.toString() }, searchTerm)
     }
 
     @Override

@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValueService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.traits.service.ReferenceSummaryMetadataAwareService
@@ -37,6 +38,7 @@ class ReferenceEnumerationTypeService extends ModelItemService<ReferenceEnumerat
 
     ReferenceEnumerationValueService referenceEnumerationValueService
     ReferenceSummaryMetadataService referenceSummaryMetadataService
+    ReferenceDataModelService referenceDataModelService
 
     @Override
     ReferenceEnumerationType get(Serializable id) {
@@ -114,9 +116,11 @@ class ReferenceEnumerationTypeService extends ModelItemService<ReferenceEnumerat
 
         List<ReferenceEnumerationType> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            log.debug('Performing lucene label search')
+            log.debug('Performing hs label search')
             long start = System.currentTimeMillis()
-            results = ReferenceEnumerationType.luceneLabelSearch(ReferenceEnumerationType, searchTerm, readableIds.toList()).results
+            results =
+                ReferenceEnumerationType
+                    .labelHibernateSearch(ReferenceEnumerationType, searchTerm, readableIds.toList(), referenceDataModelService.getAllReadablePathNodes(readableIds)).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
 

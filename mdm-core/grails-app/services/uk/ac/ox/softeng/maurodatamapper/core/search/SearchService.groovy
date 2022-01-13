@@ -50,13 +50,13 @@ class SearchService extends AbstractCatalogueItemSearchService<CatalogueItem> {
     @Autowired(required = false)
     List<CatalogueItemSearchDomainProvider> catalogueItemSearchDomainProviders
 
-    PaginatedHibernateSearchResult<CatalogueItem> findAllByFolderIdByLuceneSearch(UUID folderId, SearchParams searchParams, Map pagination = [:]) {
+    PaginatedHibernateSearchResult<CatalogueItem> findAllByFolderIdByHibernateSearch(UUID folderId, SearchParams searchParams, Map pagination = [:]) {
         List<UUID> modelIds = getAllModelIdsInFolderId(folderId)
-        findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch(modelIds, searchParams, false, pagination)
+        findAllCatalogueItemsOfTypeByOwningIdsByHibernateSearch(modelIds, searchParams, false, pagination)
     }
 
-    PaginatedHibernateSearchResult<CatalogueItem> findAllReadableByLuceneSearch(UserSecurityPolicyManager userSecurityPolicyManager,
-                                                                                SearchParams searchParams, Map pagination = [:]) {
+    PaginatedHibernateSearchResult<CatalogueItem> findAllReadableByHibernateSearch(UserSecurityPolicyManager userSecurityPolicyManager,
+                                                                                   SearchParams searchParams, Map pagination = [:]) {
 
         if (!modelServices) return new PaginatedHibernateSearchResult<CatalogueItem>([], 0)
 
@@ -64,9 +64,9 @@ class SearchService extends AbstractCatalogueItemSearchService<CatalogueItem> {
 
         if (!readableFolderIds) return new PaginatedHibernateSearchResult<CatalogueItem>([], 0)
 
-        List<UUID> readableModelIds = readableFolderIds.collectMany {containerId -> getAllModelIdsInFolderId(containerId)}
+        List<UUID> readableModelIds = readableFolderIds.collectMany { containerId -> getAllModelIdsInFolderId(containerId) }
 
-        findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch(readableModelIds, searchParams, false, pagination)
+        findAllCatalogueItemsOfTypeByOwningIdsByHibernateSearch(readableModelIds, searchParams, false, pagination)
     }
 
     @Override

@@ -18,7 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter
 
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
-import uk.ac.ox.softeng.maurodatamapper.hibernate.search.HibernateSearch
+
+import grails.plugins.hibernate.search.HibernateSearchApi
 
 class CreatedBeforeFilter extends DateTimeSearchParamFilter {
 
@@ -27,7 +28,7 @@ class CreatedBeforeFilter extends DateTimeSearchParamFilter {
     }
 
     Closure getClosure(SearchParams searchParams) {
-        HibernateSearch.defineAdditionalLuceneQuery {
+        HibernateSearchApi.defineSearchQuery {
             below 'dateCreated', getOffsetDateTimeFromDate(searchParams.createdBefore)
         }
     }

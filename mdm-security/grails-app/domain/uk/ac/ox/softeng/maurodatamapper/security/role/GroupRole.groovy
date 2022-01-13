@@ -170,7 +170,7 @@ class GroupRole implements MdmDomain, EditHistoryAware, SecurableResource, Compa
         HibernateSearch.paginatedList(GroupRole, pagination) {
             should {
                 keyword 'id', groupRole.id.toString()
-                //                keyword 'path', groupRole.id.toString()
+                keyword 'path', groupRole.path.last()
             }
         }
     }
@@ -180,7 +180,7 @@ class GroupRole implements MdmDomain, EditHistoryAware, SecurableResource, Compa
             should {
                 keyword 'name', 'container_group_admin'
                 keyword 'id', topLevelFolderRole.id.toString()
-                //                keyword 'path', topLevelFolderRole.id.toString()
+                keyword 'path', groupRole.path.last()
 
             }
         }

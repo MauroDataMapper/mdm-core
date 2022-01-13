@@ -31,12 +31,7 @@ class HibernateSearchIndexingServiceIntegrationSpec extends MdmSpecification {
     MessageSource messageSource
     HibernateSearchIndexingService hibernateSearchIndexingService
 
-    void 'test core lucene index directory'() {
-        expect:
-        hibernateSearchIndexingService.luceneIndexPath.toString().startsWith('/tmp/lucene/')
-    }
-
-    void 'test lucene default config mass indexer properties'() {
+    void 'test hs default config mass indexer properties'() {
         expect:
         hibernateSearchIndexingService.massIndexerConfig == [typesToIndexInParallel: 1,
                                                              cacheMode             : 'IGNORE',

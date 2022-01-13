@@ -137,9 +137,12 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> implement
 
         List<EnumerationType> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            log.debug('Performing lucene label search')
+            log.debug('Performing hs label search')
             long start = System.currentTimeMillis()
-            results = EnumerationType.luceneLabelSearch(EnumerationType, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds)).results
+            results =
+                EnumerationType
+                    .labelHibernateSearch(EnumerationType, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds))
+                    .results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
 

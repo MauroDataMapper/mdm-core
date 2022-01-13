@@ -15,17 +15,14 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.datamodel.hibernate.search
+package uk.ac.ox.softeng.maurodatamapper.core.traits.service
 
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.LuceneIndexAwareService
+/**
+ * @since 18/10/2019
+ */
+interface HibernateSearchIndexAwareService {
 
-class LuceneIndexService implements LuceneIndexAwareService {
+    void beforeRebuild(session)
 
-    @Override
-    void beforeRebuild(Object session) {
-    }
-
-    @Override
-    void afterRebuild() {
-    }
+    void afterRebuild()
 }

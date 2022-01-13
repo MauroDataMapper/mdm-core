@@ -27,6 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate.IdPathSecureFilterFactory
 import uk.ac.ox.softeng.maurodatamapper.lucene.queries.mlt.BoostedMoreLikeThisQuery
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
@@ -55,6 +56,7 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
 
     ReferenceDataTypeService referenceDataTypeService
     ReferenceSummaryMetadataService referenceSummaryMetadataService
+    ReferenceDataModelService referenceDataModelService
 
     @Override
     ReferenceDataElement get(Serializable id) {
@@ -149,9 +151,11 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
 
         List<ReferenceDataElement> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            log.debug('Performing lucene label search')
+            log.debug('Performing hs label search')
             long start = System.currentTimeMillis()
-            results = ReferenceDataElement.luceneLabelSearch(ReferenceDataElement, searchTerm, readableIds.toList()).results
+            results =
+                ReferenceDataElement
+                    .labelHibernateSearch(ReferenceDataElement, searchTerm, readableIds.toList(), referenceDataModelService.getAllReadablePathNodes(readableIds)).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
 

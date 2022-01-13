@@ -18,7 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter
 
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
-import uk.ac.ox.softeng.maurodatamapper.hibernate.search.HibernateSearch
+
+import grails.plugins.hibernate.search.HibernateSearchApi
 
 class DomainTypesFilter implements SearchParamFilter {
 
@@ -27,9 +28,9 @@ class DomainTypesFilter implements SearchParamFilter {
     }
 
     Closure getClosure(SearchParams searchParams) {
-        HibernateSearch.defineAdditionalLuceneQuery {
+        HibernateSearchApi.defineSearchQuery {
             should {
-                searchParams.domainTypes.each {dt ->
+                searchParams.domainTypes.each { dt ->
                     keyword 'domainType', dt
                 }
             }

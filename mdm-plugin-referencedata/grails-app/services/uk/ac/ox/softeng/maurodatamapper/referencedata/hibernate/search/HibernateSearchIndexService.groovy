@@ -17,9 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.hibernate.search
 
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.LuceneIndexAwareService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.HibernateSearchIndexAwareService
 
-class LuceneIndexService implements LuceneIndexAwareService {
+class HibernateSearchIndexService implements HibernateSearchIndexAwareService {
 
     @Override
     void beforeRebuild(Object session) {

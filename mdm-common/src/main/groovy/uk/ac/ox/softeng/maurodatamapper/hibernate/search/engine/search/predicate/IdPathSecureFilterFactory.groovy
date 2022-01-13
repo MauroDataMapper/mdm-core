@@ -28,8 +28,10 @@ import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory
 
 /**
  * @since 27/04/2018
- * Secures a lucene search so that the data is filtered so only data which includes an allowed id or its path contains one of the supplied path nodes.
- * Path is tokenised on the | character so if you have a resource with path "mo:model|mi:model item 1|mi:model item 2" and the allowedPathNodes contains "mo:model" then the
+ * Secures a hibernate search so that the data is filtered so only data which includes an allowed id or its path contains one of the supplied path
+ * nodes.
+ * Path is tokenised on the | character so if you have a resource with path "mo:model|mi:model item 1|mi:model item 2" and the allowedPathNodes
+ * contains "mo:model" then the
  * resource will be allowed.
  */
 @CompileStatic

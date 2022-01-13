@@ -127,11 +127,14 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> implements Su
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(DataModel)
         if (!readableIds) return []
 
-        log.debug('Performing lucene label search')
+        log.debug('Performing hs label search')
         long start = System.currentTimeMillis()
         List<ModelDataType> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            results = ModelDataType.luceneLabelSearch(ModelDataType, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds)).results
+            results =
+                ModelDataType
+                    .labelHibernateSearch(ModelDataType, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds))
+                    .results
         }
         log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         results

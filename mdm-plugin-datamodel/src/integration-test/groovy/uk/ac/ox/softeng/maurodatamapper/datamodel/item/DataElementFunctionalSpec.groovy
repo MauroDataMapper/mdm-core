@@ -710,248 +710,209 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
         cleanUpData(responseBody().id)
     }
 
+    Tuple2<String, String> setupForLinkSuggestions() {
+        String el1 = createNewItem([
+            label          : 'ele1',
+            maxMultiplicity: 2,
+            minMultiplicity: 0,
+            dataType       : dataTypeId.toString(),
+            description    : 'most obvious match'
+        ])
 
-    /*
-        void setupForLinkSuggestions() {
-            loginEditor()
-            DataType newDataType = simpleTestDataModel.findDataTypeByLabel("string")
-            def response
-            if (!newDataType) {
-                response = post(apiPath + "/dataModels/${simpleTestDataModel.id}/dataTypes") {
-                    json {
-                        domainType = 'PrimitiveType'
-                        label = 'string'
-                    }
-                }
-                assert (response.statusCode.'2xxSuccessful')
-                newDataType = simpleTestDataModel.findDataTypeByLabel("string")
-            }
-            DataClass targetDataClass = DataClass.findByDataModelAndLabel(simpleTestDataModel, "simple")
+        String el2 = createNewItem([
+            label          : 'element',
+            maxMultiplicity: 2,
+            minMultiplicity: 0,
+            dataType       : dataTypeId.toString(),
+            description    : 'least obvious match'
+        ])
 
-            response = post(apiPath + "/dataModels/${simpleTestDataModel.id}/dataClasses/${targetDataClass.id}/dataElements") {
-                json {
-                    domainType = 'DataElement'
-                    label = 'ele1'
-                    description = 'most obvious match'
-                    dataType = {
-                        domainType = 'PrimitiveType'
-                        id = newDataType.id.toString()
-                    }
+        Tuple.of(el1, el2)
+    }
 
-                }
-            }
-            assert (response.statusCode.'2xxSuccessful')
-            response = post(apiPath + "/dataModels/${simpleTestDataModel.id}/dataClasses/${targetDataClass.id}/dataElements") {
-                json {
-                    domainType = 'DataElement'
-                    label = 'ele2'
-                    description = 'least obvious match'
-                    dataType = {
-                        domainType = 'PrimitiveType'
-                        id = newDataType.id.toString()
-                    }
+    void 'LINK01 : test get link suggestions for a data element'() {
+        given:
+        Tuple ids = setupForLinkSuggestions()
+        POST(getResourcePath(otherDataModelId, otherDataClassId), [
+            label          : 'ele1',
+            maxMultiplicity: 2,
+            minMultiplicity: 0,
+            dataType       : otherDataTypeId.toString(),
+        ], MAP_ARG, true)
+        verifyResponse(HttpStatus.CREATED, response)
+        String el3 = responseBody().id
+        String endpoint = "dataModels/${otherDataModelId}/" +
+                          "dataClasses/${otherDataClassId}/" +
+                          "dataElements/${el3}/" +
+                          "suggestLinks/${dataModelId}"
 
-                }
-            }
-            assert (response.statusCode.'2xxSuccessful')
-            adminService.rebuildLuceneIndexes(new LuceneIndexParameters())
-            logout()
+        String expectedJson = expectedLinkSuggestions(expectedLinkSuggestionResults())
+
+        when:
+        GET(endpoint, STRING_ARG, true)
+
+        then:
+        verifyJsonResponse OK, expectedJson
+
+        cleanup:
+        DELETE("${getResourcePath(otherDataModelId, otherDataClassId)}/${el3}", MAP_ARG, true)
+        verifyResponse(HttpStatus.NO_CONTENT, response)
+        cleanUpData(ids.v1)
+        cleanUpData(ids.v2)
+    }
+
+    void 'LINK02 : test get link suggestions for a data element with no data elements in the target'() {
+        given:
+        POST(getResourcePath(otherDataModelId, otherDataClassId), [
+            label          : 'ele1',
+            maxMultiplicity: 2,
+            minMultiplicity: 0,
+            dataType       : otherDataTypeId.toString(),
+        ], MAP_ARG, true)
+        verifyResponse(HttpStatus.CREATED, response)
+        String el3 = responseBody().id
+        String endpoint = "dataModels/${otherDataModelId}/" +
+                          "dataClasses/${otherDataClassId}/" +
+                          "dataElements/${el3}/" +
+                          "suggestLinks/${dataModelId}"
+
+        String expectedJson = expectedLinkSuggestions('')
+
+        when:
+        GET(endpoint, STRING_ARG, true)
+
+        then:
+        verifyJsonResponse OK, expectedJson
+
+        cleanup:
+        DELETE("${getResourcePath(otherDataModelId, otherDataClassId)}/${el3}", MAP_ARG, true)
+        verifyResponse(HttpStatus.NO_CONTENT, response)
+    }
+
+
+    String expectedLinkSuggestions(String results) {
+        '''{
+  "sourceDataElement": {
+    "id": "${json-unit.matches:id}",
+    "domainType": "DataElement",
+    "label": "ele1",
+    "model": "${json-unit.matches:id}",
+    "breadcrumbs": [
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "Functional Test DataModel 2",
+        "domainType": "DataModel",
+        "finalised": false
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "Functional Test DataClass 2",
+        "domainType": "DataClass"
+      }
+    ],
+    "dataClass": "${json-unit.matches:id}",
+    "dataType": {
+      "id": "${json-unit.matches:id}",
+      "domainType": "PrimitiveType",
+      "label": "string",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Functional Test DataModel 2",
+          "domainType": "DataModel",
+          "finalised": false
         }
+      ]
+    },
+    "maxMultiplicity": 2,
+    "minMultiplicity": 0
+  },
+  "results": [''' + results + ''']
+}'''
+    }
 
-        void 'test get link suggestions for a data element'() {
-            given:
-            setupForLinkSuggestions()
-
-            DataClass sourceDataClass = DataClass.findByLabel('content')
-            DataElement sourceDataElement = DataElement.findByDataClassAndLabel(sourceDataClass, 'ele1')
-            String endpoint = "${apiPath}/" +
-                              "dataModels/${testDataModel.id}/" +
-                              "dataClasses/${sourceDataClass.id}/" +
-                              "dataElements/${sourceDataElement.id}/" +
-                              "suggestLinks/${simpleTestDataModel.id}"
-
-            String expectedJson = expectedLinkSuggestions(expectedLinkSuggestionResults())
-
-
-            when: 'not logged in'
-            def response = restGet(endpoint)
-
-            then:
-            verifyResponse UNAUTHORIZED, response
-
-            when: 'logged in as reader'
-            loginUser(reader2)
-            response = restGet(endpoint)
-
-            then:
-            verifyResponse OK, response, expectedJson
-
-            when: 'logged in as writer'
-            loginEditor()
-            response = restGet(endpoint)
-
-            then:
-            verifyResponse OK, response, expectedJson
-        }
-
-
-        void 'test get link suggestions for a data element with no data elements in the target'() {
-            given:
-
-            DataClass sourceDataClass = DataClass.findByLabel('content')
-            DataElement sourceDataElement = DataElement.findByDataClassAndLabel(sourceDataClass, 'ele1')
-            String endpoint = "${apiPath}/" +
-                              "dataModels/${testDataModel.id}/" +
-                              "dataClasses/${sourceDataClass.id}/" +
-                              "dataElements/${sourceDataElement.id}/" +
-                              "suggestLinks/${simpleTestDataModel.id}"
-
-            String expectedJson = expectedLinkSuggestions("")
-
-            when: 'not logged in'
-            def response = restGet(endpoint)
-
-            then:
-            verifyResponse UNAUTHORIZED, response
-
-            when: 'logged in as reader'
-            loginUser(reader2)
-            response = restGet(endpoint)
-
-            then:
-            verifyResponse OK, response, expectedJson
-
-            when: 'logged in as writer'
-            loginEditor()
-            response = restGet(endpoint)
-
-            then:
-            verifyResponse OK, response, expectedJson
-        }
-
-
-        String expectedLinkSuggestions(String results) {
-            '''{
-      "sourceDataElement": {
+    String expectedLinkSuggestionResults() {
+        '''{
+      "dataElement": {
+        "id": "${json-unit.matches:id}",
         "domainType": "DataElement",
+        "label": "ele1",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Functional Test DataModel",
+            "domainType": "DataModel",
+            "finalised": false
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Functional Test DataClass",
+            "domainType": "DataClass"
+          }
+        ],
+        "description": "most obvious match",
         "dataClass": "${json-unit.matches:id}",
         "dataType": {
-          "domainType": "PrimitiveType",
-          "dataModel": "${json-unit.matches:id}",
           "id": "${json-unit.matches:id}",
+          "domainType": "PrimitiveType",
           "label": "string",
+          "model": "${json-unit.matches:id}",
           "breadcrumbs": [
             {
-              "domainType": "DataModel",
-              "finalised": false,
               "id": "${json-unit.matches:id}",
-              "label": "Complex Test DataModel"
+              "label": "Functional Test DataModel",
+              "domainType": "DataModel",
+              "finalised": false
             }
           ]
         },
-        "dataModel": "${json-unit.matches:id}",
-        "maxMultiplicity": 20,
+        "maxMultiplicity": 2,
+        "minMultiplicity": 0
+      },
+      "score": "${json-unit.any-number}"
+    },
+    {
+      "dataElement": {
         "id": "${json-unit.matches:id}",
-        "label": "ele1",
-        "minMultiplicity": 0,
+        "domainType": "DataElement",
+        "label": "element",
+        "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
-            "domainType": "DataModel",
-            "finalised": false,
             "id": "${json-unit.matches:id}",
-            "label": "Complex Test DataModel"
+            "label": "Functional Test DataModel",
+            "domainType": "DataModel",
+            "finalised": false
           },
           {
-            "domainType": "DataClass",
             "id": "${json-unit.matches:id}",
-            "label": "content"
+            "label": "Functional Test DataClass",
+            "domainType": "DataClass"
           }
-        ]
-      },
-      "results": [
-        ''' + results + '''
-      ]
-    }'''
-        }
-
-        String expectedLinkSuggestionResults() {
-            '''    {
-          "score": 0.70164835,
-          "dataElement": {
-            "domainType": "DataElement",
-            "dataClass": "${json-unit.matches:id}",
-            "dataType": {
-              "domainType": "PrimitiveType",
-              "dataModel": "${json-unit.matches:id}",
+        ],
+        "description": "least obvious match",
+        "dataClass": "${json-unit.matches:id}",
+        "dataType": {
+          "id": "${json-unit.matches:id}",
+          "domainType": "PrimitiveType",
+          "label": "string",
+          "model": "${json-unit.matches:id}",
+          "breadcrumbs": [
+            {
               "id": "${json-unit.matches:id}",
-              "label": "string",
-              "breadcrumbs": [
-                {
-                  "domainType": "DataModel",
-                  "finalised": false,
-                  "id": "${json-unit.matches:id}",
-                  "label": "Simple Test DataModel"
-                }
-              ]
-            },
-            "dataModel": "${json-unit.matches:id}",
-            "description": "most obvious match",
-            "id": "${json-unit.matches:id}",
-            "label": "ele1",
-            "breadcrumbs": [
-              {
-                "domainType": "DataModel",
-                "finalised": false,
-                "id": "${json-unit.matches:id}",
-                "label": "Simple Test DataModel"
-              },
-              {
-                "domainType": "DataClass",
-                "id": "${json-unit.matches:id}",
-                "label": "simple"
-              }
-            ]
-          }
+              "label": "Functional Test DataModel",
+              "domainType": "DataModel",
+              "finalised": false
+            }
+          ]
         },
-        {
-          "score": 0.35714078,
-          "dataElement": {
-            "domainType": "DataElement",
-            "dataClass": "${json-unit.matches:id}",
-            "dataType": {
-              "domainType": "PrimitiveType",
-              "dataModel": "${json-unit.matches:id}",
-              "id": "${json-unit.matches:id}",
-              "label": "string",
-              "breadcrumbs": [
-                {
-                  "domainType": "DataModel",
-                  "finalised": false,
-                  "id": "${json-unit.matches:id}",
-                  "label": "Simple Test DataModel"
-                }
-              ]
-            },
-            "dataModel": "${json-unit.matches:id}",
-            "description": "least obvious match",
-            "id": "${json-unit.matches:id}",
-            "label": "ele2",
-            "breadcrumbs": [
-              {
-                "domainType": "DataModel",
-                "finalised": false,
-                "id": "${json-unit.matches:id}",
-                "label": "Simple Test DataModel"
-              },
-              {
-                "domainType": "DataClass",
-                "id": "${json-unit.matches:id}",
-                "label": "simple"
-              }
-            ]
-          }
-        }
-    '''
-        }
-    */
+        "maxMultiplicity": 2,
+        "minMultiplicity": 0
+      },
+      "score": "${json-unit.any-number}"
+    }'''
+    }
+
 }

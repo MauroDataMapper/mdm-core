@@ -56,9 +56,10 @@ class TermController extends CatalogueItemController<Term> {
             params.order = searchParams.order
         }
 
-        PaginatedHibernateSearchResult<ModelItem> result = mdmPluginTerminologySearchService.findAllByTerminologyIdByLuceneSearch(params.terminologyId,
-                                                                                                                                  searchParams,
-                                                                                                                                  params)
+        PaginatedHibernateSearchResult<ModelItem> result =
+            mdmPluginTerminologySearchService.findAllByTerminologyIdByHibernateSearch(params.terminologyId,
+                                                                                      searchParams,
+                                                                                      params)
 
         respond result
     }

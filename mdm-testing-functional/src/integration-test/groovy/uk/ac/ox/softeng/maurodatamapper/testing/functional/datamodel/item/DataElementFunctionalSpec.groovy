@@ -766,7 +766,7 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsFunction
             }
         }
         assert (response.statusCode.'2xxSuccessful')
-        adminService.rebuildLuceneIndexes(new LuceneIndexParameters())
+        adminService.rebuildHibernateSearchIndexes(new LuceneIndexParameters())
         logout()
     }
 

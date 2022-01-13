@@ -72,7 +72,8 @@ class FolderController extends EditLoggingController<Folder> {
             params.order = searchParams.order
         }
 
-        PaginatedHibernateSearchResult<CatalogueItem> result = mdmCoreSearchService.findAllByFolderIdByLuceneSearch(params.folderId, searchParams, params)
+        PaginatedHibernateSearchResult<CatalogueItem> result =
+            mdmCoreSearchService.findAllByFolderIdByHibernateSearch(params.folderId, searchParams, params)
         respond result
     }
 

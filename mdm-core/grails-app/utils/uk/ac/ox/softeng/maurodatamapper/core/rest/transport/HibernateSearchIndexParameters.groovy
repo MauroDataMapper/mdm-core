@@ -22,7 +22,7 @@ import grails.validation.Validateable
 /**
  * @since 26/04/2018
  */
-class LuceneIndexParameters implements Validateable {
+class HibernateSearchIndexParameters implements Validateable {
 
     Integer typesToIndexInParallel
     Integer threadsToLoadObjects
@@ -62,7 +62,7 @@ class LuceneIndexParameters implements Validateable {
 
     @Override
     String toString() {
-        'Lucene Mass Indexer Parameters:\n' +
+        'HS Mass Indexer Parameters:\n' +
         "  typesToIndexInParallel: $typesToIndexInParallel\n" +
         "  threadsToLoadObjects: $threadsToLoadObjects\n" +
         "  batchSizeToLoadObjects: $batchSizeToLoadObjects\n" +

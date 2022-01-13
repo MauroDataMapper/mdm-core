@@ -98,9 +98,9 @@ class DataClassController extends CatalogueItemController<DataClass> {
             params.order = searchParams.order
         }
 
-        PaginatedHibernateSearchResult<ModelItem> result = mdmPluginDataModelSearchService.findAllByDataClassIdByLuceneSearch(params.dataClassId,
-                                                                                                                              searchParams,
-                                                                                                                              params)
+        PaginatedHibernateSearchResult<ModelItem> result = mdmPluginDataModelSearchService.findAllByDataClassIdByHibernateSearch(params.dataClassId,
+                                                                                                                                 searchParams,
+                                                                                                                                 params)
         respond result
     }
 

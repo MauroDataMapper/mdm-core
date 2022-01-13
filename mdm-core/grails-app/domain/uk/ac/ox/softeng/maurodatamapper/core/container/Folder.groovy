@@ -193,21 +193,21 @@ class Folder implements Container, Diffable<Folder> {
         findByLabel(MISCELLANEOUS_FOLDER_LABEL)
     }
 
-    static List<Folder> luceneList(@DelegatesTo(HibernateSearchApi) Closure closure) {
+    static List<Folder> hibernateSearchList(@DelegatesTo(HibernateSearchApi) Closure closure) {
         Folder.search().list closure
     }
 
     static List<Folder> findAllContainedInFolderPathNode(PathNode pathNode) {
-        luceneList {
+        hibernateSearchList {
             should {
                 keyword 'path', Path.from(pathNode)
             }
         }
     }
 
-    static List<Folder> luceneTreeLabelSearch(List<String> allowedIds, String searchTerm) {
+    static List<Folder> treeLabelHibernateSearch(List<String> allowedIds, String searchTerm) {
         if (!allowedIds) return []
-        luceneList {
+        hibernateSearchList {
             keyword 'label', searchTerm
             filter IdSecureFilterFactory.createFilterPredicate(searchPredicateFactory, allowedIds)
         }

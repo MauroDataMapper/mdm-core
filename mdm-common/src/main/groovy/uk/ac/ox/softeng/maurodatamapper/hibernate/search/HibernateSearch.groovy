@@ -56,7 +56,7 @@ class HibernateSearch {
     static <T> PaginatedHibernateSearchResult<T> paginatedList(Class<T> clazz, Map pagination, @DelegatesTo(HibernateSearchApi) Closure closure) {
 
         if (!ClassPropertyFetcher.forClass(clazz).isReadableProperty('search')) {
-            throw new ApiInternalException('L01', "Class ${clazz} is not configured for lucene searching")
+            throw new ApiInternalException('L01', "Class ${clazz} is not configured for HS searching")
         }
 
         Integer max = pagination.max?.toInteger()
@@ -103,10 +103,5 @@ class HibernateSearch {
         if (throwable instanceof BooleanQuery.TooManyClauses) return true
         if (!throwable.cause) return false
         return isTooManyClausesException(throwable.cause)
-    }
-
-    @Deprecated
-    static Closure defineAdditionalLuceneQuery(@DelegatesTo(HibernateSearchApi) closure) {
-        closure
     }
 }

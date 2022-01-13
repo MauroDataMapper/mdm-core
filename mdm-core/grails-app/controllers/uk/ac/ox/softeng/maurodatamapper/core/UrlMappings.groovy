@@ -37,7 +37,7 @@ class UrlMappings {
 
             group '/admin', {
                 get '/modules'(controller: 'mauroDataMapperProvider', action: 'modules')
-                post '/rebuildLuceneIndexes'(controller: 'admin', action: 'rebuildLuceneIndexes')
+                post '/rebuildHibernateSearchIndexes'(controller: 'admin', action: 'rebuildHibernateSearchIndexes') // 5.0.0 New URL
                 get '/status'(controller: 'admin', action: 'status')
                 get '/activeSessions'(controller: 'session', action: 'activeSessions')
                 '/emails'(resources: 'email', includes: INCLUDES_INDEX_ONLY)

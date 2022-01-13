@@ -29,6 +29,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
 import uk.ac.ox.softeng.maurodatamapper.hibernate.VersionUserType
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate.IdSecureFilterFactory
 import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 
 import grails.gorm.DetachedCriteria
@@ -135,7 +136,7 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware, 
         byParentFolderId(id).eq('label', label)
     }
 
-    static List<VersionedFolder> luceneList(@DelegatesTo(HibernateSearchApi) Closure closure) {
+    static List<VersionedFolder> hibernateSearchList(@DelegatesTo(HibernateSearchApi) Closure closure) {
         VersionedFolder.search().list closure
     }
 
@@ -151,18 +152,18 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware, 
     }
 
     static List<VersionedFolder> findAllContainedInFolderId(UUID folderId) {
-        luceneList {
+        hibernateSearchList {
             should {
                 keyword 'path', folderId.toString()
             }
         }
     }
 
-    static List<VersionedFolder> luceneTreeLabelSearch(List<String> allowedIds, String searchTerm) {
+    static List<VersionedFolder> treeLabelHibernateSearch(List<String> allowedIds, String searchTerm) {
         if (!allowedIds) return []
-        luceneList {
+        hibernateSearchList {
             keyword 'label', searchTerm
-            filter name: 'idSecured', params: [allowedIds: allowedIds]
+            filter IdSecureFilterFactory.createFilterPredicate(searchPredicateFactory, allowedIds)
         }
     }
 

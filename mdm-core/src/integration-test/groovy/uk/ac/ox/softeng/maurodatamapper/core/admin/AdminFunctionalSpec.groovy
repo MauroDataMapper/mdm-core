@@ -27,9 +27,9 @@ import static io.micronaut.http.HttpStatus.OK
 
 /**
  * @see AdminController* Controller: admin
- * |   POST  | /api/admin/editProperties       | Action: editApiProperties    |
- * |   POST  | /api/admin/rebuildLuceneIndexes | Action: rebuildLuceneIndexes |
- * |   GET   | /api/admin/properties           | Action: apiProperties        |
+ * |   POST  | /api/admin/editProperties                | Action: editApiProperties    |
+ * |   POST  | /api/admin/rebuildHibernateSearchIndexes | Action: rebuildHibernateSearchIndexes |
+ * |   GET   | /api/admin/properties                    | Action: apiProperties        |
  */
 @Integration
 @Slf4j
@@ -39,9 +39,9 @@ class AdminFunctionalSpec extends BaseFunctionalSpec {
         'admin'
     }
 
-    void 'test post to rebuildLuceneIndexes'() {
+    void 'test post to rebuildHibernateSearchIndexes'() {
         when:
-        POST('rebuildLuceneIndexes', [:], Argument.of(String))
+        POST('rebuildHibernateSearchIndexes', [:], Argument.of(String))
 
         then:
         verifyJsonResponse(OK, '''{

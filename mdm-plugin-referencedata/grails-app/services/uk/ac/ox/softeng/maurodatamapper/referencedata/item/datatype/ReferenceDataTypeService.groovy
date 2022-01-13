@@ -133,10 +133,10 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
 
         List<ReferenceDataType> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            log.debug('Performing lucene label search')
+            log.debug('Performing hs label search')
             long start = System.currentTimeMillis()
-            results = ReferenceDataType.luceneLabelSearch(ReferenceDataType, searchTerm, readableIds.toList(),
-                                                          referenceDataModelService.getAllReadablePathNodes (readableIds)).results
+            results = ReferenceDataType.labelHibernateSearch(ReferenceDataType, searchTerm, readableIds.toList(),
+                                                             referenceDataModelService.getAllReadablePathNodes(readableIds)).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
         results

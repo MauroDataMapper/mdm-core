@@ -120,8 +120,8 @@ class MauroDataMapperHibernateMappingContextConfiguration extends HibernateMappi
 
         checkConfig config, 'hibernate.search.default.indexBase', 'hibernate.search.backend.directory.root'
 
-        String luceneDir = config.getProperty('hibernate.search.backend.directory.root', String)
-        log.info("Using lucene index directory of: {}", luceneDir)
+        String hsDir = config.getProperty('hibernate.search.backend.directory.root', String)
+        log.info("Using hibernate search index directory of: {}", hsDir)
     }
 
 

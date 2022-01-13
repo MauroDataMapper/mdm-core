@@ -79,7 +79,7 @@ class FolderService extends ContainerService<Folder> {
     List<Folder> findAllReadableContainersBySearchTerm(UserSecurityPolicyManager userSecurityPolicyManager, String searchTerm) {
         log.debug('Searching readable folders for search term in label')
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Folder)
-        Folder.luceneTreeLabelSearch(readableIds.collect {it.toString()}, searchTerm)
+        Folder.treeLabelHibernateSearch(readableIds.collect { it.toString() }, searchTerm)
     }
 
     @Override

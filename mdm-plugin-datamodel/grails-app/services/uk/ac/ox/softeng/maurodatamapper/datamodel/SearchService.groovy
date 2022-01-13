@@ -34,12 +34,14 @@ import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearc
 
 class SearchService extends AbstractCatalogueItemSearchService<ModelItem> implements CatalogueItemSearchDomainProvider {
 
-    PaginatedHibernateSearchResult<ModelItem> findAllByDataModelIdByLuceneSearch(UUID dataModelId, SearchParams searchParams, Map pagination = [:]) {
-        findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch([dataModelId], searchParams, true, pagination)
+    PaginatedHibernateSearchResult<ModelItem> findAllByDataModelIdByHibernateSearch(UUID dataModelId, SearchParams searchParams,
+                                                                                    Map pagination = [:]) {
+        findAllCatalogueItemsOfTypeByOwningIdsByHibernateSearch([dataModelId], searchParams, true, pagination)
     }
 
-    PaginatedHibernateSearchResult<ModelItem> findAllByDataClassIdByLuceneSearch(UUID dataClassId, SearchParams searchParams, Map pagination = [:]) {
-        findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch([dataClassId], searchParams, true, pagination)
+    PaginatedHibernateSearchResult<ModelItem> findAllByDataClassIdByHibernateSearch(UUID dataClassId, SearchParams searchParams,
+                                                                                    Map pagination = [:]) {
+        findAllCatalogueItemsOfTypeByOwningIdsByHibernateSearch([dataClassId], searchParams, true, pagination)
     }
 
     @Override

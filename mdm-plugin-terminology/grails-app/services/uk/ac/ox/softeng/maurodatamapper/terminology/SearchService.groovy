@@ -27,8 +27,9 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 
 class SearchService extends AbstractCatalogueItemSearchService<ModelItem> implements CatalogueItemSearchDomainProvider {
 
-    PaginatedHibernateSearchResult<ModelItem> findAllByTerminologyIdByLuceneSearch(UUID terminologyId, SearchParams searchParams, Map pagination = [:]) {
-        findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch([terminologyId], searchParams, true, pagination)
+    PaginatedHibernateSearchResult<ModelItem> findAllByTerminologyIdByHibernateSearch(UUID terminologyId, SearchParams searchParams,
+                                                                                      Map pagination = [:]) {
+        findAllCatalogueItemsOfTypeByOwningIdsByHibernateSearch([terminologyId], searchParams, true, pagination)
     }
 
     @Override

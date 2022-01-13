@@ -29,7 +29,7 @@ import static io.micronaut.http.HttpStatus.OK
  * <pre>
  * Controller: admin
  *  |  GET   | /api/admin/status                | Action: status
- *  |  POST  | /api/admin/rebuildLuceneIndexes  | Action: rebuildLuceneIndexes
+ *  |  POST  | /api/admin/rebuildHibernateSearchIndexes  | Action: rebuildHibernateSearchIndexes
  *  </pre>
  * @see uk.ac.ox.softeng.maurodatamapper.core.admin.AdminController
  */
@@ -61,7 +61,7 @@ class AdminFunctionalSpec extends FunctionalSpec {
         where:
         method | endpoint               | args
         'GET'  | 'status'               | null
-        'POST' | 'rebuildLuceneIndexes' | [:]
+        'POST' | 'rebuildHibernateSearchIndexes' | [:]
     }
 
     @Unroll
@@ -98,7 +98,7 @@ class AdminFunctionalSpec extends FunctionalSpec {
 }
 '''
 
-        'POST' | 'rebuildLuceneIndexes' | [:]                                        || OK           | '''{
+        'POST' | 'rebuildHibernateSearchIndexes' | [:]                                        || OK           | '''{
   "user": "admin@maurodatamapper.com",
   "indexed": true,
   "timeTakenMilliseconds": "${json-unit.ignore}",
