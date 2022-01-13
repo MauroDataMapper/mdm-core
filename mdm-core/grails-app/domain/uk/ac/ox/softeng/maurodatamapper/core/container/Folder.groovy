@@ -33,6 +33,8 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstr
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.UniqueValuesValidator
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate.IdSecureFilterFactory
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.mapper.pojo.bridge.binder.PathBinder
+import uk.ac.ox.softeng.maurodatamapper.path.Path
+import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 
 import grails.gorm.DetachedCriteria
 import grails.plugins.hibernate.search.HibernateSearchApi
@@ -195,10 +197,10 @@ class Folder implements Container, Diffable<Folder> {
         Folder.search().list closure
     }
 
-    static List<Folder> findAllContainedInFolderId(UUID folderId) {
+    static List<Folder> findAllContainedInFolderPathNode(PathNode pathNode) {
         luceneList {
             should {
-                keyword 'path', folderId.toString()
+                keyword 'path', Path.from(pathNode)
             }
         }
     }

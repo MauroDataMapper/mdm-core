@@ -152,8 +152,8 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     }
 
     @Override
-    List<Container> findAllContainersInside(UUID containerId) {
-        folderService.findAllContainersInside(containerId)
+    List<Container> findAllContainersInside(PathNode pathNode) {
+        folderService.findAllContainersInside(pathNode)
     }
 
     @Override

@@ -29,6 +29,8 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstr
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.UniqueValuesValidator
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate.IdSecureFilterFactory
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.mapper.pojo.bridge.binder.PathBinder
+import uk.ac.ox.softeng.maurodatamapper.path.Path
+import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 
 import grails.gorm.DetachedCriteria
 import grails.plugins.hibernate.search.HibernateSearchApi
@@ -164,14 +166,13 @@ class Classifier implements Container {
         }
     }
 
-    static List<Classifier> findAllContainedInClassifierId(UUID classifierId) {
+    static List<Classifier> findAllContainedInClassifierPathNode(PathNode pathNode) {
         luceneList {
             should {
-                keyword 'path', classifierId.toString()
+                keyword 'path', Path.from(pathNode)
             }
         }
     }
-
 
     static DetachedCriteria<Classifier> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
         where {

@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
+import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -83,8 +84,8 @@ class ClassifierService extends ContainerService<Classifier> {
     }
 
     @Override
-    List<Classifier> findAllContainersInside(UUID containerId) {
-        Classifier.findAllContainedInClassifierId(containerId)
+    List<Classifier> findAllContainersInside(PathNode pathNode) {
+        Classifier.findAllContainedInClassifierPathNode(pathNode)
     }
 
     @Override

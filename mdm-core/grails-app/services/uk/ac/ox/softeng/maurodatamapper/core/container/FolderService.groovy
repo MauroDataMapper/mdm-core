@@ -32,6 +32,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CopyPassType
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.path.Path
+import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -82,8 +83,8 @@ class FolderService extends ContainerService<Folder> {
     }
 
     @Override
-    List<Folder> findAllContainersInside(UUID containerId) {
-        Folder.findAllContainedInFolderId(containerId)
+    List<Folder> findAllContainersInside(PathNode pathNode) {
+        Folder.findAllContainedInFolderPathNode(pathNode)
     }
 
     @Override

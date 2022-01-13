@@ -17,17 +17,17 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
+
 import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFileService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.RuleService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
-import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
+import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
 import org.hibernate.SessionFactory
@@ -50,7 +50,7 @@ abstract class ContainerService<K extends Container> implements SecurableResourc
 
     abstract List<Container> findAllReadableContainersBySearchTerm(UserSecurityPolicyManager userSecurityPolicyManager, String searchTerm)
 
-    abstract List<Container> findAllContainersInside(UUID containerId)
+    abstract List<Container> findAllContainersInside(PathNode containerPathNode)
 
     abstract K findDomainByLabel(String label)
 
@@ -103,12 +103,8 @@ abstract class ContainerService<K extends Container> implements SecurableResourc
         findByPath(nextParent, pathLabels)
     }
 
-    List<K> getFullPathDomains(K domain) {
-        List<UUID> ids = domain.pathString.split('/').findAll().collect {Utils.toUuid(it)}
-        List<K> domains = []
-        if (ids) domains.addAll(getAll(ids))
-        domains.add(domain)
-        domains
+    List<Container> findAllContainersInside(UUID containerId) {
+        findAllContainersInside(get(containerId).path.last())
     }
 
     void generateDefaultLabel(K domain, String defaultLabel) {
