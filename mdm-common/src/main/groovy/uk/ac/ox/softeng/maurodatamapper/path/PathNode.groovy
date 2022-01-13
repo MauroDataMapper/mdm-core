@@ -28,7 +28,7 @@ import java.nio.charset.Charset
  * @since 28/08/2020
  */
 @Slf4j
-class PathNode {
+class PathNode implements Serializable {
 
     static final String MODEL_PATH_IDENTIFIER_SEPARATOR = '$'
     static final String ESCAPED_MODEL_PATH_IDENTIFIER_SEPARATOR = "\\${MODEL_PATH_IDENTIFIER_SEPARATOR}"

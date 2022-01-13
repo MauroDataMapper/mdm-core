@@ -56,7 +56,7 @@ trait MdmDomain {
     }
 
     void setPath(Path path) {
-        this.path = path
+        this.@path = path
     }
 
     Path buildPath() {
@@ -70,7 +70,7 @@ trait MdmDomain {
     void checkPath() {
         if (!this.@path) {
             if (!pathPrefix || !pathIdentifier) {
-                LoggerFactory.getLogger(this.class).info('Cannot build path for {} as no prefix and/or identifier', domainType)
+                LoggerFactory.getLogger(this.class).trace('Cannot build path for {} as no prefix and/or identifier', domainType)
                 return
             }
             setBuiltPath(buildPath())

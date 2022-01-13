@@ -37,16 +37,20 @@ class PathUserType extends AbstractSingleColumnStandardBasicType<Path> implement
 
     @Override
     Path stringToObject(String xml) throws Exception {
-        return null
+        try {
+            Path.from(xml)
+        } catch (Exception ignored) {
+            null
+        }
     }
 
     @Override
     String objectToSQLString(Path value, Dialect dialect) throws Exception {
-        return null
+        value.toString()
     }
 
     @Override
     String getName() {
-        return null
+        'path'
     }
 }

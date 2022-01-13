@@ -28,7 +28,7 @@ import groovy.transform.stc.SimpleType
  * @since 28/08/2020
  */
 @CompileStatic
-class Path {
+class Path implements Serializable {
 
     //Need to escape the vertical bar which we are using as the split delimiter
     static String PATH_DELIMITER = '\\|'
