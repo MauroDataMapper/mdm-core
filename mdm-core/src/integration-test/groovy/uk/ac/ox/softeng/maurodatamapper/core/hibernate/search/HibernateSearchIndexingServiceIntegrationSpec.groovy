@@ -17,15 +17,16 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.hibernate.search
 
-
 import uk.ac.ox.softeng.maurodatamapper.test.MdmSpecification
 
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import org.junit.jupiter.api.Tag
 import org.springframework.context.MessageSource
 
 @Slf4j
 @Integration
+@Tag('non-parallel')
 class HibernateSearchIndexingServiceIntegrationSpec extends MdmSpecification {
 
     MessageSource messageSource

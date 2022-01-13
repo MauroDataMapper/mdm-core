@@ -28,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import org.junit.jupiter.api.Tag
 
 @Integration
 @Rollback
@@ -257,6 +258,7 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
 
     }
 
+    @Tag('non-parallel')
     void 'test finding all similar DataElements in another model'() {
         given:
         buildComplex = true

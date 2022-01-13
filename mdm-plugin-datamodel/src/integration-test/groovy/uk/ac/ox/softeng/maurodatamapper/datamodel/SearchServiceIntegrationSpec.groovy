@@ -29,12 +29,14 @@ import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearc
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import org.junit.jupiter.api.Tag
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 
 @Slf4j
 @Integration
 @Rollback
+@Tag('non-parallel')
 class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
     UUID complexDataModelId

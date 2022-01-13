@@ -7,8 +7,8 @@ import java.util.concurrent.TimeUnit
 buildscript {
     repositories {
         mavenLocal()
-        maven { url 'https://jenkins.cs.ox.ac.uk/artifactory/plugins-snapshot' }
-        maven { url 'https://jenkins.cs.ox.ac.uk/artifactory/plugins-release' }
+        maven {url 'https://jenkins.cs.ox.ac.uk/artifactory/plugins-snapshot'}
+        maven {url 'https://jenkins.cs.ox.ac.uk/artifactory/plugins-release'}
 
     }
     dependencies {
@@ -68,7 +68,7 @@ check {
 task('sysProps') {
     group 'help'
     doLast {
-        logger.quiet('{}', System.properties.collect { "${it.key}:${it.value}" }.sort().join('\n'))
+        logger.quiet('{}', System.properties.collect {"${it.key}:${it.value}"}.sort().join('\n'))
     }
 }
 
@@ -94,10 +94,10 @@ task rootTestReport(type: TestReport) {
     destinationDir = file("${buildDir}/reports/tests")
     testResultDirs = files("${buildDir}/test-results")
     FileCollection testResultContentDir = files("${buildDir}/test-results")
-    outputs.upToDateWhen { false }
+    outputs.upToDateWhen {false}
 
     doFirst {
-        (testResultContentDir.getAsFileTree().visit { FileVisitDetails details ->
+        (testResultContentDir.getAsFileTree().visit {FileVisitDetails details ->
             if (details.directory && details.name == 'binary') {
                 logger.info("Reporting on ${details.path}")
                 reportOn files(details.file)
@@ -119,11 +119,11 @@ tasks.register('outputRuntimeArgs') {
         List<String> arguments = runtimeMxBean.getInputArguments()
 
         logger.warn("Running with JVM args : {}", arguments.size())
-        Map<String, String> map = arguments.collectEntries { arg ->
+        Map<String, String> map = arguments.collectEntries {arg ->
             arg.split('=').toList()
         }.sort() as Map<String, String>
 
-        map.each { k, v ->
+        map.each {k, v ->
             if (v) logger.quiet('{}={}', k, v)
             else logger.quiet('{}', k)
         }
@@ -154,7 +154,7 @@ tasks.register('outputFunctionalTestShell') {
 
 tasks.register('outputE2ETestShell') {
     doLast {
-        file('mdm-testing-functional/src/integration-test/groovy/uk/ac/ox/softeng/maurodatamapper/testing/functional').listFiles().each { f ->
+        file('mdm-testing-functional/src/integration-test/groovy/uk/ac/ox/softeng/maurodatamapper/testing/functional').listFiles().each {f ->
             logger.quiet './gradlew --build-cache -Dgradle.test.package={} :mdm-testing-functional:integrationTest', f.name
         }
     }
@@ -163,8 +163,8 @@ tasks.register('outputE2ETestShell') {
 allprojects {
     repositories {
         mavenLocal()
-        maven { url "https://jenkins.cs.ox.ac.uk/artifactory/libs-release" }
-        maven { url "https://jenkins.cs.ox.ac.uk/artifactory/libs-snapshot" }
+        maven {url "https://jenkins.cs.ox.ac.uk/artifactory/libs-release"}
+        maven {url "https://jenkins.cs.ox.ac.uk/artifactory/libs-snapshot"}
     }
 }
 
@@ -196,7 +196,7 @@ subprojects {
         doLast {
             if (project.hasProperty('dependencyManagement')) {
                 Map imported = dependencyManagement.importedProperties
-                logger.quiet 'Project :: {}\n  {}', project.name, imported.collect { k, v ->
+                logger.quiet 'Project :: {}\n  {}', project.name, imported.collect {k, v ->
                     def projProp = project.hasProperty(k) ? project.getProperty(k) : null
                     "$k,$v,${projProp ?: ''}"
                 }.sort().join('\n  ')
@@ -214,22 +214,87 @@ subprojects {
     }
 
     afterEvaluate {
-        def addtlJvmArgs = ['-Xms2g', '-Xmx8g', '-XX:+UseG1GC', '-XX:+UseStringDeduplication', '-XX:+UseCompressedOops', '-Dfile.encoding=UTF-8']
+        def addtlJvmArgs = ['-XX:+UseG1GC', '-XX:+UseStringDeduplication', '-XX:+UseCompressedOops', '-Dfile.encoding=UTF-8',
+                            '-XX:ReservedCodeCacheSize=128M', '-XX:+UseCodeCacheFlushing']
+        //
         // Make sure bootRun runs with the required arguments
-        project.tasks.findByName('bootRun')?.jvmArgs(addtlJvmArgs)
-
-        project.tasks.withType(Test) { testTask ->
-            useJUnitPlatform()
-            ignoreFailures = System.getenv().containsKey('JENKINS')
+        project.tasks.withType(JavaExec).configureEach {
             jvmArgs(addtlJvmArgs)
-
+            minHeapSize = '1g'
+            maxHeapSize = '8g'
         }
 
-        //        Set<Project> dependencyProjects = collectProjectDependencies(project)
-        //        if (dependencyProjects) {
-        //            project.tasks.findByName('install').dependsOn dependencyProjects.collect { it.tasks.findByName('install') }
-        //        }
+        project.tasks.withType(Test).configureEach {testTask ->
+            ignoreFailures = System.getenv().containsKey('JENKINS')
+            jvmArgs(addtlJvmArgs)
+            minHeapSize = '1g'
+            maxHeapSize = '8g'
+        }
+
+        /*
+        To make the following work, tests or classes should be marked with the jupiter annotation @Tag
+         */
+        if (project.tasks.findByName('integrationTest')) {
+            FileCollection nonParallelTestFiles = findNonParallelTestFiles(project)
+            if (project.ext.parallelTestingOnly) {
+                if (project.ext.itTestsAvailable) logger.log(LogLevel.WARN, '<<>> Running integration tests in parallel mode <<>>')
+                project.integrationTest {
+                    maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+                    useJUnitPlatform {
+                        // TODO Once spock handles jupiter tags then we can use this and remove the filter
+                        //                        excludeTags 'non-parallel'
+                    }
+                    filter {
+                        nonParallelTestFiles.each {f ->
+                            logger.log(LogLevel.WARN, 'Ignoring {}', f.name - '.groovy')
+                            excludeTestsMatching("*${f.name - '.groovy'}")
+                        }
+                    }
+                    binaryResultsDirectory.set(project.file("${project.testResultsDir}/parallelIntegrationTest/binary"))
+                    reports {
+                        junitXml.getOutputLocation().set project.file("${project.testResultsDir}/parallelIntegrationTest")
+                    }
+                    jacoco {
+                        destinationFile = project.file("${project.buildDir}/jacoco/parallelIntegrationTest.exec")
+                    }
+                }
+                project.mergeTestReports.reportOn(project.file("${project.testResultsDir}/parallelIntegrationTest/binary"))
+            } else if (project.ext.nonParallelTestingOnly) {
+                if (!nonParallelTestFiles.isEmpty()) logger.log(LogLevel.WARN, '<<>> Running integration tests in non-parallel mode <<>>')
+                project.integrationTest {
+                    onlyIf {
+                        !nonParallelTestFiles.isEmpty()
+                    }
+                    filter {
+                        nonParallelTestFiles.each {f ->
+                            logger.log(LogLevel.WARN, 'Testing {}', f.name - '.groovy')
+                            includeTestsMatching("*${f.name - '.groovy'}")
+                        }
+                    }
+
+                    maxParallelForks = 1
+                    useJUnitPlatform {
+                        // TODO Once spock handles jupiter tags then we can use this and remove the filter
+                        //                        includeTags 'non-parallel'
+                    }
+                    binaryResultsDirectory.set(project.file("${project.testResultsDir}/nonParallelIntegrationTest/binary"))
+                    reports {
+                        junitXml.getOutputLocation().set project.file("${project.testResultsDir}/nonParallelIntegrationTest")
+                    }
+                    jacoco {
+                        destinationFile = project.file("${project.buildDir}/jacoco/nonParallelIntegrationTest.exec")
+                    }
+                }
+                project.mergeTestReports.reportOn(project.file("${project.testResultsDir}/nonParallelIntegrationTest/binary"))
+            }
+        }
+
+        Set<Project> dependencyProjects = collectProjectDependencies(project)
+        if (dependencyProjects) {
+            project.tasks.findByName('publishToMavenLocal').dependsOn dependencyProjects.collect {it.tasks.findByName('publishToMavenLocal')}
+        }
     }
+
 }
 
 afterEvaluate {
@@ -238,10 +303,10 @@ afterEvaluate {
     Make sure that each task mustRunAfter another assetCompile task, this ensures none of them can run at the same time
     We have to allow for project dependencies so make sure thats accounted for manually
     */
-    List<Task> assetCompileTasks = it.getTasksByName('assetCompile', true).toList().sort { it.path }
+    List<Task> assetCompileTasks = it.getTasksByName('assetCompile', true).toList().sort {it.path}
 
-    Task coreTask = assetCompileTasks.find { it.path.startsWith(':mdm-core') }
-    Task dataModelTask = assetCompileTasks.find { it.path.startsWith(':mdm-plugin-datamodel') }
+    Task coreTask = assetCompileTasks.find {it.path.startsWith(':mdm-core')}
+    Task dataModelTask = assetCompileTasks.find {it.path.startsWith(':mdm-plugin-datamodel')}
 
     assetCompileTasks.remove(coreTask)
     assetCompileTasks.remove(dataModelTask)
@@ -254,20 +319,14 @@ afterEvaluate {
     for (int i = 1; i < assetCompileTasks.size(); i++) {
         assetCompileTasks[i].mustRunAfter assetCompileTasks[i - 1]
     }
+
+    logger.quiet 'Project: {} > group: {}, version {}', project.name, project.group, project.version
 }
 
 Set<Project> collectProjectDependencies(Project project) {
     Set<Project> dependencyProjects = new HashSet<>()
     ConfigurationContainer configurations = project.configurations
-    Configuration configuration = configurations.findByName('compile')
-    if (configuration) {
-        DomainObjectSet<ProjectDependency> projectDependencies = configuration.dependencies.withType ProjectDependency
-        projectDependencies.forEach {
-            dependencyProjects.add(it.dependencyProject)
-            dependencyProjects.addAll(collectProjectDependencies(it.dependencyProject))
-        }
-    }
-    configuration = configurations.findByName('implementation')
+    Configuration configuration = configurations.findByName('implementation')
     if (configuration) {
         DomainObjectSet<ProjectDependency> projectDependencies = configuration.dependencies.withType ProjectDependency
         projectDependencies.forEach {
@@ -276,4 +335,11 @@ Set<Project> collectProjectDependencies(Project project) {
         }
     }
     dependencyProjects
+}
+
+FileCollection findNonParallelTestFiles(Project project) {
+    project.fileTree('src/integration-test/groovy').filter {File f ->
+        !f.name.find(/FunctionalSpec/) &&
+        f.text.find(/@Tag\('non-parallel'\)/)
+    }
 }

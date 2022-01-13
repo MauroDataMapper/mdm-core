@@ -38,6 +38,7 @@ import uk.ac.ox.softeng.maurodatamapper.version.Version
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import org.junit.jupiter.api.Tag
 
 import java.time.OffsetDateTime
 
@@ -50,6 +51,7 @@ import java.time.OffsetDateTime
 @Slf4j
 @Integration
 @Rollback
+@Tag('non-parallel')
 class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
 
     TreeItemService treeItemService

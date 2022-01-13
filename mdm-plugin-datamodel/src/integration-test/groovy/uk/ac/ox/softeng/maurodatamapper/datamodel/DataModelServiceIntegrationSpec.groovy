@@ -49,6 +49,7 @@ import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.json.JsonBuilder
 import groovy.util.logging.Slf4j
+import org.junit.jupiter.api.Tag
 import org.spockframework.util.Assert
 import spock.lang.PendingFeature
 
@@ -1873,6 +1874,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         GormUtils.outputDomainErrors(messageSource, invalid)
     }
 
+    @Tag('non-parallel')
     void 'test suggesting links between models'() {
         given:
         hibernateSearchIndexingService.purgeAllIndexes()

@@ -68,8 +68,8 @@ function unitTest(){
 
 function integrationTest(){
   echo ">> Integration Tests <<"
-> Task :outputIntegrationTestShell
-./gradlew --build-cache -Dgradle.integrationTest=true \
+
+./gradlew --build-cache -Dgradle.integrationTest=true -Dgradle.parallel=true \
    :mdm-core:integrationTest \
    :mdm-plugin-authentication-apikey:integrationTest \
    :mdm-plugin-authentication-basic:integrationTest \
@@ -82,6 +82,18 @@ function integrationTest(){
    :mdm-plugin-terminology:integrationTest \
    :mdm-security:integrationTest
 
+./gradlew --build-cache -Dgradle.integrationTest=true -Dgradle.nonParallel=true \
+   :mdm-core:integrationTest \
+   :mdm-plugin-authentication-apikey:integrationTest \
+   :mdm-plugin-authentication-basic:integrationTest \
+   :mdm-plugin-dataflow:integrationTest \
+   :mdm-plugin-datamodel:integrationTest \
+   :mdm-plugin-email-proxy:integrationTest \
+   :mdm-plugin-federation:integrationTest \
+   :mdm-plugin-profile:integrationTest \
+   :mdm-plugin-referencedata:integrationTest \
+   :mdm-plugin-terminology:integrationTest \
+   :mdm-security:integrationTest
 }
 
 function functionalTest(){
@@ -184,7 +196,7 @@ else
     if $UNIT || $INTEGRATION || $FUNCTIONAL || $E2E
     then
       ./gradlew jenkinsClean
-      compile
+     # compile
     fi
 
     if $UNIT; then unitTest; fi;

@@ -32,6 +32,7 @@ import uk.ac.ox.softeng.maurodatamapper.version.Version
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import org.junit.jupiter.api.Tag
 import org.spockframework.util.Assert
 import spock.lang.PendingFeature
 
@@ -872,6 +873,7 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         GormUtils.outputDomainErrors(messageSource, invalid)
     }
 
+    @Tag('non-parallel')
     void 'test suggesting links between models'() {
         given:
         hibernateSearchIndexingService.purgeAllIndexes()
