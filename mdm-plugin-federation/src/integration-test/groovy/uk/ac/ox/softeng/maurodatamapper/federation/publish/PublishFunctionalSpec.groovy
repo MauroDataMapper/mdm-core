@@ -24,12 +24,13 @@ import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
 import spock.lang.Shared
 
 import static io.micronaut.http.HttpStatus.CREATED
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 
 /**
@@ -53,9 +54,9 @@ class PublishFunctionalSpec extends BaseFunctionalSpec {
         'published'
     }
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def checkAndSetupData() {
+    def setup() {
         log.debug('Check and setup test data for FeedFunctionalSpec')
         folderId = new Folder(label: 'Functional Test Folder', createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true).id.toString()
         assert folderId
@@ -67,7 +68,7 @@ class PublishFunctionalSpec extends BaseFunctionalSpec {
         cleanUpResources(DataModel, Folder)
     }
 
-    Tuple<String> getNewerDataModelIds() {
+    Tuple2<String, String> getNewerDataModelIds() {
         PUT("dataModels/${dataModelId}/newBranchModelVersion", [:], MAP_ARG, true)
         verifyResponse CREATED, response
         String newerId1 = response.body().id
@@ -149,7 +150,7 @@ class PublishFunctionalSpec extends BaseFunctionalSpec {
 
     void 'N02 : Test the newerVersions endpoint (with newer versions)'() {
         given:
-        getNewerDataModelIds()
+        Tuple tuple = getNewerDataModelIds()
 
         when:
         GET("models/$dataModelId/newerVersions", STRING_ARG)
@@ -184,5 +185,11 @@ class PublishFunctionalSpec extends BaseFunctionalSpec {
         }
     ]
 }'''
+
+        cleanup:
+        DELETE("dataModels/${tuple.v1}?permanent=true", MAP_ARG, true)
+        verifyResponse NO_CONTENT, response
+        DELETE("dataModels/${tuple.v2}?permanent=true", MAP_ARG, true)
+        verifyResponse NO_CONTENT, response
     }
 }

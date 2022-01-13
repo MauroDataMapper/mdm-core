@@ -50,6 +50,7 @@ class SubscribedModel implements MdmDomain, SecurableResource, EditHistoryAware 
         subscribedModelType blank: false
         lastRead nullable: true
         localModelId nullable: true
+        path nullable: true
     }
 
     static mapping = {

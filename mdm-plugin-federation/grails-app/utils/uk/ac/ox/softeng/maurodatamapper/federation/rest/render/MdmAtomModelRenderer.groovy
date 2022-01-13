@@ -28,14 +28,15 @@ import grails.rest.render.RenderContext
 import grails.rest.render.atom.AtomRenderer
 import groovy.util.logging.Slf4j
 import org.grails.datastore.mapping.model.PersistentEntity
-import org.grails.datastore.mapping.model.types.ToOne
 import org.grails.web.xml.StreamingMarkupWriter
 import org.grails.web.xml.XMLStreamWriter
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpMethod
 
 import java.text.SimpleDateFormat
+import java.time.LocalDate
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 /**
  * Extend AtomRenderer, dealing with OffsetDateTimes, adding a summary tag and overriding various methods in order
@@ -49,7 +50,7 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
     //Make our own Atom date format because AtomRenderer.ATOM_DATE_FORMAT does not pass validation
     public static SimpleDateFormat MDM_ATOM_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
 
-    public static final Date MINTED_DATE = new Date(121, 0, 27)
+    public static final LocalDate MINTED_DATE = LocalDate.of(2021, 1, 27)
     public static final String AUTHOR_TAG = 'author'
     public static final String AUTHOR_NAME_TAG = 'name'
     public static final String AUTHOR_URI_TAG = 'uri'
@@ -65,6 +66,8 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
 
     MdmAtomModelRenderer(Class<T> targetType) {
         super(targetType)
+        //  excludes << 'path'
+        //  excludes << 'breadcrumbTree'
     }
 
     /**
@@ -100,7 +103,7 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
                 .characters(title)
                 .end()
                 .startNode(ID_TAG)
-                .characters(generateIdForURI(resourceHref, MINTED_DATE))
+                .characters(generateIdForURI(resourceHref, getMintedDate()))
                 .end()
 
             // Render in the authority as an author for all models
@@ -240,7 +243,7 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
      */
     @Override
     String generateIdForURI(String url) {
-        generateIdForURI(url, MINTED_DATE)
+        generateIdForURI(url, getMintedDate())
     }
 
     /**
@@ -337,41 +340,6 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
         linkAlt.hreflang = locale
 
         writeLink(linkAlt, locale, xml)
-        final metaClass = GroovySystem.metaClassRegistry.getMetaClass(entity.javaClass)
-        final associationMap = writeAssociationLinks(context, object, locale, xml, entity, metaClass)
-        writeDomain(context, metaClass, entity, object, xml)
-
-        if (associationMap) {
-            for (entry in associationMap.entrySet()) {
-                final property = entry.key
-                final isSingleEnded = property instanceof ToOne
-                if (isSingleEnded) {
-                    Object value = entry.value
-                    if (writtenObjects.contains(value)) {
-                        continue
-                    }
-
-                    if (value != null) {
-                        final associatedEntity = property.associatedEntity
-                        if (associatedEntity) {
-                            writtenObjects << value
-                            writeDomainWithEmbeddedAndLinks(associatedEntity, value, context, xml, writtenObjects, false)
-                        }
-                    }
-                } else {
-                    final associatedEntity = property.associatedEntity
-                    if (associatedEntity) {
-                        writer.startNode(property.name)
-                        for (obj in entry.value) {
-                            writtenObjects << obj
-                            writeDomainWithEmbeddedAndLinks(associatedEntity, obj, context, xml, writtenObjects, false)
-                        }
-                        writer.end()
-                    }
-                }
-
-            }
-        }
         writer.end()
     }
 
@@ -381,5 +349,9 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
      */
     String getModelUrn(Model model) {
         return "urn:uuid:${model.id}"
+    }
+
+    Date getMintedDate() {
+        Date.from(MINTED_DATE.atStartOfDay().toInstant(ZoneOffset.UTC))
     }
 }

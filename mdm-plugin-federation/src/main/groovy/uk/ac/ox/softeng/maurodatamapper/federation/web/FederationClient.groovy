@@ -23,24 +23,24 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogue
 
 import groovy.util.logging.Slf4j
+import groovy.xml.XmlSlurper
 import groovy.xml.slurpersupport.GPathResult
 import io.micronaut.core.annotation.AnnotationMetadataResolver
 import io.micronaut.core.type.Argument
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpStatus
-import io.micronaut.http.client.DefaultHttpClient
 import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.HttpClientConfiguration
 import io.micronaut.http.client.LoadBalancer
 import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
-import io.micronaut.http.client.ssl.NettyClientSslBuilder
+import io.micronaut.http.client.netty.DefaultHttpClient
+import io.micronaut.http.client.netty.ssl.NettyClientSslBuilder
 import io.micronaut.http.codec.MediaTypeCodecRegistry
 import io.micronaut.http.exceptions.HttpException
 import io.micronaut.http.uri.UriBuilder
 import io.netty.channel.MultithreadEventLoopGroup
 import io.netty.util.concurrent.DefaultThreadFactory
-import io.reactivex.Flowable
 import org.springframework.context.ApplicationContext
 import org.xml.sax.SAXException
 
@@ -91,13 +91,14 @@ class FederationClient implements Closeable {
         } else {
             this.contextPath = 'api'
         }
-        client = new DefaultHttpClient(LoadBalancer.fixed(hostUrl.toURL()),
+        client = new DefaultHttpClient(LoadBalancer.fixed(hostUrl.toURL().toURI()),
                                        httpClientConfiguration,
                                        this.contextPath,
                                        threadFactory,
                                        nettyClientSslBuilder,
                                        mediaTypeCodecRegistry,
-                                       AnnotationMetadataResolver.DEFAULT)
+                                       AnnotationMetadataResolver.DEFAULT,
+                                       Collections.emptyList())
         log.debug('Client created to connect to {}', hostUrl)
     }
 
@@ -150,11 +151,10 @@ class FederationClient implements Closeable {
 
     private Map<String, Object> retrieveMapFromClient(UriBuilder uriBuilder, UUID apiKey, Map params = [:]) {
         try {
-            Flowable<Map> response = client.retrieve(HttpRequest
-                                                         .GET(uriBuilder.expand(params))
-                                                         .header(API_KEY_HEADER, apiKey.toString()),
-                                                     Argument.mapOf(String, Object)) as Flowable<Map>
-            response.blockingFirst()
+            client.toBlocking().retrieve(HttpRequest
+                                             .GET(uriBuilder.expand(params))
+                                             .header(API_KEY_HEADER, apiKey.toString()),
+                                         Argument.mapOf(String, Object))
         }
         catch (HttpException ex) {
             handleHttpException(ex, getFullUrl(uriBuilder, params))
@@ -163,11 +163,10 @@ class FederationClient implements Closeable {
 
     private String retrieveStringFromClient(UriBuilder uriBuilder, UUID apiKey, Map params = [:]) {
         try {
-            Flowable<String> response = client.retrieve(HttpRequest
-                                                            .GET(uriBuilder.expand(params))
-                                                            .header(API_KEY_HEADER, apiKey.toString()),
-                                                        Argument.STRING) as Flowable<String>
-            response.blockingFirst()
+            client.toBlocking().retrieve(HttpRequest
+                                             .GET(uriBuilder.expand(params))
+                                             .header(API_KEY_HEADER, apiKey.toString()),
+                                         Argument.STRING)
         }
         catch (HttpException ex) {
             handleHttpException(ex, getFullUrl(uriBuilder, params))
@@ -176,11 +175,10 @@ class FederationClient implements Closeable {
 
     private List<Map<String, Object>> retrieveListFromClient(UriBuilder uriBuilder, UUID apiKey, Map params = [:]) {
         try {
-            Flowable<List> response = client.retrieve(HttpRequest
-                                                          .GET(uriBuilder.expand(params))
-                                                          .header(API_KEY_HEADER, apiKey.toString()),
-                                                      Argument.listOf(Map)) as Flowable<List>
-            response.blockingFirst()
+            client.toBlocking().retrieve(HttpRequest
+                                             .GET(uriBuilder.expand(params))
+                                             .header(API_KEY_HEADER, apiKey.toString()),
+                                         Argument.listOf(Map<String, Object>)) as List<Map<String, Object>>
         }
         catch (HttpException ex) {
             handleHttpException(ex, getFullUrl(uriBuilder, params))

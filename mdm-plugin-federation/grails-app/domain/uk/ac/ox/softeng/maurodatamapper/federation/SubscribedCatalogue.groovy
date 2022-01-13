@@ -32,7 +32,7 @@ import java.time.OffsetDateTime
 class SubscribedCatalogue implements MdmDomain, SecurableResource, EditHistoryAware, InformationAware {
 
     private static final int DEFAULT_REFRESH_PERIOD = 7
-    private static final String DEFAULT_CONNECTION_TIMEOUT_CONFIG_PROPERTY = 'maurodatamapper.federation.subscribedcatalogue.default.timeout'
+    public static final String DEFAULT_CONNECTION_TIMEOUT_CONFIG_PROPERTY = 'maurodatamapper.federation.subscribedcatalogue.default.timeout'
 
     UUID id
     String url

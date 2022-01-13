@@ -16,5 +16,5 @@ include(
     'mdm-plugin-dataflow',
     'mdm-plugin-referencedata',
     'mdm-plugin-profile',
-    //    'mdm-plugin-federation',
-)
+    'mdm-plugin-federation',
+    )

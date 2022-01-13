@@ -24,7 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import spock.lang.Shared
 
@@ -60,9 +60,9 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
         'admin/subscribedCatalogues'
     }
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def checkAndSetupData() {
+    def setup() {
         log.debug('Check and setup test data')
         Folder folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
         checkAndSave(folder)
@@ -79,7 +79,7 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
         cleanUpResources(DataModel, Folder)
     }
 
-    Tuple<String> getNewerDataModelIds() {
+    Tuple2<String, String> getNewerDataModelIds() {
         PUT("dataModels/${finalisedSimpleDataModelId}/newBranchModelVersion", [:], MAP_ARG, true)
         verifyResponse CREATED, response
         String newerId1 = response.body().id
@@ -219,6 +219,7 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
     void 'P01 : Test the publishedModels endpoint'() {
         given:
         POST('', getValidJson())
+        verifyResponse(CREATED, response)
         String subscribedCatalogueId = responseBody().id
 
         when:
@@ -249,6 +250,7 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
     void 'N01 : Test the newerVersions endpoint (with no newer versions)'() {
         given:
         POST('', getValidJson())
+        verifyResponse(CREATED, response)
         String subscribedCatalogueId = responseBody().id
 
         when:
@@ -267,8 +269,9 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
 
     void 'N02 : Test the newerVersions endpoint (with newer versions)'() {
         given:
-        getNewerDataModelIds()
+        Tuple tuple = getNewerDataModelIds()
         POST('', getValidJson())
+        verifyResponse(CREATED, response)
         String subscribedCatalogueId = responseBody().id
 
         when:
@@ -304,6 +307,10 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
 }'''
 
         cleanup:
+        DELETE("dataModels/${tuple.v1}?permanent=true", MAP_ARG, true)
+        verifyResponse NO_CONTENT, response
+        DELETE("dataModels/${tuple.v2}?permanent=true", MAP_ARG, true)
+        verifyResponse NO_CONTENT, response
         DELETE(subscribedCatalogueId)
         verifyResponse NO_CONTENT, response
     }
