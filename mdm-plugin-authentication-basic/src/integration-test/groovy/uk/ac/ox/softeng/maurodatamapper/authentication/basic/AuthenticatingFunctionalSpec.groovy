@@ -25,13 +25,12 @@ import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.UNAUTHORIZED
-
 
 /**
  * @see uk.ac.ox.softeng.maurodatamapper.security.authentication.AuthenticatingController* Controller: authentication
@@ -48,9 +47,9 @@ class AuthenticatingFunctionalSpec extends BaseFunctionalSpec implements Securit
         'authentication'
     }
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def checkAndSetupData() {
+    def setup() {
         createModernSecurityUsers('functionalTest')
         checkAndSave(admin)
         checkAndSave(editor)

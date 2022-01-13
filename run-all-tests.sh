@@ -77,8 +77,9 @@ function integrationTest(){
   :mdm-plugin-terminology:integrationTest \
   :mdm-plugin-referencedata:integrationTest \
   :mdm-plugin-federation:integrationTest  \
-  :mdm-security:integrationTest
-#
+  :mdm-security:integrationTest \
+  :mdm-plugin-authentication-basic:integrationTest
+
 }
 
 function functionalTest(){
@@ -93,7 +94,7 @@ function functionalTest(){
   :mdm-plugin-federation:integrationTest \
   :mdm-security:integrationTest
 #  :mdm-plugin-authentication-apikey:integrationTest \
-#  :mdm-plugin-authentication-basic:integrationTest \
+
 }
 
 function e2eTest(){
