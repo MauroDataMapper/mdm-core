@@ -15,7 +15,7 @@ dependencies {
     implementation "org.grails:grails-gorm-testing-support"
     implementation "org.mockito:mockito-core"
     implementation "io.micronaut:micronaut-http-client"
-    implementation "org.grails:grails-web-testing-support"
+    api "org.grails:grails-web-testing-support"
     implementation "org.grails:views-json-testing-support"
 
     api group: 'net.javacrumbs.json-unit', name: 'json-unit', version: '2.28.0'
