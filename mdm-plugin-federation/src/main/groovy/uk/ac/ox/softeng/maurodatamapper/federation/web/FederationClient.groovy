@@ -44,14 +44,12 @@ import io.reactivex.Flowable
 import org.springframework.context.ApplicationContext
 import org.xml.sax.SAXException
 
-import java.time.Duration
 import java.util.concurrent.ThreadFactory
-
 /**
  * @since 14/04/2021
  */
 @Slf4j
-class FederationClient {
+class FederationClient implements Closeable {
 
     static final String API_KEY_HEADER = 'apiKey'
     private HttpClient client
@@ -101,6 +99,11 @@ class FederationClient {
                                        mediaTypeCodecRegistry,
                                        AnnotationMetadataResolver.DEFAULT)
         log.debug('Client created to connect to {}', hostUrl)
+    }
+
+    @Override
+    void close() throws IOException {
+        client.close()
     }
 
     GPathResult getSubscribedCatalogueModelsFromAtomFeed(UUID apiKey) {

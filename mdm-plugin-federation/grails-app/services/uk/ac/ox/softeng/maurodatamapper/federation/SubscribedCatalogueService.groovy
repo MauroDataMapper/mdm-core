@@ -76,8 +76,9 @@ class SubscribedCatalogueService implements XmlImportMapping, AnonymisableServic
 
     void verifyConnectionToSubscribedCatalogue(SubscribedCatalogue subscribedCatalogue) {
         try {
-            FederationClient client = getFederationClientForSubscribedCatalogue(subscribedCatalogue)
-            Map<String, Object> catalogueModels = client.getSubscribedCatalogueModels(subscribedCatalogue.apiKey)
+            Map<String, Object> catalogueModels = getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
+                client.getSubscribedCatalogueModels(subscribedCatalogue.apiKey)
+            }
             if (!catalogueModels.containsKey('publishedModels') || !catalogueModels.authority) {
                 subscribedCatalogue.errors.reject('invalid.subscription.url.response',
                                                   [subscribedCatalogue.url].toArray(),
@@ -120,10 +121,9 @@ class SubscribedCatalogueService implements XmlImportMapping, AnonymisableServic
      *
      */
     List<PublishedModel> listPublishedModels(SubscribedCatalogue subscribedCatalogue) {
-
-        FederationClient client = getFederationClientForSubscribedCatalogue(subscribedCatalogue)
-
-        Map<String, Object> subscribedCatalogueModels = client.getSubscribedCatalogueModels(subscribedCatalogue.apiKey)
+        Map<String, Object> subscribedCatalogueModels = getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
+            client.getSubscribedCatalogueModels(subscribedCatalogue.apiKey)
+        }
         if (subscribedCatalogueModels.publishedModels.isEmpty()) return []
 
         (subscribedCatalogueModels.publishedModels as List<Map<String, String>>).collect {pm ->
@@ -143,20 +143,28 @@ class SubscribedCatalogueService implements XmlImportMapping, AnonymisableServic
     }
 
     List<Map<String, Object>> getAvailableExportersForResourceType(SubscribedCatalogue subscribedCatalogue, String urlResourceType) {
-        getFederationClientForSubscribedCatalogue(subscribedCatalogue).getAvailableExporters(subscribedCatalogue.apiKey, urlResourceType)
+        getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
+            client.getAvailableExporters(subscribedCatalogue.apiKey, urlResourceType)
+        }
     }
 
     Map<String, Object> getVersionLinksForModel(SubscribedCatalogue subscribedCatalogue, String urlModelType, UUID modelId) {
-        getFederationClientForSubscribedCatalogue(subscribedCatalogue).getVersionLinksForModel(subscribedCatalogue.apiKey, urlModelType, modelId)
+        getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
+            client.getVersionLinksForModel(subscribedCatalogue.apiKey, urlModelType, modelId)
+        }
     }
 
     Map<String, Object> getNewerPublishedVersionsForPublishedModel(SubscribedCatalogue subscribedCatalogue, UUID modelId) {
-        getFederationClientForSubscribedCatalogue(subscribedCatalogue).getNewerPublishedVersionsForPublishedModel(subscribedCatalogue.apiKey, modelId)
+        getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
+            client.getNewerPublishedVersionsForPublishedModel(subscribedCatalogue.apiKey, modelId)
+        }
     }
 
     String getStringResourceExport(SubscribedCatalogue subscribedCatalogue, String urlResourceType, UUID resourceId, Map exporterInfo) {
-        getFederationClientForSubscribedCatalogue(subscribedCatalogue).getStringResourceExport(subscribedCatalogue.apiKey, urlResourceType,
-                                                                                               resourceId, exporterInfo)
+        getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
+            client.getStringResourceExport(subscribedCatalogue.apiKey, urlResourceType,
+                                           resourceId, exporterInfo)
+        }
     }
 
     private FederationClient getFederationClientForSubscribedCatalogue(SubscribedCatalogue subscribedCatalogue) {
