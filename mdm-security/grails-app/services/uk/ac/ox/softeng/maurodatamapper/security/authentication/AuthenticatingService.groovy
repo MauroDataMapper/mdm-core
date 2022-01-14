@@ -88,4 +88,8 @@ class AuthenticatingService {
     boolean isAuthenticatedSession(HttpSession httpSession) {
         sessionService.isAuthenticatedSession(httpSession.id)
     }
+
+    String getEmailAddressForSession(HttpSession httpSession) {
+        sessionService.getSessionEmailAddress(httpSession)
+    }
 }
