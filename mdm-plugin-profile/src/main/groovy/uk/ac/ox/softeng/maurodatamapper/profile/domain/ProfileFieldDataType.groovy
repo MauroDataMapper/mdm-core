@@ -87,7 +87,7 @@ enum ProfileFieldDataType {
 
             case "date":
                 try {
-                    DateUtils.parseDateStrictly(input, "dd/MM/yyyy", "dd-MM-yyyy", "MM/dd/yyyy", "MM-dd-yyyy", "yyyy/MM/dd")
+                    DateUtils.parseDateStrictly(input, ConfigurableProfileFieldTypes.instance.dateFormats)
                     return null
                 } catch (Exception ignored) {
                     return 'Date'
@@ -95,7 +95,7 @@ enum ProfileFieldDataType {
 
             case "datetime":
                 try {
-                    DateUtils.parseDateStrictly(input, "dd/MM/yyyy'T'HH:mm:ss", "dd-MM-yyyy'T'HH:mm:ss")
+                    DateUtils.parseDateStrictly(input, ConfigurableProfileFieldTypes.instance.dateTimeFormats)
                     return null
                 } catch (Exception ignored) {
                     return 'DateTime'
@@ -103,7 +103,7 @@ enum ProfileFieldDataType {
 
             case "time":
                 try {
-                    DateUtils.parseDateStrictly(input, "HH:mm:ss", "HH:mm")
+                    DateUtils.parseDateStrictly(input, ConfigurableProfileFieldTypes.instance.timeFormats)
                     return null
                 } catch (Exception ignored) {
                     return 'Time'
