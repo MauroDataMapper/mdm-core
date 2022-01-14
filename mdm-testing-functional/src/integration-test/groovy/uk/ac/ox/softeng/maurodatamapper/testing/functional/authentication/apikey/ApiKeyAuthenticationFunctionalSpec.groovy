@@ -26,7 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.MutableHttpRequest
@@ -49,9 +49,9 @@ class ApiKeyAuthenticationFunctionalSpec extends FunctionalSpec {
 
     String setApiKey = null
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def checkAndSetupData() {
+    def setup() {
         log.debug('Check and setup test data')
         sessionFactory.currentSession.flush()
         assert CatalogueUser.count() == 9 // All users

@@ -25,7 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityUtils
 
 import grails.gorm.transactions.Transactional
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
@@ -75,9 +75,9 @@ abstract class UserAccessAndCopyingInDataModelsFunctionalSpec extends UserAccess
         DataModel.findByLabel('Simple Test DataModel').id.toString()
     }
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def addCopyPermissionsGroup() {
+    def setup() {
         log.info('Add group with new authenticated user')
         CatalogueUser authenticated2 = new CatalogueUser(emailAddress: userEmailAddresses.authenticated2,
                                                          firstName: 'authenticated2', lastName: 'User',

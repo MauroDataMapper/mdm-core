@@ -26,7 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessFunctionalS
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 
@@ -68,9 +68,9 @@ class SummaryMetadataReportFunctionalSpec extends UserAccessFunctionalSpec {
         SummaryMetadata.findByLabel('Functional Test Summary Metadata').id.toString()
     }
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def setupSummaryMetadata() {
+    def setup() {
         log.debug('Check and setup summary metadata')
         DataModel dataModel = DataModel.findByLabel(BootstrapModels.COMPLEX_DATAMODEL_NAME)
         new SummaryMetadata(summaryMetadataType: SummaryMetadataType.NUMBER,
@@ -142,7 +142,7 @@ class SummaryMetadataReportFunctionalSpec extends UserAccessFunctionalSpec {
 
     @Override
     Pattern getExpectedUpdateEditRegex() {
-        ~/\[Summary Metadata Report:.+?] changed properties \[reportDate]/
+        ~/\[Summary Metadata Report:.+?] changed properties \[path, reportDate]/
     }
 
     @Override

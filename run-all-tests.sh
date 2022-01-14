@@ -103,15 +103,15 @@ function functionalTest(){
 
 function e2eTest(){
   echo ">> E2E Tests <<"
-#  ./gradlew --build-cache -Dgradle.test.package=core :mdm-testing-functional:integrationTest
-#  ./gradlew --build-cache -Dgradle.test.package=security :mdm-testing-functional:integrationTest
-#  ./gradlew --build-cache -Dgradle.test.package=authentication :mdm-testing-functional:integrationTest
-#  ./gradlew --build-cache -Dgradle.test.package=datamodel :mdm-testing-functional:integrationTest
-#  ./gradlew --build-cache -Dgradle.test.package=terminology :mdm-testing-functional:integrationTest
-#  ./gradlew --build-cache -Dgradle.test.package=dataflow :mdm-testing-functional:integrationTest
-#  ./gradlew --build-cache -Dgradle.test.package=referencedata :mdm-testing-functional:integrationTest
-#  ./gradlew --build-cache -Dgradle.test.package=federation :mdm-testing-functional:integrationTest
-#  ./gradlew --build-cache -Dgradle.test.package=profile :mdm-testing-functional:integrationTest
+  ./gradlew --build-cache -Dgradle.test.package=core :mdm-testing-functional:integrationTest
+  ./gradlew --build-cache -Dgradle.test.package=security :mdm-testing-functional:integrationTest
+  ./gradlew --build-cache -Dgradle.test.package=authentication :mdm-testing-functional:integrationTest
+  ./gradlew --build-cache -Dgradle.test.package=datamodel :mdm-testing-functional:integrationTest
+  ./gradlew --build-cache -Dgradle.test.package=terminology :mdm-testing-functional:integrationTest
+  ./gradlew --build-cache -Dgradle.test.package=referencedata :mdm-testing-functional:integrationTest
+  ./gradlew --build-cache -Dgradle.test.package=profile :mdm-testing-functional:integrationTest
+  ./gradlew --build-cache -Dgradle.test.package=dataflow :mdm-testing-functional:integrationTest
+  ./gradlew --build-cache -Dgradle.test.package=federation :mdm-testing-functional:integrationTest
 }
 
 function initialReport(){

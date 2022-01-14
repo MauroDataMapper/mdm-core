@@ -23,7 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityUtils
 
 import grails.gorm.transactions.Transactional
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 
 import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
@@ -52,9 +52,9 @@ import static io.micronaut.http.HttpStatus.OK
 @Slf4j
 abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessFunctionalSpec {
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def addExtraGroup() {
+    def setup() {
         log.info('Add group with new authenticated user')
         CatalogueUser authenticated2 = new CatalogueUser(emailAddress: userEmailAddresses.authenticated2,
                                                          firstName: 'authenticated2', lastName: 'User',

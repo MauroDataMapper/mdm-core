@@ -3,17 +3,15 @@ buildscript {
         mavenLocal()
         maven {url "https://jenkins.cs.ox.ac.uk/artifactory/plugins-snapshot"}
         maven {url "https://jenkins.cs.ox.ac.uk/artifactory/plugins-release"}
-        mavenCentral()
-
+        maven { url "https://repo.grails.org/grails/core" }
     }
     dependencies {
         classpath "ox.softeng.gradle:oxbrcinformatics-gradle-plugins:$oxbrcinformaticsGradlePluginsVersion"
-        classpath "org.grails:grails-gradle-plugin:$grailsVersion"
+        classpath "org.grails:grails-gradle-plugin:$grailsGradlePluginVersion"
         classpath "org.grails.plugins:hibernate5:$grailsHibernate5Version"
         classpath "org.grails.plugins:views-gradle:$grailsViewsVersion"
     }
 }
-
 
 plugins {
     id 'project-report'
@@ -25,14 +23,13 @@ apply plugin: "war"
 apply plugin: "org.grails.grails-web"
 apply plugin: "org.grails.plugins.views-json"
 apply plugin: "org.grails.plugins.views-markup"
-
 apply plugin: 'ox.softeng.grails'
 
 repositories {
     mavenLocal()
-    maven {url "https://jenkins.cs.ox.ac.uk/artifactory/libs-release"}
-    maven {url "https://jenkins.cs.ox.ac.uk/artifactory/libs-snapshot"}
-    maven {url "https://repo.grails.org/grails/core"}
+    maven { url "https://jenkins.cs.ox.ac.uk/artifactory/libs-release" }
+    maven { url "https://jenkins.cs.ox.ac.uk/artifactory/libs-snapshot" }
+    maven { url "https://repo.grails.org/grails/core" }
 }
 
 configurations {
@@ -44,51 +41,45 @@ configurations {
 
 dependencies {
     developmentOnly("org.springframework.boot:spring-boot-devtools")
-    compile "org.springframework.boot:spring-boot-starter-logging"
-    compile "org.springframework.boot:spring-boot-autoconfigure"
-    compile "org.grails:grails-core"
-    compile "org.springframework.boot:spring-boot-starter-actuator"
-    provided "org.springframework.boot:spring-boot-starter-tomcat"
-    compile "org.grails:grails-plugin-url-mappings"
-    compile "org.grails:grails-plugin-rest"
-    compile "org.grails:grails-plugin-codecs"
-    compile "org.grails:grails-plugin-interceptors"
-    compile "org.grails:grails-plugin-services"
-    compile "org.grails:grails-plugin-datasource"
-    compile "org.grails:grails-plugin-databinding"
-    compile "org.grails:grails-web-boot"
-    compile "org.grails:grails-logging"
-    compile "org.grails.plugins:cache", {
-        exclude group: "org.codehaus.groovy", module: "groovy-all"
-    }
-    compile "org.grails.plugins:async"
-    compile "org.grails.plugins:events"
-    compile "org.grails.plugins:hibernate5:$grailsHibernate5Version"
-    compile "org.hibernate:hibernate-core"
-    compile "org.grails.plugins:views-json:$grailsViewsVersion"
-    compile "org.grails.plugins:views-json-templates:$grailsViewsVersion"
-    compile "org.grails.plugins:views-markup:$grailsViewsVersion"
     compileOnly "io.micronaut:micronaut-inject-groovy"
     console "org.grails:grails-console"
-    // Until the fixes are published we need to use our versions of the profiles
-    profile "org.grails.profiles:rest-api", {
-        transitive false
-    }
-    profile "org.grails.profiles:plugin", {
-        transitive false
-    }
-    profile "org.grails.profiles:base:4.1.0.OXBRC", {
-        transitive false
-    }
-    runtime "org.glassfish.web:el-impl:2.1.2-b03"
-    integrationTestRuntimeOnly "com.h2database:h2"
-    runtime "org.apache.tomcat:tomcat-jdbc"
-    runtime "javax.xml.bind:jaxb-api:$jaxbApiVersion"
-    testCompile "org.grails:grails-gorm-testing-support"
-    testCompile "org.mockito:mockito-core"
-    testCompile "io.micronaut:micronaut-http-client"
-    testCompile "org.grails:grails-web-testing-support"
-    testCompile "org.grails:views-json-testing-support"
+    implementation "org.springframework.boot:spring-boot-starter-logging"
+    implementation "org.springframework.boot:spring-boot-starter-validation"
+    implementation "org.springframework.boot:spring-boot-autoconfigure"
+    implementation "org.grails:grails-core"
+    implementation "org.springframework.boot:spring-boot-starter-actuator"
+    implementation "org.springframework.boot:spring-boot-starter-tomcat"
+    implementation "org.grails:grails-plugin-url-mappings"
+    implementation "org.grails:grails-plugin-rest"
+    implementation "org.grails:grails-plugin-codecs"
+    implementation "org.grails:grails-plugin-interceptors"
+    implementation "org.grails:grails-plugin-services"
+    implementation "org.grails:grails-plugin-datasource"
+    implementation "org.grails:grails-plugin-databinding"
+    implementation "org.grails:grails-web-boot"
+    implementation "org.grails:grails-logging"
+    implementation "org.grails.plugins:cache"
+    implementation "org.grails.plugins:async"
+    implementation "org.grails.plugins:events"
+    implementation "org.grails.plugins:hibernate5"
+    implementation "org.hibernate:hibernate-core"
+    implementation "org.grails.plugins:views-json"
+    implementation "org.grails.plugins:views-json-templates"
+    implementation "org.grails.plugins:views-markup"
+    implementation "com.bertramlabs.plugins:asset-pipeline-grails:$assetPipelineVersion"
+    profile "org.grails.profiles:rest-api"
+    runtimeOnly "org.glassfish.web:el-impl:2.2.1-b05"
+    runtimeOnly "com.h2database:h2"
+    runtimeOnly "org.apache.tomcat:tomcat-jdbc"
+    runtimeOnly "javax.xml.bind:jaxb-api:$jaxbApiVersion"
+    testImplementation "io.micronaut:micronaut-inject-groovy"
+    testImplementation "org.grails:grails-gorm-testing-support"
+    testImplementation "org.mockito:mockito-core"
+    testImplementation "io.micronaut:micronaut-http-client"
+    testImplementation "org.grails:grails-web-testing-support"
+    testImplementation "org.grails:views-json-testing-support"
+    testImplementation "org.hibernate.validator:hibernate-validator:6.2.0.Final"
+    testImplementation "io.micronaut:micronaut-http-client"
 }
 
 bootRun {
@@ -96,7 +87,8 @@ bootRun {
     jvmArgs(
         '-Dspring.output.ansi.enabled=always',
         '-noverify',
-        '-XX:TieredStopAtLevel=1')
+        '-XX:TieredStopAtLevel=1',
+        '-Xmx1024m')
     sourceResources sourceSets.main
 
     System.properties.each {prop ->
@@ -110,17 +102,17 @@ bootRun {
 
 grails {
     plugins {
-        compile project(':mdm-core')
-        compile project(':mdm-plugin-authentication-basic')
-        compile project(':mdm-plugin-authentication-apikey')
-        compile project(':mdm-plugin-datamodel')
-        compile project(':mdm-plugin-terminology')
-        compile project(':mdm-plugin-referencedata')
-        compile project(':mdm-plugin-federation')
+        implementation project(':mdm-core')
+        implementation project(':mdm-plugin-authentication-basic')
+        implementation project(':mdm-plugin-authentication-apikey')
+        implementation project(':mdm-plugin-datamodel')
+        implementation project(':mdm-plugin-terminology')
+        implementation project(':mdm-plugin-referencedata')
+        implementation project(':mdm-plugin-federation')
         //        compile project(':mdm-plugin-email-proxy')
-        compile project(':mdm-security')
-        compile project(':mdm-plugin-dataflow')
-        compile project(':mdm-plugin-profile')
+        implementation project(':mdm-security')
+        implementation project(':mdm-plugin-dataflow')
+        implementation project(':mdm-plugin-profile')
     }
 }
 
@@ -140,13 +132,7 @@ if (System.getProperty('gradle.test.package')) {
 
 integrationTest {
     //    failFast true
-    useJUnit {
-        if(testCategory){
-            includeCategories "uk.ac.ox.softeng.maurodatamapper.test.junit.${testCategory}"
-        }else {
-            excludeCategories 'uk.ac.ox.softeng.maurodatamapper.test.junit.TroubleTest'
-        }
-    }
+    useJUnitPlatform()
 
     if(testPackage){
         logger.quiet('Filtering to tests on {}',"uk.ac.ox.softeng.maurodatamapper.testing.functional.${testPackage}.*")
@@ -156,7 +142,7 @@ integrationTest {
 
         binaryResultsDirectory.set(file("${project.testResultsDir}/${testPackage}/binary"))
         reports {
-            junitXml.destination = file("${project.testResultsDir}/${testPackage}")
+            junitXml.getOutputLocation().set file("${project.testResultsDir}/${testPackage}")
 
         }
         mergeTestReports.reportOn(file("${project.testResultsDir}/${testPackage}/binary"))
@@ -167,7 +153,7 @@ integrationTest {
     if(testCategory){
         binaryResultsDirectory.set(file("${project.testResultsDir}/${testCategory}/binary"))
         reports {
-            junitXml.destination = file("${project.testResultsDir}/${testCategory}")
+            junitXml.getOutputLocation().set file("${project.testResultsDir}/${testCategory}")
 
         }
         mergeTestReports.reportOn(file("${project.testResultsDir}/${testCategory}/binary"))

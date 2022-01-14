@@ -534,7 +534,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
   },
   {
     "name": "DataModelXmlImporterService",
-    "version": "4.0",
+    "version": "5.0",
     "displayName": "XML DataModel Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer",
     "allowsExtraMetadataKeys": true,
@@ -2106,7 +2106,8 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
             importAsNewDocumentationVersion: false,
             importFile                     : [
                 fileType    : MimeType.JSON_API.name,
-                fileContents: exportedJsonString.replace(/${BootstrapModels.SIMPLE_DATAMODEL_NAME}/, 'Simple Test DataModel 2')
+                fileContents: exportedJsonString
+                    .replace(/${BootstrapModels.SIMPLE_DATAMODEL_NAME}/, 'Simple Test DataModel 2')
                     .replace(/${BootstrapModels.COMPLEX_DATAMODEL_NAME}/, 'Complex Test DataModel 2').bytes.toList()
             ]
         ])

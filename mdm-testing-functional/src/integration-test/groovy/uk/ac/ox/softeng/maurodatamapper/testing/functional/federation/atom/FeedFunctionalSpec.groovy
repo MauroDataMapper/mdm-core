@@ -18,10 +18,12 @@
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.federation.atom
 
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum
+import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlComparer
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import groovy.xml.XmlSlurper
 import groovy.xml.slurpersupport.GPathResult
 import io.micronaut.http.HttpResponse
 
@@ -38,7 +40,7 @@ import static io.micronaut.http.HttpStatus.OK
  */
 @Integration
 @Slf4j
-class FeedFunctionalSpec extends FunctionalSpec {
+class FeedFunctionalSpec extends FunctionalSpec implements XmlComparer {
 
     @Override
     String getResourcePath() {
@@ -100,7 +102,7 @@ class FeedFunctionalSpec extends FunctionalSpec {
      * Check that the response - which is expected to be XML as Atom, looks OK.
      */
     private GPathResult verifyBaseAtomResponse(HttpResponse<String> xmlResponse, boolean expectEntries, String host, String contextPath = '') {
-        log.warn('XML \n{}', xmlResponse.body())
+        log.warn('XML \n{}', prettyPrint(xmlResponse.body()))
 
         //Use the jsonCapableResponse even though it is a string of XML
         xmlResponse.status() == OK

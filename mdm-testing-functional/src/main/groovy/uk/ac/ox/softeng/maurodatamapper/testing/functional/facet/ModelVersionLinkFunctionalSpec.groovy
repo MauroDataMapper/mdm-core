@@ -127,7 +127,7 @@ abstract class ModelVersionLinkFunctionalSpec extends UserAccessFunctionalSpec {
 
     @Override
     Pattern getExpectedUpdateEditRegex() {
-        ~/\[VersionLink:NEW_DOCUMENTATION_VERSION_OF:.+?] changed properties \[linkType]/
+        ~/\[VersionLink:NEW_DOCUMENTATION_VERSION_OF:.+?] changed properties \[path, linkType]/
     }
 
     @Override

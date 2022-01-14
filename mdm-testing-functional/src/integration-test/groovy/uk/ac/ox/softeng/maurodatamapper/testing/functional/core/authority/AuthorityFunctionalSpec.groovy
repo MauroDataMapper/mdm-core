@@ -25,7 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessFunctionalS
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 
@@ -49,16 +49,14 @@ class AuthorityFunctionalSpec extends UserAccessFunctionalSpec {
         Authority.findByDefaultAuthority(true)
     }
 
-    @OnceBefore
-    @Transactional
     @Override
     def addValidIdReaderGroup() {
         log.info('Not adding valid id reader group')
     }
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def addApplicationAdminGroup() {
+    def setup() {
         log.info('Adding application admin group who can edit authorities')
         CatalogueUser editor = getUserByEmailAddress(userEmailAddresses.editor)
         // To allow testing of reader group rights which reader2 is not in

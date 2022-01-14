@@ -3,11 +3,11 @@ rootProject.name = 'mdm-core-5'
 include(
     'mdm-common',
     'mdm-testing-framework',
-    //    'mdm-testing-functional',
+    'mdm-testing-functional',
     'mdm-core',
     'mdm-security',
-    //
-    //    // Plugins
+
+    // Plugins
     'mdm-plugin-email-proxy',
     'mdm-plugin-datamodel',
     'mdm-plugin-authentication-basic',

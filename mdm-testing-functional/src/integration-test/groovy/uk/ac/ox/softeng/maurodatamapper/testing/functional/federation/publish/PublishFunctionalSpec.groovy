@@ -52,7 +52,7 @@ class PublishFunctionalSpec extends FunctionalSpec {
         DataModel.findByLabel('Finalised Example Test DataModel').id.toString()
     }
 
-    Tuple<String> getNewerDataModelIds() {
+    Tuple2<String, String> getNewerDataModelIds() {
         loginAdmin()
 
         PUT("dataModels/${getFinalisedDataModelId()}/newBranchModelVersion", [:], MAP_ARG, true)
@@ -135,7 +135,9 @@ class PublishFunctionalSpec extends FunctionalSpec {
 
     void 'L03 : Test the newerVersions endpoint with newer versions (as not logged in)'() {
         given:
-        def (String newerPublicId, String newerId) = getNewerDataModelIds()
+        Tuple tuple = getNewerDataModelIds()
+        String newerPublicId = tuple.v1
+        String newerId = tuple.v2
 
         when:
         GET("models/${getFinalisedDataModelId()}/newerVersions")
@@ -153,7 +155,9 @@ class PublishFunctionalSpec extends FunctionalSpec {
 
     void 'R03 : Test the newerVersions endpoint with newer versions (as reader)'() {
         given:
-        def (String newerPublicId, String newerId) = getNewerDataModelIds()
+        Tuple tuple = getNewerDataModelIds()
+        String newerPublicId = tuple.v1
+        String newerId = tuple.v2
         loginReader()
 
         when:

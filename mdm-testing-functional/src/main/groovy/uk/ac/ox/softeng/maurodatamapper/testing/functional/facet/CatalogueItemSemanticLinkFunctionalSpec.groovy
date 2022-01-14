@@ -134,7 +134,7 @@ abstract class CatalogueItemSemanticLinkFunctionalSpec extends UserAccessFunctio
 
     @Override
     Pattern getExpectedUpdateEditRegex() {
-        ~/\[SemanticLink:DOES_NOT_REFINE:.+?] changed properties \[linkType]/
+        ~/\[SemanticLink:DOES_NOT_REFINE:.+?] changed properties \[path, linkType]/
     }
 
     @Override

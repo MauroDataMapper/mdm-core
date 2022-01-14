@@ -28,7 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import spock.lang.Ignore
 import spock.lang.Shared
@@ -67,9 +67,9 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
     @Shared
     UUID adminApiKey
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def checkAndSetupData() {
+    def setup() {
         log.debug('Check and setup test data for SubscribedModelFunctionalSpec')
         sessionFactory.currentSession.flush()
 

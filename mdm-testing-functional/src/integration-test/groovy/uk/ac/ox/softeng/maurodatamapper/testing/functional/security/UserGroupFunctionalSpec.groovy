@@ -25,7 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessFunctionalS
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 
 import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
@@ -58,9 +58,9 @@ class UserGroupFunctionalSpec extends UserAccessFunctionalSpec {
 
     GroupRoleService groupRoleService
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def checkAndSetupData() {
+    def setup() {
         log.debug('Check and setup test data')
 
         CatalogueUser admin = CatalogueUser.findByEmailAddress(userEmailAddresses.admin)
@@ -103,8 +103,6 @@ class UserGroupFunctionalSpec extends UserAccessFunctionalSpec {
         true
     }
 
-    @OnceBefore
-    @Transactional
     @Override
     def addValidIdReaderGroup() {
         log.info('Not adding valid id reader group')

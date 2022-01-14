@@ -46,9 +46,9 @@ import static io.micronaut.http.HttpStatus.OK
 @Slf4j
 abstract class FunctionalSpec extends BaseFunctionalSpec implements SecurityDefinition {
 
-    //    @OnceBefore
+    //    @RunOnce
     //    @Transactional
-    //    def checkAndSetupData() {
+    //    def setup() {
     //        log.debug('Check and setup test data')
     //        // Install all required domain data here
     //    }

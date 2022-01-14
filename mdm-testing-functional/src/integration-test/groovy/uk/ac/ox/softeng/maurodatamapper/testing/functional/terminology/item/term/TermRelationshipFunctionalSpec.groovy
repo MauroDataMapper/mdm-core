@@ -153,7 +153,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
 
     @Override
     Pattern getExpectedUpdateEditRegex() {
-        ~/\[\w+:.+?] changed properties \[relationshipType, label]/
+        ~/\[\w+:.+?] changed properties \[relationshipType, path, label]/
     }
 
     @Override

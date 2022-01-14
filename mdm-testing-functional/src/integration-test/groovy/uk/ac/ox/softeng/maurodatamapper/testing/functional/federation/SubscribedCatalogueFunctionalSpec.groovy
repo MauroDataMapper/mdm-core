@@ -83,7 +83,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         DataModel.findByLabel('Finalised Example Test DataModel').id.toString()
     }
 
-    Tuple<String> getNewerDataModelIds() {
+    Tuple2<String, String> getNewerDataModelIds() {
         loginAdmin()
 
         PUT("dataModels/${getFinalisedDataModelId()}/newBranchModelVersion", [:], MAP_ARG, true)
@@ -453,7 +453,6 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
      */
 
     void 'L03a : Test the save action is not found (as not logged in)'() {
-        given:
 
         when: 'The save action is executed with no content'
         POST('', [:])
@@ -906,7 +905,9 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
     void 'A08 : Test the newerModels endpoint (with newer models and API key)'() {
         given:
         String finalisedDataModelId = getFinalisedDataModelId()
-        def (String newerPublicId, String newerId) = getNewerDataModelIds()
+        Tuple tuple = getNewerDataModelIds()
+        String newerPublicId = tuple.v1
+        String newerId = tuple.v2
         Map apiKeyJson = [
             name      : "Functional Test",
             expiryDate: LocalDate.now().plusDays(5).format(DateTimeFormatter.ISO_LOCAL_DATE)
@@ -959,11 +960,11 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
 }'''
 
         cleanup:
-        DELETE("catalogueUsers/${getUserByEmailAddress(ADMIN).id}/apiKeys/${apiKey}", MAP_ARG, true)
-        verifyResponse NO_CONTENT, response
         DELETE("dataModels/${newerId}?permanent=true", MAP_ARG, true)
         verifyResponse NO_CONTENT, response
         DELETE("dataModels/${newerPublicId}?permanent=true", MAP_ARG, true)
+        verifyResponse NO_CONTENT, response
+        DELETE("catalogueUsers/${getUserByEmailAddress(ADMIN).id}/apiKeys/${apiKey}", MAP_ARG, true)
         verifyResponse NO_CONTENT, response
         removeValidIdObject(subscribedCatalogueId)
         cleanUpRoles(subscribedCatalogueId)
@@ -972,7 +973,9 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
     void 'A09 : Test the newerModels endpoint (with newer models, without API key)'() {
         given:
         String finalisedDataModelId = getFinalisedDataModelId()
-        def (String newerPublicId, String newerId) = getNewerDataModelIds()
+        Tuple tuple = getNewerDataModelIds()
+        String newerPublicId = tuple.v1
+        String newerId = tuple.v2
         loginAdmin()
         Map subscriptionJson = [
             url          : "http://localhost:$serverPort/".toString(),

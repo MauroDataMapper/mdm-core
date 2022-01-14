@@ -1057,10 +1057,8 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
         String id2 = response.body().items.first().id
 
         cleanup:
-        removeValidIdObjectUsingTransaction(id2)
-        removeValidIdObjectUsingTransaction(id)
-        removeValidIdObject(id2, NOT_FOUND)
-        removeValidIdObject(id, NOT_FOUND)
+        removeValidIdObject(id2)
+        removeValidIdObject(id)
     }
 
     void 'E35B : test import basic Terminology as new documentation version (as editor)'() {
@@ -1108,8 +1106,6 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
         response.body().items.first().sourceModel.domainType == response.body().items.first().targetModel.domainType
 
         cleanup:
-        removeValidIdObjectUsingTransaction(newId)
-        removeValidIdObjectUsingTransaction(id)
         removeValidIdObject(newId, NOT_FOUND)
         removeValidIdObject(id, NOT_FOUND)
     }
@@ -1209,6 +1205,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
         POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/4.0',
              [terminologyIds: [getSimpleTerminologyId(), getComplexTerminologyId()]], STRING_ARG)
 
+
         expect:
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
@@ -1223,10 +1220,12 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
             finalised                      : false,
             folderId                       : testFolderId.toString(),
             importAsNewDocumentationVersion: false,
-            importAsNewBranchModelVersion  : true, // Needed to import models
             importFile                     : [
                 fileType    : MimeType.JSON_API.name,
-                fileContents: exportedJsonString.bytes.toList()
+                fileContents: exportedJsonString
+                    .replace(/Simple Test Terminology/, 'Simple Test Terminology 2')
+                    .replace(/Complex Test Terminology/, 'Complex Test Terminology 2')
+                    .bytes.toList()
             ]
         ])
 
@@ -1239,15 +1238,13 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
         String id = object.id
         String id2 = object2.id
 
-        object.label == 'Simple Test Terminology'
-        object2.label == 'Complex Test Terminology'
+        object.label == 'Simple Test Terminology 2'
+        object2.label == 'Complex Test Terminology 2'
         object.id != object2.id
 
         cleanup:
-        removeValidIdObjectUsingTransaction(id)
-        removeValidIdObjectUsingTransaction(id2)
-        removeValidIdObject(id, NOT_FOUND)
-        removeValidIdObject(id2, NOT_FOUND)
+        removeValidIdObject(id)
+        removeValidIdObject(id2)
     }
 
     String getExpectedDiffJson() {

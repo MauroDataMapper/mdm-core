@@ -31,7 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.version.VersionChangeType
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import grails.util.BuildSettings
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
@@ -79,8 +79,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     @Autowired(required = false)
     List<ModelService> modelServices
 
-    @OnceBefore
-    void createBuilder() {
+    @RunOnce
+    def setup() {
         builder = new VersionedFolderMergeBuilder(this)
     }
 

@@ -152,6 +152,14 @@ tasks.register('outputFunctionalTestShell') {
     }
 }
 
+tasks.register('outputE2ETestShell') {
+    doLast {
+        file('mdm-testing-functional/src/integration-test/groovy/uk/ac/ox/softeng/maurodatamapper/testing/functional').listFiles().each { f ->
+            logger.quiet './gradlew --build-cache -Dgradle.test.package={} :mdm-testing-functional:integrationTest', f.name
+        }
+    }
+}
+
 allprojects {
     repositories {
         mavenLocal()

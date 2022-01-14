@@ -3,10 +3,6 @@ database:
     port: 5432
     name: maurodatamapper
 ---
-apiUser:
-    username: admin@maurodatamapper.com
-    password: password
----
 #Default for plugins/applications
 ---
 maurodatamapper:
@@ -139,9 +135,9 @@ grails:
 ---
 hibernate:
     search:
-        default.indexBase: '/tmp/lucene/testing/functional'
-#    generate_statistics: true
-
+        backend:
+            directory:
+                root: 'build/lucene'
 ---
 dataSource:
     pooled: true

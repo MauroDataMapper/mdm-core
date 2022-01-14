@@ -111,7 +111,7 @@ class EnumerationValueFunctionalSpec extends UserAccessFunctionalSpec {
     @Override
     void verifySameValidDataCreationResponse() {
         verifyResponse UNPROCESSABLE_ENTITY, response
-        assert response.body().total == 2
+        assert response.body().total == 4
         assert response.body().errors.any {
             it.message == 'Property [enumerationType] of class [class uk.ac.ox.softeng.maurodatamapper.' +
             'datamodel.item.datatype.enumeration.EnumerationValue] cannot be null'
@@ -119,6 +119,13 @@ class EnumerationValueFunctionalSpec extends UserAccessFunctionalSpec {
         assert response.body().errors.any {
             it.message == 'Property [parent] of class [class uk.ac.ox.softeng.maurodatamapper.core.' +
             'facet.BreadcrumbTree] cannot be null'
+        }
+        assert response.body().errors.any {
+            it.message == 'Property [path] of class [class uk.ac.ox.softeng.maurodatamapper.' +
+            'datamodel.item.datatype.enumeration.EnumerationValue] cannot be null'
+        }
+        assert response.body().errors.any {
+            it.message == 'Property [path] of class [class uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree] cannot be null'
         }
     }
 

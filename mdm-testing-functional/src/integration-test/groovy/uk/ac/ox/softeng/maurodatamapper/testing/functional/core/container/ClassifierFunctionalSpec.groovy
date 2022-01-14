@@ -17,21 +17,15 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.container
 
-import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
-import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
+
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
 
-import grails.gorm.transactions.Rollback
 import grails.gorm.transactions.Transactional
-import grails.plugin.json.builder.JsonOutput
 import grails.testing.mixin.integration.Integration
-import groovy.json.JsonBuilder
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
@@ -154,7 +148,7 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
     @Override
     String getEditorIndexJson() {
         '''{
-  "count": 6,
+  "count": 4,
   "items": [
     {
       "id": "${json-unit.matches:id}",
@@ -174,16 +168,6 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
     {
       "id": "${json-unit.matches:id}",
       "label": "test classifier2",
-      "lastUpdated": "${json-unit.matches:offsetDateTime}"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "label": "Environment A",
-      "lastUpdated": "${json-unit.matches:offsetDateTime}"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "label": "Environment B",
       "lastUpdated": "${json-unit.matches:offsetDateTime}"
     }
   ]

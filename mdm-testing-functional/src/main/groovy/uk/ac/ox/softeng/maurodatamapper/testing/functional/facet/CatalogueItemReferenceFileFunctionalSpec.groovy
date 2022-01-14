@@ -129,7 +129,7 @@ abstract class CatalogueItemReferenceFileFunctionalSpec extends UserAccessFuncti
 
     @Override
     Pattern getExpectedUpdateEditRegex() {
-        ~/\[ReferenceFile:updated filename.txt] changed properties \[fileName]/
+        ~/\[ReferenceFile:updated filename.txt] changed properties \[path, fileName]/
     }
 
     @Override

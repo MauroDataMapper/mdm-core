@@ -24,7 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessFunctionalS
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import grails.util.BuildSettings
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
@@ -53,8 +53,8 @@ class ReferenceDataValueFunctionalSpec extends UserAccessFunctionalSpec {
     @Shared
     Path resourcesPath
 
-    @OnceBefore
-    void setupResourcesPath() {
+    @RunOnce
+    def setup() {
         resourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', 'referencedata').toAbsolutePath()
     }
 

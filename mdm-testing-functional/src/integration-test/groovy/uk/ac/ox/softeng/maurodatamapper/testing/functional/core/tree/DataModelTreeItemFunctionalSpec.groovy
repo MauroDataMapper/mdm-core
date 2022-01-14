@@ -74,7 +74,7 @@ class DataModelTreeItemFunctionalSpec extends FunctionalSpec{
         GET(getComplexDataModelId(), STRING_ARG)
 
         then:
-        verifyJsonResponse(HttpStatus.OK, getFullTreeRender())
+        verifyJsonResponse(HttpStatus.OK, getFullTreeRender('[]'))
 
     }
 
@@ -103,13 +103,20 @@ class DataModelTreeItemFunctionalSpec extends FunctionalSpec{
     }
 
 
-    String getFullTreeRender(){
+    String getFullTreeRender(String actions = '''[
+    "createModelItem",
+    "delete",
+    "moveToContainer",
+    "moveToFolder",
+    "moveToVersionedFolder",
+    "softDelete"
+  ]''') {
         '''{
   "id": "${json-unit.matches:id}",
   "domainType": "DataModel",
   "label": "Complex Test DataModel",
   "hasChildren": true,
-  "availableActions": [],
+  "availableActions": ''' + actions + ''',
   "deleted": false,
   "finalised": false,
   "superseded": false,

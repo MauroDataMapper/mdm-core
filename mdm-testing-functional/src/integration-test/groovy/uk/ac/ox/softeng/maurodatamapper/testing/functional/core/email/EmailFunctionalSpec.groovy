@@ -17,14 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.email
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.email.Email
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 
 import java.time.OffsetDateTime
@@ -44,9 +43,9 @@ import static io.micronaut.http.HttpStatus.OK
 @Slf4j
 class EmailFunctionalSpec extends FunctionalSpec {
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def checkAndSetupData() {
+    def setup() {
         log.debug('Check and setup test data')
         cleanUpResource(Email)
     }
