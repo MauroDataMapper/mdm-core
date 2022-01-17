@@ -46,19 +46,19 @@ abstract class BaseDataModelIntegrationSpec extends BaseIntegrationSpec {
         checkAndSave(testAuthority)
     }
 
-    DataModel buildSimpleDataModel(Folder folder) {
-        BootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder, testAuthority)
-    }
-
     DataModel buildSimpleDataModel() {
         BootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder, testAuthority)
     }
 
-    DataModel buildComplexDataModel(Folder folder) {
-        BootstrapModels.buildAndSaveComplexDataModel(messageSource, folder, testAuthority)
+    DataModel buildSimpleDataModel(Folder folder) {
+        BootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder, testAuthority)
     }
 
     DataModel buildComplexDataModel() {
+        BootstrapModels.buildAndSaveComplexDataModel(messageSource, folder, testAuthority)
+    }
+
+    DataModel buildComplexDataModel(Folder folder) {
         BootstrapModels.buildAndSaveComplexDataModel(messageSource, folder, testAuthority)
     }
 }

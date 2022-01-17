@@ -7,9 +7,6 @@ model {
 json {
     exportedBy exportMetadata.exportedBy
     exportedOn exportMetadata.exportDate
-    exporter {
-        namespace exportMetadata.namespace
-        name exportMetadata.name
-        version exportMetadata.version
-    }
+    if (exportMetadata.exporters.size() > 1) exporters exportMetadata.exporters
+    else exporter exportMetadata.exporters[0]
 }

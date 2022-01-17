@@ -26,12 +26,8 @@ class ExportFolder implements ExportResource {
     String templatePath
     ExportMetadata exportMetadata
 
-    ExportFolder(Folder folder, ExportMetadata exportMetadata) {
-        this([export: folder], exportMetadata)
-    }
-
-    ExportFolder(List<Folder> folders, ExportMetadata exportMetadata) {
-        this([export: folders], exportMetadata)
+    ExportFolder(Folder folder, Map<String, ByteArrayOutputStream> models, ExportMetadata exportMetadata) {
+        this([export: folder, models: models], exportMetadata)
     }
 
     private ExportFolder(Map<String, Object> exportMap, ExportMetadata exportMetadata) {

@@ -20,28 +20,27 @@ package uk.ac.ox.softeng.maurodatamapper.core.provider.exporter
 import java.time.OffsetDateTime
 
 class ExportMetadata {
-    String namespace
-    String name
-    String version
-    OffsetDateTime exportDate
-    String exportedBy
 
-    ExportMetadata() {
-    }
+    String exportedBy
+    OffsetDateTime exportDate
+    Set<Map<String, String>> exporters
 
     ExportMetadata(ExporterProviderService exporterProviderService, String firstName, String lastName) {
-        this(exporterProviderService, firstName + " " + lastName)
+        this(firstName + ' ' + lastName, OffsetDateTime.now())
+        addExporter(exporterProviderService)
     }
 
-    ExportMetadata(ExporterProviderService exporterProviderService, String exportedBy) {
-        this(exporterProviderService, exportedBy, OffsetDateTime.now())
-    }
-
-    ExportMetadata(ExporterProviderService exporterProviderService, String exportedBy, OffsetDateTime exportDate) {
-        this.namespace = exporterProviderService.getNamespace()
-        this.name = exporterProviderService.getName()
-        this.version = exporterProviderService.getVersion()
-        this.exportDate = exportDate
+    private ExportMetadata(String exportedBy, OffsetDateTime exportDate) {
         this.exportedBy = exportedBy
+        this.exportDate = exportDate
+        this.exporters = new HashSet<Map<String, String>>()
+    }
+
+    void addExporter(ExporterProviderService exporterProviderService) {
+        this.exporters << [
+            namespace: exporterProviderService.namespace,
+            name     : exporterProviderService.name,
+            version  : exporterProviderService.version
+        ]
     }
 }

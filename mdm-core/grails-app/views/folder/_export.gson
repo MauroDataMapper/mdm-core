@@ -3,6 +3,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeC
 
 model {
     Folder export
+    Map<String, ByteArrayOutputStream> models
 }
 
 json {
@@ -15,4 +16,5 @@ json {
     if (export.annotations) annotations tmpl.'/annotation/export'(export.annotations)
     if (export.rules) rules tmpl.'/rule/export'(export.rules)
     if (export.childFolders) childFolders tmpl.export(export.childFolders)
+    if (models) 'models' models
 }

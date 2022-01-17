@@ -71,4 +71,12 @@ class DataModelFolderJsonExporterServiceSpec extends BaseDataModelFolderExporter
         String expectedJson = replaceContentWithMatchers(Files.readString(expectedPath))
         verifyJson(expectedJson, exportedFolder.replace(/Mauro Data Mapper/, 'Test Authority'))
     }
+
+    void 'F01 : test export Folder with DataModels'() {
+        when:
+        buildSimpleDataModel(folderService.get(folderId))
+
+        then:
+        validateExportedFolder('folderIncDataModel', exportFolder(folderId))
+    }
 }
