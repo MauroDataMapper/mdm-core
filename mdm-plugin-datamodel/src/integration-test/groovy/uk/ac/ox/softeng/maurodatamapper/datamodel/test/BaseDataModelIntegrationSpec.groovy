@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.test
 
-import uk.ac.ox.softeng.maurodatamapper.core.admin.AdminService
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -33,7 +32,6 @@ import groovy.util.logging.Slf4j
 abstract class BaseDataModelIntegrationSpec extends BaseIntegrationSpec {
 
     Authority testAuthority
-    AdminService adminService
     DataModel dataModel
 
     Folder getTestFolder() {
@@ -48,8 +46,16 @@ abstract class BaseDataModelIntegrationSpec extends BaseIntegrationSpec {
         checkAndSave(testAuthority)
     }
 
+    DataModel buildSimpleDataModel(Folder folder) {
+        BootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder, testAuthority)
+    }
+
     DataModel buildSimpleDataModel() {
         BootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder, testAuthority)
+    }
+
+    DataModel buildComplexDataModel(Folder folder) {
+        BootstrapModels.buildAndSaveComplexDataModel(messageSource, folder, testAuthority)
     }
 
     DataModel buildComplexDataModel() {
