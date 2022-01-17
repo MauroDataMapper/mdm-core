@@ -37,6 +37,9 @@ import java.nio.file.Paths
 @Slf4j
 abstract class BaseFolderImporterServiceSpec extends BaseIntegrationSpec {
 
+    static final String CANNOT_IMPORT_EMPTY_FILE_CODE = 'FBIP02'
+    static final String CANNOT_IMPORT_JSON_CODE = 'JIS03'
+
     @Autowired
     FolderService folderService
 

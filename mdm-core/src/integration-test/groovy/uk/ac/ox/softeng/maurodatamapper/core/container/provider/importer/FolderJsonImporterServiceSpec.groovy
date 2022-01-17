@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container.provider.importer
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.test.provider.BaseFolderImporterServiceSpec
@@ -42,7 +43,23 @@ class FolderJsonImporterServiceSpec extends BaseFolderImporterServiceSpec {
         'json'
     }
 
-    // TODO: Test import null and invalid Folders
+    // TODO: Test import null Folder
+
+    void 'test import invalid Folder'() {
+        when: 'given empty content'
+        importFolder(''.bytes)
+
+        then:
+        ApiBadRequestException exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_EMPTY_FILE_CODE
+
+        when: 'given an empty JSON map'
+        importFolder('{}'.bytes)
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_JSON_CODE
+    }
 
     void 'test import Folder'() {
         when:
