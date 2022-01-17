@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
@@ -198,11 +199,20 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> implements Su
             // target VF, either because it existed in the target VF before branching occurred, or because it has already been merged from
             // the source VF to target VF. So find a resource with the same label in the target VF, and use this.
             CreatorAware modelResource = pathService.findResourceByPathFromRootResource(targetVersionedFolder, Path.from(modificationPatch.sourceValue), targetVersionedFolder.modelIdentifier)
-            targetDomain.modelResourceId = modelResource.id
-            targetDomain.modelResourceDomainType = modelResource.domainType
 
-            // TODO other scenario where the modelResourcePath points to something external to the source VF
-            return true
+            // Otherwise, the modelResourcePath is pointing to something external to the source VF. Look up the modelResource directly.
+            // Note that pathService.findResourceByPath does not check security on the pathed resource
+            if (!modelResource) {
+                modelResource = pathService.findResourceByPath(Path.from(modificationPatch.sourceValue))
+            }
+
+            if (modelResource) {
+                targetDomain.modelResourceId = modelResource.id
+                targetDomain.modelResourceDomainType = modelResource.domainType
+                return true
+            } else {
+                throw new ApiInternalException('MDTS01', "Cannot find modelResource with path ${modificationPatch.sourceValue}")
+            }
         }
 
         false

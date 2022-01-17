@@ -1143,12 +1143,19 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         then: 'the branched model data type points to the branched terminology'
         verifyResponse(OK, response)
-        responseBody().count == 1
-        def first = responseBody().items.first()
-        first.id == getIdFromPath(branchId, 'dm:Functional Test DataModel 1$main|dt:Functional Test Model Data Type')
-        first.domainType == 'ModelDataType'
-        first.modelResourceDomainType == 'Terminology'
-        first.modelResourceId == getIdFromPath(branchId, 'te:Functional Test Terminology 1$main')
+        responseBody().count == 2
+        def mdt = responseBody().items.find{it.label == 'Functional Test Model Data Type'}
+        def mdt2 = responseBody().items.find{it.label == 'Functional Test Model Data Type Pointing Externally'}
+        mdt.id == getIdFromPath(branchId, 'dm:Functional Test DataModel 1$main|dt:Functional Test Model Data Type')
+        mdt.domainType == 'ModelDataType'
+        mdt.modelResourceDomainType == 'Terminology'
+        mdt.modelResourceId == getIdFromPath(branchId, 'te:Functional Test Terminology 1$main')
+
+        and: 'the model data type pointing to the external terminology still points to the same external terminology'
+        mdt2.id == getIdFromPath(branchId, 'dm:Functional Test DataModel 1$main|dt:Functional Test Model Data Type Pointing Externally')
+        mdt2.domainType == 'ModelDataType'
+        mdt2.modelResourceDomainType == 'Terminology'
+        mdt2.modelResourceId == data.externalTerminology1Id
 
         when: 'getting the CSs inside the branch'
         GET("folders/$branchId/codeSets", MAP_ARG, true)
@@ -2467,13 +2474,16 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         GET("dataModels/$targetDataModelMap.dataModelId/dataClasses/$targetDataModelMap.existingClass/dataElements", MAP_ARG, true)
 
         then:
-        responseBody().items.label as Set == ['addLeftOnly', 'Functional Test Data Element with Model Data Type'] as Set
+        responseBody().items.label as Set == [
+                'addLeftOnly',
+                'Functional Test Data Element with Model Data Type',
+                'Functional Test Data Element with Model Data Type Pointing Externally'] as Set
 
         when:
         GET("dataModels/$targetDataModelMap.dataModelId/dataTypes", MAP_ARG, true)
 
         then:
-        responseBody().items.label as Set == ['addLeftOnly', 'Functional Test Model Data Type'] as Set
+        responseBody().items.label as Set == ['addLeftOnly', 'Functional Test Model Data Type', 'Functional Test Model Data Type Pointing Externally'] as Set
 
         when:
         GET("dataModels/$targetDataModelMap.dataModelId/metadata", MAP_ARG, true)
@@ -2777,121 +2787,129 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         builder.cleanupTestMergeData(mergeData)
     }
 
-    void 'MI09 : test branch and merge the complex VersionedFolder when a Model Data Type has differences (as editor)'() {
-        given:
-        Map data = builder.buildComplexModelsForBranching()
-        loginEditor()
-        String id = data.commonAncestorId
+   void 'MI09 : test branch and merge the complex VersionedFolder when a Model Data Type has differences (as editor)'() {
+       given:
+       Map data = builder.buildComplexModelsForBranching()
+       loginEditor()
+       String id = data.commonAncestorId
 
-        when: 'logged in as editor we create a new main branch of the VF'
-        loginEditor()
-        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+       when: 'logged in as editor we create a new main branch of the VF'
+       loginEditor()
+       PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
 
-        then: 'the branch is created'
-        verifyResponse CREATED, response
-        responseBody().id != id
-        responseBody().label == 'Functional Test VersionedFolder Complex'
-        responseBody().documentationVersion == '1.0.0'
-        responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
-        !responseBody().modelVersion
-        String targetId = responseBody().id
+       then: 'the branch is created'
+       verifyResponse CREATED, response
+       responseBody().id != id
+       responseBody().label == 'Functional Test VersionedFolder Complex'
+       responseBody().documentationVersion == '1.0.0'
+       responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+       !responseBody().modelVersion
+       String targetId = responseBody().id
 
-        when: 'logged in as editor we create a new branch of the VF'
-        loginEditor()
-        PUT("$id/newBranchModelVersion", [branchName: 'source'])
+       when: 'logged in as editor we create a new source branch of the VF'
+       loginEditor()
+       PUT("$id/newBranchModelVersion", [branchName: 'source'])
 
-        then: 'the branch is created'
-        verifyResponse CREATED, response
-        responseBody().id != id
-        responseBody().label == 'Functional Test VersionedFolder Complex'
-        responseBody().documentationVersion == '1.0.0'
-        responseBody().branchName == 'source'
-        !responseBody().modelVersion
-        String sourceId = responseBody().id
+       then: 'the branch is created'
+       verifyResponse CREATED, response
+       responseBody().id != id
+       responseBody().label == 'Functional Test VersionedFolder Complex'
+       responseBody().documentationVersion == '1.0.0'
+       responseBody().branchName == 'source'
+       !responseBody().modelVersion
+       String sourceId = responseBody().id
 
-        when: 'getting the data models inside the main folder'
-        GET("folders/$targetId/dataModels", MAP_ARG, true)
+       when: 'getting the data models inside the main folder'
+       GET("folders/$targetId/dataModels", MAP_ARG, true)
 
-        then:
-        verifyResponse(OK, response)
-        responseBody().count == 1
-        String targetDataModelId = responseBody().items[0].id
+       then:
+       verifyResponse(OK, response)
+       responseBody().count == 1
+       String targetDataModelId = responseBody().items[0].id
 
-        when: 'getting the data models inside the branched folder'
-        GET("folders/$sourceId/dataModels", MAP_ARG, true)
+       when: 'getting the data models inside the branched folder'
+       GET("folders/$sourceId/dataModels", MAP_ARG, true)
 
-        then:
-        verifyResponse(OK, response)
-        responseBody().count == 1
-        String sourceDataModelId = responseBody().items[0].id
+       then:
+       verifyResponse(OK, response)
+       responseBody().count == 1
+       String sourceDataModelId = responseBody().items[0].id
 
-        when: 'getting the code sets inside the branched folder'
-        GET("folders/$sourceId/codeSets", MAP_ARG, true)
+       when: 'getting the code sets inside the branched folder'
+       GET("folders/$sourceId/codeSets", MAP_ARG, true)
 
-        then:
-        verifyResponse(OK, response)
-        responseBody().count == 1
-        String sourceCodeSetId = responseBody().items[0].id
+       then:
+       verifyResponse(OK, response)
+       responseBody().count == 1
+       String sourceCodeSetId = responseBody().items[0].id
 
-        when: 'getting the code sets inside the main folder'
-        GET("folders/$targetId/codeSets", MAP_ARG, true)
+       when: 'getting the code sets inside the main folder'
+       GET("folders/$targetId/codeSets", MAP_ARG, true)
 
-        then:
-        verifyResponse(OK, response)
-        responseBody().count == 1
-        String targetCodeSetId = responseBody().items[0].id
+       then:
+       verifyResponse(OK, response)
+       responseBody().count == 1
+       String targetCodeSetId = responseBody().items[0].id
 
-        when: 'get the dataTypes on the branched Data Model'
-        GET("dataModels/$sourceDataModelId/dataTypes", MAP_ARG, true)
+       when: 'get the dataTypes on the branched Data Model'
+       GET("dataModels/$sourceDataModelId/dataTypes", MAP_ARG, true)
 
-        then:
-        verifyResponse(OK, response)
-        responseBody().count == 1
-        String modelDataTypeId = responseBody().items.find{it.label == 'Functional Test Model Data Type'}.id
+       then:
+       verifyResponse(OK, response)
+       responseBody().count == 2
+       String modelDataTypeId = responseBody().items.find{it.label == 'Functional Test Model Data Type'}.id
+       String externallyPointingModelDataTypeId = responseBody().items.find{it.label == 'Functional Test Model Data Type Pointing Externally'}.id
 
-        when: 'Update the model data type in the source branch to point at the CodeSet rather than Terminology'
-        PUT("dataModels/$sourceDataModelId/dataTypes/$modelDataTypeId", [modelResourceDomainType: 'CodeSet', modelResourceId: sourceCodeSetId], MAP_ARG, true)
+       when: 'Update the model data type in the source branch to point at the CodeSet rather than Terminology'
+       PUT("dataModels/$sourceDataModelId/dataTypes/$modelDataTypeId", [modelResourceDomainType: 'CodeSet', modelResourceId: sourceCodeSetId], MAP_ARG, true)
 
-        then: 'The response is updated'
-        verifyResponse(OK, response)
+       then: 'The response is updated'
+       verifyResponse(OK, response)
 
-        when: 'Get the diffs between the branch and main'
-        GET("$sourceId/mergeDiff/$targetId")
+       when: 'Update the model data type that was pointing to a terminology in an external folder to point to the other terminology in the external folder'
+       PUT("dataModels/$sourceDataModelId/dataTypes/$externallyPointingModelDataTypeId", [modelResourceDomainType: 'Terminology', modelResourceId: data.externalTerminology2Id], MAP_ARG, true)
 
-        then:
-        verifyResponse(OK, response)
-        def diffs = responseBody().diffs
+       then: 'The response is updated'
+       verifyResponse(OK, response)
 
-        when: 'Merge the diffs between the branch and main'
-        PUT("$sourceId/mergeInto/$targetId", [
-            patch:
-                [
-                    targetId: targetId,
-                    sourceId: sourceId,
-                    label   : "Functional Test Model",
-                    count   : diffs.size(),
-                    patches : diffs
-                ]
-        ])
+       when: 'Get the diffs between the branch and main'
+       GET("$sourceId/mergeDiff/$targetId")
 
-        then: 'The response is OK'
-        verifyResponse(OK, response)
+       then:
+       verifyResponse(OK, response)
+       def diffs = responseBody().diffs
 
-        when: 'get the dataTypes on the main branch Data Model'
-        GET("dataModels/$targetDataModelId/dataTypes", MAP_ARG, true)
+       when: 'Merge the diffs between the branch and main'
+       PUT("$sourceId/mergeInto/$targetId", [
+           patch:
+               [
+                   targetId: targetId,
+                   sourceId: sourceId,
+                   label   : "Functional Test Model",
+                   count   : diffs.size(),
+                   patches : diffs
+               ]
+       ])
 
-        then:
-        verifyResponse(OK, response)
-        responseBody().count == 1
-        responseBody().items[0].modelResourceDomainType == 'CodeSet'
-        responseBody().items[0].modelResourceId == targetCodeSetId
+       then: 'The response is OK'
+       verifyResponse(OK, response)
 
+       when: 'get the dataTypes on the main branch Data Model'
+       GET("dataModels/$targetDataModelId/dataTypes", MAP_ARG, true)
 
-        cleanup:
-        cleanupIds(id, sourceId, targetId)
+       then: 'the Functional Test Model Data Type points to the CodeSet and the Model Data Type pointing externally now points to Terminology 2'
+       verifyResponse(OK, response)
+       responseBody().count == 2
+       def mdt1 = responseBody().items.find {it.label == 'Functional Test Model Data Type' }
+       def mdt2 = responseBody().items.find {it.label == 'Functional Test Model Data Type Pointing Externally' }
+       mdt1.modelResourceDomainType == 'CodeSet'
+       mdt1.modelResourceId == targetCodeSetId
+       mdt2.modelResourceDomainType == 'Terminology'
+       mdt2.modelResourceId == data.externalTerminology2Id
+
+       cleanup:
+       cleanupIds(id, sourceId, targetId)
     }
-
-
 
     void 'MP01 : test model permissions'() {
         given:
@@ -3069,12 +3087,30 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
     void cleanupIds(String... ids) {
         loginEditor()
+
+        // If the 'Other Non-Versioned Folder' exists then delete it
+        // Doing the cleanup here because it is difficult to pass the folder ID
+        // to this method in all circumstances
+        GET("folders", MAP_ARG, true)
+        response.status() == OK
+        def externalFolder = responseBody().items.find {it.label == 'Other Non-Versioned Folder'}
+        if (externalFolder) {
+            DELETE("folders/${externalFolder.id}?permanent=true", MAP_ARG, true)
+            response.status() in [NO_CONTENT, NOT_FOUND]
+        }
+
         ids.each { id ->
             DELETE("$id?permanent=true")
             response.status() in [NO_CONTENT, NOT_FOUND]
         }
+
         cleanUpRoles(ids)
+        if (externalFolder) {
+            cleanUpRoles(externalFolder.id)
+        }
     }
+
+
 
     String getExpectedModelTreeVersionString(Map data) {
         """[
