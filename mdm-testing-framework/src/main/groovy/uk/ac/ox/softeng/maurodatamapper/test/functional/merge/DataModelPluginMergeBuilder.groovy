@@ -133,6 +133,37 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         dataElementId
     }
 
+    String buildCommonAncestorModelDataTypePointingExternally(String dataModelId, String terminologyId) {
+        // Create a DataElement on the DataModel, with the DataElement having a ModelDataType
+        // pointing to a terminology in an external folder
+
+        POST("dataModels/$dataModelId/dataTypes", [
+                label: "Functional Test Model Data Type Pointing Externally",
+                domainType: "ModelDataType",
+                modelResourceDomainType: "Terminology",
+                modelResourceId: terminologyId
+        ])
+        verifyResponse(CREATED, response)
+        String modelDataTypeId = responseBody().id
+
+        GET("dataModels/$dataModelId/path/${URLEncoder.encode('dc:existingClass', Charset.defaultCharset())}")
+        verifyResponse OK, response
+        assert responseBody().id
+        String dataClassId = responseBody().id
+
+        POST("dataModels/$dataModelId/dataClasses/$dataClassId/dataElements", [
+                label: "Functional Test Data Element with Model Data Type Pointing Externally",
+                domainType: "DataElement",
+                dataType: [id: modelDataTypeId],
+                minMultiplicity: 1,
+                maxMultiplicity: 1
+        ])
+        verifyResponse(CREATED, response)
+        String dataElementId = responseBody().id
+
+        dataElementId
+    }
+
     Map modifySourceDataModel(String source, String suffix = '1', String pathing = '') {
         // Modify Source
         Map sourceMap = [
