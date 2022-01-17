@@ -17,10 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.path.Path
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.core.GrailsApplication
@@ -66,7 +68,9 @@ class ModelDataType extends DataType<ModelDataType> {
                 Path otherResourcePath = Path.from(otherResourceModel.folder, otherResourceModel)
                 if (!thisResourcePath.matches(otherResourcePath, thisResourceModel.modelIdentifier)) {
                     diff.
-                    appendString('modelResourcePath', thisResourcePath.toString(), otherResourcePath.toString())
+                    appendString('modelResourcePath',
+                    makeFullyQualifiedPath(thisResourceModel).toString(),
+                    makeFullyQualifiedPath(otherResourceModel).toString())
                 }
             }
         }
@@ -88,6 +92,31 @@ class ModelDataType extends DataType<ModelDataType> {
             metadata {
                 eq 'namespace', metadataNamespace
             }
+        }
+    }
+
+    /**
+     * Make a full qualified path by recursing up through parents. Firstly look at the folder
+     * to which the Model belongs, then any hierarchy of parent folders.
+     * @param model
+     * @return Path of the model, including all parents
+     */
+    static Path makeFullyQualifiedPath(Model model) {
+        List<CreatorAware> nodes = []
+        nodes << model
+
+        if (model.folder) {
+            nodes << model.folder
+            folderParents(nodes, model.folder)
+        }
+
+        return Path.from(nodes.reverse())
+    }
+
+    static folderParents(List<CreatorAware> nodes, Folder folder) {
+        if (folder.parentFolder) {
+            nodes << folder.parentFolder
+            folderParents(nodes, folder.parentFolder)
         }
     }
 }
