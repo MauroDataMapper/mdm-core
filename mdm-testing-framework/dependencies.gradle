@@ -1,7 +1,7 @@
 dependencies {
 
-    implementation project(':mdm-common')
-    implementation project(':mdm-core')
+    compileOnly project(':mdm-common')
+    compileOnly project(':mdm-core')
 
     implementation group: 'org.codehaus.groovy', name: 'groovy'
 

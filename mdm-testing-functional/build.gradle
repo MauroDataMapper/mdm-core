@@ -102,13 +102,13 @@ bootRun {
 
 grails {
     plugins {
-        implementation project(':mdm-core')
-        implementation project(':mdm-plugin-authentication-basic')
-        implementation project(':mdm-plugin-authentication-apikey')
+        //  implementation project(':mdm-core')
+        runtimeOnly project(':mdm-plugin-authentication-basic')
+        runtimeOnly project(':mdm-plugin-authentication-apikey')
         implementation project(':mdm-plugin-datamodel')
         implementation project(':mdm-plugin-terminology')
         implementation project(':mdm-plugin-referencedata')
-        implementation project(':mdm-plugin-federation')
+        runtimeOnly project(':mdm-plugin-federation')
         //        compile project(':mdm-plugin-email-proxy')
         implementation project(':mdm-security')
         implementation project(':mdm-plugin-dataflow')
