@@ -70,7 +70,7 @@ dependencies {
     profile "org.grails.profiles:rest-api-plugin"
     developmentOnly "org.springframework.boot:spring-boot-starter-tomcat"
     runtimeOnly "org.glassfish.web:el-impl:2.2.1-b05"
-    runtimeOnly "com.h2database:h2"
+    integrationTestRuntimeOnly "com.h2database:h2"
     runtimeOnly "org.apache.tomcat:tomcat-jdbc"
     runtimeOnly "javax.xml.bind:jaxb-api:$jaxbApiVersion"
     testImplementation "io.micronaut:micronaut-inject-groovy"
