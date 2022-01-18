@@ -189,24 +189,6 @@ class TerminologyPluginMergeBuilder extends BaseTestMergeBuilder {
         baseTerminology
     }
 
-    String buildExternalTerminology(String folderId, String suffix) {
-        String label = "Functional Test External Terminology ${suffix}"
-
-        GET("folders/$folderId/terminologies")
-        verifyResponse(OK, response)
-        def existing = response.body().items.find {it.label == label}
-        if (existing) {
-            DELETE("terminologies/${existing.id}?permanent=true")
-        }
-        POST("folders/$folderId/terminologies", [
-                label: label
-        ])
-        verifyResponse(CREATED, response)
-        String terminologyId = responseBody().id
-
-        terminologyId
-    }
-
     Map modifySourceTerminology(String source, String pathing = '') {
         // Modify Source
         Map sourceMap = [

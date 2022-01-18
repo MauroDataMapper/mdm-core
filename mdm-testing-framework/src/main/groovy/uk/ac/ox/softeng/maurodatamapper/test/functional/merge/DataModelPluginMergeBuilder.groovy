@@ -133,15 +133,19 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         dataElementId
     }
 
-    String buildCommonAncestorModelDataTypePointingExternally(String dataModelId, String terminologyId) {
+    String buildCommonAncestorModelDataTypePointingExternally(String dataModelId) {
         // Create a DataElement on the DataModel, with the DataElement having a ModelDataType
         // pointing to a terminology in an external folder
+
+        GET("terminologies/path/te:Simple%20Test%20Terminology")
+        verifyResponse(OK, response)
+        String simpleTerminologyId = responseBody().id
 
         POST("dataModels/$dataModelId/dataTypes", [
                 label: "Functional Test Model Data Type Pointing Externally",
                 domainType: "ModelDataType",
                 modelResourceDomainType: "Terminology",
-                modelResourceId: terminologyId
+                modelResourceId: simpleTerminologyId
         ])
         verifyResponse(CREATED, response)
         String modelDataTypeId = responseBody().id

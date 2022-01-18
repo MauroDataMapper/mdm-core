@@ -66,20 +66,11 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         //        POST("$commonAncestorId/metadata", [namespace: 'functional.test', key: 'modifyAndDelete', value: 'some other original value 2'])
         //        verifyResponse CREATED, response3
 
-
-        // Get the Functional Test Folder (which is external to the Versioned Folders being tested) so that we can add two terminologies to it
-        GET("folders")
-        verifyResponse(OK, response)
-        def externalFolder = responseBody().items.find {it.label == 'Functional Test Folder'}
-
-
         String dataModelCa = dataModelPluginMergeBuilder.buildCommonAncestorDataModel(commonAncestorId)
         String terminologyCa = terminologyPluginMergeBuilder.buildCommonAncestorTerminology(commonAncestorId)
         String codeSetCa = terminologyPluginMergeBuilder.buildCommonAncestorCodeSet(commonAncestorId, terminologyCa)
         String modelDataTypeCa = dataModelPluginMergeBuilder.buildCommonAncestorModelDataType(dataModelCa, terminologyCa)
-        String externalTerminology1Id = terminologyPluginMergeBuilder.buildExternalTerminology(externalFolder.id, "1")
-        String externalTerminology2Id = terminologyPluginMergeBuilder.buildExternalTerminology(externalFolder.id, "2")
-        String modelDataTypeCaPointingExternallyId = dataModelPluginMergeBuilder.buildCommonAncestorModelDataTypePointingExternally(dataModelCa, externalTerminology1Id)
+        String modelDataTypeCaPointingExternallyId = dataModelPluginMergeBuilder.buildCommonAncestorModelDataTypePointingExternally(dataModelCa)
 
         // Finalise
         PUT("versionedFolders/$commonAncestorId/finalise", [versionChangeType: 'Major'])
@@ -91,8 +82,6 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
             terminologyCaId : terminologyCa,
             codeSetCaId     : codeSetCa,
             modelDataTypeCaId: modelDataTypeCa,
-            externalTerminology1Id: externalTerminology1Id,
-            externalTerminology2Id: externalTerminology2Id,
             modelDataTypeCaPointingExternallyId: modelDataTypeCaPointingExternallyId
         ]
     }

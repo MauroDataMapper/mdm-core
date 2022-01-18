@@ -1117,6 +1117,13 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         getIdFromPath(branchId, 'te:Functional Test Terminology 1$main')
         getIdFromPath(branchId, 'cs:Functional Test CodeSet 1$main')
 
+        when:
+        GET("terminologies/path/te:Simple%20Test%20Terminology", MAP_ARG, true)
+
+        then:
+        verifyResponse OK, response
+        String simpleTerminologyId = responseBody().id
+
         when: 'getting the Ts inside the branch'
         GET("folders/$branchId/terminologies", MAP_ARG, true)
 
@@ -1151,11 +1158,11 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         mdt.modelResourceDomainType == 'Terminology'
         mdt.modelResourceId == getIdFromPath(branchId, 'te:Functional Test Terminology 1$main')
 
-        and: 'the model data type pointing to the external terminology still points to the same external terminology'
+        and: 'the model data type pointing to the Simple Test Terminology still points to the same Simple Test Terminology'
         mdt2.id == getIdFromPath(branchId, 'dm:Functional Test DataModel 1$main|dt:Functional Test Model Data Type Pointing Externally')
         mdt2.domainType == 'ModelDataType'
         mdt2.modelResourceDomainType == 'Terminology'
-        mdt2.modelResourceId == data.externalTerminology1Id
+        mdt2.modelResourceId == simpleTerminologyId
 
         when: 'getting the CSs inside the branch'
         GET("folders/$branchId/codeSets", MAP_ARG, true)
@@ -2793,6 +2800,21 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
        loginEditor()
        String id = data.commonAncestorId
 
+       when:
+       GET("terminologies/path/te:Simple%20Test%20Terminology", MAP_ARG, true)
+
+       then:
+       verifyResponse OK, response
+       String simpleTerminologyId = responseBody().id
+
+       when:
+       GET("terminologies/path/te:Complex%20Test%20Terminology", MAP_ARG, true)
+
+       then:
+       verifyResponse OK, response
+       String complexTerminologyId = responseBody().id
+
+
        when: 'logged in as editor we create a new main branch of the VF'
        loginEditor()
        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
@@ -2867,7 +2889,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
        verifyResponse(OK, response)
 
        when: 'Update the model data type that was pointing to a terminology in an external folder to point to the other terminology in the external folder'
-       PUT("dataModels/$sourceDataModelId/dataTypes/$externallyPointingModelDataTypeId", [modelResourceDomainType: 'Terminology', modelResourceId: data.externalTerminology2Id], MAP_ARG, true)
+       PUT("dataModels/$sourceDataModelId/dataTypes/$externallyPointingModelDataTypeId", [modelResourceDomainType: 'Terminology', modelResourceId: complexTerminologyId], MAP_ARG, true)
 
        then: 'The response is updated'
        verifyResponse(OK, response)
@@ -2905,7 +2927,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
        mdt1.modelResourceDomainType == 'CodeSet'
        mdt1.modelResourceId == targetCodeSetId
        mdt2.modelResourceDomainType == 'Terminology'
-       mdt2.modelResourceId == data.externalTerminology2Id
+       mdt2.modelResourceId == complexTerminologyId
 
        cleanup:
        cleanupIds(id, sourceId, targetId)
