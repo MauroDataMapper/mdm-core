@@ -96,7 +96,7 @@ class FolderJsonExporterServiceSpec extends BaseFolderExporterServiceSpec<Folder
         folder.addToChildFolders(label: 'Inner Child Folder', createdBy: StandardEmailAddress.INTEGRATION_TEST)
     }
 
-    void 'test export null Folder'() {
+    void 'FE01 : test export null Folder'() {
         when:
         exportFolder(null)
 
@@ -105,12 +105,12 @@ class FolderJsonExporterServiceSpec extends BaseFolderExporterServiceSpec<Folder
         exception.errorCode == NO_FOLDER_IDS_TO_EXPORT_CODE
     }
 
-    void 'test export empty Folder'() {
+    void 'FE02 : test export empty Folder'() {
         expect:
         validateExportedFolder('emptyFolder', exportFolder(folderId))
     }
 
-    void 'test export Folder with description'() {
+    void 'FE03 : test export Folder with description'() {
         when:
         folderService.get(folderId).tap {
             description = 'Test Folder description'
@@ -121,7 +121,7 @@ class FolderJsonExporterServiceSpec extends BaseFolderExporterServiceSpec<Folder
         validateExportedFolder('folderIncDescription', exportFolder(folderId))
     }
 
-    void 'test export Folder with metadata'() {
+    void 'FE04 : test export Folder with metadata'() {
         when:
         Folder folder = folderService.get(folderId)
         metadata.each {
@@ -133,7 +133,7 @@ class FolderJsonExporterServiceSpec extends BaseFolderExporterServiceSpec<Folder
         validateExportedFolder('folderIncMetadata', exportFolder(folderId))
     }
 
-    void 'test export Folder with annotations'() {
+    void 'FE05 : test export Folder with annotations'() {
         when:
         Folder folder = folderService.get(folderId)
         annotations.each {
@@ -145,7 +145,7 @@ class FolderJsonExporterServiceSpec extends BaseFolderExporterServiceSpec<Folder
         validateExportedFolder('folderIncAnnotations', exportFolder(folderId))
     }
 
-    void 'test export Folder with rules'() {
+    void 'FE06 : test export Folder with rules'() {
         when:
         Folder folder = folderService.get(folderId)
         rules.each {
@@ -157,7 +157,7 @@ class FolderJsonExporterServiceSpec extends BaseFolderExporterServiceSpec<Folder
         validateExportedFolder('folderIncRules', exportFolder(folderId))
     }
 
-    void 'test export Folder with child Folders'() {
+    void 'FE07 : test export Folder with child Folders'() {
         when:
         Folder folder = folderService.get(folderId).tap {
             Folder child = new Folder(label: 'Empty Child Folder', createdBy: StandardEmailAddress.INTEGRATION_TEST)
