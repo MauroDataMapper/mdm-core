@@ -131,8 +131,8 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
     }
 
     @Override
-    void deleteAllByModelId(UUID modelId) {
-        List<UUID> termRelationshipTypeIds = TermRelationshipType.byTerminologyId(modelId).id().list() as List<UUID>
+    void deleteAllByModelIds(Set<UUID> modelIds) {
+        List<UUID> termRelationshipTypeIds = TermRelationshipType.byTerminologyIdInList(modelIds).id().list() as List<UUID>
 
         if (termRelationshipTypeIds) {
             // Assume relationships have been removed by this point
@@ -143,8 +143,8 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
 
             log.trace('Removing {} TermRelationshipTypes', termRelationshipTypeIds.size())
             sessionFactory.currentSession
-                .createSQLQuery('DELETE FROM terminology.term_relationship_type WHERE terminology_id = :id')
-                .setParameter('id', modelId)
+                .createSQLQuery('DELETE FROM terminology.term_relationship_type WHERE terminology_id IN :ids')
+                .setParameter('ids', modelIds)
                 .executeUpdate()
 
             log.trace('TermRelationshipTypes removed')

@@ -40,7 +40,7 @@ class SecurableResourceGroupRole implements EditHistoryAware {
 
     static constraints = {
         CallableConstraints.call(CreatorAwareConstraints, delegate)
-        securableResourceId validator: { val, obj ->
+        securableResourceId validator: {val, obj ->
             if (val && obj.userGroup) {
                 if (obj.id) {
                     if (SecurableResourceGroupRole.bySecurableResourceIdAndUserGroupAndNotId(val, obj.userGroup, obj.id).count()) {
@@ -53,8 +53,8 @@ class SecurableResourceGroupRole implements EditHistoryAware {
                 }
             }
         }
-        groupRole validator: { val -> if (val && val.applicationLevelRole) ['invalid.grouprole.cannot.be.application.level.message'] }
-        userGroup validator: { val, obj ->
+        groupRole validator: {val -> if (val && val.applicationLevelRole) ['invalid.grouprole.cannot.be.application.level.message']}
+        userGroup validator: {val, obj ->
             if (val && obj.ident() && obj.isDirty('userGroup')) ['invalid.grouprole.cannot.change.usergroup.message']
         }
     }
@@ -127,6 +127,13 @@ class SecurableResourceGroupRole implements EditHistoryAware {
 
     static DetachedCriteria<SecurableResourceGroupRole> bySecurableResourceIds(List<UUID> securableResourceIds) {
         by().inList('securableResourceId', securableResourceIds)
+    }
+
+    static DetachedCriteria<SecurableResourceGroupRole> bySecurableResourceDomainTypeAndSecurableResourceIdInList(String securableResourceDomainType,
+                                                                                                                  Collection<UUID> securableResourceIds) {
+        by()
+            .eq('securableResourceDomainType', securableResourceDomainType)
+            .inList('securableResourceId', securableResourceIds)
     }
 
     static DetachedCriteria<SecurableResourceGroupRole> bySecurableResourceAndUserGroupId(String securableResourceDomainType,

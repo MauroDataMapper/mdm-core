@@ -42,11 +42,13 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.CodeSetJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.CodeSetJsonImporterService
+import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import org.hibernate.engine.spi.SessionFactoryImplementor
 
 @Slf4j
 @Transactional
@@ -96,11 +98,6 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    void deleteAll(Collection<CodeSet> catalogueItems) {
-        deleteAll(catalogueItems.id, true)
-    }
-
-    @Override
     void delete(CodeSet codeSet) {
         codeSet.deleted = true
     }
@@ -115,16 +112,6 @@ class CodeSetService extends ModelService<CodeSet> {
             }
             codeSet.delete(flush: flush)
         } else delete(codeSet)
-    }
-
-    List<CodeSet> deleteAll(List<Serializable> idsToDelete, Boolean permanent) {
-        List<CodeSet> updated = []
-        idsToDelete.each {
-            CodeSet t = get(it)
-            delete(t, permanent, false)
-            if (!permanent) updated << t
-        }
-        updated
     }
 
     @Override
@@ -143,6 +130,37 @@ class CodeSetService extends ModelService<CodeSet> {
     CodeSet saveModelNewContentOnly(CodeSet model) {
         log.debug('Saving {}({}) without batching', model.label, model.ident())
         save(failOnError: true, validate: false, flush: true, model)
+    }
+
+    @Override
+    void deleteModelsAndContent(Set<UUID> idsToDelete) {
+        GormUtils.disableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
+
+        log.trace('Removing Term relationships to {} CodeSets', idsToDelete.size())
+        sessionFactory.currentSession
+            .createSQLQuery('DELETE FROM terminology.join_codeset_to_term WHERE codeset_id IN :ids')
+            .setParameter('ids', idsToDelete)
+            .executeUpdate()
+
+        log.trace('Removing facets')
+        deleteAllFacetsByMultiFacetAwareIds(idsToDelete.toList(), 'delete from terminology.join_codeset_to_facet where codeset_id in :ids')
+
+        log.trace('Content removed')
+        sessionFactory.currentSession
+            .createSQLQuery('DELETE FROM terminology.code_set WHERE id IN :ids')
+            .setParameter('ids', idsToDelete)
+            .executeUpdate()
+
+        log.trace('CodeSets removed')
+
+        sessionFactory.currentSession
+            .createSQLQuery('DELETE FROM core.breadcrumb_tree WHERE domain_id IN :ids')
+            .setParameter('ids', idsToDelete)
+            .executeUpdate()
+
+        log.trace('Breadcrumb trees removed')
+
+        GormUtils.enableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
     }
 
     @Override
@@ -265,6 +283,8 @@ class CodeSetService extends ModelService<CodeSet> {
 
     CodeSet copyModel(CodeSet original, Folder folderToCopyTo, User copier, boolean copyPermissions, String label, Version copyDocVersion,
                       String branchName, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
+        long start = System.currentTimeMillis()
+        log.debug('Creating a new copy of {} with branch name {}', original.label, branchName)
         CodeSet copy = new CodeSet(author: original.author,
                                    organisation: original.organisation,
                                    finalised: false, deleted: false, documentationVersion: copyDocVersion,
@@ -294,11 +314,11 @@ class CodeSetService extends ModelService<CodeSet> {
 
         copy.trackChanges()
 
-        // Copy all the terms
-        original.terms?.each { term ->
+        List<Term> terms = termService.findAllByCodeSetId(original.id)
+        terms.each { term ->
             copy.addToTerms(term)
         }
-
+        log.debug('Copy of codeset took {}', Utils.timeTaken(start))
         copy
     }
 
@@ -341,12 +361,18 @@ class CodeSetService extends ModelService<CodeSet> {
 
     @Override
     List<CodeSet> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        findAllByClassifier(classifier).findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(CodeSet, it.id)}
+        findAllByClassifier(classifier).findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(CodeSet, it.id) }
     }
 
     @Override
     Class<CodeSet> getModelClass() {
         CodeSet
+    }
+
+    @Override
+    Integer countByContainerId(UUID containerId) {
+        // We do not concern ourselves any other types of containers for CodeSets at this time
+        CodeSet.byFolderId(containerId).count()
     }
 
     @Override

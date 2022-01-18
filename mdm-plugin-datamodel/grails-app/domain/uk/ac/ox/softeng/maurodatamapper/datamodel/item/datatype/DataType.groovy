@@ -161,7 +161,8 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
      */
     @Override
     DataModel getIndexedWithin() {
-        dataModel
+        // Hack around the code, its indexed with the DC but if the DC has no id then the DE will be sorted and idx'd as part of the DC beforeValidate
+        dataModel?.id ? dataModel : null
     }
 
     Set<UUID> getDataElementIds() {
@@ -183,6 +184,10 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
 
     static DetachedCriteria<DataType> byDataModelId(Serializable dataModelId) {
         new DetachedCriteria<DataType>(DataType).eq('dataModel.id', Utils.toUuid(dataModelId))
+    }
+
+    static DetachedCriteria<DataType> byDataModelIdInList(Collection<UUID> dataModelIds) {
+        new DetachedCriteria<DataType>(DataType).inList('dataModel.id', dataModelIds)
     }
 
     static DetachedCriteria<DataType> byDataModelIdIncludingImported(Serializable dataModelId) {

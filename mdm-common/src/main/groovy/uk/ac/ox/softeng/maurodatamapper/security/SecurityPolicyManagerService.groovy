@@ -23,6 +23,8 @@ interface SecurityPolicyManagerService {
 
     UserSecurityPolicyManager removeSecurityForSecurableResource(SecurableResource securableResource, User actor)
 
+    void removeSecurityForSecurableResourceIds(String securableResourceDomainType, Collection<UUID> ids)
+
     UserSecurityPolicyManager updateSecurityForSecurableResource(SecurableResource securableResource, Set<String> changedProperties,
                                                                  User currentUser)
 

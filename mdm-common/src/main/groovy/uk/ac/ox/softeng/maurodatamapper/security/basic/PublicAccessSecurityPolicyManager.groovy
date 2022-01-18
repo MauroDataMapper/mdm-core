@@ -18,16 +18,21 @@
 package uk.ac.ox.softeng.maurodatamapper.security.basic
 
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
+import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import grails.gorm.DetachedCriteria
 
 /**
  * @since 20/11/2019
  */
+@Singleton
 class PublicAccessSecurityPolicyManager extends AbstractBasicSecurityPolicyManager {
 
-    private PublicAccessSecurityPolicyManager() {
-        user = UnloggedUser.instance
+    User user
+
+    @Override
+    User getUser() {
+        user ?: UnloggedUser.instance
     }
 
     @Override
@@ -65,9 +70,5 @@ class PublicAccessSecurityPolicyManager extends AbstractBasicSecurityPolicyManag
     @Override
     boolean isAuthenticated() {
         true
-    }
-
-    static getInstance() {
-        new PublicAccessSecurityPolicyManager()
     }
 }

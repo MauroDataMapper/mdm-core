@@ -269,6 +269,10 @@ class Term implements ModelItem<Term, Terminology> {
         by().eq('terminology.id', terminologyId)
     }
 
+    static DetachedCriteria<Term> byTerminologyIdInList(Collection<UUID> terminologyIds) {
+        by().inList('terminology.id', terminologyIds)
+    }
+
     static DetachedCriteria<Term> byTerminologyIdAndHasChildDepth(UUID terminologyId) {
         byTerminologyId(terminologyId)
             .isNotNull('depth')

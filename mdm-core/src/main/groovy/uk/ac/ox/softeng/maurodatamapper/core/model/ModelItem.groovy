@@ -69,6 +69,7 @@ trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> im
 
     CatalogueItem getIndexedWithin() {
         //no-op
+        null
     }
 
     List<Breadcrumb> getBreadcrumbs() {

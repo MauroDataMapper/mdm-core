@@ -18,12 +18,9 @@
 package uk.ac.ox.softeng.maurodatamapper.security.basic
 
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
-import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 abstract class AbstractBasicSecurityPolicyManager implements UserSecurityPolicyManager {
-
-    User user
 
     abstract boolean userCanWriteSecuredResourceId(Class<? extends SecurableResource> securableResourceClass, UUID id, String action)
 

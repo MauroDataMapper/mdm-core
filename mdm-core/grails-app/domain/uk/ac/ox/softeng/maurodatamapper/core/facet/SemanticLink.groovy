@@ -109,6 +109,10 @@ class SemanticLink implements MultiFacetItemAware {
         by().eq('targetMultiFacetAwareItemId', Utils.toUuid(multiFacetAwareItemId))
     }
 
+    static DetachedCriteria<SemanticLink> byMultiFacetAwareItemIdInList(List<UUID> multiFacetAwareItemIds) {
+        by().inList('multiFacetAwareItemId', multiFacetAwareItemIds)
+    }
+
     static DetachedCriteria<SemanticLink> byAnyMultiFacetAwareItemId(Serializable multiFacetAwareItemId) {
         by().or {
             eq 'multiFacetAwareItemId', Utils.toUuid(multiFacetAwareItemId)

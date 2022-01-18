@@ -156,13 +156,14 @@ class AuthenticatingControllerSpec extends BaseUnitSpec implements ControllerUni
         createdTime.isBefore(end)
     }
 
-    void 'test login already logged in'() {
+    void 'test login already logged in as different user'() {
         given:
         controller.authenticatingService = Mock(AuthenticatingService) {
             1 * isAuthenticatedSession(_) >> true
-            0 * authenticateAndObtainUser(_, null)
+            1 * authenticateAndObtainUser(_, null) >> admin
             0 * registerUserAsLoggedIn(_, _)
             0 * buildUserSecurityPolicyManager(_)
+            1 * getEmailAddressForSession(_) >> editor.emailAddress
         }
 
         when:
@@ -172,6 +173,25 @@ class AuthenticatingControllerSpec extends BaseUnitSpec implements ControllerUni
 
         then:
         response.status == CONFLICT.value()
+    }
+
+    void 'test login already logged in as same user'() {
+        given:
+        controller.authenticatingService = Mock(AuthenticatingService) {
+            1 * isAuthenticatedSession(_) >> true
+            1 * authenticateAndObtainUser(_, null) >> admin
+            1 * registerUserAsLoggedIn(_, _)
+            1 * buildUserSecurityPolicyManager(_)
+            1 * getEmailAddressForSession(_) >> admin.emailAddress
+        }
+
+        when:
+        request.method = 'POST'
+        request.json = [username: admin.emailAddress, password: 'password']
+        controller.login()
+
+        then:
+        response.status == OK.value()
     }
 
     void 'test login non-post request'() {

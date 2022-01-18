@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security.authentication
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.session.SessionController
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.ResourcelessMdmController
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
@@ -76,10 +75,10 @@ class AuthenticatingController implements ResourcelessMdmController {
             return false
         }
 
+       String alreadyLoggedInEmailAddress
         if (authenticatingService.isAuthenticatedSession(session)) {
             log.warn("Login attempt while a user currently logged in")
-            errorResponse(CONFLICT, 'A user is already logged in, logout first')
-            return false
+            alreadyLoggedInEmailAddress = authenticatingService.getEmailAddressForSession(session)
         }
 
         authenticationInformation.session = session
@@ -95,6 +94,10 @@ class AuthenticatingController implements ResourcelessMdmController {
             return unauthorised('Invalid credentials')
         }
 
+        if (alreadyLoggedInEmailAddress && alreadyLoggedInEmailAddress != user.emailAddress) {
+            errorResponse(CONFLICT, 'A user is already logged in, logout first')
+            return false
+        }
         setCurrentUserSecurityPolicyManager(authenticatingService.buildUserSecurityPolicyManager(user))
 
         authenticatingService.registerUserAsLoggedIn(user, session)

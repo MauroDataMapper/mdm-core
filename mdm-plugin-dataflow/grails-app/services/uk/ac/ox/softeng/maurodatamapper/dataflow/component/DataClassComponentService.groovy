@@ -98,13 +98,14 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
         }
     }
 
-    void deleteAllByModelId(UUID modelId) {
+    @Override
+    void deleteAllByModelIds(Set<UUID> modelIds) {
 
         List<UUID> dataClassComponentIds = DataClassComponent.by().where {
             dataFlow {
                 or {
-                    eq 'source.id', modelId
-                    eq 'target.id', modelId
+                    inList 'source.id', modelIds
+                    inList 'target.id', modelIds
                 }
             }
         }.id().list() as List<UUID>
@@ -112,7 +113,7 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
         if (dataClassComponentIds) {
 
             log.trace('Removing DataElementComponents in {} DataClassComponents', dataClassComponentIds.size())
-            dataElementComponentService.deleteAllByModelId(modelId)
+            dataElementComponentService.deleteAllByModelIds(modelIds)
 
             log.trace('Removing links to DataClasses in {} DataClassComponents', dataClassComponentIds.size())
             sessionFactory.currentSession

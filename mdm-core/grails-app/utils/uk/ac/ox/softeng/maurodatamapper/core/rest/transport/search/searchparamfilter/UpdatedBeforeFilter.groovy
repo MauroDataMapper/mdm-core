@@ -28,7 +28,7 @@ class UpdatedBeforeFilter extends DateTimeSearchParamFilter {
 
     Closure getClosure(SearchParams searchParams) {
         HibernateSearch.defineAdditionalLuceneQuery {
-            below 'lastUpdated', getOffsetDateTimeFromDate(searchParams.lastUpdatedBefore.toInstant())
+            below 'lastUpdated', getOffsetDateTimeFromDate(searchParams.lastUpdatedBefore)
         }
     }
 }

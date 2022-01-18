@@ -149,7 +149,7 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
         }
         // If datatype is newly created with dataelement and the datamodel is not new
         // If the DM is new then DT validation will happen at the DM level
-        if (dataType && !dataType.ident() && getModel().id) {
+        if (dataType && !dataType.ident() && getModel().id && !dataType.shouldSkipValidation()) {
             dataType.dataModel = model
             dataType.createdBy = createdBy
             dataType.beforeValidate()
@@ -192,7 +192,8 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
      */
     @Override
     DataClass getIndexedWithin() {
-        dataClass
+        // Hack around the code, its indexed with the DC but if the DC has no id then the DE will be sorted and idx'd as part of the DC beforeValidate
+        dataClass?.id ? dataClass : null
     }
 
     ObjectDiff<DataElement> diff(DataElement otherDataElement, String context) {

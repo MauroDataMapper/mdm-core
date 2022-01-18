@@ -119,21 +119,28 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
 
     @Override
     UserSecurityPolicyManager removeSecurityForSecurableResource(SecurableResource securableResource, User currentUser) {
-        log.info('Removing security for {}:{}', securableResource.domainType, securableResource.resourceId)
+        removeSecurityForSecurableResourceIds(securableResource.domainType, Collections.singleton(securableResource.resourceId))
+        retrieveUserSecurityPolicyManager(currentUser)
+    }
 
+    @Override
+    void removeSecurityForSecurableResourceIds(String securableResourceDomainType, Collection<UUID> ids) {
+        log.info('Removing security for {} >> {}', securableResourceDomainType, ids)
+        // Remove stored data first incase someone logs in while this is happening
+        securableResourceGroupRoleService.deleteAllBySecurableResourceDomainTypeAndIds(securableResourceDomainType, ids)
         GrailsCache cache = getSecurityPolicyManagerCache()
         Collection<Object> keys = cache.getAllKeys()
         keys.each {key ->
             GroupBasedUserSecurityPolicyManager securityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
             securityPolicyManager.lock()
-            UserSecurityPolicy updatedPolicy = userSecurityPolicyService.updatePolicyToRemoveSecurableResource(securityPolicyManager.userPolicy,
-                                                                                                               securableResource)
+            UserSecurityPolicy updatedPolicy = securityPolicyManager.userPolicy
+            ids.each {id ->
+                updatedPolicy = userSecurityPolicyService.updatePolicyToRemoveSecurableResource(updatedPolicy,
+                                                                                                securableResourceDomainType,
+                                                                                                id)
+            }
             storeUserSecurityPolicyManager(securityPolicyManager.withUpdatedUserPolicy(updatedPolicy))
         }
-
-        securableResourceGroupRoleService.deleteAllForSecurableResource(securableResource)
-
-        retrieveUserSecurityPolicyManager(currentUser)
     }
 
     @Override

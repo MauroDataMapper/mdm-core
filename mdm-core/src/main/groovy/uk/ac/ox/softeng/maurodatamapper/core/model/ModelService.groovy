@@ -42,7 +42,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
-import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
@@ -134,6 +133,8 @@ abstract class ModelService<K extends Model>
 
     abstract String getUrlResourceName()
 
+    abstract Integer countByContainerId(UUID containerId)
+
     abstract List<K> findAllByContainerId(UUID containerId)
 
     abstract void deleteAllInContainer(Container container)
@@ -187,7 +188,11 @@ abstract class ModelService<K extends Model>
     abstract ExporterProviderService getJsonModelExporterProviderService()
 
     void deleteModelAndContent(K model) {
-        throw new ApiNotYetImplementedException('MSXX', 'deleteModelAndContent')
+        deleteModelsAndContent(Collections.singleton(model.id))
+    }
+
+    void deleteModelsAndContent(Set<UUID> idsToDelete) {
+        throw new ApiNotYetImplementedException('MSXX', 'deleteModelsAndContent')
     }
 
     Set<DomainService> getDomainServices() {
@@ -215,6 +220,35 @@ abstract class ModelService<K extends Model>
     K undoSoftDeleteModel(K model) {
         model?.deleted = false
         model
+    }
+
+    @Override
+    void deleteAll(Collection<K> models) {
+        deleteAll(models.id, true)
+    }
+
+    List<K> deleteAll(List<Serializable> idsToDelete, Boolean permanent) {
+        if (!permanent) {
+            List<K> updated = idsToDelete.collect {
+                K dm = get(it)
+                delete(dm, permanent, false)
+                dm
+            }
+            return updated
+        }
+
+        Set<UUID> ids = idsToDelete.collect {Utils.toUuid(it)}.toSet()
+        if (!ids) return []
+
+        // Batch deletion
+        if (securityPolicyManagerService) {
+            securityPolicyManagerService.removeSecurityForSecurableResourceIds(getDomainClass().simpleName, ids)
+        }
+        long start = System.currentTimeMillis()
+        log.debug('Deleting {} {} Models', ids.size(), getDomainClass().simpleName)
+        deleteModelsAndContent(ids)
+        log.debug('Models deleted. Took {}', Utils.timeTaken(start))
+        []
     }
 
     List<K> findAllByDataLoaderPlugin(DataLoaderProviderService dataLoaderProviderService, Map pagination = [:]) {
@@ -742,7 +776,7 @@ abstract class ModelService<K extends Model>
         // List all matching models and sort descending my model version. The first result is the latest version.
         // To get the first result, use [0] rather than .first(), because even with a safe navigation operator,
         // ?.first() throws a NoSuchElementException on an empty collection
-        modelClass.byLabelAndBranchNameAndFinalised(label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).list().sort{
+        modelClass.byLabelAndBranchNameAndFinalised(label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).list().sort {
             a, b -> b.modelVersion <=> a.modelVersion
         }[0] as K
     }

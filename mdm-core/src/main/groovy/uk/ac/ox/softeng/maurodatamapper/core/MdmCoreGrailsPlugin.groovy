@@ -39,6 +39,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.markup.view.MarkupViewTemplateEngin
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.render.MdmCsvApiPropertyCollectionRenderer
 import uk.ac.ox.softeng.maurodatamapper.core.rest.render.MdmCsvApiPropertyRenderer
+import uk.ac.ox.softeng.maurodatamapper.core.security.basic.DelegatingSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.mapper.orm.mapping.MdmHibernateSearchMappingConfigurer
 import uk.ac.ox.softeng.maurodatamapper.provider.plugin.MauroDataMapperPlugin
 import uk.ac.ox.softeng.maurodatamapper.security.basic.NoAccessSecurityPolicyManager
@@ -138,7 +139,7 @@ This is basically the backend API.
                 log.warn('Running in public access mode. All actions will be available to any user')
             }
             Class defaultUspmClass = publicAccess ? PublicAccessSecurityPolicyManager : NoAccessSecurityPolicyManager
-            "${DEFAULT_USER_SECURITY_POLICY_MANAGER_BEAN_NAME}"(defaultUspmClass)
+            "${DEFAULT_USER_SECURITY_POLICY_MANAGER_BEAN_NAME}"(DelegatingSecurityPolicyManager, defaultUspmClass)
 
             /*
              * Define the mapping context beans

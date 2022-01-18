@@ -373,6 +373,10 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         folderService.save(args, folder) as VersionedFolder
     }
 
+    VersionedFolder saveFolderHierarchy(Folder folder) {
+        folderService.saveFolderHierarchy([:], folder) as VersionedFolder
+    }
+
     /**
      * Find all resources by the defined user security policy manager. If none provided then assume no security policy in place in which case
      * everything is public.
@@ -1000,6 +1004,10 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
                 .mappedForm as PropertyConfig
             return propertyConfig.joinTable
         } else super.getJoinTable(persistentEntity, facetProperty)
+    }
+
+    VersionedFolder validate(VersionedFolder folder) {
+        folderService.validate(folder) as VersionedFolder
     }
 
     private Map<String, Object> findModelInformationForModelItemMergePatch(VersionedFolder targetVersionedFolder, Path relativePathToMergeTo,

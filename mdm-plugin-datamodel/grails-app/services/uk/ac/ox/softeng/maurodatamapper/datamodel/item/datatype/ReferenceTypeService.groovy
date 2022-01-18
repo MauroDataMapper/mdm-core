@@ -81,11 +81,12 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> implements Su
         dataType.delete(flush: flush)
     }
 
-    void deleteAllByModelId(UUID dataModelId) {
+    @Override
+    void deleteAllByModelIds(Set<UUID> dataModelIds) {
         List<UUID> referenceTypeIds = ReferenceType.by()
             .where {
                 referenceClass {
-                    eq('dataModel.id', dataModelId)
+                    inList('dataModel.id', dataModelIds)
                 }
             }.id().list() as List<UUID>
 

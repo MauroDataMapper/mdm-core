@@ -180,16 +180,21 @@ class UserSecurityPolicy {
         Map<UUID, List<VirtualSecurableResourceGroupRole>> grouped = virtualSecurableResourceGroupRoles.groupBy {it.domainId}
         grouped.each {id, roles ->
             this.@virtualSecurableResourceGroupRoles.merge(id,
-                                                          new TreeSet<VirtualSecurableResourceGroupRole>(roles.toSet()),
-                                                          {existing, addtl ->
-                                                              existing + addtl
-                                                          })
+                                                           new TreeSet<VirtualSecurableResourceGroupRole>(roles.toSet()),
+                                                           {existing, addtl ->
+                                                               existing + addtl
+                                                           })
         }
         this
     }
 
     UserSecurityPolicy removeVirtualRolesForSecurableResource(SecurableResource securableResource) {
-        this.virtualSecurableResourceGroupRoles.remove(securableResource.resourceId)
+        removeVirtualRolesForSecurableResource(securableResource.resourceId)
+    }
+
+
+    UserSecurityPolicy removeVirtualRolesForSecurableResource(UUID securableResourceId) {
+        this.virtualSecurableResourceGroupRoles.remove(securableResourceId)
         this
     }
 
@@ -197,9 +202,9 @@ class UserSecurityPolicy {
         Map<UUID, List<VirtualSecurableResourceGroupRole>> grouped = allRolesToBeRemoved.groupBy {it.domainId}
         grouped.each {id, idRolesToBeRemoved ->
             this.@virtualSecurableResourceGroupRoles.computeIfPresent(id,
-                                                                     {k, existing ->
-                                                                         existing.removeAll(idRolesToBeRemoved)
-                                                                         existing
+                                                                      {k, existing ->
+                                                                          existing.removeAll(idRolesToBeRemoved)
+                                                                          existing
                                                                      })
         }
         this

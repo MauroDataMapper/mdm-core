@@ -93,14 +93,15 @@ class DataFlowService extends ModelItemService<DataFlow> {
         }
     }
 
-    void deleteAllByModelId(UUID modelId) {
+    @Override
+    void deleteAllByModelIds(Set<UUID> modelIds) {
 
-        List<UUID> dataFlowIds = DataFlow.byDataModelId(modelId).id().list() as List<UUID>
+        List<UUID> dataFlowIds = DataFlow.byDataModelIdInList(modelIds).id().list() as List<UUID>
 
         if (dataFlowIds) {
 
             log.trace('Removing DataClassComponent in {} DataFlows', dataFlowIds.size())
-            dataClassComponentService.deleteAllByModelId(modelId)
+            dataClassComponentService.deleteAllByModelIds(modelIds)
 
             log.trace('Removing facets for {} DataFlows', dataFlowIds.size())
             deleteAllFacetsByMultiFacetAwareIds(dataFlowIds,
@@ -108,8 +109,8 @@ class DataFlowService extends ModelItemService<DataFlow> {
 
             log.trace('Removing {} DataFlows', dataFlowIds.size())
             sessionFactory.currentSession
-                .createSQLQuery('DELETE FROM dataflow.data_flow WHERE source_id = :id OR target_id = :id')
-                .setParameter('id', modelId)
+                .createSQLQuery('DELETE FROM dataflow.data_flow WHERE source_id in :id OR target_id in :ids')
+                .setParameter('ids', modelIds)
                 .executeUpdate()
 
             log.trace('DataFlows removed')

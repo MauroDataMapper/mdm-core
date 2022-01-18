@@ -133,13 +133,17 @@ class UserSecurityPolicyService {
     }
 
     UserSecurityPolicy updatePolicyToRemoveSecurableResource(UserSecurityPolicy userSecurityPolicy, SecurableResource securableResource) {
+        updatePolicyToRemoveSecurableResource(userSecurityPolicy, securableResource.domainType, securableResource.resourceId)
+    }
+
+    UserSecurityPolicy updatePolicyToRemoveSecurableResource(UserSecurityPolicy userSecurityPolicy, String securableResourceDomainType, UUID securableResourceId) {
         if (!userSecurityPolicy.isLocked()) throw new ApiInternalException('GBSPMS', 'Cannot update on an unlocked UserPolicy')
         log.debug('Updating UserSecurityPolicy to remove SecurableResource')
         userSecurityPolicy.removeAssignedRoleIf {securableResourceGroupRole ->
-            securableResourceGroupRole.securableResourceId == securableResource.resourceId &&
-            securableResourceGroupRole.securableResourceDomainType == securableResource.domainType
+            securableResourceGroupRole.securableResourceId == securableResourceId &&
+            securableResourceGroupRole.securableResourceDomainType == securableResourceDomainType
         }
-        userSecurityPolicy.removeVirtualRolesForSecurableResource(securableResource)
+        userSecurityPolicy.removeVirtualRolesForSecurableResource(securableResourceId)
     }
 
     UserSecurityPolicy updatePolicyForAccessToModel(UserSecurityPolicy userSecurityPolicy, Model model,

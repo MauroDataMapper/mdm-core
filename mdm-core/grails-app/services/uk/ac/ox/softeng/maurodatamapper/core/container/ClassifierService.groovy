@@ -263,19 +263,25 @@ class ClassifierService extends ContainerService<Classifier> {
     }
 
     List<Classifier> findAllByCatalogueItemId(UserSecurityPolicyManager userSecurityPolicyManager, UUID catalogueItemId, Map pagination = [:]) {
-        CatalogueItem catalogueItem
+        CatalogueItem catalogueItem = null
 
         for (CatalogueItemService service : catalogueItemServices) {
             if (catalogueItem) break
             catalogueItem = service.findByIdJoinClassifiers(catalogueItemId)
         }
+        findAllByCatalogueItem(userSecurityPolicyManager, catalogueItem, pagination)
+    }
 
+    List<Classifier> findAllByCatalogueItem(UserSecurityPolicyManager userSecurityPolicyManager, CatalogueItem catalogueItem, Map pagination = [:]) {
+        new PaginatedResultList(findAllReadableByCatalogueItem(userSecurityPolicyManager, catalogueItem), pagination)
+    }
+
+    List<Classifier> findAllReadableByCatalogueItem(UserSecurityPolicyManager userSecurityPolicyManager, CatalogueItem catalogueItem) {
         if (!catalogueItem || !catalogueItem.classifiers) return []
-
         // Filter out all the classifiers which the user can't read
-        Collection<Classifier> allClassifiersInItem = catalogueItem.classifiers
+        Set<Classifier> allClassifiersInItem = catalogueItem.classifiers
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Classifier)
-        new PaginatedResultList(allClassifiersInItem.findAll { it.id in readableIds }.toList(), pagination)
+        allClassifiersInItem.findAll { it.id in readableIds }.toList()
     }
 
     List<Classifier> findAllByParentClassifierId(UUID parentClassifierId, Map pagination = [:]) {

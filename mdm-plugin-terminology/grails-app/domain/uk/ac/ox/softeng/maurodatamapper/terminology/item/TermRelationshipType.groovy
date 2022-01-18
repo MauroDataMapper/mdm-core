@@ -166,6 +166,10 @@ class TermRelationshipType implements ModelItem<TermRelationshipType, Terminolog
         by().eq('terminology.id', terminologyId)
     }
 
+    static DetachedCriteria<TermRelationshipType> byTerminologyIdInList(Collection<UUID> terminologyIds) {
+        by().inList('terminology.id', terminologyIds)
+    }
+
     static DetachedCriteria<TermRelationshipType> byTerminologyIdAndLabelIlikeOrDescriptionIlike(UUID terminologyId, String searchTerm) {
         byTerminologyId(terminologyId).or {
             ilike('label', "%${searchTerm}%")

@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelItemTreeItem
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -98,12 +99,12 @@ class TermService extends ModelItemService<Term> {
     }
 
     @Override
-    void deleteAllByModelId(UUID modelId) {
-        List<UUID> termIds = Term.byTerminologyId(modelId).id().list() as List<UUID>
+    void deleteAllByModelIds(Set<UUID> modelIds) {
+        List<UUID> termIds = Term.byTerminologyIdInList(modelIds).id().list() as List<UUID>
 
         if (termIds) {
             log.trace('Removing TermRelationships in {} Terms', termIds.size())
-            termRelationshipService.deleteAllByModelId(modelId)
+            termRelationshipService.deleteAllByModelIds(modelIds)
 
             log.trace('Removing CodeSet references for {} Terms', termIds.size())
             sessionFactory.currentSession
@@ -117,8 +118,8 @@ class TermService extends ModelItemService<Term> {
 
             log.trace('Removing {} Terms', termIds.size())
             sessionFactory.currentSession
-                .createSQLQuery('DELETE FROM terminology.term WHERE terminology_id = :id')
-                .setParameter('id', modelId)
+                .createSQLQuery('DELETE FROM terminology.term WHERE terminology_id IN :ids')
+                .setParameter('ids', modelIds)
                 .executeUpdate()
 
             log.trace('Terms removed')
@@ -221,18 +222,19 @@ class TermService extends ModelItemService<Term> {
         copy
     }
 
-    Term copyTerm(Terminology copiedTerminology, Term original, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
-        Term copy = copyTerm(original, copier, userSecurityPolicyManager)
+    Term copyTerm(Terminology copiedTerminology, Term original, User copier, UserSecurityPolicyManager userSecurityPolicyManager,
+                  CopyInformation copyInformation = null) {
+        Term copy = copyTerm(original, copier, userSecurityPolicyManager, copyInformation)
         copiedTerminology.addToTerms(copy)
         copy
     }
 
-    Term copyTerm(Term original, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
+    Term copyTerm(Term original, User copier, UserSecurityPolicyManager userSecurityPolicyManager, CopyInformation copyInformation = null) {
         if (!original) throw new ApiInternalException('DCSXX', 'Cannot copy non-existent Term')
         Term copy = new Term(createdBy: copier.emailAddress, code: original.code, definition: original.definition, url: original.url,
                              isParent: original.isParent,
                              depth: original.depth)
-        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
+        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
         copy
     }
