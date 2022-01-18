@@ -369,12 +369,18 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             PathNode originalModelResourceVersionedFolderPathNode = fullContextOriginalModelResourcePath.find { it.prefix == 'vf' }
             PathNode originalDataModelVersionedFolderPathNode = fullContextOriginalDataModelPath.find { it.prefix == 'vf' }
 
+
             if (originalModelResourceVersionedFolderPathNode && originalModelResourceVersionedFolderPathNode == originalDataModelVersionedFolderPathNode) {
                 log.debug('Original model resource is inside the same context path as data model for modelDataType [{}]', mdt)
 
                 // Construct a path from the prefix and label of the model pointed to originally, but with the branch name now used,
                 // to get the copy of the model in the copied folder
-                CreatorAware replacementModelResource = pathService.findResourceByPathFromRootResource(copiedDataModel.folder, Path.from(copiedDataModel.branchName, originalModelResource))
+                // Note: Using a method in PathService which does not check security on the securable resource owning the model
+                CreatorAware replacementModelResource = pathService.findResourceByPath(Path.from(copiedDataModel.branchName, originalModelResource))
+
+                if (!replacementModelResource) {
+                    throw new ApiInternalException('DMSXX', "Could not find branched model resource ${originalModelResource.label} in branch ${copiedDataModel.branchName}")
+                }
 
                 // Update the model data type to point to the copy of the model
                 mdt.modelResourceId = replacementModelResource.id
