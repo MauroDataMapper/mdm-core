@@ -43,9 +43,9 @@ class FolderJsonImporterServiceSpec extends BaseFolderImporterServiceSpec {
         'json'
     }
 
-    // TODO: Test import null Folder
+    // TODO: FI01 : Test import null Folder
 
-    void 'test import invalid Folder'() {
+    void 'FI02 : test import invalid Folder'() {
         when: 'given empty content'
         importFolder(''.bytes)
 
@@ -61,7 +61,7 @@ class FolderJsonImporterServiceSpec extends BaseFolderImporterServiceSpec {
         exception.errorCode == CANNOT_IMPORT_JSON_CODE
     }
 
-    void 'test import Folder'() {
+    void 'FI03 : test import Folder'() {
         when:
         Folder folder = importFolder('emptyFolder')
 
@@ -74,7 +74,7 @@ class FolderJsonImporterServiceSpec extends BaseFolderImporterServiceSpec {
         }
     }
 
-    void 'test import empty Folder'() {
+    void 'FI04 : test import empty Folder'() {
         when:
         Folder folder = importFolder('emptyFolder')
 
@@ -83,12 +83,12 @@ class FolderJsonImporterServiceSpec extends BaseFolderImporterServiceSpec {
         !folderService.findAllModelsInFolder(folder)
     }
 
-    void 'test import Folder with description'() {
+    void 'FI05 : test import Folder with description'() {
         expect:
         importFolder('folderIncDescription').description == 'Test Folder description'
     }
 
-    void 'test import Folder with metadata'() {
+    void 'FI06 : test import Folder with metadata'() {
         when:
         Folder folder = importFolder('folderIncMetadata')
 
@@ -101,7 +101,7 @@ class FolderJsonImporterServiceSpec extends BaseFolderImporterServiceSpec {
         }
     }
 
-    void 'test import Folder with annotations'() {
+    void 'FI07 : test import Folder with annotations'() {
         when:
         Folder folder = importFolder('folderIncAnnotations')
 
@@ -114,7 +114,7 @@ class FolderJsonImporterServiceSpec extends BaseFolderImporterServiceSpec {
         }
     }
 
-    void 'test import Folder with rules'() {
+    void 'FI08 : test import Folder with rules'() {
         when:
         Folder folder = importFolder('folderIncRules')
 
@@ -127,7 +127,7 @@ class FolderJsonImporterServiceSpec extends BaseFolderImporterServiceSpec {
         }
     }
 
-    void 'test import Folder with child Folders'() {
+    void 'FI09 : test import Folder with child Folders'() {
         when:
         Folder folder = importFolder('folderIncEmptyChildFolder')
 
