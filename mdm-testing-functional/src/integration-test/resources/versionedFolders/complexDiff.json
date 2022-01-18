@@ -2,7 +2,7 @@
   "leftId": "${json-unit.matches:id}",
   "rightId": "${json-unit.matches:id}",
   "label": "Functional Test VersionedFolder Complex",
-  "count": 64,
+  "count": 66,
   "diffs": [
     {
       "description": {
@@ -696,7 +696,7 @@
             "leftId": "${json-unit.matches:id}",
             "rightId": "${json-unit.matches:id}",
             "label": "Functional Test DataModel 1",
-            "count": 22,
+            "count": 24,
             "diffs": [
               {
                 "description": {
@@ -775,6 +775,68 @@
                           }
                         ]
                       }
+                    }
+                  ],
+                  "modified": [
+                    {
+                      "leftId": "${json-unit.matches:id}",
+                      "rightId": "${json-unit.matches:id}",
+                      "label": "Functional Test Model Data Type",
+                      "leftBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "rightBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "count": 1,
+                      "diffs": [
+                        {
+                          "modelResourcePath": {
+                            "left": "vf:Functional Test VersionedFolder Complex$source|cs:Functional Test CodeSet 1$source",
+                            "right": "vf:Functional Test VersionedFolder Complex$main|te:Functional Test Terminology 1$main"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "leftId": "${json-unit.matches:id}",
+                      "rightId": "${json-unit.matches:id}",
+                      "label": "Functional Test Model Data Type Pointing Externally",
+                      "leftBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "rightBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "count": 1,
+                      "diffs": [
+                        {
+                          "modelResourcePath": {
+                            "left": "fo:Parent Functional Test Folder|fo:Functional Test Folder|te:Complex Test Terminology$main",
+                            "right": "fo:Parent Functional Test Folder|fo:Functional Test Folder|te:Simple Test Terminology$main"
+                          }
+                        }
+                      ]
                     }
                   ]
                 }

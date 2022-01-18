@@ -3,7 +3,7 @@
   "targetId": "${json-unit.matches:id}",
   "path": "vf:Functional Test VersionedFolder With Sub Folders$source",
   "label": "Functional Test VersionedFolder With Sub Folders",
-  "count": 82,
+  "count": 86,
   "diffs": [
     {
       "fieldName": "description",
@@ -109,6 +109,15 @@
       "isMergeConflict": false,
       "isSourceModificationAndTargetDeletion": false,
       "type": "creation"
+    },
+    {
+      "fieldName": "modelResourcePath",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder 2 in VersionedFolder|dm:Functional Test DataModel 2$source|dt:Functional Test Model Data Type Pointing Externally@modelResourcePath",
+      "sourceValue": "fo:Parent Functional Test Folder|fo:Functional Test Folder|te:Complex Test Terminology$main",
+      "targetValue": "fo:Parent Functional Test Folder|fo:Functional Test Folder|te:Simple Test Terminology$main",
+      "commonAncestorValue": "fo:Parent Functional Test Folder|fo:Functional Test Folder|te:Simple Test Terminology$main",
+      "isMergeConflict": false,
+      "type": "modification"
     },
     {
       "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder 2 in VersionedFolder|dm:Functional Test DataModel 2$source|md:functional.test.addToSourceOnly",
@@ -295,6 +304,15 @@
       "isMergeConflict": false,
       "isSourceModificationAndTargetDeletion": false,
       "type": "creation"
+    },
+    {
+      "fieldName": "modelResourcePath",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|dm:Functional Test DataModel 3$source|dt:Functional Test Model Data Type Pointing Externally@modelResourcePath",
+      "sourceValue": "fo:Parent Functional Test Folder|fo:Functional Test Folder|te:Complex Test Terminology$main",
+      "targetValue": "fo:Parent Functional Test Folder|fo:Functional Test Folder|te:Simple Test Terminology$main",
+      "commonAncestorValue": "fo:Parent Functional Test Folder|fo:Functional Test Folder|te:Simple Test Terminology$main",
+      "isMergeConflict": false,
+      "type": "modification"
     },
     {
       "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|dm:Functional Test DataModel 3$source|md:functional.test.addToSourceOnly",
@@ -547,6 +565,24 @@
       "isMergeConflict": false,
       "isSourceModificationAndTargetDeletion": false,
       "type": "creation"
+    },
+    {
+      "fieldName": "modelResourcePath",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|dm:Functional Test DataModel 1$source|dt:Functional Test Model Data Type@modelResourcePath",
+      "sourceValue": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|cs:Functional Test CodeSet 1$source",
+      "targetValue": "vf:Functional Test VersionedFolder With Sub Folders$1.0.0|fo:Sub Folder in VersionedFolder|te:Functional Test Terminology 1$1.0.0",
+      "commonAncestorValue": "vf:Functional Test VersionedFolder With Sub Folders$1.0.0|fo:Sub Folder in VersionedFolder|te:Functional Test Terminology 1$1.0.0",
+      "isMergeConflict": false,
+      "type": "modification"
+    },
+    {
+      "fieldName": "modelResourcePath",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|dm:Functional Test DataModel 1$source|dt:Functional Test Model Data Type Pointing Externally@modelResourcePath",
+      "sourceValue": "fo:Parent Functional Test Folder|fo:Functional Test Folder|te:Complex Test Terminology$main",
+      "targetValue": "fo:Parent Functional Test Folder|fo:Functional Test Folder|te:Simple Test Terminology$main",
+      "commonAncestorValue": "fo:Parent Functional Test Folder|fo:Functional Test Folder|te:Simple Test Terminology$main",
+      "isMergeConflict": false,
+      "type": "modification"
     },
     {
       "path": "vf:Functional Test VersionedFolder With Sub Folders$source|dm:Functional Test DataModel 1$source|md:functional.test.addToSourceOnly",

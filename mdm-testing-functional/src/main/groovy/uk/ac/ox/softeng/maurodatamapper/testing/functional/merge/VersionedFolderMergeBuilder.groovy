@@ -69,8 +69,7 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         String dataModelCa = dataModelPluginMergeBuilder.buildCommonAncestorDataModel(commonAncestorId)
         String terminologyCa = terminologyPluginMergeBuilder.buildCommonAncestorTerminology(commonAncestorId)
         String codeSetCa = terminologyPluginMergeBuilder.buildCommonAncestorCodeSet(commonAncestorId, terminologyCa)
-        String modelDataTypeCa = dataModelPluginMergeBuilder.buildCommonAncestorModelDataType(dataModelCa, terminologyCa)
-        String modelDataTypeCaPointingExternallyId = dataModelPluginMergeBuilder.buildCommonAncestorModelDataTypePointingExternally(dataModelCa)
+        dataModelPluginMergeBuilder.buildCommonAncestorModelDataType(dataModelCa, terminologyCa)
 
         // Finalise
         PUT("versionedFolders/$commonAncestorId/finalise", [versionChangeType: 'Major'])
@@ -80,9 +79,7 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
             commonAncestorId: commonAncestorId,
             dataModelCaId   : dataModelCa,
             terminologyCaId : terminologyCa,
-            codeSetCaId     : codeSetCa,
-            modelDataTypeCaId: modelDataTypeCa,
-            modelDataTypeCaPointingExternallyId: modelDataTypeCaPointingExternallyId
+            codeSetCaId     : codeSetCa
         ]
     }
 
@@ -114,6 +111,9 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         String codeSetCa = terminologyPluginMergeBuilder.buildCommonAncestorCodeSet(subSubFolderId, terminologyCa)
         String dataModel2Id = dataModelPluginMergeBuilder.buildCommonAncestorDataModel(subFolder2Id, '2')
         String dataModel3Id = dataModelPluginMergeBuilder.buildCommonAncestorDataModel(subSubFolderId, '3')
+        dataModelPluginMergeBuilder.buildCommonAncestorModelDataType(dataModelCaId, terminologyCa)
+        dataModelPluginMergeBuilder.buildCommonAncestorModelDataType(dataModel2Id, terminologyCa)
+        dataModelPluginMergeBuilder.buildCommonAncestorModelDataType(dataModel3Id, terminologyCa)
 
         // Finalise
         PUT("versionedFolders/$commonAncestorId/finalise", [versionChangeType: 'Major'])
@@ -125,7 +125,7 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
             terminologyCaId : terminologyCa,
             codeSetCaId     : codeSetCa,
             dataModel2Id    : dataModel2Id,
-            dataModel3Id    : dataModel3Id,
+            dataModel3Id    : dataModel3Id
         ]
     }
 
@@ -224,6 +224,11 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
 
         //       sourceMap.dataModel4 = dataModelPluginMergeBuilder.buildCommonAncestorDataModel(sourceMap.newSubSubFolder2Id.toString(),'4')
 
+        // Point the Model Data Type in the source to point at the Code Set rather than Terminology
+        PUT("dataModels/$sourceMap.dataModel1.dataModelId/dataTypes/$sourceMap.dataModel1.modelDataTypeId", [
+                modelResourceDomainType: 'CodeSet', modelResourceId: sourceMap.codeSet.codeSetId
+        ])
+        verifyResponse OK, response
         logout()
 
 
@@ -271,6 +276,12 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         PUT("versionedFolders/$source", [description: 'source description on the versioned folder'])
         verifyResponse OK, response
         PUT("versionedFolders/$target", [description: 'Target modified description'])
+        verifyResponse OK, response
+
+        // Point the Model Data Type in the source to point at the Code Set rather than Terminology
+        PUT("dataModels/$sourceMap.dataModel.dataModelId/dataTypes/$sourceMap.dataModel.modelDataTypeId", [
+                modelResourceDomainType: 'CodeSet', modelResourceId: sourceMap.codeSet.codeSetId
+        ])
         verifyResponse OK, response
 
 

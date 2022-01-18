@@ -2424,9 +2424,16 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     void 'MI07 : test merge into of two complex versioned folders'() {
         given:
         TestMergeData mergeData = builder.buildComplexModelsForMerging()
+        loginReader()
+
+        when: 'Get the Complex Test Terminology ID for checking later'
+        GET("terminologies/path/te:Complex%20Test%20Terminology", MAP_ARG, true)
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+        String complexTerminologyId = responseBody().id
 
         when:
-        loginReader()
         GET("$mergeData.source/mergeDiff/$mergeData.target")
 
         then:
@@ -2490,7 +2497,19 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         GET("dataModels/$targetDataModelMap.dataModelId/dataTypes", MAP_ARG, true)
 
         then:
+        verifyResponse(OK, response)
+        responseBody().count == 3
         responseBody().items.label as Set == ['addLeftOnly', 'Functional Test Model Data Type', 'Functional Test Model Data Type Pointing Externally'] as Set
+        def mdt1 = responseBody().items.find {it.label == 'Functional Test Model Data Type' }
+        def mdt2 = responseBody().items.find {it.label == 'Functional Test Model Data Type Pointing Externally' }
+
+        and: 'the Functional Test Model Data Type points to the CodeSet in the target VF'
+        mdt1.modelResourceDomainType == 'CodeSet'
+        mdt1.modelResourceId == mergeData.targetMap.codeSet.codeSetId
+
+        and: 'the Model Data Type pointing externally now points to the Complex Test Terminology'
+        mdt2.modelResourceDomainType == 'Terminology'
+        mdt2.modelResourceId == complexTerminologyId
 
         when:
         GET("dataModels/$targetDataModelMap.dataModelId/metadata", MAP_ARG, true)
@@ -2792,145 +2811,6 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         cleanup:
         builder.cleanupTestMergeData(mergeData)
-    }
-
-   void 'MI09 : test branch and merge the complex VersionedFolder when a Model Data Type has differences (as editor)'() {
-       given:
-       Map data = builder.buildComplexModelsForBranching()
-       loginEditor()
-       String id = data.commonAncestorId
-
-       when:
-       GET("terminologies/path/te:Simple%20Test%20Terminology", MAP_ARG, true)
-
-       then:
-       verifyResponse OK, response
-       String simpleTerminologyId = responseBody().id
-
-       when:
-       GET("terminologies/path/te:Complex%20Test%20Terminology", MAP_ARG, true)
-
-       then:
-       verifyResponse OK, response
-       String complexTerminologyId = responseBody().id
-
-
-       when: 'logged in as editor we create a new main branch of the VF'
-       loginEditor()
-       PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
-
-       then: 'the branch is created'
-       verifyResponse CREATED, response
-       responseBody().id != id
-       responseBody().label == 'Functional Test VersionedFolder Complex'
-       responseBody().documentationVersion == '1.0.0'
-       responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
-       !responseBody().modelVersion
-       String targetId = responseBody().id
-
-       when: 'logged in as editor we create a new source branch of the VF'
-       loginEditor()
-       PUT("$id/newBranchModelVersion", [branchName: 'source'])
-
-       then: 'the branch is created'
-       verifyResponse CREATED, response
-       responseBody().id != id
-       responseBody().label == 'Functional Test VersionedFolder Complex'
-       responseBody().documentationVersion == '1.0.0'
-       responseBody().branchName == 'source'
-       !responseBody().modelVersion
-       String sourceId = responseBody().id
-
-       when: 'getting the data models inside the main folder'
-       GET("folders/$targetId/dataModels", MAP_ARG, true)
-
-       then:
-       verifyResponse(OK, response)
-       responseBody().count == 1
-       String targetDataModelId = responseBody().items[0].id
-
-       when: 'getting the data models inside the branched folder'
-       GET("folders/$sourceId/dataModels", MAP_ARG, true)
-
-       then:
-       verifyResponse(OK, response)
-       responseBody().count == 1
-       String sourceDataModelId = responseBody().items[0].id
-
-       when: 'getting the code sets inside the branched folder'
-       GET("folders/$sourceId/codeSets", MAP_ARG, true)
-
-       then:
-       verifyResponse(OK, response)
-       responseBody().count == 1
-       String sourceCodeSetId = responseBody().items[0].id
-
-       when: 'getting the code sets inside the main folder'
-       GET("folders/$targetId/codeSets", MAP_ARG, true)
-
-       then:
-       verifyResponse(OK, response)
-       responseBody().count == 1
-       String targetCodeSetId = responseBody().items[0].id
-
-       when: 'get the dataTypes on the branched Data Model'
-       GET("dataModels/$sourceDataModelId/dataTypes", MAP_ARG, true)
-
-       then:
-       verifyResponse(OK, response)
-       responseBody().count == 2
-       String modelDataTypeId = responseBody().items.find{it.label == 'Functional Test Model Data Type'}.id
-       String externallyPointingModelDataTypeId = responseBody().items.find{it.label == 'Functional Test Model Data Type Pointing Externally'}.id
-
-       when: 'Update the model data type in the source branch to point at the CodeSet rather than Terminology'
-       PUT("dataModels/$sourceDataModelId/dataTypes/$modelDataTypeId", [modelResourceDomainType: 'CodeSet', modelResourceId: sourceCodeSetId], MAP_ARG, true)
-
-       then: 'The response is updated'
-       verifyResponse(OK, response)
-
-       when: 'Update the model data type that was pointing to a terminology in an external folder to point to the other terminology in the external folder'
-       PUT("dataModels/$sourceDataModelId/dataTypes/$externallyPointingModelDataTypeId", [modelResourceDomainType: 'Terminology', modelResourceId: complexTerminologyId], MAP_ARG, true)
-
-       then: 'The response is updated'
-       verifyResponse(OK, response)
-
-       when: 'Get the diffs between the branch and main'
-       GET("$sourceId/mergeDiff/$targetId")
-
-       then:
-       verifyResponse(OK, response)
-       def diffs = responseBody().diffs
-
-       when: 'Merge the diffs between the branch and main'
-       PUT("$sourceId/mergeInto/$targetId", [
-           patch:
-               [
-                   targetId: targetId,
-                   sourceId: sourceId,
-                   label   : "Functional Test Model",
-                   count   : diffs.size(),
-                   patches : diffs
-               ]
-       ])
-
-       then: 'The response is OK'
-       verifyResponse(OK, response)
-
-       when: 'get the dataTypes on the main branch Data Model'
-       GET("dataModels/$targetDataModelId/dataTypes", MAP_ARG, true)
-
-       then: 'the Functional Test Model Data Type points to the CodeSet and the Model Data Type pointing externally now points to Terminology 2'
-       verifyResponse(OK, response)
-       responseBody().count == 2
-       def mdt1 = responseBody().items.find {it.label == 'Functional Test Model Data Type' }
-       def mdt2 = responseBody().items.find {it.label == 'Functional Test Model Data Type Pointing Externally' }
-       mdt1.modelResourceDomainType == 'CodeSet'
-       mdt1.modelResourceId == targetCodeSetId
-       mdt2.modelResourceDomainType == 'Terminology'
-       mdt2.modelResourceId == complexTerminologyId
-
-       cleanup:
-       cleanupIds(id, sourceId, targetId)
     }
 
     void 'MP01 : test model permissions'() {

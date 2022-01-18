@@ -99,6 +99,8 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         POST("dataModels/$dataModel1Id/metadata", [namespace: 'functional.test', key: 'modifyAndDelete', value: 'some other original value 2'])
         verifyResponse CREATED, response
 
+        buildCommonAncestorModelDataTypePointingExternally(dataModel1Id)
+
         dataModel1Id
     }
 
@@ -187,7 +189,17 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
             metadataModifyOnSource              : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|md:functional.test.modifyOnSource"),
             metadataDeleteFromSource            : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|md:functional.test.deleteFromSource"),
             metadataModifyAndDelete             : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|md:functional.test.modifyAndDelete"),
+            modelDataTypeId                     : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dt:Functional Test Model Data Type"),
+            externallyPointingModelDataTypeId   : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dt:Functional Test Model Data Type Pointing Externally")
         ]
+
+        GET("terminologies/path/te:Simple%20Test%20Terminology")
+        verifyResponse OK, response
+        sourceMap.simpleTerminologyId = responseBody().id
+
+        GET("terminologies/path/te:Complex%20Test%20Terminology")
+        verifyResponse OK, response
+        sourceMap.complexTerminologyId = responseBody().id
 
         DELETE("dataModels/$sourceMap.dataModelId/dataClasses/$sourceMap.deleteAndDelete")
         verifyResponse NO_CONTENT, response
@@ -239,6 +251,10 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         verifyResponse OK, response
         DELETE("dataModels/$sourceMap.dataModelId/metadata/$sourceMap.metadataDeleteFromSource")
         verifyResponse NO_CONTENT, response
+
+        // Update the model data type that was pointing to the Simple Test Terminology to point to the Complex Test Terminology'
+        PUT("dataModels/$sourceMap.dataModelId/dataTypes/$sourceMap.externallyPointingModelDataTypeId", [modelResourceDomainType: 'Terminology', modelResourceId: sourceMap.complexTerminologyId])
+        verifyResponse OK, response
 
         sourceMap
     }
