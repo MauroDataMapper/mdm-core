@@ -17,11 +17,15 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.datamodel
 
+import grails.testing.spock.OnceBefore
+import spock.lang.Shared
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
+import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.DataModelPluginMergeBuilder
+import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.TestMergeData
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.ModelUserAccessPermissionChangingAndVersioningFunctionalSpec
 
 import grails.gorm.transactions.Transactional
@@ -30,6 +34,7 @@ import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import spock.lang.Unroll
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.merge.VersionedFolderMergeBuilder
 
 import java.util.regex.Pattern
 
@@ -80,6 +85,14 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 @Integration
 @Slf4j
 class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioningFunctionalSpec {
+
+    @Shared
+    DataModelPluginMergeBuilder builder
+
+    @OnceBefore
+    void createBuilder() {
+        builder = new DataModelPluginMergeBuilder(this)
+    }
 
     @Transactional
     String getTestFolderId() {
@@ -3558,5 +3571,102 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     }
   ]
 }'''
+    }
+
+    void 'MI07 : test merge into of two DMs with a Model Data Type'() {
+        given:
+        String testFolderId = getTestFolderId()
+        loginEditor()
+
+        when: 'Get the Complex Test Terminology ID for checking later'
+        GET("terminologies/path/te:Complex%20Test%20Terminology", MAP_ARG, true)
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+        String complexTerminologyId = responseBody().id
+
+        when: 'Get the Simple Test Terminology ID to use in the Model Data Type'
+        GET("terminologies/path/te:Simple%20Test%20Terminology", MAP_ARG, true)
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+        String simpleTerminologyId = responseBody().id
+
+        when:
+        TestMergeData mergeData = builder.buildComplexModelsForMerging(testFolderId, simpleTerminologyId)
+
+        then:
+        mergeData.sourceMap.externallyPointingModelDataTypeId
+
+        when: 'get the mergeDiff between source and target'
+        loginReader()
+        GET("$mergeData.source/mergeDiff/$mergeData.target?isLegacy=false")
+
+        then: 'there are no modification diffs for dataTypes'
+        verifyResponse OK, response
+        !responseBody().diffs.find{it.fieldName == 'modelResourcePath'}
+
+        when: 'get the data types on the source data model'
+        GET("dataModels/$mergeData.source/dataTypes", MAP_ARG, true)
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 2
+        responseBody().items.label as Set == ['addLeftOnly', 'Functional Test Model Data Type Pointing Externally'] as Set
+        def mdt = responseBody().items.find {it.label == 'Functional Test Model Data Type Pointing Externally' }
+
+        and:
+        mdt.modelResourceDomainType == 'Terminology'
+        mdt.modelResourceId == simpleTerminologyId
+        mdt.id == mergeData.sourceMap.externallyPointingModelDataTypeId
+
+        when: 'Update the MDT to point at the Complex Test Terminology'
+        loginEditor()
+        PUT("dataModels/$mergeData.source/dataTypes/$mdt.id", [modelResourceDomainType: 'Terminology', modelResourceId: complexTerminologyId], MAP_ARG, true)
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        when: 'get the mergeDiff between source and target'
+        loginReader()
+        GET("$mergeData.source/mergeDiff/$mergeData.target?isLegacy=false")
+
+        then: 'the diffs include a modification to the Model Data Type'
+        verifyResponse OK, response
+        def postDiffs = responseBody().diffs
+        def modelResourcePath = responseBody().diffs.find{it.fieldName == 'modelResourcePath'}
+        modelResourcePath.sourceValue.contains("Complex Test Terminology")
+        modelResourcePath.targetValue.contains("Simple Test Terminology")
+        modelResourcePath.type == "modification"
+
+        when: 'Merge the diffs from source to target'
+        loginEditor()
+        PUT("$mergeData.source/mergeInto/$mergeData.target?isLegacy=false", [
+            patch:
+                [
+                    targetId: mergeData.target,
+                    sourceId: mergeData.source,
+                    label   : "Functional Test Model",
+                    count   : postDiffs.size(),
+                    patches : postDiffs
+                ]
+        ])
+
+        then: 'the response is OK'
+        verifyResponse OK, response
+
+        when: 'get the data types on the target data model'
+        GET("dataModels/$mergeData.target/dataTypes", MAP_ARG, true)
+
+        then: 'there is a Model Data Type'
+        verifyResponse OK, response
+        def mergedMdt = responseBody().items.find {it.label == 'Functional Test Model Data Type Pointing Externally' }
+
+        and: 'the Model Data Type now points to the Complex Test Terminology'
+        mergedMdt.modelResourceDomainType == 'Terminology'
+        mergedMdt.modelResourceId == complexTerminologyId
+
+        cleanup:
+        builder.cleanupTestMergeData(mergeData)
     }
 }

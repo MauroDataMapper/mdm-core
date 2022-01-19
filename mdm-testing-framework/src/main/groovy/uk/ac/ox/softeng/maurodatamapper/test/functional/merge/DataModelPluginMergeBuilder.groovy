@@ -36,8 +36,8 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
     }
 
     @Override
-    TestMergeData buildComplexModelsForMerging(String folderId) {
-        String ca = buildCommonAncestorDataModel(folderId)
+    TestMergeData buildComplexModelsForMerging(String folderId, String terminologyId = null) {
+        String ca = buildCommonAncestorDataModel(folderId, '1', terminologyId)
 
         PUT("dataModels/$ca/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
