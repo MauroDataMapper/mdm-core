@@ -58,7 +58,14 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         )
     }
 
-    String buildCommonAncestorDataModel(String folderId, String suffix = 1) {
+    /**
+     * Build the common ancestor data model.
+     * @param folderId
+     * @param suffix Appended to DM label
+     * @param terminologyId If terminologyId is provided then the built data model will include a Model Data Type pointing to that terminology
+     * @return ID of the built Data Model
+     */
+    String buildCommonAncestorDataModel(String folderId, String suffix = 1, String terminologyId = null) {
         POST("folders/$folderId/dataModels", [
             label: "Functional Test DataModel ${suffix}".toString()
         ])
@@ -99,7 +106,9 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         POST("dataModels/$dataModel1Id/metadata", [namespace: 'functional.test', key: 'modifyAndDelete', value: 'some other original value 2'])
         verifyResponse CREATED, response
 
-        buildCommonAncestorModelDataTypePointingExternally(dataModel1Id)
+        if (terminologyId) {
+            buildCommonAncestorModelDataTypePointingExternally(dataModel1Id, terminologyId)
+        }
 
         dataModel1Id
     }
@@ -135,19 +144,15 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         dataElementId
     }
 
-    String buildCommonAncestorModelDataTypePointingExternally(String dataModelId) {
+    String buildCommonAncestorModelDataTypePointingExternally(String dataModelId, String terminologyId) {
         // Create a DataElement on the DataModel, with the DataElement having a ModelDataType
         // pointing to a terminology in an external folder
-
-        GET("terminologies/path/te:Simple%20Test%20Terminology")
-        verifyResponse(OK, response)
-        String simpleTerminologyId = responseBody().id
 
         POST("dataModels/$dataModelId/dataTypes", [
                 label: "Functional Test Model Data Type Pointing Externally",
                 domainType: "ModelDataType",
                 modelResourceDomainType: "Terminology",
-                modelResourceId: simpleTerminologyId
+                modelResourceId: terminologyId
         ])
         verifyResponse(CREATED, response)
         String modelDataTypeId = responseBody().id
@@ -170,7 +175,7 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         dataElementId
     }
 
-    Map modifySourceDataModel(String source, String suffix = '1', String pathing = '') {
+    Map modifySourceDataModel(String source, String suffix = '1', String pathing = '', String simpleTerminologyId = null, String complexTerminologyId = null) {
         // Modify Source
         Map sourceMap = [
             dataModelId                         : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source"),
@@ -189,17 +194,12 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
             metadataModifyOnSource              : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|md:functional.test.modifyOnSource"),
             metadataDeleteFromSource            : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|md:functional.test.deleteFromSource"),
             metadataModifyAndDelete             : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|md:functional.test.modifyAndDelete"),
-            modelDataTypeId                     : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dt:Functional Test Model Data Type"),
-            externallyPointingModelDataTypeId   : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dt:Functional Test Model Data Type Pointing Externally")
+            modelDataTypeId                     : getIdFromPathNoValidation(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dt:Functional Test Model Data Type"),
+            externallyPointingModelDataTypeId   : getIdFromPathNoValidation(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dt:Functional Test Model Data Type Pointing Externally")
         ]
 
-        GET("terminologies/path/te:Simple%20Test%20Terminology")
-        verifyResponse OK, response
-        sourceMap.simpleTerminologyId = responseBody().id
-
-        GET("terminologies/path/te:Complex%20Test%20Terminology")
-        verifyResponse OK, response
-        sourceMap.complexTerminologyId = responseBody().id
+        sourceMap.simpleTerminologyId = simpleTerminologyId
+        sourceMap.complexTerminologyId = complexTerminologyId
 
         DELETE("dataModels/$sourceMap.dataModelId/dataClasses/$sourceMap.deleteAndDelete")
         verifyResponse NO_CONTENT, response
@@ -253,8 +253,10 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         verifyResponse NO_CONTENT, response
 
         // Update the model data type that was pointing to the Simple Test Terminology to point to the Complex Test Terminology'
-        PUT("dataModels/$sourceMap.dataModelId/dataTypes/$sourceMap.externallyPointingModelDataTypeId", [modelResourceDomainType: 'Terminology', modelResourceId: sourceMap.complexTerminologyId])
-        verifyResponse OK, response
+        if (sourceMap.externallyPointingModelDataTypeId && sourceMap.complexTerminologyId) {
+            PUT("dataModels/$sourceMap.dataModelId/dataTypes/$sourceMap.externallyPointingModelDataTypeId", [modelResourceDomainType: 'Terminology', modelResourceId: sourceMap.complexTerminologyId])
+            verifyResponse OK, response
+        }
 
         sourceMap
     }
