@@ -104,11 +104,8 @@ class ModelDataType extends DataType<ModelDataType> {
     static Path makeFullyQualifiedPath(Model model) {
         List<CreatorAware> nodes = []
         nodes << model
-
-        if (model.folder) {
-            nodes << model.folder
-            folderParents(nodes, model.folder)
-        }
+        nodes << model.folder
+        folderParents(nodes, model.folder)
 
         return Path.from(nodes.reverse())
     }
