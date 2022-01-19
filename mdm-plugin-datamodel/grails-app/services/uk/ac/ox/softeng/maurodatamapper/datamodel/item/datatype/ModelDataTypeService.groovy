@@ -187,6 +187,36 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> implements Su
      * when merging the MDT. In the diff we set a mergeField called modelResourcePath. In this method we use that modelResourcePath
      * to determine the ID of the correct model to point to.
      * @param modificationPatch
+     * @param targetDomain
+     * @param fieldName
+     * @return
+     */
+    @Override
+    boolean handlesModificationPatchOfField(FieldPatchData modificationPatch, ModelDataType targetDomain, String fieldName) {
+        if (fieldName == 'modelResourcePath') {
+
+            // Look up the resource.
+            // Note that pathService.findResourceByPath does not check security on the pathed resource
+            CreatorAware modelResource = pathService.findResourceByPath(Path.from(modificationPatch.sourceValue))
+
+            if (modelResource) {
+                targetDomain.modelResourceId = modelResource.id
+                targetDomain.modelResourceDomainType = modelResource.domainType
+                return true
+            } else {
+                throw new ApiInternalException('MDTS01', "Cannot find modelResource with path ${modificationPatch.sourceValue}")
+            }
+        }
+
+        false
+    }
+
+    /**
+     * Special handler to apply a modification patch to a ModelDataType.modelResourceId and ModelDataType.modelResourceDomainType.
+     * See ModelDataType.diff for how the MergeDiff is constructed. We want to set the correct modelResourceId, but this is difficult
+     * when merging the MDT. In the diff we set a mergeField called modelResourcePath. In this method we use that modelResourcePath
+     * to determine the ID of the correct model to point to.
+     * @param modificationPatch
      * @param targetVersionedFolder
      * @param targetDomain
      * @param fieldName
@@ -211,7 +241,7 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> implements Su
                 targetDomain.modelResourceDomainType = modelResource.domainType
                 return true
             } else {
-                throw new ApiInternalException('MDTS01', "Cannot find modelResource with path ${modificationPatch.sourceValue}")
+                throw new ApiInternalException('MDTS02', "Cannot find modelResource with path ${modificationPatch.sourceValue}")
             }
         }
 

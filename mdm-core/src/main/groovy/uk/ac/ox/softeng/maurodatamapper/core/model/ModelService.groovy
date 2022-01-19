@@ -599,9 +599,14 @@ abstract class ModelService<K extends Model>
         }
         String fieldName = modificationPatch.fieldName
         log.debug('Modifying [{}] in [{}]', fieldName, modificationPatch)
-        domain."${fieldName}" = modificationPatch.sourceValue
         DomainService domainService = getDomainServices().find {it.handles(domain.class)}
         if (!domainService) throw new ApiInternalException('MSXX', "No domain service to handle modification of [${domain.domainType}]")
+
+        // If the domainService provides a special handler for modifying this field then use it,
+        // otherwise just set the value directly
+        if (!domainService.handlesModificationPatchOfField(modificationPatch, domain, fieldName)) {
+            domain."${fieldName}" = modificationPatch.sourceValue
+        }
 
         if (!domain.validate())
             throw new ApiInvalidModelException('MS01', 'Modified domain is invalid', domain.errors, messageSource)

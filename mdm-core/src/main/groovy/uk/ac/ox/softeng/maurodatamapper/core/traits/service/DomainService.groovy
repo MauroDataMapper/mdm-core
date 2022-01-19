@@ -98,6 +98,10 @@ trait DomainService<K extends CreatorAware> implements AnonymisableService {
         }
     }
 
+    boolean handlesModificationPatchOfField(FieldPatchData modificationPatch, K targetDomain, String fieldName) {
+        false
+    }
+
     boolean handlesModificationPatchOfFieldIntoVersionedFolder(FieldPatchData modificationPatch, VersionedFolder targetVersionedFolder, K targetDomain, String fieldName) {
         false
     }
