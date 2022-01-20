@@ -196,10 +196,10 @@ subprojects {
         doLast {
             if (project.hasProperty('dependencyManagement')) {
                 Map imported = dependencyManagement.importedProperties
-                logger.quiet 'Project :: {}\n  {}', project.name, imported.collect {k, v ->
+                logger.quiet 'Project :: {}\n{}', project.name, imported.collect {k, v ->
                     def projProp = project.hasProperty(k) ? project.getProperty(k) : null
                     "$k,$v,${projProp ?: ''}"
-                }.sort().join('\n  ')
+                }.sort().join('\n')
             }
         }
     }
