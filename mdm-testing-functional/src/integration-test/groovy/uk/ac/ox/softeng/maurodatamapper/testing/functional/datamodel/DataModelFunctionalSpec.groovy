@@ -34,7 +34,6 @@ import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import spock.lang.Unroll
-import uk.ac.ox.softeng.maurodatamapper.testing.functional.merge.VersionedFolderMergeBuilder
 
 import java.util.regex.Pattern
 
@@ -3575,7 +3574,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
     void 'MI07 : test merge into of two DMs with a Model Data Type'() {
         given:
-        String testFolderId = getTestFolderId()
+        String mergeFolderId = getTestFolderId()
         loginEditor()
 
         when: 'Get the Complex Test Terminology ID for checking later'
@@ -3593,13 +3592,12 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         String simpleTerminologyId = responseBody().id
 
         when:
-        TestMergeData mergeData = builder.buildComplexModelsForMerging(testFolderId, simpleTerminologyId)
+        TestMergeData mergeData = builder.buildComplexModelsForMerging(mergeFolderId, simpleTerminologyId)
 
         then:
         mergeData.sourceMap.externallyPointingModelDataTypeId
 
         when: 'get the mergeDiff between source and target'
-        loginReader()
         GET("$mergeData.source/mergeDiff/$mergeData.target?isLegacy=false")
 
         then: 'there are no modification diffs for dataTypes'
@@ -3621,14 +3619,12 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         mdt.id == mergeData.sourceMap.externallyPointingModelDataTypeId
 
         when: 'Update the MDT to point at the Complex Test Terminology'
-        loginEditor()
         PUT("dataModels/$mergeData.source/dataTypes/$mdt.id", [modelResourceDomainType: 'Terminology', modelResourceId: complexTerminologyId], MAP_ARG, true)
 
         then: 'The response is OK'
         verifyResponse OK, response
 
         when: 'get the mergeDiff between source and target'
-        loginReader()
         GET("$mergeData.source/mergeDiff/$mergeData.target?isLegacy=false")
 
         then: 'the diffs include a modification to the Model Data Type'

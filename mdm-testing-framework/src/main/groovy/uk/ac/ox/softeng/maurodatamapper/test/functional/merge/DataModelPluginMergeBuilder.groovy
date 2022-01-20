@@ -66,6 +66,17 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
      * @return ID of the built Data Model
      */
     String buildCommonAncestorDataModel(String folderId, String suffix = 1, String terminologyId = null) {
+        // Unclear why this is needed, but without it, when running the full DataModelFunctionSpec, test MI07 fails
+        // at this point because there seems to be no authenticated session.
+        GET("session/isAuthenticated")
+        verifyResponse OK, response
+        if (!responseBody().authenticatedSession) {
+            POST('authentication/login', [
+                    username: 'editor@test.com',
+                    password: 'password'
+            ])
+        }
+
         POST("folders/$folderId/dataModels", [
             label: "Functional Test DataModel ${suffix}".toString()
         ])
