@@ -3,7 +3,7 @@ buildscript {
         mavenLocal()
         maven {url "https://jenkins.cs.ox.ac.uk/artifactory/plugins-snapshot"}
         maven {url "https://jenkins.cs.ox.ac.uk/artifactory/plugins-release"}
-        maven { url "https://repo.grails.org/grails/core" }
+        maven {url "https://repo.grails.org/grails/core"}
     }
     dependencies {
         classpath "ox.softeng.gradle:oxbrcinformatics-gradle-plugins:$oxbrcinformaticsGradlePluginsVersion"
@@ -27,9 +27,9 @@ apply plugin: 'ox.softeng.grails'
 
 repositories {
     mavenLocal()
-    maven { url "https://jenkins.cs.ox.ac.uk/artifactory/libs-release" }
-    maven { url "https://jenkins.cs.ox.ac.uk/artifactory/libs-snapshot" }
-    maven { url "https://repo.grails.org/grails/core" }
+    maven {url "https://jenkins.cs.ox.ac.uk/artifactory/libs-release"}
+    maven {url "https://jenkins.cs.ox.ac.uk/artifactory/libs-snapshot"}
+    maven {url "https://repo.grails.org/grails/core"}
 }
 
 configurations {
@@ -102,13 +102,13 @@ bootRun {
 
 grails {
     plugins {
-        //  implementation project(':mdm-core')
-        runtimeOnly project(':mdm-plugin-authentication-basic')
-        runtimeOnly project(':mdm-plugin-authentication-apikey')
+        implementation project(':mdm-core')
+        implementation project(':mdm-plugin-authentication-basic')
+        implementation project(':mdm-plugin-authentication-apikey')
         implementation project(':mdm-plugin-datamodel')
         implementation project(':mdm-plugin-terminology')
         implementation project(':mdm-plugin-referencedata')
-        runtimeOnly project(':mdm-plugin-federation')
+        implementation project(':mdm-plugin-federation')
         //        compile project(':mdm-plugin-email-proxy')
         implementation project(':mdm-security')
         implementation project(':mdm-plugin-dataflow')
@@ -134,8 +134,8 @@ integrationTest {
     //    failFast true
     useJUnitPlatform()
 
-    if(testPackage){
-        logger.quiet('Filtering to tests on {}',"uk.ac.ox.softeng.maurodatamapper.testing.functional.${testPackage}.*")
+    if (testPackage) {
+        logger.quiet('Filtering to tests on {}', "uk.ac.ox.softeng.maurodatamapper.testing.functional.${testPackage}.*")
         filter {
             includeTestsMatching "uk.ac.ox.softeng.maurodatamapper.testing.functional.${testPackage}.*"
         }
@@ -150,7 +150,7 @@ integrationTest {
         systemProperty('mdm.logFileName', "e2e-${testPackage}")
     }
 
-    if(testCategory){
+    if (testCategory) {
         binaryResultsDirectory.set(file("${project.testResultsDir}/${testCategory}/binary"))
         reports {
             junitXml.getOutputLocation().set file("${project.testResultsDir}/${testCategory}")
@@ -172,7 +172,7 @@ afterEvaluate {
             property 'sonar.java.binaries', ''
             property 'sonar.groovy.binaries', ''
             property 'sonar.tests', findAllExisting(project, project.sourceSets.integrationTest.allSource.srcDirs +
-                                    project.sourceSets.main.allSource.srcDirs)
+                                                             project.sourceSets.main.allSource.srcDirs)
             property 'sonar.java.test.binaries', project.sourceSets.integrationTest.output.classesDirs +
                                                  project.sourceSets.main.output.classesDirs
         }

@@ -1,8 +1,8 @@
 dependencies {
 
     implementation project(':mdm-common')
+//    implementation project(':mdm-core')
     implementation project(':mdm-testing-framework')
-    implementation 'org.apache.commons:commons-csv:1.8'
 
     runtimeOnly "io.methvin:directory-watcher", {
         exclude group: 'com.google.guava', module: 'guava'

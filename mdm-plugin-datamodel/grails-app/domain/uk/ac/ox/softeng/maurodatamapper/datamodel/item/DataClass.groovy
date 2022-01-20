@@ -44,7 +44,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 import groovy.util.logging.Slf4j
-import org.grails.datastore.gorm.GormEntity
 
 import javax.persistence.criteria.JoinType
 

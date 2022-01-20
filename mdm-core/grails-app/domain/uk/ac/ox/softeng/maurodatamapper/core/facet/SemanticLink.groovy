@@ -79,7 +79,7 @@ class SemanticLink implements MultiFacetItemAware {
 
     @Override
     String getPathIdentifier() {
-        "${linkType}.${targetMultiFacetAwareItemId}"
+        "${linkType}.${targetMultiFacetAwareItemDomainType}.${targetMultiFacetAwareItemId}"
     }
 
     @Override

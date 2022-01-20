@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -74,6 +75,11 @@ class ReferenceDataValue implements MdmDomain, Diffable<ReferenceDataValue> {
 
     def beforeValidate() {
         checkPath() // get path to ensure its built
+    }
+
+    @Override
+    Path buildPath() {
+        referenceDataElement?.path ? Path.from(referenceDataElement.path, pathPrefix, pathIdentifier) : null
     }
 
     ObjectDiff<ReferenceDataValue> diff(ReferenceDataValue otherValue, String context) {

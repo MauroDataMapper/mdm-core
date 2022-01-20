@@ -197,6 +197,7 @@ class BreadcrumbTree {
             }
         }
         buildTree()
+        this.path = catalogueItem.path
     }
 
     Breadcrumb getBreadcrumb() {

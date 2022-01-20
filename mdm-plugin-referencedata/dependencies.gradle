@@ -1,5 +1,4 @@
 dependencies {
-    implementation project(':mdm-common')
 
     implementation 'org.apache.commons:commons-csv:1.8'
 

@@ -1,7 +1,5 @@
 dependencies {
 
-    implementation project(':mdm-common')
-
     implementation group: 'org.apache.commons', name: 'commons-rng-simple', version: commonsRngVersion
 
     runtimeOnly "io.methvin:directory-watcher", {

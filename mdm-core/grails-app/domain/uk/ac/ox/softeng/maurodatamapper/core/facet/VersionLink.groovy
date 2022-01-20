@@ -79,7 +79,7 @@ class VersionLink implements MultiFacetItemAware {
 
     @Override
     String getPathIdentifier() {
-        "${linkType}.${targetModelId}"
+        "${linkType}.${targetModelDomainType}.${targetModelId}"
     }
 
     @Override

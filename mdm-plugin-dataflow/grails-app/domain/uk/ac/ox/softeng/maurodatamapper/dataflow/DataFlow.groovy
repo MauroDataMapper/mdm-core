@@ -76,8 +76,8 @@ class DataFlow implements ModelItem<DataFlow, DataModel> {
     static mapping = {
         definition type: 'text'
         diagramLayout type: 'text'
-        source index: 'data_flow_source_idx'
-        target index: 'data_flow_target_idx'
+        source index: 'data_flow_source_idx', cascade: 'none'
+        target index: 'data_flow_target_idx', cascade: 'none'
         dataClassComponents cascade: 'all-delete-orphan'
     }
 

@@ -18,6 +18,7 @@ buildscript {
 plugins {
     id 'project-report'
     id 'jacoco'
+    id 'java-library'
 }
 
 apply plugin: "idea"

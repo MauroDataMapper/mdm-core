@@ -1,7 +1,5 @@
 dependencies {
 
-    implementation project(':mdm-common')
-
     runtimeOnly "io.methvin:directory-watcher", {
         exclude group: 'com.google.guava', module: 'guava'
     }

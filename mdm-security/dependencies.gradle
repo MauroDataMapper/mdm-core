@@ -1,7 +1,5 @@
 dependencies {
 
-    implementation project(':mdm-common')
-
     implementation group: 'org.apache.commons', name: 'commons-rng-simple', version: commonsRngVersion
 
     runtimeOnly "io.methvin:directory-watcher", {
@@ -15,5 +13,5 @@ dependencies {
 
     testImplementation project(':mdm-testing-framework')
 
-    implementation 'com.opencsv:opencsv:5.1'
+    implementation 'com.opencsv:opencsv:5.5.2'
 }

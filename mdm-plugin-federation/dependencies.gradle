@@ -1,6 +1,5 @@
 dependencies {
 
-    implementation project(':mdm-common')
     implementation "io.micronaut:micronaut-http-client"
 
     runtimeOnly "io.methvin:directory-watcher", {

@@ -1,9 +1,9 @@
 dependencies {
     implementation 'org.javassist:javassist:3.28.0-GA'
-    implementation project(':mdm-common')
+    api project(':mdm-common')
 
-    implementation group: 'org.apache.commons', name: 'commons-text', version: commonsTextVersion
-    implementation group: 'org.apache.commons', name: 'commons-csv', version: commonsCsvVersion
+    api group: 'org.apache.commons', name: 'commons-text', version: commonsTextVersion
+    api group: 'org.apache.commons', name: 'commons-csv', version: commonsCsvVersion
     implementation group: 'org.simplejavamail', name: 'simple-java-mail', version: javaMailVersion
     implementation group: 'com.google.guava', name: 'guava', version: guavaVersion
     implementation group: 'commons-beanutils', name: 'commons-beanutils', version: commonsBeanutilsVersion
@@ -15,7 +15,7 @@ dependencies {
     }
 
     // Postgres database
-    implementation group: 'org.flywaydb', name: 'flyway-core'
+    api group: 'org.flywaydb', name: 'flyway-core'
     runtimeOnly "org.hibernate:hibernate-jcache"
     runtimeOnly group: 'org.ehcache', name: 'ehcache'
     runtimeOnly group: 'org.postgresql', name: 'postgresql'

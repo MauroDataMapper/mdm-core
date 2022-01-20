@@ -43,7 +43,6 @@ import grails.gorm.DetachedCriteria
 import grails.plugins.hibernate.search.config.SearchMappingEntityConfig
 import grails.rest.Resource
 import groovy.util.logging.Slf4j
-import org.grails.datastore.gorm.GormEntity
 
 import javax.persistence.criteria.JoinType
 

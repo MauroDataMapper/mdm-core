@@ -68,9 +68,9 @@ class DataElementComponent implements ModelItem<DataElementComponent, DataModel>
     static mapping = {
         definition type: 'text'
         sourceDataElements joinTable: [name: 'join_data_element_component_to_source_data_element', key: 'data_element_component_id'],
-                           index: 'jdectsde_data_element_component_idx'
+                           index: 'jdectsde_data_element_component_idx', cascade: 'none'
         targetDataElements joinTable: [name: 'join_data_element_component_to_target_data_element', key: 'data_element_component_id'],
-                           index: 'jdecttde_data_element_component_idx'
+                           index: 'jdecttde_data_element_component_idx', cascade: 'none'
     }
 
     static mappedBy = [

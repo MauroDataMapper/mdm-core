@@ -25,8 +25,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
-import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.path.Path
+import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
@@ -148,5 +148,9 @@ class Annotation implements MultiFacetItemAware, InformationAware, Diffable<Anno
 
     static DetachedCriteria<Annotation> byParentAnnotationId(Serializable parentAnnotationId) {
         new DetachedCriteria<Annotation>(Annotation).eq('parentAnnotation.id', Utils.toUuid(parentAnnotationId))
+    }
+
+    static DetachedCriteria<Annotation> byNoParentAnnotation() {
+        new DetachedCriteria<Annotation>(Annotation).isNull('parentAnnotation')
     }
 }
