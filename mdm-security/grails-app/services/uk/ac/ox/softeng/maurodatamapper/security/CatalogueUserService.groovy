@@ -24,17 +24,16 @@ import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFileService
 import uk.ac.ox.softeng.maurodatamapper.core.security.UserService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.AnonymisableService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
-import uk.ac.ox.softeng.maurodatamapper.security.basic.AnonymousUser
 import uk.ac.ox.softeng.maurodatamapper.security.rest.transport.UserProfilePicture
 import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityUtils
 
-import com.opencsv.CSVWriter
 import grails.gorm.transactions.Transactional
+import org.apache.commons.csv.CSVFormat
+import org.apache.commons.csv.CSVPrinter
+import org.springframework.beans.factory.annotation.Autowired
 
 import java.security.NoSuchAlgorithmException
 import java.time.OffsetDateTime
-
-import org.springframework.beans.factory.annotation.Autowired
 
 @Transactional
 class CatalogueUserService implements UserService, MdmDomainService<CatalogueUser> {
@@ -294,16 +293,15 @@ class CatalogueUserService implements UserService, MdmDomainService<CatalogueUse
     ByteArrayOutputStream convertToCsv(List<CatalogueUser> allUsers) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream()
         OutputStreamWriter streamWriter = new OutputStreamWriter(outputStream)
-        CSVWriter writer = new CSVWriter(streamWriter)
-        String[] headerUsers = ['Email Address', 'First Name', 'Last Name', 'Last Login', 'Organisation', 'Job Title', 'Disabled', 'Pending']
-        writer.writeNext(headerUsers, false)
+        CSVPrinter csvPrinter = new CSVPrinter(new BufferedWriter(streamWriter), CSVFormat.DEFAULT)
+        csvPrinter.printRecord('Email Address', 'First Name', 'Last Name', 'Last Login', 'Organisation', 'Job Title', 'Disabled', 'Pending')
         allUsers.each {user ->
-            String[] userDetails = [user.emailAddress, user.firstName, user.lastName, user.lastLogin, user.organisation, user.jobTitle,
-                                    user.disabled, user.pending]
-            writer.writeNext(userDetails, false)
+            csvPrinter.printRecord(user.emailAddress, user.firstName, user.lastName, user.lastLogin, user.organisation, user.jobTitle,
+                                   user.disabled, user.pending)
         }
-        writer.close()
-        return outputStream
+        csvPrinter.close()
+        streamWriter.close()
+        outputStream
     }
 
     Long countPendingUsers(Map pagination = [:]) {
