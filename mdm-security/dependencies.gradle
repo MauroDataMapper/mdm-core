@@ -1,5 +1,7 @@
 dependencies {
 
+    implementation group: 'org.apache.commons', name: 'commons-csv', version: commonsCsvVersion
+    implementation group: 'org.apache.commons', name: 'commons-text', version: commonsTextVersion
     implementation group: 'org.apache.commons', name: 'commons-rng-simple', version: commonsRngVersion
 
     runtimeOnly "io.methvin:directory-watcher", {

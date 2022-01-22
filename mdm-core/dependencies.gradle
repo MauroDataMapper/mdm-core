@@ -1,9 +1,9 @@
 dependencies {
-    implementation 'org.javassist:javassist:3.28.0-GA'
+
     api project(':mdm-common')
 
-    api group: 'org.apache.commons', name: 'commons-text', version: commonsTextVersion
-    api group: 'org.apache.commons', name: 'commons-csv', version: commonsCsvVersion
+    implementation group: 'org.apache.commons', name: 'commons-text', version: commonsTextVersion
+    implementation group: 'org.apache.commons', name: 'commons-csv', version: commonsCsvVersion
     implementation group: 'org.simplejavamail', name: 'simple-java-mail', version: javaMailVersion
     implementation group: 'com.google.guava', name: 'guava', version: guavaVersion
     implementation group: 'commons-beanutils', name: 'commons-beanutils', version: commonsBeanutilsVersion

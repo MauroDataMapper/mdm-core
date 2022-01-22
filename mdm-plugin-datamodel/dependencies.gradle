@@ -10,4 +10,5 @@ dependencies {
     runtimeOnly group: 'org.postgresql', name: 'postgresql'
 
     testImplementation project(':mdm-testing-framework')
+
 }

@@ -1,37 +1,40 @@
 dependencies {
-    // Required for compilation
-    api 'org.javassist:javassist:3.28.0-GA'
-    // -----
-    api platform("org.springframework.boot:spring-boot-dependencies:$springBootVersion")
 
+    implementation platform("org.springframework.boot:spring-boot-dependencies:$springBootVersion")
     implementation group: 'org.codehaus.groovy', name: 'groovy'
-    api group: 'com.google.guava', name: 'guava', version: guavaVersion
-
-    // Logging
-    api group: 'org.slf4j', name: 'slf4j-api'
-    api group: 'ch.qos.logback', name: 'logback-classic'
-
+    implementation group: 'com.google.guava', name: 'guava', version: guavaVersion
     implementation group: 'org.grails', name: 'grails-core', version: grailsVersion
     implementation group: 'org.grails', name: 'grails-datastore-gorm'
     implementation group: 'org.grails', name: 'grails-datastore-gorm-hibernate5'
     implementation group: 'org.grails', name: 'grails-plugin-validation'
     implementation "org.grails.plugins:views-json:$grailsViewsVersion"
+    implementation group: 'io.micronaut', name: 'micronaut-http'
+    implementation group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: spotbugsAnnotationVersion
 
+    testImplementation 'org.spockframework:spock-core'
+
+    /*
+    Libraries required transitively
+     */
+    api 'org.javassist:javassist:3.28.0-GA'
     api group: 'com.bertramlabs.plugins', name: 'asset-pipeline-core', version: assetPipelineVersion
+    api group: 'org.slf4j', name: 'slf4j-api'
+    api group: 'ch.qos.logback', name: 'logback-classic'
 
-    api group: 'io.micronaut', name: 'micronaut-http'
+    /*
+        Hibernate Search
+     */
 
     //mathpere/grails-hibernate-search-plugin
     api "org.grails.plugins:hibernate-search:$hibernateSearchVersion"
-    implementation('org.hibernate:hibernate-core'){
-        version{
+    implementation('org.hibernate:hibernate-core') {
+        version {
             strictly project.ext['hibernate.version']
         }
     }
     api group: 'org.hibernate.search', name: 'hibernate-search-mapper-orm', version: hibernateSearchOrmVersion
     api group: 'org.hibernate.search', name: 'hibernate-search-backend-lucene', version: hibernateSearchOrmVersion
     api group: 'org.hibernate.search', name: 'hibernate-search-v5migrationhelper-orm', version:hibernateSearchOrmVersion
-//    api 'org.apache.lucene:lucene-analyzers-common'
 
     constraints {
         api("org.apache.lucene:lucene-analyzers-common:$luceneVersion") {
@@ -39,7 +42,5 @@ dependencies {
         }
     }
 
-    implementation group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: spotbugsAnnotationVersion
 
-    testImplementation 'org.spockframework:spock-core'
 }

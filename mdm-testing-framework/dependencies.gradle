@@ -2,24 +2,22 @@ dependencies {
 
     compileOnly project(':mdm-common')
     compileOnly project(':mdm-core')
+    compileOnly platform("org.springframework.boot:spring-boot-dependencies:$springBootVersion")
+    compileOnly "io.micronaut:micronaut-http-client"
+    compileOnly "org.grails:grails-web-testing-support"
+    compileOnly "org.grails:views-json-testing-support"
+    compileOnly "org.grails.plugins:views-json"
+    compileOnly "org.grails:grails-gorm-testing-support"
+    compileOnly 'org.codehaus.groovy:groovy'
+    compileOnly "org.mockito:mockito-core"
+    compileOnly group: 'org.apache.commons', name: 'commons-csv', version: commonsCsvVersion
 
-    implementation group: 'org.codehaus.groovy', name: 'groovy'
+    //    implementation group: 'org.apache.commons', name: 'commons-csv', version: commonsCsvVersion
 
-    // Logging
-    implementation group: 'org.slf4j', name: 'slf4j-api'
-    implementation group: 'ch.qos.logback', name: 'logback-classic'
-
-    implementation "org.grails.plugins:views-json"
-    implementation group: 'org.apache.commons', name: 'commons-csv', version: commonsCsvVersion
-
-    implementation "org.grails:grails-gorm-testing-support"
-    implementation "org.mockito:mockito-core"
-    api "io.micronaut:micronaut-http-client"
-    api "org.grails:grails-web-testing-support"
-    implementation "org.grails:views-json-testing-support"
 
     api group: 'net.javacrumbs.json-unit', name: 'json-unit', version: '2.28.0'
     api group: 'org.xmlunit', name: 'xmlunit-core'
+    api group: 'com.google.guava', name: 'guava', version: guavaVersion
 
     // Needed for xml pretty print only
     implementation('org.dom4j:dom4j:2.1.3') {
