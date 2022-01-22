@@ -60,14 +60,14 @@ pipeline {
                 sh './gradlew --build-cache compile'
             }
         }
-        //
-        //        stage('License Header Check') {
-        //            steps {
-        //                warnError('Missing License Headers') {
-        //                    sh './gradlew --build-cache license'
-        //                }
-        //            }
-        //        }
+
+        stage('License Header Check') {
+            steps {
+                warnError('Missing License Headers') {
+                    sh './gradlew --build-cache license'
+                }
+            }
+        }
 
         // If the flyway is broken then do NOT deploy to artifactory
         stage('Flyway Migration Check') {
@@ -139,7 +139,7 @@ pipeline {
                             'mdm-plugin-referencedata',
                             'mdm-plugin-terminology',
                             'mdm-security',
-                        ].collect { ":${it}:integrationTest" }.join(' ')
+                        ].collect {":${it}:integrationTest"}.join(' ')
                     }
                     post {
                         always {
@@ -161,7 +161,7 @@ pipeline {
                             'mdm-plugin-referencedata',
                             'mdm-plugin-terminology',
                             'mdm-security',
-                        ].collect { ":${it}:integrationTest" }.join(' ')
+                        ].collect {":${it}:integrationTest"}.join(' ')
                     }
                     post {
                         always {
