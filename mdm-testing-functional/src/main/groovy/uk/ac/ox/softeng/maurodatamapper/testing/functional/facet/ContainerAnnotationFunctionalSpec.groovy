@@ -18,10 +18,10 @@
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.facet
 
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessWithoutUpdatingFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import io.micronaut.http.HttpResponse
 
 import static io.micronaut.http.HttpStatus.CREATED
 
@@ -43,55 +43,24 @@ abstract class ContainerAnnotationFunctionalSpec extends UserAccessWithoutUpdati
 
     abstract String getContainerDomainType()
 
-
     @Override
     String getResourcePath() {
         "${getContainerDomainType()}/${getContainerId()}/annotations"
     }
 
     @Override
-    Boolean getReaderCanCreate() {
-        true
-    }
-
-    @Override
-    Boolean readerPermissionIsInherited() {
-        true
-    }
-
-    @Override
-    void verifyL03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getContainerId()
-    }
-
-    @Override
-    void verifyL03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getContainerId()
-    }
-
-    @Override
-    void verifyL03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getContainerId()
-    }
-
-    @Override
-    void verifyN03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getContainerId()
-    }
-
-    @Override
-    void verifyN03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getContainerId()
-    }
-
-    @Override
-    void verifyN03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getContainerId()
-    }
-
-    @Override
-    void verifyR04UnknownIdResponse(HttpResponse<Map> response, String id) {
-        verifyForbidden response
+    Expectations getExpectations() {
+        Expectations.builder()
+            .withDefaultExpectations()
+            .withInheritedAccessPermissions()
+            .whereTestingUnsecuredResource()
+            .withoutAvailableActions()
+            .whereEditors {
+                cannotCreate()
+            }
+            .whereAuthors {
+                cannotEditDescription()
+            }
     }
 
     @Override
@@ -102,7 +71,7 @@ abstract class ContainerAnnotationFunctionalSpec extends UserAccessWithoutUpdati
     @Override
     Map getValidJson() {
         [
-                label: 'Functional Test Annotation'
+            label: 'Functional Test Annotation'
         ]
     }
 
@@ -112,17 +81,12 @@ abstract class ContainerAnnotationFunctionalSpec extends UserAccessWithoutUpdati
     }
 
     @Override
-    String getEditorIndexJson() {
-        '{"count": 0,"items": []}'
-    }
-
-    @Override
     String getShowJson() {
         '''{
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
-  "createdBy": "editor@test.com",
+  "createdBy": "creator@test.com",
   "createdByUser": {
-    "name": "editor User",
+    "name": "creator User",
     "id": "${json-unit.matches:id}"
   },
   "id": "${json-unit.matches:id}",

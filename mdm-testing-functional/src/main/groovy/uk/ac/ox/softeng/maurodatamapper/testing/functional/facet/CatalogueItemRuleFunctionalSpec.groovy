@@ -17,12 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.facet
 
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 
-import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import io.micronaut.http.HttpResponse
 
 import java.util.regex.Pattern
 
@@ -58,51 +56,13 @@ abstract class CatalogueItemRuleFunctionalSpec extends UserAccessFunctionalSpec 
         "${getCatalogueItemDomainType()}/${getCatalogueItemId()}"
     }
 
-    @Transactional
     @Override
-    def cleanupSpec() {
-        log.info('Removing functional test rule')
-        Rule.byName('Functional Test Rule Name').deleteAll()
-    }
-
-    @Override
-    Boolean readerPermissionIsInherited() {
-        true
-    }
-
-    @Override
-    void verifyL03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyL03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyL03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyN03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyN03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyN03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyR04UnknownIdResponse(HttpResponse<Map> response, String id) {
-        verifyForbidden response
+    Expectations getExpectations() {
+        Expectations.builder()
+            .withDefaultExpectations()
+            .withInheritedAccessPermissions()
+            .whereTestingUnsecuredResource()
+            .withoutAvailableActions()
     }
 
     void verifySameValidDataCreationResponse() {
@@ -116,7 +76,7 @@ abstract class CatalogueItemRuleFunctionalSpec extends UserAccessFunctionalSpec 
 
     @Override
     Pattern getExpectedUpdateEditRegex() {
-        ~/\[Rule:Functional Test Rule Name] changed properties \[description]/
+        ~/\[Rule:.+?] changed properties \[path, name]/
     }
 
     @Override
@@ -130,15 +90,14 @@ abstract class CatalogueItemRuleFunctionalSpec extends UserAccessFunctionalSpec 
     @Override
     Map getInvalidJson() {
         [
-            name: null,
-            description : 'Functional Test Rule Description'
+            name       : null,
+            description: 'Functional Test Rule Description'
         ]
     }
 
-    @Override
-    Map getValidUpdateJson() {
+    Map getValidNonDescriptionUpdateJson() {
         [
-            description : 'Functional Test Rule Description Updated'
+            name: "Functional Test Updated Label ${getClass().simpleName}".toString()
         ]
     }
 
@@ -165,5 +124,5 @@ abstract class CatalogueItemRuleFunctionalSpec extends UserAccessFunctionalSpec 
   "description": "Functional Test Rule Description",
   "lastUpdated": "${json-unit.matches:offsetDateTime}"
 }'''
-    } 
+    }
 }

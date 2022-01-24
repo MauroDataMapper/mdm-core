@@ -175,8 +175,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     "label": "emptyclass",
     "hasChildren": false,
     "availableActions": [
-      "createModelItem",
-      "delete"
+      "createModelItem"
     ],
     "modelId": "${json-unit.matches:id}"
   },
@@ -186,8 +185,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     "label": "content",
     "hasChildren": false,
     "availableActions": [
-      "createModelItem",
-      "delete"
+      "createModelItem"
     ],
     "modelId": "${json-unit.matches:id}"
   },
@@ -197,8 +195,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     "label": "parent",
     "hasChildren": true,
     "availableActions": [
-      "createModelItem",
-      "delete"
+      "createModelItem"
     ],
     "modelId": "${json-unit.matches:id}"
   }
@@ -295,7 +292,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
       {
         "domainType": "DataClass",
         "hasChildren": false,
-        "availableActions": ["createModelItem","delete"],
+        "availableActions": ["createModelItem"],
         "modelId": "${json-unit.matches:id}",
         "parentId": "${json-unit.matches:id}",
         "id": "${json-unit.matches:id}",
@@ -508,7 +505,6 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
       "createFolder",
       "createModel",
       "createVersionedFolder",
-      "delete",
       "moveToFolder",
       "moveToVersionedFolder",
       "softDelete"
@@ -524,7 +520,6 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
           "createFolder",
           "createModel",
           "createVersionedFolder",
-          "delete",
           "moveToFolder",
           "softDelete"
         ],
@@ -538,7 +533,6 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
             "hasChildren": false,
             "availableActions": [
               "createModelItem",
-              "delete",
               "moveToContainer",
               "moveToFolder",
               "moveToVersionedFolder",
@@ -558,7 +552,6 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
             "label": "Finalised Example Test DataModel",
             "hasChildren": false,
             "availableActions": [
-              "delete",
               "moveToContainer",
               "moveToFolder",
               "softDelete"
@@ -578,7 +571,6 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
             "hasChildren": false,
             "availableActions": [
               "createModelItem",
-              "delete",
               "moveToContainer",
               "moveToFolder",
               "moveToVersionedFolder",
@@ -599,7 +591,6 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
             "hasChildren": false,
             "availableActions": [
               "createModelItem",
-              "delete",
               "moveToContainer",
               "moveToFolder",
               "moveToVersionedFolder",
@@ -620,7 +611,6 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
             "hasChildren": false,
             "availableActions": [
               "createModelItem",
-              "delete",
               "moveToContainer",
               "moveToFolder",
               "moveToVersionedFolder",
@@ -641,7 +631,6 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
             "hasChildren": false,
             "availableActions": [
               "createModelItem",
-              "delete",
               "moveToContainer",
               "moveToFolder",
               "moveToVersionedFolder",
@@ -662,7 +651,6 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
             "hasChildren": false,
             "availableActions": [
               "createModelItem",
-              "delete",
               "moveToContainer",
               "moveToFolder",
               "moveToVersionedFolder",
@@ -974,7 +962,6 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
       "createFolder",
       "createModel",
       "createVersionedFolder",
-      "delete",
       "moveToFolder",
       "moveToVersionedFolder",
       "softDelete"
@@ -990,7 +977,6 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
           "createFolder",
           "createModel",
           "createVersionedFolder",
-          "delete",
           "moveToFolder",
           "softDelete"
         ],
@@ -1004,7 +990,6 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
             "hasChildren": true,
             "availableActions": [
               "createModelItem",
-              "delete",
               "moveToContainer",
               "moveToFolder",
               "moveToVersionedFolder",
@@ -1024,8 +1009,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
                 "label": "emptyclass",
                 "hasChildren": false,
                 "availableActions": [
-                  "createModelItem",
-                  "delete"
+                  "createModelItem"
                 ],
                 "modelId": "${json-unit.matches:id}"
               }
@@ -1210,7 +1194,6 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
       "createFolder",
       "createModel",
       "createVersionedFolder",
-      "delete",
       "moveToFolder",
       "moveToVersionedFolder",
       "softDelete"
@@ -1226,7 +1209,6 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
           "createFolder",
           "createModel",
           "createVersionedFolder",
-          "delete",
           "moveToFolder",
           "softDelete"
         ],
@@ -1243,7 +1225,6 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     "availableActions": [
       "createFolder",
       "createModel",
-      "delete",
       "moveToFolder",
       "softDelete"
     ],
@@ -1260,7 +1241,6 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     "availableActions": [
       "createFolder",
       "createModel",
-      "delete",
       "moveToFolder",
       "softDelete"
     ],

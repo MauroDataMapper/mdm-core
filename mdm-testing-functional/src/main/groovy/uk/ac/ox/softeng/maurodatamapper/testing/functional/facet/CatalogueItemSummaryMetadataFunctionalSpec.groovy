@@ -17,12 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.facet
 
-import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 
-import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 
 import java.util.regex.Pattern
@@ -59,51 +57,13 @@ abstract class CatalogueItemSummaryMetadataFunctionalSpec extends UserAccessFunc
         "${getCatalogueItemDomainType()}/${getCatalogueItemId()}"
     }
 
-    @Transactional
     @Override
-    def cleanupSpec() {
-        log.info('Removing functional test summary metadata')
-        SummaryMetadata.byLabel('Functional Test Summary Metadata').deleteAll()
-    }
-
-    @Override
-    Boolean readerPermissionIsInherited() {
-        true
-    }
-
-    @Override
-    void verifyL03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyL03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyL03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyN03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyN03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyN03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyR04UnknownIdResponse(HttpResponse<Map> response, String id) {
-        verifyForbidden response
+    Expectations getExpectations() {
+        Expectations.builder()
+            .withDefaultExpectations()
+            .withInheritedAccessPermissions()
+            .whereTestingUnsecuredResource()
+            .withoutAvailableActions()
     }
 
     @Override
@@ -113,7 +73,7 @@ abstract class CatalogueItemSummaryMetadataFunctionalSpec extends UserAccessFunc
 
     @Override
     Pattern getExpectedUpdateEditRegex() {
-        ~/\[Summary Metadata:Functional Test Summary Metadata] changed properties \[description]/
+        ~/\[Summary Metadata:.+?] changed properties \[path, label]/
     }
 
     @Override
@@ -132,13 +92,6 @@ abstract class CatalogueItemSummaryMetadataFunctionalSpec extends UserAccessFunc
     }
 
     @Override
-    Map getValidUpdateJson() {
-        [
-            description: 'Attempting update'
-        ]
-    }
-
-    @Override
     String getEditorIndexJson() {
         '''{
   "count": 0,
@@ -150,7 +103,7 @@ abstract class CatalogueItemSummaryMetadataFunctionalSpec extends UserAccessFunc
     String getShowJson() {
         '''{
   "id": "${json-unit.matches:id}",
-  "createdBy": "editor@test.com",
+  "createdBy": "creator@test.com",
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "label": "Functional Test Summary Metadata",
   "summaryMetadataType": "NUMBER"

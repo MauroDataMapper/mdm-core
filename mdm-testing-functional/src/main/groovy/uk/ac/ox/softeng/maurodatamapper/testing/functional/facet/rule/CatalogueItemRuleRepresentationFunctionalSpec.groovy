@@ -17,14 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.facet.rule
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import io.micronaut.http.HttpResponse
 import spock.lang.Shared
 
 import java.util.regex.Pattern
@@ -41,7 +40,7 @@ import static io.micronaut.http.HttpStatus.OK
  *  |  PUT     | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${ruleId}/representations/${id}  | Action: update
  *  |  GET     | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${ruleId}/representations/${id}  | Action: show
  * </pre>
- * @see uk.ac.ox.softeng.maurodatamapper.core.facet.item.RuleRepresentationController
+ * @see uk.ac.ox.softeng.maurodatamapper.core.facet.rule.RuleRepresentationController
  */
 @Slf4j
 abstract class CatalogueItemRuleRepresentationFunctionalSpec extends UserAccessFunctionalSpec {
@@ -49,24 +48,24 @@ abstract class CatalogueItemRuleRepresentationFunctionalSpec extends UserAccessF
     abstract CatalogueItem getModel()
 
     abstract CatalogueItem getCatalogueItem()
-    
+
     abstract String getCatalogueItemDomainType()
 
     @Shared
     Rule rule
-    
+
     String getModelId() {
         getModel().id.toString()
     }
 
     String getCatalogueItemId() {
         getCatalogueItem().id.toString()
-    } 
+    }
 
     @Transactional
     String getRuleId() {
         Rule.findByMultiFacetAwareItemIdAndName(getCatalogueItemId(), "Bootstrapped Functional Test Rule").id.toString()
-    }      
+    }
 
     @Override
     String getResourcePath() {
@@ -75,7 +74,7 @@ abstract class CatalogueItemRuleRepresentationFunctionalSpec extends UserAccessF
 
     String getRuleResourcePath() {
         "${getCatalogueItemDomainType()}/${getCatalogueItemId()}/rules"
-    }    
+    }
 
     @Override
     String getEditsFullPath(String id) {
@@ -83,43 +82,15 @@ abstract class CatalogueItemRuleRepresentationFunctionalSpec extends UserAccessF
     }
 
     @Override
-    Boolean readerPermissionIsInherited() {
-        true
-    }
-
-    @Override
-    void verifyL03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyL03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyL03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyN03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyN03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyN03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyR04UnknownIdResponse(HttpResponse<Map> response, String id) {
-        verifyForbidden response
+    Expectations getExpectations() {
+        Expectations.builder()
+            .withDefaultExpectations()
+            .withInheritedAccessPermissions()
+            .whereTestingUnsecuredResource()
+            .withoutAvailableActions()
+            .whereAuthors {
+                cannotEditDescription()
+            }
     }
 
     @Override
@@ -154,10 +125,15 @@ abstract class CatalogueItemRuleRepresentationFunctionalSpec extends UserAccessF
     }
 
     @Override
-    Map getValidUpdateJson() {
+    Map getValidNonDescriptionUpdateJson() {
         [
-            representation : 'A > 0 AND A < 6'
+            representation: 'A > 0 AND A < 6'
         ]
+    }
+
+    @Override
+    Map getValidDescriptionOnlyUpdateJson() {
+        getValidNonDescriptionUpdateJson()
     }
 
     @Override
@@ -176,7 +152,7 @@ abstract class CatalogueItemRuleRepresentationFunctionalSpec extends UserAccessF
   "representation": "A > 0 AND A < 5",
   "lastUpdated": "${json-unit.matches:offsetDateTime}"
 }'''
-    } 
+    }
 
     String getRuleShowJson() {
         '''{
@@ -219,5 +195,5 @@ abstract class CatalogueItemRuleRepresentationFunctionalSpec extends UserAccessF
 
         cleanup:
         removeValidIdObject(ruleRepresentationId)
-    }    
+    }
 }

@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.facet
 
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
@@ -58,51 +59,24 @@ abstract class CatalogueItemReferenceFileFunctionalSpec extends UserAccessFuncti
     }
 
     @Override
-    Boolean readerPermissionIsInherited() {
-        true
+    Expectations getExpectations() {
+        Expectations.builder()
+            .withDefaultExpectations()
+            .withInheritedAccessPermissions()
+            .whereTestingUnsecuredResource()
+            .withoutAvailableActions()
+            .whereAuthors {
+                cannotEditDescription()
+            }
     }
 
     @Override
-    void verifyL03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyL03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyL03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyN03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyN03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyN03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyR04UnknownIdResponse(HttpResponse<Map> response, String id) {
-        verifyForbidden response
-    }
-
     void verifySameValidDataCreationResponse() {
         verifyResponse CREATED, response
     }
 
     @Override
-    void verifyE02Response(HttpResponse<Map> response, String id) {
+    void verify02Response(HttpResponse<Map> response, String id, List<String> actions) {
         verifyResponse OK, response
         assert response.contentLength == 6
         assert response.header('Content-Disposition') == 'attachment;filename="functional test file.txt"'
@@ -110,16 +84,11 @@ abstract class CatalogueItemReferenceFileFunctionalSpec extends UserAccessFuncti
     }
 
     @Override
-    void verifyE03ValidResponseBody(HttpResponse<Map> response) {
+    void verify03ValidResponseBody(HttpResponse<Map> response) {
         assert responseBody().id
         assert responseBody().fileName == 'functional test file.txt'
         assert responseBody().fileType == "text/plain"
         assert responseBody().fileSize == 6
-    }
-
-    @Override
-    void verifyR02Response(HttpResponse<Map> response, String id) {
-        verifyE02Response(response, id)
     }
 
     @Override
@@ -153,10 +122,15 @@ abstract class CatalogueItemReferenceFileFunctionalSpec extends UserAccessFuncti
     }
 
     @Override
-    Map getValidUpdateJson() {
+    Map getValidNonDescriptionUpdateJson() {
         [
             fileName: 'updated filename.txt'
         ]
+    }
+
+    @Override
+    Map getValidDescriptionOnlyUpdateJson() {
+        getValidNonDescriptionUpdateJson()
     }
 
     @Override
@@ -165,10 +139,5 @@ abstract class CatalogueItemReferenceFileFunctionalSpec extends UserAccessFuncti
   "count": 0,
   "items": []
 }'''
-    }
-
-    @Override
-    String getShowJson() {
-        null
     }
 }
