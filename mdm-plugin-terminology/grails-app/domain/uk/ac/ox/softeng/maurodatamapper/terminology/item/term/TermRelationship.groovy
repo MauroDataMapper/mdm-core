@@ -26,7 +26,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelItemConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
+import uk.ac.ox.softeng.maurodatamapper.core.search.ModelItemSearch
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
@@ -66,6 +68,11 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
 
     static transients = ['aliases', 'model']
 
+    static search = {
+        CallableSearch.call(ModelItemSearch, delegate)
+        modelId searchable: 'yes', indexingDependency: [reindexOnUpdate: 'shallow', derivedFrom: 'sourceTerm']
+    }
+
     @Override
     String getDomainType() {
         TermRelationship.simpleName
@@ -88,6 +95,10 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
     @Override
     Terminology getModel() {
         sourceTerm?.terminology
+    }
+
+    UUID getModelId() {
+        getModel()?.id
     }
 
     @Override

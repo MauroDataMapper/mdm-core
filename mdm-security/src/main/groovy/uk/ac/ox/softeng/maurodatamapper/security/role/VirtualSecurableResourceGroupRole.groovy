@@ -147,11 +147,11 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
     }
 
     boolean matchesDomainResource(Class<? extends SecurableResource> securableResourceClass, UUID id) {
-        (domainType == securableResourceClass.simpleName || alternateDomainType == securableResourceClass.simpleName) && domainId == id
+        matchesDomainResourceType(securableResourceClass.simpleName) && domainId == id
     }
 
     boolean matchesDomainResourceType(Class<? extends SecurableResource> securableResourceClass) {
-        (domainType == securableResourceClass.simpleName || alternateDomainType == securableResourceClass.simpleName)
+        matchesDomainResourceType(securableResourceClass.simpleName)
     }
 
     boolean matchesDomainResourceType(String securableResourceDomainType) {

@@ -71,7 +71,7 @@ abstract class SecurableResourceInterceptor implements MdmInterceptor {
                    forbiddenOrNotFound(canRead, securableResourceClass, id)
         }
         if (isUpdate() || actionName in ['readByEveryone', 'readByAuthenticated']) {
-            return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(securableResourceClass, id, actionName) ?:
+            return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(securableResourceClass, id, isDescriptionEdit() ? 'editDescription' : actionName) ?:
                    forbiddenOrNotFound(canRead, securableResourceClass, id)
         }
         if (isSave()) {

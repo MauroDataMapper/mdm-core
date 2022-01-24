@@ -130,17 +130,18 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
         securableResourceGroupRoleService.deleteAllBySecurableResourceDomainTypeAndIds(securableResourceDomainType, ids)
         GrailsCache cache = getSecurityPolicyManagerCache()
         Collection<Object> keys = cache.getAllKeys()
+        // Rebuild all policies which have access, this needs to be done incase we revoke access to something which provides access to something else
         keys.each {key ->
-            GroupBasedUserSecurityPolicyManager securityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
-            securityPolicyManager.lock()
-            UserSecurityPolicy updatedPolicy = securityPolicyManager.userPolicy
+            GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
             ids.each {id ->
-                updatedPolicy = userSecurityPolicyService.updatePolicyToRemoveSecurableResource(updatedPolicy,
-                                                                                                securableResourceDomainType,
-                                                                                                id)
+                if (userSecurityPolicyManager.userPolicyManagesAccessToSecurableResource(securableResourceDomainType, id)) {
+                    userSecurityPolicyManager.lock()
+                    UserSecurityPolicy updatedPolicy = userSecurityPolicyService.buildUserSecurityPolicy(userSecurityPolicyManager.userPolicy)
+                    storeUserSecurityPolicyManager(userSecurityPolicyManager.withUpdatedUserPolicy(updatedPolicy))
+                }
             }
-            storeUserSecurityPolicyManager(securityPolicyManager.withUpdatedUserPolicy(updatedPolicy))
         }
+
     }
 
     @Override

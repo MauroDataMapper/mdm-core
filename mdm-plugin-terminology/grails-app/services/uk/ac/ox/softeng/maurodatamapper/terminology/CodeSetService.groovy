@@ -105,10 +105,10 @@ class CodeSetService extends ModelService<CodeSet> {
         if (!codeSet) return
         if (permanent) {
             codeSet.folder = null
+            codeSet.delete(flush: flush)
             if (securityPolicyManagerService) {
                 securityPolicyManagerService.removeSecurityForSecurableResource(codeSet, null)
             }
-            codeSet.delete(flush: flush)
         } else delete(codeSet)
     }
 

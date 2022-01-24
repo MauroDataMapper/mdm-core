@@ -44,4 +44,10 @@ class AuthorityInterceptor extends SecurableResourceInterceptor {
         securableResourceChecks()
         checkActionAuthorisationOnSecuredResource(Authority, getId(), true)
     }
+
+    @Override
+    boolean forbiddenOrNotFound(boolean canRead, Class resourceClass, UUID resourceId) {
+        boolean exists = resourceId ? Authority.get(resourceId) : false
+        canRead && exists ? forbiddenDueToPermissions() : notFound(resourceClass, resourceId.toString())
+    }
 }

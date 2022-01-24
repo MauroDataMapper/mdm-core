@@ -98,7 +98,10 @@ class SecurableResourceGroupRoleService implements MdmDomainService<SecurableRes
     }
 
     SecurableResourceGroupRole findBySecurableResourceAndId(String securableResourceDomainType, UUID securableResourceId, UUID id) {
-        SecurableResourceGroupRole.bySecurableResourceAndId(securableResourceDomainType, securableResourceId, id).get()
+        // We have to handle extending where the domaintype of folder may not be the domain type of the actual resource id as its a VF
+        SecurableResource sr = securableResourceDomainType == 'Folder' ? findSecurableResource(securableResourceDomainType, securableResourceId) : null
+        SecurableResourceGroupRole.bySecurableResourceAndId(sr?.domainType ?: securableResourceDomainType,
+                                                            sr?.resourceId ?: securableResourceId, id).get()
     }
 
     SecurableResourceGroupRole findByUserGroupIdAndId(UUID userGroupId, UUID id) {
@@ -106,13 +109,18 @@ class SecurableResourceGroupRoleService implements MdmDomainService<SecurableRes
     }
 
     SecurableResourceGroupRole findBySecurableResourceAndUserGroup(String securableResourceDomainType, UUID securableResourceId, UUID userGroupId) {
-        SecurableResourceGroupRole.bySecurableResourceAndUserGroupId(securableResourceDomainType, securableResourceId, userGroupId).get()
+        // We have to handle extending where the domaintype of folder may not be the domain type of the actual resource id as its a VF
+        SecurableResource sr = securableResourceDomainType == 'Folder' ? findSecurableResource(securableResourceDomainType, securableResourceId) : null
+        SecurableResourceGroupRole.bySecurableResourceAndUserGroupId(sr?.domainType ?: securableResourceDomainType,
+                                                                     sr?.resourceId ?: securableResourceId, userGroupId).get()
     }
 
     SecurableResourceGroupRole findBySecurableResourceAndGroupRoleIdAndUserGroupId(String securableResourceDomainType, UUID securableResourceId,
                                                                                    UUID groupRoleId, UUID userGroupId) {
-        SecurableResourceGroupRole.bySecurableResourceAndGroupRoleIdAndUserGroupId(securableResourceDomainType,
-                                                                                   securableResourceId,
+        // We have to handle extending where the domaintype of folder may not be the domain type of the actual resource id as its a VF
+        SecurableResource sr = securableResourceDomainType == 'Folder' ? findSecurableResource(securableResourceDomainType, securableResourceId) : null
+        SecurableResourceGroupRole.bySecurableResourceAndGroupRoleIdAndUserGroupId(sr?.domainType ?: securableResourceDomainType,
+                                                                                   sr?.resourceId ?: securableResourceId,
                                                                                    groupRoleId,
                                                                                    userGroupId).get()
     }
@@ -126,7 +134,10 @@ class SecurableResourceGroupRoleService implements MdmDomainService<SecurableRes
     }
 
     List<SecurableResourceGroupRole> findAllBySecurableResource(String securableResourceDomainType, UUID securableResourceId, Map pagination = [:]) {
-        SecurableResourceGroupRole.bySecurableResource(securableResourceDomainType, securableResourceId).list(pagination)
+        // We have to handle extending where the domaintype of folder may not be the domain type of the actual resource id as its a VF
+        SecurableResource sr = securableResourceDomainType == 'Folder' ? findSecurableResource(securableResourceDomainType, securableResourceId) : null
+        SecurableResourceGroupRole.bySecurableResource(sr?.domainType ?: securableResourceDomainType,
+                                                       sr?.resourceId ?: securableResourceId).list(pagination)
     }
 
     List<SecurableResourceGroupRole> findAllBySecurableResourceDomainType(String securableResourceDomainType) {
@@ -135,7 +146,11 @@ class SecurableResourceGroupRoleService implements MdmDomainService<SecurableRes
 
     List<SecurableResourceGroupRole> findAllBySecurableResourceAndGroupRoleId(String securableResourceDomainType, UUID securableResourceId,
                                                                               UUID groupRoleId, Map pagination = [:]) {
-        SecurableResourceGroupRole.bySecurableResourceAndGroupRoleId(securableResourceDomainType, securableResourceId, groupRoleId).list(pagination)
+        // We have to handle extending where the domaintype of folder may not be the domain type of the actual resource id as its a VF
+        SecurableResource sr = securableResourceDomainType == 'Folder' ? findSecurableResource(securableResourceDomainType, securableResourceId) : null
+        SecurableResourceGroupRole.bySecurableResourceAndGroupRoleId(sr?.domainType ?: securableResourceDomainType,
+                                                                     sr?.resourceId ?: securableResourceId,
+                                                                     groupRoleId).list(pagination)
     }
 
     def <R extends SecurableResource> R findSecurableResource(Class<R> clazz, UUID id) {

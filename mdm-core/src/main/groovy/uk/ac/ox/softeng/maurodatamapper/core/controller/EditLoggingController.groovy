@@ -228,4 +228,8 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
         true
     }
 
+    @Override
+    protected getObjectToBind() {
+        request.getAttribute('cached_body') ?: request
+    }
 }

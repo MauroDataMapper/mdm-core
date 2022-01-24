@@ -39,6 +39,9 @@ interface UserSecurityPolicyManager {
     boolean userCanDeleteResourceId(Class resourceClass, UUID id,
                                     Class<? extends SecurableResource> owningSecureResourceClass, UUID owningSecureResourceId)
 
+    boolean userCanWriteResourceId(Class resourceClass, UUID id,
+                                   Class<? extends SecurableResource> owningSecureResourceClass, UUID owningSecureResourceId, String action)
+
     boolean userCanReadSecuredResourceId(Class<? extends SecurableResource> securableResourceClass, UUID id)
 
     boolean userCanCreateSecuredResourceId(Class<? extends SecurableResource> securableResourceClass, UUID id)

@@ -22,8 +22,6 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 abstract class AbstractBasicSecurityPolicyManager implements UserSecurityPolicyManager {
 
-    abstract boolean userCanWriteSecuredResourceId(Class<? extends SecurableResource> securableResourceClass, UUID id, String action)
-
     abstract boolean userCanWriteResourceId(Class resourceClass, UUID id, Class<? extends SecurableResource> owningSecureResourceClass,
                                             UUID owningSecureResourceId, String action)
 

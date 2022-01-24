@@ -61,6 +61,6 @@ class ReferenceFileController extends FacetController<ReferenceFile> {
             Map object = grailsWebRequest.params
             return object
         }
-        request
+        super.getObjectToBind()
     }
 }

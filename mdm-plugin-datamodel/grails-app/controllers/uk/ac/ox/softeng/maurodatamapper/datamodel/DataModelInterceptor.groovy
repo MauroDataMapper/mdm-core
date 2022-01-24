@@ -96,7 +96,7 @@ class DataModelInterceptor extends ModelInterceptor {
         }
 
         if (actionName in ['importDataType', 'importDataClass']) {
-            if (!currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(getSecuredClass(), getId(), 'import')) {
+            if (!currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(getSecuredClass(), getId(), 'update')) {
                 return forbiddenOrNotFound(canReadId, getSecuredClass(), getId())
             }
             if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(getSecuredClass(), params.otherDataModelId)) {

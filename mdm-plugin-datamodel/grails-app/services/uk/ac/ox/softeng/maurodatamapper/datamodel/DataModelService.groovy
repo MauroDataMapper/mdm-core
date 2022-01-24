@@ -219,13 +219,13 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     void delete(DataModel dm, boolean permanent, boolean flush = true) {
         if (!dm) return
         if (permanent) {
-            if (securityPolicyManagerService) {
-                securityPolicyManagerService.removeSecurityForSecurableResource(dm, null)
-            }
             long start = System.currentTimeMillis()
             log.debug('Deleting DataModel')
             deleteModelAndContent(dm)
             log.debug('DataModel deleted. Took {}', Utils.timeTaken(start))
+            if (securityPolicyManagerService) {
+                securityPolicyManagerService.removeSecurityForSecurableResource(dm, null)
+            }
         } else delete(dm)
     }
 

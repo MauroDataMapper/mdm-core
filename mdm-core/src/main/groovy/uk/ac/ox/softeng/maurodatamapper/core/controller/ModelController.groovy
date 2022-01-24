@@ -538,7 +538,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             return
         }
 
-        if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(Folder, importerProviderServiceParameters.folderId)) {
+        if (!currentUserSecurityPolicyManager.userCanCreateResourceId(resource, null, Folder, importerProviderServiceParameters.folderId)) {
             if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Folder, importerProviderServiceParameters.folderId)) {
                 return notFound(Folder, importerProviderServiceParameters.folderId)
             }
@@ -616,7 +616,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             return
         }
 
-        if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(Folder, importerProviderServiceParameters.folderId)) {
+        if (!currentUserSecurityPolicyManager.userCanCreateResourceId(resource, null, Folder, importerProviderServiceParameters.folderId)) {
             if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Folder, importerProviderServiceParameters.folderId)) {
                 return notFound(Folder, importerProviderServiceParameters.folderId)
             }

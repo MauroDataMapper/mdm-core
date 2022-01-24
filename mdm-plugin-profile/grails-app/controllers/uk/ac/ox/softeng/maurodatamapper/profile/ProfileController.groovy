@@ -27,6 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ItemsProfilesDataBinding
+import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ProfileProvided
 import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ProfileProvidedCollection
 
 import grails.gorm.transactions.Transactional
@@ -213,7 +214,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
 
         // The multiFacetAware item referenced in the URI, is expected to be a model
         MultiFacetAware model = profileService.findMultiFacetAwareItemByDomainTypeAndId(
-                params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
+            params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
 
         if (!model) {
             return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
@@ -222,8 +223,8 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
             throw new ApiBadRequestException('PC02', 'Cannot use this endpoint on a item which is not a Model')
         }
 
-        respond([view: 'many'], [profileProvidedList: profileService.handleMany(validateOnly,
-            profileProvidedCollection, model, currentUserSecurityPolicyManager, currentUser)])
+        List<ProfileProvided> handled = profileService.handleMany(validateOnly, profileProvidedCollection, model, currentUserSecurityPolicyManager, currentUser)
+        respond([view: 'many'], [profileProvidedList: handled])
     }
 
     def listModelsInProfile() {

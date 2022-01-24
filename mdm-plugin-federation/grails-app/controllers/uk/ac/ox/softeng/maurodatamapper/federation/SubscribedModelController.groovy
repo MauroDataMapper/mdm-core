@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.federation
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 
@@ -121,7 +122,7 @@ class SubscribedModelController extends EditLoggingController<SubscribedModel> {
         instance.validate()
 
         //Check we can import into the requested folder, and get the folder
-        if (instance.folderId && !currentUserSecurityPolicyManager.userCanEditSecuredResourceId(Folder, instance.folderId)) {
+        if (instance.folderId && !currentUserSecurityPolicyManager.userCanCreateResourceId(Model, null, Folder, instance.folderId)) {
             instance.errors.rejectValue('folderId', 'invalid.subscribedmodel.folderid.no.permissions',
                                         'Invalid folderId for subscribed model, user does not have the necessary permissions')
         }

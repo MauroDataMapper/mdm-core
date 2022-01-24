@@ -127,10 +127,10 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
         if (!rdm) return
         if (permanent) {
             rdm.folder = null
+            rdm.delete(flush: flush)
             if (securityPolicyManagerService) {
                 securityPolicyManagerService.removeSecurityForSecurableResource(rdm, null)
             }
-            rdm.delete(flush: flush)
         } else delete(rdm)
     }
 

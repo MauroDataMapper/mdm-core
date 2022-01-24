@@ -276,8 +276,8 @@ class ProfileService implements DataBinder {
      * @param User
      * @return List of handled (validated or saved) instances
      */
-    private handleMany(boolean validateOnly, ProfileProvidedCollection profileProvidedCollection, Model model,
-                       UserSecurityPolicyManager userSecurityPolicyManager, User user) {
+    List<ProfileProvided> handleMany(boolean validateOnly, ProfileProvidedCollection profileProvidedCollection, Model model,
+                                     UserSecurityPolicyManager userSecurityPolicyManager, User user) {
         List<ProfileProvided> handledInstances = []
 
         profileProvidedCollection.profilesProvided.each {profileProvided ->
@@ -314,10 +314,10 @@ class ProfileService implements DataBinder {
                         boolean saveAllowed
 
                         if (profileProviderService.canBeEditedAfterFinalisation()) {
-                            saveAllowed = userSecurityPolicyManager.userCanWriteSecuredResourceId(model.class, model.id, 'saveIgnoreFinalise')
+                            saveAllowed = userSecurityPolicyManager.userCanWriteResourceId(Metadata, null, model.class, model.id, 'saveIgnoreFinalise')
                             log.debug("Profile can be edited after finalisation ${profileProviderService.namespace}.${profileProviderService.name} and saveAllowed is ${saveAllowed}")
                         } else {
-                            saveAllowed = userSecurityPolicyManager.userCanCreateResourceId(Profile.class, null, model.class, model.id)
+                            saveAllowed = userSecurityPolicyManager.userCanCreateResourceId(Metadata, null, model.class, model.id)
                             log.debug("Profile cannot be edited after finalisation ${profileProviderService.namespace}.${profileProviderService.name} and saveAllowed is ${saveAllowed}")
                         }
 

@@ -259,6 +259,11 @@ class UserSecurityPolicy {
         roles ? roles.first().matchesDomainResourceType(securableResourceClass) : false
     }
 
+    boolean managesVirtualAccessToSecurableResource(String securableResourceDomainType, UUID id) {
+        Set<VirtualSecurableResourceGroupRole> roles = virtualSecurableResourceGroupRoles[id]
+        roles ? roles.first().matchesDomainResourceType(securableResourceDomainType) : false
+    }
+
     boolean managesVirtualAccessToSecurableResource(SecurableResource securableResource) {
         managesVirtualAccessToSecurableResource(securableResource.class, securableResource.resourceId)
     }

@@ -111,13 +111,14 @@ class TerminologyService extends ModelService<Terminology> {
     void delete(Terminology terminology, boolean permanent, boolean flush = true) {
         if (!terminology) return
         if (permanent) {
-            if (securityPolicyManagerService) {
-                securityPolicyManagerService.removeSecurityForSecurableResource(terminology, null)
-            }
+
             log.debug('Deleting Terminology')
             long start = System.currentTimeMillis()
             deleteModelAndContent(terminology)
             log.debug('Terminology deleted. Took {}', Utils.timeTaken(start))
+            if (securityPolicyManagerService) {
+                securityPolicyManagerService.removeSecurityForSecurableResource(terminology, null)
+            }
         } else delete(terminology)
     }
 

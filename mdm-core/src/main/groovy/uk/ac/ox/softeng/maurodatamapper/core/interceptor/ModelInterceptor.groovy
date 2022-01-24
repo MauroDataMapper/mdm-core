@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.interceptor
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor {
@@ -60,14 +61,16 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
 
     boolean checkModelActionsAuthorised() {
 
+        webRequest.request.inputStream
+
         securableResourceChecks()
 
         if (params.containsKey('folderId')) {
             boolean canReadFolder = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Folder, params.folderId)
 
-            // We control addition of Terminologys into containers by using container permissions
+            // We control addition of models into containers by using container permissions
             if (isSave()) {
-                return currentUserSecurityPolicyManager.userCanCreateSecuredResourceId(Folder, params.folderId) ?:
+                return currentUserSecurityPolicyManager.userCanCreateResourceId(Model, null, Folder, params.folderId) ?:
                        forbiddenOrNotFound(canReadFolder, Folder, params.folderId)
             }
             if (actionName == 'changeFolder') {

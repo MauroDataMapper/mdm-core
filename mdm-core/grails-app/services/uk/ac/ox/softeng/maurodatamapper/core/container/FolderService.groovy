@@ -154,11 +154,11 @@ class FolderService extends ContainerService<Folder> {
         if (permanent) {
             folder.childFolders.each {delete(it, permanent, false)}
             modelServices.each {it.deleteAllInContainer(folder)}
+            folder.trackChanges()
+            folder.delete(flush: flush)
             if (securityPolicyManagerService) {
                 securityPolicyManagerService.removeSecurityForSecurableResource(folder, null)
             }
-            folder.trackChanges()
-            folder.delete(flush: flush)
         } else {
             folder.childFolders.each {delete(it)}
             delete(folder)

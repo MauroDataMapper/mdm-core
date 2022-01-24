@@ -74,6 +74,11 @@ class DelegatingSecurityPolicyManager implements UserSecurityPolicyManager {
     }
 
     @Override
+    boolean userCanWriteResourceId(Class resourceClass, UUID id, Class<? extends SecurableResource> owningSecureResourceClass, UUID owningSecureResourceId, String action) {
+        return delegate.userCanWriteResourceId(resourceClass, id, owningSecureResourceClass, owningSecureResourceId, action)
+    }
+
+    @Override
     boolean userCanReadSecuredResourceId(Class<? extends SecurableResource> securableResourceClass, UUID id) {
         return delegate.userCanReadSecuredResourceId(securableResourceClass, id)
     }
