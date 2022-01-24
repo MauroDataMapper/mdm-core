@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityUtils
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 
 import grails.gorm.transactions.Transactional
 import grails.testing.spock.RunOnce
@@ -75,6 +76,19 @@ abstract class UserAccessAndCopyingInDataModelsFunctionalSpec extends UserAccess
         DataModel.findByLabel('Simple Test DataModel').id.toString()
     }
 
+    @Override
+    Expectations getExpectations() {
+        Expectations.builder()
+            .withDefaultExpectations()
+            .withInheritedAccessPermissions()
+            .whereTestingUnsecuredResource()
+            .whereContainerAdminsCanAction('comment', 'delete', 'editDescription', 'save', 'show', 'update')
+            .whereEditorsCanAction('comment', 'delete', 'editDescription', 'save', 'show', 'update')
+            .whereAuthorsCanAction('comment', 'editDescription', 'show',)
+            .whereReviewersCanAction('comment', 'show')
+            .whereReadersCanAction('show')
+    }
+
     @RunOnce
     @Transactional
     def setup() {
@@ -95,7 +109,7 @@ abstract class UserAccessAndCopyingInDataModelsFunctionalSpec extends UserAccess
         UserGroup group = getUserGroup('copyPermissionsGroup')
         new SecurableResourceGroupRole(securableResource: DataModel.findByLabel('Simple Test DataModel'),
                                        userGroup: group,
-                                       groupRole: GroupRole.findByName(GroupRole.CONTAINER_ADMIN_ROLE_NAME),
+                                       groupRole: GroupRole.findByName(GroupRole.EDITOR_ROLE_NAME),
                                        createdBy: userEmailAddresses.functionalTest
         ).save(flush: true)
         new SecurableResourceGroupRole(securableResource: DataModel.findByLabel('Complex Test DataModel'),
@@ -152,45 +166,6 @@ abstract class UserAccessAndCopyingInDataModelsFunctionalSpec extends UserAccess
         super.getPermanentGroupNames() + ['copyPermissionsGroup']
     }
 
-    Boolean readerPermissionIsInherited() {
-        true
-    }
-
-    @Override
-    void verifyL03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getComplexDataModelId()
-    }
-
-    @Override
-    void verifyL03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getComplexDataModelId()
-    }
-
-    @Override
-    void verifyL03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getComplexDataModelId()
-    }
-
-    @Override
-    void verifyN03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getComplexDataModelId()
-    }
-
-    @Override
-    void verifyN03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getComplexDataModelId()
-    }
-
-    @Override
-    void verifyN03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getComplexDataModelId()
-    }
-
-    @Override
-    void verifyR04UnknownIdResponse(HttpResponse<Map> response, String id) {
-        verifyForbidden response
-    }
-
     List<String> getEditorModelItemAvailableActions() {
         ['show', 'comment', 'editDescription', 'update', 'save', 'delete']
     }
@@ -200,21 +175,21 @@ abstract class UserAccessAndCopyingInDataModelsFunctionalSpec extends UserAccess
         loginEditor()
 
         when: 'trying to copy non-existent'
-        String id = UUID.randomUUID().toString()
-        POST(getCopyPath(id), [:], MAP_ARG, true)
+        String randomId = UUID.randomUUID().toString()
+        POST(getCopyPath(randomId), [:], MAP_ARG, true)
 
         then:
-        verifyNotFound response, id
+        verifyNotFound response, randomId
 
         when: 'trying to copy valid'
         POST(getCopyPath(getExpectedTargetId()), [:], MAP_ARG, true)
 
         then:
         verifyResponse CREATED, response
+        String id = response.body().id
         verifyCopiedResponseBody response
 
         when: 'verify the id exists'
-        id = response.body().id
         GET(getAlternativePath(id), MAP_ARG, true)
 
         then:
@@ -244,21 +219,21 @@ abstract class UserAccessAndCopyingInDataModelsFunctionalSpec extends UserAccess
         loginAuthenticated2()
 
         when: 'trying to copy non-existent'
-        String id = UUID.randomUUID().toString()
-        POST(getCopyPath(id), [:], MAP_ARG, true)
+        String randomId = UUID.randomUUID().toString()
+        POST(getCopyPath(randomId), [:], MAP_ARG, true)
 
         then:
-        verifyNotFound response, id
+        verifyNotFound response, randomId
 
         when: 'trying to copy valid'
         POST(getCopyPath(getExpectedTargetId()), [:], MAP_ARG, true)
 
         then:
         verifyResponse CREATED, response
+        String id = response.body().id
         verifyCopiedResponseBody response
 
         when:
-        id = response.body().id
         GET("${getCatalogueItemDomainType()}/${id}/semanticLinks", MAP_ARG, true)
 
         then:

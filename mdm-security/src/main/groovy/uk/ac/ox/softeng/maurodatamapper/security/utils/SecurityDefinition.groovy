@@ -35,10 +35,14 @@ trait SecurityDefinition {
     CatalogueUser reviewer
     CatalogueUser reader
     CatalogueUser authenticated
+    CatalogueUser creator
 
     UserGroup admins
     UserGroup editors
     UserGroup readers
+    UserGroup reviewers
+    UserGroup authors
+    UserGroup containerAdmins
 
     Map<String, String> userEmailAddresses = [
         admin          : StandardEmailAddress.ADMIN,
@@ -59,7 +63,8 @@ trait SecurityDefinition {
         reviewer       : 'reviewer@test.com',
         reader         : 'reader@test.com',
         authenticated  : 'authenticated@test.com',
-        authenticated2 : 'authenticated2@test.com'
+        authenticated2 : 'authenticated2@test.com',
+        creator        : 'creator@test.com',
     ]
 
     CatalogueUser createAdminUser(String creatorKey) {
@@ -105,6 +110,7 @@ trait SecurityDefinition {
         reviewer = CatalogueUser.findByEmailAddress(userEmailAddresses.reviewer)
         reader = CatalogueUser.findByEmailAddress(userEmailAddresses.reader)
         authenticated = CatalogueUser.findByEmailAddress(userEmailAddresses.authenticated)
+        creator = CatalogueUser.findByEmailAddress(userEmailAddresses.creator)
         if (!containerAdmin) {
             containerAdmin = new CatalogueUser(emailAddress: userEmailAddresses.containerAdmin,
                                                firstName: 'containerAdmin', lastName: 'User',
@@ -149,29 +155,55 @@ trait SecurityDefinition {
                                               createdBy: userEmailAddresses[creatorKey],
                                               tempPassword: SecurityUtils.generateRandomPassword())
         }
+
+        if (!creator) {
+            creator = new CatalogueUser(emailAddress: userEmailAddresses.creator,
+                                        firstName: 'creator', lastName: 'User',
+                                        createdBy: userEmailAddresses[creatorKey],
+                                        tempPassword: SecurityUtils.generateRandomPassword())
+        }
     }
 
     void getOrCreateBasicGroups(String creatorKey, boolean includeAdmin = true) {
+        admins = UserGroup.findByName('administrators')
         if (includeAdmin) {
-            admins = UserGroup.findByName('administrators')
-            if (!admins) createAdminGroup(creatorKey).addToGroupMembers(admin)
+            if (!admins) createAdminGroup(creatorKey)
         }
         editors = UserGroup.findByName('editors')
         readers = UserGroup.findByName('readers')
+        reviewers = UserGroup.findByName('reviewers')
+        containerAdmins = UserGroup.findByName('containerAdmins')
+        authors = UserGroup.findByName('authors')
         if (!editors) {
             editors = new UserGroup(createdBy: userEmailAddresses[creatorKey],
                                     name: 'editors',
                                     undeleteable: false)
-                .addToGroupMembers(containerAdmin)
                 .addToGroupMembers(editor)
         }
         if (!readers) {
             readers = new UserGroup(createdBy: userEmailAddresses[creatorKey],
                                     name: 'readers',
                                     undeleteable: false)
-                .addToGroupMembers(author)
-                .addToGroupMembers(reviewer)
                 .addToGroupMembers(reader)
         }
+        if (!reviewers) {
+            reviewers = new UserGroup(createdBy: userEmailAddresses[creatorKey],
+                                      name: 'reviewers',
+                                      undeleteable: false)
+                .addToGroupMembers(reviewer)
+        }
+        if (!containerAdmins) {
+            containerAdmins = new UserGroup(createdBy: userEmailAddresses[creatorKey],
+                                            name: 'containerAdmins',
+                                            undeleteable: false)
+                .addToGroupMembers(containerAdmin)
+        }
+        if (!authors) {
+            authors = new UserGroup(createdBy: userEmailAddresses[creatorKey],
+                                    name: 'authors',
+                                    undeleteable: false)
+                .addToGroupMembers(author)
+        }
+        admins.addToGroupMembers(creator)
     }
 }

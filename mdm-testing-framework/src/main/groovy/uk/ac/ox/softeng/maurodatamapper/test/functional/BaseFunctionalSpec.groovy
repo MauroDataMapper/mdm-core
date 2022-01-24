@@ -37,6 +37,7 @@ import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.cookie.Cookie
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder
 import org.grails.datastore.gorm.GormEntity
+import org.hibernate.HibernateException
 import org.hibernate.SessionFactory
 import org.spockframework.util.Assert
 import org.springframework.beans.factory.annotation.Autowired
@@ -45,6 +46,7 @@ import spock.lang.AutoCleanup
 import spock.lang.Shared
 
 import java.time.Duration
+import javax.persistence.OptimisticLockException
 
 /**
  * Important notes are the new Grails Annotations and use of JUnit Annotations
@@ -120,6 +122,15 @@ abstract class BaseFunctionalSpec extends MdmSpecification implements ResponseCo
 
     String jsonResponseBody() {
         jsonCapableResponse.body()
+    }
+
+    @Transactional
+    void safeSessionFlush() {
+        try {
+            sessionFactory.currentSession.flush()
+        } catch (HibernateException | OptimisticLockException exception) {
+            log.warn('Unhandled error occured. Ignoring but may cause other tests to fail', exception)
+        }
     }
 
     /********** Rest Requests *******/

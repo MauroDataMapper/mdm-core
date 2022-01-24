@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRoleService
 import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityDefinition
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
@@ -30,6 +31,7 @@ import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import org.springframework.beans.factory.annotation.Autowired
 
+import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 
@@ -72,6 +74,10 @@ abstract class FunctionalSpec extends BaseFunctionalSpec implements SecurityDefi
     @Autowired
     GroupRoleService groupRoleService
 
+    Expectations getExpectations() {
+        Expectations.builder().withDefaultExpectations()
+    }
+
     @Transactional
     CatalogueUser getUserByEmailAddress(String emailAddress) {
         CatalogueUser.findByEmailAddress(emailAddress)
@@ -104,19 +110,38 @@ abstract class FunctionalSpec extends BaseFunctionalSpec implements SecurityDefi
         loginUser(userEmailAddresses.editor, 'password')
     }
 
+    HttpResponse<Map> loginContainerAdmin() {
+        loginUser(userEmailAddresses.containerAdmin, 'password')
+    }
+
     HttpResponse<Map> loginReader() {
-        CatalogueUser reader = getUserByEmailAddress(userEmailAddresses.reader)
-        loginUser(reader.emailAddress, reader.tempPassword)
+        CatalogueUser user = getUserByEmailAddress(userEmailAddresses.reader)
+        loginUser(user.emailAddress, user.tempPassword)
+    }
+
+    HttpResponse<Map> loginReviewer() {
+        CatalogueUser user = getUserByEmailAddress(userEmailAddresses.reviewer)
+        loginUser(user.emailAddress, user.tempPassword)
+    }
+
+    HttpResponse<Map> loginAuthor() {
+        CatalogueUser user = getUserByEmailAddress(userEmailAddresses.author)
+        loginUser(user.emailAddress, user.tempPassword)
+    }
+
+    HttpResponse<Map> loginCreator() {
+        CatalogueUser user = getUserByEmailAddress(userEmailAddresses.creator)
+        loginUser(user.emailAddress, user.tempPassword)
     }
 
     HttpResponse<Map> loginAuthenticated() {
-        CatalogueUser reader = getUserByEmailAddress(userEmailAddresses.authenticated)
-        loginUser(reader.emailAddress, reader.tempPassword)
+        CatalogueUser user = getUserByEmailAddress(userEmailAddresses.authenticated)
+        loginUser(user.emailAddress, user.tempPassword)
     }
 
     HttpResponse<Map> loginAuthenticated2() {
-        CatalogueUser reader = getUserByEmailAddress(userEmailAddresses.authenticated2)
-        loginUser(reader.emailAddress, reader.tempPassword)
+        CatalogueUser user = getUserByEmailAddress(userEmailAddresses.authenticated2)
+        loginUser(user.emailAddress, user.tempPassword)
     }
 
     HttpResponse<Map> loginUser(String id) {
@@ -133,6 +158,11 @@ abstract class FunctionalSpec extends BaseFunctionalSpec implements SecurityDefi
         ], MAP_ARG, true)
         verifyResponse(OK, response)
         response
+    }
+
+    HttpResponse<Map> login(String name) {
+        if (name && name != 'Anonymous') invokeMethod("login${name}", null) as HttpResponse<Map>
+        else logout()
     }
 
     void logout() {
@@ -152,6 +182,48 @@ abstract class FunctionalSpec extends BaseFunctionalSpec implements SecurityDefi
         assert response.body().resource
         assert response.body().path
         if (id) assert response.body().id == id
+    }
+
+    @Transactional
+    void addAccessShares(String id, String resourceUrl = '') {
+        log.warn('Access is not inherited so adding permissions directly')
+        addShare(id, 'readers', GroupRole.READER_ROLE_NAME, resourceUrl)
+        addShare(id, 'reviewers', GroupRole.REVIEWER_ROLE_NAME, resourceUrl)
+        addShare(id, 'authors', GroupRole.AUTHOR_ROLE_NAME, resourceUrl)
+        addShare(id, 'editors', GroupRole.EDITOR_ROLE_NAME, resourceUrl)
+        addShare(id, 'containerAdmins', GroupRole.CONTAINER_ADMIN_ROLE_NAME, resourceUrl)
+    }
+
+    @Transactional
+    void removeAccessShares(String id, String resourceUrl = '') {
+        log.info('Remove reader share from {}', id)
+        loginAdmin()
+        removeShare(id, 'readers', GroupRole.READER_ROLE_NAME, resourceUrl)
+        removeShare(id, 'reviewers', GroupRole.REVIEWER_ROLE_NAME, resourceUrl)
+        removeShare(id, 'authors', GroupRole.AUTHOR_ROLE_NAME, resourceUrl)
+        removeShare(id, 'editors', GroupRole.EDITOR_ROLE_NAME, resourceUrl)
+        removeShare(id, 'containerAdmins', GroupRole.CONTAINER_ADMIN_ROLE_NAME, resourceUrl)
+        logout()
+    }
+
+    @Transactional
+    void addShare(String id, String groupName, String role, String resourceUrl = '') {
+        log.info('Add {} share to {}', role, id)
+        String groupRoleId = getGroupRole(role).id.toString()
+        String groupId = getUserGroup(groupName).id.toString()
+        String endpoint = "${resourceUrl}$id/groupRoles/$groupRoleId/userGroups/$groupId"
+        POST(endpoint, [:])
+        verifyResponse CREATED, response
+    }
+
+    @Transactional
+    void removeShare(String id, String groupName, String role, String resourceUrl = '') {
+        log.info('Remove {} share from {}', role, id)
+        String groupRoleId = getGroupRole(role).id.toString()
+        String groupId = getUserGroup(groupName).id.toString()
+        String endpoint = "${resourceUrl}$id/groupRoles/$groupRoleId/userGroups/$groupId"
+        DELETE(endpoint, [:])
+        verifyResponse CREATED, response
     }
 
     @Override

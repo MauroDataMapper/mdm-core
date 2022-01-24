@@ -127,7 +127,7 @@ pipeline {
             stages {
                 stage('Parallel Tests') {
                     steps {
-                        sh './gradlew --build-cache -Dgradle.integrationTest=true  -Dgradle.parallel=true' + [
+                        sh './gradlew --build-cache -Dgradle.integrationTest=true  -Dgradle.parallel=true ' + [
                             'mdm-core',
                             'mdm-plugin-authentication-apikey',
                             'mdm-plugin-authentication-basic',
@@ -149,7 +149,7 @@ pipeline {
                 }
                 stage('Non-Parallel Tests') {
                     steps {
-                        sh './gradlew --build-cache -Dgradle.integrationTest=true -Dgradle.nonParallel=true' + [
+                        sh './gradlew --build-cache -Dgradle.integrationTest=true -Dgradle.nonParallel=true ' + [
                             'mdm-core',
                             'mdm-plugin-authentication-apikey',
                             'mdm-plugin-authentication-basic',
@@ -434,6 +434,26 @@ pipeline {
                     post {
                         always {
                             junit allowEmptyResults: true, testResults: 'mdm-testing-functional/build/test-results/federation/*.xml'
+                        }
+                    }
+                }
+                stage('E2E Facets Functional Test') {
+                    steps {
+                        sh "./gradlew -Dgradle.test.package=facet :mdm-testing-functional:integrationTest"
+                    }
+                    post {
+                        always {
+                            junit allowEmptyResults: true, testResults: 'mdm-testing-functional/build/test-results/facet/*.xml'
+                        }
+                    }
+                }
+                stage('E2E Versioned Folder Functional Test') {
+                    steps {
+                        sh "./gradlew -Dgradle.test.package=versionedfolder :mdm-testing-functional:integrationTest"
+                    }
+                    post {
+                        always {
+                            junit allowEmptyResults: true, testResults: 'mdm-testing-functional/build/test-results/versionedfolder/*.xml'
                         }
                     }
                 }

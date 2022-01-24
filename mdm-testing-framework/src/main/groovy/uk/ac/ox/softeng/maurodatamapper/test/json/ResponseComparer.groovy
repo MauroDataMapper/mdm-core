@@ -46,7 +46,6 @@ trait ResponseComparer extends JsonComparer {
         try {
             Assert.assertEquals('Failed Response code', expected, response.status())
         } catch (AssertionError error) {
-            log.warn('', response.status().code, response.status().reason)
             log.error('Failed Response :: {}[{}]\nResponse Body\n{}\n', response.status().code, response.status().reason, response.body())
             throw error
         }
