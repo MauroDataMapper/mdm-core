@@ -17,20 +17,16 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.container
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
-import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
-
-import java.util.regex.Pattern
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.FORBIDDEN
@@ -92,57 +88,34 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
     }
 
     @Override
-    Map getValidUpdateJson() {
-        [
-            description: 'Just something for testing'
-        ]
-    }
-
-    Pattern getExpectedCreatedEditRegex() {
-        ~/\[Classifier:Functional Test Classifier 2] created/
-    }
-
-    @Override
-    Pattern getExpectedUpdateEditRegex() {
-        ~/\[Classifier:Functional Test Classifier 2] changed properties \[description]/
-    }
-
-    @Override
-    List<String> getEditorAvailableActions() {
-        ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'delete']
-    }
-
-    @Override
-    String getEditorGroupRoleName() {
-        GroupRole.CONTAINER_ADMIN_ROLE_NAME
-    }
-
-    @Override
-    Boolean getReaderCanCreate() {
-        true
-    }
-
-    @Override
-    Boolean getAuthenticatedUsersCanCreate() {
-        true
-    }
-
-    @Override
-    void verifyL01Response(HttpResponse<Map> response) {
-        verifyResponse OK, response
-        assert response.body().count == 0
-    }
-
-    @Override
-    void verifyN01Response(HttpResponse<Map> response) {
-        verifyResponse OK, response
-        response.body().count == 0
-        response.body().items.size() == 0
-    }
-
-    @Override
-    int getExpectedCountOfGroupsWithAccess() {
-        2
+    Expectations getExpectations() {
+        Expectations.builder()
+            .withDefaultExpectations()
+            .whereEditorsCannotChangePermissions()
+            .whereAuthenticatedUsers {
+                canCreate()
+                cannotSee()
+                canIndex()
+            }
+            .whereReaders {
+                canCreate()
+            }
+            .whereReviewers {
+                canCreate()
+            }
+            .whereAuthors {
+                canCreate()
+                cannotEditDescription()
+            }
+            .whereEditors {
+                cannotDelete()
+                cannotUpdate()
+            }
+            .whereAnonymousUsers {
+                canIndex()
+            }
+            .whereContainerAdminsCanAction('comment', 'delete', 'editDescription', 'save', 'show', 'softDelete', 'update')
+            .whereEditorsCanAction 'show'
     }
 
     @Override
@@ -187,7 +160,7 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
   "label": "Functional Test Classifier 2",
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
-  "availableActions": ["comment","delete","editDescription","save","show","softDelete","update"]
+  "availableActions": ["show"]
 }'''
     }
 
@@ -196,7 +169,7 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
         GET("${getTestClassifierId()}/catalogueItems")
 
         then: "The response is not found"
-        response.status == HttpStatus.NOT_FOUND
+        response.status == NOT_FOUND
 
         when: "The catalogueItems action is requested on a known classifier ID (with no catalogueItems) logged in as editor"
         loginEditor()
@@ -225,7 +198,7 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
         ], MAP_ARG, true)
 
         then: "Resource is created"
-        response.status == HttpStatus.CREATED
+        response.status == CREATED
         String newId = response.body().id
 
         when: "The catalogueItems action is requested on the new classifier ID (which is associated with a terminology) logged in as admin"
@@ -383,7 +356,7 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
         then: 'response should be OK and include the classifier inside the terminology'
         verifyResponse(OK, response)
         assert responseBody().count == 1
-        assert responseBody().items.any { it.label == 'test classifier simple' }
+        assert responseBody().items.any {it.label == 'test classifier simple'}
 
     }
 }

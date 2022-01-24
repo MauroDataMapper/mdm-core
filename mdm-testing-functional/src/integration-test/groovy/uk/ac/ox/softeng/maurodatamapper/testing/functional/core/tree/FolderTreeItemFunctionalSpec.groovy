@@ -72,7 +72,6 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
     "hasChildren": true,
     "availableActions": [
       "createModelItem",
-      "delete",
       "moveToContainer",
       "moveToFolder",
       "moveToVersionedFolder",
@@ -92,7 +91,6 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
     "hasChildren": true,
     "availableActions": [
       "createModelItem",
-      "delete",
       "moveToContainer",
       "moveToFolder",
       "moveToVersionedFolder",
@@ -111,7 +109,6 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
     "label": "Finalised Example Test DataModel",
     "hasChildren": true,
     "availableActions": [
-      "delete",
       "moveToContainer",
       "moveToFolder",
       "softDelete"
@@ -131,7 +128,6 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
     "hasChildren": false,
     "availableActions": [
       "createModelItem",
-      "delete",
       "moveToContainer",
       "moveToFolder",
       "moveToVersionedFolder",
@@ -151,7 +147,6 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
     "hasChildren": false,
     "availableActions": [
       "createModelItem",
-      "delete",
       "moveToContainer",
       "moveToFolder",
       "moveToVersionedFolder",
@@ -170,7 +165,6 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
     "label": "Simple Test CodeSet",
     "hasChildren": false,
     "availableActions": [
-      "delete",
       "moveToContainer",
       "moveToFolder",
       "softDelete"
@@ -190,7 +184,6 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
     "hasChildren": true,
     "availableActions": [
       "createModelItem",
-      "delete",
       "moveToContainer",
       "moveToFolder",
       "moveToVersionedFolder",
@@ -210,7 +203,6 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
     "hasChildren": false,
     "availableActions": [
       "createModelItem",
-      "delete",
       "moveToContainer",
       "moveToFolder",
       "moveToVersionedFolder",
@@ -230,7 +222,6 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
     "hasChildren": true,
     "availableActions": [
       "createModelItem",
-      "delete",
       "moveToContainer",
       "moveToFolder",
       "moveToVersionedFolder",
@@ -250,7 +241,6 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
     "hasChildren": true,
     "availableActions": [
       "createModelItem",
-      "delete",
       "moveToContainer",
       "moveToFolder",
       "moveToVersionedFolder",
@@ -270,7 +260,6 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
     "hasChildren": false,
     "availableActions": [
       "createModelItem",
-      "delete",
       "moveToContainer",
       "moveToFolder",
       "moveToVersionedFolder",
@@ -289,7 +278,6 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
     "label": "Complex Test CodeSet",
     "hasChildren": false,
     "availableActions": [
-      "delete",
       "moveToContainer",
       "moveToFolder",
       "softDelete"
@@ -610,6 +598,38 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         '''[
   {
     "id": "${json-unit.matches:id}",
+    "domainType": "VersionedFolder",
+    "label": "Functional Test VersionedFolder",
+    "hasChildren": false,
+    "availableActions": [
+      "createFolder",
+      "createModel",
+      "moveToFolder",
+      "softDelete"
+    ],
+    "deleted": false,
+    "finalised": false,
+    "documentationVersion": "1.0.0",
+    "branchName": "main"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "VersionedFolder",
+    "label": "Functional Test VersionedFolder 2",
+    "hasChildren": false,
+    "availableActions": [
+      "createFolder",
+      "createModel",
+      "moveToFolder",
+      "softDelete"
+    ],
+    "deleted": false,
+    "finalised": false,
+    "documentationVersion": "1.0.0",
+    "branchName": "main"
+  },
+  {
+    "id": "${json-unit.matches:id}",
     "domainType": "Folder",
     "label": "Parent Functional Test Folder",
     "hasChildren": true,
@@ -617,7 +637,6 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
       "createFolder",
       "createModel",
       "createVersionedFolder",
-      "delete",
       "moveToFolder",
       "moveToVersionedFolder",
       "softDelete"
@@ -633,7 +652,6 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
           "createFolder",
           "createModel",
           "createVersionedFolder",
-          "delete",
           "moveToFolder",
           "softDelete"
         ],
@@ -642,12 +660,29 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "children": [
           {
             "id": "${json-unit.matches:id}",
+            "domainType": "CodeSet",
+            "label": "Complex Test CodeSet",
+            "hasChildren": false,
+            "availableActions": [
+              "moveToContainer",
+              "moveToFolder",
+              "softDelete"
+            ],
+            "deleted": false,
+            "finalised": true,
+            "superseded": false,
+            "documentationVersion": "1.0.0",
+            "folder": "${json-unit.matches:id}",
+            "type": "CodeSet",
+            "modelVersion": "1.0.0"
+          },
+          {
+            "id": "${json-unit.matches:id}",
             "domainType": "DataModel",
             "label": "Complex Test DataModel",
             "hasChildren": true,
             "availableActions": [
               "createModelItem",
-              "delete",
               "moveToContainer",
               "moveToFolder",
               "moveToVersionedFolder",
@@ -667,7 +702,6 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
             "hasChildren": true,
             "availableActions": [
               "createModelItem",
-              "delete",
               "moveToContainer",
               "moveToFolder",
               "moveToVersionedFolder",
@@ -686,7 +720,6 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
             "label": "Finalised Example Test DataModel",
             "hasChildren": true,
             "availableActions": [
-              "delete",
               "moveToContainer",
               "moveToFolder",
               "softDelete"
@@ -706,7 +739,6 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
             "hasChildren": false,
             "availableActions": [
               "createModelItem",
-              "delete",
               "moveToContainer",
               "moveToFolder",
               "moveToVersionedFolder",
@@ -726,7 +758,6 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
             "hasChildren": false,
             "availableActions": [
               "createModelItem",
-              "delete",
               "moveToContainer",
               "moveToFolder",
               "moveToVersionedFolder",
@@ -745,7 +776,6 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
             "label": "Simple Test CodeSet",
             "hasChildren": false,
             "availableActions": [
-              "delete",
               "moveToContainer",
               "moveToFolder",
               "softDelete"
@@ -765,7 +795,6 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
             "hasChildren": true,
             "availableActions": [
               "createModelItem",
-              "delete",
               "moveToContainer",
               "moveToFolder",
               "moveToVersionedFolder",
@@ -785,7 +814,6 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
             "hasChildren": false,
             "availableActions": [
               "createModelItem",
-              "delete",
               "moveToContainer",
               "moveToFolder",
               "moveToVersionedFolder",
@@ -805,7 +833,6 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
             "hasChildren": true,
             "availableActions": [
               "createModelItem",
-              "delete",
               "moveToContainer",
               "moveToFolder",
               "moveToVersionedFolder",
@@ -825,7 +852,6 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
             "hasChildren": true,
             "availableActions": [
               "createModelItem",
-              "delete",
               "moveToContainer",
               "moveToFolder",
               "moveToVersionedFolder",
@@ -845,7 +871,6 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
             "hasChildren": false,
             "availableActions": [
               "createModelItem",
-              "delete",
               "moveToContainer",
               "moveToFolder",
               "moveToVersionedFolder",
@@ -857,63 +882,10 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
             "documentationVersion": "1.0.0",
             "folder": "${json-unit.matches:id}",
             "type": "CodeSet"
-          },
-          {
-            "id": "${json-unit.matches:id}",
-            "domainType": "CodeSet",
-            "label": "Complex Test CodeSet",
-            "hasChildren": false,
-            "availableActions": [
-              "delete",
-              "moveToContainer",
-              "moveToFolder",
-              "softDelete"
-            ],
-            "deleted": false,
-            "finalised": true,
-            "superseded": false,
-            "documentationVersion": "1.0.0",
-            "folder": "${json-unit.matches:id}",
-            "type": "CodeSet",
-            "modelVersion": "1.0.0"
           }
         ]
       }
     ]
-  },
-  {
-    "id": "${json-unit.matches:id}",
-    "domainType": "VersionedFolder",
-    "label": "Functional Test VersionedFolder",
-    "hasChildren": false,
-    "availableActions": [
-      "createFolder",
-      "createModel",
-      "delete",
-      "moveToFolder",
-      "softDelete"
-    ],
-    "deleted": false,
-    "finalised": false,
-    "documentationVersion": "1.0.0",
-    "branchName": "main"
-  },
-  {
-    "id": "${json-unit.matches:id}",
-    "domainType": "VersionedFolder",
-    "label": "Functional Test VersionedFolder 2",
-    "hasChildren": false,
-    "availableActions": [
-      "createFolder",
-      "createModel",
-      "delete",
-      "moveToFolder",
-      "softDelete"
-    ],
-    "deleted": false,
-    "finalised": false,
-    "documentationVersion": "1.0.0",
-    "branchName": "main"
   }
 ]'''
     }

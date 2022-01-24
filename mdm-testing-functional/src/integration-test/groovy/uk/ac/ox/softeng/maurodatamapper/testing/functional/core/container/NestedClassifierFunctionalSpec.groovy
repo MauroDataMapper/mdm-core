@@ -17,9 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.container
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -70,19 +70,23 @@ class NestedClassifierFunctionalSpec extends UserAccessFunctionalSpec {
     }
 
     @Override
-    Map getValidUpdateJson() {
-        [
-            description: 'Just something for testing'
-        ]
+    Expectations getExpectations() {
+        Expectations.builder()
+            .withDefaultExpectations()
+            .withInheritedAccessPermissions()
+            .whereEditorsCannotChangePermissions()
+            .whereEditors {
+                cannotCreate()
+            }
+            .whereAuthors {
+                cannotEditDescription()
+            }
+            .whereContainerAdminsCanAction('comment', 'delete', 'editDescription', 'save', 'show', 'softDelete', 'update')
+            .whereEditorsCanAction('show')
     }
 
     Pattern getExpectedCreatedEditRegex() {
         ~/\[Classifier:Nested Functional Test Classifier] added as child of \[Classifier:Functional Test Classifier]/
-    }
-
-    @Override
-    Boolean readerPermissionIsInherited() {
-        true
     }
 
     @Override
@@ -98,7 +102,7 @@ class NestedClassifierFunctionalSpec extends UserAccessFunctionalSpec {
   "label": "Nested Functional Test Classifier",
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
-  "availableActions": ["comment","delete","editDescription","save","show","softDelete","update"]
+  "availableActions": ["show"]
 }'''
     }
 }

@@ -148,11 +148,11 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         PUT("versionedFolders/$id/newBranchModelVersion", [:])
         verifyResponse CREATED, response
         String mainId = responseBody().id
-        if (readRhs) addReaderShare(mainId)
+        if (readRhs) addAccessShares(mainId)
         PUT("versionedFolders/$id/newBranchModelVersion", [branchName: 'left'])
         verifyResponse CREATED, response
         String leftId = responseBody().id
-        if (readLhs) addReaderShare(leftId)
+        if (readLhs) addAccessShares(leftId)
         logout()
         new TestMergeData(commonAncestor: id, source: leftId, target: mainId)
     }
@@ -167,11 +167,11 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         PUT("versionedFolders/$data.commonAncestorId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String target = responseBody().id
-        addReaderShare(target)
+        addAccessShares(target)
         PUT("versionedFolders/$data.commonAncestorId/newBranchModelVersion", [branchName: 'source'])
         verifyResponse CREATED, response
         String source = responseBody().id
-        addReaderShare(source)
+        addAccessShares(source)
 
         Map<String, Object> sourceMap = [:]
         Map<String, Object> targetMap = [:]
@@ -264,11 +264,11 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         PUT("versionedFolders/$data.commonAncestorId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String target = responseBody().id
-        addReaderShare(target)
+        addAccessShares(target)
         PUT("versionedFolders/$data.commonAncestorId/newBranchModelVersion", [branchName: 'source'])
         verifyResponse CREATED, response
         String source = responseBody().id
-        addReaderShare(source)
+        addAccessShares(source)
 
         Map<String, Object> sourceMap = [:]
         Map<String, Object> targetMap = [:]
@@ -322,8 +322,8 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         fullFunctionalSpec.loginEditor()
     }
 
-    void addReaderShare(String id) {
-        fullFunctionalSpec.addReaderShare(id)
+    void addAccessShares(String id) {
+        fullFunctionalSpec.addAccessShares(id)
     }
 
     void logout() {

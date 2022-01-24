@@ -30,7 +30,7 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
-import spock.lang.Ignore
+import spock.lang.Requires
 import spock.lang.Shared
 
 import java.nio.file.Path
@@ -58,7 +58,14 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
  */
 @Integration
 @Slf4j
-@Ignore("Depends on remote catalogue - to be run manually")
+// Requires a connection to the CD environment, if this connection is not available
+@Requires({
+    String url = 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment'
+    HttpURLConnection connection = url.toURL().openConnection() as HttpURLConnection
+    connection.setRequestMethod("GET")
+    connection.connect()
+    connection.getResponseCode() == 200
+})
 class SubscribedModelFunctionalSpec extends FunctionalSpec {
 
     @Shared
@@ -71,7 +78,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
     @Transactional
     def setup() {
         log.debug('Check and setup test data for SubscribedModelFunctionalSpec')
-        sessionFactory.currentSession.flush()
+        safeSessionFlush()
 
         adminApiKey = new ApiKey(catalogueUser: getUserByEmailAddress(ADMIN),
                                  name: "Functional Test",
@@ -108,7 +115,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
     }
 
     String getValidId() {
-        loginAdmin()
+        loginCreator()
         POST('', validJson)
         verifyResponse CREATED, response
         String id = responseBody().id
@@ -117,7 +124,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
     }
 
     void removeValidIdObjects(String id, String localModelId = null) {
-        loginAdmin()
+        loginCreator()
         if (id) {
             DELETE(id)
             verifyResponse NO_CONTENT, response
@@ -130,7 +137,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
     }
 
     String getSubscribedModelLocalModelId(String id) {
-        loginAdmin()
+        loginCreator()
         GET(id)
         String localModelId = responseBody().localModelId
         logout()
@@ -142,7 +149,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         log.info('Cleaning up roles and groups')
         log.debug('Cleaning up {} roles for ids {}', SecurableResourceGroupRole.count(), ids)
         SecurableResourceGroupRole.bySecurableResourceIds(ids.collect {Utils.toUuid(it)}).deleteAll()
-        sessionFactory.currentSession.flush()
+        safeSessionFlush()
     }
 
     Map getValidJson() {
@@ -292,7 +299,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
 
     void 'E03 : Test the save action is ok (as editor)'() {
         given:
-        loginEditor()
+        loginContainerAdmin()
 
         when: 'The save action is executed with no content'
         POST('', [:])
@@ -540,7 +547,7 @@ class SubscribedModelFunctionalSpec extends FunctionalSpec {
         verifyResponse UNPROCESSABLE_ENTITY, response
         log.debug('responseBody().errors.first().message={}', responseBody().errors.first().message)
         responseBody().errors.first().message == 'Property [subscribedModelId] of class [class uk.ac.ox.softeng.maurodatamapper.federation.SubscribedModel] with value [' +
-            getValidJson().subscribedModelId + '] must be unique'
+        getValidJson().subscribedModelId + '] must be unique'
 
         cleanup:
         removeValidIdObjects(id, localModelId)

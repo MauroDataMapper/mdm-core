@@ -113,7 +113,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         log.info('Cleaning up roles and groups')
         log.debug('Cleaning up {} roles for ids {}', SecurableResourceGroupRole.count(), ids)
         SecurableResourceGroupRole.bySecurableResourceIds(ids.collect { Utils.toUuid(it) }).deleteAll()
-        sessionFactory.currentSession.flush()
+        safeSessionFlush()
     }
 
     Map getValidJson() {

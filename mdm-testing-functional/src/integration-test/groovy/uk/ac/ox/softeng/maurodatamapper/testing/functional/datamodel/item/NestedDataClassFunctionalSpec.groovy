@@ -99,13 +99,6 @@ class NestedDataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunc
     }
 
     @Override
-    Map getValidUpdateJson() {
-        [
-            description: 'Adding a description to the DataClass'
-        ]
-    }
-
-    @Override
     String getEditorIndexJson() {
         '''{
   "count": 1,
@@ -155,12 +148,7 @@ class NestedDataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunc
     }
   ],
   "availableActions": [
-    "delete",
-    "update",
-    "save",
-    "show",
-    "comment",
-    "editDescription"
+    "show"
   ],
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "parentDataClass": "${json-unit.matches:id}"

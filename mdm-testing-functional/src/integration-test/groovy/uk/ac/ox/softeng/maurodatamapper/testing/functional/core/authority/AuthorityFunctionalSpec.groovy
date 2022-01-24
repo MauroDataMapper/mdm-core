@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -50,34 +51,44 @@ class AuthorityFunctionalSpec extends UserAccessFunctionalSpec {
     }
 
     @Override
-    def addValidIdReaderGroup() {
-        log.info('Not adding valid id reader group')
+    Expectations getExpectations() {
+        Expectations.builder()
+            .withDefaultExpectations()
+            .withInheritedAccessPermissions()
+            .whereEditorsCannotChangePermissions()
+            .whereEditors {
+                cannotCreate()
+                canAction('show')
+            }
+            .whereAuthors {
+                cannotEditDescription()
+            }
+            .whereAuthenticatedUsers {
+                canSee()
+                canAction('show')
+            }
+            .whereAnonymousUsers {
+                canIndex()
+            }
     }
 
     @RunOnce
     @Transactional
     def setup() {
-        log.info('Adding application admin group who can edit authorities')
-        CatalogueUser editor = getUserByEmailAddress(userEmailAddresses.editor)
+        log.info('Adding application admin group who can edit authorities, contains the user containerAdmin')
+        CatalogueUser containerAdmin = getUserByEmailAddress(userEmailAddresses.containerAdmin)
         // To allow testing of reader group rights which reader2 is not in
         UserGroup group = new UserGroup(
             createdBy: userEmailAddresses.functionalTest,
             name: 'applicationAdmin',
             applicationGroupRole: GroupRole.findByName(GroupRole.APPLICATION_ADMIN_ROLE_NAME)
-        ).addToGroupMembers(editor)
+        ).addToGroupMembers(containerAdmin)
         checkAndSave(messageSource, group)
     }
 
     @Transactional
     def cleanupSpec() {
         UserGroup.findByName('applicationAdmin').delete(flush: true)
-    }
-
-    @Override
-    Map getValidUpdateJson() {
-        [
-            description: 'This was created by functional testing'
-        ]
     }
 
     @Override
@@ -96,49 +107,20 @@ class AuthorityFunctionalSpec extends UserAccessFunctionalSpec {
         ]
     }
 
-    @Override
-    Boolean readerPermissionIsInherited() {
-        true
-    }
-
-    @Override
-    Boolean getReaderCanSeeEditorCreatedItems() {
-        false
-    }
-
-    void verifyR01Response(HttpResponse<Map> response) {
+    void verify01Response(HttpResponse<Map> response) {
         verifyResponse OK, response
         assert response.body().count == 1
         assert response.body().items.size() == 1
     }
 
     @Override
-    void verifyL01Response(HttpResponse<Map> response) {
-        verifyR01Response(response)
-    }
-
-    @Override
-    void verifyN01Response(HttpResponse<Map> response) {
-        verifyR01Response(response)
-    }
-
-    @Override
-    void verifyR04KnownIdResponse(HttpResponse<Map> response, String id) {
-        verifyNotFound(response, id)
-    }
-
-    void verifyR05InvalidDataResponse(HttpResponse<Map> response, String id) {
-        verifyNotFound(response, id)
-    }
-
-    @Override
-    void verifyR05ValidDataResponse(HttpResponse<Map> response, String id) {
-        verifyNotFound(response, id)
+    void verifyNA04Response(HttpResponse<Map> response, String id) {
+        verifyForbidden(response)
     }
 
     @Override
     List<String> getPermanentGroupNames() {
-        ['applicationAdmin', 'administrators', 'readers', 'editors']
+        super.getPermanentGroupNames() + ['applicationAdmin']
     }
 
     @Override
@@ -148,7 +130,7 @@ class AuthorityFunctionalSpec extends UserAccessFunctionalSpec {
 
     @Override
     Pattern getExpectedUpdateEditRegex() {
-        ~/\[.+?@.+?] changed properties \[description]/
+        ~/\[.+?@.+?] changed properties \[path, label]/
     }
 
     @Override
@@ -176,9 +158,7 @@ class AuthorityFunctionalSpec extends UserAccessFunctionalSpec {
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
   "availableActions": [
-    "delete",
-    "show",
-    "update"
+    "show"
   ]
 }'''
     }

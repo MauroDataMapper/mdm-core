@@ -22,11 +22,14 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRoleService
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
+
+import java.util.regex.Pattern
 
 import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
 
@@ -63,16 +66,14 @@ class UserGroupFunctionalSpec extends UserAccessFunctionalSpec {
     def setup() {
         log.debug('Check and setup test data')
 
-        CatalogueUser admin = CatalogueUser.findByEmailAddress(userEmailAddresses.admin)
-        CatalogueUser editor = CatalogueUser.findByEmailAddress(userEmailAddresses.editor)
-        CatalogueUser reader = CatalogueUser.findByEmailAddress(userEmailAddresses.reader)
         // For now to allow existing permissions tests the editor user needs to be group admin role level
         // This will give editor the "editing" rights to usergroups
         UserGroup groupAdmin = new UserGroup(
             createdBy: userEmailAddresses.functionalTest,
             name: 'groupAdmins',
             applicationGroupRole: groupRoleService.getFromCache(GroupRole.GROUP_ADMIN_ROLE_NAME).groupRole)
-            .addToGroupMembers(admin).addToGroupMembers(editor)
+            .addToGroupMembers(CatalogueUser.findByEmailAddress(userEmailAddresses.containerAdmin))
+            .addToGroupMembers(CatalogueUser.findByEmailAddress(userEmailAddresses.editor))
         checkAndSave(messageSource, groupAdmin)
 
         // For now to allow existing permissions tests the reader user needs to be container group admin role level
@@ -81,7 +82,9 @@ class UserGroupFunctionalSpec extends UserAccessFunctionalSpec {
             createdBy: userEmailAddresses.functionalTest,
             name: 'containerGroupAdmins',
             applicationGroupRole: groupRoleService.getFromCache(GroupRole.CONTAINER_GROUP_ADMIN_ROLE_NAME).groupRole)
-            .addToGroupMembers(admin).addToGroupMembers(editor).addToGroupMembers(reader)
+            .addToGroupMembers(CatalogueUser.findByEmailAddress(userEmailAddresses.reader))
+            .addToGroupMembers(CatalogueUser.findByEmailAddress(userEmailAddresses.reviewer))
+            .addToGroupMembers(CatalogueUser.findByEmailAddress(userEmailAddresses.author))
         checkAndSave(messageSource, containerGroupAdmin)
     }
 
@@ -99,13 +102,22 @@ class UserGroupFunctionalSpec extends UserAccessFunctionalSpec {
     }
 
     @Override
-    Boolean readerPermissionIsInherited() {
-        true
-    }
-
-    @Override
-    def addValidIdReaderGroup() {
-        log.info('Not adding valid id reader group')
+    Expectations getExpectations() {
+        Expectations.builder()
+            .withDefaultExpectations()
+            .withInheritedAccessPermissions()
+            .whereAuthors {
+                canCreate()
+                cannotEditDescription()
+            }
+            .whereReviewers {
+                canCreate()
+            }
+            .whereReaders {
+                canCreate()
+            }
+            .whereContainerAdminsCanAction('delete', 'show', 'update')
+            .whereEditorsCanAction('delete', 'show', 'update')
     }
 
     @Override
@@ -115,7 +127,11 @@ class UserGroupFunctionalSpec extends UserAccessFunctionalSpec {
 
     @Override
     List<String> getPermanentGroupNames() {
-        ['groupAdmins', 'containerGroupAdmins', 'administrators', 'readers', 'editors']
+        super.permanentGroupNames + ['groupAdmins', 'containerGroupAdmins']
+    }
+
+    Pattern getExpectedUpdateEditRegex() {
+        ~/\[\w+( \w+)*:.+?] changed properties \[path, name]/
     }
 
     @Override
@@ -132,52 +148,96 @@ class UserGroupFunctionalSpec extends UserAccessFunctionalSpec {
         ]
     }
 
-    @Override
-    Map getValidUpdateJson() {
+    Map getValidNonDescriptionUpdateJson() {
         [
-            description: 'Testing peoples'
+            name: "Functional Test Updated Label ${getClass().simpleName}".toString()
         ]
-    }
-
-    @Override
-    Boolean getReaderCanCreate() {
-        true
     }
 
     @Override
     String getEditorIndexJson() {
         '''{
-  "count": 5,
+  "count": 8,
   "items": [
     {
       "id": "${json-unit.matches:id}",
-      "name": "readers",
+      "name": "authors",
       "createdBy": "functional-test@test.com",
-      "availableActions": [ "update","delete","show"]
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "name": "editors",
-      "createdBy": "functional-test@test.com",
-      "availableActions": [ "update","delete","show"]
+      "availableActions": [
+        "delete",
+        "show",
+        "update"
+      ]
     },
     {
       "id": "${json-unit.matches:id}",
       "name": "administrators",
       "createdBy": "admin@maurodatamapper.com",
-      "availableActions": [ "update","delete","show"]
+      "availableActions": [
+        "delete",
+        "show",
+        "update"
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "name": "editors",
+      "createdBy": "functional-test@test.com",
+      "availableActions": [
+        "delete",
+        "show",
+        "update"
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "name": "containerAdmins",
+      "createdBy": "functional-test@test.com",
+      "availableActions": [
+        "delete",
+        "show",
+        "update"
+      ]
     },
     {
       "id": "${json-unit.matches:id}",
       "name": "groupAdmins",
       "createdBy": "functional-test@test.com",
-      "availableActions": [ "update","delete","show"]
+      "availableActions": [
+        "delete",
+        "show",
+        "update"
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "name": "reviewers",
+      "createdBy": "functional-test@test.com",
+      "availableActions": [
+        "delete",
+        "show",
+        "update"
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "name": "readers",
+      "createdBy": "functional-test@test.com",
+      "availableActions": [
+        "delete",
+        "show",
+        "update"
+      ]
     },
     {
       "id": "${json-unit.matches:id}",
       "name": "containerGroupAdmins",
       "createdBy": "functional-test@test.com",
-      "availableActions": [ "update","delete","show"]
+      "availableActions": [
+        "delete",
+        "show",
+        "update"
+      ]
     }
   ]
 }'''
@@ -186,76 +246,71 @@ class UserGroupFunctionalSpec extends UserAccessFunctionalSpec {
     @Override
     String getReaderIndexJson() {
         '''{
-  "count": 5,
+  "count": 8,
   "items": [
     {
       "id": "${json-unit.matches:id}",
-      "name": "readers",
+      "name": "authors",
       "createdBy": "functional-test@test.com",
-      "availableActions": [ "show"]
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "name": "editors",
-      "createdBy": "functional-test@test.com",
-      "availableActions": ["show"]
+      "availableActions": [
+        "show"
+      ]
     },
     {
       "id": "${json-unit.matches:id}",
       "name": "administrators",
       "createdBy": "admin@maurodatamapper.com",
-      "availableActions": ["show"]
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "name": "groupAdmins",
-      "createdBy": "functional-test@test.com",
-      "availableActions": ["show"]
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "name": "containerGroupAdmins",
-      "createdBy": "functional-test@test.com",
-      "availableActions": [ "show"]
-    }
-  ]
-}'''
-    }
-
-    @Override
-    String getAdminIndexJson() {
-        '''{
-  "count": 5,
-  "items": [
-    {
-      "id": "${json-unit.matches:id}",
-      "name": "readers",
-      "createdBy": "functional-test@test.com",
-      "availableActions": [ "update","delete","show"]
+      "availableActions": [
+        "show"
+      ]
     },
     {
       "id": "${json-unit.matches:id}",
       "name": "editors",
       "createdBy": "functional-test@test.com",
-      "availableActions": [ "update","delete","show"]
+      "availableActions": [
+        "show"
+      ]
     },
     {
       "id": "${json-unit.matches:id}",
-      "name": "administrators",
-      "createdBy": "admin@maurodatamapper.com",
-      "availableActions": [ "update","delete","show"]
+      "name": "containerAdmins",
+      "createdBy": "functional-test@test.com",
+      "availableActions": [
+        "show"
+      ]
     },
     {
       "id": "${json-unit.matches:id}",
       "name": "groupAdmins",
       "createdBy": "functional-test@test.com",
-      "availableActions": [ "update","delete","show"]
+      "availableActions": [
+        "show"
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "name": "reviewers",
+      "createdBy": "functional-test@test.com",
+      "availableActions": [
+        "show"
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "name": "readers",
+      "createdBy": "functional-test@test.com",
+      "availableActions": [
+        "show"
+      ]
     },
     {
       "id": "${json-unit.matches:id}",
       "name": "containerGroupAdmins",
       "createdBy": "functional-test@test.com",
-      "availableActions": [ "update","delete","show"]
+      "availableActions": [
+        "show"
+      ]
     }
   ]
 }'''
@@ -266,8 +321,8 @@ class UserGroupFunctionalSpec extends UserAccessFunctionalSpec {
         '''{
   "id": "${json-unit.matches:id}",
   "name": "testers",
-  "createdBy": "editor@test.com",
-  "availableActions": [ "update","delete","show"]
+  "createdBy": "creator@test.com",
+  "availableActions": [ "show"]
 }'''
     }
 
@@ -287,32 +342,12 @@ class UserGroupFunctionalSpec extends UserAccessFunctionalSpec {
 
         then:
         verifyJsonResponse OK, '''{
-  "count": 3,
+  "count": 1,
   "items": [
     {
       "id": "${json-unit.matches:id}",
       "emailAddress": "reader@test.com",
       "firstName": "reader",
-      "lastName": "User",
-      "pending": false,
-      "disabled": false,
-      "needsToResetPassword": true,
-      "createdBy": "functional-test@test.com"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "emailAddress": "author@test.com",
-      "firstName": "author",
-      "lastName": "User",
-      "pending": false,
-      "disabled": false,
-      "needsToResetPassword": true,
-      "createdBy": "functional-test@test.com"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "emailAddress": "reviewer@test.com",
-      "firstName": "reviewer",
       "lastName": "User",
       "pending": false,
       "disabled": false,
@@ -340,7 +375,16 @@ class UserGroupFunctionalSpec extends UserAccessFunctionalSpec {
         PUT("${id}/catalogueUsers/${authenticatedId}", [:], STRING_ARG)
 
         then:
-        verifyJsonResponse OK, showJson
+        verifyJsonResponse OK, '''{
+  "id": "${json-unit.matches:id}",
+  "name": "testers",
+  "createdBy": "creator@test.com",
+  "availableActions": [
+    "delete",
+    "show",
+    "update"
+  ]
+}'''
 
         when: 'listing edits for the group, expect to see 2 edits. One create and one PUT.'
         GET("$id/edits", STRING_ARG)
@@ -351,9 +395,9 @@ class UserGroupFunctionalSpec extends UserAccessFunctionalSpec {
   "items": [
     {
       "dateCreated": "${json-unit.matches:offsetDateTime}",
-      "createdBy": "editor@test.com",
+      "createdBy": "creator@test.com",
       "createdByUser": {
-        "name": "editor User",
+        "name": "creator User",
         "id": "${json-unit.matches:id}"
       },
       "title": "CREATE",
@@ -425,11 +469,12 @@ class UserGroupFunctionalSpec extends UserAccessFunctionalSpec {
     },
     {
       "id": "${json-unit.matches:id}",
-      "emailAddress": "editor@test.com",
-      "firstName": "editor",
+      "emailAddress": "creator@test.com",
+      "firstName": "creator",
       "lastName": "User",
       "pending": false,
       "disabled": false,
+      "needsToResetPassword": true,
       "createdBy": "functional-test@test.com"
     }
   ]
@@ -462,7 +507,16 @@ class UserGroupFunctionalSpec extends UserAccessFunctionalSpec {
         DELETE("${id}/catalogueUsers/${reviewerId}", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, showJson
+        verifyJsonResponse OK, '''{
+  "id": "${json-unit.matches:id}",
+  "name": "testers",
+  "createdBy": "creator@test.com",
+  "availableActions": [
+    "delete",
+    "show",
+    "update"
+  ]
+}'''
 
         when: 'listing edits for the group expect to see 4 edits. One create, two PUTs and a DELETE'
         GET("$id/edits", STRING_ARG)
@@ -473,9 +527,9 @@ class UserGroupFunctionalSpec extends UserAccessFunctionalSpec {
   "items": [
     {
       "dateCreated": "${json-unit.matches:offsetDateTime}",
-      "createdBy": "editor@test.com",
+      "createdBy": "creator@test.com",
       "createdByUser": {
-        "name": "editor User",
+        "name": "creator User",
         "id": "${json-unit.matches:id}"
       },
       "title": "CREATE",
@@ -631,7 +685,7 @@ class UserGroupFunctionalSpec extends UserAccessFunctionalSpec {
         verifyResponse OK, response
         response.body().count == 1
         response.body().items.first().name == 'testers'
-        response.body().items.first().createdBy == 'editor@test.com'
+        response.body().items.first().createdBy == 'creator@test.com'
 
         cleanup:
         removeValidIdObject(id)

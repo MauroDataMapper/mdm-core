@@ -134,13 +134,6 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
     }
 
     @Override
-    Map getValidUpdateJson() {
-        [
-            description: 'Adding a description to the DataClass'
-        ]
-    }
-
-    @Override
     String getShowJson() {
         '''{
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
@@ -157,12 +150,7 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
     }
   ],
   "availableActions": [
-    "delete",
-    "update",
-    "save",
-    "show",
-    "comment",
-    "editDescription"
+    "show"
   ]
 }'''
     }

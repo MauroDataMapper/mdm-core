@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.container
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -74,26 +75,26 @@ class NestedFolderFunctionalSpec extends UserAccessFunctionalSpec {
     }
 
     @Override
-    Map getValidUpdateJson() {
-        [
-            description: 'Testing folder description'
-        ]
-    }
-
-    @Override
     Pattern getExpectedCreatedEditRegex() {
         ~/\[Folder:Nested Functional Test Folder] added as child of \[Folder:Functional Test Folder]/
     }
 
-
     @Override
-    Boolean isDisabledNotDeleted() {
-        true
-    }
-
-    @Override
-    Boolean hasDefaultCreation() {
-        true
+    Expectations getExpectations() {
+        Expectations.builder()
+            .withDefaultExpectations()
+            .withSoftDeleteByDefault()
+            .withDefaultCreation()
+            .withInheritedAccessPermissions()
+            .whereEditorsCannotChangePermissions()
+            .whereEditors {
+                cannotCreate()
+            }
+            .whereAuthors {
+                cannotEditDescription()
+            }
+            .whereContainerAdminsCanAction('comment', 'delete', 'editDescription', 'save', 'show', 'softDelete', 'update')
+            .whereEditorsCanAction('show')
     }
 
     @Override
@@ -112,10 +113,6 @@ class NestedFolderFunctionalSpec extends UserAccessFunctionalSpec {
         folder.delete(flush: true)
     }
 
-    @Override
-    Boolean readerPermissionIsInherited() {
-        true
-    }
 
     @Override
     String getEditorIndexJson() {
@@ -132,7 +129,7 @@ class NestedFolderFunctionalSpec extends UserAccessFunctionalSpec {
   "label": "Nested Functional Test Folder",
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
-  "availableActions": ["comment","delete","editDescription","save","show","softDelete","update"]
+  "availableActions": ["show"]
   }'''
     }
 
@@ -218,52 +215,5 @@ class NestedFolderFunctionalSpec extends UserAccessFunctionalSpec {
   ]
 }'''
     }
-
-     /**
-     * Whilst this is actually tested in the user access tests we ignore the labels being created
-     * we need to make sure that folders and subsequent folders are named correctly
-     * We test this inside thie test folder.
-     *
-     void 'test default folder generation'() {given:
-     loginEditor()
-
-     when: 'requesting a default folder be created'
-     def response = post('')
-
-     then:
-     verifyResponse CREATED, response, defaultCreationJson.replaceFirst(/"label": "\$\{json-unit\.ignore}",/, '"label": "New Folder",')
-
-     when: 'requesting a second default folder'
-     response = post('')
-
-     then:
-     verifyResponse CREATED, response, defaultCreationJson.replaceFirst(/"label": "\$\{json-unit\.ignore}",/, '"label": "New Folder (1)",')
-
-     when: 'requesting a third default folder'
-     def secondId = response.json.id
-     response = post('')
-
-     then:
-     verifyResponse CREATED, response, defaultCreationJson.replaceFirst(/"label": "\$\{json-unit\.ignore}",/, '"label": "New Folder (2)",')
-
-     when: 'renaming the second folder'
-     response = put(secondId) {json {label = 'Renamed folder'}}then:
-     verifyResponse OK, response, defaultCreationJson.replaceFirst(/"label": "\$\{json-unit\.ignore}",/, '"label": "Renamed folder",')
-
-     when: 'requesting a fourth default folder, this should ignore the fact that (1) is gone and still go to (3)'
-     response = post('')
-
-     then:
-     verifyResponse CREATED, response, defaultCreationJson.replaceFirst(/"label": "\$\{json-unit\.ignore}",/, '"label": "New Folder (3)",')
-
-     when: 'renaming the fourth folder'
-     response = put("${response.json.id}") {json {label = 'Another folder'}}then:
-     verifyResponse OK, response, defaultCreationJson.replaceFirst(/"label": "\$\{json-unit\.ignore}",/, '"label": "Another folder",')
-
-     when: 'requesting a fifth default folder, this should go to (3)'
-     response = post('')
-
-     then:
-     verifyResponse CREATED, response, defaultCreationJson.replaceFirst(/"label": "\$\{json-unit\.ignore}",/, '"label": "New Folder (3)",')}*/
 
 }

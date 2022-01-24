@@ -53,7 +53,7 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsFunction
     String getResourcePath() {
         "dataModels/${getComplexDataModelId()}/dataClasses/${getContentDataClassId()}/dataElements"
     }
-   
+
     @Override
     String getCopyPath(String fromId) {
         "dataModels/${getSimpleDataModelId()}/dataClasses/${getSimpleDataClassId()}/${getCatalogueItemDomainType()}/" +
@@ -117,20 +117,13 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsFunction
             dataType       : [id: getStringDataTypeId()]
         ]
     }
-  
+
     @Override
     Map getInvalidJson() {
         [
             label          : UUID.randomUUID().toString(),
             maxMultiplicity: 2,
             minMultiplicity: 0
-        ]
-    }
-
-    @Override
-    Map getValidUpdateJson() {
-        [
-            description: 'adding a description'
         ]
     }
 
@@ -261,12 +254,7 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsFunction
     }
   ],
    "availableActions": [
-    "delete",
-    "update",
-    "save",
-    "show",
-    "comment",
-    "editDescription"
+    "show"
   ]
 }'''
     }
@@ -418,7 +406,7 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsFunction
         def expectedJson = '''{
   "count": 0,
   "items": [
-    
+
   ]
 }'''
 

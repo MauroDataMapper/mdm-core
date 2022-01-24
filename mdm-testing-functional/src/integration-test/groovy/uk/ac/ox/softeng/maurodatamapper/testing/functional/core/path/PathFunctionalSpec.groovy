@@ -750,8 +750,7 @@ class PathFunctionalSpec extends FunctionalSpec {
           "domainType": "Terminology",
           "label": "Simple Test Terminology",
           "availableActions": [
-            "show",
-            "comment"
+            "show"
           ],
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "classifiers": [
@@ -784,8 +783,7 @@ class PathFunctionalSpec extends FunctionalSpec {
           "domainType": "Terminology",
           "label": "Complex Test Terminology",
           "availableActions": [
-            "show",
-            "comment"
+            "show"
           ],
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "classifiers": [
@@ -826,8 +824,7 @@ class PathFunctionalSpec extends FunctionalSpec {
             "show",
             "createNewVersions",
             "newForkModel",
-            "finalisedReadActions",
-            "comment"
+            "finalisedReadActions"
           ],
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "classifiers": [
@@ -871,8 +868,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                }
           ],
           "availableActions": [
-            "show",
-            "comment"
+            "show"
           ],
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "code": "STT01",
@@ -886,8 +882,7 @@ class PathFunctionalSpec extends FunctionalSpec {
             "domainType": "DataModel",
             "label": "Complex Test DataModel",
             "availableActions": [
-              "show",
-              "comment"
+              "show"
             ],
             "lastUpdated": "${json-unit.matches:offsetDateTime}",
             "classifiers": [
@@ -934,8 +929,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                 }
             ],
             "availableActions": [
-                "show",
-                "comment"
+                "show"
             ],
             "lastUpdated": "${json-unit.matches:offsetDateTime}",
             "maxMultiplicity": -1,
@@ -963,8 +957,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                 }
             ],
             "availableActions": [
-                "show",
-                "comment"
+                "show"
             ],
             "lastUpdated": "${json-unit.matches:offsetDateTime}",
             "parentDataClass": "${json-unit.matches:id}"   
@@ -991,8 +984,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                 }
             ],
             "availableActions": [
-                "show",
-                "comment"
+                "show"
             ],
             "lastUpdated": "${json-unit.matches:offsetDateTime}",
             "dataClass": "${json-unit.matches:id}",
@@ -1030,8 +1022,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                 }
             ],
             "availableActions": [
-                "show",
-                "comment"
+                "show"
             ],
             "lastUpdated": "${json-unit.matches:offsetDateTime}"        
         }'''
@@ -1052,8 +1043,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                 }
             ],
             "availableActions": [
-                "show",
-                "comment"
+                "show"
             ],
             "lastUpdated": "${json-unit.matches:offsetDateTime}",
             "enumerationValues": [
@@ -1097,8 +1087,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                 }
             ],
             "availableActions": [
-                "show",
-                "comment"
+                "show"
             ],
             "lastUpdated": "${json-unit.matches:offsetDateTime}",
             "referenceClass": {

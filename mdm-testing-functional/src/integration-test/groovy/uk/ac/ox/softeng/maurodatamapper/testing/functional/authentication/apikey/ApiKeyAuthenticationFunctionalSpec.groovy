@@ -53,8 +53,8 @@ class ApiKeyAuthenticationFunctionalSpec extends FunctionalSpec {
     @Transactional
     def setup() {
         log.debug('Check and setup test data')
-        sessionFactory.currentSession.flush()
-        assert CatalogueUser.count() == 9 // All users
+        safeSessionFlush()
+        assert CatalogueUser.count() == 10 // All users
 
         ApiKey apiKey = apiKeyService.createNewApiKeyForCatalogueUser(StandardEmailAddress.FUNCTIONAL_TEST,
                                                                       CatalogueUser.findByEmailAddress(StandardEmailAddress.ADMIN),
