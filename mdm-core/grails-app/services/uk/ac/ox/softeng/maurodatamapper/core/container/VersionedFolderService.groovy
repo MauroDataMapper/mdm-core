@@ -889,7 +889,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
         // If the domainService provides a special handler for modifying this field then use it,
         // otherwise just set the value directly
-        if (!domainService.handlesModificationPatchOfFieldIntoVersionedFolder(modificationPatch, targetVersionedFolder, domain, fieldName)) {
+        if (!domainService.handlesModificationPatchOfField(modificationPatch, targetVersionedFolder, domain, fieldName)) {
             domain."${fieldName}" = modificationPatch.sourceValue
         }
 

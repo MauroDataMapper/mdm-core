@@ -69,11 +69,6 @@ trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableRes
     }
 
     @Override
-    String getOtherBranchPathIdentifier(String otherBranchName) {
-        "${label}${PathNode.MODEL_PATH_IDENTIFIER_SEPARATOR}${otherBranchName}"
-    }
-
-    @Override
     int compareTo(D that) {
         int res = 0
         if (that instanceof CatalogueItem) {

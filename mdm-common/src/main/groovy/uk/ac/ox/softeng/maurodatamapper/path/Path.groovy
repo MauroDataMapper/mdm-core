@@ -18,11 +18,11 @@
 package uk.ac.ox.softeng.maurodatamapper.path
 
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.PathAware
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.SimpleType
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.PathAware
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 /**
  * @since 28/08/2020
@@ -230,19 +230,6 @@ class Path {
             domains.eachWithIndex {CreatorAware domain, int i ->
                 pathNodes << new PathNode(domain.pathPrefix, domain.pathIdentifier, false)
             }
-        }
-    }
-
-    /**
-     * Make a path for a domain, but using a specified branch name rather than the branch name or model version of the domain.
-     * Useful when retrieving a domain which has been copied to a different branch.
-     * @param otherBranchName
-     * @param domain
-     * @return
-     */
-    static Path from(String otherBranchName, CreatorAware domain) {
-        new Path().tap {
-            pathNodes << new PathNode(domain.pathPrefix, domain.getOtherBranchPathIdentifier(otherBranchName), true)
         }
     }
 

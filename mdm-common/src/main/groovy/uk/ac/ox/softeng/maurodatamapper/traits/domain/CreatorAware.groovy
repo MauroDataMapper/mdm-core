@@ -55,10 +55,6 @@ trait CreatorAware {
         null
     }
 
-    String getOtherBranchPathIdentifier(String otherBranchName) {
-        null
-    }
-
     @Deprecated(forRemoval = true)
     void setCreatedByUser(User user) {
         this.createdBy = user?.emailAddress

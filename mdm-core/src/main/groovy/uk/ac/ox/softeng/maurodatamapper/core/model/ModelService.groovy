@@ -604,7 +604,7 @@ abstract class ModelService<K extends Model>
 
         // If the domainService provides a special handler for modifying this field then use it,
         // otherwise just set the value directly
-        if (!domainService.handlesModificationPatchOfField(modificationPatch, domain, fieldName)) {
+        if (!domainService.handlesModificationPatchOfField(modificationPatch, targetModel, domain, fieldName)) {
             domain."${fieldName}" = modificationPatch.sourceValue
         }
 

@@ -35,7 +35,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProv
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
@@ -87,6 +86,9 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     @Autowired
     Set<DefaultDataTypeProvider> defaultDataTypeProviders
 
+    @Autowired(required = false)
+    Set<ModelService> modelServices
+
     @Override
     DataModel get(Serializable id) {
         DataModel.get(id)
@@ -94,7 +96,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
     @Override
     List<DataModel> getAll(Collection<UUID> ids) {
-        DataModel.getAll(ids).findAll().collect { unwrapIfProxy(it) }
+        DataModel.getAll(ids).findAll().collect {unwrapIfProxy(it)}
     }
 
     @Override
@@ -351,16 +353,16 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     void updateCopiedCrossModelLinks(DataModel copiedDataModel, DataModel originalDataModel) {
         super.updateCopiedCrossModelLinks(copiedDataModel, originalDataModel)
 
-        copiedDataModel.modelDataTypes.each { mdt ->
+        copiedDataModel.modelDataTypes.each {ModelDataType mdt ->
 
-            DomainService domainService = domainServices.find { service ->
+            ModelService modelService = modelServices.find {service ->
                 service.handles(mdt.modelResourceDomainType)
             }
 
-            if (!domainService) throw new ApiInternalException('DMSXX', "No domain service to handle repointing of modelResourceDomainType [${mdt.modelResourceDomainType}]")
+            if (!modelService) throw new ApiInternalException('DMSXX', "No domain service to handle repointing of modelResourceDomainType [${mdt.modelResourceDomainType}]")
 
             // The model pointed to originally
-            CreatorAware originalModelResource = domainService.get(mdt.modelResourceId)
+            Model originalModelResource = modelService.get(mdt.modelResourceId) as Model
 
             Path fullContextOriginalModelResourcePath = getFullPathForModel(originalModelResource)
             Path fullContextOriginalDataModelPath = getFullPathForModel(originalDataModel)
@@ -376,7 +378,9 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
                 // Construct a path from the prefix and label of the model pointed to originally, but with the branch name now used,
                 // to get the copy of the model in the copied folder
                 // Note: Using a method in PathService which does not check security on the securable resource owning the model
-                CreatorAware replacementModelResource = pathService.findResourceByPath(Path.from(copiedDataModel.branchName, originalModelResource))
+                PathNode originalModelPathNode = fullContextOriginalModelResourcePath.last()
+                CreatorAware replacementModelResource =
+                    pathService.findResourceByPath(Path.from(originalModelPathNode.prefix, originalModelPathNode.getFullIdentifier(copiedDataModel.branchName)))
 
                 if (!replacementModelResource) {
                     throw new ApiInternalException('DMSXX', "Could not find branched model resource ${originalModelResource.label} in branch ${copiedDataModel.branchName}")

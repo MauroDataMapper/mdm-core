@@ -17,18 +17,20 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.core.GrailsApplication
-import grails.util.Holders
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
+import grails.util.Holders
+import org.grails.datastore.gorm.GormEntity
 
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
 @Resource(readOnly = false, formats = ['json', 'xml'])
@@ -38,7 +40,7 @@ class ModelDataType extends DataType<ModelDataType> {
     String modelResourceDomainType
 
     static constraints = {
-        modelResourceDomainType validator: { source, obj ->
+        modelResourceDomainType validator: {source, obj ->
             if (source == DataModel.simpleName) ['invalid.model.type.datatype']
         }
     }
@@ -50,32 +52,34 @@ class ModelDataType extends DataType<ModelDataType> {
     ObjectDiff<ModelDataType> diff(ModelDataType otherDataType, String context) {
         ObjectDiff<ModelDataType> diff = catalogueItemDiffBuilder(ModelDataType, this, otherDataType)
 
-        GrailsApplication grailsApplication = Holders.getGrailsApplication()
-
-        Class thisResourceClass = Utils.lookupGrailsDomain(grailsApplication, this.modelResourceDomainType)?.getClazz()
-        Class otherResourceClass = Utils.lookupGrailsDomain(grailsApplication, otherDataType.modelResourceDomainType)?.getClazz()
-
-        if (thisResourceClass && otherResourceClass) {
-            List<Model> thisResourceModels = thisResourceClass.byIdInList([this.modelResourceId]).list()
-            List<Model> otherResourceModels = otherResourceClass.byIdInList([otherDataType.modelResourceId]).list()
-
-            if (thisResourceModels.size() == 1 && otherResourceModels.size() == 1) {
-                Model thisResourceModel = thisResourceModels.first()
-                Model otherResourceModel = otherResourceModels.first()
-
-                // Aside from branch and version, is the model pointed to by the modelDataType really different by path?
-                Path thisResourcePath = Path.from(thisResourceModel.folder, thisResourceModel)
-                Path otherResourcePath = Path.from(otherResourceModel.folder, otherResourceModel)
-                if (!thisResourcePath.matches(otherResourcePath, thisResourceModel.modelIdentifier)) {
-                    diff.
+        // Aside from branch and version, is the model pointed to by the modelDataType really different by path?
+        // Could be a different model entirely
+        Model thisResourceModel = getModelResource(this)
+        Model otherResourceModel = getModelResource(otherDataType)
+        if (thisResourceModel && otherResourceModel) {
+            Path thisResourcePath = Path.from(thisResourceModel)
+            Path otherResourcePath = Path.from(otherResourceModel)
+            if (!thisResourcePath.matches(otherResourcePath, thisResourcePath.last().modelIdentifier)) {
+                diff.
                     appendString('modelResourcePath',
-                    makeFullyQualifiedPath(thisResourceModel).toString(),
-                    makeFullyQualifiedPath(otherResourceModel).toString())
-                }
+                                 makeFullyQualifiedPath(thisResourceModel).toString(),
+                                 makeFullyQualifiedPath(otherResourceModel).toString())
             }
         }
-
         diff
+    }
+
+    static Model getModelResource(ModelDataType modelDataType) {
+        GrailsApplication grailsApplication = Holders.getGrailsApplication()
+        Class<GormEntity> resourceClass = Utils.lookupGrailsDomain(grailsApplication, modelDataType.modelResourceDomainType)?.getClazz()
+        if (resourceClass && modelDataType.modelResourceId) {
+            Model model = resourceClass.get(modelDataType.modelResourceId)
+            if (model) return model
+            throw new ApiInternalException('MDT',
+                                           "ModelDataType exists which points to a non-existent model " +
+                                           "${modelDataType.modelResourceDomainType}:${modelDataType.modelResourceId}")
+        }
+        return null
     }
 
     static DetachedCriteria<ModelDataType> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {

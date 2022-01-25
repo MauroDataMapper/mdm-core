@@ -192,47 +192,23 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> implements Su
      * @return
      */
     @Override
-    boolean handlesModificationPatchOfField(FieldPatchData modificationPatch, ModelDataType targetDomain, String fieldName) {
+    boolean handlesModificationPatchOfField(FieldPatchData modificationPatch, CreatorAware targetBeingPatched, ModelDataType targetDomain, String fieldName) {
         if (fieldName == 'modelResourcePath') {
 
-            // Look up the resource.
-            // Note that pathService.findResourceByPath does not check security on the pathed resource
-            CreatorAware modelResource = pathService.findResourceByPath(Path.from(modificationPatch.sourceValue))
-
-            if (modelResource) {
-                targetDomain.modelResourceId = modelResource.id
-                targetDomain.modelResourceDomainType = modelResource.domainType
-                return true
-            } else {
-                throw new ApiInternalException('MDTS01', "Cannot find modelResource with path ${modificationPatch.sourceValue}")
+            CreatorAware modelResource = null
+            if (targetBeingPatched.domainType == VersionedFolder.simpleName) {
+                // If the modelResourcePath is a path to something internal to the source VF then this should also exist in the
+                // target VF, either because it existed in the target VF before branching occurred, or because it has already been merged from
+                // the source VF to target VF. So find a resource with the same label in the target VF, and use this.
+                modelResource =
+                    pathService.findResourceByPathFromRootResource(targetBeingPatched, Path.from(modificationPatch.sourceValue), targetBeingPatched.modelIdentifier)
             }
-        }
 
-        false
-    }
-
-    /**
-     * Special handler to apply a modification patch to a ModelDataType.modelResourceId and ModelDataType.modelResourceDomainType.
-     * See ModelDataType.diff for how the MergeDiff is constructed. We want to set the correct modelResourceId, but this is difficult
-     * when merging the MDT. In the diff we set a mergeField called modelResourcePath. In this method we use that modelResourcePath
-     * to determine the ID of the correct model to point to.
-     * @param modificationPatch
-     * @param targetVersionedFolder
-     * @param targetDomain
-     * @param fieldName
-     * @return
-     */
-    @Override
-    boolean handlesModificationPatchOfFieldIntoVersionedFolder(FieldPatchData modificationPatch, VersionedFolder targetVersionedFolder, ModelDataType targetDomain, String fieldName) {
-        if (fieldName == 'modelResourcePath') {
-            // If the modelResourcePath is a path to something internal to the source VF then this should also exist in the
-            // target VF, either because it existed in the target VF before branching occurred, or because it has already been merged from
-            // the source VF to target VF. So find a resource with the same label in the target VF, and use this.
-            CreatorAware modelResource = pathService.findResourceByPathFromRootResource(targetVersionedFolder, Path.from(modificationPatch.sourceValue), targetVersionedFolder.modelIdentifier)
-
-            // Otherwise, the modelResourcePath is pointing to something external to the source VF. Look up the modelResource directly.
-            // Note that pathService.findResourceByPath does not check security on the pathed resource
             if (!modelResource) {
+                // Otherwise, the modelResourcePath is pointing to something external to the source VF. Look up the modelResource directly.
+                // Note that pathService.findResourceByPath does not check security on the pathed resource
+                // Look up the resource.
+                // Note that pathService.findResourceByPath does not check security on the pathed resource
                 modelResource = pathService.findResourceByPath(Path.from(modificationPatch.sourceValue))
             }
 
@@ -241,7 +217,7 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> implements Su
                 targetDomain.modelResourceDomainType = modelResource.domainType
                 return true
             } else {
-                throw new ApiInternalException('MDTS02', "Cannot find modelResource with path ${modificationPatch.sourceValue}")
+                throw new ApiInternalException('MDTS01', "Cannot find modelResource with path ${modificationPatch.sourceValue}")
             }
         }
 

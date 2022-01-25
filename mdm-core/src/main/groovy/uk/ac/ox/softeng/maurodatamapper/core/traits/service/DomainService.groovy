@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.core.traits.service
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
-import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.security.basic.AnonymousUser
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
@@ -90,7 +89,7 @@ trait DomainService<K extends CreatorAware> implements AnonymisableService {
     abstract K findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier)
 
     void anonymise(String createdBy) {
-        getDomainClass()?.findAllByCreatedBy(createdBy).each { domain ->
+        getDomainClass()?.findAllByCreatedBy(createdBy).each {domain ->
             domain.createdBy = AnonymousUser.ANONYMOUS_EMAIL_ADDRESS
 
             // Don't validate because any existing errors in data can cause validations to fail
@@ -98,11 +97,7 @@ trait DomainService<K extends CreatorAware> implements AnonymisableService {
         }
     }
 
-    boolean handlesModificationPatchOfField(FieldPatchData modificationPatch, K targetDomain, String fieldName) {
-        false
-    }
-
-    boolean handlesModificationPatchOfFieldIntoVersionedFolder(FieldPatchData modificationPatch, VersionedFolder targetVersionedFolder, K targetDomain, String fieldName) {
+    boolean handlesModificationPatchOfField(FieldPatchData modificationPatch, CreatorAware targetBeingPatched, K targetDomain, String fieldName) {
         false
     }
 }
