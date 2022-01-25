@@ -155,7 +155,7 @@ class UserSecurityPolicyServiceIntegrationSpec extends BaseIntegrationSpec imple
         policy.userGroups.size() == 4
         policy.applicationPermittedRoles.size() == 5
         policy.securableResourceGroupRoles.size() == 1
-        policy.virtualSecurableResourceGroupRoles.values().flatten().size() == 93
+        policy.virtualSecurableResourceGroupRoles.values().flatten().size() == 98
 
         when:
         Set<VirtualSecurableResourceGroupRole> folderRoles = policy.virtualSecurableResourceGroupRoles.values().flatten().findAll {it.domainId == folder.id}
@@ -189,7 +189,7 @@ class UserSecurityPolicyServiceIntegrationSpec extends BaseIntegrationSpec imple
 
         and:
         // 5 users
-        userRoles.size() == 45
+        userRoles.size() == 50
 
         and:
         // 6 groups
@@ -215,7 +215,7 @@ class UserSecurityPolicyServiceIntegrationSpec extends BaseIntegrationSpec imple
         policy.userGroups.size() == 4
         policy.applicationPermittedRoles.size() == 5
         policy.securableResourceGroupRoles.size() == 1
-        policy.virtualSecurableResourceGroupRoles.values().flatten().size() == 93
+        policy.virtualSecurableResourceGroupRoles.values().flatten().size() == 98
 
         when:
         Set<VirtualSecurableResourceGroupRole> folderRoles = policy.virtualSecurableResourceGroupRoles.values().flatten().findAll {it.domainId == folder.id}
@@ -255,7 +255,7 @@ class UserSecurityPolicyServiceIntegrationSpec extends BaseIntegrationSpec imple
 
         and:
         // 5 users
-        userRoles.size() == 45
+        userRoles.size() == 50
 
         and:
         // 6 groups

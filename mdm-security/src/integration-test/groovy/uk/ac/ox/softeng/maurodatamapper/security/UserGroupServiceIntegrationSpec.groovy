@@ -86,10 +86,8 @@ class UserGroupServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
         funGroup.description == 'A group which has fun people in it'
 
         and:
-        readers.groupMembers.size() == 3
-        checkGroupUser readers, author
+        readers.groupMembers.size() == 1
         checkGroupUser readers, reader
-        checkGroupUser readers, reviewer
 
         and:
         funGroup.groupMembers.size() == 2

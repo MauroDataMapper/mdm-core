@@ -24,6 +24,10 @@ import io.micronaut.http.HttpStatus
 
 class AuthorityInterceptorSpec extends ResourceInterceptorUnitSpec implements InterceptorUnitTest<AuthorityInterceptor> {
 
+    def setup() {
+        mockDomain(Authority)
+    }
+
     @Override
     String getControllerName() {
         'authority'
@@ -42,5 +46,10 @@ class AuthorityInterceptorSpec extends ResourceInterceptorUnitSpec implements In
     @Override
     HttpStatus getSaveAllowedCode() {
         HttpStatus.FORBIDDEN
+    }
+
+    @Override
+    HttpStatus getReadSaveAllowedCode() {
+        HttpStatus.NOT_FOUND
     }
 }

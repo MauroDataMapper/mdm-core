@@ -31,6 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import spock.lang.Retry
 
 @Slf4j
 @Integration
@@ -409,6 +410,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dm.dataClasses.find {it.label == 'Top'}.metadata.size() == 1
     }
 
+    @Retry
     void 'test copying complex dataclass'() {
         given:
         setupData()

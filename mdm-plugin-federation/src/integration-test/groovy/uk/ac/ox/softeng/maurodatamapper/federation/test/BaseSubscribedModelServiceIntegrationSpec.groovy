@@ -77,13 +77,13 @@ abstract class BaseSubscribedModelServiceIntegrationSpec<K extends Model> extend
         subscribedCatalogue = new SubscribedCatalogue(url: 'http://remote.example.com',
                                                       apiKey: UUID.randomUUID(),
                                                       label: 'Test Remote Catalogue',
-                                                      createdBy: StandardEmailAddress.INTEGRATION_TEST)
+                                                      createdBy: StandardEmailAddress.ADMIN)
         checkAndSave(subscribedCatalogue)
 
         subscribedCatalogue2 = new SubscribedCatalogue(url: 'http://remote2.example.com',
                                                        apiKey: UUID.randomUUID(),
                                                        label: 'Test Remote Catalogue 2',
-                                                       createdBy: StandardEmailAddress.INTEGRATION_TEST)
+                                                       createdBy: editor.emailAddress)
         checkAndSave(subscribedCatalogue2)
 
 
@@ -104,14 +104,14 @@ abstract class BaseSubscribedModelServiceIntegrationSpec<K extends Model> extend
         subscribedModelVersion1 = new SubscribedModel(subscribedModelId: Utils.toUuid("c8023de6-5329-4b8b-8a1b-27c2abeaffcd"),
                                                       folderId: getFolder().id,
                                                       subscribedCatalogue: subscribedCatalogue,
-                                                      createdBy: StandardEmailAddress.INTEGRATION_TEST,
+                                                      createdBy: StandardEmailAddress.ADMIN,
                                                       subscribedModelType: getModelType())
         checkAndSave(subscribedModelVersion1)
 
         subscribedModelVersion2 = new SubscribedModel(subscribedModelId: Utils.toUuid("d8023de6-5329-4b8b-8a1b-27c2abeaffcd"),
                                                       folderId: getFolder().id,
                                                       subscribedCatalogue: subscribedCatalogue,
-                                                      createdBy: StandardEmailAddress.INTEGRATION_TEST,
+                                                      createdBy: editor.emailAddress,
                                                       subscribedModelType: getModelType())
         checkAndSave(subscribedModelVersion2)
     }

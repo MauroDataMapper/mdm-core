@@ -71,6 +71,10 @@ abstract class ResourceInterceptorUnitSpec<T> extends BaseUnitSpec implements Gr
         HttpStatus.NOT_FOUND
     }
 
+    HttpStatus getReadSaveAllowedCode() {
+        HttpStatus.FORBIDDEN
+    }
+
     def getPublicAccessUserSecurityPolicyManager() {
         PublicAccessSecurityPolicyManager.instance
     }
@@ -188,11 +192,11 @@ abstract class ResourceInterceptorUnitSpec<T> extends BaseUnitSpec implements Gr
         'save'   | writeAccessId || true    | null
         'update' | unknownId     || false   | HttpStatus.NOT_FOUND
         'update' | noAccessId    || false   | HttpStatus.NOT_FOUND
-        'update' | readAccessId  || false   | HttpStatus.FORBIDDEN
+        'update' | readAccessId || false | getReadSaveAllowedCode()
         'update' | writeAccessId || true    | null
         'delete' | unknownId     || false   | HttpStatus.NOT_FOUND
         'delete' | noAccessId    || false   | HttpStatus.NOT_FOUND
-        'delete' | readAccessId  || false   | HttpStatus.FORBIDDEN
+        'delete' | readAccessId || false | getReadSaveAllowedCode()
         'delete' | writeAccessId || true    | null
 
         type = resourceId == unknownId ? 'unknown' :
