@@ -58,6 +58,7 @@ import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
@@ -85,6 +86,9 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     @Autowired
     Set<DefaultDataTypeProvider> defaultDataTypeProviders
 
+    @Autowired(required = false)
+    Set<ModelService> modelServices
+
     @Override
     DataModel get(Serializable id) {
         DataModel.get(id)
@@ -92,7 +96,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
     @Override
     List<DataModel> getAll(Collection<UUID> ids) {
-        DataModel.getAll(ids).findAll().collect { unwrapIfProxy(it) }
+        DataModel.getAll(ids).findAll().collect {unwrapIfProxy(it)}
     }
 
     @Override
@@ -343,6 +347,51 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         log.debug('Complete save of DataModel complete in {}', Utils.timeTaken(start))
         // Return the clean stored version of the datamodel, as we've messed with it so much this is much more stable
         get(dataModel.id)
+    }
+
+    @Override
+    void updateCopiedCrossModelLinks(DataModel copiedDataModel, DataModel originalDataModel) {
+        super.updateCopiedCrossModelLinks(copiedDataModel, originalDataModel)
+
+        copiedDataModel.modelDataTypes.each {ModelDataType mdt ->
+
+            ModelService modelService = modelServices.find {service ->
+                service.handles(mdt.modelResourceDomainType)
+            }
+
+            if (!modelService) throw new ApiInternalException('DMSXX', "No domain service to handle repointing of modelResourceDomainType [${mdt.modelResourceDomainType}]")
+
+            // The model pointed to originally
+            Model originalModelResource = modelService.get(mdt.modelResourceId) as Model
+
+            Path fullContextOriginalModelResourcePath = getFullPathForModel(originalModelResource)
+            Path fullContextOriginalDataModelPath = getFullPathForModel(originalDataModel)
+
+            // Is the original model resource in the same versioned folder as the original data model?
+            PathNode originalModelResourceVersionedFolderPathNode = fullContextOriginalModelResourcePath.find { it.prefix == 'vf' }
+            PathNode originalDataModelVersionedFolderPathNode = fullContextOriginalDataModelPath.find { it.prefix == 'vf' }
+
+
+            if (originalModelResourceVersionedFolderPathNode && originalModelResourceVersionedFolderPathNode == originalDataModelVersionedFolderPathNode) {
+                log.debug('Original model resource is inside the same context path as data model for modelDataType [{}]', mdt)
+
+                // Construct a path from the prefix and label of the model pointed to originally, but with the branch name now used,
+                // to get the copy of the model in the copied folder
+                // Note: Using a method in PathService which does not check security on the securable resource owning the model
+                PathNode originalModelPathNode = fullContextOriginalModelResourcePath.last()
+                CreatorAware replacementModelResource =
+                    pathService.findResourceByPath(Path.from(originalModelPathNode.prefix, originalModelPathNode.getFullIdentifier(copiedDataModel.branchName)))
+
+                if (!replacementModelResource) {
+                    throw new ApiInternalException('DMSXX', "Could not find branched model resource ${originalModelResource.label} in branch ${copiedDataModel.branchName}")
+                }
+
+                // Update the model data type to point to the copy of the model
+                mdt.modelResourceId = replacementModelResource.id
+            }
+        }
+
+        save(copiedDataModel, flush: false, validate: false)
     }
 
     void saveContent(Collection<EnumerationType> enumerationTypes,

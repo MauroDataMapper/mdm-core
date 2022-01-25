@@ -146,4 +146,32 @@ class PathService {
 
         findResourceByPathFromRootResource(rootResource, path)
     }
+
+    /**
+     * CAUTION: This method does not check whether the resource found by Path is readable by any user.
+     * @param path
+     * @return CreatorAware resource found by Path
+     */
+    CreatorAware findResourceByPath(Path path) {
+        if (path.isEmpty()) {
+            throw new ApiBadRequestException('PS05', 'Must have a path to search')
+        }
+
+        PathNode rootNode = path.first()
+
+        DomainService domainService = domainServices.find {service ->
+            service.handlesPathPrefix(rootNode.prefix)
+        }
+
+        if (!domainService) {
+            log.warn("Unknown path prefix [${rootNode.prefix}] in path")
+            return null
+        }
+
+        CreatorAware rootResource = domainService.findByParentIdAndPathIdentifier(null, rootNode.getFullIdentifier())
+
+        if (!rootResource) return null
+
+        findResourceByPathFromRootResource(rootResource, path)
+    }
 }

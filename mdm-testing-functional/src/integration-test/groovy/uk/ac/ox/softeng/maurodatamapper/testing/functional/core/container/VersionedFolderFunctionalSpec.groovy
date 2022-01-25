@@ -1117,13 +1117,12 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         getIdFromPath(branchId, 'te:Functional Test Terminology 1$main')
         getIdFromPath(branchId, 'cs:Functional Test CodeSet 1$main')
 
-        when: 'getting the DMs inside the branch'
-        GET("folders/$branchId/dataModels", MAP_ARG, true)
+        when:
+        GET("terminologies/path/te:Simple%20Test%20Terminology", MAP_ARG, true)
 
         then:
-        verifyResponse(OK, response)
-        responseBody().count == 1
-        responseBody().items.first().id == getIdFromPath(branchId, 'dm:Functional Test DataModel 1$main')
+        verifyResponse OK, response
+        String simpleTerminologyId = responseBody().id
 
         when: 'getting the Ts inside the branch'
         GET("folders/$branchId/terminologies", MAP_ARG, true)
@@ -1132,6 +1131,38 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         verifyResponse(OK, response)
         responseBody().count == 1
         responseBody().items.first().id == getIdFromPath(branchId, 'te:Functional Test Terminology 1$main')
+
+        when: 'getting the DMs inside the branch'
+        GET("folders/$branchId/dataModels", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+
+        when:
+        String branchedDataModelId = responseBody().items.first().id
+
+        then:
+        branchedDataModelId == getIdFromPath(branchId, 'dm:Functional Test DataModel 1$main')
+
+        when: 'getting the model data type from the DM inside the branch'
+        GET("dataModels/$branchedDataModelId/dataTypes", MAP_ARG, true)
+
+        then: 'the branched model data type points to the branched terminology'
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        def mdt = responseBody().items.find{it.label == 'Functional Test Model Data Type'}
+        def mdt2 = responseBody().items.find{it.label == 'Functional Test Model Data Type Pointing Externally'}
+        mdt.id == getIdFromPath(branchId, 'dm:Functional Test DataModel 1$main|dt:Functional Test Model Data Type')
+        mdt.domainType == 'ModelDataType'
+        mdt.modelResourceDomainType == 'Terminology'
+        mdt.modelResourceId == getIdFromPath(branchId, 'te:Functional Test Terminology 1$main')
+
+        and: 'the model data type pointing to the Simple Test Terminology still points to the same Simple Test Terminology'
+        mdt2.id == getIdFromPath(branchId, 'dm:Functional Test DataModel 1$main|dt:Functional Test Model Data Type Pointing Externally')
+        mdt2.domainType == 'ModelDataType'
+        mdt2.modelResourceDomainType == 'Terminology'
+        mdt2.modelResourceId == simpleTerminologyId
 
         when: 'getting the CSs inside the branch'
         GET("folders/$branchId/codeSets", MAP_ARG, true)
@@ -2393,9 +2424,16 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     void 'MI07 : test merge into of two complex versioned folders'() {
         given:
         TestMergeData mergeData = builder.buildComplexModelsForMerging()
+        loginReader()
+
+        when: 'Get the Complex Test Terminology ID for checking later'
+        GET("terminologies/path/te:Complex%20Test%20Terminology", MAP_ARG, true)
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+        String complexTerminologyId = responseBody().id
 
         when:
-        loginReader()
         GET("$mergeData.source/mergeDiff/$mergeData.target")
 
         then:
@@ -2450,13 +2488,28 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         GET("dataModels/$targetDataModelMap.dataModelId/dataClasses/$targetDataModelMap.existingClass/dataElements", MAP_ARG, true)
 
         then:
-        responseBody().items.label as Set == ['addLeftOnly'] as Set
+        responseBody().items.label as Set == [
+                'addLeftOnly',
+                'Functional Test Data Element with Model Data Type',
+                'Functional Test Data Element with Model Data Type Pointing Externally'] as Set
 
         when:
         GET("dataModels/$targetDataModelMap.dataModelId/dataTypes", MAP_ARG, true)
 
         then:
-        responseBody().items.label as Set == ['addLeftOnly'] as Set
+        verifyResponse(OK, response)
+        responseBody().count == 3
+        responseBody().items.label as Set == ['addLeftOnly', 'Functional Test Model Data Type', 'Functional Test Model Data Type Pointing Externally'] as Set
+        def mdt1 = responseBody().items.find {it.label == 'Functional Test Model Data Type' }
+        def mdt2 = responseBody().items.find {it.label == 'Functional Test Model Data Type Pointing Externally' }
+
+        and: 'the Functional Test Model Data Type points to the CodeSet in the target VF'
+        mdt1.modelResourceDomainType == 'CodeSet'
+        mdt1.modelResourceId == mergeData.targetMap.codeSet.codeSetId
+
+        and: 'the Model Data Type pointing externally now points to the Complex Test Terminology'
+        mdt2.modelResourceDomainType == 'Terminology'
+        mdt2.modelResourceId == complexTerminologyId
 
         when:
         GET("dataModels/$targetDataModelMap.dataModelId/metadata", MAP_ARG, true)
@@ -2936,12 +2989,30 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
     void cleanupIds(String... ids) {
         loginEditor()
+
+        // If the 'Other Non-Versioned Folder' exists then delete it
+        // Doing the cleanup here because it is difficult to pass the folder ID
+        // to this method in all circumstances
+        GET("folders", MAP_ARG, true)
+        response.status() == OK
+        def externalFolder = responseBody().items.find {it.label == 'Other Non-Versioned Folder'}
+        if (externalFolder) {
+            DELETE("folders/${externalFolder.id}?permanent=true", MAP_ARG, true)
+            response.status() in [NO_CONTENT, NOT_FOUND]
+        }
+
         ids.each { id ->
             DELETE("$id?permanent=true")
             response.status() in [NO_CONTENT, NOT_FOUND]
         }
+
         cleanUpRoles(ids)
+        if (externalFolder) {
+            cleanUpRoles(externalFolder.id)
+        }
     }
+
+
 
     String getExpectedModelTreeVersionString(Map data) {
         """[

@@ -83,6 +83,14 @@ abstract class BaseTestMergeBuilder {
 
     }
 
+    String getIdFromPathNoValidation(String rootResourceId, String path) {
+        functionalSpec.GET("$rootResourceId/path/${URLEncoder.encode(path, Charset.defaultCharset())}")
+        if (response.status == OK) {
+            return responseBody().id
+        }
+        null
+    }
+
     void cleanupTestMergeData(TestMergeData mergeData) {
         if (!mergeData) return
         if (mergeData.source) functionalSpec.cleanUpData(mergeData.source)

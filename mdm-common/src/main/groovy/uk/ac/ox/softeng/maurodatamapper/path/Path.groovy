@@ -18,11 +18,11 @@
 package uk.ac.ox.softeng.maurodatamapper.path
 
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.PathAware
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.SimpleType
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.PathAware
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 /**
  * @since 28/08/2020
@@ -138,10 +138,10 @@ class Path {
         }
     }
 
-    boolean matches(Path otherPath) {
+    boolean matches(Path otherPath, String modelIdentifierOverride = null) {
         if (size() != otherPath.size()) return false
         for (i in 0..<size()) {
-            if (!this[i].matches(otherPath[i])) return false
+            if (!this[i].matches(otherPath[i], modelIdentifierOverride)) return false
         }
         true
     }
