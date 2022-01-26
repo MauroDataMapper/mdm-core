@@ -231,6 +231,13 @@ subprojects {
             maxHeapSize = '8g'
         }
 
+        // Dont bother with mergeTestReports if running in jenkins
+        if (project.tasks.findByName('mergeTestReports')) {
+            project.tasks.findByName('mergeTestReports').onlyIf {
+                !System.getenv().containsKey('JENKINS')
+            }
+        }
+
         /*
         To make the following work, tests or classes should be marked with the jupiter annotation @Tag
          */

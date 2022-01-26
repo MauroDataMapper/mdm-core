@@ -12,7 +12,7 @@ pipeline {
     options {
         timestamps()
         //        timeout(time: 45, unit: 'MINUTES')
-        // skipStagesAfterUnstable()
+        //        skipStagesAfterUnstable()
         buildDiscarder(logRotator(numToKeepStr: '30'))
         disableConcurrentBuilds()
         throttleJobProperty(
@@ -94,6 +94,33 @@ pipeline {
             }
         }
 
+
+        /**
+         * Parallel jenkins vs non-parallel jenkins testing
+         *
+         * When gradle runs a "test executor" with parallel disabled it will only use 1CPU which means we can make use of jenkins
+         * to parallelise the tests.
+         *
+         * We cannot use gradle to parallelise as it will run up 1 instance and use all the same variables which means items like the HS directory get broken
+         * and the "state" of the instance is not the same.
+         *
+         * Using serial execution currently takes
+         *
+         * ~12mins for ITs
+         * ~21mins for FTs
+         * ~2hrs for E2Es
+         *
+         * Changing to parallel execution for each of the sections
+         *
+         * ~10mins for ITs
+         * ~18mins for FTs
+         * ~45mins for E2Es
+         *
+         * Whilst it looks like some of the jobs take much longer it is because jenkins start the stage time when the stage starts, and then it keeps counting while the
+         * parallel stage sits waiting for a free executor
+         */
+
+
         /*
         Unit Tests
          */
@@ -124,8 +151,9 @@ pipeline {
                     branch 'main'
                 }
             }
-            stages {
+            parallel {
                 stage('Parallel Tests') {
+                    // These are tests which can be run in gradle parallel model
                     steps {
                         sh './gradlew --build-cache -Dgradle.integrationTest=true  -Dgradle.parallel=true ' + [
                             'mdm-core',
@@ -148,6 +176,7 @@ pipeline {
                     }
                 }
                 stage('Non-Parallel Tests') {
+                    // These are tests which cannot be run in gradle parallel model - currently any test which needs to use the lucene index directory
                     steps {
                         sh './gradlew --build-cache -Dgradle.integrationTest=true -Dgradle.nonParallel=true ' + [
                             'mdm-core',
@@ -172,19 +201,19 @@ pipeline {
             }
         }
 
+
         /*
         Functional Tests
          */
-        stage('Functional Test') {
-
-            stages {
+        stage('Functional Tests') {
+            // Dont run these on main branch
+            when {
+                not {
+                    branch 'main'
+                }
+            }
+            parallel {
                 stage('Functional Test: mdm-core') {
-                    // Dont run these on main branch
-                    when {
-                        not {
-                            branch 'main'
-                        }
-                    }
                     steps {
                         sh "./gradlew -Dgradle.functionalTest=true :mdm-core:integrationTest"
                     }
@@ -195,12 +224,6 @@ pipeline {
                     }
                 }
                 stage('Functional Test: mdm-plugin-authentication-apikey') {
-                    // Dont run these on main branch
-                    when {
-                        not {
-                            branch 'main'
-                        }
-                    }
                     steps {
                         sh "./gradlew -Dgradle.functionalTest=true :mdm-plugin-authentication-apikey:integrationTest"
                     }
@@ -211,12 +234,6 @@ pipeline {
                     }
                 }
                 stage('Functional Test: mdm-plugin-authentication-basic') {
-                    // Dont run these on main branch
-                    when {
-                        not {
-                            branch 'main'
-                        }
-                    }
                     steps {
                         sh "./gradlew -Dgradle.functionalTest=true :mdm-plugin-authentication-basic:integrationTest"
                     }
@@ -227,12 +244,6 @@ pipeline {
                     }
                 }
                 stage('Functional Test: mdm-plugin-dataflow') {
-                    // Dont run these on main branch
-                    when {
-                        not {
-                            branch 'main'
-                        }
-                    }
                     steps {
                         sh "./gradlew -Dgradle.functionalTest=true :mdm-plugin-dataflow:integrationTest"
                     }
@@ -243,12 +254,6 @@ pipeline {
                     }
                 }
                 stage('Functional Test: mdm-plugin-datamodel') {
-                    // Dont run these on main branch
-                    when {
-                        not {
-                            branch 'main'
-                        }
-                    }
                     steps {
                         sh "./gradlew -Dgradle.functionalTest=true :mdm-plugin-datamodel:integrationTest"
                     }
@@ -259,12 +264,6 @@ pipeline {
                     }
                 }
                 stage('Functional Test: mdm-plugin-federation') {
-                    // Dont run these on main branch
-                    when {
-                        not {
-                            branch 'main'
-                        }
-                    }
                     steps {
                         sh "./gradlew -Dgradle.functionalTest=true :mdm-plugin-federation:integrationTest"
                     }
@@ -275,12 +274,6 @@ pipeline {
                     }
                 }
                 stage('Functional Test: mdm-plugin-profile') {
-                    // Dont run these on main branch
-                    when {
-                        not {
-                            branch 'main'
-                        }
-                    }
                     steps {
                         sh "./gradlew -Dgradle.functionalTest=true :mdm-plugin-profile:integrationTest"
                     }
@@ -291,12 +284,6 @@ pipeline {
                     }
                 }
                 stage('Functional Test: mdm-plugin-referencedata') {
-                    // Dont run these on main branch
-                    when {
-                        not {
-                            branch 'main'
-                        }
-                    }
                     steps {
                         sh "./gradlew -Dgradle.functionalTest=true :mdm-plugin-referencedata:integrationTest"
                     }
@@ -307,12 +294,6 @@ pipeline {
                     }
                 }
                 stage('Functional Test: mdm-plugin-terminology') {
-                    // Dont run these on main branch
-                    when {
-                        not {
-                            branch 'main'
-                        }
-                    }
                     steps {
                         sh "./gradlew -Dgradle.functionalTest=true :mdm-plugin-terminology:integrationTest"
                     }
@@ -323,12 +304,6 @@ pipeline {
                     }
                 }
                 stage('Functional Test: mdm-security') {
-                    // Dont run these on main branch
-                    when {
-                        not {
-                            branch 'main'
-                        }
-                    }
                     steps {
                         sh "./gradlew -Dgradle.functionalTest=true :mdm-security:integrationTest"
                     }
@@ -339,14 +314,14 @@ pipeline {
                     }
                 }
             }
+
         }
 
         /*
         E2E Functional Tests
         */
         stage('E2E Functional Tests') {
-            stages {
-
+            parallel {
                 stage('E2E Core Functional Test') {
                     steps {
                         sh "./gradlew -Dgradle.test.package=core :mdm-testing-functional:integrationTest"
