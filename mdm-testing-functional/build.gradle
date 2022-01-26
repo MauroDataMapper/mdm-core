@@ -160,12 +160,11 @@ integrationTest {
     }
 }
 
-artifactoryPublish {
-    skip = true
-}
 afterEvaluate {
 
-
+    tasks.withType(AbstractPublishToMaven).configureEach {
+        enabled = false
+    }
     sonarqube {
         properties {
             property 'sonar.sources', ''

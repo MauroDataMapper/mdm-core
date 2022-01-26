@@ -23,7 +23,6 @@ pipeline {
     }
 
     stages {
-
         stage('Clean') {
             // Only clean when the last build failed
             when {
@@ -75,7 +74,6 @@ pipeline {
                 sh './gradlew --build-cache verifyFlywayMigrationVersions'
             }
         }
-
         // Deploy develop branch even if tests fail if the code builds, as it'll be an unstable snapshot but we should still deploy
         stage('Deploy develop to Artifactory') {
             when {
@@ -89,7 +87,7 @@ pipeline {
             }
             steps {
                 script {
-                    sh "./gradlew --build-cache artifactoryPublish"
+                    sh "./gradlew --build-cache publish"
                 }
             }
         }
