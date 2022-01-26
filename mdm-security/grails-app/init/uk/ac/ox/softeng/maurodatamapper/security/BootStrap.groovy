@@ -109,7 +109,7 @@ class BootStrap implements SecurityDefinition {
                 CatalogueUser.withNewTransaction {
 
                     getOrCreateModernSecurityUsers('development', false)
-                    checkAndSave(messageSource, editor, reader, authenticated, pending, containerAdmin, author, reviewer)
+                    checkAndSave(messageSource, editor, reader, authenticated, pending, containerAdmin, author, reviewer, creator)
 
                     getOrCreateBasicGroups('development', false)
                     checkAndSave(messageSource, editors, readers)

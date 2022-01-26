@@ -27,7 +27,7 @@ import org.flywaydb.core.api.migration.BaseJavaMigration
 import org.flywaydb.core.api.migration.Context
 
 @Slf4j
-class V5_0_1__update_paths extends BaseJavaMigration {
+class V5_0_2__update_paths extends BaseJavaMigration {
 
     @Override
     void migrate(Context context) throws Exception {
