@@ -18,12 +18,14 @@ json {
     if (export.finalised) dateFinalised OffsetDateTimeConverter.toString(export.dateFinalised)
     if (export.modelVersion) modelVersion export.modelVersion
     authority tmpl.'/authority/export'(export.authority)
-    if (export.referenceDataTypes) referenceDataTypes tmpl.'/referenceDataType/export'(export.referenceDataTypes.sort())
-    if (export.referenceDataElements) referenceDataElements tmpl.'/referenceDataElement/export'(export.referenceDataElements.sort())    
-    if (export.referenceDataValues) referenceDataValues tmpl.'/referenceDataValue/export'(export.referenceDataValues.sort{a,b -> 
-            if (a.rowNumber == b.rowNumber) {
-                a.referenceDataElement.label <=> b.referenceDataElement.label
-            } else {
-                a.rowNumber <=> b.rowNumber
-            }})   
+    if (export.referenceDataTypes) referenceDataTypes g.render(template: '/referenceDataType/export',
+                                                               collection: export.referenceDataTypes.sort(), var: 'export')
+    if (export.referenceDataElements) referenceDataElements tmpl.'/referenceDataElement/export'(export.referenceDataElements.sort())
+    if (export.referenceDataValues) referenceDataValues tmpl.'/referenceDataValue/export'(export.referenceDataValues.sort { a, b ->
+        if (a.rowNumber == b.rowNumber) {
+            a.referenceDataElement.label <=> b.referenceDataElement.label
+        } else {
+            a.rowNumber <=> b.rowNumber
+        }
+    })
 }

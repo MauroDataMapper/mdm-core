@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
 
     VirtualSecurableResourceGroupRole withAccessLevel(GroupRole groupRole) {
         this.groupRole = groupRole
-        this.order = groupRole.path ? groupRole.path.split('/').size() : 0
+        this.order = groupRole.path?.size()
         this
     }
 
@@ -147,11 +147,11 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
     }
 
     boolean matchesDomainResource(Class<? extends SecurableResource> securableResourceClass, UUID id) {
-        (domainType == securableResourceClass.simpleName || alternateDomainType == securableResourceClass.simpleName) && domainId == id
+        matchesDomainResourceType(securableResourceClass.simpleName) && domainId == id
     }
 
     boolean matchesDomainResourceType(Class<? extends SecurableResource> securableResourceClass) {
-        (domainType == securableResourceClass.simpleName || alternateDomainType == securableResourceClass.simpleName)
+        matchesDomainResourceType(securableResourceClass.simpleName)
     }
 
     boolean matchesDomainResourceType(String securableResourceDomainType) {

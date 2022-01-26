@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.email.EmailProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.session.SessionService
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.security.User
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import asset.pipeline.grails.AssetResourceLocator
 import grails.config.Config
@@ -56,10 +56,19 @@ class BootStrap {
     @Autowired
     MessageSource messageSource
 
-    def init = {servletContext ->
-        Utils.outputRuntimeArgs(BootStrap)
-        log.debug('Grails Environment: {} (mdm.env property : {})', Environment.current.name, System.getProperty('mdm.env') ?: '')
-        if (grailsApplication.config.maurodatamapper.security.public) {
+    def init = { servletContext ->
+
+        String grailsEnv = Environment.current.name
+        String mdmEnv = System.getProperty('mdm.env')
+        String jenkinsEnv = System.getenv('JENKINS')
+
+        StringBuilder sb = new StringBuilder('Grails Environment: ')
+        if (jenkinsEnv) sb.append('Jenkins ')
+        sb.append(grailsEnv)
+        log.debug('{}', sb.toString())
+        if (mdmEnv) log.debug('MDM Environment: {}', mdmEnv)
+
+        if (grailsApplication.config.getProperty('maurodatamapper.security.public', Boolean)) {
             log.warn('Full public access is turned on')
         }
 
@@ -113,14 +122,17 @@ class BootStrap {
 
         // Override the email from address with either the config set variable or the simplejavamail username
         if (!apiPropertyService.findByKey(ApiPropertyEnum.EMAIL_FROM_ADDRESS.key)) {
-            String fromEmailAddressToUse = grailsApplication?.config?.maurodatamapper?.email?.from?.address ?: grailsApplication?.config?.simplejavamail?.smtp?.username
+            String fromEmailAddressToUse = grailsApplication.config.getProperty('maurodatamapper.email.from.address',
+                                                                                String,
+                                                                                grailsApplication.config.getProperty('simplejavamail.smtp.username',
+                                                                                                                     String, ''))
             apiPropertyService.findAndUpdateByApiPropertyEnum(ApiPropertyEnum.EMAIL_FROM_ADDRESS,
                                                               fromEmailAddressToUse, bootstrapUser)
         }
         // Check for site url and set if provided by config
         // We do not override any site url which has already been set
-        apiPropertyService.checkAndSetSiteUrl(grailsApplication?.config?.grails?.serverURL,
-                                              grailsApplication?.config?.grails?.contextPath,
+        apiPropertyService.checkAndSetSiteUrl(grailsApplication.config.getProperty('grails.serverURL', String),
+                                              grailsApplication.config.getProperty('grails.contextPath', String),
                                               bootstrapUser)
     }
 
@@ -136,10 +148,10 @@ class BootStrap {
             log.warn('Multiple email plugins found - we\'ll use the first one')
         }
 
-        emailers.every {emailer ->
+        emailers.every { emailer ->
             log.debug('Configuring emailer: {}/{}', emailer.namespace, emailer.name)
             try {
-                boolean configured = emailer.configure(config)
+                boolean configured = emailer.configure(config.toProperties())
                 if (configured) emailer.testConnection()
                 emailer.enabled = true
                 true
@@ -153,9 +165,9 @@ class BootStrap {
 
     void loadDefaultAuthority() {
         Authority.withNewTransaction {
-            if (!authorityService.defaultAuthorityExists() && grailsApplication.config.maurodatamapper.bootstrap.authority) {
-                Authority authority = new Authority(label: grailsApplication.config.getProperty(Authority.DEFAULT_NAME_CONFIG_PROPERTY),
-                                                    url: grailsApplication.config.getProperty(Authority.DEFAULT_URL_CONFIG_PROPERTY),
+            if (!authorityService.defaultAuthorityExists() && grailsApplication.config.getProperty('maurodatamapper.bootstrap.authority', Boolean)) {
+                Authority authority = new Authority(label: grailsApplication.config.getProperty(Authority.DEFAULT_NAME_CONFIG_PROPERTY, String),
+                                                    url: grailsApplication.config.getProperty(Authority.DEFAULT_URL_CONFIG_PROPERTY, String),
                                                     createdBy: StandardEmailAddress.ADMIN,
                                                     readableByEveryone: true,
                                                     readableByAuthenticatedUsers: true,
@@ -179,6 +191,11 @@ class BootStrap {
 
         UUID ident() {
             id
+        }
+
+        @Override
+        Path getPath() {
+            Path.from('cu', emailAddress)
         }
 
         @Override

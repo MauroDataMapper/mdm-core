@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.hibernate.search
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate.IdPathSecureFilterFactory
+import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 
 import grails.plugins.hibernate.search.HibernateSearchApi
 import groovy.util.logging.Slf4j
@@ -35,6 +36,7 @@ class HibernateSearch {
     @SuppressWarnings('UnnecessaryQualifiedReference')
     static <T> PaginatedHibernateSearchResult<T> securedPaginatedList(Class<T> clazz,
                                                                       List<UUID> allowedIds,
+                                                                      List<PathNode> allowedPathNodes,
                                                                       Map pagination,
                                                                       @DelegatesTo(HibernateSearchApi) Closure... closures) {
         if (!allowedIds) return new PaginatedHibernateSearchResult<T>([], 0)
@@ -46,7 +48,7 @@ class HibernateSearch {
                 closure.call()
             }
 
-            filter IdPathSecureFilterFactory.createFilterPredicate(searchPredicateFactory, allowedIds)
+            filter IdPathSecureFilterFactory.createFilterPredicate(searchPredicateFactory, allowedIds, allowedPathNodes)
         }
     }
 
@@ -54,7 +56,7 @@ class HibernateSearch {
     static <T> PaginatedHibernateSearchResult<T> paginatedList(Class<T> clazz, Map pagination, @DelegatesTo(HibernateSearchApi) Closure closure) {
 
         if (!ClassPropertyFetcher.forClass(clazz).isReadableProperty('search')) {
-            throw new ApiInternalException('L01', "Class ${clazz} is not configured for lucene searching")
+            throw new ApiInternalException('L01', "Class ${clazz} is not configured for HS searching")
         }
 
         Integer max = pagination.max?.toInteger()
@@ -101,10 +103,5 @@ class HibernateSearch {
         if (throwable instanceof BooleanQuery.TooManyClauses) return true
         if (!throwable.cause) return false
         return isTooManyClausesException(throwable.cause)
-    }
-
-    @Deprecated
-    static Closure defineAdditionalLuceneQuery(@DelegatesTo(HibernateSearchApi) closure) {
-        closure
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,10 +35,10 @@ class MauroDataMapperProviderServiceSpec extends MdmSpecification {
 
     void 'test modules'() {
         expect:
-        mauroDataMapperProviderService.modulesList.size() == 91
-        mauroDataMapperProviderService.javaModules.size() == 68
-        mauroDataMapperProviderService.allGrailsPluginModules.size() == 22
-        mauroDataMapperProviderService.grailsPluginModules.size() == 20
+        mauroDataMapperProviderService.modulesList.size() == 86
+        mauroDataMapperProviderService.javaModules.size() == 62
+        mauroDataMapperProviderService.allGrailsPluginModules.size() == 23
+        mauroDataMapperProviderService.grailsPluginModules.size() == 21
         mauroDataMapperProviderService.mdmGrailsPluginModules.size() == 2
         mauroDataMapperProviderService.otherModules.size() == 1
 

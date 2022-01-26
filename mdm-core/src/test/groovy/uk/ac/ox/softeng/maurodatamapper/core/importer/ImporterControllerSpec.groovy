@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ class ImporterControllerSpec extends BaseUnitSpec implements ControllerUnitTest<
 
         then:
         verifyResponse(HttpStatus.BAD_REQUEST)
-        response.errorMessage == 'Namespace, name and version must be provided to identify individual importers'
+        model.message == 'Namespace, name and version must be provided to identify individual importers'
     }
 
     void 'test the importer parameters are returned correctly'() {

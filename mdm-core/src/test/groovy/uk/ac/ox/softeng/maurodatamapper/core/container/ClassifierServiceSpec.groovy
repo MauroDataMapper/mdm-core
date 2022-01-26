@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.security.basic.NoAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
@@ -69,18 +70,15 @@ class ClassifierServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Clas
 
         and:
         classifierList[0].label == 'nestedparent'
-        classifierList[0].depth == 1
-        classifierList[0].path == "/${parent.id}"
+        classifierList[0].path == Path.from(parent, 'cl', 'nestedparent')
 
         and:
         classifierList[0].childClassifiers.size() == 1
-        classifierList[0].childClassifiers[0].depth == 2
-        classifierList[0].childClassifiers[0].path == "/${parent.id}/${id}"
+        classifierList[0].childClassifiers[0].path == Path.from('cl:parent classifier|cl:nestedparent|cl:editor classifier')
 
 
         and:
         classifierList[1].label == 'editor classifier'
-        classifierList[1].depth == 2
     }
 
     void "test count"() {
@@ -220,7 +218,7 @@ class ClassifierServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Clas
         basicModel.addToClassifiers(Classifier.findByLabel('parent classifier'))
 
         ModelService basicModelService = Stub() {
-            getModelClass() >> BasicModel
+            getDomainClass() >> BasicModel
             findByIdJoinClassifiers(_) >> {UUID id -> BasicModel.findByIdJoinClassifiers(id)}
         }
         service.catalogueItemServices = [basicModelService]
@@ -269,7 +267,7 @@ class ClassifierServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Clas
         basicModel.addToClassifiers(Classifier.findByLabel('parent classifier'))
 
         ModelService basicModelService = Stub() {
-            getModelClass() >> BasicModel
+            getDomainClass() >> BasicModel
             findByIdJoinClassifiers(_) >> {UUID id -> BasicModel.findByIdJoinClassifiers(id)}
         }
         service.catalogueItemServices = [basicModelService]

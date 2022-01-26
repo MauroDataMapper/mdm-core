@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ class SemanticLinkServiceSpec extends MultiFacetItemAwareServiceSpec<SemanticLin
         ModelService basicModelService = Stub() {
             get(_) >> {UUID id -> BasicModel.get(id)}
             getAll(_) >> {List<UUID> ids -> BasicModel.getAll(ids)}
-            getModelClass() >> BasicModel
+            getDomainClass() >> BasicModel
             handles('BasicModel') >> true
             removeSemanticLinkFromMultiFacetAware(_, _) >> {UUID id, SemanticLink semanticLink ->
                 BasicModel bm = BasicModel.get(id)

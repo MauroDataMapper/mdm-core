@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,16 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.federation
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
-import spock.lang.Ignore
+import spock.lang.Requires
 import spock.lang.Shared
 
 /**
@@ -42,7 +41,14 @@ import spock.lang.Shared
  */
 @Integration
 @Slf4j
-@Ignore("Depends on remote catalogue - to be run manually")
+// Requires a connection to the CD environment, if this connection is not available
+@Requires({
+    String url = 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment'
+    HttpURLConnection connection = url.toURL().openConnection() as HttpURLConnection
+    connection.setRequestMethod("GET")
+    connection.connect()
+    connection.getResponseCode() == 200
+})
 class SubscribedModelFunctionalSpec extends BaseFunctionalSpec {
 
     @Shared
@@ -51,9 +57,9 @@ class SubscribedModelFunctionalSpec extends BaseFunctionalSpec {
     @Shared
     UUID folderId
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def checkAndSetupData() {
+    def setup() {
         log.debug('Check and setup test data for SubscribedModelFunctionalSpec')
         sessionFactory.currentSession.flush()
         folderId = new Folder(label: 'Functional Test Folder', createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true).id

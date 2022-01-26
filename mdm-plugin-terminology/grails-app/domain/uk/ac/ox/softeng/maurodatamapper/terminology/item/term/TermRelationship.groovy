@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,14 +26,15 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelItemConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
+import uk.ac.ox.softeng.maurodatamapper.core.search.ModelItemSearch
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
-import org.grails.datastore.gorm.GormEntity
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
 class TermRelationship implements ModelItem<TermRelationship, Terminology> {
@@ -67,6 +68,11 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
 
     static transients = ['aliases', 'model']
 
+    static search = {
+        CallableSearch.call(ModelItemSearch, delegate)
+        modelId searchable: 'yes', indexingDependency: [reindexOnUpdate: 'shallow', derivedFrom: 'sourceTerm']
+    }
+
     @Override
     String getDomainType() {
         TermRelationship.simpleName
@@ -82,16 +88,6 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
         beforeValidateModelItem()
     }
 
-    @Override
-    def beforeInsert() {
-        buildPath()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPath()
-    }
-
     String getEditLabel() {
         "TermRelationship:${relationshipType.label}"
     }
@@ -101,13 +97,17 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
         sourceTerm?.terminology
     }
 
+    UUID getModelId() {
+        getModel()?.id
+    }
+
     @Override
     Boolean hasChildren() {
         false
     }
 
     @Override
-    GormEntity getPathParent() {
+    Term getParent() {
         sourceTerm
     }
 
@@ -122,6 +122,7 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
     @Override
     String getPathIdentifier() {
         if (!label) label = relationshipType?.label
+        if (!label || !sourceTerm || !targetTerm) return null
         "$sourceTerm.code.$label.$targetTerm.code"
     }
 

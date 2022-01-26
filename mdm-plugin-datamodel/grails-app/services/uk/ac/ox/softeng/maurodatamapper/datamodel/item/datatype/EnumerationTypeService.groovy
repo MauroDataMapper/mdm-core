@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValueService
@@ -42,6 +43,7 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> implement
     EnumerationValueService enumerationValueService
     SummaryMetadataService summaryMetadataService
     DataTypeService dataTypeService
+    DataModelService dataModelService
 
     @Override
     boolean handlesPathPrefix(String pathPrefix) {
@@ -123,11 +125,6 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> implement
     }
 
     @Override
-    Class<EnumerationType> getModelItemClass() {
-        EnumerationType
-    }
-
-    @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         domainType == EnumerationType.simpleName
     }
@@ -140,9 +137,12 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> implement
 
         List<EnumerationType> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            log.debug('Performing lucene label search')
+            log.debug('Performing hs label search')
             long start = System.currentTimeMillis()
-            results = EnumerationType.luceneLabelSearch(EnumerationType, searchTerm, readableIds.toList()).results
+            results =
+                EnumerationType
+                    .labelHibernateSearch(EnumerationType, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds))
+                    .results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
 

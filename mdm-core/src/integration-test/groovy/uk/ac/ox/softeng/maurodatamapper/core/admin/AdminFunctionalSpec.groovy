@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,9 @@ import static io.micronaut.http.HttpStatus.OK
 
 /**
  * @see AdminController* Controller: admin
- * |   POST  | /api/admin/editProperties       | Action: editApiProperties    |
- * |   POST  | /api/admin/rebuildLuceneIndexes | Action: rebuildLuceneIndexes |
- * |   GET   | /api/admin/properties           | Action: apiProperties        |
+ * |   POST  | /api/admin/editProperties                | Action: editApiProperties    |
+ * |   POST  | /api/admin/rebuildHibernateSearchIndexes | Action: rebuildHibernateSearchIndexes |
+ * |   GET   | /api/admin/properties                    | Action: apiProperties        |
  */
 @Integration
 @Slf4j
@@ -39,9 +39,9 @@ class AdminFunctionalSpec extends BaseFunctionalSpec {
         'admin'
     }
 
-    void 'test post to rebuildLuceneIndexes'() {
+    void 'test post to rebuildHibernateSearchIndexes'() {
         when:
-        POST('rebuildLuceneIndexes', [:], Argument.of(String))
+        POST('rebuildHibernateSearchIndexes', [:], Argument.of(String))
 
         then:
         verifyJsonResponse(OK, '''{

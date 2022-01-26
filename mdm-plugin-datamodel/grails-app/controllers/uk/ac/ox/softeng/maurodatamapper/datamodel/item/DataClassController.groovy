@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,9 +98,9 @@ class DataClassController extends CatalogueItemController<DataClass> {
             params.order = searchParams.order
         }
 
-        PaginatedHibernateSearchResult<ModelItem> result = mdmPluginDataModelSearchService.findAllByDataClassIdByLuceneSearch(params.dataClassId,
-                                                                                                                              searchParams,
-                                                                                                                              params)
+        PaginatedHibernateSearchResult<ModelItem> result = mdmPluginDataModelSearchService.findAllByDataClassIdByHibernateSearch(params.dataClassId,
+                                                                                                                                 searchParams,
+                                                                                                                                 params)
         respond result
     }
 

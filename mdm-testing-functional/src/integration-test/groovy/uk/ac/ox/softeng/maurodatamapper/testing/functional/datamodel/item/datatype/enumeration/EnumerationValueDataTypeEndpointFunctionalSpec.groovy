@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,15 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.datamodel.item.datatype.enumeration
 
-
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
-import io.micronaut.http.HttpResponse
 
 import java.util.regex.Pattern
 
@@ -69,49 +68,22 @@ class EnumerationValueDataTypeEndpointFunctionalSpec extends UserAccessFunctiona
         EnumerationType.byDataModelIdAndLabel(Utils.toUuid(complexDataModelId), 'yesnounknown').get().id.toString()
     }
 
-    Boolean readerPermissionIsInherited() {
-        true
-    }
-
     @Override
-    void verifyL03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getComplexDataModelId()
-    }
-
-    @Override
-    void verifyL03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getComplexDataModelId()
-    }
-
-    @Override
-    void verifyL03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getComplexDataModelId()
-    }
-
-    @Override
-    void verifyN03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getComplexDataModelId()
-    }
-
-    @Override
-    void verifyN03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getComplexDataModelId()
-    }
-
-    @Override
-    void verifyN03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getComplexDataModelId()
-    }
-
-    @Override
-    void verifyR04UnknownIdResponse(HttpResponse<Map> response, String id) {
-        verifyForbidden response
+    Expectations getExpectations() {
+        Expectations.builder()
+            .withDefaultExpectations()
+            .withInheritedAccessPermissions()
+            .whereTestingUnsecuredResource()
+            .withoutAvailableActions()
+            .whereAuthors {
+                cannotEditDescription()
+            }
     }
 
     @Override
     void verifySameValidDataCreationResponse() {
         verifyResponse UNPROCESSABLE_ENTITY, response
-        assert response.body().total == 2
+        assert response.body().total == 4
         assert response.body().errors.any {
             it.message == 'Property [enumerationType] of class [class uk.ac.ox.softeng.maurodatamapper.' +
             'datamodel.item.datatype.enumeration.EnumerationValue] cannot be null'
@@ -119,6 +91,13 @@ class EnumerationValueDataTypeEndpointFunctionalSpec extends UserAccessFunctiona
         assert response.body().errors.any {
             it.message == 'Property [parent] of class [class uk.ac.ox.softeng.maurodatamapper.core.' +
             'facet.BreadcrumbTree] cannot be null'
+        }
+        assert response.body().errors.any {
+            it.message == 'Property [path] of class [class uk.ac.ox.softeng.maurodatamapper.' +
+            'datamodel.item.datatype.enumeration.EnumerationValue] cannot be null'
+        }
+        assert response.body().errors.any {
+            it.message == 'Property [path] of class [class uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree] cannot be null'
         }
     }
 
@@ -139,10 +118,15 @@ class EnumerationValueDataTypeEndpointFunctionalSpec extends UserAccessFunctiona
     }
 
     @Override
-    Map getValidUpdateJson() {
+    Map getValidNonDescriptionUpdateJson() {
         [
             value: 'Optional'
         ]
+    }
+
+    @Override
+    Map getValidDescriptionOnlyUpdateJson() {
+        getValidNonDescriptionUpdateJson()
     }
 
     @Override

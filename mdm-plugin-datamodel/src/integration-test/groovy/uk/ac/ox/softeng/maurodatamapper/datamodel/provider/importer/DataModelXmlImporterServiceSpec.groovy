@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,14 +66,14 @@ class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderS
 
         then:
         exception = thrown(ApiBadRequestException)
-        exception.errorCode == NO_DATAMODEL_TO_IMPORT_CODE
+        exception.errorCode == 'XIS03'
 
         when: 'given an empty model map (backwards compatibility)'
         importModels(loadTestFile('emptyDataModel'))
 
         then:
         exception = thrown(ApiBadRequestException)
-        exception.errorCode == NO_DATAMODEL_TO_IMPORT_CODE
+        exception.errorCode == 'XIS03'
 
         // when: 'given an empty models list'
         // importModels(loadTestFile('emptyDataModelList'))

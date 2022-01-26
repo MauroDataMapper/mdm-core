@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ class TerminologyXmlExporterService extends TerminologyExporterProviderService i
 
     @Override
     String getVersion() {
-        '4.0'
+        '5.0'
     }
 
     @Override
@@ -68,12 +68,12 @@ class TerminologyXmlExporterService extends TerminologyExporterProviderService i
     @Override
     ByteArrayOutputStream exportTerminology(User currentUser, Terminology terminology) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(terminology, 'terminology', version, '3.2', 'gml', exportMetadata), fileType)
+        exportModel(new ExportModel(terminology, 'terminology', version, '4.0', 'gml', exportMetadata), fileType)
     }
 
     @Override
     ByteArrayOutputStream exportTerminologies(User currentUser, List<Terminology> terminologies) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(terminologies, 'terminology', 'terminologies', version, '3.2', 'gml', exportMetadata), fileType)
+        exportModel(new ExportModel(terminologies, 'terminology', 'terminologies', version, '4.0', 'gml', exportMetadata), fileType)
     }
 }

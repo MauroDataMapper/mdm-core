@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -128,7 +128,7 @@ class UserSecurityPolicy {
     }
 
     UserSecurityPolicy inGroups(Set<UserGroup> userGroups) {
-        this.userGroups = userGroups
+        this.userGroups = userGroups == null ? new HashSet<UserGroup>() : userGroups
         this
     }
 
@@ -257,6 +257,11 @@ class UserSecurityPolicy {
     boolean managesVirtualAccessToSecurableResource(Class<? extends SecurableResource> securableResourceClass, UUID id) {
         Set<VirtualSecurableResourceGroupRole> roles = virtualSecurableResourceGroupRoles[id]
         roles ? roles.first().matchesDomainResourceType(securableResourceClass) : false
+    }
+
+    boolean managesVirtualAccessToSecurableResource(String securableResourceDomainType, UUID id) {
+        Set<VirtualSecurableResourceGroupRole> roles = virtualSecurableResourceGroupRoles[id]
+        roles ? roles.first().matchesDomainResourceType(securableResourceDomainType) : false
     }
 
     boolean managesVirtualAccessToSecurableResource(SecurableResource securableResource) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -188,10 +188,11 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 1
+        invalid.errors.errorCount == 2
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 1
+        invalid.errors.fieldErrorCount == 2
         invalid.errors.getFieldError('label')
+        invalid.errors.getFieldError('path')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)

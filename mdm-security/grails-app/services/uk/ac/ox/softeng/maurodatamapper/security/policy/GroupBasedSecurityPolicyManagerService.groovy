@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,17 +130,18 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
         securableResourceGroupRoleService.deleteAllBySecurableResourceDomainTypeAndIds(securableResourceDomainType, ids)
         GrailsCache cache = getSecurityPolicyManagerCache()
         Collection<Object> keys = cache.getAllKeys()
+        // Rebuild all policies which have access, this needs to be done incase we revoke access to something which provides access to something else
         keys.each {key ->
-            GroupBasedUserSecurityPolicyManager securityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
-            securityPolicyManager.lock()
-            UserSecurityPolicy updatedPolicy = securityPolicyManager.userPolicy
+            GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
             ids.each {id ->
-                updatedPolicy = userSecurityPolicyService.updatePolicyToRemoveSecurableResource(updatedPolicy,
-                                                                                                securableResourceDomainType,
-                                                                                                id)
+                if (userSecurityPolicyManager.userPolicyManagesAccessToSecurableResource(securableResourceDomainType, id)) {
+                    userSecurityPolicyManager.lock()
+                    UserSecurityPolicy updatedPolicy = userSecurityPolicyService.buildUserSecurityPolicy(userSecurityPolicyManager.userPolicy)
+                    storeUserSecurityPolicyManager(userSecurityPolicyManager.withUpdatedUserPolicy(updatedPolicy))
+                }
             }
-            storeUserSecurityPolicyManager(securityPolicyManager.withUpdatedUserPolicy(updatedPolicy))
         }
+
     }
 
     @Override

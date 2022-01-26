@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -123,12 +123,12 @@ class TermSpec extends ModelItemSpec<Term> implements DomainUnitTest<Term> {
 
     @Override
     int getExpectedConstrainedErrors() {
-        3 // code and definition and label
+        4 // code and definition and label
     }
 
     @Override
     int getExpectedConstrainedBlankErrors() {
-        5
+        6
     }
 
     @Override

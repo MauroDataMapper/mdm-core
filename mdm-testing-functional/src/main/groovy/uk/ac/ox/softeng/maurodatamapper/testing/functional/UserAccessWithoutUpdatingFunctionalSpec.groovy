@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,28 +17,21 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional
 
-import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
-import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
-import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import org.apache.commons.lang3.NotImplementedException
-import org.hibernate.HibernateException
 import org.junit.Assert
 import org.springframework.beans.factory.annotation.Autowired
 
-import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
-
 import static io.micronaut.http.HttpStatus.CREATED
-import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
@@ -55,6 +48,9 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 @Slf4j
 abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAccessFunctionalSpec {
 
+    @Autowired(required = false)
+    List<SecurableResourceService> securableResourceServices
+
     abstract Map getValidJson()
 
     abstract Map getInvalidJson()
@@ -63,111 +59,54 @@ abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAcces
         getResourcePath()
     }
 
-    Map getNoContent() {
-        [:]
-    }
-
-    HttpStatus getUnknownIdDeletedStatus() {
-        NOT_FOUND
-    }
-
-    Boolean getReaderCanCreate() {
-        false
-    }
-
-    Boolean getAuthenticatedUsersCanCreate() {
-        false
-    }
-
-    Boolean isDisabledNotDeleted() {
-        false
-    }
-
-    Boolean hasDefaultCreation() {
-        false
-    }
-
-    Boolean getReaderCanSeeEditorCreatedItems() {
-        true
-    }
-
-    Boolean readerPermissionIsInherited() {
-        false
-    }
-
     void verifyDefaultCreationResponse(HttpResponse<Map> response, int count) {
-        assert !hasDefaultCreation()
+        assert !expectations.hasDefaultCreation
     }
 
-    void verifyL03NoContentResponse(HttpResponse<Map> response) {
-        verifyForbidden response
-    }
-
-    void verifyL03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyForbidden response
-    }
-
-    void verifyL03ValidContentResponse(HttpResponse<Map> response) {
-        verifyForbidden response
-    }
-
-    void verifyN03NoContentResponse(HttpResponse<Map> response) {
-        verifyForbidden response
-    }
-
-    void verifyN03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyForbidden response
-    }
-
-    void verifyN03ValidContentResponse(HttpResponse<Map> response) {
-        verifyForbidden response
-    }
-
-    void verifyR03NoContentResponse(HttpResponse<Map> response) {
-        verifyForbidden response
-    }
-
-    void verifyR03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyForbidden response
-    }
-
-    void verifyR03ValidContentResponse(HttpResponse<Map> response) {
-        verifyForbidden response
-    }
-
-    void verifyR04UnknownIdResponse(HttpResponse<Map> response, String id) {
+    void verifyNA04Response(HttpResponse<Map> response, String id) {
         verifyNotFound response, id
     }
 
-    void verifyR04KnownIdResponse(HttpResponse<Map> response, String id) {
-        verifyForbidden response
-    }
-
-    void verifyR05InvalidDataResponse(HttpResponse<Map> response, String id) {
-        verifyForbidden response
-    }
-
-    void verifyR05ValidDataResponse(HttpResponse<Map> response, String id) {
-        verifyForbidden response
-    }
-
-    void verifyE03ValidResponseBody(HttpResponse<Map> response) {
-        assert response.body().id
+    void verify03ValidResponseBody(HttpResponse<Map> response) {
+        assert responseBody().id
         validJson.each {k, v ->
             if (v instanceof Map) {
                 v.each {k1, v1 ->
-                    assert response.body()[k][k1] == v1
+                    assert responseBody()[k][k1] == v1
                 }
             } else {
-                assert response.body()[k] == v
+                assert responseBody()[k] == v
             }
         }
     }
 
+    void verify03CannotCreateResponse(HttpResponse<Map> response, String name) {
+        if ((expectations.can(name, 'see') && expectations.accessPermissionIsInherited) ||
+            (!expectations.can(name, 'create') && expectations.isSecuredResource)) verifyForbidden(response)
+        else verifyNotFound response, null
+    }
+
+    void verify04UnknownIdResponse(HttpResponse<Map> response, String name, String id) {
+        if (expectations.can(name, 'delete')) {
+            verifyNotFound(response, id)
+        } else if (expectations.can(name, 'see') && !expectations.isSecuredResource) verifyForbidden(response)
+        else verifyNotFound(response, id)
+    }
+
+    void verify04NotAllowedToDeleteResponse(HttpResponse<Map> response, String name, String id) {
+        if (expectations.can(name, 'see')) verifyForbidden response
+        else verifyNotFound(response, id)
+    }
+
     void verifySameValidDataCreationResponse() {
         verifyResponse UNPROCESSABLE_ENTITY, response
-        assert response.body().total == 1
-        assert response.body().errors.first().message
+        assert responseBody().total == 1
+        assert responseBody().errors.first().message
+    }
+
+    void verifySoftDeleteResponse(HttpResponse<Map> response) {
+        verifyResponse OK, response
+        assert responseBody().deleted == true
     }
 
     /**
@@ -177,56 +116,20 @@ abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAcces
      */
     @Override
     String getValidId() {
-        loginEditor()
+        loginCreator()
         POST(getSavePath(), validJson, MAP_ARG, true)
         verifyResponse CREATED, response
-        String id = response.body().id
-        addReaderShare(id)
+        String id = responseBody().id
+        addAccessShares(id)
         logout()
         id
     }
 
-    @Transactional
-    void addReaderShare(String id) {
-        if (!readerPermissionIsInherited()) {
-            log.info('Add reader share to {}', id)
-            String groupRoleId = getGroupRole(GroupRole.READER_ROLE_NAME).id.toString()
-            String readerGroupId = getUserGroup('validIdGroup').id.toString()
-            String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
-            POST(endpoint, [:])
-            verifyResponse CREATED, response
+    @Override
+    void addAccessShares(String id, String resourceUrl = '') {
+        if (expectations.accessPermissionIsNotInherited) {
+            super.addAccessShares(id, resourceUrl)
         }
-    }
-
-    @Transactional
-    void removeReaderShare(String id) {
-        log.info('Remove reader share from {}', id)
-        loginAdmin()
-        String groupRoleId = getGroupRole(GroupRole.READER_ROLE_NAME).id.toString()
-        String readerGroupId = getUserGroup('validIdGroup').id.toString()
-        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
-        DELETE(endpoint, [:])
-        verifyResponse NO_CONTENT, response
-        logout()
-    }
-
-    @OnceBefore
-    @Transactional
-    def addValidIdReaderGroup() {
-        log.info('Add group with new reader user')
-        CatalogueUser reader = getUserByEmailAddress(userEmailAddresses.reader)
-        // To allow testing of reader group rights which reader2 is not in
-        UserGroup group = new UserGroup(
-            createdBy: userEmailAddresses.functionalTest,
-            name: 'validIdGroup',
-            ).addToGroupMembers(reader)
-        checkAndSave(messageSource, group)
-    }
-
-    @Transactional
-    def cleanupSpec() {
-        log.info('Removing valid id group')
-        UserGroup.findByName('validIdGroup')?.delete(flush: true)
     }
 
     @Override
@@ -238,7 +141,7 @@ abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAcces
     void removeValidIdObject(String id, HttpStatus expectedStatus) {
         if (!id) return
         log.info('Removing valid id {}', id)
-        if (isDisabledNotDeleted()) {
+        if (expectations.isSoftDeleteByDefault) {
             removeValidIdObjectUsingTransaction(id)
         } else {
             removeValidIdObjectUsingApi(id, expectedStatus)
@@ -252,7 +155,7 @@ abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAcces
 
     void removeValidIdObjectUsingApi(String id, HttpStatus expectedStatus) {
         log.info('Removing valid id {} using DELETE', id)
-        loginAdmin()
+        loginCreator()
         DELETE(id)
         verifyResponse expectedStatus, response
         logout()
@@ -267,8 +170,8 @@ abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAcces
     void cleanUpRoles(Collection<String> ids) {
         log.info('Cleaning up roles and groups')
         log.debug('Cleaning up {} roles for ids {}', SecurableResourceGroupRole.count(), ids)
-        SecurableResourceGroupRole.bySecurableResourceIds(ids.collect { Utils.toUuid(it) }).deleteAll()
-        sessionFactory.currentSession.flush()
+        SecurableResourceGroupRole.bySecurableResourceIds(ids.collect {Utils.toUuid(it)}).deleteAll()
+        safeSessionFlush()
         cleanupUserGroups()
     }
 
@@ -279,22 +182,23 @@ abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAcces
             log.info('Cleaning up groups, {} user groups still remain. Ignoring groups {},', groupsLeftOver, getPermanentGroupNames())
             List<UserGroup> groupsToDelete = UserGroup.byNameNotInList(getPermanentGroupNames()).list()
 
-            // This is purely here to provide info about roles and resources which havent been cleaned up
-            // It should not be used to perform cleanp of these roles and resources
-            List<SecurableResourceGroupRole> rolesLeftOver = SecurableResourceGroupRole.byUserGroupIds(groupsToDelete*.id).list()
-            if (rolesLeftOver) {
-                log.warn('Roles not cleaned up : {}', rolesLeftOver.size())
-                cleanupOrphanedRoles(rolesLeftOver)
+            // Seems to be possible in the UserGroupFS to get a result in groupsLeftOver which is then empty on the second call, possibly a timing issue
+            if (groupsToDelete*.id) {
+                // This is purely here to provide info about roles and resources which havent been cleaned up
+                // It should not be used to perform cleanp of these roles and resources
+                List<SecurableResourceGroupRole> rolesLeftOver = SecurableResourceGroupRole.byUserGroupIds(groupsToDelete*.id).list()
+
+                if (rolesLeftOver) {
+                    log.warn('Roles not cleaned up : {}', rolesLeftOver.size())
+                    cleanupOrphanedRoles(rolesLeftOver)
+                }
             }
             UserGroup.byNameNotInList(getPermanentGroupNames()).deleteAll()
         }
 
-        sessionFactory.currentSession.flush()
+        safeSessionFlush()
         assert UserGroup.count() == getPermanentGroupNames().size()
     }
-
-    @Autowired(required = false)
-    List<SecurableResourceService> securableResourceServices
 
     void cleanupOrphanedRoles(List<SecurableResourceGroupRole> rolesLeftOver) {
 
@@ -313,56 +217,56 @@ abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAcces
             }
         }
         SecurableResourceGroupRole.deleteAll(rolesLeftOver)
-        try {
-            sessionFactory.currentSession.flush()
-        } catch (HibernateException exception) {
-            log.error('Unknown error occured. Ignoring but may cause other tests to fail', exception)
-        }
+        safeSessionFlush()
     }
-
 
     List<String> getPermanentGroupNames() {
-        ['validIdGroup', 'administrators', 'readers', 'editors']
+        ['administrators', 'readers', 'editors', 'reviewers', 'authors', 'containerAdmins']
     }
 
-    /*
-     * Logged in as editor testing
-     */
-
-    void 'E03 : Test the save action correctly persists an instance (as editor)'() {
+    void 'CORE-#prefix-03 : Test the save action correctly persists an instance (as #name)'() {
         given:
-        loginEditor()
+        login(name)
 
-        //        if (hasInvalidOption()) {
 
-        if (hasDefaultCreation()) {
+        if (expectations.hasDefaultCreation && expectations.can(name, 'create')) {
             when: 'The save action is executed with no content'
-            POST(getSavePath(), noContent, MAP_ARG, true)
+            POST(getSavePath(), [:], MAP_ARG, true)
 
-            then: 'The response is correct'
+            then:
             verifyResponse CREATED, response
-            response.body().id
+            assert responseBody().id
             verifyDefaultCreationResponse(response, 0)
 
             and:
-            removeValidIdObject(response.body().id)
+            removeValidIdObject(responseBody().id)
 
             when: 'The save action is executed with invalid data'
             POST(getSavePath(), invalidJson, MAP_ARG, true)
 
             then: 'The response is correct'
             verifyResponse CREATED, response
-            response.body().id
+            assert responseBody().id
             verifyDefaultCreationResponse(response, 1)
 
             and:
-            removeValidIdObject(response.body().id)
+            removeValidIdObject(responseBody().id)
 
-        } else {
+            when: 'The save action is executed with valid data'
+            POST(getSavePath(), validJson, MAP_ARG, true)
+
+            then:
+            verifyResponse CREATED, response
+            verify03ValidResponseBody response
+
+            cleanup:
+            removeValidIdObject(responseBody().id)
+
+        } else if (expectations.can(name, 'create')) {
             when: 'The save action is executed with no content'
-            POST(getSavePath(), noContent, MAP_ARG, true)
+            POST(getSavePath(), [:], MAP_ARG, true)
 
-            then: 'The response is correct'
+            then:
             verifyResponse UNPROCESSABLE_ENTITY, response
 
             when: 'The save action is executed with invalid data'
@@ -370,374 +274,101 @@ abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAcces
 
             then: 'The response is correct'
             verifyResponse UNPROCESSABLE_ENTITY, response
-        }
-        //        }
 
-        when: 'The save action is executed with valid data'
-        POST(getSavePath(), validJson, MAP_ARG, true)
+            when: 'The save action is executed with valid data'
+            POST(getSavePath(), validJson, MAP_ARG, true)
 
-        then: 'The response is correct'
-        verifyResponse CREATED, response
-        verifyE03ValidResponseBody(response)
+            then:
+            verifyResponse CREATED, response
+            verify03ValidResponseBody response
 
-        cleanup:
-        removeValidIdObject(response.body().id)
+            cleanup:
+            removeValidIdObject(responseBody().id)
 
-    }
-
-    void 'E04 : Test the delete action correctly deletes an instance (as editor)'() {
-        given:
-        def id = getValidId()
-        loginEditor()
-
-        when: 'When the delete action is executed on an unknown instance'
-        DELETE("${UUID.randomUUID()}")
-
-        then: 'The response is correct'
-        verifyResponse getUnknownIdDeletedStatus(), response
-
-        when: 'When the delete action is executed on an existing instance'
-        DELETE("$id")
-
-        then: 'The response is correct'
-        if (isDisabledNotDeleted()) {
-            verifyResponse OK, response
-            response.body().disabled == true
         } else {
-            verifyResponse NO_CONTENT, response
+            when: 'The save action is executed with no content'
+            POST(getSavePath(), [:], MAP_ARG, true)
+
+            then:
+            verify03CannotCreateResponse(response, name)
+
+            when: 'The save action is executed with invalid data'
+            POST(getSavePath(), invalidJson, MAP_ARG, true)
+
+            then: 'The response is correct'
+            verify03CannotCreateResponse(response, name)
+
+            when: 'The save action is executed with valid data'
+            POST(getSavePath(), validJson, MAP_ARG, true)
+
+            then:
+            verify03CannotCreateResponse(response, name)
         }
 
-        cleanup:
-        removeValidIdObject(id, NOT_FOUND)
+        where:
+        prefix | name
+        'LO'   | 'Anonymous'
+        'NA'   | 'Authenticated'
+        'RE'   | 'Reader'
+        'RV'   | 'Reviewer'
+        'AU'   | 'Author'
+        'ED'   | 'Editor'
+        'CA'   | 'ContainerAdmin'
+        'AD'   | 'Admin'
     }
 
-    /*
-     * Logged out testing
-     */
-
-    void 'L03 : Test the save action correctly persists an instance (not logged in)'() {
-        when: 'The save action is executed with no content'
-        POST(getSavePath(), noContent, MAP_ARG, true)
-
-        then: 'The response is correct'
-        verifyL03NoContentResponse response
-
-        when: 'The save action is executed with invalid data'
-        POST(getSavePath(), invalidJson, MAP_ARG, true)
-
-        then: 'The response is correct'
-        verifyL03InvalidContentResponse response
-
-        when: 'The save action is executed with valid data'
-        POST(getSavePath(), validJson, MAP_ARG, true)
-
-        then: 'The response is correct'
-        verifyL03ValidContentResponse response
-    }
-
-    void 'L04 : Test the delete action correctly deletes an instance (not logged in)'() {
+    void 'CORE-#prefix-04 : Test the delete action correctly deletes an instance (as #name)'() {
         given:
         def id = getValidId()
         String rId = UUID.randomUUID().toString()
+        login(name)
 
         when: 'When the delete action is executed on an unknown instance'
         DELETE("${rId}")
 
         then: 'The response is correct'
-        verifyNotFound response, rId
+        verify04UnknownIdResponse response, name, rId
 
         when: 'When the delete action is executed on an existing instance'
         DELETE("$id")
 
         then: 'The response is correct'
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    /**
-     * Testing when logged in as a no access/authenticated user
-     */
-
-    void 'N03 : Test the save action correctly persists an instance (as no access/authenticated)'() {
-        given:
-        loginAuthenticated()
-
-
-        if (hasDefaultCreation() && getAuthenticatedUsersCanCreate()) {
-            when: 'The save action is executed with no content'
-            POST(getSavePath(), noContent, MAP_ARG, true)
-
-            then:
-            verifyResponse CREATED, response
-            response.body().id
-            verifyDefaultCreationResponse(response, 0)
-
-            and:
-            removeValidIdObject(response.body().id)
-
-            when: 'The save action is executed with invalid data'
-            POST(getSavePath(), invalidJson, MAP_ARG, true)
-
-            then: 'The response is correct'
-            verifyResponse CREATED, response
-            response.body().id
-            verifyDefaultCreationResponse(response, 1)
-
-            and:
-            removeValidIdObject(response.body().id)
-
-            when: 'The save action is executed with valid data'
-            POST(getSavePath(), validJson, MAP_ARG, true)
-
-            then:
-            verifyResponse CREATED, response
-            response.body().id
-            validJson.each {k, v ->
-                assert response.body()[k] == v
+        if (expectations.can(name, 'delete')) {
+            if (expectations.isSoftDeleteByDefault) {
+                verifySoftDeleteResponse(response)
+            } else {
+                verifyResponse NO_CONTENT, response
             }
+        } else verify04NotAllowedToDeleteResponse(response, name, id)
 
-            and:
-            removeValidIdObject(response.body().id)
-
-        } else if (getAuthenticatedUsersCanCreate()) {
-            when: 'The save action is executed with no content'
-            POST(getSavePath(), noContent, MAP_ARG, true)
+        if (expectations.can(name, 'delete') && expectations.isSoftDeleteByDefault) {
+            when: 'permanent delete is performed'
+            DELETE("$id?permanent=true")
 
             then:
-            verifyResponse UNPROCESSABLE_ENTITY, response
-
-            when: 'The save action is executed with invalid data'
-            POST(getSavePath(), invalidJson, MAP_ARG, true)
-
-            then: 'The response is correct'
-            verifyResponse UNPROCESSABLE_ENTITY, response
-
-            when: 'The save action is executed with valid data'
-            POST(getSavePath(), validJson, MAP_ARG, true)
-
-            then:
-            verifyResponse CREATED, response
-            response.body().id
-            validJson.each {k, v ->
-                assert response.body()[k] == v
-            }
-
-            and:
-            removeValidIdObject(response.body().id)
-
-        } else {
-            when: 'The save action is executed with no content'
-            POST(getSavePath(), noContent, MAP_ARG, true)
-
-            then:
-            verifyN03NoContentResponse response
-
-            when: 'The save action is executed with invalid data'
-            POST(getSavePath(), invalidJson, MAP_ARG, true)
-
-            then: 'The response is correct'
-            verifyN03InvalidContentResponse response
-
-            when: 'The save action is executed with valid data'
-            POST(getSavePath(), validJson, MAP_ARG, true)
-
-            then:
-            verifyN03ValidContentResponse response
-        }
-    }
-
-    void 'N04 : Test the delete action correctly deletes an instance (as no access/authenticated)'() {
-        given:
-        def id = getValidId()
-        String rId = UUID.randomUUID().toString()
-        loginAuthenticated()
-
-        when: 'When the delete action is executed on an unknown instance'
-        DELETE("${rId}")
-
-        then: 'The response is correct'
-        verifyNotFound response, rId
-
-        when: 'When the delete action is executed on an existing instance'
-        DELETE("$id")
-
-        then: 'The response is correct'
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    /**
-     * Testing when logged in as a reader only user
-     */
-
-    void 'R03 : Test the save action correctly persists an instance (as reader)'() {
-        given:
-        loginReader()
-
-        if (hasDefaultCreation() && getReaderCanCreate()) {
-            when: 'The save action is executed with no content'
-            POST(getSavePath(), noContent, MAP_ARG, true)
-
-            then:
-            verifyResponse CREATED, response
-            response.body().id
-            verifyDefaultCreationResponse(response, 0)
-
-            and:
-            removeValidIdObject(response.body().id)
-
-            when: 'The save action is executed with invalid data'
-            POST(getSavePath(), invalidJson, MAP_ARG, true)
-
-            then: 'The response is correct'
-            verifyResponse CREATED, response
-            response.body().id
-            verifyDefaultCreationResponse(response, 1)
-
-            and:
-            removeValidIdObject(response.body().id)
-
-            when: 'The save action is executed with valid data'
-            POST(getSavePath(), validJson, MAP_ARG, true)
-
-            then:
-            verifyResponse CREATED, response
-            response.body().id
-            validJson.each {k, v ->
-                assert response.body()[k] == v
-            }
-
-            and:
-            removeValidIdObject(response.body().id)
-
-        } else if (getReaderCanCreate()) {
-            when: 'The save action is executed with no content'
-            POST(getSavePath(), noContent, MAP_ARG, true)
-
-            then:
-            verifyResponse UNPROCESSABLE_ENTITY, response
-
-            when: 'The save action is executed with invalid data'
-            POST(getSavePath(), invalidJson, MAP_ARG, true)
-
-            then: 'The response is correct'
-            verifyResponse UNPROCESSABLE_ENTITY, response
-
-            when: 'The save action is executed with valid data'
-            POST(getSavePath(), validJson, MAP_ARG, true)
-
-            then:
-            verifyResponse CREATED, response
-            response.body().id
-            validJson.each {k, v ->
-                assert response.body()[k] == v
-            }
-
-            and:
-            removeValidIdObject(response.body().id)
-
-        } else {
-            when: 'The save action is executed with no content'
-            POST(getSavePath(), noContent, MAP_ARG, true)
-
-            then:
-            verifyR03NoContentResponse(response)
-
-            when: 'The save action is executed with invalid data'
-            POST(getSavePath(), invalidJson, MAP_ARG, true)
-
-            then: 'The response is correct'
-            verifyR03InvalidContentResponse(response)
-
-            when: 'The save action is executed with valid data'
-            POST(getSavePath(), validJson, MAP_ARG, true)
-
-            then:
-            verifyR03ValidContentResponse(response)
-        }
-    }
-
-    void 'R04 : Test the delete action correctly deletes an instance (as reader)'() {
-        given:
-        def id = getValidId()
-        String rId = UUID.randomUUID().toString()
-        loginReader()
-
-        when: 'When the delete action is executed on an unknown instance'
-        DELETE("${rId}")
-
-        then: 'The response is correct'
-        verifyR04UnknownIdResponse response, rId
-
-        when: 'When the delete action is executed on an existing instance'
-        DELETE("$id")
-
-        then: 'The response is correct'
-        verifyR04KnownIdResponse response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    /*
-    * Logged in as admin testing
-    * This proves that admin users can mess with items created by other users
-    */
-
-    void 'A03 : Test the save action correctly persists an instance (as admin)'() {
-        given:
-        loginAdmin()
-
-        when:
-        POST(getSavePath(), validJson, MAP_ARG, true)
-
-        then:
-        verifyResponse CREATED, response
-        response.body().id
-
-        when: 'Trying to save again using the same info'
-        String id1 = response.body().id
-        POST(getSavePath(), validJson, MAP_ARG, true)
-
-        then:
-        verifySameValidDataCreationResponse()
-        String id2 = response.body()?.id
-
-        cleanup:
-        removeValidIdObject(id1)
-        if (id2) {
-            removeValidIdObject(id2) // not expecting anything, but just in case
-        }
-    }
-
-    void 'A04 : Test the delete action correctly deletes an instance (as admin)'() {
-        given:
-        def id = getValidId()
-        loginAdmin()
-
-        when: 'When the delete action is executed on an unknown instance'
-        DELETE("${UUID.randomUUID()}")
-
-        then: 'The response is correct'
-        verifyResponse unknownIdDeletedStatus, response
-
-        when: 'When the delete action is executed on an existing instance'
-        DELETE("$id")
-
-        then: 'The response is correct'
-        if (isDisabledNotDeleted()) {
-            verifyResponse OK, response
-            response.body().disabled == true
-        } else {
-            verifyResponse NO_CONTENT, response
+            if (name == 'Editor') verifyForbidden(response)
+            else verifyResponse NO_CONTENT, response
         }
 
         cleanup:
-        removeValidIdObject(id, NOT_FOUND)
-    }
+        if (!expectations.can(name, 'delete')) removeValidIdObject(id)
+        else {
+            loginCreator()
+            GET(id)
+            if (response.status() == OK) {
+                removeValidIdObject(id)
+            }
+        }
 
+        where:
+        prefix | name
+        'LO'   | 'Anonymous'
+        'NA'   | 'Authenticated'
+        'RE'   | 'Reader'
+        'RV'   | 'Reviewer'
+        'AU'   | 'Author'
+        'ED'   | 'Editor'
+        'CA'   | 'ContainerAdmin'
+        'AD'   | 'Admin'
+    }
 }

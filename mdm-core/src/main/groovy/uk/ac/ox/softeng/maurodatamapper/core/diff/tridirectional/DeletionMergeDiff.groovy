@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,16 +83,6 @@ class DeletionMergeDiff<D extends Diffable> extends TriDirectionalDiff<D> implem
     @Override
     DeletionMergeDiff<D> asMergeConflict() {
         super.asMergeConflict() as DeletionMergeDiff<D>
-    }
-
-    @Deprecated
-    DeletionMergeDiff<D> withSource(D source) {
-        super.withSource(source) as DeletionMergeDiff<D>
-    }
-
-    @Deprecated
-    DeletionMergeDiff<D> withTarget(D target) {
-        super.withTarget(target) as DeletionMergeDiff<D>
     }
 
     @Override

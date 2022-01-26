@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +21,12 @@ import uk.ac.ox.softeng.maurodatamapper.core.email.SendEmailTask
 
 import groovy.util.logging.Slf4j
 import org.simplejavamail.MailException
-import org.simplejavamail.email.Email
+import org.simplejavamail.api.email.Email
+import org.simplejavamail.api.email.Recipient
+import org.simplejavamail.api.mailer.Mailer
+import org.simplejavamail.config.ConfigLoader
 import org.simplejavamail.email.EmailBuilder
-import org.simplejavamail.email.Recipient
-import org.simplejavamail.mailer.Mailer
 import org.simplejavamail.mailer.MailerBuilder
-import org.simplejavamail.util.ConfigLoader
 
 import javax.mail.Message
 

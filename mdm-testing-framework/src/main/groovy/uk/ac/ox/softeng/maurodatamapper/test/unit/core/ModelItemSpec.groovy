@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,8 +58,8 @@ abstract class ModelItemSpec<K extends ModelItem> extends CatalogueItemSpec<K> {
         given:
         setValidDomainValues()
         wipeModel()
-        // Expected field errors >> nullable model, nullable breadcrumbTree.parent
-        int expectedErrors = modelFieldName ? 2 : 1
+        // Expected field errors >> nullable model, nullable breadcrumbTree.parent, nullable path
+        int expectedErrors = modelFieldName ? 3 : 2
         expectedErrors += expectedBaseConstrainedErrorCount
 
         when:
@@ -82,14 +82,13 @@ abstract class ModelItemSpec<K extends ModelItem> extends CatalogueItemSpec<K> {
         check(domain)
     }
 
-    void 'MI02 : test depth and path'() {
+    void 'MI02 : test path'() {
         when:
         setValidDomainValues()
         checkAndSave(domain)
         item = findById()
 
         then:
-        item.depth == domain.depth
         item.path == domain.path
 
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile
 
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.interceptor.FacetInterceptor
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
@@ -42,7 +43,7 @@ class ProfileInterceptor extends FacetInterceptor {
     @Override
     void facetResourceChecks() {
         Utils.toUuid(params, 'id')
-        params.multiFacetAwareItemDomainType = params.multiFacetAwareItemDomainType?: params.catalogueItemDomainType ?: params.containerDomainType ?: params.modelDomainType
+        params.multiFacetAwareItemDomainType = params.multiFacetAwareItemDomainType ?: params.catalogueItemDomainType ?: params.containerDomainType ?: params.modelDomainType
         params.multiFacetAwareItemId = params.multiFacetAwareItemId ?: params.catalogueItemId ?: params.containerId ?: params.modelId
         checkAdditionalIds()
         mapDomainTypeToClass(getOwningType(), true)
@@ -52,7 +53,7 @@ class ProfileInterceptor extends FacetInterceptor {
                                                         Class<? extends SecurableResource> owningSecureResourceClass, UUID owningSecureResourceId) {
 
 
-        boolean canRead = currentUserSecurityPolicyManager.userCanReadResourceId(resourceClass, id, owningSecureResourceClass, owningSecureResourceId)
+        boolean canRead = currentUserSecurityPolicyManager.userCanReadResourceId(Metadata, id, owningSecureResourceClass, owningSecureResourceId)
 
         // Read only actions
         // ProfileController.getMany and ProfileController.validateMany must check that items requested
@@ -64,11 +65,13 @@ class ProfileInterceptor extends FacetInterceptor {
         // This tests that we *might* be able to save.
         // ProfileController.saveMany must check access for every profile service provider referenced in the request body
         if (actionName == "saveMany") {
-            return (currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(owningSecureResourceClass, owningSecureResourceId, 'saveIgnoreFinalise')
-                    ||
-                    currentUserSecurityPolicyManager.userCanCreateResourceId(Profile.class, null, owningSecureResourceClass, owningSecureResourceId))
-                    ?:
-                    forbiddenOrNotFound(canRead, id ? resourceClass : owningSecureResourceClass, id ?: owningSecureResourceId)
+            boolean userCanSaveIgnoreFinalise = currentUserSecurityPolicyManager.userCanWriteResourceId(Metadata, null,
+                                                                                                        owningSecureResourceClass, owningSecureResourceId,
+                                                                                                        'saveIgnoreFinalise')
+            boolean userCanCreateMetadata = currentUserSecurityPolicyManager.userCanCreateResourceId(Metadata, null,
+                                                                                                     owningSecureResourceClass, owningSecureResourceId)
+            return (userCanSaveIgnoreFinalise || userCanCreateMetadata) ?:
+                   forbiddenOrNotFound(canRead, id ? resourceClass : owningSecureResourceClass, id ?: owningSecureResourceId)
         }
 
         ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName, params.profileVersion)
@@ -77,16 +80,20 @@ class ProfileInterceptor extends FacetInterceptor {
             // Special handling for profiles which allow post finalisation updates
             // In this situation then we check if the user can perform the action ignoring the finalisation state of the owning resource
             if (isUpdate()) {
-                return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(owningSecureResourceClass, owningSecureResourceId, 'updateIgnoreFinalise') ?:
+                return currentUserSecurityPolicyManager.userCanWriteResourceId(Metadata, null,
+                                                                               owningSecureResourceClass, owningSecureResourceId,
+                                                                               'updateIgnoreFinalise') ?:
                        forbiddenOrNotFound(canRead, id ? resourceClass : owningSecureResourceClass, id ?: owningSecureResourceId)
             }
             if (isSave()) {
-                return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(owningSecureResourceClass, owningSecureResourceId, 'saveIgnoreFinalise') ?:
+                return currentUserSecurityPolicyManager.userCanWriteResourceId(Metadata, null,
+                                                                               owningSecureResourceClass, owningSecureResourceId,
+                                                                               'saveIgnoreFinalise') ?:
                        forbiddenOrNotFound(canRead, id ? resourceClass : owningSecureResourceClass, id ?: owningSecureResourceId)
             }
         }
 
         // Otherwise just fall through to the default handling
-        super.checkActionAuthorisationOnUnsecuredResource(resourceClass, id, owningSecureResourceClass, owningSecureResourceId)
+        super.checkActionAuthorisationOnUnsecuredResource(Metadata, id, owningSecureResourceClass, owningSecureResourceId)
     }
 }

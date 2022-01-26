@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.VersionLinkAwareService
 import uk.ac.ox.softeng.maurodatamapper.path.Path
@@ -58,7 +58,7 @@ import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 import uk.ac.ox.softeng.maurodatamapper.version.VersionChangeType
@@ -92,7 +92,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     PathService pathService
 
     @Autowired(required = false)
-    Set<DomainService> domainServices
+    Set<MdmDomainService> domainServices
 
     @Autowired(required = false)
     Set<MultiFacetItemAwareService> multiFacetItemAwareServices
@@ -105,21 +105,6 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     @Autowired(required = false)
     SecurityPolicyManagerService securityPolicyManagerService
-
-    @Override
-    boolean handles(Class clazz) {
-        clazz == VersionedFolder
-    }
-
-    @Override
-    boolean handles(String domainType) {
-        domainType == VersionedFolder.simpleName
-    }
-
-    @Override
-    Class<Folder> getContainerClass() {
-        VersionedFolder
-    }
 
     Class<VersionedFolder> getVersionLinkAwareClass() {
         VersionedFolder
@@ -135,7 +120,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         folderService.getContainerPropertyNameInModel()
     }
 
-    Set<DomainService> getDomainServices() {
+    Set<MdmDomainService> getDomainServices() {
         domainServices.add(this)
         domainServices
     }
@@ -163,12 +148,12 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     List<VersionedFolder> findAllReadableContainersBySearchTerm(UserSecurityPolicyManager userSecurityPolicyManager, String searchTerm) {
         log.debug('Searching readable folders for search term in label')
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Folder)
-        VersionedFolder.luceneTreeLabelSearch(readableIds.collect {it.toString()}, searchTerm)
+        VersionedFolder.treeLabelHibernateSearch(readableIds.collect { it.toString() }, searchTerm)
     }
 
     @Override
-    List<Container> findAllContainersInside(UUID containerId) {
-        folderService.findAllContainersInside(containerId)
+    List<Container> findAllContainersInside(PathNode pathNode) {
+        folderService.findAllContainersInside(pathNode)
     }
 
     @Override
@@ -184,22 +169,27 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     @Override
     VersionedFolder findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
         String[] split = pathIdentifier.split(PathNode.ESCAPED_MODEL_PATH_IDENTIFIER_SEPARATOR)
-        DetachedCriteria criteria = parentId ? VersionedFolder.byParentFolderId(parentId) : VersionedFolder.byNoParentFolder()
-
         String label = split[0]
-        criteria.eq('label', label)
 
+        // A specific identity of the model has been requested so make sure we limit to that
         if (split.size() == 2) {
-            String modelIdentifier = split[1]
+            String identity = split[1]
+            DetachedCriteria criteria = VersionedFolder.byParentFolderId(parentId).eq('label', split[0])
 
-            if (Version.isVersionable(modelIdentifier)) {
-                criteria.eq('modelVersion', Version.from(modelIdentifier))
+            // Try the search by modelVersion or branchName and no modelVersion
+            // This will return the requested model or the latest non-finalised main branch
+            if (Version.isVersionable(identity)) {
+                criteria.eq('modelVersion', Version.from(identity))
             } else {
-                criteria.eq('branchName', modelIdentifier).isNull('modelVersion')
+                // Need to make sure that if the main branch is requested we return the one without a modelVersion
+                criteria.eq('branchName', identity)
+                    .isNull('modelVersion')
             }
+            return criteria.get() as VersionedFolder
         }
 
-        criteria.get()
+        // If no identity part then we can just get the latest model by the label
+        findLatestModelByLabel(label)
     }
 
     @Override
@@ -569,6 +559,9 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         )
     }
 
+    VersionedFolder findLatestModelByLabel(String label) {
+        findCurrentMainBranchByLabel(label) ?: findLatestFinalisedModelByLabel(label)
+    }
 
     VersionedFolder findLatestFinalisedModelByLabel(String label) {
         VersionedFolder.byLabelAndBranchNameAndFinalisedAndLatestModelVersion(label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).get()
@@ -820,9 +813,9 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     void processCreationPatchIntoVersionedFolder(FieldPatchData creationPatch, VersionedFolder targetVersionedFolder,
                                                  VersionedFolder sourceVersionedFolder,
                                                  UserSecurityPolicyManager userSecurityPolicyManager) {
-        CreatorAware domainInTarget = pathService.findResourceByPathFromRootResource(targetVersionedFolder, creationPatch.relativePathToRoot,
-                                                                                     getModelIdentifier(targetVersionedFolder))
-        CreatorAware domainToCopy = domainInTarget ?: pathService.findResourceByPathFromRootResource(sourceVersionedFolder, creationPatch.path)
+        MdmDomain domainInTarget = pathService.findResourceByPathFromRootResource(targetVersionedFolder, creationPatch.relativePathToRoot,
+                                                                                  getModelIdentifier(targetVersionedFolder))
+        MdmDomain domainToCopy = domainInTarget ?: pathService.findResourceByPathFromRootResource(sourceVersionedFolder, creationPatch.path)
         if (!domainToCopy) {
             log.warn('Could not process creation patch into versioned folder at path [{}] as no such path exists in the source', creationPatch.path)
             return
@@ -847,7 +840,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     }
 
     void processDeletionPatchIntoVersionedFolder(FieldPatchData deletionPatch, VersionedFolder targetVersionedFolder) {
-        CreatorAware domain =
+        MdmDomain domain =
             pathService.findResourceByPathFromRootResource(targetVersionedFolder, deletionPatch.relativePathToRoot,
                                                            getModelIdentifier(targetVersionedFolder))
         if (!domain) {
@@ -873,7 +866,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     }
 
     void processModificationPatchIntoVersionedFolder(FieldPatchData modificationPatch, VersionedFolder targetVersionedFolder) {
-        CreatorAware domain =
+        MdmDomain domain =
             pathService.findResourceByPathFromRootResource(targetVersionedFolder, modificationPatch.relativePathToRoot,
                                                            getModelIdentifier(targetVersionedFolder))
         if (!domain) {
@@ -884,7 +877,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         String fieldName = modificationPatch.fieldName
         log.debug('Modifying [{}] in [{}]', fieldName, modificationPatch.path.toString(getModelIdentifier(targetVersionedFolder)))
 
-        DomainService domainService = getDomainServices().find {it.handles(domain.class)}
+        MdmDomainService domainService = getDomainServices().find {it.handles(domain.class)}
         if (!domainService) throw new ApiInternalException('MSXX', "No domain service to handle modification of [${domain.domainType}]")
 
         // If the domainService provides a special handler for modifying this field then use it,

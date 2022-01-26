@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
-import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
@@ -52,7 +51,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.VersionLinkAwareService
 import uk.ac.ox.softeng.maurodatamapper.path.Path
@@ -61,7 +60,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 import uk.ac.ox.softeng.maurodatamapper.version.VersionChangeType
@@ -69,7 +68,6 @@ import uk.ac.ox.softeng.maurodatamapper.version.VersionChangeType
 import grails.gorm.DetachedCriteria
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormValidateable
-import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 
@@ -82,8 +80,6 @@ abstract class ModelService<K extends Model>
     extends CatalogueItemService<K>
     implements SecurableResourceService<K>, VersionLinkAwareService<K> {
 
-    protected static HibernateProxyHandler proxyHandler = new HibernateProxyHandler()
-
     @Autowired(required = false)
     AuthorityService authorityService
 
@@ -91,7 +87,7 @@ abstract class ModelService<K extends Model>
     Set<ModelItemService> modelItemServices
 
     @Autowired(required = false)
-    Set<DomainService> domainServices
+    Set<MdmDomainService> domainServices
 
     @Autowired(required = false)
     Set<MultiFacetItemAwareService> multiFacetItemAwareServices
@@ -120,16 +116,9 @@ abstract class ModelService<K extends Model>
     @Autowired(required = false)
     SecurityPolicyManagerService securityPolicyManagerService
 
-    @Override
-    Class<K> getCatalogueItemClass() {
-        getModelClass()
-    }
-
     Class<K> getVersionLinkAwareClass() {
-        getModelClass()
+        getDomainClass()
     }
-
-    abstract Class<K> getModelClass()
 
     abstract String getUrlResourceName()
 
@@ -179,10 +168,6 @@ abstract class ModelService<K extends Model>
                          boolean throwErrors,
                          UserSecurityPolicyManager userSecurityPolicyManager)
 
-    abstract List<K> findAllByMetadataNamespace(String namespace, Map pagination = [:])
-
-    abstract List<K> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination = [:])
-
     abstract ModelImporterProviderService<K, ? extends ModelImporterProviderServiceParameters> getJsonModelImporterProviderService()
 
     abstract ExporterProviderService getJsonModelExporterProviderService()
@@ -195,7 +180,7 @@ abstract class ModelService<K extends Model>
         throw new ApiNotYetImplementedException('MSXX', 'deleteModelsAndContent')
     }
 
-    Set<DomainService> getDomainServices() {
+    Set<MdmDomainService> getDomainServices() {
         domainServices.add(this)
         domainServices
     }
@@ -251,13 +236,9 @@ abstract class ModelService<K extends Model>
         []
     }
 
-    List<K> findAllByDataLoaderPlugin(DataLoaderProviderService dataLoaderProviderService, Map pagination = [:]) {
-        findAllByMetadataNamespaceAndKey(dataLoaderProviderService.namespace, dataLoaderProviderService.name, pagination)
-    }
-
     List<K> findAllReadableModels(UserSecurityPolicyManager userSecurityPolicyManager, boolean includeDocumentSuperseded,
                                   boolean includeModelSuperseded, boolean includeDeleted) {
-        List<UUID> ids = userSecurityPolicyManager.listReadableSecuredResourceIds(getModelClass())
+        List<UUID> ids = userSecurityPolicyManager.listReadableSecuredResourceIds(getDomainClass())
         if (!ids) return []
         List<UUID> constrainedIds
         // The list of ids are ALL the readable ids by the user, no matter the model status
@@ -274,6 +255,10 @@ abstract class ModelService<K extends Model>
         findAllReadableModels(constrainedIds, includeDeleted)
     }
 
+    List<PathNode> getAllReadablePathNodes(Collection<UUID> readableIds) {
+        getAll(readableIds).collect {it.path.last()}
+    }
+
     @Override
     K findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
         String[] split = pathIdentifier.split(PathNode.ESCAPED_MODEL_PATH_IDENTIFIER_SEPARATOR)
@@ -282,7 +267,7 @@ abstract class ModelService<K extends Model>
         // A specific identity of the model has been requested so make sure we limit to that
         if (split.size() == 2) {
             String identity = split[1]
-            DetachedCriteria criteria = useParentIdForSearching(parentId) ? modelClass.byFolderId(parentId) : modelClass.by()
+            DetachedCriteria criteria = useParentIdForSearching(parentId) ? getDomainClass().byFolderId(parentId) : getDomainClass().by()
 
             criteria.eq('label', label)
 
@@ -307,7 +292,7 @@ abstract class ModelService<K extends Model>
     }
 
     K findByFolderIdAndLabel(UUID folderId, String label) {
-        modelClass.byFolderId(folderId).eq('label', label).get() as K
+        getDomainClass().byFolderId(folderId).eq('label', label).get() as K
     }
 
     K finaliseModel(K model, User user, Version requestedModelVersion, VersionChangeType versionChangeType,
@@ -325,10 +310,10 @@ abstract class ModelService<K extends Model>
         model.modelVersionTag = versionTag
 
         model.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised Model',
-                               description: "${getModelClass().simpleName} finalised by ${user.firstName} ${user.lastName} on " +
+                               description: "${getDomainClass().simpleName} finalised by ${user.firstName} ${user.lastName} on " +
                                             "${OffsetDateTimeConverter.toString(model.dateFinalised)}")
         editService.createAndSaveEdit(EditTitle.FINALISE, model.id, model.domainType,
-                                      "${getModelClass().simpleName} finalised by ${user.firstName} ${user.lastName} on " +
+                                      "${getDomainClass().simpleName} finalised by ${user.firstName} ${user.lastName} on " +
                                       "${OffsetDateTimeConverter.toString(model.dateFinalised)}",
                                       user)
         log.debug('Model finalised took {}', Utils.timeTaken(start))
@@ -404,7 +389,7 @@ abstract class ModelService<K extends Model>
         // Check if the branch name is already being used
         if (countByAuthorityAndLabelAndBranchNameAndNotFinalised(model.authority, model.label, branchName) > 0) {
             (model as GormValidateable).errors.reject('version.aware.label.branch.name.already.exists',
-                                                      ['branchName', getModelClass(), branchName, model.label] as Object[],
+                                                      ['branchName', getDomainClass(), branchName, model.label] as Object[],
                                                       'Property [{0}] of class [{1}] with value [{2}] already exists for label [{3}]')
             return model
         }
@@ -480,7 +465,7 @@ abstract class ModelService<K extends Model>
     }
 
     K findModelSuperseding(K model) {
-        VersionLink link = versionLinkService.findLatestLinkSupersedingModelId(getModelClass().simpleName, model.id)
+        VersionLink link = versionLinkService.findLatestLinkSupersedingModelId(getDomainClass().simpleName, model.id)
         if (!link) return null
         link.multiFacetAwareItemId == model.id ? get(link.targetModelId) : get(link.multiFacetAwareItemId)
     }
@@ -501,7 +486,7 @@ abstract class ModelService<K extends Model>
      * @param domainService Service which handles catalogueItems of the leftModel and rightModel type.
      * @return The model resulting from the merging of changes.
      */
-    K mergeObjectPatchDataIntoModel(ObjectPatchData objectPatchData, K targetModel, K sourceModel, boolean isLegacy,
+    K mergeObjectPatchDataIntoModel(ObjectPatchData objectPatchData, K targetModel, K sourceModel,
                                     UserSecurityPolicyManager userSecurityPolicyManager) {
 
 
@@ -510,8 +495,6 @@ abstract class ModelService<K extends Model>
             return targetModel
         }
         log.debug('Merging patch data into {}', targetModel.id)
-        if (isLegacy) return mergeLegacyObjectPatchDataIntoModel(objectPatchData, targetModel, userSecurityPolicyManager)
-
         getSortedFieldPatchDataForMerging(objectPatchData).each {fieldPatch ->
             switch (fieldPatch.type) {
                 case 'creation':
@@ -556,7 +539,7 @@ abstract class ModelService<K extends Model>
 
     void processCreationPatchIntoModel(FieldPatchData creationPatch, K targetModel, K sourceModel,
                                        UserSecurityPolicyManager userSecurityPolicyManager) {
-        CreatorAware domainToCopy = pathService.findResourceByPathFromRootResource(sourceModel, creationPatch.path)
+        MdmDomain domainToCopy = pathService.findResourceByPathFromRootResource(sourceModel, creationPatch.path)
         if (!domainToCopy) {
             log.warn('Could not process creation patch into model at path [{}] as no such path exists in the source', creationPatch.path)
             return
@@ -573,7 +556,7 @@ abstract class ModelService<K extends Model>
     }
 
     void processDeletionPatchIntoModel(FieldPatchData deletionPatch, K targetModel) {
-        CreatorAware domain = pathService.findResourceByPathFromRootResource(targetModel, deletionPatch.relativePathToRoot)
+        MdmDomain domain = pathService.findResourceByPathFromRootResource(targetModel, deletionPatch.relativePathToRoot)
         if (!domain) {
             log.warn('Could not process deletion patch into model at path [{}] as no such path exists in the target',
                      deletionPatch.relativePathToRoot)
@@ -591,7 +574,7 @@ abstract class ModelService<K extends Model>
     }
 
     void processModificationPatchIntoModel(FieldPatchData modificationPatch, K targetModel) {
-        CreatorAware domain = pathService.findResourceByPathFromRootResource(targetModel, modificationPatch.relativePathToRoot)
+        MdmDomain domain = pathService.findResourceByPathFromRootResource(targetModel, modificationPatch.relativePathToRoot)
         if (!domain) {
             log.warn('Could not process modifiation patch into model at path [{}] as no such path exists in the target',
                      modificationPatch.relativePathToRoot)
@@ -599,7 +582,8 @@ abstract class ModelService<K extends Model>
         }
         String fieldName = modificationPatch.fieldName
         log.debug('Modifying [{}] in [{}]', fieldName, modificationPatch)
-        DomainService domainService = getDomainServices().find {it.handles(domain.class)}
+
+        MdmDomainService domainService = getDomainServices().find {it.handles(domain.class)}
         if (!domainService) throw new ApiInternalException('MSXX', "No domain service to handle modification of [${domain.domainType}]")
 
         // If the domainService provides a special handler for modifying this field then use it,
@@ -683,30 +667,6 @@ abstract class ModelService<K extends Model>
         multiFacetItemAwareService.save(copy, flush: false, validate: false)
     }
 
-    @SuppressWarnings('GrDeprecatedAPIUsage')
-    @Deprecated
-    K mergeLegacyObjectPatchDataIntoModel(ObjectPatchData objectPatchData, K targetModel, UserSecurityPolicyManager userSecurityPolicyManager) {
-
-        log.debug('Merging legacy {} diffs into model {}', objectPatchData.getDiffsWithContent().size(), targetModel.label)
-        objectPatchData.getDiffsWithContent().each {mergeFieldDiff ->
-            log.debug('{}', mergeFieldDiff.summary)
-
-            if (mergeFieldDiff.isFieldChange()) {
-                targetModel.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
-            } else if (mergeFieldDiff.isMetadataChange()) {
-                mergeLegacyMetadataIntoCatalogueItem(mergeFieldDiff, targetModel, userSecurityPolicyManager)
-            } else {
-                ModelItemService modelItemService = modelItemServices.find {it.handles(mergeFieldDiff.fieldName)}
-                if (modelItemService) {
-                    modelItemService.processLegacyFieldPatchData(mergeFieldDiff, targetModel, userSecurityPolicyManager)
-                } else {
-                    log.error('Unknown ModelItem field to merge [{}]', mergeFieldDiff.fieldName)
-                }
-            }
-        }
-        targetModel
-    }
-
     List<VersionTreeModel> buildModelVersionTree(K instance, VersionLinkType versionLinkType,
                                                  VersionTreeModel parentVersionTreeModel,
                                                  boolean includeForks, boolean branchesOnly,
@@ -781,7 +741,7 @@ abstract class ModelService<K extends Model>
         // List all matching models and sort descending my model version. The first result is the latest version.
         // To get the first result, use [0] rather than .first(), because even with a safe navigation operator,
         // ?.first() throws a NoSuchElementException on an empty collection
-        modelClass.byLabelAndBranchNameAndFinalised(label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).list().sort {
+        getDomainClass().byLabelAndBranchNameAndFinalised(label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).list().sort{
             a, b -> b.modelVersion <=> a.modelVersion
         }[0] as K
     }
@@ -801,11 +761,11 @@ abstract class ModelService<K extends Model>
     }
 
     K findCurrentMainBranchByLabel(String label) {
-        modelClass.byLabelAndBranchNameAndNotFinalised(label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).get() as K
+        getDomainClass().byLabelAndBranchNameAndNotFinalised(label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).get() as K
     }
 
     List<K> findAllAvailableBranchesByLabel(String label) {
-        modelClass.byLabelAndNotFinalised(label).list() as List<K>
+        getDomainClass().byLabelAndNotFinalised(label).list() as List<K>
     }
 
     Version getLatestModelVersionByLabel(String label) {

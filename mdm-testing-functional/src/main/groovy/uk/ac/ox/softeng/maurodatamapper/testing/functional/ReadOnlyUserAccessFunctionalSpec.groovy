@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional
 
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
+import org.spockframework.util.Assert
 
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.OK
@@ -30,230 +32,127 @@ import static io.micronaut.http.HttpStatus.OK
  *  | GET    | /api/${resourcePath}       | Action: index  |
  *  | GET    | /api/${resourcePath}/${id} | Action: show   |
  * </pre>
+ *
+ * To change any expected permissions inside the tests override the getExpectedPermissions method
+ *
  */
 @Slf4j
 abstract class ReadOnlyUserAccessFunctionalSpec extends FunctionalSpec {
 
     abstract String getEditorIndexJson()
 
-    abstract String getShowJson()
-
     abstract String getValidId()
 
     abstract void removeValidIdObject(String id)
+
+    @RunOnce
+    def setup() {
+        log.info('{}', expectations)
+    }
+
+    String getShowJson() {
+        null
+    }
 
     String getReaderIndexJson() {
         getEditorIndexJson()
     }
 
     String getAdminIndexJson() {
+        getContainerAdminIndexJson()
+    }
+
+    String getContainerAdminIndexJson() {
         getEditorIndexJson()
     }
 
-    Boolean getReaderCanSeeEditorCreatedItems() {
-        false
-    }
 
-    void verifyL01Response(HttpResponse<Map> response) {
-        verifyResponse NOT_FOUND, response
-    }
-
-    void verifyN01Response(HttpResponse<Map> response) {
-        verifyResponse NOT_FOUND, response
-    }
-
-    void verifyE02Response(HttpResponse<Map> response, String id) {
+    void verify01Response(HttpResponse<Map> response) {
         verifyResponse OK, response
-        response.body().id == id
+        assert responseBody().containsKey('count')
+        assert responseBody().containsKey('items')
     }
 
-    void verifyR01Response(HttpResponse<Map> response) {
+    void verify02Response(HttpResponse<Map> response, String id, List<String> actions) {
         verifyResponse OK, response
-        assert response.body().count
-        assert response.body().items
+        assert responseBody().id == id
+        if (expectations.availableActionsProvided) assert responseBody().availableActions == actions
     }
 
-    void verifyR02Response(HttpResponse<Map> response, String id) {
-        verifyResponse OK, response
-        response.body().id == id
-        response.body().availableActions = ['show']
-    }
-
-    void verifyA02Response(HttpResponse<Map> response, String id) {
-        verifyE02Response(response, id)
-    }
-
-    /*
-     * Logged in as editor testing
-     */
-
-    void 'E01 : Test the index action (as editor)'() {
-        given:
-        loginEditor()
-
-        when: 'The index action is requested'
-        GET('', STRING_ARG)
-
-        then: 'The response is correct'
-        verifyJsonResponse OK, editorIndexJson
-    }
-
-    void 'E02 : Test the show action correctly renders an instance (as editor)'() {
-        given:
-        def id = getValidId()
-        loginEditor()
-
-        if (showJson) {
-            when: 'When the show action is called to retrieve a resource'
-            GET("$id", STRING_ARG)
-
-            then:
-            verifyJsonResponse OK, showJson
-        } else {
-            when: 'When the show action is called to retrieve a resource'
-            GET("$id")
-
-            then:
-            verifyE02Response response, id
-        }
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    /*
-     * Logged out testing
-     */
-
-    void 'L01 : Test the index action (not logged in)'() {
-        when: 'The index action is requested'
-        GET('')
-
-        then: 'The response is correct'
-        verifyL01Response response
-    }
-
-    void 'L02 : Test the show action correctly renders an instance (not logged in)'() {
-        given:
-        def id = getValidId()
-
-        when: 'When the show action is called to retrieve a resource'
-        GET("$id")
-
-        then: 'The response is correct'
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    /**
-     * Testing when logged in as a no access/authenticated user
-     */
-
-    void 'N01 : Test the index action (as no access/authenticated)'() {
-        given:
-        loginAuthenticated()
-
-        when: 'The index action is requested'
-        GET('')
-
-        then: 'The response is correct'
-        verifyN01Response(response)
-    }
-
-    void 'N02 : Test the show action correctly renders an instance (as no access/authenticated)'() {
-        given:
-        def id = getValidId()
-        loginAuthenticated()
-
-        when: 'When the show action is called to retrieve a resource'
-        GET("$id")
-
-        then: 'The response is correct'
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
+    void untestedExpectation() {
+        Assert.fail('Untested expectation')
     }
 
     /**
      * Testing when logged in as a reader only user
      */
 
-    void 'R01 : Test the index action (as reader)'() {
+    void 'CORE-#prefix-01 : Test the index action (as #name)'() {
         given:
-        loginReader()
+        login(name)
 
-        if (getReaderIndexJson()) {
+        if (expectedJson) {
             when: 'The index action is requested'
             GET('', STRING_ARG)
 
             then: 'The response is correct'
-            verifyJsonResponse OK, getReaderIndexJson()
+            if (expectations.can(name, 'index')) verifyJsonResponse OK, expectedJson
+            else assert jsonCapableResponse.status() == NOT_FOUND
         } else {
             when: 'The index action is requested'
             GET('')
 
             then: 'The response is correct'
-            verifyR01Response(response)
+            if (expectations.can(name, 'index')) verify01Response(response)
+            else verifyNotFound(response, null)
         }
+
+        where:
+        prefix | name             | expectedJson
+        'LO'   | 'Anonymous'      | null
+        'NA'   | 'Authenticated'  | null
+        'RE'   | 'Reader'         | getReaderIndexJson()
+        'RV'   | 'Reviewer'       | getReaderIndexJson()
+        'AU'   | 'Author'         | getReaderIndexJson()
+        'ED'   | 'Editor'         | getEditorIndexJson()
+        'CA'   | 'ContainerAdmin' | getContainerAdminIndexJson()
+        'AD'   | 'Admin'          | getAdminIndexJson()
     }
 
-    void 'R02 : Test the show action correctly renders an instance (as reader)'() {
+    void 'CORE-#prefix-02 : Test the show action correctly renders an instance (as #name)'() {
         given:
         def id = getValidId()
-        loginReader()
+        login(name)
+
+        if (showJson && name == 'reader') {
+            when: 'When the show action is called to retrieve a resource'
+            GET("$id", STRING_ARG)
+
+            then:
+            if (expectations.can(name, 'see')) verifyJsonResponse OK, showJson
+            else assert jsonCapableResponse.status() == NOT_FOUND
+        }
 
         when: 'When the show action is called to retrieve a resource'
         GET("$id")
 
         then: 'The response is correct'
-        if (!readerCanSeeEditorCreatedItems) verifyNotFound response, id
-        else {
-            verifyR02Response response, id
-        }
+        if (expectations.noAccess) verifyNotFound response, id
+        else if (expectations.can(name, 'see')) verify02Response(response, id, expectations.availableActions(name))
+        else verifyNotFound response, id
 
         cleanup:
         removeValidIdObject(id)
-    }
 
-    /*
-    * Logged in as admin testing
-    * This proves that admin users can mess with items created by other users
-    */
-
-    void 'A01 : Test the index action (as admin)'() {
-        given:
-        loginAdmin()
-
-        when: 'The index action is requested'
-        GET('', STRING_ARG)
-
-        then: 'The response is correct'
-        verifyJsonResponse OK, adminIndexJson
-    }
-
-    void 'A02 : Test the show action correctly renders an instance (as admin)'() {
-        given:
-        def id = getValidId()
-        loginAdmin()
-
-        if (showJson) {
-            when: 'When the show action is called to retrieve a resource'
-            GET("$id", STRING_ARG)
-
-            then: 'The response is correct'
-            verifyJsonResponse OK, showJson
-        } else {
-            when: 'When the show action is called to retrieve a resource'
-            GET("$id")
-
-            then: 'The response is correct'
-            verifyA02Response(response, id)
-        }
-
-        cleanup:
-        removeValidIdObject(id)
+        where:
+        prefix | name
+        'LO'   | 'Anonymous'
+        'NA'   | 'Authenticated'
+        'RE'   | 'Reader'
+        'RV'   | 'Reviewer'
+        'AU'   | 'Author'
+        'ED'   | 'Editor'
+        'CA'   | 'ContainerAdmin'
+        'AD'   | 'Admin'
     }
 }

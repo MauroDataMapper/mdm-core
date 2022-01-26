@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.hibernate.search
 
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.LuceneIndexParameters
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.LuceneIndexAwareService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.HibernateSearchIndexParameters
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.HibernateSearchIndexAwareService
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.core.GrailsApplication
 import groovy.util.logging.Slf4j
@@ -43,21 +44,21 @@ class HibernateSearchIndexingService {
     GrailsApplication grailsApplication
 
     @Autowired(required = false)
-    Set<LuceneIndexAwareService> luceneIndexAwareServices
+    Set<HibernateSearchIndexAwareService> hibernateSearchIndexAwareServices
 
     SessionFactory sessionFactory
 
     Map getHibernateSearchConfig() {
-        grailsApplication.config.getProperty('hibernate.search', Map)
+        Utils.getMapFromConfig(grailsApplication.config, 'hibernate.search')
     }
 
-    Path getLuceneIndexPath() {
-        String luceneDir = hibernateSearchConfig.backend.directory.root
-        Paths.get(luceneDir).toAbsolutePath().normalize()
+    Path getHibernateSearchIndexPath() {
+        String dir = hibernateSearchConfig['backend.directory.root']
+        Paths.get(dir).toAbsolutePath().normalize()
     }
 
     Map getMassIndexerConfig() {
-        hibernateSearchConfig.massindexer ?: [:]
+        Utils.cleanPrefixFromMap(hibernateSearchConfig, 'massindexer')
     }
 
     SearchSession getSearchSession() {
@@ -79,40 +80,40 @@ class HibernateSearchIndexingService {
     }
 
     void purgeAllIndexes() {
-        log.warn('Purging all existing indexes from lucene')
+        log.warn('Purging all existing indexes from hs')
         Search.mapping(sessionFactory).allIndexedEntities().each {domain ->
             searchSession.workspace(domain.javaClass()).purge();
         }
     }
 
-    void rebuildLuceneIndexes(LuceneIndexParameters indexParameters) {
+    void rebuildHibernateSearchIndexes(HibernateSearchIndexParameters indexParameters) {
         if (sessionFactory.currentSession) {
             log.info('Rebuilding indexes using current session')
-            rebuildLuceneIndexes(indexParameters, sessionFactory.currentSession)
+            rebuildHibernateSearchIndexes(indexParameters, sessionFactory.currentSession)
         } else {
-            sessionFactory.openSession().withCloseable {session ->
+            sessionFactory.openSession().withCloseable { session ->
                 log.info('Rebuilding indexes using new session')
-                rebuildLuceneIndexes(indexParameters, session)
+                rebuildHibernateSearchIndexes(indexParameters, session)
             }
         }
     }
 
-    void removeLuceneIndexDirectory() {
-        log.warn('Removing Lucene Index Directory {}', luceneIndexPath)
-        getLuceneIndexPath().toFile().deleteDir()
+    void removeHibernateSearchIndexDirectory() {
+        log.warn('Removing Hibernate Search Index Directory {}', hibernateSearchIndexPath)
+        getHibernateSearchIndexPath().toFile().deleteDir()
     }
 
-    void rebuildLuceneIndexes(LuceneIndexParameters indexParameters, Session session) {
+    void rebuildHibernateSearchIndexes(HibernateSearchIndexParameters indexParameters, Session session) {
 
         // Update from config default parameters
         indexParameters.updateFromMap(getMassIndexerConfig())
 
-        log.warn('Lucene Indexes are being rebuilt, searches will not work')
+        log.warn('Hibernate Search Indexes are being rebuilt, searches will not work')
 
         SearchSession searchSession = Search.session(session)
         SearchMapping searchMapping = Search.mapping(session.sessionFactory)
 
-        luceneIndexAwareServices.each {it.beforeRebuild(session)}
+        hibernateSearchIndexAwareServices.each { it.beforeRebuild(session) }
 
         log.info("Using ${indexParameters}")
         try {
@@ -136,9 +137,9 @@ class HibernateSearchIndexingService {
 
             indexer.startAndWait()
 
-            log.warn('Lucene Indexes rebuilt')
+            log.warn('Hibernate Search Indexes rebuilt')
         } finally {
-            luceneIndexAwareServices.each {it.afterRebuild()}
+            hibernateSearchIndexAwareServices.each { it.afterRebuild() }
         }
     }
 }

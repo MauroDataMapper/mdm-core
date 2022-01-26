@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.terminology.provider
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
@@ -41,7 +42,7 @@ import uk.ac.ox.softeng.maurodatamapper.version.Version
 import com.google.common.base.CaseFormat
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import grails.util.BuildSettings
 import groovy.util.logging.Slf4j
 import org.junit.Assert
@@ -133,9 +134,9 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         validateExportedModel(testName, exportedModels)
     }
 
-    @OnceBefore
-    void setupResourcesPath() {
-        resourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', importType)
+    @RunOnce
+    def setup() {
+        resourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', importType, 'codeset')
         assert getImporterService()
     }
 
@@ -630,15 +631,18 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
 
         CodeSet codeSet = CodeSet.findById(simpleCodeSetId)
 
-        Annotation testAnnotation = new Annotation(label: 'propagationTest', description: 'propagationTest', createdBy: admin.emailAddress)
-        Classifier testClassifier = new Classifier(label: 'propagationTest', createdBy: admin.emailAddress)
-        Metadata testMetadata = new Metadata(namespace: 'propagationTest', key: 'key', value: 'value', createdBy: admin.emailAddress)
-        Rule testRule = new Rule(name: 'propagationTest', createdBy: admin.emailAddress).addToRuleRepresentations(language: 'e', representation:
-            'a+b', createdBy: admin.emailAddress)
-        SemanticLink testSemanticLink = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdByUser: admin,
+        Annotation testAnnotation = new Annotation(label: 'propagationTest', description: 'propagationTest',
+                                                   createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        Classifier testClassifier = new Classifier(label: 'propagationTest', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        Metadata testMetadata = new Metadata(namespace: 'propagationTest', key: 'key', value: 'value',
+                                             createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        Rule testRule = new Rule(name: 'propagationTest', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+            .addToRuleRepresentations(language: 'e', representation:
+                'a+b', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        SemanticLink testSemanticLink = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdBy: StandardEmailAddress.INTEGRATION_TEST,
                                                          targetMultiFacetAwareItem: Term.findByCode('STT01'))
         ReferenceFile testReferenceFile = new ReferenceFile(fileName: 'propagationTest', fileType: 'text', fileContents: 'hello'.bytes, fileSize:
-            'hello'.bytes.size(), createdBy: admin.emailAddress)
+            'hello'.bytes.size(), createdBy: StandardEmailAddress.INTEGRATION_TEST)
 
         codeSet.addToAnnotations(testAnnotation)
         codeSet.addToClassifiers(testClassifier)

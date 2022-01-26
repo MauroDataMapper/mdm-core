@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -401,7 +401,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
 
     void checkImportedDataClassAssociations(User importingUser, DataModel dataModel, DataClass dataClass, boolean matchDataTypes = false) {
         dataModel.addToDataClasses(dataClass)
-        dataClass.buildPath()
+        dataClass.checkPath()
         dataClass.createdBy = importingUser.emailAddress
         checkFacetsAfterImportingCatalogueItem(dataClass)
         if (dataClass.dataClasses) {
@@ -414,7 +414,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
             dataClass.fullSortOfChildren(dataClass.dataElements)
             dataClass.dataElements.each { de ->
                 de.createdBy = importingUser.emailAddress
-                de.buildPath()
+                de.checkPath()
                 dataElementService.checkFacetsAfterImportingCatalogueItem(de)
             }
             if (matchDataTypes) dataElementService.matchUpDataTypes(dataModel, dataClass.dataElements)
@@ -620,11 +620,6 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     }
 
     @Override
-    DataClass copy(Model copiedDataModel, DataClass original, UUID parentDataClassId, UserSecurityPolicyManager userSecurityPolicyManager) {
-        copy(copiedDataModel as DataModel, original, parentDataClassId ? get(parentDataClassId) : null, userSecurityPolicyManager)
-    }
-
-    @Override
     DataClass copy(Model copiedDataModel, DataClass original, CatalogueItem parentDataClass, UserSecurityPolicyManager userSecurityPolicyManager) {
         copyDataClass(copiedDataModel as DataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager,
                       parentDataClass as DataClass,
@@ -732,17 +727,6 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         matchUpAndAddMissingReferenceTypeClasses(copiedDataModel, originalDataModel, copier, userSecurityPolicyManager)
     }
 
-    @Deprecated(forRemoval = true)
-    private Set<ReferenceType> getAllNestedReferenceTypes(DataClass dataClass) {
-        Set<ReferenceType> referenceTypes = []
-        referenceTypes.addAll(dataClass.referenceTypes ?: [])
-        referenceTypes.addAll(dataClass.dataElements.dataType.findAll { it.instanceOf(ReferenceType) })
-        dataClass.dataClasses.each {
-            referenceTypes.addAll(getAllNestedReferenceTypes(it))
-        }
-        referenceTypes
-    }
-
     private Set<ReferenceType> findAllEmptyReferenceTypes(DataModel dataModel) {
         dataModel.referenceTypes.findAll { !(it as ReferenceType).referenceClass } as Set<ReferenceType>
     }
@@ -750,11 +734,6 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     String buildPath(DataClass dataClass) {
         if (!dataClass.parentDataClass) return dataClass.label
         "${buildPath(dataClass.parentDataClass)}|${dataClass.label}"
-    }
-
-    @Override
-    Class<DataClass> getModelItemClass() {
-        DataClass
     }
 
     @Override
@@ -810,9 +789,11 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
 
         List<DataClass> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            log.debug('Performing lucene label search')
+            log.debug('Performing hs label search')
             long start = System.currentTimeMillis()
-            results = DataClass.luceneLabelSearch(DataClass, searchTerm, readableIds.toList()).results
+            results =
+                DataClass
+                    .labelHibernateSearch(DataClass, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds)).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
 

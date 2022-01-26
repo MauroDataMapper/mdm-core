@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.path.Path
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.core.GrailsApplication
@@ -57,13 +57,11 @@ class ModelDataType extends DataType<ModelDataType> {
         Model thisResourceModel = getModelResource(this)
         Model otherResourceModel = getModelResource(otherDataType)
         if (thisResourceModel && otherResourceModel) {
-            Path thisResourcePath = Path.from(thisResourceModel)
-            Path otherResourcePath = Path.from(otherResourceModel)
-            if (!thisResourcePath.matches(otherResourcePath, thisResourcePath.last().modelIdentifier)) {
+            if (!thisResourceModel.getPath().matches(otherResourceModel.getPath(), thisResourceModel.getPath().last().modelIdentifier)) {
                 diff.
                     appendString('modelResourcePath',
-                                 makeFullyQualifiedPath(thisResourceModel).toString(),
-                                 makeFullyQualifiedPath(otherResourceModel).toString())
+                                 thisResourceModel.getPath().toString(),
+                                 otherResourceModel.getPath().toString())
             }
         }
         diff
@@ -96,28 +94,6 @@ class ModelDataType extends DataType<ModelDataType> {
             metadata {
                 eq 'namespace', metadataNamespace
             }
-        }
-    }
-
-    /**
-     * Make a full qualified path by recursing up through parents. Firstly look at the folder
-     * to which the Model belongs, then any hierarchy of parent folders.
-     * @param model
-     * @return Path of the model, including all parents
-     */
-    static Path makeFullyQualifiedPath(Model model) {
-        List<CreatorAware> nodes = []
-        nodes << model
-        nodes << model.folder
-        folderParents(nodes, model.folder)
-
-        return Path.from(nodes.reverse())
-    }
-
-    static folderParents(List<CreatorAware> nodes, Folder folder) {
-        if (folder.parentFolder) {
-            nodes << folder.parentFolder
-            folderParents(nodes, folder.parentFolder)
         }
     }
 }

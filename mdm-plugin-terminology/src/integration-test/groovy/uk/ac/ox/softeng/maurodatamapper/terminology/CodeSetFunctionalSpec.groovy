@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,18 +24,29 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.CodeSetJsonExporterService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.CodeSetXmlExporterService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.TerminologyJsonExporterService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.CodeSetJsonImporterService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.CodeSetXmlImporterService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.TerminologyJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.TerminologyPluginMergeBuilder
 import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.TestMergeData
+import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlComparer
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
+import io.micronaut.http.HttpResponse
 import spock.lang.PendingFeature
 import spock.lang.Shared
+
+import java.nio.file.Files
+import java.nio.file.Path
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.CREATED
@@ -87,7 +98,14 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 @Integration
 @Transactional
 @Slf4j
-class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
+class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements XmlComparer {
+
+    CodeSetJsonExporterService codeSetJsonExporterService
+    CodeSetJsonImporterService codeSetJsonImporterService
+    CodeSetXmlExporterService codeSetXmlExporterService
+    CodeSetXmlImporterService codeSetXmlImporterService
+    TerminologyJsonExporterService terminologyJsonExporterService
+    TerminologyJsonImporterService terminologyJsonImporterService
 
     @Shared
     UUID folderId
@@ -101,9 +119,9 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
     @Shared
     TerminologyPluginMergeBuilder builder
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def checkAndSetupData() {
+    def setup() {
         log.debug('Check and setup test data')
         sessionFactory.currentSession.flush()
         assert Folder.count() == 0
@@ -180,6 +198,37 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
     "defaultAuthority": true
   }
 }'''
+    }
+
+    String getJsonImporterPath() {
+        "${codeSetJsonImporterService.namespace}/${codeSetJsonImporterService.name}/${codeSetJsonImporterService.version}"
+    }
+
+    String getJsonExporterPath() {
+        "${codeSetJsonExporterService.namespace}/${codeSetJsonExporterService.name}/${codeSetJsonExporterService.version}"
+    }
+
+    String getXmlImporterPath() {
+        "${codeSetXmlImporterService.namespace}/${codeSetXmlImporterService.name}/${codeSetXmlImporterService.version}"
+    }
+
+    String getXmlExporterPath() {
+        "${codeSetXmlExporterService.namespace}/${codeSetXmlExporterService.name}/${codeSetXmlExporterService.version}"
+    }
+
+    String getTerminologyImporterPath() {
+        "${terminologyJsonImporterService.namespace}/${terminologyJsonImporterService.name}/${terminologyJsonImporterService.version}"
+    }
+
+    String getTerminologyExporterPath() {
+        "${terminologyJsonExporterService.namespace}/${terminologyJsonExporterService.name}/${terminologyJsonExporterService.version}"
+    }
+
+    byte[] loadTestFile(String filename, String fileType = 'json') {
+        Path testFilePath = fileType == 'json' ? resourcesPath.resolve('codeset').resolve("${filename}.json") :
+                            xmlResourcesPath.resolve('codeset').resolve("${filename}.xml")
+        assert Files.exists(testFilePath)
+        Files.readAllBytes(testFilePath)
     }
 
     void 'test finalising CodeSet'() {
@@ -858,24 +907,24 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
         then:
         verifyResponse OK, response
-        responseBody().leftId == rightId
-        responseBody().rightId == leftId
+        responseBody().targetId == rightId
+        responseBody().sourceId == leftId
 
         when:
         GET("$leftId/mergeDiff/$mainId")
 
         then:
         verifyResponse OK, response
-        responseBody().leftId == mainId
-        responseBody().rightId == leftId
+        responseBody().targetId == mainId
+        responseBody().sourceId == leftId
 
         when:
         GET("$rightId/mergeDiff/$mainId")
 
         then:
         verifyResponse OK, response
-        responseBody().leftId == mainId
-        responseBody().rightId == rightId
+        responseBody().targetId == mainId
+        responseBody().sourceId == rightId
 
         cleanup:
         cleanUpData(mainId)
@@ -927,11 +976,11 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         when:
         PUT("$source/mergeInto/$target", [patch:
                                               [
-                                                  leftId : "$target" as String,
-                                                  rightId: "${UUID.randomUUID().toString()}" as String,
-                                                  label  : "Functional Test Model",
-                                                  count  : 0,
-                                                  diffs  : []
+                                                  targetId: target,
+                                                  sourceId: UUID.randomUUID().toString(),
+                                                  label   : "Functional Test Model",
+                                                  count   : 0,
+                                                  patches : []
                                               ]
         ])
 
@@ -942,11 +991,11 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         when:
         PUT("$source/mergeInto/$target", [patch:
                                               [
-                                                  leftId : "${UUID.randomUUID().toString()}" as String,
-                                                  rightId: "$source" as String,
-                                                  label  : "Functional Test Model",
-                                                  count  : 0,
-                                                  diffs  : []
+                                                  targetId: UUID.randomUUID().toString(),
+                                                  sourceId: source,
+                                                  label   : "Functional Test Model",
+                                                  count   : 0,
+                                                  patches : []
                                               ]
         ])
 
@@ -960,26 +1009,12 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         cleanUpData(id)
     }
 
-    void 'MD01 : test merging diff into draft model legacy style'() {
+    void 'MD01 : test merging diff of complex models'() {
         given:
         TestMergeData testMergeData = builder.buildComplexCodeSetModelsForMerging(folderId.toString())
 
         when:
         GET("$testMergeData.source/mergeDiff/$testMergeData.target", STRING_ARG)
-
-        then:
-        verifyJsonResponse OK, expectedLegacyMergeDiffJson
-
-        cleanup:
-        builder.cleanupTestMergeData(testMergeData)
-    }
-
-    void 'MD02 : test merging diff into draft model new style'() {
-        given:
-        TestMergeData testMergeData = builder.buildComplexCodeSetModelsForMerging(folderId.toString())
-
-        when:
-        GET("$testMergeData.source/mergeDiff/$testMergeData.target?isLegacy=false", STRING_ARG)
 
         then:
         verifyJsonResponse OK, expectedMergeDiffJson
@@ -988,95 +1023,19 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         builder.cleanupTestMergeData(testMergeData)
     }
 
-    void 'MI01: test merging diff into model legacy style'() {
-
+    void 'MI01 : test merging into complex models'() {
         given:
         TestMergeData testMergeData = builder.buildComplexCodeSetModelsForMerging(folderId.toString())
 
         when:
-        def requestBody = [
-            changeNotice: 'Functional Test Merge Change Notice',
-            patch       : [
-                leftId : testMergeData.target,
-                rightId: testMergeData.source,
-                label  : "Functional Test Model",
-                count  : 7,
-                diffs  : [
-                    [
-                        fieldName: "description",
-                        value    : "DescriptionLeft"
-                    ],
-                    [
-                        fieldName: "terms",
-                        deleted  : [
-                            [
-                                id: testMergeData.sourceMap.codeSet.deleteAndModify,
-                            ],
-                            [
-                                id: testMergeData.sourceMap.codeSet.deleteLeftOnly,
-                            ],
-                            [
-                                id: testMergeData.sourceMap.codeSet.deleteLeftOnlyCodeSet,
-                            ]
-                        ],
-                        created  : [
-                            [
-                                id: testMergeData.sourceMap.codeSet.addLeftOnly,
-                            ],
-                            [
-                                id: testMergeData.sourceMap.codeSet.addLeftOnlyCodeSet,
-                            ],
-                            [
-                                id: testMergeData.sourceMap.codeSet.modifyAndDelete,
-                            ]
-                        ]
-                    ]
-                ]
-            ]
-        ]
-
-        PUT("$testMergeData.source/mergeInto/$testMergeData.target", requestBody)
-
-        then:
-        verifyResponse OK, response
-        responseBody().id == testMergeData.target
-        responseBody().description == 'DescriptionLeft'
-
-        when:
-        GET("$testMergeData.target/terms")
-
-        then:
-        responseBody().items.label as Set == ['AAARD: addAndAddReturningDifference', 'ALO: addLeftOnly', 'MAD: modifyAndDelete',
-                                              'MAMRD: modifyAndModifyReturningDifference', 'MLO: modifyLeftOnly', 'ALOCS: addLeftOnlyCodeSet'] as Set
-
-        when: 'List edits for the Target CodeSet'
-        GET("$testMergeData.target/edits", MAP_ARG)
-
-        then: 'The response is OK'
-        verifyResponse OK, response
-
-        and: 'There is a CHANGENOTICE edit'
-        response.body().items.find {
-            it.title == "CHANGENOTICE" && it.description == "Functional Test Merge Change Notice"
-        }
-
-        cleanup:
-        builder.cleanupTestMergeData(testMergeData)
-    }
-
-    void 'MI02 : test merging into into draft model new style'() {
-        given:
-        TestMergeData testMergeData = builder.buildComplexCodeSetModelsForMerging(folderId.toString())
-
-        when:
-        GET("$testMergeData.source/mergeDiff/$testMergeData.target?isLegacy=false")
+        GET("$testMergeData.source/mergeDiff/$testMergeData.target")
 
         then:
         verifyResponse OK, response
 
         when:
         List<Map> patches = responseBody().diffs
-        PUT("$testMergeData.source/mergeInto/$testMergeData.target?isLegacy=false", [
+        PUT("$testMergeData.source/mergeInto/$testMergeData.target", [
             patch: [
                 targetId: responseBody().targetId,
                 sourceId: responseBody().sourceId,
@@ -1273,7 +1232,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
             },
             {
                 "name": "CodeSetXmlExporterService",
-                "version": "4.0",
+                "version": "5.0",
                 "displayName": "XML CodeSet Exporter",
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
                 "allowsExtraMetadataKeys": true,
@@ -1291,7 +1250,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         String id = createNewItem(validJson)
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0", STRING_ARG)
+        GET("${id}/export/${jsonExporterPath}", STRING_ARG)
 
         then:
         verifyJsonResponse OK, '''{
@@ -1324,7 +1283,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
     void 'EX03A : test export simple CodeSet JSON'() {
         given:
-        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
+        POST("terminologies/import/${terminologyImporterPath}", [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1341,7 +1300,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         String terminologyId = response.body().items[0].id
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/4.0', [
+        POST("import/${jsonImporterPath}", [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1359,7 +1318,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         id
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0", STRING_ARG)
+        GET("${id}/export/${jsonExporterPath}", STRING_ARG)
 
         then:
         verifyJsonResponse OK, expected
@@ -1369,33 +1328,32 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         DELETE("terminologies/${terminologyId}?permanent=true")
     }
 
-    @PendingFeature(reason = 'No means to verify expected XML')
     void 'EX03B : test export simple CodeSet XML'() {
         given:
-        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyXmlImporterService/4.0', [
+        POST("terminologies/import/${terminologyImporterPath}", [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
             importAsNewBranchModelVersion  : true, // Needed to import models
             importFile                     : [
-                fileType    : MimeType.XML.name,
-                fileContents: loadTestFile('simpleTerminologyForCodeSet', 'xml').toList()
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('simpleTerminologyForCodeSet').toList()
             ]
         ], MAP_ARG, true)
-        String expected = new String(loadTestFile('simpleCodeSet', 'xml')).replace(/Admin User/, 'Unlogged User')
+        String expected = new String(loadTestFile('codeSetSimple', 'xml')).replace(/Admin User/, 'Unlogged User')
 
         expect:
         verifyResponse CREATED, response
         String terminologyId = response.body().items[0].id
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetXmlImporterService/4.0', [
+        POST("/import/${xmlImporterPath}", [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
             importFile                     : [
                 fileType    : MimeType.XML.name,
-                fileContents: loadTestFile('simpleCodeSet', 'xml').toList()
+                fileContents: loadTestFile('codeSetSimple', 'xml').toList()
             ]
         ])
 
@@ -1407,10 +1365,11 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         id
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetXmlExporterService/4.0", STRING_ARG)
+        HttpResponse<String> xmlResponse = GET("${id}/export/${xmlExporterPath}", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, expected
+        verifyResponse OK, xmlResponse
+        compareXml(expected, xmlResponse.body())
 
         cleanup:
         cleanUpData(id)
@@ -1419,7 +1378,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
     void 'EX04A : test export complex CodeSet JSON'() {
         given:
-        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
+        POST("terminologies/import/$terminologyImporterPath", [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1436,7 +1395,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         String terminologyId = response.body().items[0].id
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/4.0', [
+        POST("import/${jsonImporterPath}", [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1454,7 +1413,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         id
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0", STRING_ARG)
+        GET("${id}/export/$jsonExporterPath", STRING_ARG)
 
         then:
         verifyJsonResponse OK, expected
@@ -1464,17 +1423,16 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         DELETE("terminologies/${terminologyId}?permanent=true")
     }
 
-    @PendingFeature(reason = 'No means to verify expected XML')
     void 'EX04B : test export complex CodeSet XML'() {
         given:
-        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyXmlImporterService/4.0', [
+        POST("terminologies/import/${terminologyImporterPath}", [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
             importAsNewBranchModelVersion  : true, // Needed to import models
             importFile                     : [
-                fileType    : MimeType.XML.name,
-                fileContents: loadTestFile('complexTerminologyForCodeSet', 'xml').toList()
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('complexTerminologyForCodeSet').toList()
             ]
         ], MAP_ARG, true)
         String expected = new String(loadTestFile('complexCodeSet', 'xml')).replace(/Admin User/, 'Unlogged User')
@@ -1484,7 +1442,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         String terminologyId = response.body().items[0].id
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetXmlImporterService/4.0', [
+        POST("import/${xmlImporterPath}", [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1502,10 +1460,11 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         id
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetXmlExporterService/4.0", STRING_ARG)
+        HttpResponse<String> xmlResponse = GET("${id}/export/${xmlExporterPath}", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, expected
+        verifyResponse OK, xmlResponse
+        compareXml(expected, xmlResponse.body())
 
         cleanup:
         cleanUpData(id)
@@ -1518,7 +1477,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         String id2 = createNewItem([label: 'Functional Test Model 2'])
 
         when:
-        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0',
+        POST("export/${jsonExporterPath}",
              [codeSetIds: [id, id2]], STRING_ARG)
 
         then:
@@ -1567,7 +1526,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
     void 'EX05A : test export multiple CodeSets JSON'() {
         given:
-        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
+        POST("terminologies/import/${terminologyImporterPath}", [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1581,7 +1540,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         String simpleTerminologyId = response.body().items[0].id
 
         and:
-        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
+        POST("terminologies/import/${terminologyImporterPath}", [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1598,7 +1557,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         String expected = new String(loadTestFile('simpleAndComplexCodeSets')).replace(/Admin User/, 'Unlogged User')
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/4.0', [
+        POST("import/${jsonImporterPath}", [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1618,7 +1577,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         id2
 
         when:
-        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0',
+        POST("export/${jsonExporterPath}",
              [codeSetIds: [id, id2]], STRING_ARG)
 
         then:
@@ -1631,31 +1590,30 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         DELETE("terminologies/${complexTerminologyId}?permanent=true")
     }
 
-    @PendingFeature(reason = 'No means to verify expected XML')
     void 'EX05B : test export multiple CodeSets XML'() {
         given:
-        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyXmlImporterService/4.0', [
+        POST("terminologies/import/${terminologyImporterPath}", [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
             importAsNewBranchModelVersion  : true, // Needed to import models
             importFile                     : [
-                fileType    : MimeType.XML.name,
-                fileContents: loadTestFile('simpleTerminologyForCodeSet', 'xml').toList()
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('simpleTerminologyForCodeSet').toList()
             ]
         ], MAP_ARG, true)
         verifyResponse CREATED, response
         String simpleTerminologyId = response.body().items[0].id
 
         and:
-        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyXmlImporterService/4.0', [
+        POST("terminologies/import/${terminologyImporterPath}", [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
             importAsNewBranchModelVersion  : true, // Needed to import models
             importFile                     : [
-                fileType    : MimeType.XML.name,
-                fileContents: loadTestFile('complexTerminologyForCodeSet', 'xml').toList()
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('complexTerminologyForCodeSet').toList()
             ]
         ], MAP_ARG, true)
         verifyResponse CREATED, response
@@ -1665,7 +1623,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         String expected = new String(loadTestFile('simpleAndComplexCodeSets', 'xml')).replace(/Admin User/, 'Unlogged User')
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetXmlImporterService/4.0', [
+        POST("import/${xmlImporterPath}", [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1685,11 +1643,12 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         id2
 
         when:
-        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetXmlExporterService/4.0',
-             [codeSetIds: [id, id2]], STRING_ARG)
+        HttpResponse<String> xmlResponse = POST("export/${xmlExporterPath}",
+                                                [codeSetIds: [id, id2]], STRING_ARG)
 
         then:
-        verifyJsonResponse OK, expected
+        verifyResponse OK, xmlResponse
+        compareXml(expected, xmlResponse.body())
 
         cleanup:
         cleanUpData(id)
@@ -1706,7 +1665,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         verifyJsonResponse OK, '''[
             {
                 "name": "CodeSetXmlImporterService",
-                "version": "4.0",
+                "version": "5.0",
                 "displayName": "XML CodeSet Importer",
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
                 "allowsExtraMetadataKeys": true,
@@ -1714,7 +1673,8 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
       
                 ],
                 "providerType": "CodeSetImporter",
-                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters",
+                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter''' +
+                               '''.CodeSetFileImporterProviderServiceParameters",
                 "canImportMultipleDomains": true
             },
             {
@@ -1727,7 +1687,8 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
       
                 ],
                 "providerType": "CodeSetImporter",
-                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters",
+                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter''' +
+                               '''.CodeSetFileImporterProviderServiceParameters",
                 "canImportMultipleDomains": true
             }
         ]'''
@@ -1737,7 +1698,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         given:
         String id = createNewItem(validJson)
 
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0", STRING_ARG)
+        GET("${id}/export/${jsonExporterPath}", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
 
@@ -1745,7 +1706,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         exportedJsonString
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/4.0', [
+        POST("import/${jsonImporterPath}", [
             finalised                      : false,
             modelName                      : 'Functional Test Import',
             folderId                       : folderId.toString(),
@@ -1789,7 +1750,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
             modelVersion: Version.from('1.0.0')
         ])
 
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0", STRING_ARG)
+        GET("${id}/export/${jsonExporterPath}", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
 
@@ -1797,7 +1758,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         exportedJsonString
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/4.0', [
+        POST("import/${jsonImporterPath}", [
             finalised                      : true,
             terminologyName                : 'Functional Test Model',
             folderId                       : folderId.toString(),
@@ -1837,7 +1798,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
     void 'IM04 : test import and export a CodeSet with unknown terms'() {
 
         when: 'importing a codeset which references unknown'
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/4.0', [
+        POST("import/${jsonImporterPath}", [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1854,7 +1815,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
     void 'IM05 : test import and export a CodeSet with terms'() {
         given: 'The Simple Test Terminology is imported as a pre-requisite'
-        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
+        POST("terminologies/import/${terminologyImporterPath}", [
             finalised                      : true,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1868,7 +1829,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         def tid = responseBody().id
 
         when: 'importing a codeset which references the terms already imported'
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/4.0', [
+        POST("import/${jsonImporterPath}", [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1890,7 +1851,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         id
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0", STRING_ARG)
+        GET("${id}/export/${jsonExporterPath}", STRING_ARG)
 
         then:
         verifyJsonResponse OK, expected
@@ -1902,7 +1863,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
     void 'IM06A : test import simple CodeSet JSON'() {
         given:
-        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
+        POST("terminologies/import/${terminologyImporterPath}", [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1918,7 +1879,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         String terminologyId = response.body().items[0].id
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/4.0', [
+        POST("import/${jsonImporterPath}", [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1942,14 +1903,14 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
     void 'IM06B : test import simple CodeSet XML'() {
         given:
-        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyXmlImporterService/4.0', [
+        POST("terminologies/import/${terminologyImporterPath}", [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
             importAsNewBranchModelVersion  : true, // Needed to import models
             importFile                     : [
-                fileType    : MimeType.XML.name,
-                fileContents: loadTestFile('simpleTerminologyForCodeSet', 'xml').toList()
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('simpleTerminologyForCodeSet').toList()
             ]
         ], MAP_ARG, true)
 
@@ -1958,7 +1919,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         String terminologyId = response.body().items[0].id
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetXmlImporterService/4.0', [
+        POST("import/${xmlImporterPath}", [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1982,7 +1943,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
     void 'IM07A : test import complex CodeSet JSON'() {
         given:
-        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
+        POST("terminologies/import/${terminologyImporterPath}", [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1998,7 +1959,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         String terminologyId = response.body().items[0].id
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/4.0', [
+        POST("import/${jsonImporterPath}", [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -2022,14 +1983,14 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
     void 'IM07B : test import complex CodeSet XML'() {
         given:
-        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyXmlImporterService/4.0', [
+        POST("terminologies/import/${terminologyImporterPath}", [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
             importAsNewBranchModelVersion  : true, // Needed to import models
             importFile                     : [
-                fileType    : MimeType.XML.name,
-                fileContents: loadTestFile('complexTerminologyForCodeSet', 'xml').toList()
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('complexTerminologyForCodeSet').toList()
             ]
         ], MAP_ARG, true)
 
@@ -2038,7 +1999,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         String terminologyId = response.body().items[0].id
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetXmlImporterService/4.0', [
+        POST("import/${xmlImporterPath}", [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -2062,7 +2023,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
     void 'IM08A : test import multiple CodeSets JSON'() {
         given:
-        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
+        POST("terminologies/import/${terminologyImporterPath}", [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -2076,7 +2037,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         String simpleTerminologyId = response.body().items[0].id
 
         and:
-        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/4.0', [
+        POST("terminologies/import/${terminologyImporterPath}", [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -2090,7 +2051,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         String complexTerminologyId = response.body().items[0].id
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/4.0', [
+        POST("import/${jsonImporterPath}", [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -2118,35 +2079,35 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
     void 'IM08B : test import multiple CodeSets XML'() {
         given:
-        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyXmlImporterService/4.0', [
+        POST("terminologies/import/${terminologyImporterPath}", [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
             importAsNewBranchModelVersion  : true, // Needed to import models
             importFile                     : [
-                fileType    : MimeType.XML.name,
-                fileContents: loadTestFile('simpleTerminologyForCodeSet', 'xml').toList()
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('simpleTerminologyForCodeSet').toList()
             ]
         ], MAP_ARG, true)
         verifyResponse CREATED, response
         String simpleTerminologyId = response.body().items[0].id
 
         and:
-        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyXmlImporterService/4.0', [
+        POST("terminologies/import/${terminologyImporterPath}", [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
             importAsNewBranchModelVersion  : true, // Needed to import models
             importFile                     : [
-                fileType    : MimeType.XML.name,
-                fileContents: loadTestFile('complexTerminologyForCodeSet', 'xml').toList()
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('complexTerminologyForCodeSet').toList()
             ]
         ], MAP_ARG, true)
         verifyResponse CREATED, response
         String complexTerminologyId = response.body().items[0].id
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetXmlImporterService/4.0', [
+        POST("import/${xmlImporterPath}", [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -2351,166 +2312,5 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
     }
   ]
 }'''
-    }
-
-    String getExpectedLegacyMergeDiffJson() {
-        '''{
-  "leftId": "${json-unit.matches:id}",
-  "rightId": "${json-unit.matches:id}",
-  "label": "Functional Test CodeSet 1",
-  "count": 10,
-  "diffs": [
-    {
-      "description": {
-        "left": null,
-        "right": "DescriptionLeft",
-        "isMergeConflict": false
-      }
-    },
-    {
-      "metadata": {
-        "deleted": [
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "namespace": "functional.test",
-              "key": "deleteFromSource",
-              "value": "some other original value"
-            },
-            "isMergeConflict": false
-          }
-        ],
-        "created": [
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "namespace": "functional.test",
-              "key": "addToSourceOnly",
-              "value": "adding to source only"
-            },
-            "isMergeConflict": false
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "namespace": "functional.test",
-              "key": "modifyAndDelete",
-              "value": "source has modified this also"
-            },
-            "isMergeConflict": true,
-            "commonAncestorValue": {
-              "id": "${json-unit.matches:id}",
-              "namespace": "functional.test",
-              "key": "modifyAndDelete",
-              "value": "some other original value 2"
-            }
-          }
-        ],
-        "modified": [
-          {
-            "leftId": "${json-unit.matches:id}",
-            "rightId": "${json-unit.matches:id}",
-            "namespace": "functional.test",
-            "key": "modifyOnSource",
-            "count": 1,
-            "diffs": [
-              {
-                "value": {
-                  "left": "some original value",
-                  "right": "source has modified this",
-                  "isMergeConflict": false
-                }
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "terms": {
-        "deleted": [
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "DLOCS: deleteLeftOnlyCodeSet",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test Terminology 1",
-                  "domainType": "Terminology",
-                  "finalised": true
-                }
-              ]
-            },
-            "isMergeConflict": false
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "DLO: deleteLeftOnly",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test Terminology 1",
-                  "domainType": "Terminology",
-                  "finalised": true
-                }
-              ]
-            },
-            "isMergeConflict": false
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "DAM: deleteAndModify",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test Terminology 1",
-                  "domainType": "Terminology",
-                  "finalised": true
-                }
-              ]
-            },
-            "isMergeConflict": false
-          }
-        ],
-        "created": [
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "ALO: addLeftOnly",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test Terminology 1",
-                  "domainType": "Terminology",
-                  "finalised": true
-                }
-              ]
-            },
-            "isMergeConflict": false
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "ALOCS: addLeftOnlyCodeSet",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test Terminology 1",
-                  "domainType": "Terminology",
-                  "finalised": true
-                }
-              ]
-            },
-            "isMergeConflict": false
-          }
-        ]
-      }
-    }
-  ]
-}
-'''
     }
 }

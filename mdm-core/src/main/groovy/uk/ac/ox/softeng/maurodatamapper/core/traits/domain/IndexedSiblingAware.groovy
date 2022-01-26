@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,18 +32,6 @@ trait IndexedSiblingAware {
         children.sort().eachWithIndex { ModelItem mi, int i ->
             if (mi.idx != i) mi.idx = i
         }
-    }
-
-    /**
-     * Given a CatalogueItem which has been updated, re-index its siblings.
-     *
-     * @param ModelItem updated         The item which has been updated
-     * @param Set <ModelItem>  siblings   The siblings of the updated item
-     * @param int oldIndex                  The index of the updated item before it was updated     
-     */
-    @Deprecated
-    void updateSiblingIndexes(ModelItem updated, Collection<ModelItem> siblings, Integer oldIndex) {
-        updateSiblingIndexes(updated, siblings)
     }
 
     /**

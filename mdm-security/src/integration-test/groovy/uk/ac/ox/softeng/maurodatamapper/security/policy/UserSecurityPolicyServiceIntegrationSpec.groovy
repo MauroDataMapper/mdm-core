@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -155,7 +155,7 @@ class UserSecurityPolicyServiceIntegrationSpec extends BaseIntegrationSpec imple
         policy.userGroups.size() == 4
         policy.applicationPermittedRoles.size() == 5
         policy.securableResourceGroupRoles.size() == 1
-        policy.virtualSecurableResourceGroupRoles.values().flatten().size() == 93
+        policy.virtualSecurableResourceGroupRoles.values().flatten().size() == 98
 
         when:
         Set<VirtualSecurableResourceGroupRole> folderRoles = policy.virtualSecurableResourceGroupRoles.values().flatten().findAll {it.domainId == folder.id}
@@ -189,7 +189,7 @@ class UserSecurityPolicyServiceIntegrationSpec extends BaseIntegrationSpec imple
 
         and:
         // 5 users
-        userRoles.size() == 45
+        userRoles.size() == 50
 
         and:
         // 6 groups
@@ -215,7 +215,7 @@ class UserSecurityPolicyServiceIntegrationSpec extends BaseIntegrationSpec imple
         policy.userGroups.size() == 4
         policy.applicationPermittedRoles.size() == 5
         policy.securableResourceGroupRoles.size() == 1
-        policy.virtualSecurableResourceGroupRoles.values().flatten().size() == 93
+        policy.virtualSecurableResourceGroupRoles.values().flatten().size() == 98
 
         when:
         Set<VirtualSecurableResourceGroupRole> folderRoles = policy.virtualSecurableResourceGroupRoles.values().flatten().findAll {it.domainId == folder.id}
@@ -255,7 +255,7 @@ class UserSecurityPolicyServiceIntegrationSpec extends BaseIntegrationSpec imple
 
         and:
         // 5 users
-        userRoles.size() == 45
+        userRoles.size() == 50
 
         and:
         // 6 groups

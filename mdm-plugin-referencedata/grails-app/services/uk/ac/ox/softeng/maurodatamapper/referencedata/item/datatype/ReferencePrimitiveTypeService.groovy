@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.traits.service.ReferenceSummaryMetadataAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -38,6 +39,7 @@ class ReferencePrimitiveTypeService extends ModelItemService<ReferencePrimitiveT
     public static final String DEFAULT_TEXT_TYPE_DESCRIPTION = 'Text Data Type'
 
     ReferenceSummaryMetadataService referenceSummaryMetadataService
+    ReferenceDataModelService referenceDataModelService
 
     @Override
     ReferencePrimitiveType get(Serializable id) {
@@ -103,11 +105,6 @@ class ReferencePrimitiveTypeService extends ModelItemService<ReferencePrimitiveT
     }
 
     @Override
-    Class<ReferencePrimitiveType> getModelItemClass() {
-        ReferencePrimitiveType
-    }
-
-    @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         domainType == ReferencePrimitiveType.simpleName
     }
@@ -118,11 +115,13 @@ class ReferencePrimitiveTypeService extends ModelItemService<ReferencePrimitiveT
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(ReferenceDataModel)
         if (!readableIds) return []
 
-        log.debug('Performing lucene label search')
+        log.debug('Performing hs label search')
         long start = System.currentTimeMillis()
         List<ReferencePrimitiveType> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            results = ReferencePrimitiveType.luceneLabelSearch(ReferencePrimitiveType, searchTerm, readableIds.toList()).results
+            results =
+                ReferencePrimitiveType
+                    .labelHibernateSearch(ReferencePrimitiveType, searchTerm, readableIds.toList(), referenceDataModelService.getAllReadablePathNodes(readableIds)).results
         }
         log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         results

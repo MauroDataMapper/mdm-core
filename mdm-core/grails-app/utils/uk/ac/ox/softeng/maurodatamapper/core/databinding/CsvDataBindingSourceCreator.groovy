@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,21 +17,19 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.databinding
 
-import org.grails.web.databinding.bindingsource.AbstractRequestBodyDataBindingSourceCreator
-import org.grails.web.databinding.bindingsource.InvalidRequestBodyException
 import grails.databinding.CollectionDataBindingSource
 import grails.databinding.DataBindingSource
 import grails.databinding.SimpleMapDataBindingSource
 import grails.web.mime.MimeType
-
 import groovy.transform.CompileStatic
-
-import javax.servlet.http.HttpServletRequest
-
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
 import org.apache.commons.csv.CSVRecord
+import org.grails.web.databinding.bindingsource.AbstractRequestBodyDataBindingSourceCreator
+import org.grails.web.databinding.bindingsource.InvalidRequestBodyException
 import org.springframework.http.HttpMethod
+
+import javax.servlet.http.HttpServletRequest
 
 /**
  * Read CSV from the body of a request and convert to a Map, so that this Map can

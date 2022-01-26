@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelItemTreeItem
+import uk.ac.ox.softeng.maurodatamapper.core.tree.TreeItemService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
@@ -46,6 +47,7 @@ class TermService extends ModelItemService<Term> {
     TermRelationshipService termRelationshipService
     MessageSource messageSource
     TerminologyService terminologyService
+    TreeItemService treeItemService
 
     private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
 
@@ -145,7 +147,7 @@ class TermService extends ModelItemService<Term> {
         }
 
         if (notSaved) {
-            log.trace('Batch saving {} new {} in batches of {}', notSaved.size(), getModelItemClass().simpleName, BATCH_SIZE)
+            log.trace('Batch saving {} new {} in batches of {}', notSaved.size(), getDomainClass().simpleName, BATCH_SIZE)
             List batch = []
             int count = 0
 
@@ -240,11 +242,6 @@ class TermService extends ModelItemService<Term> {
     }
 
     @Override
-    Class<Term> getModelItemClass() {
-        Term
-    }
-
-    @Override
     boolean hasTreeTypeModelItems(Term term, boolean fullTreeRender, boolean includeImportedItems) {
         termRelationshipService.countByTermIdIsParent(term.id)
     }
@@ -284,9 +281,10 @@ class TermService extends ModelItemService<Term> {
 
         List<Term> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            log.debug('Performing lucene label search')
+            log.debug('Performing hs label search')
             long start = System.currentTimeMillis()
-            results = Term.luceneLabelSearch(Term, searchTerm, readableIds.toList()).results
+            results = Term.labelHibernateSearch(Term, searchTerm, readableIds.toList(),
+                                                terminologyService.getAllReadablePathNodes(readableIds)).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
 
@@ -349,11 +347,11 @@ class TermService extends ModelItemService<Term> {
             int depth = term.depth
             log.debug('Term provided, building tree at depth {}', depth)
             List<Term> terms = findAllTreeTypeModelItemsIn(term) as List<Term>
-            tree = terms.collect { t -> new ModelItemTreeItem(t, t.hasChildren(), []) }.toSet()
+            tree = terms.collect {t -> treeItemService.createModelItemTreeItem(t, t.hasChildren(), [])}.toSet()
         } else {
             log.debug('No term provided so providing top level tree')
             List<Term> terms = terminologyService.findAllTreeTypeModelItemsIn(terminology) as List<Term>
-            tree = terms.collect { t -> new ModelItemTreeItem(t, t.hasChildren(), []) }.toSet()
+            tree = terms.collect {t -> treeItemService.createModelItemTreeItem(t, t.hasChildren(), [])}.toSet()
         }
 
         List<ModelItemTreeItem> sortedTree = tree.sort()

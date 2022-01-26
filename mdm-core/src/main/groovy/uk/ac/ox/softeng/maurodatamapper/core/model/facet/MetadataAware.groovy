@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ package uk.ac.ox.softeng.maurodatamapper.core.model.facet
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
-import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import grails.compiler.GrailsCompileStatic
 import groovy.transform.SelfType
@@ -57,11 +56,6 @@ trait MetadataAware {
 
     def addToMetadata(Map args) {
         addToMetadata(new Metadata(args))
-    }
-
-    @Deprecated
-    def addToMetadata(String namespace, String key, String value, User createdBy) {
-        addToMetadata(namespace, key, value, createdBy.emailAddress)
     }
 
     def addToMetadata(String namespace, String key, String value, String createdBy) {

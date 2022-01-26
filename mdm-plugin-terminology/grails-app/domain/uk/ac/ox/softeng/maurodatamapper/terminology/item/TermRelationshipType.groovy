@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
 
 import com.google.common.base.CaseFormat
 import grails.gorm.DetachedCriteria
-import org.grails.datastore.gorm.GormEntity
 
 class TermRelationshipType implements ModelItem<TermRelationshipType, Terminology> {
 
@@ -84,7 +83,6 @@ class TermRelationshipType implements ModelItem<TermRelationshipType, Terminolog
     TermRelationshipType() {
         parentalRelationship = false
         childRelationship = false
-        depth = 1
     }
 
     @Override
@@ -104,16 +102,6 @@ class TermRelationshipType implements ModelItem<TermRelationshipType, Terminolog
     def beforeValidate() {
         if (!displayLabel) createDisplayLabel(label)
         beforeValidateModelItem()
-    }
-
-    @Override
-    def beforeInsert() {
-        buildPath()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPath()
     }
 
     String getEditLabel() {
@@ -138,7 +126,7 @@ class TermRelationshipType implements ModelItem<TermRelationshipType, Terminolog
     }
 
     @Override
-    GormEntity getPathParent() {
+    Terminology getParent() {
         terminology
     }
 

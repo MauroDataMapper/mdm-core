@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -135,11 +135,6 @@ class DataElementComponentService extends ModelItemService<DataElementComponent>
     }
 
     @Override
-    Class<DataElementComponent> getModelItemClass() {
-        DataElementComponent
-    }
-
-    @Override
     DataElementComponent findByIdJoinClassifiers(UUID id) {
         DataElementComponent.findById(id, [fetch: [classifiers: 'join']])
     }
@@ -172,27 +167,12 @@ class DataElementComponentService extends ModelItemService<DataElementComponent>
         false
     }
 
-    @Deprecated(forRemoval = true)
-    DataElementComponent findByDataFlowIdAndId(UUID dataFlowId, Serializable id) {
-        DataElementComponent.byDataFlowIdAndId(dataFlowId, Utils.toUuid(id)).find()
-    }
-
     DataElementComponent findByDataClassComponentIdAndId(UUID dataClassComponentId, Serializable id) {
         DataElementComponent.byDataClassComponentIdAndId(dataClassComponentId, Utils.toUuid(id)).find()
     }
 
-    @Deprecated(forRemoval = true)
-    List<DataElementComponent> findAllByDataFlowId(UUID dataFlowId, Map pagination = [:]) {
-        DataElementComponent.byDataFlowId(dataFlowId).list(pagination)
-    }
-
     List<DataElementComponent> findAllByDataClassComponentId(UUID dataClassComponentId, Map pagination = [:]) {
         DataElementComponent.byDataClassComponentId(dataClassComponentId).list(pagination)
-    }
-
-    @Deprecated(forRemoval = true)
-    List<DataElementComponent> findAllByDataFlowIdAndDataClassId(UUID dataFlowId, UUID dataClassId, Map pagination = [:]) {
-        DataElementComponent.byDataFlowIdAndDataClassId(dataFlowId, dataClassId).list(pagination)
     }
 
     /*
@@ -247,7 +227,7 @@ TODO data flow copying
         Set<DataElement> resolvedSourceDataElements = []
 
         rawSourceDataElements.each {sde ->
-            Path path = Path.from(sde.path)
+            Path path = sde.uncheckedPath
             DataElement sourceDataElement = pathService.findResourceByPathFromRootClass(DataModel, path) as DataElement
 
             if (sourceDataElement) {
@@ -263,7 +243,7 @@ TODO data flow copying
         Set<DataElement> resolvedTargetDataElements = []
 
         rawTargetDataElements.each {tde ->
-            Path path = Path.from(tde.path)
+            Path path = tde.uncheckedPath
             DataElement targetDataElement = pathService.findResourceByPathFromRootClass(DataModel, path) as DataElement
 
             if (targetDataElement) {

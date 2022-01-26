@@ -3,15 +3,17 @@ database:
     port: 5432
     name: maurodatamapper
 ---
-apiUser:
-    username: admin@maurodatamapper.com
-    password: password
----
 #Default for plugins/applications
 ---
 maurodatamapper:
     security:
         public: false
+        max:
+            lock:
+                time: 5
+    bootstrap:
+        adminuser: true
+        folder: true
     authority:
         name: 'Mauro Data Mapper'
         url: http://localhost
@@ -146,7 +148,9 @@ hibernate:
             provider: org.ehcache.jsr107.EhcacheCachingProvider
             missing_cache_strategy: create
     search:
-        default.indexBase: '/tmp/lucene/security'
+        backend:
+            directory:
+                root: 'build/lucene'
 
 ---
 dataSource:

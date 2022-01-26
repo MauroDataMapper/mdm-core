@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
@@ -105,15 +106,18 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
 
         Terminology terminology = Terminology.findById(simpleTerminologyId)
 
-        Annotation testAnnotation = new Annotation(label: 'propagationTest', description: 'propagationTest', createdBy: admin.emailAddress)
-        Classifier testClassifier = new Classifier(label: 'propagationTest', createdBy: admin.emailAddress)
-        Metadata testMetadata = new Metadata(namespace: 'propagationTest', key: 'key', value: 'value', createdBy: admin.emailAddress)
-        Rule testRule = new Rule(name: 'propagationTest', createdBy: admin.emailAddress).addToRuleRepresentations(language: 'e', representation:
-            'a+b', createdBy: admin.emailAddress)
-        SemanticLink testSemanticLink = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdByUser: admin,
+        Annotation testAnnotation = new Annotation(label: 'propagationTest', description: 'propagationTest',
+                                                   createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        Classifier testClassifier = new Classifier(label: 'propagationTest', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        Metadata testMetadata = new Metadata(namespace: 'propagationTest', key: 'key', value: 'value',
+                                             createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        Rule testRule = new Rule(name: 'propagationTest', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+            .addToRuleRepresentations(language: 'e', representation:
+                'a+b', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        SemanticLink testSemanticLink = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdBy: StandardEmailAddress.INTEGRATION_TEST,
                                                          targetMultiFacetAwareItem: Term.findByCode('STT01'))
         ReferenceFile testReferenceFile = new ReferenceFile(fileName: 'propagationTest', fileType: 'text', fileContents: 'hello'.bytes, fileSize:
-            'hello'.bytes.size(), createdBy: admin.emailAddress)
+            'hello'.bytes.size(), createdBy: StandardEmailAddress.INTEGRATION_TEST)
 
         terminology.addToAnnotations(testAnnotation)
         terminology.addToClassifiers(testClassifier)
@@ -152,15 +156,18 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
         Terminology terminology = Terminology.findById(complexTerminologyId)
         Term term = terminology.terms.find { it.code == 'CTT1' }
 
-        Annotation testAnnotation = new Annotation(label: 'propagationTest', description: 'propagationTest', createdBy: admin.emailAddress)
-        Classifier testClassifier = new Classifier(label: 'propagationTest', createdBy: admin.emailAddress).save()
-        Metadata testMetadata = new Metadata(namespace: 'propagationTest', key: 'key', value: 'value', createdBy: admin.emailAddress)
-        Rule testRule = new Rule(name: 'propagationTest', createdBy: admin.emailAddress).addToRuleRepresentations(language: 'e', representation:
-            'a+b', createdBy: admin.emailAddress)
-        SemanticLink testSemanticLink = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdByUser: admin,
+        Annotation testAnnotation = new Annotation(label: 'propagationTest', description: 'propagationTest',
+                                                   createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        Classifier testClassifier = new Classifier(label: 'propagationTest', createdBy: StandardEmailAddress.INTEGRATION_TEST).save()
+        Metadata testMetadata = new Metadata(namespace: 'propagationTest', key: 'key', value: 'value',
+                                             createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        Rule testRule = new Rule(name: 'propagationTest', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+            .addToRuleRepresentations(language: 'e', representation:
+                'a+b', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        SemanticLink testSemanticLink = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdBy: StandardEmailAddress.INTEGRATION_TEST,
                                                          targetMultiFacetAwareItem: Term.findByCode('STT01'))
         ReferenceFile testReferenceFile = new ReferenceFile(fileName: 'propagationTest', fileType: 'text', fileContents: 'hello'.bytes, fileSize:
-            'hello'.bytes.size(), createdBy: admin.emailAddress)
+            'hello'.bytes.size(), createdBy: StandardEmailAddress.INTEGRATION_TEST)
 
         term.addToAnnotations(testAnnotation)
         term.addToClassifiers(testClassifier)

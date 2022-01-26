@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,17 +20,18 @@ package uk.ac.ox.softeng.maurodatamapper.security.role
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
-import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.HibernateSearch
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.mapper.pojo.bridge.binder.PathBinder
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.PathAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.gorm.DetachedCriteria
-import org.grails.datastore.gorm.GormEntity
 
-class GroupRole implements EditHistoryAware, PathAware, SecurableResource, Comparable<GroupRole> {
+class GroupRole implements MdmDomain, EditHistoryAware, SecurableResource, Comparable<GroupRole> {
 
     public static final String APPLICATION_ADMIN_ROLE_NAME = 'application_admin'
     public static final String CONTAINER_ADMIN_ROLE_NAME = 'container_admin'
@@ -57,13 +58,13 @@ class GroupRole implements EditHistoryAware, PathAware, SecurableResource, Compa
     static belongsTo = [parent: GroupRole]
 
     static constraints = {
-        CallableConstraints.call(CreatorAwareConstraints, delegate)
+        CallableConstraints.call(MdmDomainConstraints, delegate)
         parent nullable: true
-        name blank: false, validator: {val -> if (val.find(/\s/)) ['invalid.grouprole.name.message']}, unique: true
+        name blank: false, validator: { val -> if (val.find(/\s/)) ['invalid.grouprole.name.message'] }, unique: true
         displayName blank: false
         children nullable: false, minSize: 0
         securedResourceGroupRoles nullable: false, minSize: 0
-        userGroups nullable: false, minSize: 0, validator: {val, obj ->
+        userGroups nullable: false, minSize: 0, validator: { val, obj ->
             if (val && !obj.applicationLevelRole) ['invalid.grouprole.application.level.sergroups.message']
         }
     }
@@ -78,7 +79,7 @@ class GroupRole implements EditHistoryAware, PathAware, SecurableResource, Compa
 
     static search = {
         name searchable: 'yes'
-        path searchable: 'yes', analyzer: 'path'
+        path valueBinder: new PathBinder()
     }
 
     GroupRole() {
@@ -87,25 +88,9 @@ class GroupRole implements EditHistoryAware, PathAware, SecurableResource, Compa
         userGroups = []
     }
 
-    @Override
-    GormEntity getPathParent() {
-        parent
-    }
-
-    @Override
     def beforeValidate() {
-        buildPath()
-        children.each {it.beforeValidate()}
-    }
-
-    @Override
-    def beforeInsert() {
-        buildPath()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPath()
+        checkPath()
+        children.each { it.beforeValidate() }
     }
 
     @Override
@@ -121,6 +106,11 @@ class GroupRole implements EditHistoryAware, PathAware, SecurableResource, Compa
     @Override
     String getPathIdentifier() {
         name
+    }
+
+    @Override
+    Path buildPath() {
+        parent ? Path.from(parent.path, pathPrefix, pathIdentifier) : Path.from(pathPrefix, pathIdentifier)
     }
 
     @Override
@@ -165,7 +155,7 @@ class GroupRole implements EditHistoryAware, PathAware, SecurableResource, Compa
         if (this.applicationLevelRole != that.applicationLevelRole) {
             throw new ApiInternalException('GR01', 'Incomparable group roles')
         }
-        this.depth <=> that.depth
+        this.path.size() <=> that.path.size()
     }
 
     static GroupRole findByName(String name) {
@@ -180,7 +170,7 @@ class GroupRole implements EditHistoryAware, PathAware, SecurableResource, Compa
         HibernateSearch.paginatedList(GroupRole, pagination) {
             should {
                 keyword 'id', groupRole.id.toString()
-                keyword 'path', groupRole.id.toString()
+                keyword 'path', groupRole.path.last()
             }
         }
     }
@@ -190,7 +180,7 @@ class GroupRole implements EditHistoryAware, PathAware, SecurableResource, Compa
             should {
                 keyword 'name', 'container_group_admin'
                 keyword 'id', topLevelFolderRole.id.toString()
-                keyword 'path', topLevelFolderRole.id.toString()
+                keyword 'path', groupRole.path.last()
 
             }
         }

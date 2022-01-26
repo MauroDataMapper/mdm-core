@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,22 +19,23 @@ package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.PathAware
+import uk.ac.ox.softeng.maurodatamapper.path.Path
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
+import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
-import org.grails.datastore.gorm.GormEntity
 
 /**
  * @since 27/10/2017
  */
 @Slf4j
+@CompileStatic
 class TreeItem implements Comparable<TreeItem> {
 
     UUID id
     String label
     String domainType
-    Integer depth
-    String path
+    Path path
 
     UUID parentId
     UUID rootId
@@ -49,28 +50,18 @@ class TreeItem implements Comparable<TreeItem> {
     List<String> availableActions
 
 
-    protected TreeItem(GormEntity object, UUID id, String label, String domainType, Boolean childrenExist, List<String> availableTreeActions) {
+    protected TreeItem(MdmDomain domain, String label, Boolean childrenExist, List<String> availableTreeActions) {
         childSet = [] as HashSet
         renderChildren = false
-        depth = 0
-        path = ''
         pathIds = []
 
-        this.id = id
+        this.id = domain.id
         this.label = label
-        this.domainType = domainType
+        this.domainType = domain.domainType
         this.childrenExist = childrenExist
         this.availableActions = availableTreeActions
-
-        if (object.instanceOf(PathAware)) {
-            object.buildPath()
-            depth = object.depth
-            path = object.path
-        }
-        determinePathIds()
-        determineRootId()
-        determineParentId()
-        setDomainTypeIndex(object.getClass())
+        this.path = domain.path
+        setDomainTypeIndex(domain.getClass())
     }
 
     @Override
@@ -212,23 +203,5 @@ class TreeItem implements Comparable<TreeItem> {
         if (Container.isAssignableFrom(itemClass)) domainTypeIndex = 0
         else if (ModelItem.isAssignableFrom(itemClass)) domainTypeIndex = 1
         else domainTypeIndex = 2
-    }
-
-    private void determinePathIds() {
-        if (!pathIds && path) {
-            pathIds = path.split('/').findAll().collect {UUID.fromString(it)}
-        }
-    }
-
-    private void determineRootId() {
-        if (!rootId && pathIds) {
-            rootId = pathIds?.first()
-        }
-    }
-
-    private void determineParentId() {
-        if (!parentId && pathIds) {
-            parentId = pathIds?.last()
-        }
     }
 }

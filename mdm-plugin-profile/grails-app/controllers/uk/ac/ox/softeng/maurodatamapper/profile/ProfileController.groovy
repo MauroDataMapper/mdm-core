@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,10 +27,11 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ItemsProfilesDataBinding
+import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ProfileProvided
 import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ProfileProvidedCollection
 
-import grails.web.databinding.DataBinder
 import grails.gorm.transactions.Transactional
+import grails.web.databinding.DataBinder
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -213,7 +214,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
 
         // The multiFacetAware item referenced in the URI, is expected to be a model
         MultiFacetAware model = profileService.findMultiFacetAwareItemByDomainTypeAndId(
-                params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
+            params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
 
         if (!model) {
             return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
@@ -222,8 +223,8 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
             throw new ApiBadRequestException('PC02', 'Cannot use this endpoint on a item which is not a Model')
         }
 
-        respond([view: 'many'], [profileProvidedList: profileService.handleMany(validateOnly,
-            profileProvidedCollection, model, currentUserSecurityPolicyManager, currentUser)])
+        List<ProfileProvided> handled = profileService.handleMany(validateOnly, profileProvidedCollection, model, currentUserSecurityPolicyManager, currentUser)
+        respond([view: 'many'], [profileProvidedList: handled])
     }
 
     def listModelsInProfile() {
@@ -275,7 +276,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
         params.offset = 0
         params.max = null
 
-        List<Profile> profileObjects = mdmPluginProfileSearchService.findAllDataModelProfileObjectsForProfileProviderByLuceneSearch(
+        List<Profile> profileObjects = mdmPluginProfileSearchService.findAllDataModelProfileObjectsForProfileProviderByHibernateSearch(
             currentUserSecurityPolicyManager, profileProviderService, searchParams, params
         )
 

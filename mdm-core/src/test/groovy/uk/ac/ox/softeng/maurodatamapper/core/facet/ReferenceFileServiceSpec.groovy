@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ class ReferenceFileServiceSpec extends MultiFacetItemAwareServiceSpec<ReferenceF
 
         ModelService basicModelService = Stub() {
             get(_) >> basicModel
-            getModelClass() >> BasicModel
+            getDomainClass() >> BasicModel
             handles('BasicModel') >> true
             removeReferenceFileFromCatalogueItem(basicModel.id, _) >> {UUID bmid, ReferenceFile referenceFile ->
                 basicModel.referenceFiles.remove(referenceFile)

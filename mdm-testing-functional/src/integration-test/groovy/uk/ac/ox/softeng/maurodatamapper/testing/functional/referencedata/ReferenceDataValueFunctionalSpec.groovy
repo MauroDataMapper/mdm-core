@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,11 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import grails.util.BuildSettings
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
@@ -53,8 +54,8 @@ class ReferenceDataValueFunctionalSpec extends UserAccessFunctionalSpec {
     @Shared
     Path resourcesPath
 
-    @OnceBefore
-    void setupResourcesPath() {
+    @RunOnce
+    def setup() {
         resourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', 'referencedata').toAbsolutePath()
     }
 
@@ -72,6 +73,18 @@ class ReferenceDataValueFunctionalSpec extends UserAccessFunctionalSpec {
     @Override
     String getEditsFullPath(String id) {
         "referenceDataElements/$referenceDataElementId"
+    }
+
+    @Override
+    Expectations getExpectations() {
+        Expectations.builder()
+            .withDefaultExpectations()
+            .withInheritedAccessPermissions()
+            .whereTestingUnsecuredResource()
+            .withoutAvailableActions()
+            .whereAuthors {
+                cannotEditDescription()
+            }
     }
 
     @Override
@@ -115,64 +128,369 @@ class ReferenceDataValueFunctionalSpec extends UserAccessFunctionalSpec {
     }
 
     @Override
-    Map getValidUpdateJson() {
+    Map getValidNonDescriptionUpdateJson() {
         [
             value: 'Updated ReferenceDataValue'
         ]
     }
 
     @Override
-    Boolean readerPermissionIsInherited() {
-        true
+    Map getValidDescriptionOnlyUpdateJson() {
+        getValidNonDescriptionUpdateJson()
     }
 
     @Override
-    void verifyL03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, simpleReferenceDataModelId
-    }
-
-    @Override
-    void verifyL03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, simpleReferenceDataModelId
-    }
-
-    @Override
-    void verifyL03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, simpleReferenceDataModelId
-    }
-
-    @Override
-    void verifyN03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, simpleReferenceDataModelId
-    }
-
-    @Override
-    void verifyN03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, simpleReferenceDataModelId
-    }
-
-    @Override
-    void verifyN03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, simpleReferenceDataModelId
-    }
-
-    @Override
-    void verifyE03ValidResponseBody(HttpResponse<Map> response) {
+    void verify03ValidResponseBody(HttpResponse<Map> response) {
         assert response.body().id
     }
 
     @Override
-    void verifyR04UnknownIdResponse(HttpResponse<Map> response, String id) {
-        verifyForbidden response
-    }
-
-    @Override
-    String getShowJson() {
-        null
-    }
-
-    @Override
     String getEditorIndexJson() {
-        new String(loadJsonFile('expectedEditorIndex'))
+        '''{
+  "count": 200,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "rowNumber": 1,
+      "value": "Organisation 1",
+      "referenceDataElement": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataElement",
+        "label": "Organisation name",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Simple Reference Data Model",
+            "domainType": "ReferenceDataModel",
+            "finalised": false
+          }
+        ],
+        "columnNumber": 1,
+        "referenceDataType": {
+          "id": "${json-unit.matches:id}",
+          "domainType": "ReferencePrimitiveType",
+          "label": "string",
+          "model": "${json-unit.matches:id}",
+          "breadcrumbs": [
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "Simple Reference Data Model",
+              "domainType": "ReferenceDataModel",
+              "finalised": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "rowNumber": 1,
+      "value": "ORG1",
+      "referenceDataElement": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataElement",
+        "label": "Organisation code",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Simple Reference Data Model",
+            "domainType": "ReferenceDataModel",
+            "finalised": false
+          }
+        ],
+        "columnNumber": 0,
+        "referenceDataType": {
+          "id": "${json-unit.matches:id}",
+          "domainType": "ReferencePrimitiveType",
+          "label": "string",
+          "model": "${json-unit.matches:id}",
+          "breadcrumbs": [
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "Simple Reference Data Model",
+              "domainType": "ReferenceDataModel",
+              "finalised": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "rowNumber": 2,
+      "value": "Organisation 2",
+      "referenceDataElement": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataElement",
+        "label": "Organisation name",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Simple Reference Data Model",
+            "domainType": "ReferenceDataModel",
+            "finalised": false
+          }
+        ],
+        "columnNumber": 1,
+        "referenceDataType": {
+          "id": "${json-unit.matches:id}",
+          "domainType": "ReferencePrimitiveType",
+          "label": "string",
+          "model": "${json-unit.matches:id}",
+          "breadcrumbs": [
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "Simple Reference Data Model",
+              "domainType": "ReferenceDataModel",
+              "finalised": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "rowNumber": 2,
+      "value": "ORG2",
+      "referenceDataElement": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataElement",
+        "label": "Organisation code",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Simple Reference Data Model",
+            "domainType": "ReferenceDataModel",
+            "finalised": false
+          }
+        ],
+        "columnNumber": 0,
+        "referenceDataType": {
+          "id": "${json-unit.matches:id}",
+          "domainType": "ReferencePrimitiveType",
+          "label": "string",
+          "model": "${json-unit.matches:id}",
+          "breadcrumbs": [
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "Simple Reference Data Model",
+              "domainType": "ReferenceDataModel",
+              "finalised": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "rowNumber": 3,
+      "value": "Organisation 3",
+      "referenceDataElement": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataElement",
+        "label": "Organisation name",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Simple Reference Data Model",
+            "domainType": "ReferenceDataModel",
+            "finalised": false
+          }
+        ],
+        "columnNumber": 1,
+        "referenceDataType": {
+          "id": "${json-unit.matches:id}",
+          "domainType": "ReferencePrimitiveType",
+          "label": "string",
+          "model": "${json-unit.matches:id}",
+          "breadcrumbs": [
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "Simple Reference Data Model",
+              "domainType": "ReferenceDataModel",
+              "finalised": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "rowNumber": 3,
+      "value": "ORG3",
+      "referenceDataElement": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataElement",
+        "label": "Organisation code",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Simple Reference Data Model",
+            "domainType": "ReferenceDataModel",
+            "finalised": false
+          }
+        ],
+        "columnNumber": 0,
+        "referenceDataType": {
+          "id": "${json-unit.matches:id}",
+          "domainType": "ReferencePrimitiveType",
+          "label": "string",
+          "model": "${json-unit.matches:id}",
+          "breadcrumbs": [
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "Simple Reference Data Model",
+              "domainType": "ReferenceDataModel",
+              "finalised": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "rowNumber": 4,
+      "value": "Organisation 4",
+      "referenceDataElement": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataElement",
+        "label": "Organisation name",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Simple Reference Data Model",
+            "domainType": "ReferenceDataModel",
+            "finalised": false
+          }
+        ],
+        "columnNumber": 1,
+        "referenceDataType": {
+          "id": "${json-unit.matches:id}",
+          "domainType": "ReferencePrimitiveType",
+          "label": "string",
+          "model": "${json-unit.matches:id}",
+          "breadcrumbs": [
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "Simple Reference Data Model",
+              "domainType": "ReferenceDataModel",
+              "finalised": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "rowNumber": 4,
+      "value": "ORG4",
+      "referenceDataElement": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataElement",
+        "label": "Organisation code",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Simple Reference Data Model",
+            "domainType": "ReferenceDataModel",
+            "finalised": false
+          }
+        ],
+        "columnNumber": 0,
+        "referenceDataType": {
+          "id": "${json-unit.matches:id}",
+          "domainType": "ReferencePrimitiveType",
+          "label": "string",
+          "model": "${json-unit.matches:id}",
+          "breadcrumbs": [
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "Simple Reference Data Model",
+              "domainType": "ReferenceDataModel",
+              "finalised": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "rowNumber": 5,
+      "value": "Organisation 5",
+      "referenceDataElement": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataElement",
+        "label": "Organisation name",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Simple Reference Data Model",
+            "domainType": "ReferenceDataModel",
+            "finalised": false
+          }
+        ],
+        "columnNumber": 1,
+        "referenceDataType": {
+          "id": "${json-unit.matches:id}",
+          "domainType": "ReferencePrimitiveType",
+          "label": "string",
+          "model": "${json-unit.matches:id}",
+          "breadcrumbs": [
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "Simple Reference Data Model",
+              "domainType": "ReferenceDataModel",
+              "finalised": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "rowNumber": 5,
+      "value": "ORG5",
+      "referenceDataElement": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataElement",
+        "label": "Organisation code",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Simple Reference Data Model",
+            "domainType": "ReferenceDataModel",
+            "finalised": false
+          }
+        ],
+        "columnNumber": 0,
+        "referenceDataType": {
+          "id": "${json-unit.matches:id}",
+          "domainType": "ReferencePrimitiveType",
+          "label": "string",
+          "model": "${json-unit.matches:id}",
+          "breadcrumbs": [
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "Simple Reference Data Model",
+              "domainType": "ReferenceDataModel",
+              "finalised": false
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
+'''
     }
 }

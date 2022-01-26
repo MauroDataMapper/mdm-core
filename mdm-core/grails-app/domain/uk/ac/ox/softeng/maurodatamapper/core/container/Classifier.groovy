@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,12 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.InformationAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
-import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.UniqueValuesValidator
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate.IdSecureFilterFactory
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.mapper.pojo.bridge.binder.PathBinder
+import uk.ac.ox.softeng.maurodatamapper.path.Path
+import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 
 import grails.gorm.DetachedCriteria
 import grails.plugins.hibernate.search.HibernateSearchApi
@@ -58,7 +61,7 @@ class Classifier implements Container {
     ]
 
     static constraints = {
-        CallableConstraints.call(CreatorAwareConstraints, delegate)
+        CallableConstraints.call(MdmDomainConstraints, delegate)
         CallableConstraints.call(InformationAwareConstraints, delegate)
         label unique: true
         metadata validator: {val, obj ->
@@ -77,7 +80,7 @@ class Classifier implements Container {
 
     static search = {
         label searchable: 'yes', analyzer: 'wordDelimiter'
-        path searchable: 'yes', analyzer: 'path'
+        path valueBinder: new PathBinder()
         description termVector: 'with_positions'
         lastUpdated searchable: 'yes'
         dateCreated searchable: 'yes'
@@ -103,25 +106,8 @@ class Classifier implements Container {
         label
     }
 
-    @Override
-    Classifier getPathParent() {
-        parentClassifier
-    }
-
-    @Override
     def beforeValidate() {
-        buildPath()
-        childClassifiers.each { it.beforeValidate() }
-    }
-
-    @Override
-    def beforeInsert() {
-        buildPath()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPath()
+        childClassifiers.each {it.beforeValidate()}
     }
 
     @Override
@@ -144,6 +130,11 @@ class Classifier implements Container {
         false
     }
 
+    @Override
+    Container getParent() {
+        parentClassifier
+    }
+
     static DetachedCriteria<Classifier> by() {
         new DetachedCriteria<Classifier>(Classifier)
     }
@@ -152,29 +143,36 @@ class Classifier implements Container {
         by().eq('label', label)
     }
 
-    static DetachedCriteria<Classifier> byParentClassifierId(UUID id) {
-        by().eq('parentClassifier.id', id)
+    static DetachedCriteria<Classifier> byNoParentClassifier() {
+        by().isNull('parentClassifier')
     }
 
-    static List<Classifier> luceneList(@DelegatesTo(HibernateSearchApi) Closure closure) {
+    static DetachedCriteria<Classifier> byParentClassifierId(UUID id) {
+        id ? by().eq('parentClassifier.id', id) : by().isNull('parentClassifier')
+    }
+
+    static DetachedCriteria<Classifier> byParentClassifierIdAndLabel(UUID id, String label) {
+        byParentClassifierId(id).eq('label', label)
+    }
+
+    static List<Classifier> hibernateSearchList(@DelegatesTo(HibernateSearchApi) Closure closure) {
         Classifier.search().list closure
     }
 
-    static List<Classifier> luceneTreeLabelSearch(List<String> allowedIds, String searchTerm) {
-        luceneList {
+    static List<Classifier> treeLabelHibernateSearch(List<String> allowedIds, String searchTerm) {
+        hibernateSearchList {
             keyword 'label', searchTerm
             filter IdSecureFilterFactory.createFilterPredicate(searchPredicateFactory, allowedIds)
         }
     }
 
-    static List<Classifier> findAllContainedInClassifierId(UUID classifierId) {
-        luceneList {
+    static List<Classifier> findAllContainedInClassifierPathNode(PathNode pathNode) {
+        hibernateSearchList {
             should {
-                keyword 'path', classifierId.toString()
+                keyword 'path', Path.from(pathNode)
             }
         }
     }
-
 
     static DetachedCriteria<Classifier> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
         where {

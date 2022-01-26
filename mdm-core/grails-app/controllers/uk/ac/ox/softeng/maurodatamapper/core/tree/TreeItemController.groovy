@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -129,7 +129,7 @@ class TreeItemController extends RestfulController<TreeItem> implements MdmContr
         Model model = treeItemService.findTreeCapableCatalogueItem(params.modelClass, params.modelId)
         if (!model) return notFound(Model, params.modelId)
 
-        respond(treeItemService.buildFullModelTree(model))
+        respond(treeItemService.buildFullModelTree(model, currentUserSecurityPolicyManager))
     }
 
     def ancestors() {

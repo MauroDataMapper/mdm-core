@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,11 +37,11 @@ trait MdmController implements UserSecurityPolicyManagerAware {
     }
 
     void notYetImplemented() {
-        render status: NOT_IMPLEMENTED
+        errorResponse NOT_IMPLEMENTED, null
     }
 
     void gone() {
-        render status: GONE
+        errorResponse GONE, null
     }
 
     void done() {
@@ -57,7 +57,11 @@ trait MdmController implements UserSecurityPolicyManagerAware {
     }
 
     void errorResponse(HttpStatus status, String message) {
-        render status: status, message: message
+        renderMapForResponse(status: status, view: '/error', model: [
+            httpStatus: status,
+            message   : message,
+            errorCode : 'ERXX'
+        ],)
     }
 
     Map getMultiErrorResponseMap(List<GormEntity> result) {

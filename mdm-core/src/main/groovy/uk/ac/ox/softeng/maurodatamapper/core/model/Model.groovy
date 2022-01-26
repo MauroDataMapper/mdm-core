@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.VersionLinkAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 
@@ -65,7 +66,7 @@ trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableRes
 
     @Override
     String getPathIdentifier() {
-        "${label}${PathNode.MODEL_PATH_IDENTIFIER_SEPARATOR}${modelVersion ?: branchName}"
+        label ? "${label}${PathNode.MODEL_PATH_IDENTIFIER_SEPARATOR}${modelVersion ?: branchName}" : null
     }
 
     @Override
@@ -81,6 +82,10 @@ trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableRes
             res == 0 ? this.branchName <=> that.branchName : res
         }
         res
+    }
+
+    Path getFullPathInsideFolder() {
+        Path.from(folder.path, path)
     }
 
     static <T extends Model> ObjectDiff modelDiffBuilder(Class<T> diffClass, T lhs, T rhs) {

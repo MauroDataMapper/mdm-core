@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -168,11 +168,6 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
         sessionFactory.currentSession.clear()
 
         log.trace('Batch save took {}', Utils.getTimeString(System.currentTimeMillis() - start))
-    }
-
-    @Override
-    Class<TermRelationship> getModelItemClass() {
-        TermRelationship
     }
 
     @Override

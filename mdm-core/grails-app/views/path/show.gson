@@ -1,12 +1,12 @@
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.plugin.json.view.template.JsonViewTemplate
 
 import java.beans.Introspector
 
 model {
-    CreatorAware pathedResource
+    MdmDomain pathedResource
     UserSecurityPolicyManager userSecurityPolicyManager
 }
 

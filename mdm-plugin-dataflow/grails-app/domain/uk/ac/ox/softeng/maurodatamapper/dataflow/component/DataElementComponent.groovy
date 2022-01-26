@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstra
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
-import org.grails.datastore.gorm.GormEntity
 
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
 @Resource(readOnly = false, formats = ['json', 'xml'])
@@ -69,9 +68,9 @@ class DataElementComponent implements ModelItem<DataElementComponent, DataModel>
     static mapping = {
         definition type: 'text'
         sourceDataElements joinTable: [name: 'join_data_element_component_to_source_data_element', key: 'data_element_component_id'],
-                           index: 'jdectsde_data_element_component_idx'
+                           index: 'jdectsde_data_element_component_idx', cascade: 'none'
         targetDataElements joinTable: [name: 'join_data_element_component_to_target_data_element', key: 'data_element_component_id'],
-                           index: 'jdecttde_data_element_component_idx'
+                           index: 'jdecttde_data_element_component_idx', cascade: 'none'
     }
 
     static mappedBy = [
@@ -93,23 +92,12 @@ class DataElementComponent implements ModelItem<DataElementComponent, DataModel>
     }
 
     @Override
-    GormEntity getPathParent() {
+    DataClassComponent getParent() {
         dataClassComponent
     }
 
-    @Override
     def beforeValidate() {
         beforeValidateModelItem()
-    }
-
-    @Override
-    def beforeInsert() {
-        buildPath()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPath()
     }
 
     @Override
@@ -133,22 +121,6 @@ class DataElementComponent implements ModelItem<DataElementComponent, DataModel>
 
     static DetachedCriteria<DataElementComponent> by() {
         new DetachedCriteria<DataElementComponent>(DataElementComponent)
-    }
-
-    @Deprecated(forRemoval = true)
-    static DetachedCriteria<DataElementComponent> byDataFlowId(UUID dataFlowId) {
-        by().where {
-            dataClassComponent {
-                dataFlow {
-                    eq(id, dataFlowId)
-                }
-            }
-        }
-    }
-
-    @Deprecated(forRemoval = true)
-    static DetachedCriteria<DataElementComponent> byDataFlowIdAndId(UUID dataFlowId, UUID id) {
-        byDataFlowId(dataFlowId).idEq(id)
     }
 
     static DetachedCriteria<DataElementComponent> byDataClassComponentId(UUID dataClassComponentId) {
@@ -176,18 +148,6 @@ class DataElementComponent implements ModelItem<DataElementComponent, DataModel>
 
     static DetachedCriteria<DataElementComponent> byTargetDataElementId(UUID dataElementId) {
         by().eq('targetDataElements.id', dataElementId)
-    }
-
-    @Deprecated(forRemoval = true)
-    static DetachedCriteria<DataElementComponent> byDataFlowIdAndDataClassId(UUID dataFlowId, UUID dataClassId) {
-        byDataFlowId(dataFlowId).or {
-            sourceDataElements {
-                eq('dataClass.id', dataClassId)
-            }
-            targetDataElements {
-                eq('dataClass.id', dataClassId)
-            }
-        }
     }
 
     static DetachedCriteria<DataElementComponent> byClassifierId(UUID classifierId) {

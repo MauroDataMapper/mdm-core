@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
+
 import uk.ac.ox.softeng.maurodatamapper.core.hibernate.search.HibernateSearchIndexingService
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MetadataAware
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.facet.NamespaceKeys
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
@@ -45,6 +44,11 @@ class MetadataService implements MultiFacetItemAwareService<Metadata> {
 
     Metadata get(Serializable id) {
         Metadata.get(id)
+    }
+
+    @Override
+    List<Metadata> getAll(Collection<UUID> resourceIds) {
+        Metadata.getAll(resourceIds)
     }
 
     List<Metadata> list(Map args) {
@@ -244,26 +248,6 @@ class MetadataService implements MultiFacetItemAwareService<Metadata> {
         }
         namespaceKeys
 
-    }
-
-    void mergeLegacyMetadataIntoCatalogueItem(CatalogueItem targetCatalogueItem, ObjectPatchData objectPatchData) {
-
-        if (!objectPatchData.hasPatches()) return
-
-        Metadata targetMetadata = findByMultiFacetAwareItemIdAndId(targetCatalogueItem.id, objectPatchData.targetId)
-        if (!targetMetadata) {
-            log.error('Attempted to merge non-existent metadata [{}] inside target catalogue item [{}]', objectPatchData.targetId,
-                      targetCatalogueItem.id)
-        }
-
-        objectPatchData.getDiffsWithContent().each {fieldPatchData ->
-            if (fieldPatchData.value) {
-                targetMetadata.setProperty(fieldPatchData.fieldName, fieldPatchData.value)
-            } else {
-                log.error('Only field diff types can be handled inside MetadataService')
-            }
-        }
-        targetMetadata.save(validate: false, flush: true)
     }
 
     private void singleBatchSave(Collection<Metadata> metadata) {

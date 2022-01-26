@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,10 +58,10 @@ abstract class SecurableResourceInterceptor implements MdmInterceptor {
     boolean checkActionAuthorisationOnSecuredResource(Class<? extends SecurableResource> securableResourceClass, UUID id,
                                                       boolean directCallsToIndexAllowed = false) {
 
-        boolean canRead = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(securableResourceClass, id)
-
         // Allows for direct calls to secured resources but stops indexing on nested secured resources
         if (directCallsToIndexAllowed && isIndex() && !id) return true
+
+        boolean canRead = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(securableResourceClass, id)
 
         // The 3 tiers of writing are deleting, updating/editing and saving/creation
         // We will have to handle certain controls inside the controller
@@ -71,7 +71,7 @@ abstract class SecurableResourceInterceptor implements MdmInterceptor {
                    forbiddenOrNotFound(canRead, securableResourceClass, id)
         }
         if (isUpdate() || actionName in ['readByEveryone', 'readByAuthenticated']) {
-            return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(securableResourceClass, id, actionName) ?:
+            return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(securableResourceClass, id, isDescriptionEdit() ? 'editDescription' : actionName) ?:
                    forbiddenOrNotFound(canRead, securableResourceClass, id)
         }
         if (isSave()) {

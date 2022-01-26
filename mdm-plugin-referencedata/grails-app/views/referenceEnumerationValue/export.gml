@@ -24,21 +24,21 @@ ReferenceEnumerationValue ev = referenceEnumerationValue as ReferenceEnumeration
     if (ev.classifiers) {
         'mdm:classifiers' {
             ev.classifiers.each {cl ->
-                layout '/classifier/ev.gml', classifier: cl, ns: 'mdm'
+                layout '/classifier/ev.gml', classifier: cl
             }
         }
     }
     if (ev.metadata) {
         'mdm:metadata' {
             ev.metadata.each {md ->
-                layout '/metadata/ev.gml', metadata: md, ns: 'mdm'
+                layout '/metadata/ev.gml', metadata: md
             }
         }
     }
     if (ev.annotations) {
         'mdm:annotations' {
             ev.annotations.each {ann ->
-                layout '/annotation/ev.gml', annotation: ann, ns: 'mdm'
+                layout '/annotation/ev.gml', annotation: ann
             }
         }
     }

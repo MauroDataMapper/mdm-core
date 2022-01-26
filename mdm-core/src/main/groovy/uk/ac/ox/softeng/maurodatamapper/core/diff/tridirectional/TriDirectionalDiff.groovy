@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,42 +95,6 @@ abstract class TriDirectionalDiff<T> extends BiDirectionalDiff<T> {
 
     Path getFullyQualifiedObjectPath() {
         fullyQualifiedObjectPath
-    }
-
-    @Deprecated
-    @Override
-    T getRight() {
-        super.getRight()
-    }
-
-    @Deprecated
-    @Override
-    void setRight(T right) {
-        super.setRight(right)
-    }
-
-    @Deprecated
-    @Override
-    BiDirectionalDiff<T> leftHandSide(T lhs) {
-        super.leftHandSide(lhs)
-    }
-
-    @Deprecated
-    @Override
-    BiDirectionalDiff<T> rightHandSide(T rhs) {
-        super.rightHandSide(rhs)
-    }
-
-    @Deprecated
-    @Override
-    void setLeft(T left) {
-        super.setLeft(left)
-    }
-
-    @Deprecated
-    @Override
-    T getLeft() {
-        super.getLeft()
     }
 
     @Override

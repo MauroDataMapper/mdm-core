@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -56,6 +57,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     ModelDataTypeService modelDataTypeService
     SummaryMetadataService summaryMetadataService
     EnumerationValueService enumerationValueService
+    DataModelService dataModelService
 
     @Override
     DataType get(Serializable id) {
@@ -175,11 +177,6 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     }
 
     @Override
-    Class<DataType> getModelItemClass() {
-        DataType
-    }
-
-    @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         domainType == DataType.simpleName
     }
@@ -214,9 +211,11 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
 
         List<DataType> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            log.debug('Performing lucene label search')
+            log.debug('Performing hs label search')
             long start = System.currentTimeMillis()
-            results = DataType.luceneLabelSearch(DataType, searchTerm, readableIds.toList()).results
+            results =
+                DataType
+                    .labelHibernateSearch(DataType, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds)).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
         results
@@ -319,14 +318,14 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
 
     void checkImportedDataTypeAssociations(User importingUser, DataModel dataModel, DataType dataType) {
         dataModel.addToDataTypes(dataType)
-        dataType.buildPath()
+        dataType.checkPath()
         dataType.createdBy = importingUser.emailAddress
         if (dataType.instanceOf(EnumerationType)) {
             EnumerationType enumerationType = (dataType as EnumerationType)
             enumerationType.fullSortOfChildren(enumerationType.enumerationValues)
             enumerationType.enumerationValues.each { ev ->
                 ev.createdBy = importingUser.emailAddress
-                ev.buildPath()
+                ev.checkPath()
             }
         }
         checkFacetsAfterImportingCatalogueItem(dataType)
@@ -476,11 +475,11 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         dataModel
     }
 
-    private def <T extends DataType> T mergeDataTypes(List<T> dataTypes) {
+    def <T extends DataType> T mergeDataTypes(List<T> dataTypes) {
         mergeDataTypes(dataTypes.first(), dataTypes)
     }
 
-    private def <T extends DataType> T mergeDataTypes(T keep, List<T> dataTypes) {
+    def <T extends DataType> T mergeDataTypes(T keep, List<T> dataTypes) {
         for (int i = 1; i < dataTypes.size(); i++) {
             mergeDataTypes(keep, dataTypes[i])
             delete(dataTypes[i])
@@ -488,7 +487,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         keep
     }
 
-    private void mergeDataTypes(DataType keep, DataType replace) {
+    void mergeDataTypes(DataType keep, DataType replace) {
         replace.dataElements?.each { de ->
             keep.addToDataElements(de)
         }

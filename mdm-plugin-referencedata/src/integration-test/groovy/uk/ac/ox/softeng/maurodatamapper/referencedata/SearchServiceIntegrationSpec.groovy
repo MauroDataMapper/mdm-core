@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,14 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.test.BaseReferenceDataMode
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import org.junit.jupiter.api.Tag
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 
 @Slf4j
 @Integration
 @Rollback
+@Tag('non-parallel')
 class SearchServiceIntegrationSpec extends BaseReferenceDataModelIntegrationSpec {
 
     UUID referenceModelId
@@ -41,6 +43,17 @@ class SearchServiceIntegrationSpec extends BaseReferenceDataModelIntegrationSpec
 
     SearchService getSearchService() {
         mdmPluginDataModelSearchService
+    }
+
+    @Override
+    void preDomainDataSetup() {
+        super.preDomainDataSetup()
+        hibernateSearchIndexingService.purgeAllIndexes()
+    }
+
+    @Override
+    void postDomainDataSetup() {
+        hibernateSearchIndexingService.flushIndexes()
     }
 
     @Override

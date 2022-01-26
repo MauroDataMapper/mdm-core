@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import grails.util.BuildSettings
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
@@ -90,15 +90,16 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     @Shared
     Path csvResourcesPath
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def checkAndSetupData() {
+    def setup() {
         log.debug('Check and setup test data')
         sessionFactory.currentSession.flush()
         folderId = new Folder(label: 'Reference Data Functional Test Folder', createdBy: FUNCTIONAL_TEST).save(flush: true).id
         assert folderId
         movingFolderId = new Folder(label: 'Reference Data Functional Test Folder 2', createdBy: FUNCTIONAL_TEST).save(flush: true).id
         assert movingFolderId
+        csvResourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', 'csv').toAbsolutePath()
     }
 
     @Transactional
@@ -134,11 +135,6 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         Path testFilePath = csvResourcesPath.resolve("${filename}.csv")
         assert Files.exists(testFilePath)
         Files.readAllBytes(testFilePath)
-    }
-
-    @OnceBefore
-    void setupCsvResourcesPath() {
-        csvResourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', 'csv').toAbsolutePath()
     }
 
     @Override
@@ -191,7 +187,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
   },
   {
     "name": "ReferenceDataXmlExporterService",
-    "version": "4.0",
+    "version": "5.0",
     "displayName": "XML Reference Data Exporter",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
     "allowsExtraMetadataKeys": true,
@@ -228,7 +224,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
   },
   {
     "name": "ReferenceDataXmlImporterService",
-    "version": "4.0",
+    "version": "5.0",
     "displayName": "XML Reference Data Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": true,

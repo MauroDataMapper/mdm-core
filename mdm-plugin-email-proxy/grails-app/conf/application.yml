@@ -156,7 +156,9 @@ hibernate:
             provider: org.ehcache.jsr107.EhcacheCachingProvider
             missing_cache_strategy: create
     search:
-        default.indexBase: '/tmp/lucene/plugin/email/proxy'
+        backend:
+            directory:
+                root: 'build/lucene'
 
 ---
 dataSource:

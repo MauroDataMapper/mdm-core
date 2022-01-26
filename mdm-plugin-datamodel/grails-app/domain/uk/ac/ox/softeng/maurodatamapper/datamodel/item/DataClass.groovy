@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 import groovy.util.logging.Slf4j
-import org.grails.datastore.gorm.GormEntity
 
 import javax.persistence.criteria.JoinType
 
@@ -105,6 +104,7 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     }
 
     static mapping = {
+        breadcrumbTree fetch: 'join'
         dataElements cascade: 'all-delete-orphan'
         dataClasses cascade: 'all-delete-orphan'
         referenceTypes cascade: 'none'
@@ -173,7 +173,7 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     }
 
     @Override
-    GormEntity getPathParent() {
+    CatalogueItem getParent() {
         parentDataClass ?: dataModel
     }
 
@@ -187,7 +187,6 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         }
     }
 
-    @Override
     def beforeValidate() {
         long st = System.currentTimeMillis()
         dataModel = dataModel ?: parentDataClass?.getModel()
@@ -203,16 +202,6 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
             if (dataClasses) fullSortOfChildren(dataClasses)
         }
         log.trace('DC before validate {} took {}', this.label, Utils.timeTaken(st))
-    }
-
-    @Override
-    def beforeInsert() {
-        buildPath()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPath()
     }
 
     @Override
@@ -238,10 +227,6 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     String getDiffIdentifier(String context) {
         if (!parentDataClass) return this.pathIdentifier
         "${parentDataClass.getDiffIdentifier(context)}/${this.pathIdentifier}"
-    }
-
-    CatalogueItem getParent() {
-        parentDataClass ?: dataModel
     }
 
     /**

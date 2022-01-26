@@ -18,7 +18,7 @@
     SPDX-License-Identifier: Apache-2.0
 
 -->
-<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/4.0" xmlns:mdm="http://maurodatamapper.com/dataModel/3.2">
+<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/5.0" xmlns:mdm="http://maurodatamapper.com/dataModel/4.0">
   <mdm:dataModel>
     <mdm:id>876b48d8-d559-4b1b-b591-6e5df060312e</mdm:id>
     <mdm:label>National Minimum Data Set for Thoracic Surgery and Lung Cancer Surgery</mdm:label>
@@ -32,15 +32,16 @@
         <mdm:description>http://www.datadictionary.nhs.uk/data_dictionary/attributes/a/at/attended_or_did_not_attend_de.asp?shownav=1</mdm:description>
       </mdm:annotation>
     </mdm:annotations>
-    <mdm:type>Data Standard</mdm:type>
     <mdm:documentationVersion>1.0.0</mdm:documentationVersion>
     <mdm:finalised>false</mdm:finalised>
+    <mdm:branchName>main</mdm:branchName>
     <mdm:authority>
       <mdm:id>04b2fb71-539b-4273-988b-6f440d0139ce</mdm:id>
       <mdm:label>Test Authority</mdm:label>
       <mdm:url>http://localhost</mdm:url>
       <mdm:lastUpdated>2020-08-12T11:40:05.038Z</mdm:lastUpdated>
     </mdm:authority>
+    <mdm:type>Data Standard</mdm:type>
   </mdm:dataModel>
   <exp:exportMetadata>
     <exp:exportedBy>Admin User</exp:exportedBy>
@@ -48,7 +49,7 @@
     <exp:exporter>
       <exp:namespace>uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter</exp:namespace>
       <exp:name>DataModelXmlExporterService</exp:name>
-      <exp:version>4.0</exp:version>
+      <exp:version>5.0</exp:version>
     </exp:exporter>
   </exp:exportMetadata>
 </exp:exportModel>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.file
 
-import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFile
-import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
+
+import uk.ac.ox.softeng.maurodatamapper.test.unit.MdmDomainSpec
 
 import grails.testing.gorm.DomainUnitTest
 import grails.web.mime.MimeType
@@ -27,7 +27,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 
-class UserImageFileSpec extends CreatorAwareSpec<UserImageFile> implements DomainUnitTest<UserImageFile> {
+class UserImageFileSpec extends MdmDomainSpec<UserImageFile> implements DomainUnitTest<UserImageFile> {
 
     void 'test creating actual user image'() {
         given:

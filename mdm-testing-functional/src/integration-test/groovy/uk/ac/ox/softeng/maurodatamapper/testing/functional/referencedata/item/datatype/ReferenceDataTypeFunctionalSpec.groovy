@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -29,7 +30,7 @@ import io.micronaut.http.HttpResponse
 
 /**
  * <pre>
- 
+
  * Controller: referenceDataType
  *  |   POST   | /api/referenceDataModels/${referenceDataModelId}/referenceDataTypes  | Action: save
  *  |   GET    | /api/referenceDataModels/${referenceDataModelId}/referenceDataTypes  | Action: index
@@ -80,56 +81,22 @@ class ReferenceDataTypeFunctionalSpec extends UserAccessFunctionalSpec {
     }
 
     @Override
-    Map getValidUpdateJson() {
-        [
-            description: 'describes a date only'
-        ]
-    }
-
-
-    Boolean readerPermissionIsInherited() {
-        true
-    }
-
-    @Override
-    void verifyL03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getSimpleReferenceDataModelId()
+    Expectations getExpectations() {
+        Expectations.builder()
+            .withDefaultExpectations()
+            .withInheritedAccessPermissions()
+            .whereTestingUnsecuredResource()
+            .whereContainerAdminsCanAction('comment', 'delete', 'editDescription', 'save', 'show', 'update')
+            .whereEditorsCanAction('comment', 'delete', 'editDescription', 'save', 'show', 'update')
+            .whereAuthorsCanAction('comment', 'editDescription', 'show',)
+            .whereReviewersCanAction('comment', 'show')
+            .whereReadersCanAction('show')
     }
 
     @Override
-    void verifyL03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getSimpleReferenceDataModelId()
-    }
-
-    @Override
-    void verifyL03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getSimpleReferenceDataModelId()
-    }
-
-    @Override
-    void verifyN03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getSimpleReferenceDataModelId()
-    }
-
-    @Override
-    void verifyN03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getSimpleReferenceDataModelId()
-    }
-
-    @Override
-    void verifyN03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getSimpleReferenceDataModelId()
-    }
-
-    @Override
-    void verifyR04UnknownIdResponse(HttpResponse<Map> response, String id) {
-        verifyForbidden response
-    }
-
-    @Override
-    void verifyE03ValidResponseBody(HttpResponse<Map> response) {
+    void verify03ValidResponseBody(HttpResponse<Map> response) {
         assert response.body().id
-    }    
+    }
 
     @Override
     String getShowJson() {
@@ -147,12 +114,7 @@ class ReferenceDataTypeFunctionalSpec extends UserAccessFunctionalSpec {
     }
   ],
   "availableActions": [
-    "show",
-    "comment",
-    "editDescription",
-    "update",
-    "save",
-    "delete"
+    "show"
   ],
   "lastUpdated": "${json-unit.matches:offsetDateTime}"
 }'''

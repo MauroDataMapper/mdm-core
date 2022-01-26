@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 
 import grails.gorm.DetachedCriteria
-import org.grails.datastore.gorm.GormEntity
 
 class DataClassComponent implements ModelItem<DataClassComponent, DataModel> {
 
@@ -94,24 +93,13 @@ class DataClassComponent implements ModelItem<DataClassComponent, DataModel> {
     }
 
     @Override
-    GormEntity getPathParent() {
+    DataFlow getParent() {
         dataFlow
     }
 
-    @Override
     def beforeValidate() {
         beforeValidateModelItem()
         dataElementComponents.each {it.beforeValidate()}
-    }
-
-    @Override
-    def beforeInsert() {
-        buildPath()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPath()
     }
 
     @Override

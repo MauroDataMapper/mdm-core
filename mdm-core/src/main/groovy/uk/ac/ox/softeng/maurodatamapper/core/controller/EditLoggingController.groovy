@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.controller
 
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmController
-import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.AddsEditHistory
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import grails.artefact.controller.RestResponder
@@ -157,7 +157,7 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
     protected T saveResource(T resource) {
         log.trace('save resource')
         resource.save flush: true, validate: false
-        if (resource.instanceOf(AddsEditHistory) && !params.boolean('noHistory')) resource.addCreatedEdit(getCurrentUser())
+        if (resource.instanceOf(EditHistoryAware) && !params.boolean('noHistory')) resource.addCreatedEdit(getCurrentUser())
         resource
     }
 
@@ -166,7 +166,7 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
         log.trace('update {}', resource.ident())
         List<String> dirtyPropertyNames = resource.getDirtyPropertyNames()
         resource.save flush: true, validate: false
-        if (resource.instanceOf(AddsEditHistory) && !params.boolean('noHistory')) resource.addUpdatedEdit(getCurrentUser(), dirtyPropertyNames)
+        if (resource.instanceOf(EditHistoryAware) && !params.boolean('noHistory')) resource.addUpdatedEdit(getCurrentUser(), dirtyPropertyNames)
         resource
     }
 
@@ -174,7 +174,7 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
     protected void deleteResource(T resource) {
         log.trace('delete {}', resource.ident())
         serviceDeleteResource(resource)
-        if (resource.instanceOf(AddsEditHistory) && !params.boolean('noHistory')) resource.addDeletedEdit(getCurrentUser())
+        if (resource.instanceOf(EditHistoryAware) && !params.boolean('noHistory')) resource.addDeletedEdit(getCurrentUser())
     }
 
     protected void updateResponse(T instance) {
@@ -228,4 +228,8 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
         true
     }
 
+    @Override
+    protected getObjectToBind() {
+        request.getAttribute('cached_body') ?: request
+    }
 }

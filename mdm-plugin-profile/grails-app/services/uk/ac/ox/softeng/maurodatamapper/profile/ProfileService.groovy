@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile
 
-import groovy.util.logging.Slf4j
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
@@ -40,6 +39,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 import grails.gorm.transactions.Transactional
 import grails.web.databinding.DataBinder
+import groovy.util.logging.Slf4j
 import org.hibernate.SessionFactory
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -276,8 +276,8 @@ class ProfileService implements DataBinder {
      * @param User
      * @return List of handled (validated or saved) instances
      */
-    private handleMany(boolean validateOnly, ProfileProvidedCollection profileProvidedCollection, Model model,
-                       UserSecurityPolicyManager userSecurityPolicyManager, User user) {
+    List<ProfileProvided> handleMany(boolean validateOnly, ProfileProvidedCollection profileProvidedCollection, Model model,
+                                     UserSecurityPolicyManager userSecurityPolicyManager, User user) {
         List<ProfileProvided> handledInstances = []
 
         profileProvidedCollection.profilesProvided.each {profileProvided ->
@@ -314,10 +314,10 @@ class ProfileService implements DataBinder {
                         boolean saveAllowed
 
                         if (profileProviderService.canBeEditedAfterFinalisation()) {
-                            saveAllowed = userSecurityPolicyManager.userCanWriteSecuredResourceId(model.class, model.id, 'saveIgnoreFinalise')
+                            saveAllowed = userSecurityPolicyManager.userCanWriteResourceId(Metadata, null, model.class, model.id, 'saveIgnoreFinalise')
                             log.debug("Profile can be edited after finalisation ${profileProviderService.namespace}.${profileProviderService.name} and saveAllowed is ${saveAllowed}")
                         } else {
-                            saveAllowed = userSecurityPolicyManager.userCanCreateResourceId(Profile.class, null, model.class, model.id)
+                            saveAllowed = userSecurityPolicyManager.userCanCreateResourceId(Metadata, null, model.class, model.id)
                             log.debug("Profile cannot be edited after finalisation ${profileProviderService.namespace}.${profileProviderService.name} and saveAllowed is ${saveAllowed}")
                         }
 

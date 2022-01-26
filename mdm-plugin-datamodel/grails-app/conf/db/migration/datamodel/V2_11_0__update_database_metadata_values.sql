@@ -10,7 +10,8 @@ CREATE TABLE migration.database_metadata (
     multi_facet_aware_item_id          UUID,
     value                              TEXT         NOT NULL,
     created_by                         VARCHAR(255) NOT NULL,
-    key                                TEXT         NOT NULL
+    key                                TEXT         NOT NULL,
+    path                               TEXT         NOT NULL
 );
 
 CREATE TABLE migration.additional_metadata (
@@ -23,21 +24,33 @@ CREATE TABLE migration.additional_metadata (
     multi_facet_aware_item_id          UUID,
     value                              TEXT         NOT NULL,
     created_by                         VARCHAR(255) NOT NULL,
-    key                                TEXT         NOT NULL
+    key                                TEXT         NOT NULL,
+    path                               TEXT         NOT NULL
 );
 
 
 -- Extract all metadata for databases for speed
-INSERT INTO migration.database_metadata
-SELECT *
+INSERT INTO migration.database_metadata(id, version, date_created, last_updated, multi_facet_aware_item_domain_type, namespace, multi_facet_aware_item_id, value, created_by,
+                                        key, path)
+SELECT id,
+       version,
+       date_created,
+       last_updated,
+       multi_facet_aware_item_domain_type,
+       namespace,
+       multi_facet_aware_item_id,
+       value,
+       created_by,
+       key,
+       path
 FROM core.metadata
 WHERE namespace LIKE 'ox.softeng.metadatacatalogue.plugins.database%' AND
       "key" LIKE '%[%]%';
 
 -- Extract out the name of MD like 'foreign_key[dhsjdhs]'
 INSERT
-INTO migration.additional_metadata(id, version, date_created, last_updated, multi_facet_aware_item_domain_type, namespace, multi_facet_aware_item_id, "value", created_by,
-                                   "key")
+INTO migration.additional_metadata(id, version, date_created, last_updated, multi_facet_aware_item_domain_type, namespace, multi_facet_aware_item_id, value, created_by,
+                                   key, path)
 SELECT uuid_generate_v1(),
        version,
        date_created,
@@ -47,7 +60,8 @@ SELECT uuid_generate_v1(),
        multi_facet_aware_item_id,
        SUBSTRING("key", '.+?\[(.+)\]'),
        created_by,
-       CONCAT(SUBSTRING("key", '(.+?)\[.+\]'), '_name')
+       CONCAT(SUBSTRING("key", '(.+?)\[.+\]'), '_name'),
+       path
 FROM migration.database_metadata;
 
 -- Migrate the namespace
@@ -62,7 +76,7 @@ WHERE namespace LIKE 'uk.ac.ox.softeng.metadatacatalogue.plugins.database%' AND
       "key" LIKE '%[%]%';
 
 -- Insert new rows
-INSERT INTO core.metadata(id, version, date_created, last_updated, multi_facet_aware_item_domain_type, namespace, multi_facet_aware_item_id, "value", created_by, "key")
+INSERT INTO core.metadata(id, version, date_created, last_updated, multi_facet_aware_item_domain_type, namespace, multi_facet_aware_item_id, value, created_by, key, path)
 SELECT id,
        version,
        date_created,
@@ -70,9 +84,10 @@ SELECT id,
        multi_facet_aware_item_domain_type,
        namespace,
        multi_facet_aware_item_id,
-       "value",
+       value,
        created_by,
-       "key"
+       key,
+       path
 FROM migration.additional_metadata;
 
 -- Add the new rows to the facet join tables

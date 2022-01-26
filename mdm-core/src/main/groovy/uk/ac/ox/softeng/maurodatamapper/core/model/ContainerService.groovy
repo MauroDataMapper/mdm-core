@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,24 +23,21 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFileService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.RuleService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
-import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
+import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
-import grails.core.GrailsApplication
 import grails.gorm.DetachedCriteria
 import org.hibernate.SessionFactory
 
 /**
  * @since 16/01/2020
  */
-abstract class ContainerService<K extends Container> implements SecurableResourceService<K>, MultiFacetAwareService<K>, DomainService<K> {
+abstract class ContainerService<K extends Container> implements SecurableResourceService<K>, MultiFacetAwareService<K>, MdmDomainService<K> {
 
     SessionFactory sessionFactory
-    GrailsApplication grailsApplication
     MetadataService metadataService
     RuleService ruleService
     SemanticLinkService semanticLinkService
@@ -53,7 +50,7 @@ abstract class ContainerService<K extends Container> implements SecurableResourc
 
     abstract List<Container> findAllReadableContainersBySearchTerm(UserSecurityPolicyManager userSecurityPolicyManager, String searchTerm)
 
-    abstract List<Container> findAllContainersInside(UUID containerId)
+    abstract List<Container> findAllContainersInside(PathNode containerPathNode)
 
     abstract K findDomainByLabel(String label)
 
@@ -69,10 +66,8 @@ abstract class ContainerService<K extends Container> implements SecurableResourc
 
     abstract List<K> findAllWhereDirectParentOfContainer(K container)
 
-    abstract Class<K> getContainerClass()
-
     Class<K> getMultiFacetAwareClass() {
-        getContainerClass()
+        getDomainClass()
     }
 
     @Override
@@ -108,12 +103,8 @@ abstract class ContainerService<K extends Container> implements SecurableResourc
         findByPath(nextParent, pathLabels)
     }
 
-    List<K> getFullPathDomains(K domain) {
-        List<UUID> ids = domain.path.split('/').findAll().collect {Utils.toUuid(it)}
-        List<K> domains = []
-        if (ids) domains.addAll(getAll(ids))
-        domains.add(domain)
-        domains
+    List<Container> findAllContainersInside(UUID containerId) {
+        findAllContainersInside(get(containerId).path.last())
     }
 
     void generateDefaultLabel(K domain, String defaultLabel) {

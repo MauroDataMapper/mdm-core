@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,16 @@
 package uk.ac.ox.softeng.maurodatamapper.security.authentication
 
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
-import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.rest.Resource
 
 import java.time.LocalDate
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class ApiKey implements CreatorAware {
+class ApiKey implements MdmDomain {
 
     public static final String DEFAULT_NAME = 'default'
 
@@ -40,7 +40,7 @@ class ApiKey implements CreatorAware {
     static belongsTo = [catalogueUser: CatalogueUser]
 
     static constraints = {
-        CallableConstraints.call(CreatorAwareConstraints, delegate)
+        CallableConstraints.call(MdmDomainConstraints, delegate)
         name blank: false, unique: 'catalogueUser'
     }
 
@@ -65,5 +65,13 @@ class ApiKey implements CreatorAware {
 
     void setExpiresInDays(long days) {
         expiryDate = LocalDate.now().plusDays(days)
+    }
+
+    String getPathPrefix() {
+        null
+    }
+
+    String getPathIdentifier() {
+        null
     }
 }

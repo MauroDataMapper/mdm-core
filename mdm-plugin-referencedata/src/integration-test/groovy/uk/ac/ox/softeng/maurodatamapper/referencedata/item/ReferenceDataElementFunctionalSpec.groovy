@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
@@ -26,7 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import spock.lang.Shared
 
@@ -75,9 +74,9 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
     @Shared
     Folder folder
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def checkAndSetupData() {
+    def setup() {
         log.debug('Check and setup test data')
         folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
         checkAndSave(folder)
@@ -416,233 +415,4 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
         response.body().referenceDataType.id != dtId
         response.body().referenceDataType.label == 'Reference Test DataType'
     }
-
-       /* void setupForLinkSuggestions() {
-            loginEditor()
-            ReferenceDataType newDataType = simpleTestReferenceDataModel.findReferenceDataTypeByLabel("string")
-            def response
-            if (!newDataType) {
-                response = post(apiPath + "/referenceDataModels/${simpleTestReferenceDataModel.id}/refernceDataTypes") {
-                    json {
-                        domainType = 'ReferencePrimitiveType'
-                        label = 'string'
-                    }
-                }
-                assert (response.statusCode.'2xxSuccessful')
-                newDataType = simpleTestReferenceDataModel.findReferenceDataTypeByLabel("string")
-            }
-
-            response = post(apiPath + "/referenceDataModels/${simpleTestReferenceDataModel.id}/referenceDataElements") {
-                json {
-                    domainType = 'ReferenceDataElement'
-                    label = 'ele2'
-                    description = 'least obvious match'
-                    dataType = {
-                        domainType = 'ReferencePrimitiveType'
-                        id = newDataType.id.toString()
-                    }
-
-                }
-            }
-            assert (response.statusCode.'2xxSuccessful')
-            adminService.rebuildLuceneIndexes(new LuceneIndexParameters())
-            logout()
-        }
-
-        void 'test get link suggestions for a data element'() {
-            given:
-            setupForLinkSuggestions()
-
-            DataClass sourceDataClass = DataClass.findByLabel('content')
-            DataElement sourceDataElement = DataElement.findByDataClassAndLabel(sourceDataClass, 'ele1')
-            String endpoint = "${apiPath}/" +
-                              "referenceDataModels/${testReferenceDataModel.id}/" +
-                              "dataClasses/${sourceDataClass.id}/" +
-                              "dataElements/${sourceDataElement.id}/" +
-                              "suggestLinks/${simpleTestReferenceDataModel.id}"
-
-            String expectedJson = expectedLinkSuggestions(expectedLinkSuggestionResults())
-
-
-            when: 'not logged in'
-            def response = restGet(endpoint)
-
-            then:
-            verifyResponse UNAUTHORIZED, response
-
-            when: 'logged in as reader'
-            loginUser(reader2)
-            response = restGet(endpoint)
-
-            then:
-            verifyResponse OK, response, expectedJson
-
-            when: 'logged in as writer'
-            loginEditor()
-            response = restGet(endpoint)
-
-            then:
-            verifyResponse OK, response, expectedJson
-        }
-
-
-        void 'test get link suggestions for a data element with no data elements in the target'() {
-            given:
-
-            DataClass sourceDataClass = DataClass.findByLabel('content')
-            DataElement sourceDataElement = DataElement.findByDataClassAndLabel(sourceDataClass, 'ele1')
-            String endpoint = "${apiPath}/" +
-                              "referenceDataModels/${testReferenceDataModel.id}/" +
-                              "dataClasses/${sourceDataClass.id}/" +
-                              "dataElements/${sourceDataElement.id}/" +
-                              "suggestLinks/${simpleTestReferenceDataModel.id}"
-
-            String expectedJson = expectedLinkSuggestions("")
-
-            when: 'not logged in'
-            def response = restGet(endpoint)
-
-            then:
-            verifyResponse UNAUTHORIZED, response
-
-            when: 'logged in as reader'
-            loginUser(reader2)
-            response = restGet(endpoint)
-
-            then:
-            verifyResponse OK, response, expectedJson
-
-            when: 'logged in as writer'
-            loginEditor()
-            response = restGet(endpoint)
-
-            then:
-            verifyResponse OK, response, expectedJson
-        }
-
-
-        String expectedLinkSuggestions(String results) {
-            '''{
-      "sourceDataElement": {
-        "domainType": "DataElement",
-        "dataClass": "${json-unit.matches:id}",
-        "dataType": {
-          "domainType": "PrimitiveType",
-          "referenceDataModel": "${json-unit.matches:id}",
-          "id": "${json-unit.matches:id}",
-          "label": "string",
-          "breadcrumbs": [
-            {
-              "domainType": "ReferenceDataModel",
-              "finalised": false,
-              "id": "${json-unit.matches:id}",
-              "label": "Complex Test ReferenceDataModel"
-            }
-          ]
-        },
-        "referenceDataModel": "${json-unit.matches:id}",
-        "maxMultiplicity": 20,
-        "id": "${json-unit.matches:id}",
-        "label": "ele1",
-        "minMultiplicity": 0,
-        "breadcrumbs": [
-          {
-            "domainType": "ReferenceDataModel",
-            "finalised": false,
-            "id": "${json-unit.matches:id}",
-            "label": "Complex Test ReferenceDataModel"
-          },
-          {
-            "domainType": "DataClass",
-            "id": "${json-unit.matches:id}",
-            "label": "content"
-          }
-        ]
-      },
-      "results": [
-        ''' + results + '''
-      ]
-    }'''
-        }
-
-        String expectedLinkSuggestionResults() {
-            '''    {
-          "score": 0.70164835,
-          "dataElement": {
-            "domainType": "DataElement",
-            "dataClass": "${json-unit.matches:id}",
-            "dataType": {
-              "domainType": "PrimitiveType",
-              "referenceDataModel": "${json-unit.matches:id}",
-              "id": "${json-unit.matches:id}",
-              "label": "string",
-              "breadcrumbs": [
-                {
-                  "domainType": "ReferenceDataModel",
-                  "finalised": false,
-                  "id": "${json-unit.matches:id}",
-                  "label": "Simple Test ReferenceDataModel"
-                }
-              ]
-            },
-            "referenceDataModel": "${json-unit.matches:id}",
-            "description": "most obvious match",
-            "id": "${json-unit.matches:id}",
-            "label": "ele1",
-            "breadcrumbs": [
-              {
-                "domainType": "ReferenceDataModel",
-                "finalised": false,
-                "id": "${json-unit.matches:id}",
-                "label": "Simple Test ReferenceDataModel"
-              },
-              {
-                "domainType": "DataClass",
-                "id": "${json-unit.matches:id}",
-                "label": "simple"
-              }
-            ]
-          }
-        },
-        {
-          "score": 0.35714078,
-          "dataElement": {
-            "domainType": "DataElement",
-            "dataClass": "${json-unit.matches:id}",
-            "dataType": {
-              "domainType": "PrimitiveType",
-              "referenceDataModel": "${json-unit.matches:id}",
-              "id": "${json-unit.matches:id}",
-              "label": "string",
-              "breadcrumbs": [
-                {
-                  "domainType": "ReferenceDataModel",
-                  "finalised": false,
-                  "id": "${json-unit.matches:id}",
-                  "label": "Simple Test ReferenceDataModel"
-                }
-              ]
-            },
-            "referenceDataModel": "${json-unit.matches:id}",
-            "description": "least obvious match",
-            "id": "${json-unit.matches:id}",
-            "label": "ele2",
-            "breadcrumbs": [
-              {
-                "domainType": "ReferenceDataModel",
-                "finalised": false,
-                "id": "${json-unit.matches:id}",
-                "label": "Simple Test ReferenceDataModel"
-              },
-              {
-                "domainType": "DataClass",
-                "id": "${json-unit.matches:id}",
-                "label": "simple"
-              }
-            ]
-          }
-        }
-    '''
-        }
-  */
 }

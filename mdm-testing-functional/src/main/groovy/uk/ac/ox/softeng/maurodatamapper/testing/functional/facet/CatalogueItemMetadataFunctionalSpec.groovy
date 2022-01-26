@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.facet
 
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 
-import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import io.micronaut.http.HttpResponse
 
 import java.util.regex.Pattern
 
@@ -56,51 +54,16 @@ abstract class CatalogueItemMetadataFunctionalSpec extends UserAccessFunctionalS
         "${getCatalogueItemDomainType()}/${getCatalogueItemId()}"
     }
 
-    @Transactional
     @Override
-    def cleanupSpec() {
-        log.info('Removing functional test metadata')
-        Metadata.byNamespaceAndKey('functional.test.namespace', 'ftk').deleteAll()
-    }
-
-    @Override
-    Boolean readerPermissionIsInherited() {
-        true
-    }
-
-    @Override
-    void verifyL03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyL03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyL03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyN03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyN03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyN03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyR04UnknownIdResponse(HttpResponse<Map> response, String id) {
-        verifyForbidden response
+    Expectations getExpectations() {
+        Expectations.builder()
+            .withDefaultExpectations()
+            .withInheritedAccessPermissions()
+            .whereTestingUnsecuredResource()
+            .withoutAvailableActions()
+            .whereAuthors {
+                canUpdate()
+            }
     }
 
     @Override
@@ -132,10 +95,15 @@ abstract class CatalogueItemMetadataFunctionalSpec extends UserAccessFunctionalS
     }
 
     @Override
-    Map getValidUpdateJson() {
+    Map getValidNonDescriptionUpdateJson() {
         [
             value: 'ftv.update'
         ]
+    }
+
+    @Override
+    Map getValidDescriptionOnlyUpdateJson() {
+        getValidNonDescriptionUpdateJson()
     }
 
     @Override

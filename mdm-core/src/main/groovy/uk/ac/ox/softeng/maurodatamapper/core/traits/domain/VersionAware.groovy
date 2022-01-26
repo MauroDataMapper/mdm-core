@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.traits.domain
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.databinding.BindUsing
@@ -29,7 +29,7 @@ import groovy.transform.SelfType
 import java.time.OffsetDateTime
 
 @CompileStatic
-@SelfType([InformationAware, CreatorAware])
+@SelfType([InformationAware, MdmDomain])
 trait VersionAware {
 
     String branchName

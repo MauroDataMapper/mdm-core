@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,9 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters
 
 import groovy.util.logging.Slf4j
-import groovy.util.slurpersupport.GPathResult
-import groovy.util.slurpersupport.NodeChild
+import groovy.xml.XmlSlurper
+import groovy.xml.slurpersupport.GPathResult
+import groovy.xml.slurpersupport.NodeChild
 
 import java.nio.charset.Charset
 
@@ -40,7 +41,7 @@ class CodeSetXmlImporterService extends DataBindCodeSetImporterProviderService<C
 
     @Override
     String getVersion() {
-        '4.0'
+        '5.0'
     }
 
     @Override
@@ -91,7 +92,7 @@ class CodeSetXmlImporterService extends DataBindCodeSetImporterProviderService<C
     }
 
     private Map backwardsCompatibleExtractCodeSetMap(GPathResult result, Map map) {
-        if (result.name() == 'exportModel') return map.codeSet as Map
+        if (result.name() == 'exportModel' && map.codeSet && map.codeSet instanceof Map) return map.codeSet as Map
         if (result.name() == 'codeSet') return map
         throw new ApiBadRequestException('XIS03', 'Cannot import XML as codeSet is not present')
     }

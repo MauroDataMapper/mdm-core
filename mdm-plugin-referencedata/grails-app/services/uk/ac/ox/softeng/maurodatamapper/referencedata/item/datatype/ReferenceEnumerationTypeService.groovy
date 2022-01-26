@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValueService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.traits.service.ReferenceSummaryMetadataAwareService
@@ -37,6 +38,7 @@ class ReferenceEnumerationTypeService extends ModelItemService<ReferenceEnumerat
 
     ReferenceEnumerationValueService referenceEnumerationValueService
     ReferenceSummaryMetadataService referenceSummaryMetadataService
+    ReferenceDataModelService referenceDataModelService
 
     @Override
     ReferenceEnumerationType get(Serializable id) {
@@ -102,11 +104,6 @@ class ReferenceEnumerationTypeService extends ModelItemService<ReferenceEnumerat
     }
 
     @Override
-    Class<ReferenceEnumerationType> getModelItemClass() {
-        ReferenceEnumerationType
-    }
-
-    @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         domainType == ReferenceEnumerationType.simpleName
     }
@@ -119,9 +116,11 @@ class ReferenceEnumerationTypeService extends ModelItemService<ReferenceEnumerat
 
         List<ReferenceEnumerationType> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            log.debug('Performing lucene label search')
+            log.debug('Performing hs label search')
             long start = System.currentTimeMillis()
-            results = ReferenceEnumerationType.luceneLabelSearch(ReferenceEnumerationType, searchTerm, readableIds.toList()).results
+            results =
+                ReferenceEnumerationType
+                    .labelHibernateSearch(ReferenceEnumerationType, searchTerm, readableIds.toList(), referenceDataModelService.getAllReadablePathNodes(readableIds)).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,12 +28,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchData
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -107,10 +105,10 @@ class CodeSetService extends ModelService<CodeSet> {
         if (!codeSet) return
         if (permanent) {
             codeSet.folder = null
+            codeSet.delete(flush: flush)
             if (securityPolicyManagerService) {
                 securityPolicyManagerService.removeSecurityForSecurableResource(codeSet, null)
             }
-            codeSet.delete(flush: flush)
         } else delete(codeSet)
     }
 
@@ -216,71 +214,6 @@ class CodeSetService extends ModelService<CodeSet> {
         latest
     }
 
-    @Override
-    CodeSet mergeLegacyObjectPatchDataIntoModel(ObjectPatchData objectPatchData, CodeSet targetModel,
-                                                UserSecurityPolicyManager userSecurityPolicyManager) {
-
-
-        if (!objectPatchData.hasPatches()) return targetModel
-
-        objectPatchData.getDiffsWithContent().each { mergeFieldDiff ->
-
-            if (mergeFieldDiff.isFieldChange()) {
-                targetModel.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
-            } else if (mergeFieldDiff.isMetadataChange()) {
-                mergeLegacyMetadataIntoCatalogueItem(mergeFieldDiff, targetModel, userSecurityPolicyManager)
-            } else {
-                ModelItemService modelItemService = modelItemServices.find { it.handles(mergeFieldDiff.fieldName) }
-
-                if (modelItemService) {
-
-                    // Special handling for terms as CodeSets dont own terms
-                    if (mergeFieldDiff.fieldName == 'terms') {
-                        // apply deletions of children to target object
-                        mergeFieldDiff.deleted.each { mergeItemData ->
-                            Term modelItem = modelItemService.get(mergeItemData.id) as Term
-                            targetModel.removeFromTerms(modelItem)
-                        }
-
-                        // copy additions from source to target object
-                        mergeFieldDiff.created.each { mergeItemData ->
-                            Term modelItem = modelItemService.get(mergeItemData.id) as Term
-                            targetModel.addToTerms(modelItem)
-                        }
-                        // for modifications, recursively call this method
-                        mergeFieldDiff.modified.each { mergeObjectDiffData ->
-                            Term termToRemove = modelItemService.get(mergeObjectDiffData.leftId) as Term
-                            Term termToAdd = modelItemService.get(mergeObjectDiffData.rightId) as Term
-                            targetModel.removeFromTerms(termToRemove)
-                            targetModel.addToTerms(termToAdd)
-                        }
-                    } else {
-                        // apply deletions of children to target object
-                        mergeFieldDiff.deleted.each { mergeItemData ->
-                            ModelItem modelItem = modelItemService.get(mergeItemData.id) as ModelItem
-                            modelItemService.delete(modelItem)
-                        }
-
-                        // copy additions from source to target object
-                        mergeFieldDiff.created.each { mergeItemData ->
-                            ModelItem modelItem = modelItemService.get(mergeItemData.id) as ModelItem
-                            modelItemService.copy(targetModel, modelItem, userSecurityPolicyManager)
-                        }
-                        // for modifications, recursively call this method
-                        mergeFieldDiff.modified.each { mergeObjectDiffData ->
-                            ModelItem modelItem = modelItemService.get(mergeObjectDiffData.leftId) as ModelItem
-                            modelItemService.
-                                mergeLegacyObjectPatchDataIntoModelItem(mergeObjectDiffData, modelItem, targetModel, userSecurityPolicyManager)
-                        }
-                    }
-                } else {
-                    log.error('Unknown ModelItem field to merge [{}]', mergeFieldDiff.fieldName)
-                }
-            }
-        }
-        targetModel
-    }
-
     CodeSet copyModel(CodeSet original, Folder folderToCopyTo, User copier, boolean copyPermissions, String label, Version copyDocVersion,
                       String branchName, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
         long start = System.currentTimeMillis()
@@ -335,9 +268,9 @@ class CodeSetService extends ModelService<CodeSet> {
 
         List<CodeSet> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            log.debug('Performing lucene label search')
+            log.debug('Performing hs label search')
             long start = System.currentTimeMillis()
-            results = CodeSet.luceneLabelSearch(CodeSet, searchTerm, readableIds.toList()).results
+            results = CodeSet.labelHibernateSearch(CodeSet, searchTerm, readableIds.toList(), []).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
 
@@ -362,11 +295,6 @@ class CodeSetService extends ModelService<CodeSet> {
     @Override
     List<CodeSet> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
         findAllByClassifier(classifier).findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(CodeSet, it.id) }
-    }
-
-    @Override
-    Class<CodeSet> getModelClass() {
-        CodeSet
     }
 
     @Override

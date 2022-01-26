@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,16 +24,16 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.Informatio
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
-import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.security.User
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.PathAware
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class Annotation implements MultiFacetItemAware, PathAware, InformationAware, Diffable<Annotation> {
+class Annotation implements MultiFacetItemAware, InformationAware, Diffable<Annotation> {
 
     UUID id
     Annotation parentAnnotation
@@ -53,7 +53,7 @@ class Annotation implements MultiFacetItemAware, PathAware, InformationAware, Di
     static transients = ['multiFacetAwareItem', 'user']
 
     static constraints = {
-        CallableConstraints.call(CreatorAwareConstraints, delegate)
+        CallableConstraints.call(MdmDomainConstraints, delegate)
         CallableConstraints.call(InformationAwareConstraints, delegate)
         multiFacetAwareItemId nullable: true, validator: {val, obj ->
             if (val) return true
@@ -90,12 +90,11 @@ class Annotation implements MultiFacetItemAware, PathAware, InformationAware, Di
     }
 
     @Override
-    Annotation getPathParent() {
-        parentAnnotation
+    Path buildPath() {
+        parentAnnotation ? Path.from(parentAnnotation.path, pathPrefix, pathIdentifier) : Path.from(pathPrefix, pathIdentifier)
     }
 
     def beforeValidate() {
-        buildPath()
         childAnnotations.eachWithIndex { ann, i ->
             if (!ann.label) ann.label = "$label [$i]"
             if (multiFacetAwareItem) {
@@ -106,16 +105,6 @@ class Annotation implements MultiFacetItemAware, PathAware, InformationAware, Di
             }
             ann.beforeValidate()
         }
-    }
-
-    @Override
-    def beforeInsert() {
-        buildPath()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPath()
     }
 
     @Override
@@ -159,5 +148,9 @@ class Annotation implements MultiFacetItemAware, PathAware, InformationAware, Di
 
     static DetachedCriteria<Annotation> byParentAnnotationId(Serializable parentAnnotationId) {
         new DetachedCriteria<Annotation>(Annotation).eq('parentAnnotation.id', Utils.toUuid(parentAnnotationId))
+    }
+
+    static DetachedCriteria<Annotation> byNoParentAnnotation() {
+        new DetachedCriteria<Annotation>(Annotation).isNull('parentAnnotation')
     }
 }

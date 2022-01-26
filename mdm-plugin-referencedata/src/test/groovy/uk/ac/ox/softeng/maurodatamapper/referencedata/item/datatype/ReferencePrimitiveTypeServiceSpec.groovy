@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,33 +65,34 @@ class ReferencePrimitiveTypeServiceSpec extends BaseUnitSpec implements ServiceU
         mockArtefact(MetadataService)
         mockArtefact(ReferenceSummaryMetadataService)
         mockDomains(Classifier, Folder, Annotation, BreadcrumbTree, Edit, Metadata, ReferenceFile, SemanticLink,
-                    ReferenceDataModel, ReferenceDataType, ReferencePrimitiveType, ReferenceDataType, ReferenceEnumerationType, ReferenceEnumerationValue, ReferenceDataElement, Authority)
+                    ReferenceDataModel, ReferenceDataType, ReferencePrimitiveType, ReferenceDataType, ReferenceEnumerationType, ReferenceEnumerationValue,
+                    ReferenceDataElement, Authority)
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
         checkAndSave(new Authority(label: 'Test Authority', url: 'http:localhost', createdBy: StandardEmailAddress.UNIT_TEST))
-        referenceReferenceDataModel = new ReferenceDataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder, authority: testAuthority)
+        referenceReferenceDataModel = new ReferenceDataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'Unit test model', folder: testFolder, authority: testAuthority)
         checkAndSave(referenceReferenceDataModel)
 
-        ReferencePrimitiveType primitiveType = new ReferencePrimitiveType(createdByUser: editor, label: 'varchar')
+        ReferencePrimitiveType primitiveType = new ReferencePrimitiveType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'varchar')
 
         referenceReferenceDataModel.addToReferenceDataTypes(primitiveType)
-        referenceReferenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: admin, label: 'string'))
-        referenceReferenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: editor, label: 'integer'))
+        referenceReferenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'string'))
+        referenceReferenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'integer'))
 
-        ReferenceEnumerationType et1 = new ReferenceEnumerationType(createdByUser: editor, label: 'et1')
-            .addToReferenceEnumerationValues(createdByUser: admin, key: 'key1', value: 'val1')
-            .addToReferenceEnumerationValues(new ReferenceEnumerationValue(createdByUser: admin, key: 'key2', value: 'val2')
+        ReferenceEnumerationType et1 = new ReferenceEnumerationType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'et1')
+            .addToReferenceEnumerationValues(createdBy: StandardEmailAddress.UNIT_TEST, key: 'key1', value: 'val1')
+            .addToReferenceEnumerationValues(new ReferenceEnumerationValue(createdBy: StandardEmailAddress.UNIT_TEST, key: 'key2', value: 'val2')
             )
         referenceReferenceDataModel.addToReferenceDataTypes(et1)
-        referenceReferenceDataModel.addToReferenceDataTypes(new ReferenceEnumerationType(createdByUser: editor, label: 'et2')
-                                     .addToReferenceEnumerationValues(createdByUser: admin, key: 'key1', value: 'val1')
-                                     .addToReferenceEnumerationValues(createdByUser: admin, key: 'key2', value: 'val2')
-                                     .addToReferenceEnumerationValues(createdByUser: admin, key: 'key3', value: 'val3')
-                                     .addToReferenceEnumerationValues(createdByUser: admin, key: 'key4', value: 'val4')
+        referenceReferenceDataModel.addToReferenceDataTypes(new ReferenceEnumerationType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'et2')
+                                                                .addToReferenceEnumerationValues(createdBy: StandardEmailAddress.UNIT_TEST, key: 'key1', value: 'val1')
+                                                                .addToReferenceEnumerationValues(createdBy: StandardEmailAddress.UNIT_TEST, key: 'key2', value: 'val2')
+                                                                .addToReferenceEnumerationValues(createdBy: StandardEmailAddress.UNIT_TEST, key: 'key3', value: 'val3')
+                                                                .addToReferenceEnumerationValues(createdBy: StandardEmailAddress.UNIT_TEST, key: 'key4', value: 'val4')
         )
-        referenceReferenceDataModel.addToReferenceDataTypes(new ReferenceEnumerationType(createdByUser: admin, label: 'yesnounknown')
-                                     .addToReferenceEnumerationValues(key: 'Y', value: 'Yes')
-                                     .addToReferenceEnumerationValues(key: 'N', value: 'No')
-                                     .addToReferenceEnumerationValues(key: 'U', value: 'Unknown'))
+        referenceReferenceDataModel.addToReferenceDataTypes(new ReferenceEnumerationType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'yesnounknown')
+                                                                .addToReferenceEnumerationValues(key: 'Y', value: 'Yes')
+                                                                .addToReferenceEnumerationValues(key: 'N', value: 'No')
+                                                                .addToReferenceEnumerationValues(key: 'U', value: 'Unknown'))
 
 
         checkAndSave(referenceReferenceDataModel)

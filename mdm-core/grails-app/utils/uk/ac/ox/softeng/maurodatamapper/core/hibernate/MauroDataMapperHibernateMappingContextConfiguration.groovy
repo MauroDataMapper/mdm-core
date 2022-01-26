@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import grails.config.Config
 import grails.core.GrailsApplication
 import grails.util.Holders
 import groovy.util.logging.Slf4j
+import org.grails.config.PropertySourcesConfig
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.orm.hibernate.cfg.HibernateMappingContextConfiguration
 import org.hibernate.HibernateException
@@ -31,6 +32,7 @@ import org.hibernate.cfg.AvailableSettings
 import org.hibernate.cfg.Configuration
 import org.hibernate.service.ServiceRegistry
 import org.springframework.context.ConfigurableApplicationContext
+import org.springframework.core.env.PropertySource
 import org.springframework.orm.hibernate5.SpringBeanContainer
 
 import static uk.ac.ox.softeng.maurodatamapper.util.Utils.parentClassIsAssignableFromChild
@@ -118,20 +120,25 @@ class MauroDataMapperHibernateMappingContextConfiguration extends HibernateMappi
 
         checkConfig config, 'hibernate.search.default.indexBase', 'hibernate.search.backend.directory.root'
 
-        String luceneDir = config['hibernate.search.backend.directory.root']
-        log.info("Using lucene index directory of: {}", luceneDir)
+        String hsDir = config.getProperty('hibernate.search.backend.directory.root', String)
+        log.info("Using hibernate search index directory of: {}", hsDir)
     }
 
 
     void checkConfig(Config config, String oldProp, String newProp) {
-        if (config[oldProp]) {
+        if (config.containsProperty(oldProp)) {
             def oldValue = config.remove(oldProp)
+            String title = 'Configuration'
+            if (config instanceof PropertySourcesConfig) {
+                PropertySource propertySource = config.getPropertySources().find { it.containsProperty(oldProp) } as PropertySource
+                title = "[${propertySource.name}] configuration"
+            }
             if (newProp) {
-                log.warn('DEPRECATED : Configuration property [{}] has moved to [{}]', oldProp, newProp)
-                config[newProp] = oldValue
+                log.warn('DEPRECATED : {} property [{}] has moved to [{}]', title, oldProp, newProp)
+                config.setAt(newProp, oldValue)
                 (this as Configuration).getProperties()[newProp] = oldValue
             } else {
-                log.warn('DEPRECATED : Configuration property [{}] has been removed', oldProp)
+                log.warn('DEPRECATED : {} property [{}] has been removed', title, oldProp)
             }
         }
     }

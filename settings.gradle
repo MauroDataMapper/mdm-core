@@ -13,18 +13,8 @@ include(
     'mdm-plugin-authentication-basic',
     'mdm-plugin-authentication-apikey',
     'mdm-plugin-terminology',
-    'mdm-plugin-referencedata',
     'mdm-plugin-dataflow',
+    'mdm-plugin-referencedata',
     'mdm-plugin-profile',
     'mdm-plugin-federation',
     )
-
-//if(hasProperty('isJenkins')) {
-//    logger.quiet('Setting local build cache')
-//    buildCache {
-//        local {
-//            directory = new File(rootDir, 'build-cache')
-//            removeUnusedEntriesAfterDays = 30
-//        }
-//    }
-//}

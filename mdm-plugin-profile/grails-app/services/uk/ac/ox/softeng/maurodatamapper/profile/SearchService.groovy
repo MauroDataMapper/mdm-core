@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,18 +52,19 @@ class SearchService extends AbstractCatalogueItemSearchService<DataModel> {
         super.getSearchParamFilters() + ([DataModelTypeFilter] as HashSet<Class<SearchParamFilter>>)
     }
 
-    PaginatedHibernateSearchResult<CatalogueItem> findAllReadableByLuceneSearch(UserSecurityPolicyManager userSecurityPolicyManager, SearchParams searchParams,
-                                                                                Map pagination = [:]) {
-        mdmCoreSearchService.findAllReadableByLuceneSearch(userSecurityPolicyManager, searchParams, pagination)
+    PaginatedHibernateSearchResult<CatalogueItem> findAllReadableByHibernateSearch(UserSecurityPolicyManager userSecurityPolicyManager,
+                                                                                   SearchParams searchParams,
+                                                                                   Map pagination = [:]) {
+        mdmCoreSearchService.findAllReadableByHibernateSearch(userSecurityPolicyManager, searchParams, pagination)
     }
 
-    List<Profile> findAllDataModelProfileObjectsForProfileProviderByLuceneSearch(UserSecurityPolicyManager userSecurityPolicyManager,
-                                                                                 ProfileProviderService dataModelProfileProviderService,
-                                                                                 SearchParams searchParams, Map pagination = [:]) {
+    List<Profile> findAllDataModelProfileObjectsForProfileProviderByHibernateSearch(UserSecurityPolicyManager userSecurityPolicyManager,
+                                                                                    ProfileProviderService dataModelProfileProviderService,
+                                                                                    SearchParams searchParams, Map pagination = [:]) {
 
         // Limit domain types to only those we know we care about
         if (searchParams.domainTypes) {
-            searchParams.domainTypes.removeIf([test: {String s ->
+            searchParams.domainTypes.removeIf([test: { String s ->
                 !(s in getDomainsToSearchInside())
             }] as Predicate)
         } else {
@@ -74,8 +75,9 @@ class SearchService extends AbstractCatalogueItemSearchService<DataModel> {
         System.setProperty("hibernate.search.index_uninverting_allowed", "true")
 
         // Find all catalogue items which meet the initial search parameters
-        PaginatedHibernateSearchResult<CatalogueItem> result = mdmCoreSearchService.findAllReadableByLuceneSearch(userSecurityPolicyManager, searchParams,
-                                                                                                                  pagination)
+        PaginatedHibernateSearchResult<CatalogueItem> result =
+            mdmCoreSearchService.findAllReadableByHibernateSearch(userSecurityPolicyManager, searchParams,
+                                                                  pagination)
         log.debug("Results size: " + result.count)
         if (result.isEmpty()) return []
 
@@ -128,7 +130,7 @@ class SearchService extends AbstractCatalogueItemSearchService<DataModel> {
         log.debug('Filtering found DataModel ids')
         // Execute the profile filtered search on the found datamodels
 
-        Map<String, Object> filters = pagination.findAll {k, v ->
+        Map<String, Object> filters = pagination.findAll { k, v ->
             k in dataModelProfileProviderService.getKnownMetadataKeys()
         }
 
@@ -138,20 +140,21 @@ class SearchService extends AbstractCatalogueItemSearchService<DataModel> {
             return PaginatedHibernateSearchResult.paginateFullResultSet(dataModelService.getAll(foundDataModelIds), pagination)
         }
 
-        PaginatedHibernateSearchResult<DataModel> filteredDataModels = findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch(foundDataModelIds.toList(),
-                                                                                                                            searchParams,
-                                                                                                                            false,
-                                                                                                                            pagination) {
-            filters.each {metadataKey, filter ->
-                if (filter instanceof String) {
-                    simpleQueryString(filter as String,
-                                      "${dataModelProfileProviderService.metadataNamespace} | ${metadataKey}")
-                } else {
-                    // We've got a list of filters
-                    should {
-                        ((List<String>) filter).each { filterValue ->
-                            simpleQueryString(filterValue, "${dataModelProfileProviderService.metadataNamespace} | ${metadataKey}")
-                        }
+        PaginatedHibernateSearchResult<DataModel> filteredDataModels =
+            findAllCatalogueItemsOfTypeByOwningIdsByHibernateSearch(foundDataModelIds.toList(),
+                                                                    searchParams,
+                                                                    false,
+                                                                    pagination) {
+                filters.each { metadataKey, filter ->
+                    if (filter instanceof String) {
+                        simpleQueryString(filter as String,
+                                          "${dataModelProfileProviderService.metadataNamespace} | ${metadataKey}")
+                    } else {
+                        // We've got a list of filters
+                        should {
+                            ((List<String>) filter).each { filterValue ->
+                                simpleQueryString(filterValue, "${dataModelProfileProviderService.metadataNamespace} | ${metadataKey}")
+                            }
                     }
                 }
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security
 
-import uk.ac.ox.softeng.maurodatamapper.security.authentication.ApiKey
-import uk.ac.ox.softeng.maurodatamapper.security.authentication.ApiKeyService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
 import uk.ac.ox.softeng.maurodatamapper.core.email.Email
@@ -27,6 +25,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
+import uk.ac.ox.softeng.maurodatamapper.security.authentication.ApiKey
+import uk.ac.ox.softeng.maurodatamapper.security.authentication.ApiKeyService
 import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRoleService
 import uk.ac.ox.softeng.maurodatamapper.security.test.SecurityUsers

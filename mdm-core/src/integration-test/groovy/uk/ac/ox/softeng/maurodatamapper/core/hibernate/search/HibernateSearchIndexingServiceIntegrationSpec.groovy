@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,26 +17,22 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.hibernate.search
 
-
 import uk.ac.ox.softeng.maurodatamapper.test.MdmSpecification
 
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import org.junit.jupiter.api.Tag
 import org.springframework.context.MessageSource
 
 @Slf4j
 @Integration
+@Tag('non-parallel')
 class HibernateSearchIndexingServiceIntegrationSpec extends MdmSpecification {
 
     MessageSource messageSource
     HibernateSearchIndexingService hibernateSearchIndexingService
 
-    void 'test core lucene index directory'() {
-        expect:
-        hibernateSearchIndexingService.luceneIndexPath.toString().startsWith('/tmp/lucene/')
-    }
-
-    void 'test lucene default config mass indexer properties'() {
+    void 'test hs default config mass indexer properties'() {
         expect:
         hibernateSearchIndexingService.massIndexerConfig == [typesToIndexInParallel: 1,
                                                              cacheMode             : 'IGNORE',

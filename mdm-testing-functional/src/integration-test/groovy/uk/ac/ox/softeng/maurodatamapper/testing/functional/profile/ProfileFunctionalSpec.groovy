@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import io.micronaut.core.type.Argument
 import io.micronaut.http.HttpResponse
-import spock.lang.PendingFeature
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.CREATED
@@ -37,6 +36,15 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 
+/**
+ * Permissions are tested here with the lowest or highest role which could perform this.
+ * Checking that if you have that role then you can perform the action or the action is not allowed.
+ * Actions are inherited from the datamodel,
+ * authors can mess with MD
+ * readers can validate a profile and see a profile
+ * no-one can mess with a finalised or non-editable field unless the profile is a post-finalised editable one
+ *
+ */
 @Slf4j
 @Integration
 class ProfileFunctionalSpec extends FunctionalSpec {
@@ -57,7 +65,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
     }
 
     String getDataModelId() {
-        loginEditor()
+        loginCreator()
         POST("folders/${getTestFolderId()}/dataModels", [label: "profile functional model"])
         verifyResponse(CREATED, response)
         String id = responseBody().id
@@ -66,12 +74,13 @@ class ProfileFunctionalSpec extends FunctionalSpec {
     }
 
     Map<String, String> getSecondDataModelIds() {
-        loginEditor()
+        loginCreator()
 
         // Create a Data Model
         POST("folders/${getTestFolderId()}/dataModels", [label: "second profile functional model"])
         verifyResponse(CREATED, response)
         String id = responseBody().id
+        addAccessShares(id, 'dataModels/')
 
         // Add a Data Type
         POST("dataModels/${id}/dataTypes", [label: "profile functional data type", domainType: "PrimitiveType"])
@@ -94,16 +103,18 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         String secondDataElementId = responseBody().id
 
         logout()
+
         ["dataModelId": id, "dataTypeId": dataTypeId, "dataClassId": dataClassId, "firstDataElementId": firstDataElementId, "secondDataElementId": secondDataElementId]
     }
 
     Map<String, String> getThirdDataModelIds() {
-        loginEditor()
+        loginCreator()
 
         // Create a Data Model
         POST("folders/${getTestFolderId()}/dataModels", [label: "third profile functional model"])
         verifyResponse(CREATED, response)
         String id = responseBody().id
+        addAccessShares(id, 'dataModels/')
 
         // Add a Data Type
         POST("dataModels/${id}/dataTypes", [label: "profile functional data type", domainType: "PrimitiveType"])
@@ -131,10 +142,11 @@ class ProfileFunctionalSpec extends FunctionalSpec {
 
     String getDynamicProfileModelId() {
 
-        loginEditor()
+        loginCreator()
         POST("folders/${getTestFolderId()}/dataModels?defaultDataTypeProvider=ProfileSpecificationDataTypeProvider", [label: "Dynamic Profile Model"])
         verifyResponse(CREATED, response)
         String dynamicProfileModelId = responseBody().id
+        addAccessShares(dynamicProfileModelId, 'dataModels/')
 
         POST("dataModels/$dynamicProfileModelId/dataClasses", [label: 'Profile Section Class'])
         verifyResponse(CREATED, response)
@@ -211,10 +223,11 @@ class ProfileFunctionalSpec extends FunctionalSpec {
      */
     String getSecondDynamicProfileModelId() {
 
-        loginEditor()
+        loginCreator()
         POST("folders/${getTestFolderId()}/dataModels?defaultDataTypeProvider=ProfileSpecificationDataTypeProvider", [label: "Second Dynamic Profile Model"])
         verifyResponse(CREATED, response)
         String dynamicProfileModelId = responseBody().id
+        addAccessShares(dynamicProfileModelId, 'dataModels/')
 
         POST("dataModels/$dynamicProfileModelId/dataClasses", [label: 'Profile Section Class'])
         verifyResponse(CREATED, response)
@@ -291,14 +304,14 @@ class ProfileFunctionalSpec extends FunctionalSpec {
     }
 
     void finaliseDataModelId(String id) {
-        loginEditor()
+        loginCreator()
         PUT("dataModels/$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
         logout()
     }
 
     void cleanupDataModelId(String id) {
-        loginEditor()
+        loginCreator()
         DELETE("dataModels/$id?permanent=true")
         verifyResponse(NO_CONTENT, response)
         logout()
@@ -440,7 +453,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         cleanupDataModelId(id)
     }
 
-    void 'N02 : test saving profile (as editor)'() {
+    void 'N02 : test saving profile (as author)'() {
         given:
         String id = getDataModelId()
         Map namespaceFieldMap = [
@@ -471,7 +484,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         ]
 
         when:
-        loginEditor()
+        loginAuthor()
         POST("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${id}", profileMap)
 
         then:
@@ -489,6 +502,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         localResponse.body().first().namespace == profileSpecificationProfileService.namespace
 
         when:
+        loginReader()
         GET("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${id}", STRING_ARG)
 
         then:
@@ -498,7 +512,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         cleanupDataModelId(id)
     }
 
-    void 'N03 : test editing profile (as editor)'() {
+    void 'N03 : test editing profile (as author)'() {
         given:
         String id = getDataModelId()
         Map namespaceFieldMap = [
@@ -527,7 +541,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
             name      : profileSpecificationProfileService.name
 
         ]
-        loginEditor()
+        loginAuthor()
         POST("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${id}", profileMap)
         verifyResponse(OK, response)
 
@@ -588,7 +602,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         cleanupDataModelId(id)
     }
 
-    void 'N04 : test deleting profile (as editor)'() {
+    void 'N04 : test deleting profile (as author)'() {
         given:
         String id = getDataModelId()
         Map namespaceFieldMap = [
@@ -617,7 +631,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
             name      : profileSpecificationProfileService.name
 
         ]
-        loginEditor()
+        loginAuthor()
         POST("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${id}", profileMap)
         verifyResponse(OK, response)
 
@@ -682,7 +696,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         cleanupDataModelId(id)
     }
 
-    void 'N06 : test editing non-editable profile on finalised model'() {
+    void 'N06 : test editing non-editable profile on finalised model (as editor)'() {
         given:
         String id = getDataModelId()
 
@@ -771,7 +785,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         cleanupDataModelId(id)
     }
 
-    void 'N07 : test saving editable profile on finalised model (as editor)'() {
+    void 'N07 : test saving a post-finalised editable profile on finalised model (as author)'() {
         given:
         String id = getDataModelId()
         finaliseDataModelId(id)
@@ -809,7 +823,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         ]
 
         when:
-        loginEditor()
+        loginAuthor()
         POST("profiles/${postFinalisedEditableProfileService.namespace}/${postFinalisedEditableProfileService.name}/dataModels/${id}", profileMap)
 
         then:
@@ -832,7 +846,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         cleanupDataModelId(id)
     }
 
-    void 'N08 : test editing editable profile on finalised model'() {
+    void 'N08 : test editing post-finalised editable profile on finalised model (as author)'() {
         given:
         String id = getDataModelId()
 
@@ -867,7 +881,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
             name      : postFinalisedEditableProfileService.name
 
         ]
-        loginEditor()
+        loginAuthor()
         POST("profiles/${postFinalisedEditableProfileService.namespace}/${postFinalisedEditableProfileService.name}/dataModels/${id}", profileMap)
         verifyResponse(OK, response)
         finaliseDataModelId(id)
@@ -937,7 +951,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         cleanupDataModelId(id)
     }
 
-    void 'N09 : test saving and getting profile with derived fields (as editor)'() {
+    void 'N09 : test saving and getting profile with derived fields (as author and reader)'() {
         given:
         String id = getDataModelId()
         Map profileMap = [
@@ -972,7 +986,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         verifyResponse(OK, response)
 
         when:
-        loginEditor()
+        loginAuthor()
         POST("profiles/${derivedFieldProfileService.namespace}/${derivedFieldProfileService.name}/dataModels/${id}", profileMap)
 
         then:
@@ -993,6 +1007,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         localResponse.body().first().namespace == derivedFieldProfileService.namespace
 
         when:
+        loginReader()
         GET("profiles/${derivedFieldProfileService.namespace}/${derivedFieldProfileService.name}/dataModels/${id}", STRING_ARG)
 
         then:
@@ -1002,14 +1017,15 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         cleanupDataModelId(id)
     }
 
-    void 'N10 : test saving a dynamic profile (as editor)'() {
+    void 'N10 : test saving a dynamic profile (as author)'() {
         given:
         String simpleModelId = getDataModelId()
 
-        loginEditor()
+        loginCreator()
         POST("folders/${getTestFolderId()}/dataModels?defaultDataTypeProvider=ProfileSpecificationDataTypeProvider", [label: "Dynamic Profile Model"])
         verifyResponse(CREATED, response)
         String dynamicProfileModelId = responseBody().id
+        addAccessShares(dynamicProfileModelId, 'dataModels/')
 
         POST("dataModels/$dynamicProfileModelId/dataClasses", [label: 'Profile Section Class'])
         verifyResponse(CREATED, response)
@@ -1070,12 +1086,14 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         ]
 
         when:
+        loginAuthor()
         POST("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${dynamicProfileModelId}", profileMap)
 
         then:
         verifyResponse(OK, response)
 
         when: 'the dynamic profile data model is finalised'
+        loginCreator()
         PUT("dataModels/$dynamicProfileModelId/finalise", [versionChangeType: 'Major'])
 
         then: 'the response is OK'
@@ -1110,7 +1128,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
             namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
             name      : 'Dynamic+Profile+Model'
         ]
-
+        loginAuthor()
         POST("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model", dynamicProfileMap)
 
         then:
@@ -1129,6 +1147,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         localResponse.body().first().namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
 
         when:
+        loginReader()
         GET("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model", STRING_ARG)
 
         then:
@@ -1200,14 +1219,15 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         cleanupDataModelId(dynamicProfileModelId)
     }
 
-    void 'N11 : test editing a dynamic profile'() {
+    void 'N11 : test editing a dynamic profile (as author)'() {
         given:
         String simpleModelId = getDataModelId()
 
-        loginEditor()
+        loginCreator()
         POST("folders/${getTestFolderId()}/dataModels?defaultDataTypeProvider=ProfileSpecificationDataTypeProvider", [label: "Dynamic Profile Model"])
         verifyResponse(CREATED, response)
         String dynamicProfileModelId = responseBody().id
+        addAccessShares(dynamicProfileModelId, 'dataModels/')
 
         POST("dataModels/$dynamicProfileModelId/dataClasses", [label: 'Profile Section Class'])
         verifyResponse(CREATED, response)
@@ -1301,6 +1321,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         verifyResponse(OK, response)
 
         when:
+        loginAuthor()
         optionalFieldMap.currentValue = ''
         defaultOptionalFieldMap.currentValue = 'edited value'
         POST("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model", dynamicProfileMap)
@@ -1316,152 +1337,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         cleanupDataModelId(dynamicProfileModelId)
     }
 
-    String getExpectedSavedProfile() {
-        '''{
-  "sections": [
-    {
-      "name": "Profile Specification",
-      "description": "The details necessary for this Data Model to be used as the specification for a dynamic profile.",
-      "fields": [
-        {
-          "fieldName": "Metadata namespace",
-          "metadataPropertyName": "metadataNamespace",
-          "description": "The namespace under which properties of this profile will be stored",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 1,
-          "allowedValues": null,
-          "regularExpression": null,
-          "dataType": "string",
-          "derived": false,
-          "derivedFrom": null,
-          "uneditable": false,
-          "defaultValue":null,
-          "editableAfterFinalisation": true,
-          "currentValue": "functional.test.profile"
-        },
-        {
-          "fieldName": "Applicable for domains",
-          "metadataPropertyName": "domainsApplicable",
-          "description": "Determines which types of catalogue item can be profiled using this profile.  ''' +
-        '''For example, 'DataModel'.  Separate multiple domains with a semi-colon (';').  Leave blank to allow this profile to be applicable to any catalogue item.",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 0,
-          "allowedValues": null,
-          "regularExpression": null,
-          "dataType": "string",
-          "derived": false,
-          "derivedFrom": null,
-          "uneditable": false,
-          "defaultValue":null,
-          "editableAfterFinalisation": true,
-          "currentValue": "DataModel"
-        },
-        {
-          "fieldName": "Can be edited after finalisation",
-          "metadataPropertyName": "editableAfterFinalisation",
-          "description": "Defines if the profile can be edited after the model has been finalised. This defaults to false.",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 0,
-          "allowedValues": null,
-          "regularExpression": null,
-          "dataType": "boolean",
-          "derived": false,
-          "derivedFrom": null,
-          "uneditable": false,
-          "defaultValue":null,
-          "editableAfterFinalisation": true,
-          "currentValue": ""
-        }
-      ]
-    }
-  ],
-  "id": "${json-unit.matches:id}",
-  "label": "profile functional model",
-  "domainType": "DataModel"
-}'''
-    }
-
-    String getExpectedDerivedSavedProfile() {
-        '''{
-  "sections": [
-    {
-      "name": "Profile Derived Specification",
-      "description": "The details necessary for this Data Model to be used as the specification for a dynamic profile.",
-      "fields": [
-        {
-          "fieldName": "Derived Field",
-          "metadataPropertyName": "derivedField",
-          "description": "A field which is derived",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 1,
-          "allowedValues": null,
-          "regularExpression": null,
-          "dataType": "string",
-          "derived": true,
-          "derivedFrom": "label",
-          "uneditable": true,
-          "defaultValue":null,
-          "editableAfterFinalisation": true,
-          "currentValue": "profile functional model"
-        },
-        {
-          "fieldName": "Uneditable Field",
-          "metadataPropertyName": "uneditableField",
-          "description": "A field which is uneditable and listed as mandatory",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 1,
-          "allowedValues": null,
-          "regularExpression": null,
-          "dataType": "string",
-          "derived": false,
-          "derivedFrom": null,
-          "uneditable": true,
-          "defaultValue":null,
-          "editableAfterFinalisation": true,
-          "currentValue": ""
-        },
-        {
-          "fieldName": "Uneditable Field Optional",
-          "metadataPropertyName": "uneditableFieldOptional",
-          "description": "A field which is uneditable and listed as optional",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 0,
-          "allowedValues": null,
-          "regularExpression": null,
-          "dataType": "string",
-          "derived": false,
-          "derivedFrom": null,
-          "uneditable": true,
-          "defaultValue":null,
-          "editableAfterFinalisation": true,
-          "currentValue": ""
-        },
-        {
-          "fieldName": "Plain Field",
-          "metadataPropertyName": "plainField",
-          "description": "A field which is normal",
-          "maxMultiplicity": 1,
-          "minMultiplicity": 1,
-          "allowedValues": null,
-          "regularExpression": null,
-          "dataType": "string",
-          "derived": false,
-          "derivedFrom": null,
-          "uneditable": false,
-          "defaultValue":null,
-          "editableAfterFinalisation": true,
-          "currentValue": "functional.test.profile"
-        }
-      ]
-    }
-  ],
-  "id": "${json-unit.matches:id}",
-  "label": "profile functional model",
-  "domainType": "DataModel"
-}'''
-    }
-
-    void 'N12 : test validating OK a dynamic profile (as editor) using validateMany'() {
+    void 'N12 : test validating valid dynamic profiles using validateMany (as reader)'() {
         given:
         Map<String, String> secondIds = getSecondDataModelIds()
         String secondModelId = secondIds["dataModelId"]
@@ -1549,7 +1425,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
             ]
         ]
 
-        loginEditor()
+        loginReader()
         POST("dataModels/$secondModelId/profile/validateMany", dynamicProfileMap)
 
         then: 'the profiles are validated successfully'
@@ -1588,7 +1464,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         cleanupDataModelId(secondDynamicProfileModelId)
     }
 
-    void 'N13 : test validating OK a dynamic profile (as editor) using validateMany'() {
+    void 'N13 : test validating invalid dynamic profiles using validateMany (as reader)'() {
         given:
         Map<String, String> secondIds = getSecondDataModelIds()
         String secondModelId = secondIds["dataModelId"]
@@ -1676,7 +1552,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
             ]
         ]
 
-        loginEditor()
+        loginReader()
         POST("dataModels/$secondModelId/profile/validateMany", dynamicProfileMap)
 
         then: 'the first profile has an error'
@@ -1732,7 +1608,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
      * third should fail silently.
      * 4. Use getMany to retrieve the saved profiles
      */
-    void 'N14 : test saving and retrieving dynamic profiles (as editor) using saveMany and getMany'() {
+    void 'N14 : test saving and retrieving dynamic profiles using saveMany and getMany (as author and reader)'() {
         given:
         Map<String, String> secondIds = getSecondDataModelIds()
         String secondModelId = secondIds["dataModelId"]
@@ -1817,13 +1693,12 @@ class ProfileFunctionalSpec extends FunctionalSpec {
             ]
         ]
 
-        loginEditor()
-
         /**
          * 1. First save two dynamic profiles against the first data element
          */
 
         when: 'use saveMany on a MultiFacetAwareItem that is not a Model'
+        loginAuthor()
         POST("dataElements/$secondModelFirstDataElementId/profile/saveMany", dynamicProfileMap)
 
         then:
@@ -1859,6 +1734,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         localResponse.body()[1].namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
 
         when:
+        loginReader()
         GET("dataElements/$secondModelFirstDataElementId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model", STRING_ARG)
 
         then:
@@ -1931,6 +1807,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
          * request save a dynamic profile against the second data element
          */
         when:
+        loginAuthor()
         optionalFieldMap1 = [
                 fieldName   : 'Dynamic Profile Elem (Optional)',
                 currentValue: 'abc updated'
@@ -2020,6 +1897,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         responseBody().profilesProvided[1].profile.domainType == "DataElement"
 
         when:
+        loginReader()
         localResponse = GET("dataElements/$secondModelFirstDataElementId/profiles/used", Argument.listOf(Map))
 
         then:
@@ -2181,6 +2059,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
          * third should fail silently.
          */
         when:
+        loginAuthor()
         optionalFieldMap1 = [
                 fieldName   : 'Dynamic Profile Elem (Optional)',
                 currentValue: 'abc updated again'
@@ -2303,6 +2182,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         responseBody().profilesProvided[1].profile.domainType == "DataElement"
 
         when:
+        loginReader()
         localResponse = GET("dataElements/$secondModelFirstDataElementId/profiles/used", Argument.listOf(Map))
 
         then:
@@ -2485,26 +2365,27 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         /**
          * 4. Get many profiles for many elements
          */
+        when: 'request made against a MultiFacetAwareItem that is not a model'
+        loginAuthor()
         Map getManyMap = [
-            "multiFacetAwareItems": [
+            "multiFacetAwareItems"   : [
                 [
                     "multiFacetAwareItemDomainType": "dataElement",
-                    "multiFacetAwareItemId": secondModelFirstDataElementId
+                    "multiFacetAwareItemId"        : secondModelFirstDataElementId
                 ],
                 [
                     "multiFacetAwareItemDomainType": "dataElement",
-                    "multiFacetAwareItemId": secondModelSecondDataElementId
+                    "multiFacetAwareItemId"        : secondModelSecondDataElementId
                 ]
             ],
             "profileProviderServices": [
                 [
-                    "name": "Dynamic+Profile+Model",
+                    "name"     : "Dynamic+Profile+Model",
                     "namespace": "uk.ac.ox.softeng.maurodatamapper.profile.provider"
                 ]
             ]
         ]
 
-        when: 'request made against a MultiFacetAwareItem that is not a model'
         POST("dataElements/$secondModelFirstDataElementId/profile/getMany", getManyMap)
 
         then:
@@ -2534,11 +2415,11 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         cleanupDataModelId(secondDynamicProfileModelId)
     }
 
-    void 'test that a profile having two versions, each with version tags, can be retrieved by namespace and name only'() {
+    void 'N15 : test that a profile having two versions, each with version tags, can be retrieved by namespace and name only'() {
         given: 'a finalised profile and a simple data model'
         String simpleModelId = getDataModelId()
         String profileModelId = getDynamicProfileModelId()
-        loginEditor()
+        loginCreator()
 
         when: 'count the used profiles on the simple data model'
         HttpResponse<List<Map>> localResponse = GET("dataModels/${simpleModelId}/profiles/used", Argument.listOf(Map))
@@ -2598,4 +2479,150 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         cleanupDataModelId(simpleModelId)
         cleanupDataModelId(profileModelId)
     }
+
+    String getExpectedSavedProfile() {
+        '''{
+  "sections": [
+    {
+      "name": "Profile Specification",
+      "description": "The details necessary for this Data Model to be used as the specification for a dynamic profile.",
+      "fields": [
+        {
+          "fieldName": "Metadata namespace",
+          "metadataPropertyName": "metadataNamespace",
+          "description": "The namespace under which properties of this profile will be stored",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 1,
+          "allowedValues": null,
+          "regularExpression": null,
+          "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
+          "defaultValue":null,
+          "editableAfterFinalisation": true,
+          "currentValue": "functional.test.profile"
+        },
+        {
+          "fieldName": "Applicable for domains",
+          "metadataPropertyName": "domainsApplicable",
+          "description": "Determines which types of catalogue item can be profiled using this profile.  ''' +
+        '''For example, 'DataModel'.  Separate multiple domains with a semi-colon (';').  Leave blank to allow this profile to be applicable to any catalogue item.",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "allowedValues": null,
+          "regularExpression": null,
+          "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
+          "defaultValue":null,
+          "editableAfterFinalisation": true,
+          "currentValue": "DataModel"
+        },
+        {
+          "fieldName": "Can be edited after finalisation",
+          "metadataPropertyName": "editableAfterFinalisation",
+          "description": "Defines if the profile can be edited after the model has been finalised. This defaults to false.",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "allowedValues": null,
+          "regularExpression": null,
+          "dataType": "boolean",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
+          "defaultValue":null,
+          "editableAfterFinalisation": true,
+          "currentValue": ""
+        }
+      ]
+    }
+  ],
+  "id": "${json-unit.matches:id}",
+  "label": "profile functional model",
+  "domainType": "DataModel"
+}'''
+    }
+
+    String getExpectedDerivedSavedProfile() {
+        '''{
+  "sections": [
+    {
+      "name": "Profile Derived Specification",
+      "description": "The details necessary for this Data Model to be used as the specification for a dynamic profile.",
+      "fields": [
+        {
+          "fieldName": "Derived Field",
+          "metadataPropertyName": "derivedField",
+          "description": "A field which is derived",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 1,
+          "allowedValues": null,
+          "regularExpression": null,
+          "dataType": "string",
+          "derived": true,
+          "derivedFrom": "label",
+          "uneditable": true,
+          "defaultValue":null,
+          "editableAfterFinalisation": true,
+          "currentValue": "profile functional model"
+        },
+        {
+          "fieldName": "Uneditable Field",
+          "metadataPropertyName": "uneditableField",
+          "description": "A field which is uneditable and listed as mandatory",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 1,
+          "allowedValues": null,
+          "regularExpression": null,
+          "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": true,
+          "defaultValue":null,
+          "editableAfterFinalisation": true,
+          "currentValue": ""
+        },
+        {
+          "fieldName": "Uneditable Field Optional",
+          "metadataPropertyName": "uneditableFieldOptional",
+          "description": "A field which is uneditable and listed as optional",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "allowedValues": null,
+          "regularExpression": null,
+          "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": true,
+          "defaultValue":null,
+          "editableAfterFinalisation": true,
+          "currentValue": ""
+        },
+        {
+          "fieldName": "Plain Field",
+          "metadataPropertyName": "plainField",
+          "description": "A field which is normal",
+          "maxMultiplicity": 1,
+          "minMultiplicity": 1,
+          "allowedValues": null,
+          "regularExpression": null,
+          "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
+          "defaultValue":null,
+          "editableAfterFinalisation": true,
+          "currentValue": "functional.test.profile"
+        }
+      ]
+    }
+  ],
+  "id": "${json-unit.matches:id}",
+  "label": "profile functional model",
+  "domainType": "DataModel"
+}'''
+    }
+
 }

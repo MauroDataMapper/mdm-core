@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,11 @@ class SemanticLinkService implements MultiFacetItemAwareService<SemanticLink> {
         SemanticLink.get(id)
     }
 
+    @Override
+    List<SemanticLink> getAll(Collection<UUID> resourceIds) {
+        SemanticLink.getAll(resourceIds)
+    }
+
     List<SemanticLink> list(Map args) {
         SemanticLink.list(args)
     }
@@ -48,10 +53,6 @@ class SemanticLinkService implements MultiFacetItemAwareService<SemanticLink> {
 
     void delete(UUID id) {
         delete(get(id))
-    }
-
-    SemanticLink save(SemanticLink semanticLink) {
-        semanticLink.save(flush: true)
     }
 
     @Override
@@ -220,18 +221,6 @@ class SemanticLinkService implements MultiFacetItemAwareService<SemanticLink> {
 
     List<SemanticLink> findAllBySourceOrTargetMultiFacetAwareItemId(Serializable multiFacetAwareItemId, Map paginate = [:]) {
         SemanticLink.withFilter(SemanticLink.byAnyMultiFacetAwareItemId(multiFacetAwareItemId), paginate).list(paginate)
-    }
-
-    @Deprecated(forRemoval = true)
-    List<SemanticLink> findAllByMultiFacetAwareItemIdAndType(UUID multiFacetAwareItemId, String type, Map paginate = [:]) {
-        switch (type) {
-            case 'source':
-                return findAllBySourceMultiFacetAwareItemId(multiFacetAwareItemId, paginate)
-                break
-            case 'target':
-                return findAllByTargetMultiFacetAwareItemId(multiFacetAwareItemId, paginate)
-        }
-        findAllBySourceOrTargetMultiFacetAwareItemId(multiFacetAwareItemId, paginate)
     }
 
     boolean areLinksIdenticalBetweenSameSourceLabelAndTargetItem(SemanticLink a, String sourceALabel, SemanticLink b, String sourceBLabel) {

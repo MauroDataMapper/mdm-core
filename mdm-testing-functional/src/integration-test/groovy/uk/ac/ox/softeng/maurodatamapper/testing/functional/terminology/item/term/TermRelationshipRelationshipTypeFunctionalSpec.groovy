@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.ReadOnlyUserAccessFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
@@ -66,12 +67,17 @@ class TermRelationshipRelationshipTypeFunctionalSpec extends ReadOnlyUserAccessF
         //no-op dont remove
     }
 
-    Boolean readerPermissionIsInherited() {
-        true
-    }
-
-    Boolean getReaderCanSeeEditorCreatedItems() {
-        true
+    @Override
+    Expectations getExpectations() {
+        Expectations.builder()
+            .withDefaultExpectations()
+            .withInheritedAccessPermissions()
+            .whereTestingUnsecuredResource()
+            .whereContainerAdminsCanAction('comment', 'delete', 'editDescription', 'save', 'show', 'update')
+            .whereEditorsCanAction('comment', 'delete', 'editDescription', 'save', 'show', 'update')
+            .whereAuthorsCanAction('comment', 'editDescription', 'show',)
+            .whereReviewersCanAction('comment', 'show')
+            .whereReadersCanAction('show')
     }
 
     @Override
@@ -95,12 +101,7 @@ class TermRelationshipRelationshipTypeFunctionalSpec extends ReadOnlyUserAccessF
     }
   ],
   "availableActions": [
-    "delete",
-    "update",
-    "save",
-    "show",
-    "comment",
-    "editDescription"
+    "show"
   ],
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "relationshipType": {

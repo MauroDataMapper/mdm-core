@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -127,10 +127,10 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
         if (!rdm) return
         if (permanent) {
             rdm.folder = null
+            rdm.delete(flush: flush)
             if (securityPolicyManagerService) {
                 securityPolicyManagerService.removeSecurityForSecurableResource(rdm, null)
             }
-            rdm.delete(flush: flush)
         } else delete(rdm)
     }
 
@@ -544,9 +544,9 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
 
         List<ReferenceDataModel> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            log.debug('Performing lucene label search')
+            log.debug('Performing hs label search')
             long start = System.currentTimeMillis()
-            results = ReferenceDataModel.luceneLabelSearch(ReferenceDataModel, searchTerm, readableIds.toList()).results
+            results = ReferenceDataModel.labelHibernateSearch(ReferenceDataModel, searchTerm, readableIds.toList(), []).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
 
@@ -571,11 +571,6 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
     @Override
     List<ReferenceDataModel> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
         findAllByClassifier(classifier).findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(ReferenceDataModel, it.id) }
-    }
-
-    @Override
-    Class<ReferenceDataModel> getModelClass() {
-        ReferenceDataModel
     }
 
     @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.DataTypeSpec
@@ -33,7 +34,7 @@ class ReferenceTypeSpec extends DataTypeSpec<ReferenceType> implements DomainUni
     def setup() {
         log.debug('Setting up ReferenceTypeSpec unit')
         mockDomain(DataClass)
-        reference = new DataClass(createdByUser: admin, label: 'reference', dataModel: dataSet)
+        reference = new DataClass(createdBy: StandardEmailAddress.UNIT_TEST, label: 'reference', dataModel: dataSet)
         checkAndSave(reference)
     }
 
@@ -56,7 +57,7 @@ class ReferenceTypeSpec extends DataTypeSpec<ReferenceType> implements DomainUni
     }
 
     ReferenceType createValidDomain(String label, DataModel dataModel) {
-        DataClass reference2 = new DataClass(createdByUser: admin, label: 'reference', dataModel: dataModel)
+        DataClass reference2 = new DataClass(createdBy: StandardEmailAddress.UNIT_TEST, label: 'reference', dataModel: dataModel)
         checkAndSave(reference2)
         createValidDomain(label).tap {
             referenceClass = reference2

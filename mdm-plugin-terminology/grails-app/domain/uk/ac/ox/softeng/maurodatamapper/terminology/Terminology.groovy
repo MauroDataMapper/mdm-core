@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -150,39 +150,6 @@ class Terminology implements Model<Terminology> {
     TermRelationshipType findRelationshipTypeByLabel(String label) {
         termRelationshipTypes.find {it.label == label}
     }
-
-
-    /*
-     Boolean isTreeStructureCapable() {
-            if (hasChild == null) {
-                hasChild = TermRelationshipType.byTerminologyId(this.id).or {
-                    eq('parentalRelationship', true)
-                    eq('childRelationship', true)
-                }.count() &&
-                           Term.byTerminologyId(this.id)
-                               .isNotNull('depth')
-                               .lt('depth', Integer.MAX_VALUE)
-            }
-            hasChild
-        }
-
-
-
-        List<Term> getCodeSortedTerms() {
-
-            terms.sort {a, b ->
-                Double ln1 = TreeItem.extractNumber(a.code)
-                Double ln2 = TreeItem.extractNumber(b.code)
-
-                String ls1 = a.code.replaceAll(/[\d.]/, '')
-                String ls2 = b.code.replaceAll(/[\d.]/, '')
-
-                def res = ls1 <=> ls2
-                if (res == 0) res = ln1 <=> ln2
-                res
-            }
-        }
-    */
 
     List<TermRelationship> getAllTermRelationships() {
         List<List<TermRelationship>> collection = terms?.collect {it.sourceTermRelationships ?: []} ?: []

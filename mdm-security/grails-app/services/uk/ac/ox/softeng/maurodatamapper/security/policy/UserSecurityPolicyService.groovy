@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
+import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUserService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
@@ -38,7 +39,6 @@ import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.VirtualGroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.VirtualSecurableResourceGroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.VirtualSecurableResourceGroupRoleService
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.core.GrailsApplication
 import grails.gorm.transactions.Transactional
@@ -57,6 +57,7 @@ class UserSecurityPolicyService {
     CatalogueUserService catalogueUserService
     UserGroupService userGroupService
     FolderService folderService
+    PathService pathService
 
     @Autowired(required = false)
     List<SecurableResourceService> securableResourceServices = []
@@ -274,7 +275,7 @@ class UserSecurityPolicyService {
         } else virtualSecurableResourceGroupRoles = [] as HashSet
 
         // Load sub containers
-        List<Container> subContainers = containerService.findAllContainersInside(container.id) as List<Container>
+        List<Container> subContainers = containerService.findAllContainersInside(container.path.last()) as List<Container>
         subContainers.each {subContainer ->
             virtualSecurableResourceGroupRoles.addAll(
                 accessRoles.collect {igr ->
@@ -319,7 +320,7 @@ class UserSecurityPolicyService {
 
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = [] as Set
 
-        GroupRole highestRole = applicationLevelRoles.sort {it.depth}.first()
+        GroupRole highestRole = applicationLevelRoles.sort().first()
         VirtualGroupRole virtualGroupRole = groupRoleService.getFromCache(highestRole.name)
         Set<GroupRole> inheritedUserRoles = virtualGroupRole.allowedRoles
         List<CatalogueUser> users = catalogueUserService.list([:])
@@ -341,7 +342,7 @@ class UserSecurityPolicyService {
 
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = [] as Set
 
-        GroupRole highestRole = applicationLevelRoles.sort {it.depth}.first()
+        GroupRole highestRole = applicationLevelRoles.sort().first()
         VirtualGroupRole virtualGroupRole = groupRoleService.getFromCache(highestRole.name)
         Set<GroupRole> inheritedUserRoles = virtualGroupRole.allowedRoles
         List<UserGroup> userGroups = userGroupService.list([:])
@@ -525,9 +526,9 @@ class UserSecurityPolicyService {
         }.toSet()
 
         // Build parents
-        if (container.depth != 0) {
+        if (container.path.size() != 1) {
 
-            List<UUID> ids = container.path.split('/').toList().findAll().collect {Utils.toUuid(it)}
+            List<UUID> ids = pathService.findAllResourceIdsInPath(container.path)
 
             ContainerService containerService = containerServices.find {it.handles(container.domainType)}
             containerService.getAll(ids).each {alternateContainer ->

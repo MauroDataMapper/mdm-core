@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
@@ -30,6 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import spock.lang.Retry
 
 @Slf4j
 @Integration
@@ -43,49 +45,50 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     @Override
     void setupDomainData() {
         log.debug('Setting up DataClassServiceIntegrationSpec')
-        dataModel = new DataModel(createdByUser: admin, label: 'Integration test model', folder: testFolder,
+        dataModel = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Integration test model', folder: testFolder,
                                   authority: testAuthority)
         checkAndSave(dataModel)
 
-        dataModel.addToDataTypes(new PrimitiveType(createdByUser: admin, label: 'string'))
-        dataModel.addToDataTypes(new PrimitiveType(createdByUser: editor, label: 'integer'))
+        dataModel.addToDataTypes(new PrimitiveType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'string'))
+        dataModel.addToDataTypes(new PrimitiveType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'integer'))
 
-        DataClass dataClass = new DataClass(createdByUser: admin, label: 'dc1')
+        DataClass dataClass = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'dc1')
         dataModel.addToDataClasses(dataClass)
-        DataClass parent = new DataClass(createdByUser: editor, label: 'Integration parent', dataModel: dataModel, minMultiplicity: 0,
+        DataClass parent = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Integration parent', dataModel: dataModel, minMultiplicity: 0,
                                          maxMultiplicity: 1)
-        DataClass child = new DataClass(createdByUser: reader1, label: 'Integration child', minMultiplicity: 1, maxMultiplicity: -1)
+        DataClass child = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Integration child', minMultiplicity: 1, maxMultiplicity: -1)
         parent.addToDataClasses(child)
-        DataClass added = new DataClass(createdByUser: reader1, label: 'added', description: 'a desc')
+        DataClass added = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'added', description: 'a desc')
         dataModel.addToDataClasses(added)
-        DataClass grandParent = new DataClass(createdByUser: editor, label: 'Integration grandparent')
+        DataClass grandParent = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Integration grandparent')
         grandParent.addToDataClasses(parent)
         dataModel.addToDataClasses(grandParent)
 
         checkAndSave(dataModel)
 
-        ReferenceType refType = new ReferenceType(createdByUser: editor, label: 'Integration parent')
+        ReferenceType refType = new ReferenceType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Integration parent')
         parent.addToReferenceTypes(refType)
         dataModel.addToDataTypes(refType)
 
-        DataElement el1 = new DataElement(createdByUser: editor, label: 'parentel', minMultiplicity: 1, maxMultiplicity: 1, dataType: refType)
+        DataElement el1 = new DataElement(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'parentel', minMultiplicity: 1, maxMultiplicity: 1, dataType: refType)
         parent.addToDataElements(el1)
 
-        ReferenceType refType2 = new ReferenceType(createdByUser: editor, label: 'dataclass')
+        ReferenceType refType2 = new ReferenceType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'dataclass')
         dataClass.addToReferenceTypes(refType2)
         dataModel.addToDataTypes(refType2)
 
-        DataElement el2 = new DataElement(createdByUser: editor, label: 'childEl', minMultiplicity: 1, maxMultiplicity: 1)
+        DataElement el2 = new DataElement(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'childEl', minMultiplicity: 1, maxMultiplicity: 1)
         refType2.addToDataElements(el2)
         child.addToDataElements(el2)
 
-        DataElement el3 = new DataElement(createdByUser: editor, label: 'anotherParentEl', minMultiplicity: 1, maxMultiplicity: 1)
+        DataElement el3 = new DataElement(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'anotherParentEl', minMultiplicity: 1, maxMultiplicity: 1)
         refType.addToDataElements(el3)
         added.addToDataElements(el3)
 
         checkAndSave(dataModel)
 
-        SemanticLink link = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdByUser: editor, targetMultiFacetAwareItem: dataClass)
+        SemanticLink link = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdBy: StandardEmailAddress.INTEGRATION_TEST,
+                                             targetMultiFacetAwareItem: dataClass)
         parent.addToSemanticLinks(link)
 
         checkAndSave(link)
@@ -289,8 +292,8 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         setupData()
 
         when:
-        DataModel copyModel = new DataModel(label: 'copy', createdByUser: editor, folder: testFolder, authority: testAuthority)
-        DataClass vsimple = new DataClass(label: 'vsimple', createdByUser: editor)
+        DataModel copyModel = new DataModel(label: 'copy', createdBy: StandardEmailAddress.INTEGRATION_TEST, folder: testFolder, authority: testAuthority)
+        DataClass vsimple = new DataClass(label: 'vsimple', createdBy: StandardEmailAddress.INTEGRATION_TEST)
         dataModel.addToDataClasses(vsimple)
 
         then:
@@ -331,20 +334,20 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         given:
         setupData()
 
-        DataClass content = new DataClass(createdByUser: admin, label: 'content', minMultiplicity: 1, maxMultiplicity: 1)
-        content.addToDataClasses(label: 'vsimple', createdByUser: editor, minMultiplicity: 0, maxMultiplicity: 1)
-        DataElement element = new DataElement(createdByUser: admin, label: 'ele1', dataType: dataModel.findDataTypeByLabel('string'))
+        DataClass content = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'content', minMultiplicity: 1, maxMultiplicity: 1)
+        content.addToDataClasses(label: 'vsimple', createdBy: StandardEmailAddress.INTEGRATION_TEST, minMultiplicity: 0, maxMultiplicity: 1)
+        DataElement element = new DataElement(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'ele1', dataType: dataModel.findDataTypeByLabel('string'))
         content.addToDataElements(element)
         dataModel.addToDataClasses(content)
-        DataModel copyModel = new DataModel(label: 'copy', createdByUser: editor, folder: testFolder, authority: testAuthority)
+        DataModel copyModel = new DataModel(label: 'copy', createdBy: StandardEmailAddress.INTEGRATION_TEST, folder: testFolder, authority: testAuthority)
 
         expect:
         checkAndSave(dataModel)
         checkAndSave(copyModel)
 
         when:
-        copyModel.addToDataTypes(new PrimitiveType(createdByUser: admin, label: 'string'))
-        copyModel.addToDataTypes(new PrimitiveType(createdByUser: editor, label: 'integer'))
+        copyModel.addToDataTypes(new PrimitiveType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'string'))
+        copyModel.addToDataTypes(new PrimitiveType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'integer'))
 
         then:
         checkAndSave(copyModel)
@@ -385,16 +388,16 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         given:
         setupData()
 
-        DataModel copyModel = new DataModel(label: 'test', createdByUser: editor, folder: testFolder, authority: testAuthority)
+        DataModel copyModel = new DataModel(label: 'test', createdBy: StandardEmailAddress.INTEGRATION_TEST, folder: testFolder, authority: testAuthority)
 
-        DataClass top = new DataClass(createdByUser: reader1, label: 'Top', minMultiplicity: 1, maxMultiplicity: 1)
+        DataClass top = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Top', minMultiplicity: 1, maxMultiplicity: 1)
 
         Metadata metadata = new Metadata(namespace: 'Test', key: 'key', value: '1')
 
         copyModel.addToDataClasses(top)
         top.addToMetadata(metadata)
 
-        DataClass middle = new DataClass(createdByUser: reader1, label: 'Middle', minMultiplicity: 1, maxMultiplicity: 1)
+        DataClass middle = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Middle', minMultiplicity: 1, maxMultiplicity: 1)
         top.addToDataClasses(middle)
         copyModel.addToDataClasses(middle)
 
@@ -407,11 +410,12 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dm.dataClasses.find {it.label == 'Top'}.metadata.size() == 1
     }
 
+    @Retry
     void 'test copying complex dataclass'() {
         given:
         setupData()
         DataClass complex = dataModel.dataClasses.find {it.label == 'Integration grandparent'}
-        DataModel copyModel = new DataModel(label: 'copy', createdByUser: editor, folder: testFolder, authority: testAuthority)
+        DataModel copyModel = new DataModel(label: 'copy', createdBy: StandardEmailAddress.INTEGRATION_TEST, folder: testFolder, authority: testAuthority)
         checkAndSave(copyModel)
         dataModelService.updateFacetsAfterInsertingCatalogueItem(copyModel)
         sessionFactory.currentSession.flush()
@@ -489,15 +493,15 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         //          DataClass: Integration Test Imported DataClass 2 (imported)
         //              DataClass: Integration Test Imported Child DataClass 1 (imported)
 
-        DataClass importedChild1 = new DataClass(createdByUser: reader1, label: 'Integration Test Imported Child DataClass 1', dataModel: dataModel)
+        DataClass importedChild1 = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Integration Test Imported Child DataClass 1', dataModel: dataModel)
         checkAndSave(importedChild1)
 
-        DataClass imported1 = new DataClass(createdByUser: reader1, label: 'Integration Test Imported DataClass 1', dataModel: dataModel)
-        DataClass imported2 = new DataClass(createdByUser: reader1, label: 'Integration Test Imported DataClass 2', dataModel: dataModel)
+        DataClass imported1 = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Integration Test Imported DataClass 1', dataModel: dataModel)
+        DataClass imported2 = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Integration Test Imported DataClass 2', dataModel: dataModel)
         imported2.addToImportedDataClasses(importedChild1)
         [imported1, imported2].each {checkAndSave(it)}
 
-        DataClass importingParent = new DataClass(createdByUser: editor, label: 'Integration Test Importing Parent DataClass', dataModel: dataModel)
+        DataClass importingParent = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Integration Test Importing Parent DataClass', dataModel: dataModel)
         [imported1, imported2].each {importingParent.addToImportedDataClasses(it)}
         checkAndSave(importingParent)
         dataModel.addToDataClasses(importingParent)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.security
 
-
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 
@@ -29,8 +28,8 @@ import io.micronaut.http.HttpResponse
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.METHOD_NOT_ALLOWED
-import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 
@@ -166,7 +165,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
 
         then: "The response is correct"
         verifyJsonResponse OK, '''{
-  "count": 9,
+  "count": 10,
   "items": [
     {
       "id": "${json-unit.matches:id}",
@@ -178,9 +177,9 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "createdBy": "admin@maurodatamapper.com",
       "creationMethod": "Standard",
       "availableActions": [
-        "update",
         "disable",
-        "show"
+        "show",
+        "update"
       ],
       "lastLogin": "${json-unit.matches:offsetDateTime}",
       "organisation": "Oxford BRC Informatics",
@@ -203,9 +202,9 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "createdBy": "functional-test@test.com",
       "creationMethod": "Standard",
       "availableActions": [
-        "update",
         "disable",
-        "show"
+        "show",
+        "update"
       ],
       "lastLogin": "${json-unit.matches:offsetDateTime}"
     },
@@ -220,14 +219,14 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "createdBy": "functional-test@test.com",
       "creationMethod": "Standard",
       "availableActions": [
-        "update",
         "disable",
-        "show"
+        "show",
+        "update"
       ],
       "groups": [
         {
           "id": "${json-unit.matches:id}",
-          "name": "readers"
+          "name": "authors"
         }
       ]
     },
@@ -241,14 +240,36 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "createdBy": "functional-test@test.com",
       "creationMethod": "Standard",
       "availableActions": [
-        "update",
         "disable",
-        "show"
+        "show",
+        "update"
       ],
       "groups": [
         {
           "id": "${json-unit.matches:id}",
-          "name": "editors"
+          "name": "containerAdmins"
+        }
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "emailAddress": "creator@test.com",
+      "firstName": "creator",
+      "lastName": "User",
+      "pending": false,
+      "disabled": false,
+      "needsToResetPassword": true,
+      "createdBy": "functional-test@test.com",
+      "creationMethod": "Standard",
+      "availableActions": [
+        "disable",
+        "show",
+        "update"
+      ],
+      "groups": [
+        {
+          "id": "${json-unit.matches:id}",
+          "name": "administrators"
         }
       ]
     },
@@ -262,9 +283,9 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "createdBy": "functional-test@test.com",
       "creationMethod": "Standard",
       "availableActions": [
-        "update",
         "disable",
-        "show"
+        "show",
+        "update"
       ],
       "lastLogin": "${json-unit.matches:offsetDateTime}",
       "groups": [
@@ -284,9 +305,9 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "createdBy": "functional-test@test.com",
       "creationMethod": "Standard",
       "availableActions": [
-        "update",
         "disable",
-        "show"
+        "show",
+        "update"
       ],
       "organisation": "Oxford",
       "jobTitle": "tester"
@@ -302,9 +323,9 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "createdBy": "functional-test@test.com",
       "creationMethod": "Standard",
       "availableActions": [
-        "update",
         "disable",
-        "show"
+        "show",
+        "update"
       ],
       "lastLogin": "${json-unit.matches:offsetDateTime}",
       "groups": [
@@ -325,14 +346,14 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "createdBy": "functional-test@test.com",
       "creationMethod": "Standard",
       "availableActions": [
-        "update",
         "disable",
-        "show"
+        "show",
+        "update"
       ],
       "groups": [
         {
           "id": "${json-unit.matches:id}",
-          "name": "readers"
+          "name": "reviewers"
         }
       ]
     },
@@ -346,9 +367,9 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "createdBy": "unlogged_user@mdm-core.com",
       "creationMethod": "Standard",
       "availableActions": [
-        "update",
         "disable",
-        "show"
+        "show",
+        "update"
       ]
     }
   ]
@@ -550,7 +571,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
         DELETE("$endpoint/$id")
 
         then: "The response is correct"
-        verifyForbidden response
+        verifyNotFound response, id
 
         when: 'logged in as user whose id it is'
         loginUser(id)
@@ -656,7 +677,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
         PUT("$endpoint/$id/userPreferences", update)
 
         then:
-        verifyForbidden response
+        verifyNotFound response, id
 
         when: 'logged in as user whose id it is'
         loginUser(id)
@@ -766,7 +787,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
         PUT("$endpoint/$id/changePassword", validChange)
 
         then:
-        verifyForbidden response
+        verifyNotFound response, id
 
         when: 'logged in as user'
         loginUser(id)
@@ -1231,7 +1252,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
         PUT("$endpoint/$id/changePassword", validChange)
 
         then:
-        verifyForbidden response
+        verifyNotFound response, id
 
         when: 'logged in as user using resetPassword'
         loginUser(id)

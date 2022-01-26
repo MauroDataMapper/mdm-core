@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,16 +70,6 @@ class CreationMergeDiff<C extends Diffable> extends TriDirectionalDiff<C> implem
     @Override
     CreationMergeDiff<C> asMergeConflict() {
         super.asMergeConflict() as CreationMergeDiff<C>
-    }
-
-    @Deprecated
-    CreationMergeDiff<C> withSource(C source) {
-        super.withSource(source) as CreationMergeDiff<C>
-    }
-
-    @Deprecated
-    CreationMergeDiff<C> withTarget(C target) {
-        super.withTarget(target) as CreationMergeDiff<C>
     }
 
     @Override

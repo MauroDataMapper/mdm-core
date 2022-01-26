@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata
 
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
@@ -31,6 +32,7 @@ import uk.ac.ox.softeng.maurodatamapper.version.Version
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import org.junit.jupiter.api.Tag
 import org.spockframework.util.Assert
 import spock.lang.PendingFeature
 
@@ -52,20 +54,20 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         referenceDataModel = buildExampleReferenceDataModel()
         secondReferenceDataModel = buildSecondExampleReferenceDataModel()
 
-        ReferenceDataModel referenceDataModel1 = new ReferenceDataModel(createdByUser: reader1, label: 'test database', folder: testFolder,
+        ReferenceDataModel referenceDataModel1 = new ReferenceDataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'test database', folder: testFolder,
                                                                         authority: testAuthority)
-        ReferenceDataModel referenceDataModel2 = new ReferenceDataModel(createdByUser: reader2, label: 'test form', folder: testFolder,
+        ReferenceDataModel referenceDataModel2 = new ReferenceDataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'test form', folder: testFolder,
                                                                         authority: testAuthority)
-        ReferenceDataModel referenceDataModel3 = new ReferenceDataModel(createdByUser: editor, label: 'test standard', folder: testFolder,
+        ReferenceDataModel referenceDataModel3 = new ReferenceDataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'test standard', folder: testFolder,
                                                                         authority: testAuthority)
 
         checkAndSave(referenceDataModel1)
         checkAndSave(referenceDataModel2)
         checkAndSave(referenceDataModel3)
 
-        ReferenceDataType referenceDataType = new ReferencePrimitiveType(createdByUser: admin, label: 'string')
+        ReferenceDataType referenceDataType = new ReferencePrimitiveType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'string')
         referenceDataModel1.addToReferenceDataTypes(referenceDataType)
-        ReferenceDataElement referenceDataElement = new ReferenceDataElement(label: 'sdmelement', createdByUser: editor,
+        ReferenceDataElement referenceDataElement = new ReferenceDataElement(label: 'sdmelement', createdBy: StandardEmailAddress.INTEGRATION_TEST,
                                                                              referenceDataType: referenceDataType)
         referenceDataModel1.addToReferenceDataElements(referenceDataElement)
 
@@ -166,7 +168,7 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         setupData()
 
         when:
-        ReferenceDataModel referenceDataModel = new ReferenceDataModel(createdByUser: reader2, label: 'saving test', folder: testFolder,
+        ReferenceDataModel referenceDataModel = new ReferenceDataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'saving test', folder: testFolder,
                                                                        authority: testAuthority)
         referenceDataModel = referenceDataModelService.validate(referenceDataModel)
 
@@ -830,17 +832,19 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
     void 'DMSV02 : test validation on invalid simple model'() {
         given:
         setupData()
-        ReferenceDataModel check = new ReferenceDataModel(createdByUser: reader1, folder: testFolder, authority: testAuthority)
+        ReferenceDataModel check = new ReferenceDataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, folder: testFolder, authority: testAuthority)
 
         when:
         ReferenceDataModel invalid = referenceDataModelService.validate(check)
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 1
+        invalid.errors.errorCount == 3
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 1
+        invalid.errors.fieldErrorCount == 3
         invalid.errors.getFieldError('label')
+        invalid.errors.getFieldError('path')
+        invalid.errors.getFieldError('breadcrumbTree.path')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -849,26 +853,32 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
     void 'DMSV03 : test validation on invalid primitive datatype model'() {
         given:
         setupData()
-        ReferenceDataModel check = new ReferenceDataModel(createdByUser: reader1, label: 'test invalid', folder: testFolder, authority: testAuthority)
-        check.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: admin))
+        ReferenceDataModel check = new ReferenceDataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'test invalid', folder: testFolder,
+                                                          authority: testAuthority)
+        check.addToReferenceDataTypes(new ReferencePrimitiveType(createdBy: StandardEmailAddress.INTEGRATION_TEST))
 
         when:
         ReferenceDataModel invalid = referenceDataModelService.validate(check)
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 1
+        invalid.errors.errorCount == 3
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 1
+        invalid.errors.fieldErrorCount == 3
         invalid.errors.getFieldError('referenceDataTypes[0].label')
+        invalid.errors.getFieldError('referenceDataTypes[0].path')
+        invalid.errors.getFieldError('referenceDataTypes[0].breadcrumbTree.path')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
     }
 
+    @Tag('non-parallel')
     void 'test suggesting links between models'() {
         given:
+        hibernateSearchIndexingService.purgeAllIndexes()
         setupData()
+        hibernateSearchIndexingService.flushIndexes()
         ReferenceDataModel dataModel = referenceDataModelService.get(id)
 
         when:

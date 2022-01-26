@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.MutableHttpRequest
@@ -49,12 +49,12 @@ class ApiKeyAuthenticationFunctionalSpec extends FunctionalSpec {
 
     String setApiKey = null
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def checkAndSetupData() {
+    def setup() {
         log.debug('Check and setup test data')
-        sessionFactory.currentSession.flush()
-        assert CatalogueUser.count() == 9 // All users
+        safeSessionFlush()
+        assert CatalogueUser.count() == 10 // All users
 
         ApiKey apiKey = apiKeyService.createNewApiKeyForCatalogueUser(StandardEmailAddress.FUNCTIONAL_TEST,
                                                                       CatalogueUser.findByEmailAddress(StandardEmailAddress.ADMIN),

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,12 +26,13 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
@@ -44,6 +45,7 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> implements Su
 
     SummaryMetadataService summaryMetadataService
     DataTypeService dataTypeService
+    DataModelService dataModelService
     PathService pathService
 
     @Override
@@ -110,11 +112,6 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> implements Su
     }
 
     @Override
-    Class<ModelDataType> getModelItemClass() {
-        ModelDataType
-    }
-
-    @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         domainType == ModelDataType.simpleName
     }
@@ -130,11 +127,14 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> implements Su
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(DataModel)
         if (!readableIds) return []
 
-        log.debug('Performing lucene label search')
+        log.debug('Performing hs label search')
         long start = System.currentTimeMillis()
         List<ModelDataType> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            results = ModelDataType.luceneLabelSearch(ModelDataType, searchTerm, readableIds.toList()).results
+            results =
+                ModelDataType
+                    .labelHibernateSearch(ModelDataType, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds))
+                    .results
         }
         log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         results
@@ -192,10 +192,10 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> implements Su
      * @return
      */
     @Override
-    boolean handlesModificationPatchOfField(FieldPatchData modificationPatch, CreatorAware targetBeingPatched, ModelDataType targetDomain, String fieldName) {
+    boolean handlesModificationPatchOfField(FieldPatchData modificationPatch, MdmDomain targetBeingPatched, ModelDataType targetDomain, String fieldName) {
         if (fieldName == 'modelResourcePath') {
 
-            CreatorAware modelResource = null
+            MdmDomain modelResource = null
             if (targetBeingPatched.domainType == VersionedFolder.simpleName) {
                 // If the modelResourcePath is a path to something internal to the source VF then this should also exist in the
                 // target VF, either because it existed in the target VF before branching occurred, or because it has already been merged from

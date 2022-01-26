@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
-import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityPair
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
@@ -40,7 +40,7 @@ import uk.ac.ox.softeng.maurodatamapper.lucene.queries.mlt.BoostedMoreLikeThisQu
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
@@ -63,7 +63,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     DataClassService dataClassService
     DataTypeService dataTypeService
     SummaryMetadataService summaryMetadataService
-    PathService pathService
+    DataModelService dataModelService
 
     @Override
     DataElement get(Serializable id) {
@@ -193,11 +193,6 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     }
 
     @Override
-    Class<DataElement> getModelItemClass() {
-        DataElement
-    }
-
-    @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         domainType == DataElement.simpleName
     }
@@ -211,9 +206,12 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
 
         List<DataElement> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            log.debug('Performing lucene label search')
+            log.debug('Performing hs label search')
             long start = System.currentTimeMillis()
-            results = DataElement.luceneLabelSearch(DataElement, searchTerm, readableIds.toList()).results
+            results =
+                DataElement
+                    .labelHibernateSearch(DataElement, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds))
+                    .results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
 
@@ -341,20 +339,11 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
             parent = parent.parentDataClass
         }
 
-        List<CreatorAware> pathObjects = []
+        List<MdmDomain> pathObjects = []
         pathObjects << dataElement.model
         pathObjects.addAll(parents.reverse())
         pathObjects << dataElement
         Path.from(pathObjects)
-    }
-
-    @Deprecated
-    @Override
-    DataElement copy(Model copiedModelInto, DataElement original, UserSecurityPolicyManager userSecurityPolicyManager) {
-        // The old code just searched for a label that matched which could result in the wrong DC being used, the path is better and more reliable
-        Path originalPath = buildDataElementPath(original)
-        DataClass parentToCopyInto = pathService.findResourceByPathFromRootResource(copiedModelInto, originalPath.childPath.parent)
-        copy(copiedModelInto, original, parentToCopyInto, userSecurityPolicyManager)
     }
 
     @Override
@@ -457,7 +446,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
             .where { lsf ->
                 BooleanPredicateClausesStep boolStep = lsf
                     .bool()
-                    .filter(IdPathSecureFilterFactory.createFilter(lsf, [dataModelToSearch.id]))
+                    .filter(IdPathSecureFilterFactory.createFilter(lsf, [dataModelToSearch.id], [dataModelToSearch.path.last()]))
                     .filter(FilterFactory.mustNot(lsf, lsf.id().matching(dataElementToCompare.id)))
 
                 moreLikeThisQueries.each { mlt ->

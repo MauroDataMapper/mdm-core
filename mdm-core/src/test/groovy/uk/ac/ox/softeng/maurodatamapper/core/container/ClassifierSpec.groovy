@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,14 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
-import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
-import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
+import uk.ac.ox.softeng.maurodatamapper.test.unit.MdmDomainSpec
 
 import grails.testing.gorm.DomainUnitTest
 
-class ClassifierSpec extends CreatorAwareSpec<Classifier> implements DomainUnitTest<Classifier> {
+class ClassifierSpec extends MdmDomainSpec<Classifier> implements DomainUnitTest<Classifier> {
 
     def setup() {
         mockDomain(Edit)
@@ -37,8 +37,7 @@ class ClassifierSpec extends CreatorAwareSpec<Classifier> implements DomainUnitT
         item = findById()
 
         then:
-        item.depth == 0
-        item.path == ''
+        item.path.toString() == 'cl:test'
 
     }
 
@@ -62,20 +61,17 @@ class ClassifierSpec extends CreatorAwareSpec<Classifier> implements DomainUnitT
         item2
 
         and:
-        item.depth == 0
-        item.path == ''
+        item.path.toString() == 'cl:test'
 
         and:
-        item2.depth == 1
-        item2.path == "/${item.id}"
+        item2.path.toString() == 'cl:test|cl:child'
 
         when:
         Classifier child2 = new Classifier(label: 'child2', createdBy: admin.emailAddress)
         item2.addToChildClassifiers(child2)
 
         then:
-        child2.depth == 2
-        child2.path == "/${item.id}/${item2.id}"
+        child2.path.toString() == 'cl:test|cl:child|cl:child2'
 
     }
 
@@ -135,7 +131,6 @@ class ClassifierSpec extends CreatorAwareSpec<Classifier> implements DomainUnitT
     @Override
     void verifyDomainOtherConstraints(Classifier subDomain) {
         assert subDomain.label == 'test'
-        assert subDomain.depth == 0
-        assert subDomain.path == ''
+        assert subDomain.path.toString() == 'cl:test'
     }
 }

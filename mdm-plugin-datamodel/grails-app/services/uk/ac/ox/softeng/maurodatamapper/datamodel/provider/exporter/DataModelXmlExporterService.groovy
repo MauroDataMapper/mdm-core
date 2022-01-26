@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ class DataModelXmlExporterService extends DataModelExporterProviderService imple
 
     @Override
     String getVersion() {
-        '4.0'
+        '5.0'
     }
 
     @Override
@@ -63,12 +63,12 @@ class DataModelXmlExporterService extends DataModelExporterProviderService imple
     @Override
     ByteArrayOutputStream exportDataModel(User currentUser, DataModel dataModel) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(dataModel, 'dataModel', version, '3.2', 'gml', exportMetadata), fileType)
+        exportModel(new ExportModel(dataModel, 'dataModel', version, '4.0', 'gml', exportMetadata), fileType)
     }
 
     @Override
     ByteArrayOutputStream exportDataModels(User currentUser, List<DataModel> dataModels) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(dataModels, 'dataModel', 'dataModels', version, '3.2', 'gml', exportMetadata), fileType)
+        exportModel(new ExportModel(dataModels, 'dataModel', 'dataModels', version, '4.0', 'gml', exportMetadata), fileType)
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
+import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -41,21 +42,6 @@ class ClassifierService extends ContainerService<Classifier> {
     List<CatalogueItemService> catalogueItemServices
 
     HibernateSearchIndexingService hibernateSearchIndexingService
-
-    @Override
-    boolean handles(Class clazz) {
-        clazz == Classifier
-    }
-
-    @Override
-    boolean handles(String domainType) {
-        domainType == Classifier.simpleName
-    }
-
-    @Override
-    Class<Classifier> getContainerClass() {
-        Classifier
-    }
 
     @Override
     boolean isContainerVirtual() {
@@ -98,40 +84,36 @@ class ClassifierService extends ContainerService<Classifier> {
     }
 
     @Override
-    List<Classifier> findAllContainersInside(UUID containerId) {
-        Classifier.findAllContainedInClassifierId(containerId)
+    List<Classifier> findAllContainersInside(PathNode pathNode) {
+        Classifier.findAllContainedInClassifierPathNode(pathNode)
     }
 
     @Override
     Classifier findDomainByLabel(String label) {
-        return null
+        Classifier.byNoParentClassifier().eq('label', label).get()
     }
 
     @Override
     Classifier findByParentIdAndLabel(UUID parentId, String label) {
-        return null
+        Classifier.byParentClassifierIdAndLabel(parentId, label.trim()).get()
     }
 
     @Override
-    List<Classifier> findAllByParentId(UUID parentId) {
-        return null
-    }
-
-    @Override
-    List<Classifier> findAllByParentId(UUID parentId, Map pagination) {
-        return null
+    List<Classifier> findAllByParentId(UUID parentId, Map pagination = [:]) {
+        Classifier.byParentClassifierId(parentId).list(pagination)
     }
 
     @Override
     DetachedCriteria<Classifier> getCriteriaByParent(Classifier domain) {
-        return null
+        if (domain.parentClassifier) return Classifier.byParentClassifierId(domain.parentClassifier.id)
+        return Classifier.byNoParentClassifier()
     }
 
     @Override
     List<Classifier> findAllReadableContainersBySearchTerm(UserSecurityPolicyManager userSecurityPolicyManager, String searchTerm) {
         log.debug('Searching readable classifiers for search term in label')
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Classifier)
-        Classifier.luceneTreeLabelSearch(readableIds.collect { it.toString() }, searchTerm)
+        Classifier.treeLabelHibernateSearch(readableIds.collect { it.toString() }, searchTerm)
     }
 
     @Override

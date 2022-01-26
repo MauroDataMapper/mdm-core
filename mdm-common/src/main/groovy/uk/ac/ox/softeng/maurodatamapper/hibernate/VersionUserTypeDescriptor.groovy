@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,10 +48,10 @@ class VersionUserTypeDescriptor extends AbstractTypeDescriptor<Version> {
         if (value == null) {
             return null
         }
-        if (Version.class.isAssignableFrom(type)) {
+        if (Version.isAssignableFrom(type)) {
             return (X) value
         }
-        if (String.class.isAssignableFrom(type)) {
+        if (String.isAssignableFrom(type)) {
             return (X) toString(value)
         }
         throw unknownUnwrap(type)
@@ -62,10 +62,10 @@ class VersionUserTypeDescriptor extends AbstractTypeDescriptor<Version> {
         if (value == null) {
             return null
         }
-        if (String.class.isInstance(value)) {
+        if (String.isInstance(value)) {
             return fromString((String) value)
         }
-        if (Version.class.isInstance(value)) {
+        if (Version.isInstance(value)) {
             return (Version) value
         }
         throw unknownWrap(value.getClass())

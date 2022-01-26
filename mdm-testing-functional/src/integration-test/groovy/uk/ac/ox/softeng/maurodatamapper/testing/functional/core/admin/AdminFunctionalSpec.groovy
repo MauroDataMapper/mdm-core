@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import static io.micronaut.http.HttpStatus.OK
  * <pre>
  * Controller: admin
  *  |  GET   | /api/admin/status                | Action: status
- *  |  POST  | /api/admin/rebuildLuceneIndexes  | Action: rebuildLuceneIndexes
+ *  |  POST  | /api/admin/rebuildHibernateSearchIndexes  | Action: rebuildHibernateSearchIndexes
  *  </pre>
  * @see uk.ac.ox.softeng.maurodatamapper.core.admin.AdminController
  */
@@ -61,7 +61,7 @@ class AdminFunctionalSpec extends FunctionalSpec {
         where:
         method | endpoint               | args
         'GET'  | 'status'               | null
-        'POST' | 'rebuildLuceneIndexes' | [:]
+        'POST' | 'rebuildHibernateSearchIndexes' | [:]
     }
 
     @Unroll
@@ -73,14 +73,14 @@ class AdminFunctionalSpec extends FunctionalSpec {
 
         then: 'The response is Unauth'
         verifyJsonResponse responseCode, expectedJson
-        
+
         where:
         method | endpoint               | args                                       || responseCode | expectedJson
         'GET'  | 'status'               | null                                       || OK           | '''
 {
   "Mauro Data Mapper Version": "${json-unit.matches:version}",
-  "Grails Version": "4.0.6",
-  "Java Version": "12.0.2",
+  "Grails Version": "5.1.2",
+  "Java Version": "17.0.1",
   "Java Vendor": "${json-unit.any-string}",
   "OS Name": "${json-unit.any-string}",
   "OS Version": "${json-unit.matches:version}",
@@ -92,13 +92,13 @@ class AdminFunctionalSpec extends FunctionalSpec {
     },
     {
       "class": "org.postgresql.Driver",
-      "version": "42.2"
+      "version": "42.3"
     }
   ]
 }
 '''
 
-        'POST' | 'rebuildLuceneIndexes' | [:]                                        || OK           | '''{
+        'POST' | 'rebuildHibernateSearchIndexes' | [:]                                        || OK           | '''{
   "user": "admin@maurodatamapper.com",
   "indexed": true,
   "timeTakenMilliseconds": "${json-unit.ignore}",

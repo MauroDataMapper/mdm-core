@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicat
 
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import org.hibernate.search.engine.search.predicate.SearchPredicate
 import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep
@@ -29,6 +30,7 @@ import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory
  * @since 27/04/2018
  */
 @Slf4j
+@CompileStatic
 class IdSecureFilterFactory extends FilterFactory {
 
     static PredicateFinalStep createFilter(SearchPredicateFactory factory, Collection<UUID> allowedIds) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,13 +111,14 @@ class TerminologyService extends ModelService<Terminology> {
     void delete(Terminology terminology, boolean permanent, boolean flush = true) {
         if (!terminology) return
         if (permanent) {
-            if (securityPolicyManagerService) {
-                securityPolicyManagerService.removeSecurityForSecurableResource(terminology, null)
-            }
+
             log.debug('Deleting Terminology')
             long start = System.currentTimeMillis()
             deleteModelAndContent(terminology)
             log.debug('Terminology deleted. Took {}', Utils.timeTaken(start))
+            if (securityPolicyManagerService) {
+                securityPolicyManagerService.removeSecurityForSecurableResource(terminology, null)
+            }
         } else delete(terminology)
     }
 
@@ -446,9 +447,9 @@ class TerminologyService extends ModelService<Terminology> {
 
         List<Terminology> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            log.debug('Performing lucene label search')
+            log.debug('Performing hs label search')
             long start = System.currentTimeMillis()
-            results = Terminology.luceneLabelSearch(Terminology, searchTerm, readableIds.toList()).results
+            results = Terminology.labelHibernateSearch(Terminology, searchTerm, readableIds.toList(), []).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
 
@@ -473,11 +474,6 @@ class TerminologyService extends ModelService<Terminology> {
     @Override
     List<Terminology> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
         findAllByClassifier(classifier).findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.id) }
-    }
-
-    @Override
-    Class<Terminology> getModelClass() {
-        Terminology
     }
 
     @Override

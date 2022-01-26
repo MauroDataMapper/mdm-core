@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.security.role
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.AnonymisableService
-import uk.ac.ox.softeng.maurodatamapper.security.basic.AnonymousUser
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
@@ -31,7 +30,7 @@ import grails.validation.ValidationException
 import org.springframework.beans.factory.annotation.Autowired
 
 @Transactional
-class SecurableResourceGroupRoleService implements AnonymisableService {
+class SecurableResourceGroupRoleService implements MdmDomainService<SecurableResourceGroupRole> {
 
     @Autowired(required = false)
     List<SecurableResourceService> securableResourceServices
@@ -41,6 +40,11 @@ class SecurableResourceGroupRoleService implements AnonymisableService {
 
     SecurableResourceGroupRole get(Serializable id) {
         SecurableResourceGroupRole.get(id)
+    }
+
+    @Override
+    List<SecurableResourceGroupRole> getAll(Collection<UUID> resourceIds) {
+        SecurableResourceGroupRole.getAll(resourceIds)
     }
 
     List<SecurableResourceGroupRole> list(Map pagination) {
@@ -57,6 +61,11 @@ class SecurableResourceGroupRoleService implements AnonymisableService {
 
     void delete(SecurableResourceGroupRole securableResourceGroupRole) {
         securableResourceGroupRole.delete(flush: true)
+    }
+
+    @Override
+    SecurableResourceGroupRole findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        return null
     }
 
     void deleteAllForSecurableResource(SecurableResource securableResource) {
@@ -89,7 +98,10 @@ class SecurableResourceGroupRoleService implements AnonymisableService {
     }
 
     SecurableResourceGroupRole findBySecurableResourceAndId(String securableResourceDomainType, UUID securableResourceId, UUID id) {
-        SecurableResourceGroupRole.bySecurableResourceAndId(securableResourceDomainType, securableResourceId, id).get()
+        // We have to handle extending where the domaintype of folder may not be the domain type of the actual resource id as its a VF
+        SecurableResource sr = securableResourceDomainType == 'Folder' ? findSecurableResource(securableResourceDomainType, securableResourceId) : null
+        SecurableResourceGroupRole.bySecurableResourceAndId(sr?.domainType ?: securableResourceDomainType,
+                                                            sr?.resourceId ?: securableResourceId, id).get()
     }
 
     SecurableResourceGroupRole findByUserGroupIdAndId(UUID userGroupId, UUID id) {
@@ -97,13 +109,18 @@ class SecurableResourceGroupRoleService implements AnonymisableService {
     }
 
     SecurableResourceGroupRole findBySecurableResourceAndUserGroup(String securableResourceDomainType, UUID securableResourceId, UUID userGroupId) {
-        SecurableResourceGroupRole.bySecurableResourceAndUserGroupId(securableResourceDomainType, securableResourceId, userGroupId).get()
+        // We have to handle extending where the domaintype of folder may not be the domain type of the actual resource id as its a VF
+        SecurableResource sr = securableResourceDomainType == 'Folder' ? findSecurableResource(securableResourceDomainType, securableResourceId) : null
+        SecurableResourceGroupRole.bySecurableResourceAndUserGroupId(sr?.domainType ?: securableResourceDomainType,
+                                                                     sr?.resourceId ?: securableResourceId, userGroupId).get()
     }
 
     SecurableResourceGroupRole findBySecurableResourceAndGroupRoleIdAndUserGroupId(String securableResourceDomainType, UUID securableResourceId,
                                                                                    UUID groupRoleId, UUID userGroupId) {
-        SecurableResourceGroupRole.bySecurableResourceAndGroupRoleIdAndUserGroupId(securableResourceDomainType,
-                                                                                   securableResourceId,
+        // We have to handle extending where the domaintype of folder may not be the domain type of the actual resource id as its a VF
+        SecurableResource sr = securableResourceDomainType == 'Folder' ? findSecurableResource(securableResourceDomainType, securableResourceId) : null
+        SecurableResourceGroupRole.bySecurableResourceAndGroupRoleIdAndUserGroupId(sr?.domainType ?: securableResourceDomainType,
+                                                                                   sr?.resourceId ?: securableResourceId,
                                                                                    groupRoleId,
                                                                                    userGroupId).get()
     }
@@ -117,7 +134,10 @@ class SecurableResourceGroupRoleService implements AnonymisableService {
     }
 
     List<SecurableResourceGroupRole> findAllBySecurableResource(String securableResourceDomainType, UUID securableResourceId, Map pagination = [:]) {
-        SecurableResourceGroupRole.bySecurableResource(securableResourceDomainType, securableResourceId).list(pagination)
+        // We have to handle extending where the domaintype of folder may not be the domain type of the actual resource id as its a VF
+        SecurableResource sr = securableResourceDomainType == 'Folder' ? findSecurableResource(securableResourceDomainType, securableResourceId) : null
+        SecurableResourceGroupRole.bySecurableResource(sr?.domainType ?: securableResourceDomainType,
+                                                       sr?.resourceId ?: securableResourceId).list(pagination)
     }
 
     List<SecurableResourceGroupRole> findAllBySecurableResourceDomainType(String securableResourceDomainType) {
@@ -126,7 +146,11 @@ class SecurableResourceGroupRoleService implements AnonymisableService {
 
     List<SecurableResourceGroupRole> findAllBySecurableResourceAndGroupRoleId(String securableResourceDomainType, UUID securableResourceId,
                                                                               UUID groupRoleId, Map pagination = [:]) {
-        SecurableResourceGroupRole.bySecurableResourceAndGroupRoleId(securableResourceDomainType, securableResourceId, groupRoleId).list(pagination)
+        // We have to handle extending where the domaintype of folder may not be the domain type of the actual resource id as its a VF
+        SecurableResource sr = securableResourceDomainType == 'Folder' ? findSecurableResource(securableResourceDomainType, securableResourceId) : null
+        SecurableResourceGroupRole.bySecurableResourceAndGroupRoleId(sr?.domainType ?: securableResourceDomainType,
+                                                                     sr?.resourceId ?: securableResourceId,
+                                                                     groupRoleId).list(pagination)
     }
 
     def <R extends SecurableResource> R findSecurableResource(Class<R> clazz, UUID id) {
@@ -143,12 +167,5 @@ class SecurableResourceGroupRoleService implements AnonymisableService {
                                                        "SecurableResourceGroupRole retrieval for securable resource [${domainType}] with no " +
                                                        "supporting service")
         service.get(id)
-    }
-
-    void anonymise(String createdBy) {
-        SecurableResourceGroupRole.findAllByCreatedBy(createdBy).each { securableResourceGroupRole ->
-            securableResourceGroupRole.createdBy = AnonymousUser.ANONYMOUS_EMAIL_ADDRESS
-            securableResourceGroupRole.save(validate: false)
-        }
     }
 }

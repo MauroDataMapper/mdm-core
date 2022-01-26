@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
@@ -219,13 +219,13 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     void delete(DataModel dm, boolean permanent, boolean flush = true) {
         if (!dm) return
         if (permanent) {
-            if (securityPolicyManagerService) {
-                securityPolicyManagerService.removeSecurityForSecurableResource(dm, null)
-            }
             long start = System.currentTimeMillis()
             log.debug('Deleting DataModel')
             deleteModelAndContent(dm)
             log.debug('DataModel deleted. Took {}', Utils.timeTaken(start))
+            if (securityPolicyManagerService) {
+                securityPolicyManagerService.removeSecurityForSecurableResource(dm, null)
+            }
         } else delete(dm)
     }
 
@@ -379,7 +379,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
                 // to get the copy of the model in the copied folder
                 // Note: Using a method in PathService which does not check security on the securable resource owning the model
                 PathNode originalModelPathNode = fullContextOriginalModelResourcePath.last()
-                CreatorAware replacementModelResource =
+                MdmDomain replacementModelResource =
                     pathService.findResourceByPath(Path.from(originalModelPathNode.prefix, originalModelPathNode.getFullIdentifier(copiedDataModel.branchName)))
 
                 if (!replacementModelResource) {
@@ -457,9 +457,9 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
         log.trace('Removing other ModelItems in {} DataModels', idsToDelete.size())
         modelItemServices.findAll {
-            !(it.modelItemClass in [DataClass, DataElement, DataType, EnumerationType, ModelDataType, PrimitiveType,
-                                    ReferenceType, EnumerationValue])
-        }.each { modelItemService ->
+            !(it.domainClass in [DataClass, DataElement, DataType, EnumerationType, ModelDataType, PrimitiveType,
+                                 ReferenceType, EnumerationValue])
+        }.each {modelItemService ->
             try {
                 modelItemService.deleteAllByModelIds(idsToDelete)
             } catch (ApiNotYetImplementedException ignored) {
@@ -810,9 +810,9 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
         List<DataModel> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            log.debug('Performing lucene label search')
+            log.debug('Performing hs label search')
             long start = System.currentTimeMillis()
-            results = DataModel.luceneLabelSearch(DataModel, searchTerm, readableIds.toList()).results
+            results = DataModel.labelHibernateSearch(DataModel, searchTerm, readableIds.toList(), []).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
 
@@ -838,11 +838,6 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     List<DataModel> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
         findAllByClassifier(classifier)
             .findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.id) } as List<DataModel>
-    }
-
-    @Override
-    Class<DataModel> getModelClass() {
-        DataModel
     }
 
     @Override

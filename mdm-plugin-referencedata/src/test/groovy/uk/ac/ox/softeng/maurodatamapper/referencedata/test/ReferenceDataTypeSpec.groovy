@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.test
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
@@ -37,7 +37,7 @@ abstract class ReferenceDataTypeSpec<K extends ReferenceDataType> extends ModelI
         log.debug('Setting up ReferenceDataTypeSpec unit')
         mockDomain(ReferenceDataModel)
 
-        dataSet = new ReferenceDataModel(createdByUser: admin, label: 'dataSet', folder: testFolder, authority: testAuthority)
+        dataSet = new ReferenceDataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'dataSet', folder: testFolder, authority: testAuthority)
 
         checkAndSave(dataSet)
         assert ReferenceDataModel.count() == 1
@@ -106,7 +106,8 @@ abstract class ReferenceDataTypeSpec<K extends ReferenceDataType> extends ModelI
     void 'DT02 : test unique label naming across datamodels'() {
         given:
         setValidDomainValues()
-        ReferenceDataModel referenceDataModel = new ReferenceDataModel(label: 'another model', createdByUser: editor, folder: testFolder, authority: testAuthority)
+        ReferenceDataModel referenceDataModel = new ReferenceDataModel(label: 'another model', createdBy: StandardEmailAddress.UNIT_TEST, folder: testFolder,
+                                                                       authority: testAuthority)
 
         expect: 'domain is currently valid'
         checkAndSave(domain)

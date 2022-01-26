@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -270,9 +270,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         T target = queryForResource params.otherModelId
         if (!target) return notFound(params.otherModelId)
 
-        // default to legacy until UI is updated
-        String view = params.boolean('isLegacy', true) ? 'legacyMergeDiff' : 'mergeDiff'
-        respond modelService.getMergeDiffForModels(source, target), view: view
+        respond modelService.getMergeDiffForModels(source, target)
     }
 
     @Transactional
@@ -295,8 +293,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         T targetModel = queryForResource params.otherModelId
         if (!targetModel) return notFound(params.otherModelId)
 
-        T instance = modelService.mergeObjectPatchDataIntoModel(mergeIntoData.patch, targetModel, sourceModel,
-                                                                params.boolean('isLegacy', true), currentUserSecurityPolicyManager) as T
+        T instance = modelService.mergeObjectPatchDataIntoModel(mergeIntoData.patch, targetModel, sourceModel, currentUserSecurityPolicyManager) as T
 
         if (!validateResource(instance, 'merge')) return
 
@@ -541,7 +538,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             return
         }
 
-        if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(Folder, importerProviderServiceParameters.folderId)) {
+        if (!currentUserSecurityPolicyManager.userCanCreateResourceId(resource, null, Folder, importerProviderServiceParameters.folderId)) {
             if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Folder, importerProviderServiceParameters.folderId)) {
                 return notFound(Folder, importerProviderServiceParameters.folderId)
             }
@@ -619,7 +616,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             return
         }
 
-        if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(Folder, importerProviderServiceParameters.folderId)) {
+        if (!currentUserSecurityPolicyManager.userCanCreateResourceId(resource, null, Folder, importerProviderServiceParameters.folderId)) {
             if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Folder, importerProviderServiceParameters.folderId)) {
                 return notFound(Folder, importerProviderServiceParameters.folderId)
             }

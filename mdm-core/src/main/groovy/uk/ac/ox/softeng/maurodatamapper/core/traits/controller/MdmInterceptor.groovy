@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,21 @@ import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.core.GrailsClass
+import grails.databinding.DataBindingSource
 import grails.web.api.WebAttributes
+import grails.web.databinding.DataBindingUtils
+import grails.web.mime.MimeType
 import grails.web.servlet.mvc.GrailsParameterMap
+import groovy.util.logging.Slf4j
+
+import javax.servlet.ServletInputStream
+import javax.servlet.http.HttpServletRequest
 
 /**
  * @since 25/11/2019
  */
 
+@Slf4j
 trait MdmInterceptor implements UserSecurityPolicyManagerAware, WebAttributes {
 
     @Override
@@ -109,8 +117,9 @@ trait MdmInterceptor implements UserSecurityPolicyManagerAware, WebAttributes {
 
         }
         if (isUpdate()) {
-            return currentUserSecurityPolicyManager.userCanEditResourceId(resourceClass, id,
-                                                                          owningSecureResourceClass, owningSecureResourceId) ?:
+            return currentUserSecurityPolicyManager.userCanWriteResourceId(resourceClass, id,
+                                                                           owningSecureResourceClass, owningSecureResourceId,
+                                                                           isDescriptionEdit() ? 'editDescription' : actionName) ?:
                    forbiddenOrNotFound(canRead, id ? resourceClass : owningSecureResourceClass, id ?: owningSecureResourceId)
         }
         if (isSave()) {
@@ -138,5 +147,24 @@ trait MdmInterceptor implements UserSecurityPolicyManagerAware, WebAttributes {
     boolean forbiddenOrNotFound(boolean canRead, Class resourceClass, UUID resourceId) {
         canRead ? forbiddenDueToPermissions() :
         notFound(resourceClass, resourceId.toString())
+    }
+
+    DataBindingSource cacheRequestBody() {
+        if (!((request as HttpServletRequest).contentType in [MimeType.MULTIPART_FORM.name, MimeType.FORM.name]) && (request as HttpServletRequest).contentLength > 0) {
+            try {
+                ServletInputStream is = (request as HttpServletRequest).getInputStream()
+                DataBindingSource dbs = DataBindingUtils.createDataBindingSource(grailsApplication, Map, is)
+                (request as HttpServletRequest).setAttribute('cached_body', dbs)
+                return dbs
+            } catch (Exception ignored) {
+                log.warn 'Could not cache request body {}', ignored.message
+            }
+        }
+        null
+    }
+
+    boolean isDescriptionEdit() {
+        DataBindingSource bs = cacheRequestBody()
+        bs && bs.size() == 1 && bs.containsProperty('description')
     }
 }

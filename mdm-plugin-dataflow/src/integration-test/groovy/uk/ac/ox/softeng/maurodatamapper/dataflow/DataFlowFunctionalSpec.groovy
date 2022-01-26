@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.dataflow
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.dataflow.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -25,7 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
@@ -73,9 +72,9 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
     @Shared
     UUID targetDataModelId
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def checkAndSetupData() {
+    def setup() {
         log.debug('Check and setup test data')
         folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
         checkAndSave(folder)
@@ -215,7 +214,7 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
     "canExportMultipleDomains": false
   }
 ]'''
-    }    
+    }
 
     void 'test getting DataFlow importers'() {
         when:
@@ -250,7 +249,7 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
     "version": "${json-unit.matches:version}"
   }
 ]'''
-    }    
+    }
 
     void 'test export a single DataFlow'() {
         given:
@@ -341,7 +340,7 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
         cleanup:
         cleanUpData(id)
         cleanUpData(id2)
-    }    
+    }
 
 
     void 'test import the sample data flow'() {
@@ -357,13 +356,13 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
 
         when:
         POST("import/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer/DataFlowJsonImporterService/4.0", [
-            modelName                      : 'Functional Test Import',
-            importFile                     : [
+            modelName : 'Functional Test Import',
+            importFile: [
                 fileName    : 'FT Import',
                 fileType    : MimeType.JSON_API.name,
                 fileContents: exportedJsonString.bytes.toList()
             ]
-        ], STRING_ARG)    
+        ], STRING_ARG)
 
         then:
         verifyJsonResponse CREATED, '''{

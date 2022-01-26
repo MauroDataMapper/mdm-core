@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional
 import uk.ac.ox.softeng.maurodatamapper.core.api.exception.ApiDiffException
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.path.Path
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.SimpleType
@@ -158,7 +158,7 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
         // If this is the case we want to make sure we ignore any versioning on sub contents as child versioning is controlled by the parent
         // This should only happen to models inside versioned folders, but we want to try and be more dynamic
         if (isVersionedDiff()) {
-            Path childPath = Path.from((CreatorAware) lhs.first())
+            Path childPath = Path.from((MdmDomain) lhs.first())
             if (childPath.size() == 1 && childPath.first().modelIdentifier) {
                 // child collection has versioning
                 // recollect entries using the clean identifier rather than the full thing

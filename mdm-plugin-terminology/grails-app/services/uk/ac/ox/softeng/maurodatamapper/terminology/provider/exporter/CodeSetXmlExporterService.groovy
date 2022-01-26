@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ class CodeSetXmlExporterService extends CodeSetExporterProviderService implement
 
     @Override
     String getVersion() {
-        '4.0'
+        '5.0'
     }
 
     @Override
@@ -68,12 +68,12 @@ class CodeSetXmlExporterService extends CodeSetExporterProviderService implement
     @Override
     ByteArrayOutputStream exportCodeSet(User currentUser, CodeSet codeSet) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(codeSet, 'codeSet', version, '3.0', 'gml', exportMetadata), fileType)
+        exportModel(new ExportModel(codeSet, 'codeSet', version, '4.0', 'gml', exportMetadata), fileType)
     }
 
     @Override
     ByteArrayOutputStream exportCodeSets(User currentUser, List<CodeSet> codeSets) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel(new ExportModel(codeSets, 'codeSet', 'codeSets', version, '3.0', 'gml', exportMetadata), fileType)
+        exportModel(new ExportModel(codeSets, 'codeSet', 'codeSets', version, '4.0', 'gml', exportMetadata), fileType)
     }
 }

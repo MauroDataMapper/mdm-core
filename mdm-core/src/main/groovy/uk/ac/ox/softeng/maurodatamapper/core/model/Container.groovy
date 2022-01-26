@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,9 @@ package uk.ac.ox.softeng.maurodatamapper.core.model
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.PathAware
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 /**
  * This is the base trait for any container of models.
@@ -30,14 +31,16 @@ import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
  *
  * @since 05/11/2019
  */
-trait Container implements PathAware, InformationAware, SecurableResource, EditHistoryAware, MultiFacetAware {
+trait Container implements InformationAware, SecurableResource, EditHistoryAware, MultiFacetAware, MdmDomain {
 
     abstract boolean hasChildren()
 
     abstract Boolean getDeleted()
 
-    //    @Override
-    //    String getPathIdentifier() {
-    //        label
-    //    }
+    abstract Container getParent()
+
+    @Override
+    Path buildPath() {
+        parent ? Path.from(parent.path, pathPrefix, pathIdentifier) : Path.from(pathPrefix, pathIdentifier)
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate
 
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 
+import groovy.transform.CompileStatic
 import org.hibernate.search.engine.search.predicate.SearchPredicate
 import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep
 import org.hibernate.search.engine.search.predicate.dsl.PredicateFinalStep
@@ -26,26 +28,16 @@ import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory
 
 /**
  * @since 27/04/2018
- * Secures a lucene search so that the data is filtered so only data which includes an allowed id or its path contains one of the supplied path nodes.
- * Path is tokenised on the | character so if you have a resource with path "mo:model|mi:model item 1|mi:model item 2" and the allowedPathNodes contains "mo:model" then the
+ * Secures a hibernate search so that the data is filtered so only data which includes an allowed id or its path contains one of the supplied path
+ * nodes.
+ * Path is tokenised on the | character so if you have a resource with path "mo:model|mi:model item 1|mi:model item 2" and the allowedPathNodes
+ * contains "mo:model" then the
  * resource will be allowed.
  */
+@CompileStatic
 class IdPathSecureFilterFactory extends FilterFactory {
 
-    static PredicateFinalStep createFilter(SearchPredicateFactory factory, Collection<UUID> allowedIds) {
-
-        BooleanPredicateClausesStep step = startFilter(factory)
-
-        allowedIds.each {id ->
-            step = step
-                .should(factory.id().matching(id))
-                .should(factory.match().field('path').matching(id.toString()))
-        }
-
-        step
-    }
-
-    static PredicateFinalStep createFilter(SearchPredicateFactory factory, Set<UUID> allowedIds, Set<PathNode> allowedPathNodes) {
+    static PredicateFinalStep createFilter(SearchPredicateFactory factory, Collection<UUID> allowedIds, Collection<PathNode> allowedPathNodes) {
 
         BooleanPredicateClausesStep step = startFilter(factory)
 
@@ -53,16 +45,12 @@ class IdPathSecureFilterFactory extends FilterFactory {
             step = step.should(factory.id().matching(id))
         }
         allowedPathNodes?.each {pn ->
-            step = step.should(factory.match().field('path').matching(pn))
+            step = step.should(factory.match().field('path').matching(Path.from(pn)))
         }
         step
     }
 
-    static SearchPredicate createFilterPredicate(SearchPredicateFactory factory, Collection<UUID> allowedIds) {
-        createFilter(factory, allowedIds).toPredicate()
-    }
-
-    static SearchPredicate createFilterPredicate(SearchPredicateFactory factory, Set<UUID> allowedIds, Set<PathNode> allowedPathNodes) {
+    static SearchPredicate createFilterPredicate(SearchPredicateFactory factory, Collection<UUID> allowedIds, Collection<PathNode> allowedPathNodes) {
         createFilter(factory, allowedIds, allowedPathNodes).toPredicate()
     }
 }

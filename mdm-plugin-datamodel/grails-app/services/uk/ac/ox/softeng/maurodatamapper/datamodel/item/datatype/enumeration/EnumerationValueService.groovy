@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
@@ -36,6 +37,7 @@ import groovy.util.logging.Slf4j
 class EnumerationValueService extends ModelItemService<EnumerationValue> implements SummaryMetadataAwareService {
 
     SummaryMetadataService summaryMetadataService
+    DataModelService dataModelService
 
     @Override
     EnumerationValue get(Serializable id) {
@@ -129,11 +131,6 @@ class EnumerationValueService extends ModelItemService<EnumerationValue> impleme
     }
 
     @Override
-    Class<EnumerationValue> getModelItemClass() {
-        EnumerationValue
-    }
-
-    @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         domainType == EnumerationValue.simpleName
     }
@@ -147,9 +144,12 @@ class EnumerationValueService extends ModelItemService<EnumerationValue> impleme
 
         List<EnumerationValue> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            log.debug('Performing lucene label search')
+            log.debug('Performing hs label search')
             long start = System.currentTimeMillis()
-            results = EnumerationValue.luceneLabelSearch(EnumerationValue, searchTerm, readableIds.toList()).results
+            results =
+                EnumerationValue
+                    .labelHibernateSearch(EnumerationValue, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds))
+                    .results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
 

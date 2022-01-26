@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -153,11 +153,6 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
     }
 
     @Override
-    Class<DataClassComponent> getModelItemClass() {
-        DataClassComponent
-    }
-
-    @Override
     DataClassComponent findByIdJoinClassifiers(UUID id) {
         DataClassComponent.findById(id, [fetch: [classifiers: 'join']])
     }
@@ -216,7 +211,7 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
 
         if (rawSourceDataClasses) {
             rawSourceDataClasses.each {sdc ->
-                Path path = Path.from(sdc.path)
+                Path path = sdc.uncheckedPath
                 DataClass sourceDataClass = pathService.findResourceByPathFromRootClass(DataModel, path) as DataClass
 
                 if (sourceDataClass) {
@@ -235,7 +230,7 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
 
         if (rawTargetDataClasses) {
             rawTargetDataClasses.each {tdc ->
-                Path path = Path.from(tdc.path)
+                Path path = tdc.uncheckedPath
                 DataClass targetDataClass = pathService.findResourceByPathFromRootClass(DataModel, path) as DataClass
 
                 if (targetDataClass) {

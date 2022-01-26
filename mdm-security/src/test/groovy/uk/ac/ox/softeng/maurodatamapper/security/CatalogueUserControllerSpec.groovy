@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.security
 
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyService
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.email.EmailService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
@@ -76,7 +77,7 @@ class CatalogueUserControllerSpec extends ResourceControllerSpec<CatalogueUser> 
 
         mockDomain(Edit)
         mockDomain(UserGroup)
-        group = new UserGroup(name: 'testgroup', createdByUser: admin).addToGroupMembers(admin)
+        group = new UserGroup(name: 'testgroup', createdBy: StandardEmailAddress.UNIT_TEST).addToGroupMembers(admin)
         checkAndSave(group)
 
 
@@ -901,11 +902,11 @@ json {
     }
 
     @Unroll
-    void "test rejectRegistration for #userName when logged in as #actorName"() {
+    void "test rejectRegistration for #userName"() {
         given:
         def user = CatalogueUser.findByEmailAddress(userEmail)
         controller.catalogueUserService = Mock(CatalogueUserService) {
-            rejectUserRegistration(_, _) >> {a, u ->
+            rejectUserRegistration(_, _) >> { a, u ->
                 if (!u.pending) {
                     u.errors.reject('invalid.already.registered.message', [u.emailAddress].toArray(),
                                     'Cannot approve or reject user registration for [{0}] as user is already registered')

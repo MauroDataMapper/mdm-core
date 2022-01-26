@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,14 @@ package uk.ac.ox.softeng.maurodatamapper.security.role
 
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
-import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.gorm.DetachedCriteria
 
-class SecurableResourceGroupRole implements EditHistoryAware {
+class SecurableResourceGroupRole implements MdmDomain, EditHistoryAware {
 
     UUID id
     String securableResourceDomainType
@@ -39,7 +40,7 @@ class SecurableResourceGroupRole implements EditHistoryAware {
     ]
 
     static constraints = {
-        CallableConstraints.call(CreatorAwareConstraints, delegate)
+        CallableConstraints.call(MdmDomainConstraints, delegate)
         securableResourceId validator: {val, obj ->
             if (val && obj.userGroup) {
                 if (obj.id) {
@@ -92,6 +93,14 @@ class SecurableResourceGroupRole implements EditHistoryAware {
     String toString() {
         String idStr = ident() ? ident().toString() : '(unsaved)'
         "${getEditLabel()} : ${idStr}"
+    }
+
+    String getPathPrefix() {
+        null
+    }
+
+    String getPathIdentifier() {
+        null
     }
 
     static DetachedCriteria<SecurableResourceGroupRole> by() {

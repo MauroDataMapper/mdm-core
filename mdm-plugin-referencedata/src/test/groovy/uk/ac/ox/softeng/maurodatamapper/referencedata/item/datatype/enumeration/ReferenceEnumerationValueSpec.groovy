@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
@@ -35,8 +35,8 @@ class ReferenceEnumerationValueSpec extends ModelItemSpec<ReferenceEnumerationVa
     def setup() {
         log.debug('Setting up EnumerationValueSpec unit')
         mockDomains(ReferenceDataModel, ReferenceEnumerationType)
-        dataSet = new ReferenceDataModel(createdByUser: admin, label: 'dataSet', folder: testFolder, authority: testAuthority)
-        referenceEnumerationType = new ReferenceEnumerationType(createdByUser: admin, label: 'et', referenceReferenceDataModel: dataSet)
+        dataSet = new ReferenceDataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'dataSet', folder: testFolder, authority: testAuthority)
+        referenceEnumerationType = new ReferenceEnumerationType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'et', referenceReferenceDataModel: dataSet)
         dataSet.addToReferenceDataTypes(referenceEnumerationType)
         checkAndSave(dataSet)
     }
@@ -97,7 +97,7 @@ class ReferenceEnumerationValueSpec extends ModelItemSpec<ReferenceEnumerationVa
 
     @Override
     int getExpectedConstrainedErrors() {
-        2
+        3 // key label path
     }
 
     @Override
@@ -109,11 +109,11 @@ class ReferenceEnumerationValueSpec extends ModelItemSpec<ReferenceEnumerationVa
 
     @Override
     int getExpectedConstrainedBlankErrors() {
-        6
+        7
     }
 
     @Override
     String getExpectedNewlineLabel() {
         'ev_key'
-    }    
+    }
 }

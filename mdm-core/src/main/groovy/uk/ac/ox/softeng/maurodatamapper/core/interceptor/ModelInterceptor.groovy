@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.interceptor
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor {
@@ -60,14 +61,16 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
 
     boolean checkModelActionsAuthorised() {
 
+        webRequest.request.inputStream
+
         securableResourceChecks()
 
         if (params.containsKey('folderId')) {
             boolean canReadFolder = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Folder, params.folderId)
 
-            // We control addition of Terminologys into containers by using container permissions
+            // We control addition of models into containers by using container permissions
             if (isSave()) {
-                return currentUserSecurityPolicyManager.userCanCreateSecuredResourceId(Folder, params.folderId) ?:
+                return currentUserSecurityPolicyManager.userCanCreateResourceId(Model, null, Folder, params.folderId) ?:
                        forbiddenOrNotFound(canReadFolder, Folder, params.folderId)
             }
             if (actionName == 'changeFolder') {

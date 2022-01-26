@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.validator.Versioned
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.VersionLinkAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
-import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
 import uk.ac.ox.softeng.maurodatamapper.hibernate.VersionUserType
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate.IdSecureFilterFactory
 import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 
 import grails.gorm.DetachedCriteria
@@ -43,7 +44,7 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware, 
     ]
 
     static constraints = {
-        CallableConstraints.call(CreatorAwareConstraints, delegate)
+        CallableConstraints.call(MdmDomainConstraints, delegate)
         CallableConstraints.call(InformationAwareConstraints, delegate)
         CallableConstraints.call(VersionAwareConstraints, delegate)
 
@@ -126,14 +127,16 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware, 
     }
 
     static DetachedCriteria<VersionedFolder> byParentFolderId(UUID id) {
-        by().eq('parentFolder.id', id)
+        id ?
+        by().eq('parentFolder.id', id) :
+        by().isNull('parentFolder')
     }
 
     static DetachedCriteria<VersionedFolder> byParentFolderIdAndLabel(UUID id, String label) {
         byParentFolderId(id).eq('label', label)
     }
 
-    static List<VersionedFolder> luceneList(@DelegatesTo(HibernateSearchApi) Closure closure) {
+    static List<VersionedFolder> hibernateSearchList(@DelegatesTo(HibernateSearchApi) Closure closure) {
         VersionedFolder.search().list closure
     }
 
@@ -149,18 +152,18 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware, 
     }
 
     static List<VersionedFolder> findAllContainedInFolderId(UUID folderId) {
-        luceneList {
+        hibernateSearchList {
             should {
                 keyword 'path', folderId.toString()
             }
         }
     }
 
-    static List<VersionedFolder> luceneTreeLabelSearch(List<String> allowedIds, String searchTerm) {
+    static List<VersionedFolder> treeLabelHibernateSearch(List<String> allowedIds, String searchTerm) {
         if (!allowedIds) return []
-        luceneList {
+        hibernateSearchList {
             keyword 'label', searchTerm
-            filter name: 'idSecured', params: [allowedIds: allowedIds]
+            filter IdSecureFilterFactory.createFilterPredicate(searchPredicateFactory, allowedIds)
         }
     }
 

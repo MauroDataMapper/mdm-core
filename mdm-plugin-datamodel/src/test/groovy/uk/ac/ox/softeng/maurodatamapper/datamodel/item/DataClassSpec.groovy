@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.test.unit.core.ModelItemSpec
 
 import grails.testing.gorm.DomainUnitTest
@@ -40,9 +41,9 @@ class DataClassSpec extends ModelItemSpec<DataClass> implements DomainUnitTest<D
         log.debug('Setting up DataClassSpec unit')
         mockDomains(DataModel, DataClass, DataType, PrimitiveType, ReferenceType, EnumerationType, EnumerationValue, DataElement)
 
-        dataSet = new DataModel(createdByUser: admin, label: 'dataSet', folder: testFolder, authority: testAuthority)
-        dataSet.addToDataTypes(new PrimitiveType(createdByUser: admin, label: 'string'))
-        dataSet.addToDataTypes(new PrimitiveType(createdByUser: admin, label: 'integer'))
+        dataSet = new DataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'dataSet', folder: testFolder, authority: testAuthority)
+        dataSet.addToDataTypes(new PrimitiveType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'string'))
+        dataSet.addToDataTypes(new PrimitiveType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'integer'))
 
         checkAndSave(dataSet)
         assert DataModel.count() == 1
@@ -94,8 +95,8 @@ class DataClassSpec extends ModelItemSpec<DataClass> implements DomainUnitTest<D
         setValidDomainValues()
 
         when:
-        domain.addToDataClasses(createdByUser: editor, label: 'child')
-        domain.addToDataClasses(createdByUser: editor, label: 'child2')
+        domain.addToDataClasses(createdBy: StandardEmailAddress.UNIT_TEST, label: 'child')
+        domain.addToDataClasses(createdBy: StandardEmailAddress.UNIT_TEST, label: 'child2')
 
         then:
         checkAndSave(domain)
@@ -117,8 +118,7 @@ class DataClassSpec extends ModelItemSpec<DataClass> implements DomainUnitTest<D
 
         then:
         DataClass.count() == 4
-        item2.depth == 1
-        item2.path == "/$dataSet.id"
+        item2.path == Path.from(dataSet).resolve('dc', 'child3')
         item2.model.id == dataSet.id
         !item2.parentDataClass
 
@@ -130,8 +130,7 @@ class DataClassSpec extends ModelItemSpec<DataClass> implements DomainUnitTest<D
         then:
         DataClass.count() == 4
         item2.id == item3.id
-        item3.depth == 2
-        item3.path == "/$dataSet.id/${domain.id}"
+        item3.path == Path.from(dataSet).resolve('dc', 'test').resolve('dc', 'child3')
         item3.model.id == dataSet.id
         item3.parentDataClass.id == item.id
     }
@@ -141,8 +140,8 @@ class DataClassSpec extends ModelItemSpec<DataClass> implements DomainUnitTest<D
         setValidDomainValues()
 
         when:
-        domain.addToDataElements(createdByUser: reader1, label: 'element1', dataType: dataSet.findDataTypeByLabel('string'))
-        domain.addToDataElements(createdByUser: reader1, label: 'element2', dataType: dataSet.findDataTypeByLabel('integer'))
+        domain.addToDataElements(createdBy: StandardEmailAddress.UNIT_TEST, label: 'element1', dataType: dataSet.findDataTypeByLabel('string'))
+        domain.addToDataElements(createdBy: StandardEmailAddress.UNIT_TEST, label: 'element2', dataType: dataSet.findDataTypeByLabel('integer'))
 
         then:
         checkAndSave(domain)
@@ -157,8 +156,7 @@ class DataClassSpec extends ModelItemSpec<DataClass> implements DomainUnitTest<D
         item.dataElements.size() == 2
 
         and:
-        element.depth == 2
-        element.path == "/${dataSet.id}/${domain.id}"
+        element.path == Path.from(dataSet, domain).resolve('de', 'element1')
         element.model.id == dataSet.id
         element.dataClass.id == item.id
     }
@@ -172,18 +170,18 @@ class DataClassSpec extends ModelItemSpec<DataClass> implements DomainUnitTest<D
         checkAndSave(dataSet)
 
         when: 'adding another child dataclass to the datamodel'
-        dataSet.addToDataClasses(label: domain.label, createdByUser: admin)
+        dataSet.addToDataClasses(label: domain.label, createdBy: StandardEmailAddress.UNIT_TEST)
         checkAndSave(dataSet)
 
         then: 'datamodel should not be valid'
         thrown(InternalSpockError)
-        dataSet.errors.fieldErrors.any { it.field.contains('label') && it.code.contains('unique') }
+        dataSet.errors.fieldErrors.any {it.field.contains('label') && it.code.contains('unique')}
     }
 
     void 'test unique label naming for direct child dataclasses of 2 datamodels'() {
         given:
         setValidDomainValues()
-        DataModel dataModel = new DataModel(label: 'another mode', createdByUser: editor, folder: testFolder, authority: testAuthority)
+        DataModel dataModel = new DataModel(label: 'another mode', createdBy: StandardEmailAddress.UNIT_TEST, folder: testFolder, authority: testAuthority)
 
         expect: 'domain is currently valid'
         checkAndSave(domain)
@@ -191,7 +189,7 @@ class DataClassSpec extends ModelItemSpec<DataClass> implements DomainUnitTest<D
         checkAndSave(dataModel)
 
         when: 'adding another child dataclass to the datamodel'
-        dataModel.addToDataClasses(label: domain.label, createdByUser: admin)
+        dataModel.addToDataClasses(label: domain.label, createdBy: StandardEmailAddress.UNIT_TEST)
 
         then: 'datamodel should be valid'
         checkAndSave(dataSet)
@@ -207,23 +205,23 @@ class DataClassSpec extends ModelItemSpec<DataClass> implements DomainUnitTest<D
         checkAndSave(dataSet)
 
         when: 'adding child dataclass to the dataclass with same label as parent'
-        domain.addToDataClasses(label: domain.label, createdByUser: admin)
+        domain.addToDataClasses(label: domain.label, createdBy: StandardEmailAddress.UNIT_TEST)
 
         then: 'domain should be valid'
         checkAndSave(domain)
 
         when: 'adding another dataclass to domain'
-        domain.addToDataClasses(label: 'another', createdByUser: admin)
+        domain.addToDataClasses(label: 'another', createdBy: StandardEmailAddress.UNIT_TEST)
 
         then: 'domain should be valid'
         checkAndSave(domain)
 
         when: 'adding another dataclass to domain using same label'
-        domain.addToDataClasses(label: 'another', createdByUser: admin)
+        domain.addToDataClasses(label: 'another', createdBy: StandardEmailAddress.UNIT_TEST)
         checkAndSave(domain)
 
         then:
         thrown(InternalSpockError)
-        domain.errors.fieldErrors.any { it.field.contains('label') && it.code.contains('unique') }
+        domain.errors.fieldErrors.any {it.field.contains('label') && it.code.contains('unique')}
     }
 }

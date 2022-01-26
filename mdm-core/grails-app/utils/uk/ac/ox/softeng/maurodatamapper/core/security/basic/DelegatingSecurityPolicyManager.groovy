@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,6 +71,11 @@ class DelegatingSecurityPolicyManager implements UserSecurityPolicyManager {
     boolean userCanDeleteResourceId(Class resourceClass, UUID id,
                                     Class<? extends SecurableResource> owningSecureResourceClass, UUID owningSecureResourceId) {
         return delegate.userCanDeleteResourceId(resourceClass, id, owningSecureResourceClass, owningSecureResourceId)
+    }
+
+    @Override
+    boolean userCanWriteResourceId(Class resourceClass, UUID id, Class<? extends SecurableResource> owningSecureResourceClass, UUID owningSecureResourceId, String action) {
+        return delegate.userCanWriteResourceId(resourceClass, id, owningSecureResourceClass, owningSecureResourceId, action)
     }
 
     @Override

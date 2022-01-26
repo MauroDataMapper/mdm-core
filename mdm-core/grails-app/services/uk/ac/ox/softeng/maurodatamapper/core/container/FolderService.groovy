@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CopyPassType
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.path.Path
+import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -60,21 +61,6 @@ class FolderService extends ContainerService<Folder> {
     MessageSource messageSource
 
     @Override
-    boolean handles(Class clazz) {
-        clazz == Folder
-    }
-
-    @Override
-    boolean handles(String domainType) {
-        domainType == Folder.simpleName
-    }
-
-    @Override
-    Class<Folder> getContainerClass() {
-        Folder
-    }
-
-    @Override
     boolean isContainerVirtual() {
         false
     }
@@ -93,12 +79,12 @@ class FolderService extends ContainerService<Folder> {
     List<Folder> findAllReadableContainersBySearchTerm(UserSecurityPolicyManager userSecurityPolicyManager, String searchTerm) {
         log.debug('Searching readable folders for search term in label')
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Folder)
-        Folder.luceneTreeLabelSearch(readableIds.collect {it.toString()}, searchTerm)
+        Folder.treeLabelHibernateSearch(readableIds.collect { it.toString() }, searchTerm)
     }
 
     @Override
-    List<Folder> findAllContainersInside(UUID containerId) {
-        Folder.findAllContainedInFolderId(containerId)
+    List<Folder> findAllContainersInside(PathNode pathNode) {
+        Folder.findAllContainedInFolderPathNode(pathNode)
     }
 
     @Override
@@ -168,11 +154,11 @@ class FolderService extends ContainerService<Folder> {
         if (permanent) {
             folder.childFolders.each {delete(it, permanent, false)}
             modelServices.each {it.deleteAllInContainer(folder)}
+            folder.trackChanges()
+            folder.delete(flush: flush)
             if (securityPolicyManagerService) {
                 securityPolicyManagerService.removeSecurityForSecurableResource(folder, null)
             }
-            folder.trackChanges()
-            folder.delete(flush: flush)
         } else {
             folder.childFolders.each {delete(it)}
             delete(folder)
@@ -262,41 +248,6 @@ class FolderService extends ContainerService<Folder> {
     @Override
     List<Folder> findAllByMetadataNamespace(String namespace, Map pagination = [:]) {
         Folder.byMetadataNamespace(namespace).list(pagination)
-    }
-
-    @Deprecated
-    Folder findFolder(String label) {
-        findDomainByLabel(label)
-    }
-
-    @Deprecated
-    Folder findFolder(Folder parentFolder, String label) {
-        findByParentIdAndLabel(parentFolder.id, label)
-    }
-
-    @Deprecated
-    Folder findByFolderPath(String folderPath) {
-        findByPath(folderPath)
-    }
-
-    @Deprecated
-    Folder findByFolderPath(List<String> pathLabels) {
-        findByPath(pathLabels)
-    }
-
-    @Deprecated
-    Folder findByFolderPath(Folder parentFolder, List<String> pathLabels) {
-        findByPath(parentFolder, pathLabels)
-    }
-
-    @Deprecated
-    List<Folder> findAllByParentFolderId(UUID parentFolderId, Map pagination = [:]) {
-        findAllByParentId(parentFolderId, pagination)
-    }
-
-    @Deprecated
-    List<Folder> getFullPathFolders(Folder folder) {
-        getFullPathDomains(folder)
     }
 
     List<Model> findAllModelsInFolder(Folder folder) {

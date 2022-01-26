@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.facet
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
@@ -67,43 +67,16 @@ abstract class ModelVersionLinkFunctionalSpec extends UserAccessFunctionalSpec {
     }
 
     @Override
-    Boolean readerPermissionIsInherited() {
-        true
-    }
+    Expectations getExpectations() {
+        Expectations.builder()
+            .withDefaultExpectations()
+            .withInheritedAccessPermissions()
+            .whereTestingUnsecuredResource()
+            .withoutAvailableActions()
+            .whereAuthors {
+                cannotEditDescription()
+            }
 
-    @Override
-    void verifyL03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyL03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyL03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyN03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyN03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyN03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getModelId()
-    }
-
-    @Override
-    void verifyR04UnknownIdResponse(HttpResponse<Map> response, String id) {
-        verifyForbidden response
     }
 
     @Override
@@ -112,7 +85,7 @@ abstract class ModelVersionLinkFunctionalSpec extends UserAccessFunctionalSpec {
     }
 
     @Override
-    void verifyE03ValidResponseBody(HttpResponse<Map> response) {
+    void verify03ValidResponseBody(HttpResponse<Map> response) {
         assert response.body().id
         assert response.body().linkType == 'New Fork Of'
         assert response.body().domainType == 'VersionLink'
@@ -127,7 +100,7 @@ abstract class ModelVersionLinkFunctionalSpec extends UserAccessFunctionalSpec {
 
     @Override
     Pattern getExpectedUpdateEditRegex() {
-        ~/\[VersionLink:NEW_DOCUMENTATION_VERSION_OF:.+?] changed properties \[linkType]/
+        ~/\[VersionLink:NEW_DOCUMENTATION_VERSION_OF:.+?] changed properties \[path, linkType]/
     }
 
     @Override
@@ -149,10 +122,15 @@ abstract class ModelVersionLinkFunctionalSpec extends UserAccessFunctionalSpec {
     }
 
     @Override
-    Map getValidUpdateJson() {
+    Map getValidNonDescriptionUpdateJson() {
         [
             linkType: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF.label,
         ]
+    }
+
+    @Override
+    Map getValidDescriptionOnlyUpdateJson() {
+        getValidNonDescriptionUpdateJson()
     }
 
 
