@@ -40,7 +40,6 @@ import io.micronaut.http.HttpResponse
 import org.junit.Assert
 import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Shared
-import spock.lang.Stepwise
 
 import java.nio.charset.Charset
 import java.nio.file.Files
@@ -70,7 +69,6 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
  */
 @Integration
 @Slf4j
-@Stepwise
 class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec {
 
     @Shared

@@ -295,11 +295,6 @@ subprojects {
                 project.mergeTestReports.reportOn(project.file("${project.testResultsDir}/nonParallelIntegrationTest/binary"))
             }
         }
-
-        Set<Project> dependencyProjects = collectProjectDependencies(project)
-        if (dependencyProjects) {
-            project.tasks.findByName('publishToMavenLocal').dependsOn dependencyProjects.collect {it.tasks.findByName('publishToMavenLocal')}
-        }
     }
 
 }
