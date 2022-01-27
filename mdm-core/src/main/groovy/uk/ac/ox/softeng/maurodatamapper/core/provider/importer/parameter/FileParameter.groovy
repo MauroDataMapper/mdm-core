@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter
 
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
+
 /**
  * @since 06/03/2018
  */
@@ -33,18 +35,20 @@ class FileParameter {
     FileParameter(String fileName, String fileType, byte[] fileContents) {
         this.fileName = fileName
         this.fileType = fileType
-        this.fileContents = fileContents.clone()
+        this.fileContents = Utils.copyOf(fileContents)
     }
 
     byte[] getFileContents() {
-        fileContents.clone()
+        Utils.copyOf fileContents
     }
 
     void setFileContents(byte[] fileContents) {
-        this.fileContents = fileContents.clone()
+        this.fileContents = Utils.copyOf fileContents
     }
 
     InputStream getInputStream() {
         new ByteArrayInputStream(fileContents)
     }
+
+
 }

@@ -164,4 +164,8 @@ class Utils {
         map.findAll {it.key.startsWith(prefix)}
             .collectEntries {k, v -> [k.replace(/$prefix./, ''), v]}
     }
+
+    static byte[] copyOf(byte[] contents) {
+        Arrays.copyOf(contents, contents.size())
+    }
 }

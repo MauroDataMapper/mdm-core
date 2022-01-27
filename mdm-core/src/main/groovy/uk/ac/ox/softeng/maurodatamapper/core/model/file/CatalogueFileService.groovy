@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import groovy.util.logging.Slf4j
 
@@ -71,7 +72,7 @@ trait CatalogueFileService<T> {
         Class<? extends CatalogueFile> clazz = catalogueFileClass
         CatalogueFile instance = clazz.getDeclaredConstructor().newInstance()
         instance.fileName = name
-        instance.fileContents = Arrays.copyOf(contents, contents.size())
+        instance.fileContents = Utils.copyOf(contents)
         instance.fileType = type ?: 'Unknown'
         instance.fileSize = contents.length
         instance.createdBy = userEmail
