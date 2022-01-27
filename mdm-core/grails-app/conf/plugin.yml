@@ -45,7 +45,8 @@ grails:
         enabled: true
         allowCredentials: true
         # The following are the defaults
-        #allowedOrigins: ['*']
+        # allowedOrigins: ['*'] # Cannot use allowedOrigins with *, they have to be clearly stated origins
+        # allowedOriginPatterns: ['*']
         #exposedHeaders: null
         #maxAge: 1800
     databinding:

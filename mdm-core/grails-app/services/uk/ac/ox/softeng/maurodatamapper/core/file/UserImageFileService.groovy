@@ -96,7 +96,7 @@ class UserImageFileService implements CatalogueFileService<UserImageFile> {
         Resource resource = assetResourceLocator.findAssetForURI(UserImageFile.NO_PROFILE_IMAGE_FILE_NAME)
 
         if (resource) {
-            return createNewFile(UserImageFile.NO_PROFILE_IMAGE_FILE_NAME, resource.inputStream.bytes, 'image/png', user)
+            return createNewFile(UserImageFile.NO_PROFILE_IMAGE_FILE_NAME, resource.inputStream.readAllBytes(), 'image/png', user)
         }
         null
     }
