@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,17 +19,15 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
-import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
-import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
+import uk.ac.ox.softeng.maurodatamapper.test.unit.MdmDomainSpec
 
 import grails.testing.gorm.DomainUnitTest
 import org.spockframework.util.InternalSpockError
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
 
-class SemanticLinkSpec extends CreatorAwareSpec<SemanticLink> implements DomainUnitTest<SemanticLink> {
+class SemanticLinkSpec extends MdmDomainSpec<SemanticLink> implements DomainUnitTest<SemanticLink> {
 
     BasicModel db, db2
     Folder misc

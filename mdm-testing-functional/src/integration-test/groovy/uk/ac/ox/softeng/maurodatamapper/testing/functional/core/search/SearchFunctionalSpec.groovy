@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,19 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.search
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
+import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
+import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels as DataModelBootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 
+import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 
 /**
@@ -39,6 +46,8 @@ import static io.micronaut.http.HttpStatus.OK
 @Integration
 @Slf4j
 class SearchFunctionalSpec extends FunctionalSpec {
+
+    AuthorityService authorityService
 
     @Override
     String getResourcePath() {
@@ -366,5 +375,53 @@ class SearchFunctionalSpec extends FunctionalSpec {
     }
   ]
 }'''
+    }
+
+    void 'S08 : test searching for "simple" using POST with pagination and classifier'() {
+        given:
+        String term = 'simple'
+        Map ids = buildSearchData()
+
+
+        when: 'logged in as reader user'
+        loginReader()
+        POST('', [searchTerm : term,
+                  classifiers: ['Environment A'],
+                  sort       : 'label', max: 15], STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 1,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "test simple A"
+    }
+  ]
+}'''
+        cleanup:
+        loginAdmin()
+        DELETE("dataModels/${ids.dm1Id}?permanent=true", MAP_ARG, true)
+        verifyResponse(NO_CONTENT, response)
+        DELETE("dataModels/${ids.dm2Id}?permanent=true", MAP_ARG, true)
+        verifyResponse(NO_CONTENT, response)
+        DELETE("classifiers/${ids.envA}?permanent=true", MAP_ARG, true)
+        verifyResponse(NO_CONTENT, response)
+        DELETE("classifiers/${ids.envB}?permanent=true", MAP_ARG, true)
+        verifyResponse(NO_CONTENT, response)
+    }
+
+    @Transactional
+    Map<String, String> buildSearchData() {
+        Map m = [:]
+        Folder folder = Folder.findByLabel('Functional Test Folder')
+        Authority authority = authorityService.getDefaultAuthority()
+        m.dm1Id = DataModelBootstrapModels.buildAndSaveSimpleDataModelWithClassifier(messageSource, folder, 'test simple A', 'Environment A', authority).id.toString()
+        m.dm2Id = DataModelBootstrapModels.buildAndSaveSimpleDataModelWithClassifier(messageSource, folder, 'test simple B', 'Environment B', authority).id.toString()
+
+        m.envA = Classifier.byLabel('Environment A').get().id.toString()
+        m.envB = Classifier.byLabel('Environment B').get().id.toString()
+        m
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,11 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.federation.publish
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
 import uk.ac.ox.softeng.maurodatamapper.federation.PublishedModel
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
@@ -41,7 +43,7 @@ class PublishService {
         modelServices.each {
             List<Model> readableModels = it.findAllReadableModels(userSecurityPolicyManager, false, true, false)
             // Only publish finalised models which belong to this instance of MDM
-            List<Model> publishableModels = readableModels.findAll { Model model ->
+            List<Model> publishableModels = readableModels.findAll {Model model ->
                 model.finalised && model.authority.id == authorityService.getDefaultAuthority().id
             } as List<Model>
             models.addAll(publishableModels)
@@ -50,6 +52,31 @@ class PublishService {
     }
 
     List<PublishedModel> findAllPublishedReadableModels(UserSecurityPolicyManager userSecurityPolicyManager) {
-        findAllReadableModelsToPublish(userSecurityPolicyManager).collect { new PublishedModel(it) }
+        findAllReadableModelsToPublish(userSecurityPolicyManager).collect {new PublishedModel(it)}.sort()
+    }
+
+    List<PublishedModel> findPublishedSupersedingModels(List<PublishedModel> publishedModels, String modelType, UUID modelId,
+                                                        UserSecurityPolicyManager userSecurityPolicyManager) {
+        List<VersionTreeModel> newerVersionTree =
+            findServiceForModelDomainType(modelType).buildModelVersionTree(findModelByDomainTypeAndId(modelType, modelId), null, null,
+                                                                           false, false, userSecurityPolicyManager)
+        List<PublishedModel> newerPublishedModels = []
+        newerVersionTree.findAll {it ->
+            Model model = it.versionAware
+            model.id != modelId && publishedModels.find {pm -> pm.modelId == model.id}
+        }.each {vtm ->
+            newerPublishedModels << new PublishedModel(vtm.versionAware).tap {previousModelId = vtm.parentVersionTreeModel.versionAware.id}
+        }
+        return newerPublishedModels
+    }
+
+    ModelService findServiceForModelDomainType(String domainType) {
+        ModelService modelService = modelServices.find {it.handles(domainType)}
+        if (!modelService) throw new ApiInternalException('MS01', "No model service to handle model [${domainType}]")
+        return modelService
+    }
+
+    Model findModelByDomainTypeAndId(String domainType, UUID modelId) {
+        return findServiceForModelDomainType(domainType).get(modelId)
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.test
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
@@ -37,7 +37,7 @@ abstract class DataTypeSpec<K extends DataType> extends ModelItemSpec<K> {
         log.debug('Setting up DataTypeSpec unit')
         mockDomain(DataModel)
 
-        dataSet = new DataModel(createdByUser: admin, label: 'dataSet', folder: testFolder, authority: testAuthority)
+        dataSet = new DataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'dataSet', folder: testFolder, authority: testAuthority)
 
         checkAndSave(dataSet)
         assert DataModel.count() == 1
@@ -112,7 +112,7 @@ abstract class DataTypeSpec<K extends DataType> extends ModelItemSpec<K> {
     void 'DT02 : test unique label naming across datamodels'() {
         given:
         setValidDomainValues()
-        DataModel dataModel = new DataModel(label: 'another model', createdByUser: editor, folder: testFolder, authority: testAuthority)
+        DataModel dataModel = new DataModel(label: 'another model', createdBy: StandardEmailAddress.UNIT_TEST, folder: testFolder, authority: testAuthority)
 
         expect: 'domain is currently valid'
         checkAndSave(domain)

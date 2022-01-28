@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.BreadcrumbTreeM
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.CatalogueItemClassifierAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.CatalogueItemMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.ClassifierAwareMappingContext
-import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.CreatorAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.InformationAwareMappingContext
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.MdmDomainMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.MetadataAwareMappingContext
-import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.PathAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.ReferenceFileAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.RuleAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.SemanticLinkAwareMappingContext
@@ -37,28 +36,21 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.VersionLinkAwar
 import uk.ac.ox.softeng.maurodatamapper.core.json.view.JsonViewTemplateEngine
 import uk.ac.ox.softeng.maurodatamapper.core.markup.view.MarkupViewTemplateEngine
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperProviderService
-import uk.ac.ox.softeng.maurodatamapper.core.rest.render.MdmCsvApiPropertyRenderer
 import uk.ac.ox.softeng.maurodatamapper.core.rest.render.MdmCsvApiPropertyCollectionRenderer
+import uk.ac.ox.softeng.maurodatamapper.core.rest.render.MdmCsvApiPropertyRenderer
+import uk.ac.ox.softeng.maurodatamapper.core.security.basic.DelegatingSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.mapper.orm.mapping.MdmHibernateSearchMappingConfigurer
 import uk.ac.ox.softeng.maurodatamapper.provider.plugin.MauroDataMapperPlugin
-import uk.ac.ox.softeng.maurodatamapper.search.filter.IdPathFilterFactory
-import uk.ac.ox.softeng.maurodatamapper.search.filter.IdPathSecureFilterFactory
-import uk.ac.ox.softeng.maurodatamapper.search.filter.IdSecureFilterFactory
 import uk.ac.ox.softeng.maurodatamapper.security.basic.NoAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import grails.plugin.markup.view.MarkupViewConfiguration
 import grails.plugins.Plugin
 import grails.web.mime.MimeType
-import grails.plugin.markup.view.MarkupViewConfiguration
 import groovy.util.logging.Slf4j
-import org.apache.lucene.analysis.core.LowerCaseFilterFactory
-import org.apache.lucene.analysis.core.WhitespaceTokenizerFactory
-import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilterFactory
-import org.apache.lucene.analysis.miscellaneous.WordDelimiterFilterFactory
 import org.grails.web.databinding.bindingsource.DataBindingSourceRegistry
 import org.springframework.boot.web.servlet.ServletListenerRegistrationBean
-
-import java.lang.management.ManagementFactory
-import java.lang.management.RuntimeMXBean
 
 /**
  * @since 01/11/2017
@@ -69,7 +61,7 @@ class MdmCoreGrailsPlugin extends Plugin {
     static String DEFAULT_USER_SECURITY_POLICY_MANAGER_BEAN_NAME = 'defaultUserSecurityPolicyManager'
 
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = "4.0.0 > *"
+    def grailsVersion = "5.1.1 > *"
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
         "grails-app/views/error.gsp"
@@ -105,53 +97,32 @@ This is basically the backend API.
     def scm = [url: "https://github.com/mauroDataMapper/mdm-core"]
 
     def dependsOn = [
-        hibernate      : '7.0.1 > *',
+        hibernate      : '7.2.0 > *',
         interceptors   : grailsVersion,
         services       : grailsVersion,
-        assetPipeline  : '3.0.11 > *',
-        jsonView       : '2.0.0.RC2 > *',
-        //markupView     : '1.2.6 > *',
-        hibernateSearch: '2.3.0 > *'
+        assetPipeline  : '3.3.6 > *',
+        jsonView       : '2.2.0 > *',
+        markupView     : '2.2.0 > *',
+        hibernateSearch: '3.0.0-SNAPSHOT > *'
     ]
 
     Closure doWithSpring() {
         {->
+
             // Dynamically update the Flyway Schemas
             mdmFlywayMigationStrategy MdmFlywayMigationStrategy
 
             boolean rebuildIndexes = grailsApplication.config.getProperty('grails.plugins.hibernatesearch.rebuildIndexOnStart', Boolean, false)
             if (rebuildIndexes) log.warn('Rebuilding search indexes')
             /*
-             * Load in the Lucene analysers used by the hibernate search functionality
+             * Load in the HS analysers used by the hibernate search functionality
              */
-            grailsApplication.config.grails.plugins.hibernatesearch = {
-                // Rebuild dev and test indexes on each restart
-                rebuildIndexOnStart rebuildIndexes
-
-                analyzer(name: 'wordDelimiter', tokenizer: WhitespaceTokenizerFactory) {
-                    filter WordDelimiterFilterFactory
-                    filter LowerCaseFilterFactory
-                }
-
-                analyzer(name: 'lowercase', tokenizer: WhitespaceTokenizerFactory) {
-                    filter ASCIIFoldingFilterFactory
-                    filter LowerCaseFilterFactory
-                }
-
-                fullTextFilter name: 'idSecured', impl: IdSecureFilterFactory, cache: 'none'
-                fullTextFilter name: 'idPathSecured', impl: IdPathSecureFilterFactory, cache: 'none'
-                fullTextFilter name: 'idPath', impl: IdPathFilterFactory, cache: 'none'
-
-                normalizer(name: 'lowercase') {
-                    filter ASCIIFoldingFilterFactory
-                    filter LowerCaseFilterFactory
-                }
-            }
+            hibernateSearchMappingConfigurer(MdmHibernateSearchMappingConfigurer)
 
             // Ensure the uuid2 generator is used for mapping ids
-            grailsApplication.config.grails.gorm.default.mapping = {
+            grailsApplication.config.setAt('grails.gorm.default.mapping', {
                 id generator: 'uuid2'
-            }
+            })
 
             /*
              * Define the default user security policy manager
@@ -160,20 +131,19 @@ This is basically the backend API.
              * The default is either no access, or complete access (and that means complete unfettered access to everything
              * maurodatamapper.security.public property defines what the default is
              */
-            boolean publicAccess = grailsApplication.config.maurodatamapper.security.public
+            boolean publicAccess = grailsApplication.config.getProperty('maurodatamapper.security.public', Boolean)
             if (publicAccess) {
                 log.warn('Running in public access mode. All actions will be available to any user')
             }
             Class defaultUspmClass = publicAccess ? PublicAccessSecurityPolicyManager : NoAccessSecurityPolicyManager
-            "${DEFAULT_USER_SECURITY_POLICY_MANAGER_BEAN_NAME}"(defaultUspmClass)
+            "${DEFAULT_USER_SECURITY_POLICY_MANAGER_BEAN_NAME}"(DelegatingSecurityPolicyManager, defaultUspmClass)
 
             /*
              * Define the mapping context beans
              */
             coreSchemaMappingContext CoreSchemaMappingContext
             informationAwareMappingContext InformationAwareMappingContext
-            pathAwareMappingContext PathAwareMappingContext
-            creatorAwareMappingContext CreatorAwareMappingContext
+            creatorAwareMappingContext MdmDomainMappingContext
             classifierAwareMappingContext ClassifierAwareMappingContext
             catalogueItemClassifierAwareMappingContext CatalogueItemClassifierAwareMappingContext
             breadcrumbTreeMappingContext BreadcrumbTreeMappingContext
@@ -193,7 +163,7 @@ This is basically the backend API.
             /*
              * Get all MDM Plugins to execute their doWithSpring
              */
-            MauroDataMapperProviderService.getServices(MauroDataMapperPlugin).each { MauroDataMapperPlugin plugin ->
+            MauroDataMapperProviderService.getServices(MauroDataMapperPlugin).each {MauroDataMapperPlugin plugin ->
                 if (plugin.doWithSpring()) {
                     log.info("Adding plugin {} beans", plugin.name)
                     def c = plugin.doWithSpring()
@@ -210,7 +180,7 @@ This is basically the backend API.
 
             // If global exclude fields provided then we need to use the custom MDM port of the template engine as this is the only way
             // we can actually add the global exclusion fields to the generator
-            if (grailsApplication.config.getProperty('grails.views.excludeFields')) {
+            if (grailsApplication.config.containsProperty('grails.views.excludeFields')) {
                 jsonTemplateEngine(JsonViewTemplateEngine, grailsApplication, ref('jsonViewConfiguration'), applicationContext.classLoader)
             }
 
@@ -232,7 +202,8 @@ This is basically the backend API.
     }
 
     void doWithApplicationContext() {
-        if (config.env == 'live') outputRuntimeArgs()
+        if (config.getProperty('env', String) == 'live') outputRuntimeArgs()
+        else Utils.outputRuntimeArgs(MdmCoreGrailsPlugin)
 
         /*
          * Add custom data binding bean to the data binding registry
@@ -242,26 +213,7 @@ This is basically the backend API.
     }
 
     void outputRuntimeArgs() {
-        RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean()
-        List<String> arguments = runtimeMxBean.getInputArguments()
-
-        log.warn("Running with {} JVM args", arguments.size())
-        Map<String, String> map = arguments.collectEntries { arg ->
-            arg.split('=').toList()
-        }.sort() as Map<String, String>
-
-        map.findAll { k, v ->
-            k.startsWith('-Denv') ||
-            k.startsWith('-Dgrails') ||
-            k.startsWith('-Dinfo') ||
-            k.startsWith('-Djava.version') ||
-            k.startsWith('-Dspring') ||
-            k.startsWith('-Duser.timezone') ||
-            k.startsWith('-X')
-        }.each { k, v ->
-            if (v) log.warn('{}={}', k, v)
-            else log.warn('{}', k)
-        }
+        Utils.outputRuntimeArgs(MdmCoreGrailsPlugin)
 
         log.warn("Running with {} Grails config args", config.size())
         config.findAll {
@@ -271,7 +223,7 @@ This is basically the backend API.
                                            it.key.startsWith('hibernate.search') ||
                                            it.key.startsWith('emailService'))
 
-        }.sort().each { k, v ->
+        }.sort().each {k, v ->
             log.warn('{}={}', k, v)
         }
     }

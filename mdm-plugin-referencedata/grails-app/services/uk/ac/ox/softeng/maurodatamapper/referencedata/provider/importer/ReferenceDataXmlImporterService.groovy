@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,8 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.paramete
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import groovy.util.logging.Slf4j
-import groovy.util.slurpersupport.GPathResult
+import groovy.xml.XmlSlurper
+import groovy.xml.slurpersupport.GPathResult
 
 import java.nio.charset.Charset
 
@@ -40,7 +41,7 @@ class ReferenceDataXmlImporterService
 
     @Override
     String getVersion() {
-        '4.0'
+        '5.0'
     }
 
     @Override

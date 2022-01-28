@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter
 
-
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.provider.DataBindImportAndDefaultExporterServiceSpec
 import uk.ac.ox.softeng.maurodatamapper.test.json.JsonComparer
@@ -38,8 +39,9 @@ import java.nio.file.Path
 @Rollback
 @Slf4j
 class DataModelJsonExporterServiceSpec extends DataBindImportAndDefaultExporterServiceSpec<DataModelJsonImporterService, DataModelJsonExporterService>
-
     implements JsonComparer {
+
+    private static final String NO_DATAMODEL_IDS_TO_EXPORT_CODE = 'DMEP01'
 
     DataModelJsonImporterService dataModelJsonImporterService
     DataModelJsonExporterService dataModelJsonExporterService
@@ -50,13 +52,13 @@ class DataModelJsonExporterServiceSpec extends DataBindImportAndDefaultExporterS
     }
 
     @Override
-    String getImportType() {
-        'json'
+    DataModelJsonExporterService getExporterService() {
+        dataModelJsonExporterService
     }
 
     @Override
-    DataModelJsonExporterService getExporterService() {
-        dataModelJsonExporterService
+    String getImportType() {
+        'json'
     }
 
     @Override
@@ -71,5 +73,117 @@ class DataModelJsonExporterServiceSpec extends DataBindImportAndDefaultExporterS
 
         String expectedJson = replaceContentWithMatchers(Files.readString(expectedPath))
         verifyJson(expectedJson, exportedModel)
+    }
+
+    void 'M01 : test multi-export invalid DataModels'() {
+        expect:
+        exporterService.canExportMultipleDomains()
+
+        when: 'given null'
+        exportModels(null)
+
+        then:
+        ApiBadRequestException exception = thrown(ApiBadRequestException)
+        exception.errorCode == NO_DATAMODEL_IDS_TO_EXPORT_CODE
+
+        when: 'given an empty list'
+        exportModels([])
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == NO_DATAMODEL_IDS_TO_EXPORT_CODE
+
+        when: 'given a null model'
+        exportModels([null])
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == NO_DATAMODEL_IDS_TO_EXPORT_CODE
+
+        when: 'given a single invalid model'
+        exportModels([UUID.randomUUID()])
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == NO_DATAMODEL_IDS_TO_EXPORT_CODE
+
+        when: 'given multiple invalid models'
+        exportModels([UUID.randomUUID(), UUID.randomUUID()])
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == NO_DATAMODEL_IDS_TO_EXPORT_CODE
+    }
+
+    void 'M02 : test multi-export single DataModel'() {
+        given:
+        setupData()
+        DataModel.count() == 2
+
+        expect:
+        exporterService.canExportMultipleDomains()
+
+        when:
+        String exported = exportModels([simpleDataModelId])
+
+        then:
+        validateExportedModels('simpleDataModelInList', replaceWithTestAuthority(exported))
+    }
+
+    void 'M03 : test multi-export multiple DataModels'() {
+        given:
+        setupData()
+        DataModel.count() == 2
+
+        expect:
+        exporterService.canExportMultipleDomains()
+
+        when:
+        String exported = exportModels([simpleDataModelId, complexDataModelId])
+
+        then:
+        validateExportedModels('simpleAndComplexDataModels', replaceWithTestAuthority(exported))
+    }
+
+    void 'M04 : test multi-export DataModels with invalid models'() {
+        given:
+        setupData()
+        DataModel.count() == 2
+
+        expect:
+        exporterService.canExportMultipleDomains()
+
+        when:
+        String exported = exportModels([UUID.randomUUID(), simpleDataModelId])
+
+        then:
+        validateExportedModels('simpleDataModelInList', replaceWithTestAuthority(exported))
+
+        when:
+        exported = exportModels([UUID.randomUUID(), simpleDataModelId, UUID.randomUUID(), complexDataModelId])
+
+        then:
+        validateExportedModels('simpleAndComplexDataModels', replaceWithTestAuthority(exported))
+    }
+
+    void 'M05 : test multi-export DataModels with duplicates'() {
+        given:
+        setupData()
+        DataModel.count() == 2
+
+        expect:
+        exporterService.canExportMultipleDomains()
+
+        when:
+        String exported = exportModels([simpleDataModelId, simpleDataModelId])
+
+        then:
+        validateExportedModels('simpleDataModelInList', replaceWithTestAuthority(exported))
+
+        when:
+        exported = exportModels([simpleDataModelId, complexDataModelId, complexDataModelId, simpleDataModelId])
+
+        then:
+        validateExportedModels('simpleAndComplexDataModels', replaceWithTestAuthority(exported))
     }
 }

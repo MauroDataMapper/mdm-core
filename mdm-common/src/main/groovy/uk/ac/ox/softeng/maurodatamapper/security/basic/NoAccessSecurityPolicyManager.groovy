@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,17 @@
 package uk.ac.ox.softeng.maurodatamapper.security.basic
 
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
+import uk.ac.ox.softeng.maurodatamapper.security.User
 
 /**
  * @since 19/11/2019
  */
+@Singleton
 class NoAccessSecurityPolicyManager extends AbstractBasicSecurityPolicyManager {
 
-    private NoAccessSecurityPolicyManager() {
-        user = UnloggedUser.instance
+    @Override
+    User getUser() {
+        UnloggedUser.instance
     }
 
     @Override
@@ -63,9 +66,5 @@ class NoAccessSecurityPolicyManager extends AbstractBasicSecurityPolicyManager {
     @Override
     boolean isAuthenticated() {
         false
-    }
-
-    static getInstance() {
-        new NoAccessSecurityPolicyManager()
     }
 }

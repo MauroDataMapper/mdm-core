@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,12 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
-import org.grails.datastore.gorm.GormEntity
+import groovy.transform.CompileStatic
 
 /**
  * @since 07/01/2020
  */
+@CompileStatic
 class ContainerTreeItem extends TreeItem {
 
     Boolean deleted
@@ -38,20 +39,22 @@ class ContainerTreeItem extends TreeItem {
     String modelVersionTag
     String branchName
     boolean versionAware
+    Integer depth
 
     ContainerTreeItem(Container container, List<String> availableTreeActions) {
-        super(container as GormEntity, container.id, container.label, container.domainType, null, availableTreeActions)
-        containerId = container.parentId
+        super(container, container.label, null, availableTreeActions)
+        containerId = container.getParent()?.id
         deleted = container.deleted
         containerType = container.domainType
         renderChildren = true
         versionAware = false
+        depth = path.size() - 1 // Root elements have a depth of 0
         if (Utils.parentClassIsAssignableFromChild(VersionedFolder, container.class)) {
-            finalised = container.finalised
-            documentationVersion = container.documentationVersion
-            modelVersion = container.modelVersion
-            modelVersionTag = container.modelVersionTag
-            branchName = container.branchName
+            finalised = ((VersionedFolder) container).finalised
+            documentationVersion = ((VersionedFolder) container).documentationVersion
+            modelVersion = ((VersionedFolder) container).modelVersion
+            modelVersionTag = ((VersionedFolder) container).modelVersionTag
+            branchName = ((VersionedFolder) container).branchName
             versionAware = true
         }
     }

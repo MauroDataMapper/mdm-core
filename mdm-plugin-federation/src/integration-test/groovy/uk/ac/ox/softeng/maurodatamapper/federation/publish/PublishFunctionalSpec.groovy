@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,11 +24,21 @@ import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
 import spock.lang.Shared
 
+import static io.micronaut.http.HttpStatus.CREATED
+import static io.micronaut.http.HttpStatus.NO_CONTENT
+import static io.micronaut.http.HttpStatus.OK
+
+/**
+ * @see PublishController* Controller: publish
+ *  | GET | /api/published/models                                   | Action: index         |
+ *  | GET | /api/published/models/${publishedModelId}/newerVersions | Action: newerVersions |
+ *
+ */
 @Slf4j
 @Integration
 class PublishFunctionalSpec extends BaseFunctionalSpec {
@@ -36,14 +46,17 @@ class PublishFunctionalSpec extends BaseFunctionalSpec {
     @Shared
     String folderId
 
+    @Shared
+    String dataModelId
+
     @Override
     String getResourcePath() {
         'published'
     }
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def checkAndSetupData() {
+    def setup() {
         log.debug('Check and setup test data for FeedFunctionalSpec')
         folderId = new Folder(label: 'Functional Test Folder', createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true).id.toString()
         assert folderId
@@ -53,6 +66,24 @@ class PublishFunctionalSpec extends BaseFunctionalSpec {
     def cleanupSpec() {
         log.debug('CleanupSpec PublishFunctionalSpec')
         cleanUpResources(DataModel, Folder)
+    }
+
+    Tuple2<String, String> getNewerDataModelIds() {
+        PUT("dataModels/${dataModelId}/newBranchModelVersion", [:], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String newerId1 = response.body().id
+
+        PUT("dataModels/${newerId1}/finalise", [versionChangeType: "Major"], MAP_ARG, true)
+        verifyResponse OK, response
+
+        PUT("dataModels/${newerId1}/newBranchModelVersion", [:], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String newerId2 = response.body().id
+
+        PUT("dataModels/${newerId2}/finalise", [versionChangeType: "Major"], MAP_ARG, true)
+        verifyResponse OK, response
+
+        new Tuple(newerId1, newerId2)
     }
 
     void 'test getting published models'() {
@@ -81,7 +112,7 @@ class PublishFunctionalSpec extends BaseFunctionalSpec {
             modelVersion      : '1.0.0'
         ], MAP_ARG, true)
         verifyResponse(HttpStatus.CREATED, response)
-        String id = responseBody().id
+        dataModelId = responseBody().id
 
         when:
         GET('models')
@@ -97,12 +128,68 @@ class PublishFunctionalSpec extends BaseFunctionalSpec {
         Map<String, Object> publishedModel = responseBody().publishedModels.first()
 
         then:
-        publishedModel.modelId == id
+        publishedModel.modelId == dataModelId
         publishedModel.title == 'FunctionalTest DataModel 1.0.0'
         publishedModel.description == 'Some random desc'
         publishedModel.modelType == 'DataModel'
         publishedModel.datePublished == publishedDateStr
         publishedModel.lastUpdated
         publishedModel.dateCreated
+    }
+
+    void 'N01 : Test the newerVersions endpoint (with no newer versions)'() {
+        when:
+        GET("models/$dataModelId/newerVersions", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+    "newerPublishedModels": []
+}'''
+    }
+
+    void 'N02 : Test the newerVersions endpoint (with newer versions)'() {
+        given:
+        Tuple tuple = getNewerDataModelIds()
+
+        when:
+        GET("models/$dataModelId/newerVersions", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+    "newerPublishedModels": [
+        {
+            "dateCreated": "${json-unit.matches:offsetDateTime}",
+            "datePublished": "${json-unit.matches:offsetDateTime}",
+            "description": "Some random desc",
+            "label": "FunctionalTest DataModel",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "modelId": "${json-unit.matches:id}",
+            "modelType": "DataModel",
+            "previousModelId": "${json-unit.matches:id}",
+            "title": "FunctionalTest DataModel 2.0.0",
+            "version": "2.0.0"
+        },
+        {
+            "dateCreated": "${json-unit.matches:offsetDateTime}",
+            "datePublished": "${json-unit.matches:offsetDateTime}",
+            "description": "Some random desc",
+            "label": "FunctionalTest DataModel",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "modelId": "${json-unit.matches:id}",
+            "modelType": "DataModel",
+            "previousModelId": "${json-unit.matches:id}",
+            "title": "FunctionalTest DataModel 3.0.0",
+            "version": "3.0.0"
+        }
+    ]
+}'''
+
+        cleanup:
+        DELETE("dataModels/${tuple.v1}?permanent=true", MAP_ARG, true)
+        verifyResponse NO_CONTENT, response
+        DELETE("dataModels/${tuple.v2}?permanent=true", MAP_ARG, true)
+        verifyResponse NO_CONTENT, response
     }
 }

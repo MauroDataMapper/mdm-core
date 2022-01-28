@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,18 +20,29 @@ package uk.ac.ox.softeng.maurodatamapper.core.traits.domain
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.security.User
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.compiler.GrailsCompileStatic
 import groovy.transform.SelfType
-import org.grails.datastore.gorm.GormEntity
 
 /**
  * @since 26/09/2017
  */
-@SelfType(GormEntity)
+@SelfType(MdmDomain)
 @GrailsCompileStatic
-trait EditHistoryAware extends AddsEditHistory implements CreatorAware {
+trait EditHistoryAware {
+
+    public static final List<String> DIRTY_PROPERTY_NAMES_TO_IGNORE = ['version', 'lastUpdated']
+
+    abstract String getEditLabel()
+
+    boolean shouldAddEdit(List<String> dirtyPropertyNames) {
+        editedPropertyNames(dirtyPropertyNames)
+    }
+
+    List<String> editedPropertyNames(List<String> dirtyPropertyNames) {
+        dirtyPropertyNames - DIRTY_PROPERTY_NAMES_TO_IGNORE
+    }
 
     void addToEditsTransactionally(EditTitle title, User createdBy, String description) {
         createAndSaveEditInsideNewTransaction title, createdBy, description
@@ -58,7 +69,6 @@ trait EditHistoryAware extends AddsEditHistory implements CreatorAware {
         }
     }
 
-    @Override
     void addCreatedEdit(User creator) {
         addToEditsTransactionally EditTitle.CREATE, creator, getCreatedEditDescription()
     }
@@ -67,17 +77,14 @@ trait EditHistoryAware extends AddsEditHistory implements CreatorAware {
         "[$editLabel] created"
     }
 
-    @Override
     void addUpdatedEdit(User editor, List<String> dirtyPropertyNames) {
         addToEditsTransactionally EditTitle.UPDATE, editor, editLabel, dirtyPropertyNames
     }
 
-    @Override
     void addDeletedEdit(User deleter) {
         // No-op
     }
 
-    @Override
     void addChangeNoticeEdit(User changer, String changeNotice) {
         addToEditsTransactionally EditTitle.CHANGENOTICE, changer, changeNotice
     }

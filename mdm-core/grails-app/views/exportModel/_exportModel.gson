@@ -5,6 +5,8 @@ model {
 }
 
 json {
-    call(exportModel.exportModelType, g.render(template: exportModel.modelExportTemplatePath, model: exportModel.modelExportMap))
+    call(exportModel.modelType,
+         exportModel.exportMap.export instanceof List ? g.render(template: exportModel.templatePath, collection: exportModel.exportMap.export, var: 'export')
+                                                      : g.render(template: exportModel.templatePath, model: exportModel.exportMap))
     exportMetadata g.render(exportModel.exportMetadata)
 }

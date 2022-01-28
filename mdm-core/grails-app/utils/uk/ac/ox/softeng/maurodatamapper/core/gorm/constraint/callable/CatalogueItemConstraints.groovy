@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,17 @@
 package uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable
 
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
-import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.UniqueValuesValidator
 
 /**
  * @since 17/02/2020
  */
-class CatalogueItemConstraints extends CreatorAwareConstraints {
+class CatalogueItemConstraints extends MdmDomainConstraints {
 
     static constraints = {
         CallableConstraints.call(InformationAwareConstraints, delegate)
-
+        path nullable: false
         aliasesString nullable: true, blank: false
         metadata validator: {val, obj ->
             if (val) new UniqueValuesValidator('namespace:key').isValid(val.groupBy {"${it.namespace}:${it.key}"})

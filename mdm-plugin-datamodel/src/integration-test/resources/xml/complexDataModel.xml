@@ -18,7 +18,7 @@
     SPDX-License-Identifier: Apache-2.0
 
 -->
-<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/3.2" xmlns:mdm="http://maurodatamapper.com/dataModel/3.2">
+<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/5.0" xmlns:mdm="http://maurodatamapper.com/dataModel/4.0">
   <mdm:dataModel>
     <mdm:id>412d7b5f-247b-4136-a663-584610ad491b</mdm:id>
     <mdm:label>Complex Test DataModel</mdm:label>
@@ -73,17 +73,18 @@
         <mdm:description>with description</mdm:description>
       </mdm:annotation>
     </mdm:annotations>
-    <mdm:type>Data Standard</mdm:type>
     <mdm:author>admin person</mdm:author>
     <mdm:organisation>brc</mdm:organisation>
     <mdm:documentationVersion>1.0.0</mdm:documentationVersion>
     <mdm:finalised>false</mdm:finalised>
+    <mdm:branchName>main</mdm:branchName>
     <mdm:authority>
       <mdm:id>04b2fb71-539b-4273-988b-6f440d0139ce</mdm:id>
       <mdm:label>Test Authority</mdm:label>
       <mdm:url>http://localhost</mdm:url>
       <mdm:lastUpdated>2020-08-12T11:40:05.038Z</mdm:lastUpdated>
     </mdm:authority>
+    <mdm:type>Data Standard</mdm:type>
     <mdm:dataTypes>
       <mdm:dataType>
         <mdm:id>554c36e4-19f6-4491-a3bd-8290ceef54a5</mdm:id>
@@ -149,6 +150,15 @@
         <mdm:id>2f6e15d5-c7ab-4d86-92fe-6a4d8df738c8</mdm:id>
         <mdm:label>parent</mdm:label>
         <mdm:lastUpdated>2020-04-12T16:48:47.581144Z</mdm:lastUpdated>
+        <mdm:metadata>
+          <mdm:metadata>
+            <mdm:id>f586794a-2132-4392-9154-4d94f3df4ccc</mdm:id>
+            <mdm:namespace>test.com</mdm:namespace>
+            <mdm:key>mdcl1</mdm:key>
+            <mdm:value>mdcl1</mdm:value>
+            <mdm:lastUpdated>2021-12-16T20:03:06.918Z</mdm:lastUpdated>
+          </mdm:metadata>
+        </mdm:metadata>
         <mdm:maxMultiplicity>-1</mdm:maxMultiplicity>
         <mdm:minMultiplicity>1</mdm:minMultiplicity>
         <mdm:dataClasses>
@@ -163,6 +173,15 @@
             <mdm:id>7a14a850-5e5d-4b4d-8e77-a61d79a0236f</mdm:id>
             <mdm:label>child</mdm:label>
             <mdm:lastUpdated>2020-04-12T16:48:47.572319Z</mdm:lastUpdated>
+            <mdm:metadata>
+              <mdm:metadata>
+                <mdm:id>b67eda47-5515-455a-8aa0-afcb28ba4a74</mdm:id>
+                <mdm:namespace>test.com</mdm:namespace>
+                <mdm:key>mdel1</mdm:key>
+                <mdm:value>mdel1</mdm:value>
+                <mdm:lastUpdated>2021-12-16T20:03:06.949Z</mdm:lastUpdated>
+              </mdm:metadata>
+            </mdm:metadata>
             <mdm:dataType>
               <mdm:id>c4f4eaf9-7557-4e5f-92ea-bfa9008456ab</mdm:id>
               <mdm:label>child</mdm:label>
@@ -223,7 +242,7 @@
     <exp:exporter>
       <exp:namespace>uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter</exp:namespace>
       <exp:name>DataModelXmlExporterService</exp:name>
-      <exp:version>3.2</exp:version>
+      <exp:version>5.0</exp:version>
     </exp:exporter>
   </exp:exportMetadata>
 </exp:exportModel>

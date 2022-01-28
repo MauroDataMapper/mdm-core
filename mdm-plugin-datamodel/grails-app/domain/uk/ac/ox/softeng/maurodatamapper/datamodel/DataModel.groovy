@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -202,6 +202,12 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
         summaryMetadata?.each {
             if (!it.createdBy) it.createdBy = createdBy
             it.multiFacetAwareItem = this
+        }
+        // New save/validate so all DEs and DCs are also new so sort the indexes now
+        // This avoids repeated calls to the individual DE or DC during their beforeValidate
+        if (!id) {
+            fullSortOfChildren(getDataTypes())
+            fullSortOfChildren(childDataClasses)
         }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
-import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
@@ -40,7 +40,7 @@ class Metadata implements MultiFacetItemAware, Diffable<Metadata> {
     String value
 
     static constraints = {
-        CallableConstraints.call(CreatorAwareConstraints, delegate)
+        CallableConstraints.call(MdmDomainConstraints, delegate)
         multiFacetAwareItemId nullable: true, validator: {val, obj ->
             if (val) return true
             if (!val && obj.multiFacetAwareItem && !obj.multiFacetAwareItem.ident()) return true
@@ -59,8 +59,9 @@ class Metadata implements MultiFacetItemAware, Diffable<Metadata> {
     }
 
     static search = {
-        key index: 'yes', analyzer: 'wordDelimiter'
-        value index: 'yes'
+        namespace searchable: 'yes', analyze: false
+        key searchable: 'yes', analyzer: 'wordDelimiter'
+        value searchable: 'yes'
     }
 
     static transients = ['multiFacetAwareItem']
@@ -158,8 +159,13 @@ class Metadata implements MultiFacetItemAware, Diffable<Metadata> {
         new DetachedCriteria<Metadata>(Metadata)
     }
 
-    static DetachedCriteria<Metadata> byMultiFacetAwareItemId(Serializable multiFacetAwareItemId) {
-        new DetachedCriteria<Metadata>(Metadata).eq('multiFacetAwareItemId', Utils.toUuid(multiFacetAwareItemId))
+    static DetachedCriteria<Metadata> byMultiFacetAwareItemId(Serializable multiFacetAwareItemId, Map filters = [:]) {
+        DetachedCriteria criteria = new DetachedCriteria<Metadata>(Metadata).eq('multiFacetAwareItemId', Utils.toUuid(multiFacetAwareItemId))
+        if (filters) {
+            criteria = withFilter(criteria, filters)
+        }
+
+        criteria
     }
 
     static DetachedCriteria<Metadata> byMultiFacetAwareItemIdInList(List<UUID> multiFacetAwareItemIds) {
@@ -186,8 +192,13 @@ class Metadata implements MultiFacetItemAware, Diffable<Metadata> {
         byMultiFacetAwareItemId(multiFacetAwareItemId).eq('namespace', namespace)
     }
 
-    static DetachedCriteria<Metadata> byMultiFacetAwareItemIdAndNotNamespaces(Serializable multiFacetAwareItemId, List<String> namespaces) {
-        byMultiFacetAwareItemId(multiFacetAwareItemId).not {inList('namespace', namespaces)}
+    static DetachedCriteria<Metadata> byMultiFacetAwareItemIdAndNotNamespaces(Serializable multiFacetAwareItemId, List<String> namespaces, Map filters = [:]) {
+        DetachedCriteria criteria = byMultiFacetAwareItemId(multiFacetAwareItemId).not {inList('namespace', namespaces)}
+        if (filters) {
+            criteria = withFilter(criteria, filters)
+        }
+
+        criteria
     }
 
 

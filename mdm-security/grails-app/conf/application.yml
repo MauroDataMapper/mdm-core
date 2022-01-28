@@ -3,15 +3,17 @@ database:
     port: 5432
     name: maurodatamapper
 ---
-apiUser:
-    username: admin@maurodatamapper.com
-    password: password
----
 #Default for plugins/applications
 ---
 maurodatamapper:
     security:
         public: false
+        max:
+            lock:
+                time: 5
+    bootstrap:
+        adminuser: true
+        folder: true
     authority:
         name: 'Mauro Data Mapper'
         url: http://localhost
@@ -111,8 +113,9 @@ grails:
     cors:
         enabled: true
         # The following are the defaults
-        allowedOrigins: ['*']
-        allowedMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD']
+        # allowedOrigins: ['*'] # Cannot use allowedOrigins with *, they have to be clearly stated origins
+        allowedOriginPatterns: [ '*' ]
+        allowedMethods: [ 'GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD' ]
         allowedHeaders: [ 'origin', 'content-type', 'accept', 'authorization', 'pragma', 'cache-control' ]
         #exposedHeaders: null
         #maxAge: 1800
@@ -146,7 +149,9 @@ hibernate:
             provider: org.ehcache.jsr107.EhcacheCachingProvider
             missing_cache_strategy: create
     search:
-        default.indexBase: '/tmp/lucene/security'
+        backend:
+            directory:
+                root: 'build/lucene'
 
 ---
 dataSource:
@@ -161,6 +166,11 @@ dataSource:
 environments:
     test:
         spring.flyway.enabled: false
+        maurodatamapper:
+            security:
+                max:
+                    lock:
+                        time: 1
         database:
             name: 'msTest'
             creation: 'CREATE SCHEMA IF NOT EXISTS core\;CREATE SCHEMA IF NOT EXISTS security'

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.
 import groovy.util.logging.Slf4j
 
 @Slf4j
-class CodeSetJsonImporterService extends DataBindCodeSetImporterProviderService<CodeSetFileImporterProviderServiceParameters> 
-    implements JsonImportMapping {
+class CodeSetJsonImporterService extends DataBindCodeSetImporterProviderService<CodeSetFileImporterProviderServiceParameters> implements JsonImportMapping {
 
     @Override
     String getDisplayName() {
@@ -37,7 +36,12 @@ class CodeSetJsonImporterService extends DataBindCodeSetImporterProviderService<
 
     @Override
     String getVersion() {
-        '3.0'
+        '4.0'
+    }
+
+    @Override
+    Boolean canImportMultipleDomains() {
+        true
     }
 
     @Override
@@ -51,6 +55,23 @@ class CodeSetJsonImporterService extends DataBindCodeSetImporterProviderService<
         if (!codeSet) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as codeSet is not present')
 
         log.debug('Importing CodeSet map')
-        bindMapToCodeSet currentUser, new HashMap(codeSet)
+        bindMapToCodeSet(currentUser, new HashMap(codeSet))
+    }
+
+    @Override
+    List<CodeSet> importCodeSets(User currentUser, byte[] content) {
+        if (!currentUser) throw new ApiUnauthorizedException('JIS01', 'User must be logged in to import model')
+        if (content.size() == 0) throw new ApiBadRequestException('JIS02', 'Cannot import empty content')
+
+        log.debug('Parsing in file content using JsonSlurper')
+        Object jsonContent = slurpAndClean(content)
+        List<Map> jsonMaps = jsonContent.codeSets?.unique() ?: [jsonContent.codeSet]
+
+        List<Map> codeSetMaps = jsonMaps.findAll { it }
+        if (!codeSetMaps) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as codeSet(s) is not present')
+        if (codeSetMaps.size() < jsonMaps.size()) log.warn('Cannot import certain JSON as codeSet(s) is not present')
+
+        log.debug('Importing CodeSet map')
+        codeSetMaps.collect { bindMapToCodeSet(currentUser, new HashMap(it)) }
     }
 }

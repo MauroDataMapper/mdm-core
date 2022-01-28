@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.search
 
-import uk.ac.ox.softeng.maurodatamapper.core.search.bridge.MetadataBridge
-import uk.ac.ox.softeng.maurodatamapper.search.PipeTokenizerAnalyzer
-import uk.ac.ox.softeng.maurodatamapper.search.bridge.OffsetDateTimeBridge
+import uk.ac.ox.softeng.maurodatamapper.core.hibernate.search.mapper.pojo.binder.MetadataBinder
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.mapper.pojo.bridge.binder.PathBinder
 
 /**
  * @since 27/02/2020
@@ -27,14 +26,13 @@ import uk.ac.ox.softeng.maurodatamapper.search.bridge.OffsetDateTimeBridge
 class StandardSearch {
 
     static search = {
-        label index: 'yes', analyzer: 'wordDelimiter', sortable: [name: 'label_sort', normalizer: 'lowercase'], termVector: 'with_positions'
+        label searchable: 'yes', analyzer: 'wordDelimiter', sortable: [name: 'label_sort', normalizer: 'lowercase'], termVector: 'with_positions'
         description termVector: 'with_positions'
-        //domainType index: 'yes', sortable: [name: 'domainType_sort', normalizer: 'lowercase']
-        aliasesString index: 'yes', analyzer: PipeTokenizerAnalyzer
-        metadata bridge: ['class': MetadataBridge]
-        metadata indexEmbedded: true
-        classifiers indexEmbedded: true
-        lastUpdated index: 'yes', bridge: ['class': OffsetDateTimeBridge]
-        dateCreated index: 'yes', bridge: ['class': OffsetDateTimeBridge]
+        aliasesString searchable: 'yes', analyzer: 'pipe'
+        metadata binder: MetadataBinder, indexingDependency: [reindexOnUpdate: 'shallow'], indexEmbedded: [includePaths: ['key', 'value', 'namespace']]
+        classifiers indexingDependency: [reindexOnUpdate: 'shallow'], indexEmbedded: [includePaths: ['label', 'description']]
+        lastUpdated searchable: 'yes'
+        dateCreated searchable: 'yes'
+        path valueBinder: new PathBinder()
     }
 }

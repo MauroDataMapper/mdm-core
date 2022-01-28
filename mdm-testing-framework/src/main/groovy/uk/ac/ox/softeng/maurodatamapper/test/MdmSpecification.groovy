@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.test.unit.security.TestUser
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
-import grails.testing.spock.OnceBefore
 import grails.validation.Validateable
 import grails.validation.ValidationException
 import groovy.transform.CompileStatic
@@ -47,8 +47,9 @@ abstract class MdmSpecification extends Specification {
     static UUID reader2Id
     static UUID pendingId
 
-    @OnceBefore
-    def setupUserIds() {
+    long startTime
+
+    def setupSpec() {
         log.debug('Setup User Ids')
         adminId = UUID.randomUUID()
         editorId = UUID.randomUUID()
@@ -58,7 +59,13 @@ abstract class MdmSpecification extends Specification {
     }
 
     def setup() {
-        log.warn('--- {} --- {} ---', getClass().simpleName, specificationContext.currentIteration.name)
+        startTime = System.currentTimeMillis()
+        log.warn('--- {} --- {} ---', specificationContext.currentSpec.displayName, specificationContext.currentIteration.displayName)
+    }
+
+    def cleanup() {
+        log.warn('--- {} --- {} >>> {} ---', specificationContext.currentSpec.displayName, specificationContext.currentIteration.displayName,
+                 Utils.timeTaken(startTime))
     }
 
     void check(GormEntity domainObj) {

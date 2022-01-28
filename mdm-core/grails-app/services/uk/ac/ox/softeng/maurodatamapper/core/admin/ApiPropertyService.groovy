@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.admin
 
+// import asset.pipeline.AssetPipelineConfigHolder
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import asset.pipeline.grails.AssetResourceLocator
@@ -118,7 +119,7 @@ class ApiPropertyService {
         grailsLinkGenerator.setConfiguredServerBaseURL(apiProperty.value)
     }
 
-    void checkAndSetSiteUrl(configServerUrl, configContextPath, User user) {
+    void checkAndSetSiteUrl(String configServerUrl, String configContextPath, User user) {
         ApiProperty siteUrlProperty = findByApiPropertyEnum(ApiPropertyEnum.SITE_URL)
         // If no site url property but a config server url then create a new property
         if (!siteUrlProperty && configServerUrl) {
@@ -177,6 +178,27 @@ class ApiPropertyService {
 
     void loadDefaultPropertiesIntoDatabase(User createdBy) {
         log.info('Loading default API properties')
+
+
+        // TODO: Once we're happy that this issue has been solved, the extra logging can be removed
+/*        log.info("Class Search Directories: ")
+        assetResourceLocator.classSearchDirectories.each {
+            log.info(it)
+        }
+        log.info("Resource Search Directories: ")
+        assetResourceLocator.resourceSearchDirectories.each {
+            log.info(it)
+        }
+        log.info("Plugin List: ")
+        assetResourceLocator.pluginManager.pluginList.each {
+            log.info(it.toString())
+        }
+        log.info("Manifest properties found: ")
+        log.info(AssetPipelineConfigHolder.manifest.toString())
+
+        log.info("Is war: " + assetResourceLocator.warDeployed)
+        log.info(assetResourceLocator.defaultResourceLoader.toString())
+*/
         Resource resource = assetResourceLocator.findAssetForURI('defaults.properties')
         try {
             if (resource?.exists()) {
@@ -199,6 +221,8 @@ class ApiPropertyService {
                 } catch (FileNotFoundException ignored) {
                     log.warn('URL loading of API defaults file failed as asset not found')
                 }
+            } else {
+                log.error("Cannot find the defaults.properties file")
             }
         } catch (IOException e) {
             log.error('Something went wrong trying to load default API Properties', e)

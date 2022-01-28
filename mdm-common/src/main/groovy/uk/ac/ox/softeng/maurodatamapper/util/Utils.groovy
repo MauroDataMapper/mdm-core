@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +17,23 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.util
 
+import grails.config.Config
 import grails.core.GrailsApplication
 import grails.core.GrailsClass
 import groovy.transform.CompileStatic
+import groovy.util.logging.Slf4j
 import org.grails.core.artefact.DomainClassArtefactHandler
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 import java.lang.management.ManagementFactory
 import java.lang.management.RuntimeMXBean
+import java.time.Duration
 
 /**
  * @since 15/03/2018
  */
+@Slf4j
 @CompileStatic
 class Utils {
 
@@ -38,12 +42,22 @@ class Utils {
     }
 
     static String getTimeString(long duration) {
+        durationToString(Duration.ofMillis(duration))
+    }
+
+    static String durationToString(Duration duration) {
         StringBuilder sb = new StringBuilder()
 
-        long secs = (duration / 1000) as long
-        long ms = duration - (secs * 1000)
-        long mins = (secs / 60) as long
-        secs = secs % 60
+        int hrs = duration.toHoursPart()
+        int mins = duration.toMinutesPart()
+        int secs = duration.toSecondsPart()
+        int ms = duration.toMillisPart()
+
+        if (hrs > 0) {
+            sb.append(duration.toHoursPart()).append(' hr')
+            if (hrs > 1) sb.append('s')
+            sb.append(' ')
+        }
 
         if (mins > 0) {
             sb.append(mins).append(' min')
@@ -58,6 +72,8 @@ class Utils {
         }
 
         sb.append(ms).append(' ms').toString()
+
+        sb.toString()
     }
 
     static void outputRuntimeArgs(Class clazz) {
@@ -113,13 +129,43 @@ class Utils {
     }
 
     static GrailsClass lookupGrailsDomain(GrailsApplication grailsApplication, String lookup) {
-        grailsApplication.getArtefacts(DomainClassArtefactHandler.TYPE).find {
-            lookup in [
-                it.getPropertyName(),
-                it.getPropertyName() + 's',
-                it.getPropertyName() + 'es',
-                it.getPropertyName().replaceFirst(/y$/, 'ies')
-            ] || lookup == it.getShortName()
+        if (!cachedGrailsDomains) loadGrailsDomainsCache(grailsApplication)
+        GrailsClass gc = cachedGrailsDomains[lookup]
+        if (gc) return gc
+        // Just incase theres a secondary load of artefacts we can check the system again
+        // Should only happen under test
+        log.debug('Reloading grails domain cache')
+        loadGrailsDomainsCache(grailsApplication)
+        cachedGrailsDomains[lookup]
+    }
+
+    private static Map<String, GrailsClass> cachedGrailsDomains = [:]
+
+    private static void loadGrailsDomainsCache(GrailsApplication grailsApplication) {
+        grailsApplication.getArtefacts(DomainClassArtefactHandler.TYPE).each {gc ->
+            cachedGrailsDomains[gc.getShortName()] = gc
+            cachedGrailsDomains[gc.propertyName] = gc
+            cachedGrailsDomains[(gc.propertyName + 's')] = gc
+            cachedGrailsDomains[(gc.propertyName + 'es')] = gc
+            cachedGrailsDomains[(gc.propertyName.replaceFirst(/y$/, 'ies'))] = gc
         }
+    }
+
+    /**
+     * Utility method to handle the issue where we need a map out of the grails config but they deprecated the navigable map.
+     */
+    static Map<String, Object> getMapFromConfig(Config config, String keyPrefix) {
+        cleanPrefixFromMap(
+            config.findAll {it.key.startsWith(keyPrefix) && !(it.value instanceof Map)}, keyPrefix
+        )
+    }
+
+    static Map<String, Object> cleanPrefixFromMap(Map<String, Object> map, String prefix) {
+        map.findAll {it.key.startsWith(prefix)}
+            .collectEntries {k, v -> [k.replace(/$prefix./, ''), v]}
+    }
+
+    static byte[] copyOf(byte[] contents) {
+        Arrays.copyOf(contents, contents.size())
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,23 +22,35 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFile
 import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFileService
 import uk.ac.ox.softeng.maurodatamapper.core.security.UserService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.AnonymisableService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.security.rest.transport.UserProfilePicture
 import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityUtils
 
-import com.opencsv.CSVWriter
 import grails.gorm.transactions.Transactional
+import org.apache.commons.csv.CSVFormat
+import org.apache.commons.csv.CSVPrinter
+import org.springframework.beans.factory.annotation.Autowired
 
 import java.security.NoSuchAlgorithmException
 import java.time.OffsetDateTime
 
 @Transactional
-class CatalogueUserService implements UserService {
+class CatalogueUserService implements UserService, MdmDomainService<CatalogueUser> {
 
     UserImageFileService userImageFileService
     UserGroupService userGroupService
 
+    @Autowired(required = false)
+    List<AnonymisableService> anonymisableServices
+
     CatalogueUser get(Serializable id) {
         CatalogueUser.get(id) ?: id instanceof String ? findByEmailAddress(id) : null
+    }
+
+    @Override
+    List<CatalogueUser> getAll(Collection<UUID> resourceIds) {
+        CatalogueUser.getAll(resourceIds)
     }
 
     List<CatalogueUser> list(Map pagination) {
@@ -53,8 +65,44 @@ class CatalogueUserService implements UserService {
         delete(get(id))
     }
 
-    void delete(CatalogueUser catalogueUser) {
-        catalogueUser.disabled = true
+    void delete(CatalogueUser catalogueUser, boolean permanent = false) {
+        if (permanent) {
+            anonymiseAndPermanentlyDelete(catalogueUser)
+        } else {
+            catalogueUser.disabled = true
+        }
+    }
+
+    /**
+     * When it is necessary to completely scrub the user's name and email address from the database,
+     * this method:
+     * - Use the anonymise method on every AnonymisableService
+     * - Explicitly anonymise the CatalogueUser table
+     * - Removes the CatalogueUser from any UserGroups
+     * - Finally, permanently delete the CatalogueUser.
+     *
+     * @param catalogueUser
+     */
+    void anonymiseAndPermanentlyDelete(CatalogueUser catalogueUser) {
+        // Anonymise everything
+        anonymisableServices.each {
+            it.anonymise(catalogueUser.emailAddress)
+        }
+
+        anonymise(catalogueUser.emailAddress)
+
+        // Remove user from any user groups
+        catalogueUser.groups.each {group ->
+            catalogueUser.removeFromGroups(group)
+        }
+
+        // Delete
+        catalogueUser.delete(flush: true)
+    }
+
+    @Override
+    CatalogueUser findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        return null
     }
 
     CatalogueUser findByEmailAddress(String emailAddress) {
@@ -245,16 +293,15 @@ class CatalogueUserService implements UserService {
     ByteArrayOutputStream convertToCsv(List<CatalogueUser> allUsers) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream()
         OutputStreamWriter streamWriter = new OutputStreamWriter(outputStream)
-        CSVWriter writer = new CSVWriter(streamWriter)
-        String[] headerUsers = ['Email Address', 'First Name', 'Last Name', 'Last Login', 'Organisation', 'Job Title', 'Disabled', 'Pending']
-        writer.writeNext(headerUsers, false)
+        CSVPrinter csvPrinter = new CSVPrinter(new BufferedWriter(streamWriter), CSVFormat.DEFAULT)
+        csvPrinter.printRecord('Email Address', 'First Name', 'Last Name', 'Last Login', 'Organisation', 'Job Title', 'Disabled', 'Pending')
         allUsers.each {user ->
-            String[] userDetails = [user.emailAddress, user.firstName, user.lastName, user.lastLogin, user.organisation, user.jobTitle,
-                                    user.disabled, user.pending]
-            writer.writeNext(userDetails, false)
+            csvPrinter.printRecord(user.emailAddress, user.firstName, user.lastName, user.lastLogin, user.organisation, user.jobTitle,
+                                   user.disabled, user.pending)
         }
-        writer.close()
-        return outputStream
+        csvPrinter.close()
+        streamWriter.close()
+        outputStream
     }
 
     Long countPendingUsers(Map pagination = [:]) {

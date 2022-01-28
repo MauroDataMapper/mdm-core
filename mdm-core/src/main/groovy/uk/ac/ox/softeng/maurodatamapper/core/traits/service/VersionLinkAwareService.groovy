@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,19 +21,17 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.VersionLinkAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import groovy.transform.SelfType
 
 /**
  * @since 29/04/2021
  */
-@SelfType([MultiFacetAwareService, DomainService])
+@SelfType([MultiFacetAwareService, MdmDomainService])
 trait VersionLinkAwareService<K extends VersionLinkAware> {
 
     abstract Class<K> getVersionLinkAwareClass()
-
-    abstract boolean handles(String domainType)
 
     abstract VersionLinkService getVersionLinkService()
 
@@ -48,7 +46,7 @@ trait VersionLinkAwareService<K extends VersionLinkAware> {
     }
 
     List<UUID> findAllSupersededModelIds(List<K> models) {
-        findAllSupersededIds(models.collect { (it as CreatorAware).id })
+        findAllSupersededIds(models.collect { (it as MdmDomain).id })
     }
 
     List<K> findAllDocumentationSupersededModels(Map pagination) {

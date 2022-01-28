@@ -45,7 +45,8 @@ grails:
         enabled: true
         allowCredentials: true
         # The following are the defaults
-        #allowedOrigins: ['*']
+        # allowedOrigins: ['*'] # Cannot use allowedOrigins with *, they have to be clearly stated origins
+        # allowedOriginPatterns: ['*']
         #exposedHeaders: null
         #maxAge: 1800
     databinding:
@@ -65,17 +66,15 @@ spring:
         ignoreMissingMigrations: true
         baselineOnMigrate: true
 ---
-
 hibernate:
     configClass: uk.ac.ox.softeng.maurodatamapper.core.hibernate.MauroDataMapperHibernateMappingContextConfiguration
     search:
-        lucene_version: 5.5.5
-        default:
-            indexmanager: near-real-time
-            directory_provider: filesystem
-            optimizer:
-                operation_limit.max: 1000
-                transaction_limit.max: 100
+        configuration_property_checking:
+            strategy: ignore
+        backend:
+            lucene_version: 8.7.0
+            analysis:
+                configurer: 'class:uk.ac.ox.softeng.maurodatamapper.hibernate.search.backend.lucene.analysis.MdmLuceneAnalysisConfigurer'
         # Defaults
         massindexer:
             typesToIndexInParallel: 1
@@ -101,13 +100,17 @@ hibernate:
         batch_size: 30
     order_inserts: true
     order_updates: true
-grails:
-    plugins:
-        hibernatesearch:
-            rebuildIndexOnStart: true
 environments:
+    test:
+        grails:
+            plugins:
+                hibernatesearch:
+                    rebuildIndexOnStart: false
     development:
         grails:
+            plugins:
+                hibernatesearch:
+                    rebuildIndexOnStart: true
             views:
                 markup:
                     cacheTemplates: false

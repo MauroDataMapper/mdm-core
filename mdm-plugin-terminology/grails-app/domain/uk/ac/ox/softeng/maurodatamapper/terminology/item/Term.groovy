@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,13 +39,7 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
-import org.apache.lucene.analysis.core.KeywordAnalyzer
-import org.grails.datastore.gorm.GormEntity
 import org.grails.datastore.mapping.validation.CascadeValidateType
-import org.hibernate.search.annotations.Field
-import org.hibernate.search.annotations.FieldBridge
-import org.hibernate.search.annotations.Index
-import org.hibernate.search.bridge.builtin.UUIDBridge
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
 class Term implements ModelItem<Term, Terminology> {
@@ -59,6 +53,7 @@ class Term implements ModelItem<Term, Terminology> {
     String definition
     String url
     Boolean isParent
+    Integer depth
 
     static belongsTo = [Terminology, CodeSet]
 
@@ -84,6 +79,7 @@ class Term implements ModelItem<Term, Terminology> {
         url nullable: true, url: true
         isParent nullable: false
         definition nullable: false, blank: false
+        depth nullable: false
     }
 
     static mapping = {
@@ -107,8 +103,9 @@ class Term implements ModelItem<Term, Terminology> {
 
     static search = {
         CallableSearch.call(ModelItemSearch, delegate)
-        code index: 'yes', analyzer: KeywordAnalyzer, sortable: [name: 'code_sort', normalizer: 'lowercase'], termVector: 'with_positions'
+        code searchable: 'yes', analyzer: 'keyword', sortable: [name: 'code_sort', normalizer: 'lowercase'], termVector: 'with_positions'
         definition termVector: 'with_positions'
+        modelId searchable: 'yes', indexingDependency: [reindexOnUpdate: 'shallow', derivedFrom: 'terminology']
     }
 
     Term() {
@@ -157,7 +154,6 @@ class Term implements ModelItem<Term, Terminology> {
         pathIdentifier
     }
 
-    @Field(index = Index.YES, bridge = @FieldBridge(impl = UUIDBridge))
     UUID getModelId() {
         terminology.id
     }
@@ -166,18 +162,7 @@ class Term implements ModelItem<Term, Terminology> {
         label = code && definition && code == definition ? "${code}".toString() :
                 code && definition ? "${code}: ${definition}".toString() :
                 null
-        buildTermPath()
         beforeValidateModelItem()
-    }
-
-    @Override
-    def beforeInsert() {
-        buildTermPath()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildTermPath()
     }
 
     @Override
@@ -211,7 +196,7 @@ class Term implements ModelItem<Term, Terminology> {
     }
 
     @Override
-    GormEntity getPathParent() {
+    Terminology getParent() {
         terminology
     }
 
@@ -243,11 +228,6 @@ class Term implements ModelItem<Term, Terminology> {
         path
     }
 
-    @Override
-    String buildPath() {
-        // no-op
-    }
-
     Term addToSourceTermRelationships(Map args) {
         addToSourceTermRelationships new TermRelationship(args)
     }
@@ -272,6 +252,10 @@ class Term implements ModelItem<Term, Terminology> {
 
     static DetachedCriteria<Term> byTerminologyId(UUID terminologyId) {
         by().eq('terminology.id', terminologyId)
+    }
+
+    static DetachedCriteria<Term> byTerminologyIdInList(Collection<UUID> terminologyIds) {
+        by().inList('terminology.id', terminologyIds)
     }
 
     static DetachedCriteria<Term> byTerminologyIdAndHasChildDepth(UUID terminologyId) {

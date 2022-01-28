@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,12 +28,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchData
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -42,11 +40,13 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.CodeSetJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.CodeSetJsonImporterService
+import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import org.hibernate.engine.spi.SessionFactoryImplementor
 
 @Slf4j
 @Transactional
@@ -96,11 +96,6 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    void deleteAll(Collection<CodeSet> catalogueItems) {
-        deleteAll(catalogueItems.id, true)
-    }
-
-    @Override
     void delete(CodeSet codeSet) {
         codeSet.deleted = true
     }
@@ -110,21 +105,11 @@ class CodeSetService extends ModelService<CodeSet> {
         if (!codeSet) return
         if (permanent) {
             codeSet.folder = null
+            codeSet.delete(flush: flush)
             if (securityPolicyManagerService) {
                 securityPolicyManagerService.removeSecurityForSecurableResource(codeSet, null)
             }
-            codeSet.delete(flush: flush)
         } else delete(codeSet)
-    }
-
-    List<CodeSet> deleteAll(List<Serializable> idsToDelete, Boolean permanent) {
-        List<CodeSet> updated = []
-        idsToDelete.each {
-            CodeSet t = get(it)
-            delete(t, permanent, false)
-            if (!permanent) updated << t
-        }
-        updated
     }
 
     @Override
@@ -143,6 +128,37 @@ class CodeSetService extends ModelService<CodeSet> {
     CodeSet saveModelNewContentOnly(CodeSet model) {
         log.debug('Saving {}({}) without batching', model.label, model.ident())
         save(failOnError: true, validate: false, flush: true, model)
+    }
+
+    @Override
+    void deleteModelsAndContent(Set<UUID> idsToDelete) {
+        GormUtils.disableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
+
+        log.trace('Removing Term relationships to {} CodeSets', idsToDelete.size())
+        sessionFactory.currentSession
+            .createSQLQuery('DELETE FROM terminology.join_codeset_to_term WHERE codeset_id IN :ids')
+            .setParameter('ids', idsToDelete)
+            .executeUpdate()
+
+        log.trace('Removing facets')
+        deleteAllFacetsByMultiFacetAwareIds(idsToDelete.toList(), 'delete from terminology.join_codeset_to_facet where codeset_id in :ids')
+
+        log.trace('Content removed')
+        sessionFactory.currentSession
+            .createSQLQuery('DELETE FROM terminology.code_set WHERE id IN :ids')
+            .setParameter('ids', idsToDelete)
+            .executeUpdate()
+
+        log.trace('CodeSets removed')
+
+        sessionFactory.currentSession
+            .createSQLQuery('DELETE FROM core.breadcrumb_tree WHERE domain_id IN :ids')
+            .setParameter('ids', idsToDelete)
+            .executeUpdate()
+
+        log.trace('Breadcrumb trees removed')
+
+        GormUtils.enableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
     }
 
     @Override
@@ -198,73 +214,10 @@ class CodeSetService extends ModelService<CodeSet> {
         latest
     }
 
-    @Override
-    CodeSet mergeLegacyObjectPatchDataIntoModel(ObjectPatchData objectPatchData, CodeSet targetModel,
-                                                UserSecurityPolicyManager userSecurityPolicyManager) {
-
-
-        if (!objectPatchData.hasPatches()) return targetModel
-
-        objectPatchData.getDiffsWithContent().each { mergeFieldDiff ->
-
-            if (mergeFieldDiff.isFieldChange()) {
-                targetModel.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
-            } else if (mergeFieldDiff.isMetadataChange()) {
-                mergeLegacyMetadataIntoCatalogueItem(mergeFieldDiff, targetModel, userSecurityPolicyManager)
-            } else {
-                ModelItemService modelItemService = modelItemServices.find { it.handles(mergeFieldDiff.fieldName) }
-
-                if (modelItemService) {
-
-                    // Special handling for terms as CodeSets dont own terms
-                    if (mergeFieldDiff.fieldName == 'terms') {
-                        // apply deletions of children to target object
-                        mergeFieldDiff.deleted.each { mergeItemData ->
-                            Term modelItem = modelItemService.get(mergeItemData.id) as Term
-                            targetModel.removeFromTerms(modelItem)
-                        }
-
-                        // copy additions from source to target object
-                        mergeFieldDiff.created.each { mergeItemData ->
-                            Term modelItem = modelItemService.get(mergeItemData.id) as Term
-                            targetModel.addToTerms(modelItem)
-                        }
-                        // for modifications, recursively call this method
-                        mergeFieldDiff.modified.each { mergeObjectDiffData ->
-                            Term termToRemove = modelItemService.get(mergeObjectDiffData.leftId) as Term
-                            Term termToAdd = modelItemService.get(mergeObjectDiffData.rightId) as Term
-                            targetModel.removeFromTerms(termToRemove)
-                            targetModel.addToTerms(termToAdd)
-                        }
-                    } else {
-                        // apply deletions of children to target object
-                        mergeFieldDiff.deleted.each { mergeItemData ->
-                            ModelItem modelItem = modelItemService.get(mergeItemData.id) as ModelItem
-                            modelItemService.delete(modelItem)
-                        }
-
-                        // copy additions from source to target object
-                        mergeFieldDiff.created.each { mergeItemData ->
-                            ModelItem modelItem = modelItemService.get(mergeItemData.id) as ModelItem
-                            modelItemService.copy(targetModel, modelItem, userSecurityPolicyManager)
-                        }
-                        // for modifications, recursively call this method
-                        mergeFieldDiff.modified.each { mergeObjectDiffData ->
-                            ModelItem modelItem = modelItemService.get(mergeObjectDiffData.leftId) as ModelItem
-                            modelItemService.
-                                mergeLegacyObjectPatchDataIntoModelItem(mergeObjectDiffData, modelItem, targetModel, userSecurityPolicyManager)
-                        }
-                    }
-                } else {
-                    log.error('Unknown ModelItem field to merge [{}]', mergeFieldDiff.fieldName)
-                }
-            }
-        }
-        targetModel
-    }
-
     CodeSet copyModel(CodeSet original, Folder folderToCopyTo, User copier, boolean copyPermissions, String label, Version copyDocVersion,
                       String branchName, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
+        long start = System.currentTimeMillis()
+        log.debug('Creating a new copy of {} with branch name {}', original.label, branchName)
         CodeSet copy = new CodeSet(author: original.author,
                                    organisation: original.organisation,
                                    finalised: false, deleted: false, documentationVersion: copyDocVersion,
@@ -294,11 +247,11 @@ class CodeSetService extends ModelService<CodeSet> {
 
         copy.trackChanges()
 
-        // Copy all the terms
-        original.terms?.each { term ->
+        List<Term> terms = termService.findAllByCodeSetId(original.id)
+        terms.each { term ->
             copy.addToTerms(term)
         }
-
+        log.debug('Copy of codeset took {}', Utils.timeTaken(start))
         copy
     }
 
@@ -315,9 +268,9 @@ class CodeSetService extends ModelService<CodeSet> {
 
         List<CodeSet> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            log.debug('Performing lucene label search')
+            log.debug('Performing hs label search')
             long start = System.currentTimeMillis()
-            results = CodeSet.luceneLabelSearch(CodeSet, searchTerm, readableIds.toList()).results
+            results = CodeSet.labelHibernateSearch(CodeSet, searchTerm, readableIds.toList(), []).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
 
@@ -335,13 +288,19 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    List<CodeSet> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        CodeSet.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(CodeSet, it.id) }
+    List<CodeSet> findAllByClassifier(Classifier classifier) {
+        CodeSet.byClassifierId(classifier.id).list() as List<CodeSet>
     }
 
     @Override
-    Class<CodeSet> getModelClass() {
-        CodeSet
+    List<CodeSet> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
+        findAllByClassifier(classifier).findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(CodeSet, it.id) }
+    }
+
+    @Override
+    Integer countByContainerId(UUID containerId) {
+        // We do not concern ourselves any other types of containers for CodeSets at this time
+        CodeSet.byFolderId(containerId).count()
     }
 
     @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,9 +26,10 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import asset.pipeline.grails.AssetResourceLocator
 import groovy.util.logging.Slf4j
-import groovy.util.slurpersupport.GPathResult
-import groovy.util.slurpersupport.NodeChild
-import groovy.util.slurpersupport.NodeChildren
+import groovy.xml.XmlSlurper
+import groovy.xml.slurpersupport.GPathResult
+import groovy.xml.slurpersupport.NodeChild
+import groovy.xml.slurpersupport.NodeChildren
 import org.springframework.core.io.Resource
 
 import java.nio.charset.Charset

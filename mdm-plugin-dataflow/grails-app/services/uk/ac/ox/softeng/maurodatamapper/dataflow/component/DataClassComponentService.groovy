@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,13 +98,14 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
         }
     }
 
-    void deleteAllByModelId(UUID modelId) {
+    @Override
+    void deleteAllByModelIds(Set<UUID> modelIds) {
 
         List<UUID> dataClassComponentIds = DataClassComponent.by().where {
             dataFlow {
                 or {
-                    eq 'source.id', modelId
-                    eq 'target.id', modelId
+                    inList 'source.id', modelIds
+                    inList 'target.id', modelIds
                 }
             }
         }.id().list() as List<UUID>
@@ -112,7 +113,7 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
         if (dataClassComponentIds) {
 
             log.trace('Removing DataElementComponents in {} DataClassComponents', dataClassComponentIds.size())
-            dataElementComponentService.deleteAllByModelId(modelId)
+            dataElementComponentService.deleteAllByModelIds(modelIds)
 
             log.trace('Removing links to DataClasses in {} DataClassComponents', dataClassComponentIds.size())
             sessionFactory.currentSession
@@ -152,11 +153,6 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
     }
 
     @Override
-    Class<DataClassComponent> getModelItemClass() {
-        DataClassComponent
-    }
-
-    @Override
     DataClassComponent findByIdJoinClassifiers(UUID id) {
         DataClassComponent.findById(id, [fetch: [classifiers: 'join']])
     }
@@ -169,9 +165,13 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
     }
 
     @Override
+    List<DataClassComponent> findAllByClassifier(Classifier classifier) {
+        DataClassComponent.byClassifierId(classifier.id).list()
+    }
+
+    @Override
     List<DataClassComponent> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        DataClassComponent.byClassifierId(classifier.id).list().
-            findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id) }
+        findAllByClassifier(classifier).findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)}
     }
 
     @Override
@@ -211,7 +211,7 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
 
         if (rawSourceDataClasses) {
             rawSourceDataClasses.each {sdc ->
-                Path path = Path.from(sdc.path)
+                Path path = sdc.uncheckedPath
                 DataClass sourceDataClass = pathService.findResourceByPathFromRootClass(DataModel, path) as DataClass
 
                 if (sourceDataClass) {
@@ -230,7 +230,7 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
 
         if (rawTargetDataClasses) {
             rawTargetDataClasses.each {tdc ->
-                Path path = Path.from(tdc.path)
+                Path path = tdc.uncheckedPath
                 DataClass targetDataClass = pathService.findResourceByPathFromRootClass(DataModel, path) as DataClass
 
                 if (targetDataClass) {

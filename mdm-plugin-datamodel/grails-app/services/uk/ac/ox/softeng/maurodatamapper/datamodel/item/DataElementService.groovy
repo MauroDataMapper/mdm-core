@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,32 +24,37 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
-import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
-import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityResult
+import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityPair
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate.FilterFactory
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate.IdPathSecureFilterFactory
+import uk.ac.ox.softeng.maurodatamapper.lucene.queries.mlt.BoostedMoreLikeThisQuery
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import org.apache.lucene.search.Query
-import org.hibernate.search.engine.ProjectionConstants
-import org.hibernate.search.jpa.FullTextEntityManager
-import org.hibernate.search.jpa.FullTextQuery
-import org.hibernate.search.jpa.Search
-import org.hibernate.search.query.dsl.QueryBuilder
+import org.apache.lucene.analysis.Analyzer
+import org.hibernate.search.backend.lucene.LuceneBackend
+import org.hibernate.search.backend.lucene.LuceneExtension
+import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep
+import org.hibernate.search.engine.search.query.SearchResult
+import org.hibernate.search.mapper.orm.Search
+import org.hibernate.search.mapper.orm.mapping.SearchMapping
+import org.hibernate.search.mapper.orm.session.SearchSession
 
-import javax.persistence.EntityManager
+import java.util.function.BiFunction
 
 @Slf4j
 @Transactional
@@ -58,7 +63,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     DataClassService dataClassService
     DataTypeService dataTypeService
     SummaryMetadataService summaryMetadataService
-    PathService pathService
+    DataModelService dataModelService
 
     @Override
     DataElement get(Serializable id) {
@@ -81,7 +86,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
 
     @Override
     void deleteAll(Collection<DataElement> dataElements) {
-        dataElements.each {delete(it)}
+        dataElements.each { delete(it) }
     }
 
     void delete(UUID id) {
@@ -96,10 +101,11 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
         dataElement.delete(flush: flush)
     }
 
-    void deleteAllByModelId(UUID dataModelId) {
+    @Override
+    void deleteAllByModelIds(Set<UUID> dataModelIds) {
         List<UUID> dataElementIds = DataElement.by().where {
             dataClass {
-                eq('dataModel.id', dataModelId)
+                inList('dataModel.id', dataModelIds)
             }
         }.id().list() as List<UUID>
 
@@ -153,10 +159,10 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     DataElement checkFacetsAfterImportingCatalogueItem(DataElement catalogueItem) {
         super.checkFacetsAfterImportingCatalogueItem(catalogueItem)
         if (catalogueItem.summaryMetadata) {
-            catalogueItem.summaryMetadata.each {sm ->
+            catalogueItem.summaryMetadata.each { sm ->
                 sm.multiFacetAwareItemId = catalogueItem.id
                 sm.createdBy = sm.createdBy ?: catalogueItem.createdBy
-                sm.summaryMetadataReports.each {smr ->
+                sm.summaryMetadataReports.each { smr ->
                     smr.createdBy = catalogueItem.createdBy
                 }
             }
@@ -177,13 +183,13 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     }
 
     @Override
-    List<DataElement> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        DataElement.byClassifierId(classifier.id).list().findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)}
+    List<DataElement> findAllByClassifier(Classifier classifier) {
+        DataElement.byClassifierId(classifier.id).list()
     }
 
     @Override
-    Class<DataElement> getModelItemClass() {
-        DataElement
+    List<DataElement> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
+        findAllByClassifier(classifier).findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id) }
     }
 
     @Override
@@ -200,9 +206,12 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
 
         List<DataElement> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            log.debug('Performing lucene label search')
+            log.debug('Performing hs label search')
             long start = System.currentTimeMillis()
-            results = DataElement.luceneLabelSearch(DataElement, searchTerm, readableIds.toList()).results
+            results =
+                DataElement
+                    .labelHibernateSearch(DataElement, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds))
+                    .results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
 
@@ -212,13 +221,13 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     void matchUpDataTypes(DataModel dataModel, Collection<DataElement> dataElements) {
         if (dataElements) {
             log.debug("Matching up {} DataElements to a possible {} DataTypes", dataElements.size(), dataModel.dataTypes.size())
-            def grouped = dataElements.groupBy {it.dataType.label}.sort {a, b ->
+            def grouped = dataElements.groupBy { it.dataType.label }.sort { a, b ->
                 def res = a.value.size() <=> b.value.size()
                 if (res == 0) res = a.key <=> b.key
                 res
             }
             log.debug('Grouped {} DataElements by DataType label', grouped.size())
-            grouped.each {label, elements ->
+            grouped.each { label, elements ->
                 log.trace('Matching {} elements to DataType label {}', elements.size(), label)
                 DataType dataType = dataModel.findDataTypeByLabel(label)
 
@@ -229,7 +238,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
                     dataType.createdBy = dataElement.createdBy
                     dataModel.addToDataTypes(dataType)
                 }
-                elements.each {dataType.addToDataElements(it)}
+                elements.each { dataType.addToDataElements(it) }
             }
         }
     }
@@ -330,24 +339,16 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
             parent = parent.parentDataClass
         }
 
-        List<CreatorAware> pathObjects = []
+        List<MdmDomain> pathObjects = []
         pathObjects << dataElement.model
         pathObjects.addAll(parents.reverse())
         pathObjects << dataElement
         Path.from(pathObjects)
     }
 
-    @Deprecated
     @Override
-    DataElement copy(Model copiedModelInto, DataElement original, UserSecurityPolicyManager userSecurityPolicyManager) {
-        // The old code just searched for a label that matched which could result in the wrong DC being used, the path is better and more reliable
-        Path originalPath = buildDataElementPath(original)
-        DataClass parentToCopyInto = pathService.findResourceByPathFromRootResource(copiedModelInto, originalPath.childPath.parent)
-        copy(copiedModelInto, original, parentToCopyInto, userSecurityPolicyManager)
-    }
-
-    @Override
-    DataElement copy(Model copiedDataModel, DataElement original, CatalogueItem parentDataClass, UserSecurityPolicyManager userSecurityPolicyManager) {
+    DataElement copy(Model copiedDataModel, DataElement original, CatalogueItem parentDataClass,
+                     UserSecurityPolicyManager userSecurityPolicyManager) {
         DataElement copy = copyDataElement(copiedDataModel as DataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
         if (parentDataClass) {
             (parentDataClass as DataClass).addToDataElements(copy)
@@ -356,11 +357,12 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     }
 
     DataElement copyDataElement(DataModel copiedDataModel, DataElement original, User copier,
-                                UserSecurityPolicyManager userSecurityPolicyManager, CopyInformation copyInformation = new CopyInformation()) {
+                                UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata = false,
+                                CopyInformation copyInformation = new CopyInformation()) {
         DataElement copy = new DataElement(minMultiplicity: original.minMultiplicity,
                                            maxMultiplicity: original.maxMultiplicity)
 
-        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
+        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata, copyInformation)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         DataType dataType = copiedDataModel.findDataTypeByLabel(original.dataType.label)
@@ -380,12 +382,11 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
                                              DataElement copy,
                                              User copier,
                                              UserSecurityPolicyManager userSecurityPolicyManager,
-                                             boolean copySummaryMetadata, CopyInformation copyInformation) {
+                                             boolean copySummaryMetadata,
+                                             CopyInformation copyInformation) {
         copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
         if (copySummaryMetadata) {
-            summaryMetadataService.findAllByMultiFacetAwareItemId(original.id).each {
-                copy.addToSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
-            }
+            copySummaryMetadataFromOriginal(original, copy, copier, copyInformation)
         }
         copy
     }
@@ -394,50 +395,73 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     DataElement copyCatalogueItemInformation(DataElement original,
                                              DataElement copy,
                                              User copier,
-                                             UserSecurityPolicyManager userSecurityPolicyManager, CopyInformation copyInformation) {
+                                             UserSecurityPolicyManager userSecurityPolicyManager,
+                                             CopyInformation copyInformation) {
         copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, false, copyInformation)
     }
 
     DataElementSimilarityResult findAllSimilarDataElementsInDataModel(DataModel dataModelToSearch, DataElement dataElementToCompare, maxResults = 5) {
 
-        EntityManager entityManager = sessionFactory.createEntityManager()
-        FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager)
+        SearchSession searchSession = Search.session(sessionFactory.currentSession)
+        SearchMapping searchMapping = Search.mapping(sessionFactory)
+        Analyzer wordDelimiter = searchMapping.backend().unwrap(LuceneBackend).analyzer('wordDelimiter').get()
+        Analyzer standard = searchMapping.backend().unwrap(LuceneBackend).analyzer('standard').get()
 
+        String[] fields = ['label', 'dataClass.label', 'dataType.label', 'description'] as String[]
 
-        QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory()
-            .buildQueryBuilder()
-            .forEntity(DataElement)
-            .get()
-
-        Query moreLikeThisQuery = queryBuilder
-            .bool()
-            .must(queryBuilder.moreLikeThis()
-                      .excludeEntityUsedForComparison()
-                      .comparingField('label').boostedTo(1f)
-                      .andField('description').boostedTo(1f)
-                      .andField('dataType.label').boostedTo(1f)
-                      .andField('dataClass.label').boostedTo(1f)
-                      .toEntity(dataElementToCompare)
-                      .createQuery()
+        List<BoostedMoreLikeThisQuery> moreLikeThisQueries = [
+            new BoostedMoreLikeThisQuery(wordDelimiter, 'label', dataElementToCompare.label, fields)
+                .boostedTo(2f)
+                .withMinWordLength(2)
+                .withMinDocFrequency(2),
+            new BoostedMoreLikeThisQuery(wordDelimiter, 'dataClass.label', dataElementToCompare.dataClass.label, fields)
+                .boostedTo(1f)
+                .withMinWordLength(2)
+                .withMinDocFrequency(2),
+            new BoostedMoreLikeThisQuery(wordDelimiter, 'dataType.label', dataElementToCompare.dataType.label, fields)
+                .boostedTo(1f)
+                .withMinWordLength(2)
+                .withMinDocFrequency(2),
+        ]
+        if (dataElementToCompare.description)
+            moreLikeThisQueries.add(new BoostedMoreLikeThisQuery(standard, 'description', dataElementToCompare.description, fields)
+                                        .boostedTo(1f)
+                                        .withMinWordLength(2)
             )
-            .createQuery()
 
-        SimilarityResult similarityResult = new DataElementSimilarityResult(dataElementToCompare)
+        SearchResult<SimilarityPair<DataElement>> searchResult = searchSession.search(DataElement)
+            .extension(LuceneExtension.get())
+            .select { pf ->
+                pf.composite(new BiFunction<DataElement, Float, SimilarityPair<DataElement>>() {
 
-        FullTextQuery query = fullTextEntityManager
-            .createFullTextQuery(moreLikeThisQuery, DataElement)
-            .setMaxResults(maxResults)
-            .setProjection(ProjectionConstants.THIS, ProjectionConstants.SCORE)
+                    @Override
+                    SimilarityPair<DataElement> apply(DataElement dataElement, Float score) {
+                        dataElement.dataClass = proxyHandler.unwrapIfProxy(dataElement.dataClass)
+                        dataElement.dataType = proxyHandler.unwrapIfProxy(dataElement.dataType)
+                        dataElement.dataClass.dataModel = proxyHandler.unwrapIfProxy(dataElement.dataClass.dataModel)
+                        new SimilarityPair<DataElement>(dataElement, score)
+                    }
+                }, pf.entity(), pf.score())
+            }
+            .where { lsf ->
+                BooleanPredicateClausesStep boolStep = lsf
+                    .bool()
+                    .filter(IdPathSecureFilterFactory.createFilter(lsf, [dataModelToSearch.id], [dataModelToSearch.path.last()]))
+                    .filter(FilterFactory.mustNot(lsf, lsf.id().matching(dataElementToCompare.id)))
 
-        query.enableFullTextFilter('idPathSecured').setParameter('allowedIds', [dataModelToSearch.id])
+                moreLikeThisQueries.each { mlt ->
+                    boolStep.should(lsf.bool().must(lsf.fromLuceneQuery(mlt)).boost(mlt.boost))
+                }
 
-        query.getResultList().each {
-            similarityResult.add(get(it[0].id), it[1])
-        }
+                boolStep
+            }
+            .fetch(maxResults)
 
+        DataElementSimilarityResult similarityResult = new DataElementSimilarityResult(dataElementToCompare, searchResult)
+        log.debug('Found {} similar results in {}', similarityResult.totalSimilar(), Utils.durationToString(similarityResult.took()))
         similarityResult
-    }
 
+    }
 
     DataElement findDataElementWithSameLabelTree(DataModel dataModel, DataElement original) {
         DataClass parent = dataClassService.findSameLabelTree(dataModel, original.dataClass)
@@ -457,10 +481,10 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
         List<SemanticLink> alreadyExistingLinks =
             semanticLinkService.findAllBySourceMultiFacetAwareItemIdInListAndTargetMultiFacetAwareItemIdInListAndLinkType(
                 dataElements*.id, fromDataElements*.id, SemanticLinkType.IS_FROM)
-        dataElements.each {de ->
-            fromDataElements.each {fde ->
+        dataElements.each { de ->
+            fromDataElements.each { fde ->
                 // If no link already exists then add a new one
-                if (!alreadyExistingLinks.any {it.multiFacetAwareItemId == de.id && it.targetMultiFacetAwareItemId == fde.id}) {
+                if (!alreadyExistingLinks.any { it.multiFacetAwareItemId == de.id && it.targetMultiFacetAwareItemId == fde.id }) {
                     setDataElementIsFromDataElement(de, fde, user)
                 }
             }
@@ -492,7 +516,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
      * @param label The label of the DataElement being sought
      */
     DataElement findDataElement(DataClass dataClass, String label) {
-        dataClass.dataElements.find {it.label == label.trim()}
+        dataClass.dataElements.find { it.label == label.trim() }
     }
 
     /**
@@ -516,4 +540,34 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
         DataElement.byMetadataNamespace(namespace).list(pagination)
     }
 
+    @Override
+    void propagateContentsInformation(DataElement catalogueItem, DataElement previousVersionCatalogueItem) {
+        previousVersionCatalogueItem.summaryMetadata.each { previousSummaryMetadata ->
+            if (catalogueItem.summaryMetadata.any { it.label == previousSummaryMetadata.label }) return
+            SummaryMetadata summaryMetadata = new SummaryMetadata(label: previousSummaryMetadata.label,
+                                                                  description: previousSummaryMetadata.description,
+                                                                  summaryMetadataType: previousSummaryMetadata.summaryMetadataType)
+
+            previousSummaryMetadata.summaryMetadataReports.each { previousSummaryMetadataReport ->
+                summaryMetadata.addToSummaryMetadataReports(reportDate: previousSummaryMetadataReport.reportDate,
+                                                            reportValue: previousSummaryMetadataReport.reportValue,
+                                                            createdBy: previousSummaryMetadataReport.createdBy
+                )
+            }
+            catalogueItem.addToSummaryMetadata(summaryMetadata)
+        }
+    }
+
+    @Override
+    CopyInformation cacheFacetInformationForCopy(List<UUID> originalIds, CopyInformation copyInformation = null) {
+        CopyInformation cachedInformation = super.cacheFacetInformationForCopy(originalIds, copyInformation)
+        cacheSummaryMetadataInformationForCopy(originalIds, cachedInformation)
+    }
+
+    @Override
+    void preBatchSaveHandling(List<DataElement> modelItems) {
+        // Fix HS issue around non-session loaded DT.
+        // This may have an adverse effect on saving, which will need to be tested
+        dataTypeService.getAll(modelItems.collect { it.dataType.id })
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,16 +30,18 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.search.searchparamfilter.DataModelTypeFilter
-import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 
 class SearchService extends AbstractCatalogueItemSearchService<ModelItem> implements CatalogueItemSearchDomainProvider {
 
-    PaginatedLuceneResult<ModelItem> findAllByDataModelIdByLuceneSearch(UUID dataModelId, SearchParams searchParams, Map pagination = [:]) {
-        findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch([dataModelId], searchParams, true, pagination)
+    PaginatedHibernateSearchResult<ModelItem> findAllByDataModelIdByHibernateSearch(UUID dataModelId, SearchParams searchParams,
+                                                                                    Map pagination = [:]) {
+        findAllCatalogueItemsOfTypeByOwningIdsByHibernateSearch([dataModelId], searchParams, true, pagination)
     }
 
-    PaginatedLuceneResult<ModelItem> findAllByDataClassIdByLuceneSearch(UUID dataClassId, SearchParams searchParams, Map pagination = [:]) {
-        findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch([dataClassId], searchParams, true, pagination)
+    PaginatedHibernateSearchResult<ModelItem> findAllByDataClassIdByHibernateSearch(UUID dataClassId, SearchParams searchParams,
+                                                                                    Map pagination = [:]) {
+        findAllCatalogueItemsOfTypeByOwningIdsByHibernateSearch([dataClassId], searchParams, true, pagination)
     }
 
     @Override

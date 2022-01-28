@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.path
 
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import groovy.util.logging.Slf4j
@@ -28,7 +28,7 @@ import java.nio.charset.Charset
  * @since 28/08/2020
  */
 @Slf4j
-class PathNode {
+class PathNode implements Serializable {
 
     static final String MODEL_PATH_IDENTIFIER_SEPARATOR = '$'
     static final String ESCAPED_MODEL_PATH_IDENTIFIER_SEPARATOR = "\\${MODEL_PATH_IDENTIFIER_SEPARATOR}"
@@ -67,7 +67,9 @@ class PathNode {
     }
 
     void parseIdentifier(String fullIdentifier, boolean isLast) {
-        String parsed = URLDecoder.decode(fullIdentifier, Charset.defaultCharset())
+        String parsed = safeUrlDecode(fullIdentifier)
+        if (!parsed) return
+
         if (isLast) {
             parsed.find(/^(.+?)${ATTRIBUTE_PATH_IDENTIFIER_SEPARATOR}(.+?)$/) {full, subIdentifier, attr ->
                 attribute = attr
@@ -134,7 +136,7 @@ class PathNode {
         matchesPrefix(pathNode.prefix) && matchesIdentifier(pathNode, modelIdentifierOverride)
     }
 
-    boolean matches(CreatorAware creatorAware) {
+    boolean matches(MdmDomain creatorAware) {
         matches(Path.from(creatorAware).last())
     }
 
@@ -158,6 +160,9 @@ class PathNode {
         if ((modelIdentifier || otherPathNode.modelIdentifier)) {
             return matchesModelPathIdentifierFormat(otherPathNode.identifier, otherPathNode.modelIdentifier)
         }
+
+        // If either side has no identifier then they definitely cant equal each other
+        if (!identifier || !otherPathNode.identifier) return false
 
         // Some of the legacy paths included : so we handle submissions of this format
         String[] identifierSplit = identifier.split(/:/)
@@ -192,5 +197,13 @@ class PathNode {
 
     PathNode clone() {
         new PathNode(this.prefix, this.identifier, this.modelIdentifier, this.attribute)
+    }
+
+    static safeUrlDecode(String value) {
+        try {
+            URLDecoder.decode(value, Charset.defaultCharset())
+        } catch (IllegalArgumentException | NullPointerException ignored) {
+            value
+        }
     }
 }

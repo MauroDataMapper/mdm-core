@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.SearchParamFilter
-import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 import grails.compiler.GrailsCompileStatic
@@ -50,23 +50,23 @@ class SearchService extends AbstractCatalogueItemSearchService<CatalogueItem> {
     @Autowired(required = false)
     List<CatalogueItemSearchDomainProvider> catalogueItemSearchDomainProviders
 
-    PaginatedLuceneResult<CatalogueItem> findAllByFolderIdByLuceneSearch(UUID folderId, SearchParams searchParams, Map pagination = [:]) {
+    PaginatedHibernateSearchResult<CatalogueItem> findAllByFolderIdByHibernateSearch(UUID folderId, SearchParams searchParams, Map pagination = [:]) {
         List<UUID> modelIds = getAllModelIdsInFolderId(folderId)
-        findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch(modelIds, searchParams, false, pagination)
+        findAllCatalogueItemsOfTypeByOwningIdsByHibernateSearch(modelIds, searchParams, false, pagination)
     }
 
-    PaginatedLuceneResult<CatalogueItem> findAllReadableByLuceneSearch(UserSecurityPolicyManager userSecurityPolicyManager,
-                                                                       SearchParams searchParams, Map pagination = [:]) {
+    PaginatedHibernateSearchResult<CatalogueItem> findAllReadableByHibernateSearch(UserSecurityPolicyManager userSecurityPolicyManager,
+                                                                                   SearchParams searchParams, Map pagination = [:]) {
 
-        if (!modelServices) return new PaginatedLuceneResult<CatalogueItem>([], 0)
+        if (!modelServices) return new PaginatedHibernateSearchResult<CatalogueItem>([], 0)
 
         List<UUID> readableFolderIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Folder)
 
-        if (!readableFolderIds) return new PaginatedLuceneResult<CatalogueItem>([], 0)
+        if (!readableFolderIds) return new PaginatedHibernateSearchResult<CatalogueItem>([], 0)
 
-        List<UUID> readableModelIds = readableFolderIds.collectMany {containerId -> getAllModelIdsInFolderId(containerId)}
+        List<UUID> readableModelIds = readableFolderIds.collectMany { containerId -> getAllModelIdsInFolderId(containerId) }
 
-        findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch(readableModelIds, searchParams, false, pagination)
+        findAllCatalogueItemsOfTypeByOwningIdsByHibernateSearch(readableModelIds, searchParams, false, pagination)
     }
 
     @Override
@@ -118,7 +118,7 @@ class SearchService extends AbstractCatalogueItemSearchService<CatalogueItem> {
         containedFolderIds.add(folderId)
         modelServices.collectMany {service ->
             containedFolderIds.collectMany {fId ->
-                (service.findAllByContainerId(folderId) as List<Model>).collect {model -> model.id}
+                (service.findAllByContainerId(fId) as List<Model>).collect {model -> model.id}
             }
         }
     }

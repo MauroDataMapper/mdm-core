@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelItemTreeItem
+import uk.ac.ox.softeng.maurodatamapper.core.tree.TreeItemService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
@@ -45,6 +47,7 @@ class TermService extends ModelItemService<Term> {
     TermRelationshipService termRelationshipService
     MessageSource messageSource
     TerminologyService terminologyService
+    TreeItemService treeItemService
 
     private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
 
@@ -98,12 +101,12 @@ class TermService extends ModelItemService<Term> {
     }
 
     @Override
-    void deleteAllByModelId(UUID modelId) {
-        List<UUID> termIds = Term.byTerminologyId(modelId).id().list() as List<UUID>
+    void deleteAllByModelIds(Set<UUID> modelIds) {
+        List<UUID> termIds = Term.byTerminologyIdInList(modelIds).id().list() as List<UUID>
 
         if (termIds) {
             log.trace('Removing TermRelationships in {} Terms', termIds.size())
-            termRelationshipService.deleteAllByModelId(modelId)
+            termRelationshipService.deleteAllByModelIds(modelIds)
 
             log.trace('Removing CodeSet references for {} Terms', termIds.size())
             sessionFactory.currentSession
@@ -117,8 +120,8 @@ class TermService extends ModelItemService<Term> {
 
             log.trace('Removing {} Terms', termIds.size())
             sessionFactory.currentSession
-                .createSQLQuery('DELETE FROM terminology.term WHERE terminology_id = :id')
-                .setParameter('id', modelId)
+                .createSQLQuery('DELETE FROM terminology.term WHERE terminology_id IN :ids')
+                .setParameter('ids', modelIds)
                 .executeUpdate()
 
             log.trace('Terms removed')
@@ -144,7 +147,7 @@ class TermService extends ModelItemService<Term> {
         }
 
         if (notSaved) {
-            log.trace('Batch saving {} new {} in batches of {}', notSaved.size(), getModelItemClass().simpleName, BATCH_SIZE)
+            log.trace('Batch saving {} new {} in batches of {}', notSaved.size(), getDomainClass().simpleName, BATCH_SIZE)
             List batch = []
             int count = 0
 
@@ -221,25 +224,21 @@ class TermService extends ModelItemService<Term> {
         copy
     }
 
-    Term copyTerm(Terminology copiedTerminology, Term original, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
-        Term copy = copyTerm(original, copier, userSecurityPolicyManager)
+    Term copyTerm(Terminology copiedTerminology, Term original, User copier, UserSecurityPolicyManager userSecurityPolicyManager,
+                  CopyInformation copyInformation = null) {
+        Term copy = copyTerm(original, copier, userSecurityPolicyManager, copyInformation)
         copiedTerminology.addToTerms(copy)
         copy
     }
 
-    Term copyTerm(Term original, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
+    Term copyTerm(Term original, User copier, UserSecurityPolicyManager userSecurityPolicyManager, CopyInformation copyInformation = null) {
         if (!original) throw new ApiInternalException('DCSXX', 'Cannot copy non-existent Term')
         Term copy = new Term(createdBy: copier.emailAddress, code: original.code, definition: original.definition, url: original.url,
                              isParent: original.isParent,
                              depth: original.depth)
-        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
+        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
         copy
-    }
-
-    @Override
-    Class<Term> getModelItemClass() {
-        Term
     }
 
     @Override
@@ -260,8 +259,13 @@ class TermService extends ModelItemService<Term> {
     }
 
     @Override
+    List<Term> findAllByClassifier(Classifier classifier) {
+        Term.byClassifierId(classifier.id).list()
+    }
+
+    @Override
     List<Term> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        Term.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.model.id) }
+        findAllByClassifier(classifier).findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.model.id)}
     }
 
     @Override
@@ -277,9 +281,10 @@ class TermService extends ModelItemService<Term> {
 
         List<Term> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            log.debug('Performing lucene label search')
+            log.debug('Performing hs label search')
             long start = System.currentTimeMillis()
-            results = Term.luceneLabelSearch(Term, searchTerm, readableIds.toList()).results
+            results = Term.labelHibernateSearch(Term, searchTerm, readableIds.toList(),
+                                                terminologyService.getAllReadablePathNodes(readableIds)).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
 
@@ -342,11 +347,11 @@ class TermService extends ModelItemService<Term> {
             int depth = term.depth
             log.debug('Term provided, building tree at depth {}', depth)
             List<Term> terms = findAllTreeTypeModelItemsIn(term) as List<Term>
-            tree = terms.collect { t -> new ModelItemTreeItem(t, t.hasChildren(), []) }.toSet()
+            tree = terms.collect {t -> treeItemService.createModelItemTreeItem(t, t.hasChildren(), [])}.toSet()
         } else {
             log.debug('No term provided so providing top level tree')
             List<Term> terms = terminologyService.findAllTreeTypeModelItemsIn(terminology) as List<Term>
-            tree = terms.collect { t -> new ModelItemTreeItem(t, t.hasChildren(), []) }.toSet()
+            tree = terms.collect {t -> treeItemService.createModelItemTreeItem(t, t.hasChildren(), [])}.toSet()
         }
 
         List<ModelItemTreeItem> sortedTree = tree.sort()

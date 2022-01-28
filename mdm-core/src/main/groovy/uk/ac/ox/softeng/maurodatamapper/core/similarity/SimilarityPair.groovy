@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,18 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 class SimilarityPair<K extends CatalogueItem> {
 
     K item
-    Float similarity
+    Float score
 
-    SimilarityPair(K item, similarity) {
+    SimilarityPair(K item, Float score) {
         this.item = item
-        this.similarity = similarity
+        this.score = score
+    }
+
+    String toString() {
+        score > 0 ? "Similarity to ${item.label} with score ${score}" : "No similarity to ${item.label}"
+    }
+
+    static SimilarityPair create(CatalogueItem item, Float score) {
+        new SimilarityPair(item, score)
     }
 }

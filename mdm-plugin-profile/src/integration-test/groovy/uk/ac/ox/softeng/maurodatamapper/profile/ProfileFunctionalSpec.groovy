@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import io.micronaut.core.type.Argument
 import io.micronaut.http.HttpResponse
@@ -60,9 +60,9 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         Authority.findByDefaultAuthority(true)
     }
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def checkAndSetupData() {
+    def setup() {
         log.debug('Check and setup test data')
         folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
         checkAndSave(folder)
@@ -317,6 +317,108 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         "value":"mdv2",
         "lastUpdated":"${json-unit.matches:offsetDateTime}"
     }
+]}
+'''
+    }
+
+    void 'test getting with filters other properties on a datamodel'() {
+        given:
+        String id = getComplexDataModelId()
+
+        when: 'filter with a namespace that matches all three properties'
+        GET("dataModels/${id}/profiles/otherMetadata?ns=test.com", STRING_ARG)
+
+        then: 'all three properties are returned'
+        verifyJsonResponse OK, '''
+{
+    "count": 3,
+    "items": [{
+        "id":"${json-unit.matches:id}",
+        "namespace":"test.com",
+        "key":"mdk1",
+        "value":"mdv1",
+        "lastUpdated":"${json-unit.matches:offsetDateTime}"
+    },{
+        "id":"${json-unit.matches:id}",
+        "namespace":"test.com",
+        "key":"mdk2",
+        "value":"mdv2",
+        "lastUpdated":"${json-unit.matches:offsetDateTime}"
+    },{
+        "id":"${json-unit.matches:id}",
+        "namespace":"test.com/test",
+        "key":"mdk1",
+        "value":"mdv2",
+        "lastUpdated":"${json-unit.matches:offsetDateTime}"
+    }
+]}
+'''
+
+        when: 'filter with a namespace that matches just one property'
+        GET("dataModels/${id}/profiles/otherMetadata?ns=test.com/test", STRING_ARG)
+
+        then: 'the one matching property is returned'
+        verifyJsonResponse OK, '''
+{
+    "count": 1,
+    "items": [{
+        "id":"${json-unit.matches:id}",
+        "namespace":"test.com/test",
+        "key":"mdk1",
+        "value":"mdv2",
+        "lastUpdated":"${json-unit.matches:offsetDateTime}"
+    }
+]}
+'''
+
+        when: 'filter by namespace and key'
+        GET("dataModels/${id}/profiles/otherMetadata?ns=test.com&key=mdk1", STRING_ARG)
+
+        then: 'two matching properties are returned'
+        verifyJsonResponse OK, '''
+{
+    "count": 2,
+    "items": [{
+        "id":"${json-unit.matches:id}",
+        "namespace":"test.com",
+        "key":"mdk1",
+        "value":"mdv1",
+        "lastUpdated":"${json-unit.matches:offsetDateTime}"
+    },{
+        "id":"${json-unit.matches:id}",
+        "namespace":"test.com/test",
+        "key":"mdk1",
+        "value":"mdv2",
+        "lastUpdated":"${json-unit.matches:offsetDateTime}"
+    }
+]}
+'''
+
+        when: 'filter by namespace and key and value'
+        GET("dataModels/${id}/profiles/otherMetadata?ns=test.com&key=mdk1&value=mdv2", STRING_ARG)
+
+        then: 'the one matching property is returned'
+        verifyJsonResponse OK, '''
+{
+    "count": 1,
+    "items": [{
+        "id":"${json-unit.matches:id}",
+        "namespace":"test.com/test",
+        "key":"mdk1",
+        "value":"mdv2",
+        "lastUpdated":"${json-unit.matches:offsetDateTime}"
+    }
+]}
+'''
+
+        when: 'filter by namespace and key and value that do not match'
+        GET("dataModels/${id}/profiles/otherMetadata?ns=test.com&key=mdk1&value=mdv3", STRING_ARG)
+
+        then: 'no properties are returned'
+        verifyJsonResponse OK, '''
+{
+    "count": 0,
+    "items": [
 ]}
 '''
     }
@@ -646,6 +748,12 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
 
         then:
         verifyResponse(OK, response)
+
+        when:
+        PUT("dataModels/$dynamicProfileModelId/finalise", [versionChangeType: 'Major', versionTag: 'Functional Test Version Tag'])
+
+        then:
+        verifyResponse OK, response
 
         when:
         Map optionalFieldMap = [

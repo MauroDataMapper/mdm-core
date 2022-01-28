@@ -130,6 +130,15 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "maxMultiplicity": -1,
         "minMultiplicity": 1,
+        "metadata":[
+          {
+            "id": "${json-unit.matches:id}",
+            "key": "mdcl1",
+            "namespace": "test.com",
+            "value": "mdcl1",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}"
+          }
+        ],
         "dataClasses": [
           {
             "id": "${json-unit.matches:id}",
@@ -154,7 +163,14 @@
               }
             },
             "maxMultiplicity": 1,
-            "minMultiplicity": 1
+            "minMultiplicity": 1,
+            "metadata": [{
+              "id": "${json-unit.matches:id}",
+              "key": "mdel1",
+              "namespace": "test.com",
+              "value": "mdel1",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}"
+            }]
           }
         ]
       },
@@ -202,7 +218,7 @@
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
       "name": "DataModelJsonExporterService",
-      "version": "2.0"
+      "version": "3.0"
     }
   }
 }

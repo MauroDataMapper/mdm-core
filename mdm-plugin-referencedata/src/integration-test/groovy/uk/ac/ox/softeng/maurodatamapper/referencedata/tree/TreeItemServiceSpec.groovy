@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.tree
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
@@ -34,6 +34,7 @@ import uk.ac.ox.softeng.maurodatamapper.version.Version
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import org.junit.jupiter.api.Tag
 
 import java.time.OffsetDateTime
 
@@ -46,12 +47,24 @@ import java.time.OffsetDateTime
 @Slf4j
 @Integration
 @Rollback
+@Tag('non-parallel')
 class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
 
     TreeItemService treeItemService
 
     ReferenceDataModel simpleDataModel
     ReferenceDataModel complexDataModel
+
+    @Override
+    void preDomainDataSetup() {
+        super.preDomainDataSetup()
+        hibernateSearchIndexingService.purgeAllIndexes()
+    }
+
+    @Override
+    void postDomainDataSetup() {
+        hibernateSearchIndexingService.flushIndexes()
+    }
 
     @SuppressWarnings('GroovyAssignabilityCheck')
     @Override
@@ -62,37 +75,38 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
         complexDataModel = buildSecondExampleReferenceDataModel()
 
         checkAndSave(new Folder(label: 'empty folder', createdBy: editor.emailAddress))
-        Classifier testClassifier = new Classifier(label: 'integration test classifier', createdByUser: admin)
-        testClassifier.addToChildClassifiers(new Classifier(label: 'empty classifier', createdByUser: admin))
+        Classifier testClassifier = new Classifier(label: 'integration test classifier', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        testClassifier.addToChildClassifiers(new Classifier(label: 'empty classifier', createdBy: StandardEmailAddress.INTEGRATION_TEST))
         checkAndSave(testClassifier)
 
-        ReferenceDataModel dataModel1 = new ReferenceDataModel(createdByUser: reader1, label: 'dm1', folder: testFolder, authority: testAuthority)
+        ReferenceDataModel dataModel1 = new ReferenceDataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'dm1', folder: testFolder, authority: testAuthority)
             .addToClassifiers(testClassifier)
-        ReferenceDataModel dataModel2 = new ReferenceDataModel(createdByUser: reader2, label: 'dm2', folder: testFolder, authority: testAuthority)
+        ReferenceDataModel dataModel2 = new ReferenceDataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'dm2', folder: testFolder, authority: testAuthority)
             .addToClassifiers(testClassifier)
-        ReferenceDataModel dataModel3 = new ReferenceDataModel(createdByUser: editor, label: 'dm3', folder: testFolder, authority: testAuthority, deleted: true)
+        ReferenceDataModel dataModel3 = new ReferenceDataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'dm3', folder: testFolder, authority: testAuthority,
+                                                               deleted: true)
             .addToClassifiers(testClassifier)
 
         checkAndSave(dataModel1)
         checkAndSave(dataModel2)
         checkAndSave(dataModel3)
 
-        ReferenceDataType dt = new ReferencePrimitiveType(createdByUser: admin, label: 'integration datatype')
+        ReferenceDataType dt = new ReferencePrimitiveType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'integration datatype')
         dataModel1.addToReferenceDataTypes(dt)
-        ReferenceDataElement dataElement = new ReferenceDataElement(label: 'sdmelement', createdByUser: editor, referenceDataType: dt)
+        ReferenceDataElement dataElement = new ReferenceDataElement(label: 'sdmelement', createdBy: StandardEmailAddress.INTEGRATION_TEST, referenceDataType: dt)
         dataModel1.modelVersion = Version.from('1.0.0')
         dataModel1.finalised = true
         dataModel1.dateFinalised = OffsetDateTime.now()
 
         checkAndSave(dataModel1)
 
-        dataModel2.addToVersionLinks(createdByUser: admin, targetModel: dataModel1, linkType: VersionLinkType.NEW_MODEL_VERSION_OF)
+        dataModel2.addToVersionLinks(createdBy: StandardEmailAddress.INTEGRATION_TEST, targetModel: dataModel1, linkType: VersionLinkType.NEW_MODEL_VERSION_OF)
         dataModel2.modelVersion = Version.from('2.0.0')
         dataModel2.finalised = true
         dataModel2.dateFinalised = OffsetDateTime.now()
         checkAndSave(dataModel2)
 
-        dataModel3.addToVersionLinks(createdByUser: admin, targetModel: dataModel2, linkType: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF)
+        dataModel3.addToVersionLinks(createdBy: StandardEmailAddress.INTEGRATION_TEST, targetModel: dataModel2, linkType: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF)
 
         checkAndSave(dataModel3)
 
@@ -527,7 +541,7 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
 
         when:
         def tf = treeItems.find { it.label == testFolder.label }
-        
+
         then:
         tf
         tf.hasChildren()
@@ -535,7 +549,7 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
         !tf.find { it.label == 'Simple Reference Data Model' }
         tf.find { it.label == 'Second Simple Reference Data Model' }
 
-        when:        
+        when:
         def tree2 = tf.find { it.label == 'Second Simple Reference Data Model' }
 
         then:
@@ -577,7 +591,7 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
         TreeItem tree1 = tf.find { it.label == 'dm1' }
 
         then:
-        tree1        
-    }    
+        tree1
+    }
 
 }

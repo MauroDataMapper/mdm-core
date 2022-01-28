@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,12 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataType
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
-import io.micronaut.http.HttpResponse
 
 import java.time.OffsetDateTime
 import java.util.regex.Pattern
@@ -68,9 +68,9 @@ class SummaryMetadataReportFunctionalSpec extends UserAccessFunctionalSpec {
         SummaryMetadata.findByLabel('Functional Test Summary Metadata').id.toString()
     }
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def setupSummaryMetadata() {
+    def setup() {
         log.debug('Check and setup summary metadata')
         DataModel dataModel = DataModel.findByLabel(BootstrapModels.COMPLEX_DATAMODEL_NAME)
         new SummaryMetadata(summaryMetadataType: SummaryMetadataType.NUMBER,
@@ -80,7 +80,6 @@ class SummaryMetadataReportFunctionalSpec extends UserAccessFunctionalSpec {
     }
 
     @Transactional
-    @Override
     def cleanupSpec() {
         log.info('Removing functional test summary metadata reports')
         SummaryMetadata.findByLabel('Functional Test Summary Metadata')?.delete(flush: true)
@@ -92,45 +91,18 @@ class SummaryMetadataReportFunctionalSpec extends UserAccessFunctionalSpec {
     }
 
     @Override
-    Boolean readerPermissionIsInherited() {
-        true
+    Expectations getExpectations() {
+        Expectations.builder()
+            .withDefaultExpectations()
+            .withInheritedAccessPermissions()
+            .whereTestingUnsecuredResource()
+            .withoutAvailableActions()
+            .whereAuthors {
+                cannotEditDescription()
+            }
     }
 
     @Override
-    void verifyL03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getComplexDataModelId()
-    }
-
-    @Override
-    void verifyL03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getComplexDataModelId()
-    }
-
-    @Override
-    void verifyL03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getComplexDataModelId()
-    }
-
-    @Override
-    void verifyN03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getComplexDataModelId()
-    }
-
-    @Override
-    void verifyN03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getComplexDataModelId()
-    }
-
-    @Override
-    void verifyN03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getComplexDataModelId()
-    }
-
-    @Override
-    void verifyR04UnknownIdResponse(HttpResponse<Map> response, String id) {
-        verifyForbidden response
-    }
-
     void verifySameValidDataCreationResponse() {
         verifyResponse CREATED, response
     }
@@ -142,7 +114,7 @@ class SummaryMetadataReportFunctionalSpec extends UserAccessFunctionalSpec {
 
     @Override
     Pattern getExpectedUpdateEditRegex() {
-        ~/\[Summary Metadata Report:.+?] changed properties \[reportDate]/
+        ~/\[Summary Metadata Report:.+?] changed properties \[path, reportDate]/
     }
 
     @Override
@@ -161,10 +133,15 @@ class SummaryMetadataReportFunctionalSpec extends UserAccessFunctionalSpec {
     }
 
     @Override
-    Map getValidUpdateJson() {
+    Map getValidNonDescriptionUpdateJson() {
         [
             reportDate: offsetDateTimeConverter.toString(dateTime.plusDays(1))
         ]
+    }
+
+    @Override
+    Map getValidDescriptionOnlyUpdateJson() {
+        getValidNonDescriptionUpdateJson()
     }
 
     @Override

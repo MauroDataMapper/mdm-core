@@ -1,6 +1,12 @@
 dependencies {
-    // Has to be compile not implementation to work with the old grails level compile
-    compile project(':mdm-testing-framework')
+
+    compileOnly project(':mdm-common')
+    compileOnly "io.micronaut:micronaut-http-client"
+    implementation "org.grails:grails-web-testing-support"
+    compileOnly project(':mdm-testing-framework')
+
+    testImplementation group: 'org.apache.commons', name: 'commons-csv', version: commonsCsvVersion
+    implementation project(':mdm-testing-framework')
 
     runtimeOnly "io.methvin:directory-watcher", {
         exclude group: 'com.google.guava', module: 'guava'

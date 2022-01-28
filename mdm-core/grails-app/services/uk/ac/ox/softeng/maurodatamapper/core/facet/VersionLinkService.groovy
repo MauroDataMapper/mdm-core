@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,11 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
         VersionLink.get(id)
     }
 
+    @Override
+    List<VersionLink> getAll(Collection<UUID> resourceIds) {
+        VersionLink.getAll(resourceIds)
+    }
+
     List<VersionLink> list(Map args) {
         VersionLink.list(args)
     }
@@ -56,10 +61,6 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
 
     void delete(UUID id) {
         delete(get(id))
-    }
-
-    VersionLink save(VersionLink versionLink) {
-        versionLink.save(flush: true)
     }
 
     void delete(VersionLink versionLink, boolean flush = false) {
@@ -244,18 +245,6 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
             .eq('targetModelId', modelId)
             .sort('lastUpdated', 'desc')
             .get()
-    }
-
-    @Deprecated(forRemoval = true)
-    List<VersionLink> findAllByModelIdAndType(UUID modelId, String type, Map paginate = [:]) {
-        switch (type) {
-            case 'source':
-                return findAllBySourceModelId(modelId, paginate)
-                break
-            case 'target':
-                return findAllByTargetModelId(modelId, paginate)
-        }
-        findAllBySourceOrTargetModelId(modelId, paginate)
     }
 
     VersionLinkAware findVersionLinkAwareByDomainTypeAndId(String domainType, UUID modelId) {

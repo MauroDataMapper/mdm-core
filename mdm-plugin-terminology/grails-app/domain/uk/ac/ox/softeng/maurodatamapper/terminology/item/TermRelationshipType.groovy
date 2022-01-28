@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,18 +26,15 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelItemConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
+import uk.ac.ox.softeng.maurodatamapper.core.search.ModelItemSearch
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.gorm.constraint.validator.TermRelationshipTypeLabelValidator
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
 
 import com.google.common.base.CaseFormat
 import grails.gorm.DetachedCriteria
-import org.grails.datastore.gorm.GormEntity
-import org.hibernate.search.annotations.Field
-import org.hibernate.search.annotations.FieldBridge
-import org.hibernate.search.annotations.Index
-import org.hibernate.search.bridge.builtin.UUIDBridge
 
 class TermRelationshipType implements ModelItem<TermRelationshipType, Terminology> {
 
@@ -78,10 +75,14 @@ class TermRelationshipType implements ModelItem<TermRelationshipType, Terminolog
 
     static transients = ['aliases', 'model']
 
+    static search = {
+        CallableSearch.call(ModelItemSearch, delegate)
+        modelId searchable: 'yes', indexingDependency: [reindexOnUpdate: 'shallow', derivedFrom: 'terminology']
+    }
+
     TermRelationshipType() {
         parentalRelationship = false
         childRelationship = false
-        depth = 1
     }
 
     @Override
@@ -94,7 +95,6 @@ class TermRelationshipType implements ModelItem<TermRelationshipType, Terminolog
         'trt'
     }
 
-    @Field(index = Index.YES, bridge = @FieldBridge(impl = UUIDBridge))
     UUID getModelId() {
         terminology.id
     }
@@ -102,16 +102,6 @@ class TermRelationshipType implements ModelItem<TermRelationshipType, Terminolog
     def beforeValidate() {
         if (!displayLabel) createDisplayLabel(label)
         beforeValidateModelItem()
-    }
-
-    @Override
-    def beforeInsert() {
-        buildPath()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPath()
     }
 
     String getEditLabel() {
@@ -136,7 +126,7 @@ class TermRelationshipType implements ModelItem<TermRelationshipType, Terminolog
     }
 
     @Override
-    GormEntity getPathParent() {
+    Terminology getParent() {
         terminology
     }
 
@@ -162,6 +152,10 @@ class TermRelationshipType implements ModelItem<TermRelationshipType, Terminolog
 
     static DetachedCriteria<TermRelationshipType> byTerminologyId(UUID terminologyId) {
         by().eq('terminology.id', terminologyId)
+    }
+
+    static DetachedCriteria<TermRelationshipType> byTerminologyIdInList(Collection<UUID> terminologyIds) {
+        by().inList('terminology.id', terminologyIds)
     }
 
     static DetachedCriteria<TermRelationshipType> byTerminologyIdAndLabelIlikeOrDescriptionIlike(UUID terminologyId, String searchTerm) {

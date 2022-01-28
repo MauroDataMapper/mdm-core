@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,15 @@ package uk.ac.ox.softeng.maurodatamapper.core.container
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
-import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
+import uk.ac.ox.softeng.maurodatamapper.path.Path
+import uk.ac.ox.softeng.maurodatamapper.test.unit.MdmDomainSpec
 
+import grails.testing.gorm.DomainUnitTest
+import groovy.transform.SelfType
 import org.spockframework.util.InternalSpockError
 
-abstract class FolderContainerSpec<K extends Container> extends CreatorAwareSpec<K> {
+@SelfType(DomainUnitTest)
+abstract class FolderContainerSpec<K extends Container> extends MdmDomainSpec<K> {
 
     abstract Container newChildContainerClass(Map<String, Object> args)
 
@@ -51,8 +55,7 @@ abstract class FolderContainerSpec<K extends Container> extends CreatorAwareSpec
         item = findById()
 
         then:
-        item.depth == 0
-        item.path == ''
+        item.path == Path.from(domain)
 
     }
 
@@ -76,20 +79,17 @@ abstract class FolderContainerSpec<K extends Container> extends CreatorAwareSpec
         item2
 
         and:
-        item.depth == 0
-        item.path == ''
+        item.path == Path.from(domain)
 
         and:
-        item2.depth == 1
-        item2.path == "/${item.id}"
+        item2.path == Path.from(domain, child)
 
         when:
         K child2 = newChildContainerClass(label: 'child2', createdBy: admin.emailAddress)
         item2.addToChildFolders(child2)
 
         then:
-        child2.depth == 2
-        child2.path == "/${item.id}/${item2.id}"
+        child2.path == Path.from(domain, child, child2)
 
     }
 
@@ -187,7 +187,7 @@ abstract class FolderContainerSpec<K extends Container> extends CreatorAwareSpec
     @Override
     void verifyDomainOtherConstraints(K subDomain) {
         assert subDomain.label == 'test'
-        assert subDomain.depth == 0
-        assert subDomain.path == ''
+        assert subDomain.path.size() == 1
+        assert subDomain.path == Path.from(subDomain)
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
+import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ContainerTreeItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelItemTreeItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelTreeItem
@@ -35,6 +36,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.compiler.GrailsCompileStatic
 import grails.gorm.transactions.Transactional
+import groovy.transform.CompileDynamic
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -54,6 +56,8 @@ class TreeItemService {
 
     @Autowired(required = false)
     List<CatalogueItemService> catalogueItemServices
+
+    PathService pathService
 
     /**
      * Convenience method for obtaining the catalogue item from it's ID.
@@ -239,10 +243,10 @@ class TreeItemService {
             if (fullTreeRender) {
                 Collection<ModelItemTreeItem> children = buildCatalogueItemTree(mi, true, userSecurityPolicyManager)
 
-                ModelItemTreeItem modelItemTreeItem = new ModelItemTreeItem(mi, !children.isEmpty(), actions)
-                    .withRenderChildren() as ModelItemTreeItem
-                modelItemTreeItem.addAllToChildren(children) as ModelItemTreeItem
-            } else new ModelItemTreeItem(mi, mi.hasChildren(), actions, service.isCatalogueItemImportedIntoCatalogueItem(mi, catalogueItem))
+                createModelItemTreeItem(mi, !children.isEmpty(), actions)
+                    .withRenderChildren()
+                    .addAllToChildren(children) as ModelItemTreeItem
+            } else createModelItemTreeItem(mi, mi.hasChildren(), actions, service.isCatalogueItemImportedIntoCatalogueItem(mi, catalogueItem))
         }
 
         log.debug("Tree build took ${Utils.timeTaken(start)}")
@@ -277,23 +281,19 @@ class TreeItemService {
                                    userSecurityPolicyManager.userAvailableTreeActions(mi.domainType, mi.id, mi.model.domainType, mi.model.id) :
                                    []
             List<ModelItemTreeItem> current = new ArrayList<>()
-            current.add(new ModelItemTreeItem(mi, mi.hasChildren(), actions))
-            if (catalogueItem.getPathParent()) {
-                TreeItem parent = recursiveAncestorModelItemTreeItemBuilder(catalogueItem.getPathParent() as CatalogueItem,
-                                                                            userSecurityPolicyManager)
+            current.add(createModelItemTreeItem(mi, mi.hasChildren(), actions))
+            if (mi.getParent()) {
+                TreeItem parent = recursiveAncestorModelItemTreeItemBuilder(mi.getParent(), userSecurityPolicyManager)
                 parent.addAllToChildren(current)
                 parent.renderChildren = true
                 return parent
             }
         }
         Model model = catalogueItem as Model
-        List<String> actions = userSecurityPolicyManager ?
-                               userSecurityPolicyManager.userAvailableTreeActions(model.domainType, model.id, model.domainType, model.id) :
-                               []
-        new ModelTreeItem(model, model.folder.id, true, false, actions)
+        createModelTreeItem(model, model.folder.id, true, false, userSecurityPolicyManager)
     }
 
-    ModelTreeItem buildFullModelTree(Model model) {
+    ModelTreeItem buildFullModelTree(Model model, UserSecurityPolicyManager userSecurityPolicyManager) {
         log.info("Building full model tree for ${model.class.simpleName}")
         long start = System.currentTimeMillis()
 
@@ -301,11 +301,12 @@ class TreeItemService {
         if (!service) throw new ApiBadRequestException('TIS02', 'Tree requested for model with no supporting service')
 
         if (!service.hasTreeTypeModelItems(model, true)) {
-            return new ModelTreeItem(model, model.folder.id, false, false, [])
+            createModelTreeItem(model, model.folder.id, false, false, userSecurityPolicyManager)
         }
 
-        ModelTreeItem modelTreeItem = new ModelTreeItem(model, model.folder.id, true, false, []).withRenderChildren() as ModelTreeItem
-        modelTreeItem.addAllToChildren(buildCatalogueItemTree(model, true, null))
+        ModelTreeItem modelTreeItem = createModelTreeItem(model, model.folder.id, true, false, userSecurityPolicyManager)
+            .withRenderChildren()
+            .addAllToChildren(buildCatalogueItemTree(model, true, null)) as ModelTreeItem
 
         log.debug("Tree build took ${Utils.timeTaken(start)}")
         modelTreeItem
@@ -355,8 +356,7 @@ class TreeItemService {
         ContainerService service = containerServices.find {it.handles(containerClass)}
         if (!service) throw new ApiBadRequestException('TIS02', 'Tree requested for containers with no supporting service')
         models.collect {model ->
-            new ModelTreeItem(model, service.containerPropertyNameInModel, model.id in modelIdsWithChildren, supersededIds.contains(model.id),
-                              userSecurityPolicyManager.userAvailableTreeActions(model.domainType, model.id))
+            createModelTreeItem(model, service.containerPropertyNameInModel, model.id in modelIdsWithChildren, supersededIds.contains(model.id), userSecurityPolicyManager)
         }
     }
 
@@ -367,8 +367,7 @@ class TreeItemService {
         ContainerService service = containerServices.find {it.handles(containerClass)}
         if (!service) throw new ApiBadRequestException('TIS02', 'Tree requested for containers with no supporting service')
         models.collect {model ->
-            new ModelTreeItem(model, service.containerPropertyNameInModel, model.id in modelIdsWithChildren, true,
-                              userSecurityPolicyManager.userAvailableTreeActions(model.domainType, model.id))
+            createModelTreeItem(model, service.containerPropertyNameInModel, model.id in modelIdsWithChildren, true, userSecurityPolicyManager)
         }
     }
 
@@ -380,8 +379,7 @@ class TreeItemService {
         if (!service) throw new ApiBadRequestException('TIS02', 'Tree requested for containers with no supporting service')
         List<K> readableContainers = service.getAll(readableContainerIds).findAll()
         readableContainers.collect {container ->
-            new ContainerTreeItem(container,
-                                  userSecurityPolicyManager.userAvailableTreeActions(container.domainType, container.id))
+            createContainerTreeItem(container, userSecurityPolicyManager)
         }
     }
 
@@ -393,7 +391,7 @@ class TreeItemService {
 
         modelServices.each {service ->
 
-            log.debug('Getting all readable models of type {} ', service.modelClass.simpleName)
+            log.debug('Getting all readable models of type {} ', service.domainClass.simpleName)
             long start1 = System.currentTimeMillis()
             List<? extends Model> readableModels = service.findAllReadableModels(userSecurityPolicyManager, includeDocumentSuperseded,
                                                                                  includeModelSuperseded, includeDeleted).sort()
@@ -409,8 +407,8 @@ class TreeItemService {
 
             long start4 = System.currentTimeMillis()
             List<ModelTreeItem> treeItems = readableModels.collect {model ->
-                new ModelTreeItem(model, containerPropertyName, modelsWithChildren.contains(model.ident()), supersededModels.contains(model.ident()),
-                                  userSecurityPolicyManager.userAvailableTreeActions(model.domainType, model.id))
+                createModelTreeItem(model, containerPropertyName, modelsWithChildren.contains(model.ident()), supersededModels.contains(model.ident()),
+                                    userSecurityPolicyManager)
             }
             log.trace('Listing tree items took: {}', Utils.timeTaken(start4))
 
@@ -430,7 +428,7 @@ class TreeItemService {
             log.trace('Branch name determination took: {}', Utils.timeTaken(start4))
             List<ModelTreeItem> collectedReadableTreeItems = labelGrouping.collectMany {k, v -> v as Collection} as List<ModelTreeItem>
             readableTreeItems.addAll(collectedReadableTreeItems)
-            log.debug('Complete listing of {} took: {}', service.modelClass.simpleName, Utils.timeTaken(start1))
+            log.debug('Complete listing of {} took: {}', service.domainClass.simpleName, Utils.timeTaken(start1))
         }
         readableTreeItems
     }
@@ -449,7 +447,7 @@ class TreeItemService {
         log.debug('Found {} containers, took: {}', containers.size(), Utils.timeTaken(start1))
 
         List<ContainerTreeItem> foundContainerTreeItems = containers.collect {container ->
-            new ContainerTreeItem(container, userSecurityPolicyManager.userAvailableTreeActions(container.domainType, container.id))
+            createContainerTreeItem(container, userSecurityPolicyManager)
         }
 
         log.debug('Retrieving containers needed to wrap found containers')
@@ -458,7 +456,7 @@ class TreeItemService {
         if (containerIdsNeeded) {
             List<K> extraContainers = service.getAll(containerIdsNeeded) as List<K>
             foundContainerTreeItems.addAll(extraContainers.collect {container ->
-                new ContainerTreeItem(container, userSecurityPolicyManager.userAvailableTreeActions(container.domainType, container.id))
+                createContainerTreeItem(container, userSecurityPolicyManager)
             })
         }
         // Don't build a tree here as we need to add to an existing tree
@@ -474,12 +472,12 @@ class TreeItemService {
         List<CatalogueItem> catalogueItems = []
         catalogueItemServices.each {service ->
             if (service.shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-                log.debug('Searching all readable catalogue items of type {} ', service.catalogueItemClass.simpleName)
+                log.debug('Searching all readable catalogue items of type {} ', service.domainClass.simpleName)
                 long start1 = System.currentTimeMillis()
                 List<CatalogueItem> foundCatalogueItems =
                     service.findAllReadableTreeTypeCatalogueItemsBySearchTermAndDomain(userSecurityPolicyManager,
                                                                                        searchString, domainType)
-                log.debug('Found {} {} catalogue items, took: {}', foundCatalogueItems.size(), service.catalogueItemClass.simpleName,
+                log.debug('Found {} {} catalogue items, took: {}', foundCatalogueItems.size(), service.domainClass.simpleName,
                           Utils.timeTaken(start1))
                 catalogueItems.addAll(foundCatalogueItems)
             }
@@ -502,7 +500,7 @@ class TreeItemService {
         log.debug('Processing all found models and models for model items')
         modelServices.each {service ->
 
-            String modelDomainType = service.getModelClass().simpleName
+            String modelDomainType = service.domainClass.simpleName
             List<Model> models = domainTypeGroupedModels.getOrDefault(modelDomainType, [])
             List<ModelItem> modelItems = modelDomainTypeGroupedModelItems.getOrDefault(modelDomainType, [])
             List<UUID> supersededModels = []
@@ -522,8 +520,7 @@ class TreeItemService {
             log.debug('Compiling model tree items for found items')
             foundModelTreeItems.addAll(
                 models.collect {model ->
-                    new ModelTreeItem(model, containerPropertyName, null, supersededModels.contains(model.ident()),
-                                      userSecurityPolicyManager.userAvailableTreeActions(model.domainType, model.id))
+                    createModelTreeItem(model, containerPropertyName, null, supersededModels.contains(model.ident()), userSecurityPolicyManager)
                         .withRenderChildren() as ModelTreeItem
                 }
             )
@@ -531,8 +528,8 @@ class TreeItemService {
 
         log.debug('Compiling model item tree items for found items')
         List<ModelItemTreeItem> foundModelItemTreeItems = allModelItems.collect {modelItem ->
-            new ModelItemTreeItem(modelItem, null,
-                                  userSecurityPolicyManager.userAvailableTreeActions(modelItem.domainType, modelItem.id, modelItem.model.domainType, modelItem.model.id)
+            createModelItemTreeItem(modelItem, null,
+                                    userSecurityPolicyManager.userAvailableTreeActions(modelItem.domainType, modelItem.id, modelItem.model.domainType, modelItem.model.id)
             ).withRenderChildren() as ModelItemTreeItem
         }
 
@@ -570,9 +567,9 @@ class TreeItemService {
             if (modelItems) {
                 modelItemTreeItems.addAll(
                     modelItems.collect {modelItem ->
-                        new ModelItemTreeItem(modelItem, null,
-                                              userSecurityPolicyManager.
-                                                  userAvailableTreeActions(modelItem.domainType, modelItem.id, modelItem.model.domainType, modelItem.model.id))
+                        createModelItemTreeItem(modelItem, null,
+                                                userSecurityPolicyManager.
+                                                    userAvailableTreeActions(modelItem.domainType, modelItem.id, modelItem.model.domainType, modelItem.model.id))
                             .withRenderChildren() as ModelItemTreeItem
                     }
                 )
@@ -667,5 +664,40 @@ class TreeItemService {
             it.isEmptyContainerTree()
         })
         rootTreeItems.each {it.recursivelyRemoveEmptyChildContainers()}
+    }
+
+    ModelItemTreeItem createModelItemTreeItem(ModelItem modelItem, Boolean childrenExist, List<String> availableTreeActions, boolean imported = false) {
+        contextualiseTreeItem(new ModelItemTreeItem(modelItem, childrenExist, availableTreeActions, imported))
+    }
+
+    @CompileDynamic
+    private ModelTreeItem createModelTreeItem(Model model, String containerPropertyName, Boolean childrenExist, Boolean isSuperseded,
+                                              UserSecurityPolicyManager userSecurityPolicyManager) {
+        createModelTreeItem(model, model."$containerPropertyName".id as UUID, childrenExist, isSuperseded, userSecurityPolicyManager)
+    }
+
+    private ModelTreeItem createModelTreeItem(Model model, UUID containerId, Boolean childrenExist, Boolean isSuperseded,
+                                              UserSecurityPolicyManager userSecurityPolicyManager) {
+        contextualiseTreeItem(new ModelTreeItem(model, containerId, childrenExist, isSuperseded,
+                                                userSecurityPolicyManager.userAvailableTreeActions(model.domainType, model.id)))
+    }
+
+    private ContainerTreeItem createContainerTreeItem(Container container, UserSecurityPolicyManager userSecurityPolicyManager) {
+        contextualiseTreeItem(new ContainerTreeItem(container,
+                                                    userSecurityPolicyManager.userAvailableTreeActions(container.domainType, container.id)))
+    }
+
+    private <T extends TreeItem> T contextualiseTreeItem(T treeItem) {
+
+        List<UUID> pathIds = pathService.findAllResourceIdsInPath(treeItem.path)
+
+        // Remove the last id in the path as its the id of the TI
+        pathIds.removeLast()
+
+        treeItem.pathIds = pathIds
+        treeItem.rootId = pathIds ? pathIds.first() : null
+        treeItem.parentId = pathIds ? pathIds.last() : null
+
+        treeItem
     }
 }

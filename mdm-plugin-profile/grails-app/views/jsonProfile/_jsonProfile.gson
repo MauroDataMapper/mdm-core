@@ -6,7 +6,5 @@ model {
     JsonProfile jsonProfile
 }
 json {
-    id jsonProfile.id
-    label jsonProfile.label
-    domainType jsonProfile.domainType
+
 }

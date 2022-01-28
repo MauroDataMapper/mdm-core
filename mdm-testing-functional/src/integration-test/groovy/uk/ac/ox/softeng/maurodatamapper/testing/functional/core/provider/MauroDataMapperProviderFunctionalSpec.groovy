@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,18 +89,19 @@ class MauroDataMapperProviderFunctionalSpec extends FunctionalSpec {
     "version": "${json-unit.matches:version}"
   },
   {
+    "name": "mdm.pluginProfile",
+    "version": "${json-unit.matches:version}"
+  },
+  {
     "name": "mdm.pluginReferencedata",
-     "version": "${json-unit.matches:version}"
+    "version": "${json-unit.matches:version}"
   },
   {
     "name": "mdm.pluginTerminology",
-     "version": "${json-unit.matches:version}"
+    "version": "${json-unit.matches:version}"
   },
   {
     "name": "mdm.security",
-     "version": "${json-unit.matches:version}"
-  },
-  { "name": "mdm.pluginProfile",
     "version": "${json-unit.matches:version}"
   },
   {
@@ -121,11 +122,11 @@ class MauroDataMapperProviderFunctionalSpec extends FunctionalSpec {
   },
   {
     "name": "grails.controllersAsync",
-    "version": "SNAPSHOT"
+    "version": "${json-unit.matches:version}"
   },
   {
     "name": "grails.converters",
-     "version": "${json-unit.matches:version}"
+    "version": "${json-unit.matches:version}"
   },
   {
     "name": "grails.core",
@@ -169,7 +170,11 @@ class MauroDataMapperProviderFunctionalSpec extends FunctionalSpec {
   },
   {
     "name": "grails.markupView",
-     "version": "${json-unit.matches:version}"
+    "version": "${json-unit.matches:version}"
+  },
+  {
+    "name": "grails.mimeTypes",
+    "version": "${json-unit.matches:version}"
   },
   {
     "name": "grails.restResponder",
@@ -349,111 +354,87 @@ class MauroDataMapperProviderFunctionalSpec extends FunctionalSpec {
   },
   {
     "name": "jdk.jlink",
-     "version": "${json-unit.matches:version}"
+    "version": "${json-unit.matches:version}"
+  },
+  {
+    "name": "jdk.jpackage",
+    "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.jshell",
-     "version": "${json-unit.matches:version}"
+    "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.jsobject",
-     "version": "${json-unit.matches:version}"
+    "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.jstatd",
-     "version": "${json-unit.matches:version}"
+    "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.localedata",
-     "version": "${json-unit.matches:version}"
+    "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.management",
-     "version": "${json-unit.matches:version}"
+    "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.management.agent",
-     "version": "${json-unit.matches:version}"
+    "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.management.jfr",
-     "version": "${json-unit.matches:version}"
+    "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.naming.dns",
-     "version": "${json-unit.matches:version}"
+    "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.naming.rmi",
-     "version": "${json-unit.matches:version}"
+    "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.net",
-     "version": "${json-unit.matches:version}"
+    "version": "${json-unit.matches:version}"
   },
   {
-    "name": "jdk.scripting.nashorn",
-     "version": "${json-unit.matches:version}"
+    "name": "jdk.nio.mapmode",
+    "version": "${json-unit.matches:version}"
+  },
+  {
+    "name": "jdk.random",
+    "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.sctp",
-     "version": "${json-unit.matches:version}"
+    "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.security.auth",
-     "version": "${json-unit.matches:version}"
+    "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.security.jgss",
-     "version": "${json-unit.matches:version}"
+    "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.unsupported",
-     "version": "${json-unit.matches:version}"
+    "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.unsupported.desktop",
-     "version": "${json-unit.matches:version}"
+    "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.xml.dom",
-     "version": "${json-unit.matches:version}"
+    "version": "${json-unit.matches:version}"
   },
   {
     "name": "jdk.zipfs",
-     "version": "${json-unit.matches:version}"
-  },
-  {
-    "name": "openj9.cuda",
-     "version": "${json-unit.matches:version}"
-  },
-  {
-    "name": "openj9.dataaccess",
-     "version": "${json-unit.matches:version}"
-  },
-  {
-    "name": "openj9.dtfj",
-     "version": "${json-unit.matches:version}"
-  },
-  {
-    "name": "openj9.gpu",
-     "version": "${json-unit.matches:version}"
-  },
-  {
-    "name": "openj9.jvm",
-     "version": "${json-unit.matches:version}"
-  },
-  {
-    "name": "openj9.sharedclasses",
-     "version": "${json-unit.matches:version}"
-  },
-  {
-    "name": "openj9.traceformat",
-     "version": "${json-unit.matches:version}"
-  },
-  {
-    "name": "openj9.zosconditionhandling",
-     "version": "${json-unit.matches:version}"
+    "version": "${json-unit.matches:version}"
   }
 ]''')
     }

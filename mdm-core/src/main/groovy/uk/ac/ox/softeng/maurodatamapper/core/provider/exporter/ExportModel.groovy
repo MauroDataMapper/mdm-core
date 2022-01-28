@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,37 +23,48 @@ import groovy.xml.Namespace
 
 class ExportModel {
 
-    Namespace xmlNamespace
-    Map modelExportMap
+    Map<String, Object> exportMap
+    String modelType
+    String templatePath
     ExportMetadata exportMetadata
-    String modelExportTemplatePath
-    String exportModelType
+    Namespace xmlNamespace
     Namespace modelXmlNamespace
 
     ExportModel(CatalogueItem model, String modelType, String version, ExportMetadata exportMetadata) {
-        this(model, modelType, version, '', exportMetadata)
+        this([export: model], modelType, '', version, version, '', exportMetadata)
     }
 
-    ExportModel(CatalogueItem model, String modelType, String version, String templatePathFileExtension, ExportMetadata exportMetadata) {
-        this(model, modelType, version, version, templatePathFileExtension, exportMetadata)
+    ExportModel(List<CatalogueItem> models, String modelType, String multiModelType, String version, ExportMetadata exportMetadata) {
+        this([export: models], modelType, multiModelType, version, version, '', exportMetadata)
     }
 
-    ExportModel(CatalogueItem model, String modelType, String version, String modelVersion, String templatePathFileExtension,
+    ExportModel(CatalogueItem model, String modelType, String version, String templateFileExtension, ExportMetadata exportMetadata) {
+        this([export: model], modelType, '', version, version, templateFileExtension, exportMetadata)
+    }
+
+    ExportModel(CatalogueItem model, String modelType, String version, String modelVersion, String templateFileExtension, ExportMetadata exportMetadata) {
+        this([export: model], modelType, '', version, modelVersion, templateFileExtension, exportMetadata)
+    }
+
+    ExportModel(List<CatalogueItem> models, String modelType, String multiModelType, String version, String modelVersion, String templateFileExtension,
                 ExportMetadata exportMetadata) {
-        this.exportMetadata = exportMetadata
-        this.exportModelType = modelType
-        this.xmlNamespace = new Namespace("http://maurodatamapper.com/export/${version}", 'xmlns:exp')
-        this.modelXmlNamespace = new Namespace("http://maurodatamapper.com/$exportModelType/$modelVersion", 'xmlns:mdm')
-        this.modelExportTemplatePath = "/$exportModelType/export${templatePathFileExtension ? ".$templatePathFileExtension" : ''}"
-        this.modelExportMap = [export: model]
-        this.modelExportMap[exportModelType] = model
+        this([export: models], modelType, multiModelType, version, modelVersion, templateFileExtension, exportMetadata)
     }
 
-    Map getXmlNamespaces() {
-        Map ns = [:]
-        ns[xmlNamespace.prefix] = xmlNamespace.uri
-        ns[modelXmlNamespace.prefix] = modelXmlNamespace.uri
-        ns
+    private ExportModel(Map<String, Object> exportMap, String modelType, String multiModelType, String version, String modelVersion, String templateFileExtension,
+                        ExportMetadata exportMetadata) {
+        this.exportMap = exportMap
+        this.modelType = exportMap.export instanceof List ? multiModelType : modelType
+        templatePath = "/${modelType}/export${templateFileExtension ? ".$templateFileExtension" : ''}"
+        this.exportMetadata = exportMetadata
+        xmlNamespace = new Namespace("http://maurodatamapper.com/export/${version}", 'xmlns:exp')
+        modelXmlNamespace = new Namespace("http://maurodatamapper.com/${modelType}/${modelVersion}", 'xmlns:mdm')
+    }
+
+    Map<String, String> getXmlNamespaces() {
+        [
+            (xmlNamespace.prefix)     : xmlNamespace.uri,
+            (modelXmlNamespace.prefix): modelXmlNamespace.uri
+        ]
     }
 }
-

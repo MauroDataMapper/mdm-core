@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,22 +46,28 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 @Slf4j
 abstract class UserAccessFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec {
 
-    abstract Map getValidUpdateJson()
+    Map getValidNonDescriptionUpdateJson() {
+        [
+            label: "Functional Test Updated Label ${getClass().simpleName}".toString()
+        ]
+    }
+
+    Map getValidDescriptionOnlyUpdateJson() {
+        [
+            description: 'Functional Test Description Update'
+        ]
+    }
 
     Map getInvalidUpdateJson() {
         getInvalidJson()
     }
 
-    void verifyInvalidUpdateResponse(HttpResponse response) {
-        verifyResponse UNPROCESSABLE_ENTITY, response
-    }
-
     Pattern getExpectedCreatedEditRegex() {
-        ~/\[\w+:.+?] created/
+        ~/\[\w+( \w+)*:.+?] created/
     }
 
     Pattern getExpectedUpdateEditRegex() {
-        ~/\[\w+:.+?] changed properties \[description]/
+        ~/\[\w+( \w+)*:.+?] changed properties \[path, label]/
     }
 
     String getEditsPath() {
@@ -77,212 +83,131 @@ abstract class UserAccessFunctionalSpec extends UserAccessWithoutUpdatingFunctio
         log.info('Removing changelog id {} using transaction', id)
         Edit changelog = Edit.get(id)
         changelog.delete(flush: true)
-    }    
+    }
 
-    /*
-     * Logged in as editor testing
-     */
-
-    void 'E05 : Test the update action correctly updates an instance (as editor)'() {
-        given:
-        def id = getValidId()
-        loginEditor()
-
-        when: 'The update action is called with invalid data'
-        PUT("$id", invalidUpdateJson)
-
-        then: 'The response is correct'
-        verifyInvalidUpdateResponse(response)
-
-        when: 'The update action is called with valid data'
-        PUT("$id", validUpdateJson)
-
-        then: 'The response is correct'
+    void verifyValidDataUpdateResponse(HttpResponse<Map> response, String id, Map update) {
         verifyResponse OK, response
-        response.body().id == id
-        validUpdateJson.each {k, v ->
+        assert responseBody().id == id
+        update.each {k, v ->
             if (v instanceof Map) {
                 v.each {k1, v1 ->
-                    assert response.body()[k][k1] == v1
+                    assert responseBody()[k][k1] == v1
                 }
             } else {
-                assert response.body()[k] == v
+                assert responseBody()[k] == v
             }
         }
-
-        cleanup:
-        removeValidIdObject(id)
     }
 
-    /*
-     * Logged out testing
+    /**
+     * Testing when logged in as a author only user
      */
-
-    void 'L05 : Test the update action correctly updates an instance (not logged in)'() {
+    void 'CORE-#prefix-05 : Test the update action correctly updates an instance (as #name)'() {
         given:
         def id = getValidId()
+        login(name)
 
         when: 'The update action is called with invalid data'
         PUT("$id", invalidUpdateJson)
 
         then: 'The response is correct'
-        verifyNotFound response, id
+        if (expectations.can(name, 'update')) verifyResponse UNPROCESSABLE_ENTITY, response
+        else if (expectations.can(name, 'see')) verifyForbidden(response)
+        else verifyNotFound response, id
 
         when: 'The update action is called with valid data'
-        PUT("$id", validUpdateJson)
+        PUT("$id", validDescriptionOnlyUpdateJson)
 
         then: 'The response is correct'
-        verifyNotFound response, id
+        if (expectations.can(name, 'editDescription') || expectations.can(name, 'update')) verifyValidDataUpdateResponse response, id, validDescriptionOnlyUpdateJson
+        else if (expectations.can(name, 'see')) verifyForbidden(response)
+        else verifyNotFound response, id
+
+        when: 'The update action is called with valid data'
+        PUT("$id", validNonDescriptionUpdateJson)
+
+        then: 'The response is correct'
+        if (expectations.can(name, 'update')) verifyValidDataUpdateResponse response, id, validNonDescriptionUpdateJson
+        else if (expectations.can(name, 'see')) verifyForbidden(response)
+        else verifyNotFound response, id
 
         cleanup:
         removeValidIdObject(id)
+
+        where:
+        prefix | name
+        'LO'   | 'Anonymous'
+        'NA'   | 'Authenticated'
+        'RE'   | 'Reader'
+        'RV'   | 'Reviewer'
+        'AU'   | 'Author'
+        'ED'   | 'Editor'
+        'CA'   | 'ContainerAdmin'
+        'AD'   | 'Admin'
     }
 
-    /**
-     * Testing when logged in as a no access/authenticated user
-     */
-    void 'N05 : Test the update action correctly updates an instance (as no access/authenticated)'() {
-        given:
-        def id = getValidId()
-        loginAuthenticated()
-
-        when: 'The update action is called with invalid data'
-        PUT("$id", invalidUpdateJson)
-
-        then: 'The response is correct'
-        verifyNotFound response, id
-
-        when: 'The update action is called with valid data'
-        PUT("$id", validUpdateJson)
-
-        then: 'The response is correct'
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    /**
-     * Testing when logged in as a reader only user
-     */
-    void 'R05 : Test the update action correctly updates an instance (as reader)'() {
+    void 'CORE-X01 : Test getting edits after creation (as reader)'() {
         given:
         def id = getValidId()
         loginReader()
-
-        when: 'The update action is called with invalid data'
-        PUT("$id", invalidUpdateJson)
-
-        then: 'The response is correct'
-        verifyR05InvalidDataResponse response, id
-
-        when: 'The update action is called with valid data'
-        PUT("$id", validUpdateJson)
-
-        then: 'The response is correct'
-        verifyR05ValidDataResponse response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    /*
-    * Logged in as admin testing
-    * This proves that admin users can mess with items created by other users
-    */
-
-    void 'A05 : Test the update action correctly updates an instance (as admin)'() {
-        given:
-        def id = getValidId()
-        loginAdmin()
-
-        when: 'The update action is called with invalid data'
-        PUT("$id", invalidUpdateJson)
-
-        then: 'The response is correct'
-        verifyInvalidUpdateResponse(response)
-
-        when: 'The update action is called with valid data'
-        PUT("$id", validUpdateJson)
-
-        then: 'The response is correct'
-        verifyResponse OK, response
-        response.body().id == id
-        validUpdateJson.each {k, v ->
-            if (v instanceof Map) {
-                v.each {k1, v1 ->
-                    assert response.body()[k][k1] == v1
-                }
-            } else {
-                assert response.body()[k] == v
-            }
-        }
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'X01 : Test getting edits after creation (as editor)'() {
-        given:
-        def id = getValidId()
-        loginEditor()
 
         when: 'getting initial edits'
         GET("${getEditsFullPath(id)}/edits?sort=dateCreated&order=desc", MAP_ARG, true)
 
         then:
         verifyResponse OK, response
-        response.body().count >= 1
-        response.body().items.first().createdBy == userEmailAddresses.editor
-        (response.body().items.first().description as String).matches(getExpectedCreatedEditRegex())
+        responseBody().count >= 1
+        responseBody().items.first().createdBy == userEmailAddresses.creator
+        (responseBody().items.first().description as String).matches(getExpectedCreatedEditRegex())
 
         cleanup:
         removeValidIdObject(id)
     }
 
-    void 'X02 : Test getting edits after edit (as editor)'() {
+    void 'CORE-X02 : Test getting edits after edit (as reader)'() {
         given:
         def id = getValidId()
-        loginEditor()
-        PUT("$id", validUpdateJson)
+        loginCreator()
+        PUT("$id", validNonDescriptionUpdateJson)
         verifyResponse OK, response
+        loginReader()
 
         when: 'getting edits after update'
         GET("${getEditsFullPath(id)}/edits?sort=dateCreated&order=desc", MAP_ARG, true)
 
         then:
         verifyResponse OK, response
-        response.body().count >= 2
-        response.body().items[1].createdBy == userEmailAddresses.editor
-        (response.body().items[1].description as String).matches(getExpectedCreatedEditRegex())
-        response.body().items[0].createdBy == userEmailAddresses.editor
-        (response.body().items[0].description as String).matches(getExpectedUpdateEditRegex())
+        responseBody().count >= 2
+        responseBody().items[1].createdBy == userEmailAddresses.creator
+        (responseBody().items[1].description as String).matches(getExpectedCreatedEditRegex())
+        responseBody().items[0].createdBy == userEmailAddresses.creator
+        (responseBody().items[0].description as String).matches(getExpectedUpdateEditRegex())
 
 
         cleanup:
         removeValidIdObject(id)
     }
 
-    void 'X03 : Test getting changelogs after creation (as editor)'() {
+    void 'CORE-X03 : Test getting changelogs after creation (as reader)'() {
         given:
         def id = getValidId()
-        loginEditor()
+        loginReader()
 
         when: 'getting initial changelogs'
         GET("${getEditsFullPath(id)}/changelogs?sort=dateCreated&order=desc", MAP_ARG, true)
 
         then:
         verifyResponse OK, response
-        response.body().count == 0
+        responseBody().count == 0
 
         cleanup:
         removeValidIdObject(id)
     }
 
-    void 'X04 : Test creating and getting a changelog (as editor)'() {
+    void 'CORE-X04 : Test creating and getting a changelog (as editor)'() {
         given:
         def id = getValidId()
-        loginEditor()
+        loginCreator()
 
         when: 'creating a changelog'
         POST("${getEditsFullPath(id)}/changelogs", ["description": "Functional Test Changelog"], MAP_ARG, true)
@@ -291,18 +216,19 @@ abstract class UserAccessFunctionalSpec extends UserAccessWithoutUpdatingFunctio
         verifyResponse CREATED, response
 
         when: 'getting changelogs after creation'
+        loginReader()
         GET("${getEditsFullPath(id)}/changelogs?sort=dateCreated&order=desc", MAP_ARG, true)
 
         then: 'the response is correct'
         verifyResponse OK, response
-        response.body().count == 1
-        response.body().items[0].createdBy == userEmailAddresses.editor
-        response.body().items[0].description == "Functional Test Changelog"
-        response.body().items[0].title == "CHANGELOG"
-        def changelogId = response.body().items[0].id
+        responseBody().count == 1
+        responseBody().items[0].createdBy == userEmailAddresses.creator
+        responseBody().items[0].description == "Functional Test Changelog"
+        responseBody().items[0].title == "CHANGELOG"
+        def changelogId = responseBody().items[0].id
 
         cleanup:
         removeValidIdObject(id)
         removeChangelogUsingTransaction(changelogId)
-    }    
+    }
 }

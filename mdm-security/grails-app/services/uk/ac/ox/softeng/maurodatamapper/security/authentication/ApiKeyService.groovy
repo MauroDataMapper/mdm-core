@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security.authentication
 
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUserService
 
@@ -25,11 +26,16 @@ import grails.gorm.transactions.Transactional
 import java.time.LocalDate
 
 @Transactional
-class ApiKeyService {
+class ApiKeyService implements MdmDomainService<ApiKey> {
     CatalogueUserService catalogueUserService
 
     ApiKey get(Serializable id) {
         ApiKey.get(id)
+    }
+
+    @Override
+    List<ApiKey> getAll(Collection<UUID> resourceIds) {
+        ApiKey.getAll(resourceIds)
     }
 
     List<ApiKey> list(Map pagination) {
@@ -46,6 +52,11 @@ class ApiKeyService {
 
     void delete(ApiKey apiKey) {
         apiKey.delete(flush: true)
+    }
+
+    @Override
+    ApiKey findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
+        return null
     }
 
     boolean isApiKeyExpired(ApiKey apiKey) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,15 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.dataflow
 
-
 import uk.ac.ox.softeng.maurodatamapper.dataflow.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
-import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 
 /**
@@ -67,43 +66,16 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
     }
 
     @Override
-    Boolean readerPermissionIsInherited() {
-        true
-    }
-
-    @Override
-    void verifyL03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getTargetDataModelId()
-    }
-
-    @Override
-    void verifyL03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getTargetDataModelId()
-    }
-
-    @Override
-    void verifyL03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getTargetDataModelId()
-    }
-
-    @Override
-    void verifyN03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getTargetDataModelId()
-    }
-
-    @Override
-    void verifyN03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getTargetDataModelId()
-    }
-
-    @Override
-    void verifyN03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getTargetDataModelId()
-    }
-
-    @Override
-    void verifyR04UnknownIdResponse(HttpResponse<Map> response, String id) {
-        verifyForbidden response
+    Expectations getExpectations() {
+        Expectations.builder()
+            .withDefaultExpectations()
+            .withInheritedAccessPermissions()
+            .whereTestingUnsecuredResource()
+            .whereContainerAdminsCanAction('comment', 'delete', 'editDescription', 'save', 'show', 'update')
+            .whereEditorsCanAction('comment', 'delete', 'editDescription', 'save', 'show', 'update')
+            .whereAuthorsCanAction('comment', 'editDescription', 'show',)
+            .whereReviewersCanAction('comment', 'show')
+            .whereReadersCanAction('show')
     }
 
     void removeValidIdObjectUsingTransaction(String id) {
@@ -118,7 +90,7 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
         POST(getSavePath(), additionalValidJson, MAP_ARG, true)
         verifyResponse HttpStatus.CREATED, response
         String id = response.body().id
-        addReaderShare(id)
+        addAccessShares(id)
         logout()
         id
     }
@@ -138,13 +110,6 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
             source: [
                 id: sourceDataModelId
             ]
-        ]
-    }
-
-    @Override
-    Map getValidUpdateJson() {
-        [
-            description: 'This is nothing special'
         ]
     }
 
@@ -204,12 +169,7 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
     }
   ],
   "availableActions": [
-    "show",
-    "comment",
-    "editDescription",
-    "update",
-    "save",
-    "delete"
+    "show"
   ],
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "definition": null,
@@ -380,7 +340,7 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
 
         cleanup:
         removeValidIdObject(id)
-    }    
+    }
 
     void 'L35 : test export multiple Flows (json only exports first id) (as not logged in)'() {
         given:
@@ -402,7 +362,7 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
         cleanup:
         removeValidIdObject(id)
         removeValidIdObject(id2)
-    }   
+    }
 
     void 'N35 : test export multiple Flows (json only exports first id) (as authenticated/no access)'() {
         given:
@@ -475,7 +435,7 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
         cleanup:
         removeValidIdObject(id)
         removeValidIdObject(id2)
-    }       
+    }
 
 
     void 'L36 : test import basic DataFlow (as not logged in)'() {
@@ -535,7 +495,7 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
 
         cleanup:
         removeValidIdObject(id)
-    }    
+    }
 
     void 'R36 : test import basic DataFlow (as reader)'() {
         given:
@@ -566,7 +526,7 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
 
         cleanup:
         removeValidIdObject(id)
-    }     
+    }
 
 
     void 'E36A : test import basic DataFlow (as editor)'() {
@@ -605,6 +565,6 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
         removeValidIdObjectUsingTransaction(id)
         removeValidIdObject(id2, HttpStatus.NOT_FOUND)
         removeValidIdObject(id, HttpStatus.NOT_FOUND)
-    }    
+    }
 
 }

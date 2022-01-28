@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelItemConstraints
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 
@@ -40,7 +41,7 @@ class BasicModelItem implements ModelItem<BasicModelItem, BasicModel>, GormEntit
 
     UUID id
     BasicModel model
-    BasicModelItem parent
+    BasicModelItem parentItem
 
     static constraints = {
         CallableConstraints.call(ModelItemConstraints, delegate)
@@ -60,7 +61,7 @@ class BasicModelItem implements ModelItem<BasicModelItem, BasicModel>, GormEntit
     ]
 
     static mappedBy = [
-        childModelItems: 'parent'
+        childModelItems: 'parentItem'
     ]
 
     static mapping = {
@@ -86,26 +87,15 @@ class BasicModelItem implements ModelItem<BasicModelItem, BasicModel>, GormEntit
         null
     }
 
-    @Override
     def beforeValidate() {
         idx = 0
-        if (!model) this.model = parent?.model
+        if (!model) this.model = parentItem?.model
         beforeValidateModelItem()
     }
 
     @Override
-    def beforeInsert() {
-        buildPath()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPath()
-    }
-
-    @Override
-    GormEntity getPathParent() {
-        parent ?: model
+    CatalogueItem getParent() {
+        parentItem ?: model
     }
 
     BasicModelItem addToChildModelItems(Map map) {
@@ -113,7 +103,7 @@ class BasicModelItem implements ModelItem<BasicModelItem, BasicModel>, GormEntit
     }
 
     BasicModelItem addToChildModelItems(BasicModelItem basicModelItem) {
-        basicModelItem.parent = this
+        basicModelItem.parentItem = this
         basicModelItem.model = this.model
         addTo('childModelItems', basicModelItem)
     }

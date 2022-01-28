@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,18 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
+import uk.ac.ox.softeng.maurodatamapper.core.email.Email
+import uk.ac.ox.softeng.maurodatamapper.core.email.EmailService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
+import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
+import uk.ac.ox.softeng.maurodatamapper.security.authentication.ApiKey
+import uk.ac.ox.softeng.maurodatamapper.security.authentication.ApiKeyService
+import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
+import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRoleService
 import uk.ac.ox.softeng.maurodatamapper.security.test.SecurityUsers
 import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityUtils
 import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec
@@ -28,6 +38,8 @@ import grails.testing.gorm.DomainUnitTest
 import grails.testing.services.ServiceUnitTest
 import groovy.util.logging.Slf4j
 
+import java.time.LocalDate
+
 @Slf4j
 class CatalogueUserServiceSpec extends BaseUnitSpec implements ServiceUnitTest<CatalogueUserService>, DomainUnitTest<CatalogueUser>,
     SecurityUsers {
@@ -36,6 +48,13 @@ class CatalogueUserServiceSpec extends BaseUnitSpec implements ServiceUnitTest<C
 
     def setup() {
         log.debug('Setting up CatalogueUserServiceSpec')
+        mockDomains(ApiKey, Edit, Email, Folder, SecurableResourceGroupRole)
+        mockArtefact(ApiKeyService)
+        mockArtefact(EditService)
+        mockArtefact(EmailService)
+        mockArtefact(FolderService)
+        mockArtefact(UserGroupService)
+        mockArtefact(SecurableResourceGroupRoleService)
         implementSecurityUsers('unitTest')
         id = editor.id
     }
@@ -428,6 +447,92 @@ class CatalogueUserServiceSpec extends BaseUnitSpec implements ServiceUnitTest<C
         lines[0] == 'Email Address,First Name,Last Name,Last Login,Organisation,Job Title,Disabled,Pending'
         lines.any {it == 'newtester1@email.com,wibble1,scruff1,,organisation,chef,false,false'}
         lines.any {it == 'newtester2@email.com,wibble2,scruff2,,organisation,chef but good,true,false'}
+    }
+
+    void "test permanent deletion and anonymisation"() {
+        given:
+        CatalogueUser catalogueUserAdmin = service.createNewUser(
+                emailAddress: 'admin@email.com', firstName: 'admin', lastName: 'scruff1', lastLogin: null, password: 'wobble',
+                organisation: 'organisation', jobTitle: 'admin', disabled: false, pending: false)
+        CatalogueUser catalogueUser1 = service.createNewUser(
+                emailAddress: 'newtester1@email.com', firstName: 'wibble1', lastName: 'scruff1', lastLogin: null, password: 'wobble',
+                organisation: 'organisation', jobTitle: 'chef', disabled: false, pending: false)
+        CatalogueUser catalogueUser2 = service.createNewUser(
+                emailAddress: 'newtester2@email.com', firstName: 'wibble2', lastName: 'scruff2', lastLogin: null, password: 'wobble',
+                organisation: 'organisation', jobTitle: 'chef but good', disabled: false, pending: false)
+
+        UserGroup group = new UserGroup(name: 'readersOnly', createdBy: reader.emailAddress)
+                .addToGroupMembers(catalogueUser1)
+                .addToGroupMembers(catalogueUser2)
+        checkAndSave(group)
+
+        checkAndSave(new ApiKey(refreshable: true, expiryDate: LocalDate.now(), disabled: false, name: 'Key 1', createdBy: catalogueUser1.emailAddress, catalogueUser: catalogueUserAdmin))
+        checkAndSave(new ApiKey(refreshable: true, expiryDate: LocalDate.now(), disabled: false, name: 'Key 2', createdBy: catalogueUser2.emailAddress, catalogueUser: catalogueUserAdmin))
+        checkAndSave(new Edit(title: EditTitle.UPDATE, createdBy: catalogueUser1.emailAddress, description: 'Edit 1', resourceDomainType: 'Folder', resourceId: UUID.randomUUID()))
+        checkAndSave(new Edit(title: EditTitle.UPDATE, createdBy: catalogueUser2.emailAddress, description: 'Edit 2', resourceDomainType: 'Folder', resourceId: UUID.randomUUID()))
+        checkAndSave(new Email(sentToEmailAddress: catalogueUser1.emailAddress, subject: 'Test Email', body: 'Body Content', successfullySent: true))
+        checkAndSave(new Email(sentToEmailAddress: catalogueUser2.emailAddress, subject: 'Test Email', body: 'Body Content', successfullySent: true))
+        checkAndSave(new Folder(label: 'Folder 1', createdBy: catalogueUser1.emailAddress))
+        checkAndSave(new Folder(label: 'Folder 2', createdBy: catalogueUser2.emailAddress))
+
+        when:
+        List<Folder> folders = Folder.findAll()
+        List<Edit> edits = Edit.findAll()
+        List<Email> emails = Email.findAll()
+        List<ApiKey> apiKeys = ApiKey.findAll()
+
+        then:
+        group.groupMembers.size() == 2
+        folders.size() == 2
+        edits.size() == 2
+        emails.size() == 2
+        apiKeys.size() == 2
+
+        and:
+        group.groupMembers.any {it.id == catalogueUser1.id}
+        group.groupMembers.any {it.id == catalogueUser2.id}
+        folders.any {it.createdBy == catalogueUser1.createdBy}
+        folders.any {it.createdBy == catalogueUser2.createdBy}
+        !folders.any {it.createdBy == 'anonymous@maurodatamapper.com'}
+        edits.any {it.createdBy == catalogueUser1.createdBy}
+        edits.any {it.createdBy == catalogueUser2.createdBy}
+        !edits.any {it.createdBy == 'anonymous@maurodatamapper.com'}
+        emails.any{it.sentToEmailAddress == catalogueUser1.emailAddress}
+        emails.any{it.sentToEmailAddress == catalogueUser2.emailAddress}
+        apiKeys.any {it.createdBy == catalogueUser1.createdBy}
+        apiKeys.any {it.createdBy == catalogueUser2.createdBy}
+        !apiKeys.any {it.createdBy == 'anonymous@maurodatamapper.com'}
+
+
+
+        when:
+        service.delete(catalogueUser2, true)
+        folders = Folder.findAll()
+        edits = Edit.findAll()
+        emails = Email.findAll()
+        apiKeys = ApiKey.findAll()
+
+        then:
+        group.groupMembers.size() == 1
+        folders.size() == 2
+        edits.size() == 2
+        emails.size() == 1
+        apiKeys.size() == 2
+
+        and:
+        group.groupMembers.any {it.id == catalogueUser1.id}
+        !group.groupMembers.any {it.id == catalogueUser2.id}
+        folders.any {it.createdBy == catalogueUser1.createdBy}
+        !folders.any {it.createdBy == catalogueUser2.createdBy}
+        folders.any {it.createdBy == 'anonymous@maurodatamapper.com'}
+        edits.any {it.createdBy == catalogueUser1.createdBy}
+        !edits.any {it.createdBy == catalogueUser2.createdBy}
+        edits.any {it.createdBy == 'anonymous@maurodatamapper.com'}
+        emails.any{it.sentToEmailAddress == catalogueUser1.emailAddress}
+        !emails.any{it.sentToEmailAddress == catalogueUser2.emailAddress}
+        apiKeys.any {it.createdBy == catalogueUser1.createdBy}
+        !apiKeys.any {it.createdBy == catalogueUser2.createdBy}
+        apiKeys.any {it.createdBy == 'anonymous@maurodatamapper.com'}
     }
 
     private CatalogueUser basicAuthentication(String emailAddress, String password) {

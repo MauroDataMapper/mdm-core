@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,19 +50,19 @@ abstract class DataBindDataModelImporterProviderService<T extends DataModelFileI
     }
 
     @Override
-    List<DataModel> importModels(User currentUser, DataModelFileImporterProviderServiceParameters params) {
-        if (!currentUser) throw new ApiUnauthorizedException('FBIP01', 'User must be logged in to import model')
-        if (params.importFile.fileContents.size() == 0) throw new ApiBadRequestException('FBIP02', 'Cannot import empty file')
-        log.info('Importing {} as {}', params.importFile.fileName, currentUser.emailAddress)
-        importDataModels(currentUser, params.importFile.fileContents)
-    }
-
-    @Override
     DataModel importModel(User currentUser, DataModelFileImporterProviderServiceParameters params) {
         if (!currentUser) throw new ApiUnauthorizedException('FBIP01', 'User must be logged in to import model')
         if (params.importFile.fileContents.size() == 0) throw new ApiBadRequestException('FBIP02', 'Cannot import empty file')
         log.info('Importing {} as {}', params.importFile.fileName, currentUser.emailAddress)
         importDataModel(currentUser, params.importFile.fileContents)
+    }
+
+    @Override
+    List<DataModel> importModels(User currentUser, DataModelFileImporterProviderServiceParameters params) {
+        if (!currentUser) throw new ApiUnauthorizedException('FBIP01', 'User must be logged in to import model')
+        if (params.importFile.fileContents.size() == 0) throw new ApiBadRequestException('FBIP02', 'Cannot import empty file')
+        log.info('Importing {} as {}', params.importFile.fileName, currentUser.emailAddress)
+        importDataModels(currentUser, params.importFile.fileContents)
     }
 
     DataModel bindMapToDataModel(User currentUser, Map dataModelMap) {

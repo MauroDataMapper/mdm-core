@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,11 +40,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 import groovy.util.logging.Slf4j
-import org.grails.datastore.gorm.GormEntity
-import org.hibernate.search.annotations.Field
-import org.hibernate.search.annotations.FieldBridge
-import org.hibernate.search.annotations.Index
-import org.hibernate.search.bridge.builtin.UUIDBridge
 
 import javax.persistence.criteria.JoinType
 
@@ -103,6 +98,8 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
 
     static search = {
         CallableSearch.call(ModelItemSearch, delegate)
+        modelType searchable: 'yes', analyze: false, indexingDependency: [reindexOnUpdate: 'shallow', derivedFrom: 'dataModel']
+        modelId searchable: 'yes', indexingDependency: [reindexOnUpdate: 'shallow', derivedFrom: 'dataModel']
     }
 
     DataType() {
@@ -113,17 +110,15 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
         'dt'
     }
 
-    @Field(index = Index.YES, bridge = @FieldBridge(impl = UUIDBridge))
     UUID getModelId() {
         dataModel.id
     }
 
     @Override
-    GormEntity getPathParent() {
+    DataModel getParent() {
         dataModel
     }
 
-    @Override
     def beforeValidate() {
         long st = System.currentTimeMillis()
         beforeValidateModelItem()
@@ -132,16 +127,6 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
             it.multiFacetAwareItem = this
         }
         if (domainType != ENUMERATION_DOMAIN_TYPE) log.trace('DT before validate {} took {}', this.label, Utils.timeTaken(st))
-    }
-
-    @Override
-    def beforeInsert() {
-        buildPath()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPath()
     }
 
     @Override
@@ -164,7 +149,8 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
      */
     @Override
     DataModel getIndexedWithin() {
-        dataModel
+        // Hack around the code, its indexed with the DC but if the DC has no id then the DE will be sorted and idx'd as part of the DC beforeValidate
+        dataModel?.id ? dataModel : null
     }
 
     Set<UUID> getDataElementIds() {
@@ -186,6 +172,10 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
 
     static DetachedCriteria<DataType> byDataModelId(Serializable dataModelId) {
         new DetachedCriteria<DataType>(DataType).eq('dataModel.id', Utils.toUuid(dataModelId))
+    }
+
+    static DetachedCriteria<DataType> byDataModelIdInList(Collection<UUID> dataModelIds) {
+        new DetachedCriteria<DataType>(DataType).inList('dataModel.id', dataModelIds)
     }
 
     static DetachedCriteria<DataType> byDataModelIdIncludingImported(Serializable dataModelId) {

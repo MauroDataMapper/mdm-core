@@ -3,7 +3,6 @@ buildscript {
         mavenLocal()
         maven {url "https://jenkins.cs.ox.ac.uk/artifactory/plugins-snapshot"}
         maven {url "https://jenkins.cs.ox.ac.uk/artifactory/plugins-release"}
-        mavenCentral()
 
     }
     dependencies {
@@ -13,7 +12,6 @@ buildscript {
 
 plugins {
     id 'groovy'
-    id 'io.spring.dependency-management'
 }
 
 apply plugin: 'ox.softeng.ox-brc-standard'
@@ -24,14 +22,6 @@ repositories {
     mavenLocal()
     maven {url 'https://jenkins.cs.ox.ac.uk/artifactory/libs-snapshot'}
     maven {url 'https://jenkins.cs.ox.ac.uk/artifactory/libs-release'}
-}
-
-dependencyManagement {
-    imports {
-        mavenBom("org.grails:grails-bom:$grailsVersion")
-        mavenBom("org.springframework.boot:spring-boot-dependencies:$springBootVersion")
-    }
-    applyMavenExclusions false
 }
 
 apply from: 'dependencies.gradle'

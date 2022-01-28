@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.search
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.ClassifierFilterFilter
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.ClassifiersFilter
@@ -27,17 +28,21 @@ import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfi
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.SearchParamFilter
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.UpdatedAfterFilter
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.UpdatedBeforeFilter
-import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.compiler.GrailsCompileStatic
 import grails.plugins.hibernate.search.HibernateSearchApi
 import groovy.transform.CompileDynamic
 import groovy.util.logging.Slf4j
+import org.springframework.beans.factory.annotation.Autowired
 
 @Slf4j
 @GrailsCompileStatic
 abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
+
+    @Autowired
+    PathService pathService
 
     abstract Set<Class<K>> getDomainsToSearch()
 
@@ -61,11 +66,12 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
         }
     }
 
-    PaginatedLuceneResult<K> findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch(List<UUID> owningIds,
-                                                                                  SearchParams searchParams,
-                                                                                  boolean removeOwningIds,
-                                                                                  Map pagination = [:],
-                                                                                  @DelegatesTo(HibernateSearchApi) Closure customSearch = null) {
+    PaginatedHibernateSearchResult<K> findAllCatalogueItemsOfTypeByOwningIdsByHibernateSearch(List<UUID> owningIds,
+                                                                                              SearchParams searchParams,
+                                                                                              boolean removeOwningIds,
+                                                                                              Map pagination = [:],
+                                                                                              @DelegatesTo(HibernateSearchApi)
+                                                                                                  Closure customSearch = null) {
         Closure additional = null
 
         Set<Class<SearchParamFilter>> searchParamFilters = getSearchParamFilters()
@@ -83,7 +89,7 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
         Set<Class<K>> filteredDomainsToSearch = getFilteredDomainsToSearch(searchParams)
 
         if (!filteredDomainsToSearch) {
-            return new PaginatedLuceneResult<K>(new ArrayList<K>(), 0)
+            return new PaginatedHibernateSearchResult<K>(new ArrayList<K>(), 0)
         }
 
         long start = System.currentTimeMillis()
@@ -93,39 +99,42 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
 
         if (removeOwningIds) {
             // Remove null entries and any which have an owning id, as we only want those inside the owners
-            items = items.findAll { !(it.id in owningIds) }
+            items = items.findAll {!(it.id in owningIds)}
         }
 
-        PaginatedLuceneResult<K> results = PaginatedLuceneResult.paginateFullResultSet(items, pagination)
+        PaginatedHibernateSearchResult<K> results = PaginatedHibernateSearchResult.paginateFullResultSet(items, pagination)
 
         log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}")
         results
     }
 
-    protected List<K> performSearch(List<UUID> owningIds,
-                                    String searchTerm,
-                                    Boolean labelOnly,
-                                    Set<Class<K>> filteredDomainsToSearch,
-                                    @DelegatesTo(HibernateSearchApi) Closure additional,
-                                    @DelegatesTo(HibernateSearchApi) Closure customSearch) {
+    List<K> performSearch(List<UUID> owningIds,
+                          String searchTerm,
+                          Boolean labelOnly,
+                          Set<Class<K>> filteredDomainsToSearch,
+                          @DelegatesTo(HibernateSearchApi) Closure additional,
+                          @DelegatesTo(HibernateSearchApi) Closure customSearch) {
         if (customSearch) {
-            log.debug('Performing lucene custom search')
+            log.debug('Performing hs custom search')
             return performCustomSearch(filteredDomainsToSearch, owningIds, additional, customSearch)
         } else if (labelOnly) {
-            log.debug('Performing lucene label search')
+            log.debug('Performing hs label search')
             return performLabelSearch(filteredDomainsToSearch, owningIds, searchTerm, additional)
         }
 
-        log.debug('Performing lucene standard search')
+        log.debug('Performing hs standard search')
         return performStandardSearch(filteredDomainsToSearch, owningIds, searchTerm, additional)
     }
 
     @CompileDynamic
     protected List<K> performLabelSearch(Set<Class<K>> domainsToSearch, List<UUID> owningIds, String searchTerm,
                                          @DelegatesTo(HibernateSearchApi) Closure additional = null) {
+
         domainsToSearch.collect { domain ->
             log.debug('Domain searching {}', domain)
-            domain.luceneLabelSearch(domain, searchTerm, owningIds, [:], additional).results
+            domain
+                .labelHibernateSearch(domain, searchTerm, owningIds, pathService.findAllPathsForIds(owningIds).collect { it.last() }, [:], additional)
+                .results
         }.flatten().findAll() as List<K>
 
     }
@@ -135,7 +144,8 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
                                             @DelegatesTo(HibernateSearchApi) Closure additional = null) {
         domainsToSearch.collect { domain ->
             log.debug('Domain searching {}', domain)
-            domain.luceneStandardSearch(domain, searchTerm, owningIds, [:], additional).results
+            domain.standardHibernateSearch(domain, searchTerm, owningIds, pathService.findAllPathsForIds(owningIds).collect { it.last() }, [:],
+                                           additional).results
         }.flatten().findAll() as List<K>
     }
 
@@ -145,7 +155,8 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
                                           @DelegatesTo(HibernateSearchApi) Closure customSearch) {
         domainsToSearch.collect { domain ->
             log.debug('Domain searching {}', domain)
-            domain.luceneCustomSearch(domain, owningIds, [:], additional, customSearch).results
+            domain.customHibernateSearch(domain, owningIds, pathService.findAllPathsForIds(owningIds).collect { it.last() }, [:], additional,
+                                         customSearch).results
         }.flatten().findAll() as List<K>
     }
 }

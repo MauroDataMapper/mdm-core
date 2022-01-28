@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.authentication
 
-
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessWithoutUpdatingFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
@@ -49,7 +49,7 @@ class ApiKeyFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec {
 
     @Override
     String getResourcePath() {
-        "catalogueUsers/${getUserByEmailAddress(userEmailAddresses.editor).id}/apiKeys"
+        "catalogueUsers/${getUserByEmailAddress(userEmailAddresses.creator).id}/apiKeys"
     }
 
     @Override
@@ -58,12 +58,13 @@ class ApiKeyFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec {
     }
 
     @Override
-    String getReaderIndexJson() {
-        null
+    Expectations getExpectations() {
+        Expectations.builder()
+            .whereNooneCanDoAnything()
+            .whereTestingUnsecuredResource()
     }
 
-    @Override
-    String getShowJson() {
+    String getReaderIndexJson() {
         null
     }
 
@@ -80,78 +81,12 @@ class ApiKeyFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec {
     }
 
     @Override
-    Boolean readerPermissionIsInherited() {
-        true
-    }
-
-    @Override
-    Boolean getReaderCanSeeEditorCreatedItems() {
-        false
-    }
-
-    @Override
-    void verifyR01Response(HttpResponse<Map> response) {
+    void verify01Response(HttpResponse<Map> response) {
         verifyResponse NOT_FOUND, response
-        String id = getUserByEmailAddress(userEmailAddresses.editor).id.toString()
+        String id = getUserByEmailAddress(userEmailAddresses.creator).id.toString()
         assert responseBody().path == "/api/catalogueUsers/${id}/apiKeys/"
         assert responseBody().resource == 'CatalogueUser'
         assert responseBody().id == id
-    }
-
-    @Override
-    void verifyE02Response(HttpResponse<Map> response, String id) {
-        // Show is not allowed
-        verifyResponse NOT_FOUND, response
-    }
-
-    @Override
-    void verifyL03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound(response, null)
-    }
-
-    @Override
-    void verifyL03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound(response, null)
-    }
-
-    @Override
-    void verifyL03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound(response, null)
-    }
-
-    @Override
-    void verifyN03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound(response, null)
-    }
-
-    @Override
-    void verifyN03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound(response, null)
-    }
-
-    @Override
-    void verifyN03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound(response, null)
-    }
-
-    @Override
-    void verifyR03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound(response, null)
-    }
-
-    @Override
-    void verifyR03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound(response, null)
-    }
-
-    @Override
-    void verifyR03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound(response, null)
-    }
-
-    @Override
-    void verifyR04KnownIdResponse(HttpResponse<Map> response, String id) {
-        verifyNotFound(response, null)
     }
 
     @Override
@@ -160,13 +95,22 @@ class ApiKeyFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec {
         assert response.body().path
     }
 
-    void 'E05 : Test disabling an ApiKey (as editor)'() {
+    void verify04UnknownIdResponse(HttpResponse<Map> response, String name, String id) {
+        verifyNotFound(response, id)
+    }
+
+    @Override
+    void verify04NotAllowedToDeleteResponse(HttpResponse<Map> response, String name, String id) {
+        verifyNotFound(response, id)
+    }
+
+    void 'C01 : Test disabling an ApiKey (as creator)'() {
 
         given:
         String id = getValidId()
 
         when:
-        loginEditor()
+        loginCreator()
         PUT("${id}/disable", [:])
 
         then:
@@ -177,17 +121,17 @@ class ApiKeyFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec {
         removeValidIdObject(id)
     }
 
-    void 'E06 : Test enabling a disabled ApiKey (as editor)'() {
+    void 'C02 : Test enabling a disabled ApiKey (as creator)'() {
 
         given:
         String id = getValidId()
-        loginEditor()
+        loginCreator()
         PUT("${id}/disable", [:])
         verifyResponse(HttpStatus.OK, response)
         logout()
 
         when:
-        loginEditor()
+        loginCreator()
         PUT("${id}/enable", [:])
 
         then:
@@ -198,11 +142,11 @@ class ApiKeyFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec {
         removeValidIdObject(id)
     }
 
-    void 'E07 : Test refreshing an expired refreshable ApiKey (as editor)'() {
+    void 'C03 : Test refreshing an expired refreshable ApiKey (as creator)'() {
 
         given:
         int refreshDays = 4
-        loginEditor()
+        loginCreator()
         POST(getSavePath(), [name       : 'functionalTest',
                              expiryDate : LocalDate.now().minusDays(5).format(DateTimeFormatter.ISO_LOCAL_DATE),
                              refreshable: true], MAP_ARG, true)
@@ -211,7 +155,7 @@ class ApiKeyFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec {
         logout()
 
         when:
-        loginEditor()
+        loginCreator()
         PUT("${id}/refresh/${refreshDays}", [:])
 
         then:
@@ -222,11 +166,11 @@ class ApiKeyFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec {
         removeValidIdObject(id)
     }
 
-    void 'E08 : Test refreshing an expired unrefreshable ApiKey (as editor)'() {
+    void 'C04 : Test refreshing an expired unrefreshable ApiKey (as creator)'() {
 
         given:
         int refreshDays = 4
-        loginEditor()
+        loginCreator()
         POST(getSavePath(), [name       : 'functionalTest',
                              expiryDate : LocalDate.now().minusDays(5).format(DateTimeFormatter.ISO_LOCAL_DATE),
                              refreshable: false], MAP_ARG, true)
@@ -235,7 +179,7 @@ class ApiKeyFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec {
         logout()
 
         when:
-        loginEditor()
+        loginCreator()
         PUT("${id}/refresh/${refreshDays}", [:])
 
         then:
@@ -247,12 +191,13 @@ class ApiKeyFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec {
         removeValidIdObject(id)
     }
 
-    void 'L05 : Test disabling an ApiKey (not logged in)'() {
+    void '#prefix-01 : Test disabling an ApiKey (as #name)'() {
 
         given:
         String id = getValidId()
 
         when:
+        login(name)
         PUT("${id}/disable", [:])
 
         then:
@@ -260,13 +205,21 @@ class ApiKeyFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec {
 
         cleanup:
         removeValidIdObject(id)
+
+        where:
+        prefix | name
+        'LO'   | null
+        'NA'   | 'Authenticated'
+        'RD'   | 'Reader'
+        'ED'   | 'Editor'
+        'CA'   | 'ContainerAdmin'
     }
 
-    void 'L06 : Test enabling a disabled ApiKey (not logged in)'() {
+    void '#prefix-02 : Test enabling a disabled ApiKey (as #name)'() {
 
         given:
         String id = getValidId()
-        loginEditor()
+        loginCreator()
         PUT("${id}/disable", [:])
         verifyResponse(HttpStatus.OK, response)
         logout()
@@ -279,13 +232,21 @@ class ApiKeyFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec {
 
         cleanup:
         removeValidIdObject(id)
+
+        where:
+        prefix | name
+        'LO'   | null
+        'NA'   | 'Authenticated'
+        'RD'   | 'Reader'
+        'ED'   | 'Editor'
+        'CA'   | 'ContainerAdmin'
     }
 
-    void 'L07 : Test refreshing an expired refreshable ApiKey (not logged in)'() {
+    void '#prefix-03 : Test refreshing an expired refreshable ApiKey (as #name)'() {
 
         given:
         int refreshDays = 4
-        loginEditor()
+        loginCreator()
         POST(getSavePath(), [name       : 'functionalTest',
                              expiryDate : LocalDate.now().minusDays(5).format(DateTimeFormatter.ISO_LOCAL_DATE),
                              refreshable: true], MAP_ARG, true)
@@ -301,13 +262,21 @@ class ApiKeyFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec {
 
         cleanup:
         removeValidIdObject(id)
+
+        where:
+        prefix | name
+        'LO'   | null
+        'NA'   | 'Authenticated'
+        'RD'   | 'Reader'
+        'ED'   | 'Editor'
+        'CA'   | 'ContainerAdmin'
     }
 
-    void 'L08 : Test refreshing an expired unrefreshable ApiKey (not logged in)'() {
+    void '#prefix-04 : Test refreshing an expired unrefreshable ApiKey (as #name)'() {
 
         given:
         int refreshDays = 4
-        loginEditor()
+        loginCreator()
         POST(getSavePath(), [name       : 'functionalTest',
                              expiryDate : LocalDate.now().minusDays(5).format(DateTimeFormatter.ISO_LOCAL_DATE),
                              refreshable: true], MAP_ARG, true)
@@ -323,88 +292,13 @@ class ApiKeyFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec {
 
         cleanup:
         removeValidIdObject(id)
-    }
 
-
-    void 'N05 : Test disabling an ApiKey (as no access/authenticated)'() {
-
-        given:
-        String id = getValidId()
-
-        when:
-        loginAuthenticated()
-        PUT("${id}/disable", [:])
-
-        then:
-        verifyNotFound(response, id)
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'N06 : Test enabling a disabled ApiKey (as no access/authenticated)'() {
-
-        given:
-        String id = getValidId()
-        loginEditor()
-        PUT("${id}/disable", [:])
-        verifyResponse(HttpStatus.OK, response)
-        logout()
-
-        when:
-        loginAuthenticated()
-        PUT("${id}/enable", [:])
-
-        then:
-        verifyNotFound(response, id)
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'N07 : Test refreshing an expired refreshable ApiKey (as no access/authenticated)'() {
-
-        given:
-        int refreshDays = 4
-        loginEditor()
-        POST(getSavePath(), [name       : 'functionalTest',
-                             expiryDate : LocalDate.now().minusDays(5).format(DateTimeFormatter.ISO_LOCAL_DATE),
-                             refreshable: true], MAP_ARG, true)
-        verifyResponse CREATED, response
-        String id = response.body().id
-        logout()
-
-        when:
-        loginAuthenticated()
-        PUT("${id}/refresh/${refreshDays}", [:])
-
-        then:
-        verifyNotFound(response, id)
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'N08 : Test refreshing an expired unrefreshable ApiKey (as no access/authenticated)'() {
-
-        given:
-        int refreshDays = 4
-        loginEditor()
-        POST(getSavePath(), [name       : 'functionalTest',
-                             expiryDate : LocalDate.now().minusDays(5).format(DateTimeFormatter.ISO_LOCAL_DATE),
-                             refreshable: true], MAP_ARG, true)
-        verifyResponse CREATED, response
-        String id = response.body().id
-        logout()
-
-        when:
-        loginAuthenticated()
-        PUT("${id}/refresh/${refreshDays}", [:])
-
-        then:
-        verifyNotFound(response, id)
-
-        cleanup:
-        removeValidIdObject(id)
+        where:
+        prefix | name
+        'LO'   | null
+        'NA'   | 'Authenticated'
+        'RD'   | 'Reader'
+        'ED'   | 'Editor'
+        'CA'   | 'ContainerAdmin'
     }
 }

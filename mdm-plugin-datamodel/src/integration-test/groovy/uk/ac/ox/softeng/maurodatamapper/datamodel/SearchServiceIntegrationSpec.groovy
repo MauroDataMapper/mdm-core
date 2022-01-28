@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,17 +24,19 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.BaseDataModelIntegrationSpec
-import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import org.junit.jupiter.api.Tag
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 
 @Slf4j
 @Integration
 @Rollback
+@Tag('non-parallel')
 class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
     UUID complexDataModelId
@@ -48,6 +50,17 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     }
 
     @Override
+    void preDomainDataSetup() {
+        super.preDomainDataSetup()
+        hibernateSearchIndexingService.purgeAllIndexes()
+    }
+
+    @Override
+    void postDomainDataSetup() {
+        hibernateSearchIndexingService.flushIndexes()
+    }
+
+    @Override
     void setupDomainData() {
         log.debug('Setting up DataModelServiceSpec unit')
 
@@ -55,7 +68,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         simpleDataModelId = buildSimpleDataModel().id
     }
 
-    void 'test performStandardSearch on simple DataModel'() {
+    void 'S1 - test performStandardSearch on simple DataModel'() {
 
         given:
         setupData()
@@ -75,7 +88,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         modelItems.size() == 0
     }
 
-    void 'test performLabelSearch on simple DataModel'() {
+    void 'S2 - test performLabelSearch on simple DataModel'() {
 
         given:
         setupData()
@@ -95,7 +108,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         modelItems.size() == 0
     }
 
-    void 'test performStandardSearch domain restricted on simple DataModel'() {
+    void 'S3 - test performStandardSearch domain restricted on simple DataModel'() {
 
         given:
         setupData()
@@ -133,7 +146,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         modelItems.size() == 1
     }
 
-    void 'test performLabelSearch  domain restricted label search on simple DataModel'() {
+    void 'S4 - test performLabelSearch  domain restricted label search on simple DataModel'() {
 
         given:
         setupData()
@@ -174,7 +187,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         modelItems.size() == 0
     }
 
-    void 'test perform x search on simple DataModel looking for metadata entry'() {
+    void 'S5 - test perform x search on simple DataModel looking for metadata entry'() {
 
         given:
         setupData()
@@ -193,14 +206,14 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         modelItems.size() == 0
     }
 
-    void 'test findAllByDataModelIdByLuceneSearch on complex DataModel with no pagination'() {
+    void 'S6 - test findAllByDataModelIdByHibernateSearch on complex DataModel with no pagination'() {
 
         given:
         setupData()
         SearchParams searchParams = new SearchParams(search: 'emptyclass')
 
         when:
-        PaginatedLuceneResult<ModelItem> result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams)
+        PaginatedHibernateSearchResult<ModelItem> result = searchService.findAllByDataModelIdByHibernateSearch(complexDataModelId, searchParams)
 
         then:
         result.count == 1
@@ -209,7 +222,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when:
         searchParams = new SearchParams(search: 'string')
-        result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams)
+        result = searchService.findAllByDataModelIdByHibernateSearch(complexDataModelId, searchParams)
 
         then:
         result.count == 1
@@ -218,7 +231,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when:
         searchParams = new SearchParams(search: 'ele*')
-        result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams)
+        result = searchService.findAllByDataModelIdByHibernateSearch(complexDataModelId, searchParams)
 
         then:
         result.count == 3
@@ -228,7 +241,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when:
         searchParams = new SearchParams(search: 'child')
-        result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams)
+        result = searchService.findAllByDataModelIdByHibernateSearch(complexDataModelId, searchParams)
 
         then:
         result.count == 3
@@ -238,7 +251,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when:
         searchParams = new SearchParams(search: 'yes')
-        result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams)
+        result = searchService.findAllByDataModelIdByHibernateSearch(complexDataModelId, searchParams)
 
         then:
         result.count == 1
@@ -246,7 +259,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         result.results[0].domainType == 'EnumerationValue'
     }
 
-    void 'test findAllByDataModelIdByLuceneSearch on complex DataModel with pagination'() {
+    void 'S7 - test findAllByDataModelIdByHibernateSearch on complex DataModel with pagination'() {
 
         given:
         setupData()
@@ -255,7 +268,8 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
 
         when:
-        PaginatedLuceneResult<ModelItem> result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams, pagination)
+        PaginatedHibernateSearchResult<ModelItem> result =
+            searchService.findAllByDataModelIdByHibernateSearch(complexDataModelId, searchParams, pagination)
 
         then:
         result.count == 3
@@ -265,7 +279,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when:
         pagination.order = 'desc'
-        result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams, pagination)
+        result = searchService.findAllByDataModelIdByHibernateSearch(complexDataModelId, searchParams, pagination)
 
         then:
         result.count == 3
@@ -275,7 +289,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when:
         pagination = [max: 2]
-        result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams, pagination)
+        result = searchService.findAllByDataModelIdByHibernateSearch(complexDataModelId, searchParams, pagination)
 
         then:
         result.count == 3
@@ -284,7 +298,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when:
         pagination = [max: 2, offset: 1]
-        result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams, pagination)
+        result = searchService.findAllByDataModelIdByHibernateSearch(complexDataModelId, searchParams, pagination)
 
         then:
         result.count == 3
@@ -292,7 +306,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         result.results[1].label == 'element2'
     }
 
-    void 'test findAllByDataModelIdByLuceneSearch on complex DataModel with domain filtering'() {
+    void 'S8 - test findAllByDataModelIdByHibernateSearch on complex DataModel with domain filtering'() {
 
         given:
         setupData()
@@ -301,7 +315,8 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
 
         when:
-        PaginatedLuceneResult<ModelItem> result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams, pagination)
+        PaginatedHibernateSearchResult<ModelItem> result =
+            searchService.findAllByDataModelIdByHibernateSearch(complexDataModelId, searchParams, pagination)
 
         then:
         result.count == 1
@@ -309,7 +324,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when:
         searchParams.domainTypes = [DataElement.simpleName]
-        result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams, pagination)
+        result = searchService.findAllByDataModelIdByHibernateSearch(complexDataModelId, searchParams, pagination)
 
         then:
         result.count == 2
@@ -319,7 +334,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         when:
         searchParams.searchTerm = 'child'
         searchParams.domainTypes = [DataElement.simpleName]
-        result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams, pagination)
+        result = searchService.findAllByDataModelIdByHibernateSearch(complexDataModelId, searchParams, pagination)
 
         then:
         result.count == 1
@@ -327,7 +342,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when:
         searchParams.domainTypes = [DataElement.simpleName, DataClass.simpleName]
-        result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams, pagination)
+        result = searchService.findAllByDataModelIdByHibernateSearch(complexDataModelId, searchParams, pagination)
 
         then:
         result.count == 2
@@ -336,14 +351,14 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when:
         searchParams.domainTypes = [ReferenceType.simpleName]
-        result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams, pagination)
+        result = searchService.findAllByDataModelIdByHibernateSearch(complexDataModelId, searchParams, pagination)
 
         then:
         result.count == 1
         result.results.any { it.label == 'child' && it.domainType == 'ReferenceType' }
     }
 
-    void 'test findAllByDataModelIdByLuceneSearch on complex DataModel label search only'() {
+    void 'S9 - test findAllByDataModelIdByHibernateSearch on complex DataModel label search only'() {
 
         given:
         setupData()
@@ -352,7 +367,8 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
 
         when:
-        PaginatedLuceneResult<ModelItem> result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams, pagination)
+        PaginatedHibernateSearchResult<ModelItem> result =
+            searchService.findAllByDataModelIdByHibernateSearch(complexDataModelId, searchParams, pagination)
 
         then:
         result.count == 2

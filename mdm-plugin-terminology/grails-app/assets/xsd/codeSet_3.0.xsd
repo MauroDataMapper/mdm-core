@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:mdm="http://maurodatamapper.com/codeSet/3.0" elementFormDefault="qualified"
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:mdm="http://maurodatamapper.com/codeSet/3.0" elementFormDefault="qualified"
            targetNamespace="http://maurodatamapper.com/codeSet/3.0">
   <xs:element name="codeSet" type="mdm:codeSetCT" />
+  <xs:element name="codeSets" type="mdm:codeSetsCT" />
   <xs:complexType name="codeSetCT">
     <xs:sequence>
       <xs:element minOccurs="0" name="id" type="mdm:uuid" />
@@ -16,7 +18,7 @@
       <xs:element minOccurs="0" name="organisation" type="xs:string" />
       <xs:element name="documentationVersion" type="mdm:mandatoryString">
         <xs:annotation>
-          <xs:documentation>If adding a CodeSet which already exists in the Metadata Catalogue then this must be provided and be a later version to the one in the Catalogue. 
+          <xs:documentation>If adding a CodeSet which already exists in the Metadata Catalogue then this must be provided and be a later version to the one in the Catalogue.
 Otherwise you will get an import error due to non-unique labels</xs:documentation>
         </xs:annotation>
       </xs:element>
@@ -30,9 +32,14 @@ Otherwise you will get an import error due to non-unique labels</xs:documentatio
         <xs:annotation>
           <xs:documentation>ModelVersion must only be set if the CodeSet is finalised.</xs:documentation>
         </xs:annotation>
-      </xs:element>      
+      </xs:element>
       <xs:element name="authority" type="mdm:authorityType" />
       <xs:element name="termPaths" type="mdm:termPathCollectionCT" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="codeSetsCT">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" ref="mdm:codeSet" />
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="termPathCollectionCT">
@@ -95,7 +102,7 @@ Otherwise you will get an import error due to non-unique labels</xs:documentatio
       <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string" />
       <xs:element minOccurs="0" name="childAnnotations" type="mdm:annotationsType" />
     </xs:sequence>
-  </xs:complexType>  
+  </xs:complexType>
   <xs:complexType name="metadataCollectionType">
     <xs:sequence>
       <xs:element maxOccurs="unbounded" name="metadata" type="mdm:metadataType" />
@@ -133,5 +140,5 @@ Otherwise you will get an import error due to non-unique labels</xs:documentatio
       <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string" />
       <xs:element name="lastUpdated" type="xs:dateTime" minOccurs="0" />
     </xs:sequence>
-  </xs:complexType>  
+  </xs:complexType>
 </xs:schema>

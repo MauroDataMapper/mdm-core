@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,14 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
-import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
+import uk.ac.ox.softeng.maurodatamapper.test.unit.MdmDomainSpec
 
 import grails.testing.gorm.DomainUnitTest
 import org.spockframework.util.InternalSpockError
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
 
-class AnnotationSpec extends CreatorAwareSpec<Annotation> implements DomainUnitTest<Annotation> {
+class AnnotationSpec extends MdmDomainSpec<Annotation> implements DomainUnitTest<Annotation> {
 
     BasicModel db
     Folder misc
@@ -42,15 +42,14 @@ class AnnotationSpec extends CreatorAwareSpec<Annotation> implements DomainUnitT
         checkAndSave(db)
     }
 
-    void 'test depth and path'() {
+    void 'test path'() {
         when:
         setValidDomainValues()
         checkAndSave(domain)
         item = findById()
 
         then:
-        item.depth == 0
-        item.path == ''
+        item.path.toString() == 'ann:test'
 
     }
 
@@ -74,12 +73,10 @@ class AnnotationSpec extends CreatorAwareSpec<Annotation> implements DomainUnitT
         item2
 
         and:
-        item.depth == 0
-        item.path == ''
+        item.path.toString() == 'ann:test'
 
         and:
-        item2.depth == 1
-        item2.path == "/${item.id}"
+        item2.path.toString() == 'ann:test|ann:test [0]'
         item2.multiFacetAwareItemId
         item2.description == 'child'
 
@@ -88,8 +85,8 @@ class AnnotationSpec extends CreatorAwareSpec<Annotation> implements DomainUnitT
         item2.addToChildAnnotations(child2)
 
         then:
-        child2.depth == 2
-        child2.path == "/${item.id}/${item2.id}"
+        item2.validate()
+        child2.path.toString() == 'ann:test|ann:test [0]|ann:test [0] [0]'
 
     }
 

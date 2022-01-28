@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.unidirectional.CreationDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.unidirectional.DeletionDiff
 import uk.ac.ox.softeng.maurodatamapper.path.Path
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import groovy.transform.CompileStatic
 import groovy.transform.stc.ClosureParams
@@ -93,11 +93,11 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
     }
 
     String getSourceId() {
-        (source as CreatorAware).id
+        (source as MdmDomain).id
     }
 
     String getTargetId() {
-        (target as CreatorAware).id
+        (target as MdmDomain).id
     }
 
     Path getFullyQualifiedPath() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,56 +20,55 @@ package uk.ac.ox.softeng.maurodatamapper.federation.web
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
+import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogue
 
 import groovy.util.logging.Slf4j
-import groovy.util.slurpersupport.GPathResult
+import groovy.xml.XmlSlurper
+import groovy.xml.slurpersupport.GPathResult
 import io.micronaut.core.annotation.AnnotationMetadataResolver
 import io.micronaut.core.type.Argument
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpStatus
-import io.micronaut.http.client.DefaultHttpClient
 import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.HttpClientConfiguration
 import io.micronaut.http.client.LoadBalancer
 import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
-import io.micronaut.http.client.ssl.NettyClientSslBuilder
+import io.micronaut.http.client.netty.DefaultHttpClient
+import io.micronaut.http.client.netty.ssl.NettyClientSslBuilder
 import io.micronaut.http.codec.MediaTypeCodecRegistry
 import io.micronaut.http.exceptions.HttpException
 import io.micronaut.http.uri.UriBuilder
 import io.netty.channel.MultithreadEventLoopGroup
 import io.netty.util.concurrent.DefaultThreadFactory
-import io.reactivex.Flowable
 import org.springframework.context.ApplicationContext
 import org.xml.sax.SAXException
 
-import java.time.Duration
 import java.util.concurrent.ThreadFactory
-
 /**
  * @since 14/04/2021
  */
 @Slf4j
-class FederationClient {
+class FederationClient implements Closeable {
 
     static final String API_KEY_HEADER = 'apiKey'
     private HttpClient client
     private String hostUrl
     private String contextPath
 
-    FederationClient(String hostUrl, ApplicationContext applicationContext) {
-        this(hostUrl,
+    FederationClient(SubscribedCatalogue subscribedCatalogue, ApplicationContext applicationContext) {
+        this(subscribedCatalogue,
              applicationContext.getBean(HttpClientConfiguration),
              applicationContext.getBean(NettyClientSslBuilder),
              applicationContext.getBean(MediaTypeCodecRegistry)
         )
     }
 
-    FederationClient(String hostUrl,
+    FederationClient(SubscribedCatalogue subscribedCatalogue,
                      HttpClientConfiguration httpClientConfiguration,
                      NettyClientSslBuilder nettyClientSslBuilder,
                      MediaTypeCodecRegistry mediaTypeCodecRegistry) {
-        this(hostUrl,
+        this(subscribedCatalogue,
              httpClientConfiguration,
              new DefaultThreadFactory(MultithreadEventLoopGroup),
              nettyClientSslBuilder,
@@ -77,12 +76,12 @@ class FederationClient {
         )
     }
 
-    private FederationClient(String hostUrl,
+    private FederationClient(SubscribedCatalogue subscribedCatalogue,
                              HttpClientConfiguration httpClientConfiguration,
                              ThreadFactory threadFactory,
                              NettyClientSslBuilder nettyClientSslBuilder,
                              MediaTypeCodecRegistry mediaTypeCodecRegistry) {
-        this.hostUrl = hostUrl
+        hostUrl = subscribedCatalogue.url
         // The http client resolves using URI.resolve which ignores anything in the url path,
         // therefore we need to make sure its part of the context path.
         URI hostUri = hostUrl.toURI()
@@ -92,15 +91,20 @@ class FederationClient {
         } else {
             this.contextPath = 'api'
         }
-        httpClientConfiguration.setReadTimeout(Duration.ofMinutes(5))
-        client = new DefaultHttpClient(LoadBalancer.fixed(hostUrl.toURL()),
+        client = new DefaultHttpClient(LoadBalancer.fixed(hostUrl.toURL().toURI()),
                                        httpClientConfiguration,
                                        this.contextPath,
                                        threadFactory,
                                        nettyClientSslBuilder,
                                        mediaTypeCodecRegistry,
-                                       AnnotationMetadataResolver.DEFAULT)
+                                       AnnotationMetadataResolver.DEFAULT,
+                                       Collections.emptyList())
         log.debug('Client created to connect to {}', hostUrl)
+    }
+
+    @Override
+    void close() throws IOException {
+        client.close()
     }
 
     GPathResult getSubscribedCatalogueModelsFromAtomFeed(UUID apiKey) {
@@ -117,7 +121,11 @@ class FederationClient {
     }
 
     Map<String, Object> getVersionLinksForModel(UUID apiKey, String urlModelResourceType, UUID modelId) {
-        retrieveMapFromClient(UriBuilder.of(urlModelResourceType).path(modelId.toString()), apiKey)
+        retrieveMapFromClient(UriBuilder.of(urlModelResourceType).path(modelId.toString()).path('versionLinks'), apiKey)
+    }
+
+    Map<String, Object> getNewerPublishedVersionsForPublishedModel(UUID apiKey, UUID modelId) {
+        retrieveMapFromClient(UriBuilder.of('published/models').path(modelId.toString()).path('newerVersions'), apiKey)
     }
 
     String getStringResourceExport(UUID apiKey, String urlResourceType, UUID resourceId, Map exporterInfo) {
@@ -143,11 +151,10 @@ class FederationClient {
 
     private Map<String, Object> retrieveMapFromClient(UriBuilder uriBuilder, UUID apiKey, Map params = [:]) {
         try {
-            Flowable<Map> response = client.retrieve(HttpRequest
-                                                         .GET(uriBuilder.expand(params))
-                                                         .header(API_KEY_HEADER, apiKey.toString()),
-                                                     Argument.mapOf(String, Object)) as Flowable<Map>
-            response.blockingFirst()
+            client.toBlocking().retrieve(HttpRequest
+                                             .GET(uriBuilder.expand(params))
+                                             .header(API_KEY_HEADER, apiKey.toString()),
+                                         Argument.mapOf(String, Object))
         }
         catch (HttpException ex) {
             handleHttpException(ex, getFullUrl(uriBuilder, params))
@@ -156,11 +163,10 @@ class FederationClient {
 
     private String retrieveStringFromClient(UriBuilder uriBuilder, UUID apiKey, Map params = [:]) {
         try {
-            Flowable<String> response = client.retrieve(HttpRequest
-                                                            .GET(uriBuilder.expand(params))
-                                                            .header(API_KEY_HEADER, apiKey.toString()),
-                                                        Argument.STRING) as Flowable<String>
-            response.blockingFirst()
+            client.toBlocking().retrieve(HttpRequest
+                                             .GET(uriBuilder.expand(params))
+                                             .header(API_KEY_HEADER, apiKey.toString()),
+                                         Argument.STRING)
         }
         catch (HttpException ex) {
             handleHttpException(ex, getFullUrl(uriBuilder, params))
@@ -169,11 +175,10 @@ class FederationClient {
 
     private List<Map<String, Object>> retrieveListFromClient(UriBuilder uriBuilder, UUID apiKey, Map params = [:]) {
         try {
-            Flowable<List> response = client.retrieve(HttpRequest
-                                                          .GET(uriBuilder.expand(params))
-                                                          .header(API_KEY_HEADER, apiKey.toString()),
-                                                      Argument.listOf(Map)) as Flowable<List>
-            response.blockingFirst()
+            client.toBlocking().retrieve(HttpRequest
+                                             .GET(uriBuilder.expand(params))
+                                             .header(API_KEY_HEADER, apiKey.toString()),
+                                         Argument.listOf(Map<String, Object>)) as List<Map<String, Object>>
         }
         catch (HttpException ex) {
             handleHttpException(ex, getFullUrl(uriBuilder, params))

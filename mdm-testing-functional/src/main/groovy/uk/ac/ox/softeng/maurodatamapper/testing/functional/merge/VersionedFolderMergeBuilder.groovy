@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,8 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         // Somethings up with the MD, when running properly the diff happily returns the changed MD, but under test it doesnt.
         // The MD exists in the daabase and is returned if using the MD endpoint but when calling folder.metadata the collection is empty.
         // When run-app all the tables are correctly populated and the collection is not empty
+        String simpleTerminologyId = getSimpleTerminologyId()
+
         loginEditor()
         POST("versionedFolders", [
             label: 'Functional Test VersionedFolder Complex'
@@ -66,9 +68,10 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         //        POST("$commonAncestorId/metadata", [namespace: 'functional.test', key: 'modifyAndDelete', value: 'some other original value 2'])
         //        verifyResponse CREATED, response3
 
-        String dataModelCa = dataModelPluginMergeBuilder.buildCommonAncestorDataModel(commonAncestorId)
+        String dataModelCa = dataModelPluginMergeBuilder.buildCommonAncestorDataModel(commonAncestorId, '1', simpleTerminologyId)
         String terminologyCa = terminologyPluginMergeBuilder.buildCommonAncestorTerminology(commonAncestorId)
         String codeSetCa = terminologyPluginMergeBuilder.buildCommonAncestorCodeSet(commonAncestorId, terminologyCa)
+        dataModelPluginMergeBuilder.buildCommonAncestorModelDataType(dataModelCa, terminologyCa)
 
         // Finalise
         PUT("versionedFolders/$commonAncestorId/finalise", [versionChangeType: 'Major'])
@@ -83,7 +86,10 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
     }
 
     Map buildSubFolderModelsForBranching() {
+        String simpleTerminologyId = getSimpleTerminologyId()
+
         loginEditor()
+
         POST("versionedFolders", [
             label: 'Functional Test VersionedFolder With Sub Folders'
         ])
@@ -105,11 +111,15 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         ])
         verifyResponse(CREATED, response)
         String subFolder2Id = responseBody().id
-        String dataModelCaId = dataModelPluginMergeBuilder.buildCommonAncestorDataModel(commonAncestorId)
+
+        String dataModelCaId = dataModelPluginMergeBuilder.buildCommonAncestorDataModel(commonAncestorId, '1', simpleTerminologyId)
         String terminologyCa = terminologyPluginMergeBuilder.buildCommonAncestorTerminology(subFolderId)
         String codeSetCa = terminologyPluginMergeBuilder.buildCommonAncestorCodeSet(subSubFolderId, terminologyCa)
-        String dataModel2Id = dataModelPluginMergeBuilder.buildCommonAncestorDataModel(subFolder2Id, '2')
-        String dataModel3Id = dataModelPluginMergeBuilder.buildCommonAncestorDataModel(subSubFolderId, '3')
+        String dataModel2Id = dataModelPluginMergeBuilder.buildCommonAncestorDataModel(subFolder2Id, '2', simpleTerminologyId)
+        String dataModel3Id = dataModelPluginMergeBuilder.buildCommonAncestorDataModel(subSubFolderId, '3', simpleTerminologyId)
+        dataModelPluginMergeBuilder.buildCommonAncestorModelDataType(dataModelCaId, terminologyCa)
+        dataModelPluginMergeBuilder.buildCommonAncestorModelDataType(dataModel2Id, terminologyCa)
+        dataModelPluginMergeBuilder.buildCommonAncestorModelDataType(dataModel3Id, terminologyCa)
 
         // Finalise
         PUT("versionedFolders/$commonAncestorId/finalise", [versionChangeType: 'Major'])
@@ -121,7 +131,7 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
             terminologyCaId : terminologyCa,
             codeSetCaId     : codeSetCa,
             dataModel2Id    : dataModel2Id,
-            dataModel3Id    : dataModel3Id,
+            dataModel3Id    : dataModel3Id
         ]
     }
 
@@ -138,27 +148,30 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         PUT("versionedFolders/$id/newBranchModelVersion", [:])
         verifyResponse CREATED, response
         String mainId = responseBody().id
-        if (readRhs) addReaderShare(mainId)
+        if (readRhs) addAccessShares(mainId)
         PUT("versionedFolders/$id/newBranchModelVersion", [branchName: 'left'])
         verifyResponse CREATED, response
         String leftId = responseBody().id
-        if (readLhs) addReaderShare(leftId)
+        if (readLhs) addAccessShares(leftId)
         logout()
         new TestMergeData(commonAncestor: id, source: leftId, target: mainId)
     }
 
     TestMergeData buildSubFolderModelsForMerging() {
+        String simpleTerminologyId = getSimpleTerminologyId()
+        String complexTerminologyId = getComplexTerminologyId()
+
         loginEditor()
 
         Map data = buildSubFolderModelsForBranching()
         PUT("versionedFolders/$data.commonAncestorId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String target = responseBody().id
-        addReaderShare(target)
+        addAccessShares(target)
         PUT("versionedFolders/$data.commonAncestorId/newBranchModelVersion", [branchName: 'source'])
         verifyResponse CREATED, response
         String source = responseBody().id
-        addReaderShare(source)
+        addAccessShares(source)
 
         Map<String, Object> sourceMap = [:]
         Map<String, Object> targetMap = [:]
@@ -166,13 +179,13 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         logout()
         loginEditor()
 
-        sourceMap.dataModel1 = dataModelPluginMergeBuilder.modifySourceDataModel(source)
+        sourceMap.dataModel1 = dataModelPluginMergeBuilder.modifySourceDataModel(source, '1', '', simpleTerminologyId, complexTerminologyId)
         targetMap.dataModel1 = dataModelPluginMergeBuilder.modifyTargetDataModel(target)
 
-        sourceMap.dataModel2 = dataModelPluginMergeBuilder.modifySourceDataModel(source, '2', 'fo:Sub Folder 2 in VersionedFolder|')
+        sourceMap.dataModel2 = dataModelPluginMergeBuilder.modifySourceDataModel(source, '2', 'fo:Sub Folder 2 in VersionedFolder|', simpleTerminologyId, complexTerminologyId)
         targetMap.dataModel2 = dataModelPluginMergeBuilder.modifyTargetDataModel(target, '2', 'fo:Sub Folder 2 in VersionedFolder|')
 
-        sourceMap.dataModel3 = dataModelPluginMergeBuilder.modifySourceDataModel(source, '3', 'fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|')
+        sourceMap.dataModel3 = dataModelPluginMergeBuilder.modifySourceDataModel(source, '3', 'fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|', simpleTerminologyId, complexTerminologyId)
         targetMap.dataModel3 = dataModelPluginMergeBuilder.modifyTargetDataModel(target, '3', 'fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|')
 
         sourceMap.terminology = terminologyPluginMergeBuilder.modifySourceTerminology(source, 'fo:Sub Folder in VersionedFolder|')
@@ -220,6 +233,11 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
 
         //       sourceMap.dataModel4 = dataModelPluginMergeBuilder.buildCommonAncestorDataModel(sourceMap.newSubSubFolder2Id.toString(),'4')
 
+        // Point the Model Data Type in the source to point at the Code Set rather than Terminology
+        PUT("dataModels/$sourceMap.dataModel1.dataModelId/dataTypes/$sourceMap.dataModel1.modelDataTypeId", [
+                modelResourceDomainType: 'CodeSet', modelResourceId: sourceMap.codeSet.codeSetId
+        ])
+        verifyResponse OK, response
         logout()
 
 
@@ -237,17 +255,20 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
 
     @Override
     TestMergeData buildComplexModelsForMerging(String folderId) {
+        String simpleTerminologyId = getSimpleTerminologyId()
+        String complexTerminologyId = getComplexTerminologyId()
+
         loginEditor()
 
         Map data = buildComplexModelsForBranching()
         PUT("versionedFolders/$data.commonAncestorId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String target = responseBody().id
-        addReaderShare(target)
+        addAccessShares(target)
         PUT("versionedFolders/$data.commonAncestorId/newBranchModelVersion", [branchName: 'source'])
         verifyResponse CREATED, response
         String source = responseBody().id
-        addReaderShare(source)
+        addAccessShares(source)
 
         Map<String, Object> sourceMap = [:]
         Map<String, Object> targetMap = [:]
@@ -255,7 +276,7 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         logout()
         loginEditor()
 
-        sourceMap.dataModel = dataModelPluginMergeBuilder.modifySourceDataModel(source)
+        sourceMap.dataModel = dataModelPluginMergeBuilder.modifySourceDataModel(source, '1', '', simpleTerminologyId, complexTerminologyId)
         targetMap.dataModel = dataModelPluginMergeBuilder.modifyTargetDataModel(target)
 
         sourceMap.terminology = terminologyPluginMergeBuilder.modifySourceTerminology(source)
@@ -267,6 +288,12 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         PUT("versionedFolders/$source", [description: 'source description on the versioned folder'])
         verifyResponse OK, response
         PUT("versionedFolders/$target", [description: 'Target modified description'])
+        verifyResponse OK, response
+
+        // Point the Model Data Type in the source to point at the Code Set rather than Terminology
+        PUT("dataModels/$sourceMap.dataModel.dataModelId/dataTypes/$sourceMap.dataModel.modelDataTypeId", [
+                modelResourceDomainType: 'CodeSet', modelResourceId: sourceMap.codeSet.codeSetId
+        ])
         verifyResponse OK, response
 
 
@@ -295,8 +322,8 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         fullFunctionalSpec.loginEditor()
     }
 
-    void addReaderShare(String id) {
-        fullFunctionalSpec.addReaderShare(id)
+    void addAccessShares(String id) {
+        fullFunctionalSpec.addAccessShares(id)
     }
 
     void logout() {
@@ -321,5 +348,23 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
 
     static String getExpectedSubFolderMergeDiffJson() {
         Files.readString(Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', 'versionedFolders', 'SubFolderMergeDiff.json'))
+    }
+
+    String getSimpleTerminologyId() {
+        loginEditor()
+        GET("terminologies/path/te:Simple%20Test%20Terminology")
+        verifyResponse(OK, response)
+        String simpleTerminologyId = responseBody().id
+        logout()
+        simpleTerminologyId
+    }
+
+    String getComplexTerminologyId() {
+        loginEditor()
+        GET("terminologies/path/te:Complex%20Test%20Terminology")
+        verifyResponse(OK, response)
+        String complexTerminologyId = responseBody().id
+        logout()
+        complexTerminologyId
     }
 }

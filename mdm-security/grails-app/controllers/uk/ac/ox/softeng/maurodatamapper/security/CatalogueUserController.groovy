@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -119,7 +119,7 @@ class CatalogueUserController extends EditLoggingController<CatalogueUser> /* im
 
     @Override
     void serviceDeleteResource(CatalogueUser resource) {
-        catalogueUserService.delete(resource)
+        catalogueUserService.delete(resource, params.boolean('permanent') ?: false)
     }
 
     @Override
@@ -137,7 +137,11 @@ class CatalogueUserController extends EditLoggingController<CatalogueUser> /* im
 
     @Override
     protected void deleteResponse(CatalogueUser instance) {
-        super.updateResponse(instance)
+        if (params.boolean('permanent')) {
+            super.deleteResponse(instance)
+        } else {
+            super.updateResponse(instance)
+        }
     }
 
     @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,20 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.similarity
 
+import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityPair
 import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
+
+import org.hibernate.search.engine.search.query.SearchResult
 
 /**
  * @since 07/04/2020
  */
 class ReferenceDataElementSimilarityResult extends SimilarityResult<ReferenceDataElement> {
 
-    ReferenceDataElementSimilarityResult(ReferenceDataElement source) {
-        super(source)
+
+    ReferenceDataElementSimilarityResult(ReferenceDataElement source,
+                                         SearchResult<SimilarityPair<ReferenceDataElement>> searchResult) {
+        super(source, searchResult)
     }
 }

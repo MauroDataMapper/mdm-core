@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -28,7 +28,7 @@ import org.hibernate.SessionFactory
 
 @Slf4j
 @Transactional
-class ReferenceDataValueService implements DomainService<ReferenceDataValue> {
+class ReferenceDataValueService implements MdmDomainService<ReferenceDataValue> {
 
     SessionFactory sessionFactory
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.test.functional.facet
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 
 import grails.gorm.transactions.Transactional
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 
 /**
@@ -36,10 +36,10 @@ import groovy.util.logging.Slf4j
 @Slf4j
 abstract class ContainerMetadataFunctionalSpec extends ContainerFacetFunctionalSpec<Metadata> {
 
-
-    @OnceBefore
     @Transactional
+    @RunOnce
     def cleanUpMetadataBefore() {
+        log.debug('Cleanup Metadata before')
         Metadata.deleteAll(Metadata.list())
         sessionFactory.currentSession.flush()
     }

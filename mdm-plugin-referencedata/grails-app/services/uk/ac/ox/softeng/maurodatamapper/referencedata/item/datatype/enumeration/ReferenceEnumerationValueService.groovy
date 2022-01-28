@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.traits.service.ReferenceSummaryMetadataAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -28,6 +29,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 class ReferenceEnumerationValueService extends ModelItemService<ReferenceEnumerationValue> implements ReferenceSummaryMetadataAwareService {
 
     ReferenceSummaryMetadataService referenceSummaryMetadataService
+    ReferenceDataModelService referenceDataModelService
 
     @Override
     ReferenceEnumerationValue get(Serializable id) {
@@ -73,15 +75,15 @@ class ReferenceEnumerationValueService extends ModelItemService<ReferenceEnumera
     }
 
     @Override
-    List<ReferenceEnumerationValue> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        ReferenceEnumerationValue.byClassifierId(classifier.id).list().findAll {
-            userSecurityPolicyManager.userCanReadSecuredResourceId(ReferenceDataModel, it.model.id)
-        }
+    List<ReferenceEnumerationValue> findAllByClassifier(Classifier classifier) {
+        ReferenceEnumerationValue.byClassifierId(classifier.id).list()
     }
 
     @Override
-    Class<ReferenceEnumerationValue> getModelItemClass() {
-        ReferenceEnumerationValue
+    List<ReferenceEnumerationValue> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
+        findAllByClassifier(classifier).findAll {
+            userSecurityPolicyManager.userCanReadSecuredResourceId(ReferenceDataModel, it.model.id)
+        }
     }
 
     @Override
@@ -92,15 +94,17 @@ class ReferenceEnumerationValueService extends ModelItemService<ReferenceEnumera
     @Override
     List<ReferenceEnumerationValue> findAllReadableTreeTypeCatalogueItemsBySearchTermAndDomain(UserSecurityPolicyManager userSecurityPolicyManager,
                                                                                                String searchTerm, String domainType) {
-        List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(DataModel)
+        List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(ReferenceDataModel)
         if (!readableIds) return []
 
 
         List<ReferenceEnumerationValue> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            log.debug('Performing lucene label search')
+            log.debug('Performing hs label search')
             long start = System.currentTimeMillis()
-            results = ReferenceEnumerationValue.luceneLabelSearch(ReferenceEnumerationValue, searchTerm, readableIds.toList()).results
+            results =
+                ReferenceEnumerationValue
+                    .labelHibernateSearch(ReferenceEnumerationValue, searchTerm, readableIds.toList(), referenceDataModelService.getAllReadablePathNodes(readableIds)).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
 

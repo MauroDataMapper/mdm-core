@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.dataflow.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -97,47 +98,20 @@ class DataClassComponentFunctionalSpec extends UserAccessFunctionalSpec {
     }
 
     @Override
-    Boolean readerPermissionIsInherited() {
-        true
+    Expectations getExpectations() {
+        Expectations.builder()
+            .withDefaultExpectations()
+            .withInheritedAccessPermissions()
+            .whereTestingUnsecuredResource()
+            .whereContainerAdminsCanAction('comment', 'delete', 'editDescription', 'save', 'show', 'update')
+            .whereEditorsCanAction('comment', 'delete', 'editDescription', 'save', 'show', 'update')
+            .whereAuthorsCanAction('comment', 'editDescription', 'show',)
+            .whereReviewersCanAction('comment', 'show')
+            .whereReadersCanAction('show')
     }
 
     @Override
-    void verifyL03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getTargetDataModelId()
-    }
-
-    @Override
-    void verifyL03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getTargetDataModelId()
-    }
-
-    @Override
-    void verifyL03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getTargetDataModelId()
-    }
-
-    @Override
-    void verifyN03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getTargetDataModelId()
-    }
-
-    @Override
-    void verifyN03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getTargetDataModelId()
-    }
-
-    @Override
-    void verifyN03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getTargetDataModelId()
-    }
-
-    @Override
-    void verifyR04UnknownIdResponse(HttpResponse<Map> response, String id) {
-        verifyForbidden response
-    }
-
-    @Override
-    void verifyE03ValidResponseBody(HttpResponse<Map> response) {
+    void verify03ValidResponseBody(HttpResponse<Map> response) {
         assert responseBody().id
         assert responseBody().label == 'Functional Test DataClassComponent'
         assert responseBody().sourceDataClasses.size() == 1
@@ -150,7 +124,7 @@ class DataClassComponentFunctionalSpec extends UserAccessFunctionalSpec {
     @Override
     void verifySameValidDataCreationResponse() {
         verifyResponse CREATED, response
-        verifyE03ValidResponseBody(response)
+        verify03ValidResponseBody(response)
     }
 
     @Override
@@ -168,13 +142,6 @@ class DataClassComponentFunctionalSpec extends UserAccessFunctionalSpec {
             label            : 'Functional Test DataClassComponent',
             sourceDataClasses: [],
             targetDataClasses: []
-        ]
-    }
-
-    @Override
-    Map getValidUpdateJson() {
-        [
-            description: 'a direct copy of the data from source to target'
         ]
     }
 
@@ -326,12 +293,7 @@ class DataClassComponentFunctionalSpec extends UserAccessFunctionalSpec {
     }
   ],
   "availableActions": [
-    "show",
-    "comment",
-    "editDescription",
-    "update",
-    "save",
-    "delete"
+    "show"
   ],
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "definition": null,

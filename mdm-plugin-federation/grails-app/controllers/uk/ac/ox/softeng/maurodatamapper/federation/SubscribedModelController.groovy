@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.federation
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 
@@ -28,8 +28,6 @@ import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.validation.Errors
-
-import static org.springframework.http.HttpStatus.OK
 
 @Slf4j
 class SubscribedModelController extends EditLoggingController<SubscribedModel> {
@@ -62,13 +60,11 @@ class SubscribedModelController extends EditLoggingController<SubscribedModel> {
 
         if (!validateResource(instance, 'create')) return
 
-        if (params.boolean('federate', true)) {
-            def federationResult = subscribedModelService.federateSubscribedModel(instance, currentUserSecurityPolicyManager)
-            if (federationResult instanceof Errors) {
-                transactionStatus.setRollbackOnly()
-                respond federationResult, view: 'create' // STATUS CODE 422
-                return
-            }
+        def federationResult = subscribedModelService.federateSubscribedModel(instance, currentUserSecurityPolicyManager)
+        if (federationResult instanceof Errors) {
+            transactionStatus.setRollbackOnly()
+            respond federationResult, view: 'create' // STATUS CODE 422
+            return
         }
 
         saveResource instance
@@ -76,17 +72,13 @@ class SubscribedModelController extends EditLoggingController<SubscribedModel> {
         saveResponse instance
     }
 
-    /**
-     * Federate the specified SubscribedModel by
-     * 1. Get the SubscribedModel, else respond not found
-     * 2. Export as Json the model from the remote catalogue, responding no content if the result is empty
-     * 3. Import the json into the local catalogue, responding unprocessable if this doesn't work
-     * 4. Look up version links from the remote and save this locally
-     * @return
-     */
-    @Transactional
-    def federate() {
-        respond null, status: OK
+    def newerVersions() {
+        SubscribedModel subscribedModel = queryForResource(params.id)
+        if (!subscribedModel) {
+            return notFound(SubscribedModel, params.id)
+        }
+
+        respond subscribedModelService.getNewerPublishedVersions(subscribedModel), view: 'newerVersions'
     }
 
     @Override
@@ -130,7 +122,7 @@ class SubscribedModelController extends EditLoggingController<SubscribedModel> {
         instance.validate()
 
         //Check we can import into the requested folder, and get the folder
-        if (instance.folderId && !currentUserSecurityPolicyManager.userCanEditSecuredResourceId(Folder, instance.folderId)) {
+        if (instance.folderId && !currentUserSecurityPolicyManager.userCanCreateResourceId(Model, null, Folder, instance.folderId)) {
             instance.errors.rejectValue('folderId', 'invalid.subscribedmodel.folderid.no.permissions',
                                         'Invalid folderId for subscribed model, user does not have the necessary permissions')
         }

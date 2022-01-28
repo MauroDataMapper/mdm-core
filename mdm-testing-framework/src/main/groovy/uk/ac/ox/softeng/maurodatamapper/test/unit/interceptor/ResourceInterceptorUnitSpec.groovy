@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,6 +69,10 @@ abstract class ResourceInterceptorUnitSpec<T> extends BaseUnitSpec implements Gr
 
     HttpStatus getSaveAllowedCode() {
         HttpStatus.NOT_FOUND
+    }
+
+    HttpStatus getReadSaveAllowedCode() {
+        HttpStatus.FORBIDDEN
     }
 
     def getPublicAccessUserSecurityPolicyManager() {
@@ -188,11 +192,11 @@ abstract class ResourceInterceptorUnitSpec<T> extends BaseUnitSpec implements Gr
         'save'   | writeAccessId || true    | null
         'update' | unknownId     || false   | HttpStatus.NOT_FOUND
         'update' | noAccessId    || false   | HttpStatus.NOT_FOUND
-        'update' | readAccessId  || false   | HttpStatus.FORBIDDEN
+        'update' | readAccessId || false | getReadSaveAllowedCode()
         'update' | writeAccessId || true    | null
         'delete' | unknownId     || false   | HttpStatus.NOT_FOUND
         'delete' | noAccessId    || false   | HttpStatus.NOT_FOUND
-        'delete' | readAccessId  || false   | HttpStatus.FORBIDDEN
+        'delete' | readAccessId || false | getReadSaveAllowedCode()
         'delete' | writeAccessId || true    | null
 
         type = resourceId == unknownId ? 'unknown' :

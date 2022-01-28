@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,7 +87,7 @@ enum ProfileFieldDataType {
 
             case "date":
                 try {
-                    DateUtils.parseDateStrictly(input, "dd/MM/yyyy", "dd-MM-yyyy", "MM/dd/yyyy", "MM-dd-yyyy", "yyyy/MM/dd")
+                    DateUtils.parseDateStrictly(input, ConfigurableProfileFieldTypes.instance.dateFormats)
                     return null
                 } catch (Exception ignored) {
                     return 'Date'
@@ -95,7 +95,7 @@ enum ProfileFieldDataType {
 
             case "datetime":
                 try {
-                    DateUtils.parseDateStrictly(input, "dd/MM/yyyy'T'HH:mm:ss", "dd-MM-yyyy'T'HH:mm:ss")
+                    DateUtils.parseDateStrictly(input, ConfigurableProfileFieldTypes.instance.dateTimeFormats)
                     return null
                 } catch (Exception ignored) {
                     return 'DateTime'
@@ -103,7 +103,7 @@ enum ProfileFieldDataType {
 
             case "time":
                 try {
-                    DateUtils.parseDateStrictly(input, "HH:mm:ss", "HH:mm")
+                    DateUtils.parseDateStrictly(input, ConfigurableProfileFieldTypes.instance.timeFormats)
                     return null
                 } catch (Exception ignored) {
                     return 'Time'

@@ -2,7 +2,7 @@
   "leftId": "${json-unit.matches:id}",
   "rightId": "${json-unit.matches:id}",
   "label": "Functional Test VersionedFolder Complex",
-  "count": 64,
+  "count": 66,
   "diffs": [
     {
       "description": {
@@ -38,16 +38,16 @@
                       "value": {
                         "id": "${json-unit.matches:id}",
                         "namespace": "functional.test",
-                        "key": "addToSourceOnly",
-                        "value": "adding to source only"
+                        "key": "modifyAndDelete",
+                        "value": "source has modified this also"
                       }
                     },
                     {
                       "value": {
                         "id": "${json-unit.matches:id}",
                         "namespace": "functional.test",
-                        "key": "modifyAndDelete",
-                        "value": "source has modified this also"
+                        "key": "addToSourceOnly",
+                        "value": "adding to source only"
                       }
                     }
                   ],
@@ -106,7 +106,7 @@
                     {
                       "value": {
                         "id": "${json-unit.matches:id}",
-                        "label": "SALO: secondAddLeftOnly",
+                        "label": "MAD: modifyAndDelete",
                         "breadcrumbs": [
                           {
                             "id": "${json-unit.matches:id}",
@@ -120,7 +120,7 @@
                     {
                       "value": {
                         "id": "${json-unit.matches:id}",
-                        "label": "MAD: modifyAndDelete",
+                        "label": "SALO: secondAddLeftOnly",
                         "breadcrumbs": [
                           {
                             "id": "${json-unit.matches:id}",
@@ -136,7 +136,7 @@
                     {
                       "value": {
                         "id": "${json-unit.matches:id}",
-                        "label": "DAM: deleteAndModify",
+                        "label": "DLO: deleteLeftOnly",
                         "breadcrumbs": [
                           {
                             "id": "${json-unit.matches:id}",
@@ -150,7 +150,7 @@
                     {
                       "value": {
                         "id": "${json-unit.matches:id}",
-                        "label": "DLO: deleteLeftOnly",
+                        "label": "DAM: deleteAndModify",
                         "breadcrumbs": [
                           {
                             "id": "${json-unit.matches:id}",
@@ -177,36 +177,6 @@
                     }
                   ],
                   "modified": [
-                    {
-                      "leftId": "${json-unit.matches:id}",
-                      "rightId": "${json-unit.matches:id}",
-                      "label": "MAMRD: modifyAndModifyReturningDifference",
-                      "leftBreadcrumbs": [
-                        {
-                          "id": "${json-unit.matches:id}",
-                          "label": "Functional Test Terminology 1",
-                          "domainType": "Terminology",
-                          "finalised": false
-                        }
-                      ],
-                      "rightBreadcrumbs": [
-                        {
-                          "id": "${json-unit.matches:id}",
-                          "label": "Functional Test Terminology 1",
-                          "domainType": "Terminology",
-                          "finalised": false
-                        }
-                      ],
-                      "count": 1,
-                      "diffs": [
-                        {
-                          "description": {
-                            "left": "DescriptionLeft",
-                            "right": "DescriptionRight"
-                          }
-                        }
-                      ]
-                    },
                     {
                       "leftId": "${json-unit.matches:id}",
                       "rightId": "${json-unit.matches:id}",
@@ -241,6 +211,36 @@
                       "leftId": "${json-unit.matches:id}",
                       "rightId": "${json-unit.matches:id}",
                       "label": "AAARD: addAndAddReturningDifference",
+                      "leftBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test Terminology 1",
+                          "domainType": "Terminology",
+                          "finalised": false
+                        }
+                      ],
+                      "rightBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test Terminology 1",
+                          "domainType": "Terminology",
+                          "finalised": false
+                        }
+                      ],
+                      "count": 1,
+                      "diffs": [
+                        {
+                          "description": {
+                            "left": "DescriptionLeft",
+                            "right": "DescriptionRight"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "leftId": "${json-unit.matches:id}",
+                      "rightId": "${json-unit.matches:id}",
+                      "label": "MAMRD: modifyAndModifyReturningDifference",
                       "leftBreadcrumbs": [
                         {
                           "id": "${json-unit.matches:id}",
@@ -520,6 +520,20 @@
                     {
                       "value": {
                         "id": "${json-unit.matches:id}",
+                        "label": "MLO: modifyLeftOnly",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test Terminology 1",
+                            "domainType": "Terminology",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
                         "label": "ALO: addLeftOnly",
                         "breadcrumbs": [
                           {
@@ -534,35 +548,7 @@
                     {
                       "value": {
                         "id": "${json-unit.matches:id}",
-                        "label": "MAMRD: modifyAndModifyReturningDifference",
-                        "breadcrumbs": [
-                          {
-                            "id": "${json-unit.matches:id}",
-                            "label": "Functional Test Terminology 1",
-                            "domainType": "Terminology",
-                            "finalised": false
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      "value": {
-                        "id": "${json-unit.matches:id}",
-                        "label": "ALOCS: addLeftOnlyCodeSet",
-                        "breadcrumbs": [
-                          {
-                            "id": "${json-unit.matches:id}",
-                            "label": "Functional Test Terminology 1",
-                            "domainType": "Terminology",
-                            "finalised": false
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      "value": {
-                        "id": "${json-unit.matches:id}",
-                        "label": "MLO: modifyLeftOnly",
+                        "label": "MAD: modifyAndDelete",
                         "breadcrumbs": [
                           {
                             "id": "${json-unit.matches:id}",
@@ -590,7 +576,21 @@
                     {
                       "value": {
                         "id": "${json-unit.matches:id}",
-                        "label": "MAD: modifyAndDelete",
+                        "label": "ALOCS: addLeftOnlyCodeSet",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test Terminology 1",
+                            "domainType": "Terminology",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "MAMRD: modifyAndModifyReturningDifference",
                         "breadcrumbs": [
                           {
                             "id": "${json-unit.matches:id}",
@@ -620,21 +620,7 @@
                     {
                       "value": {
                         "id": "${json-unit.matches:id}",
-                        "label": "MAMRD: modifyAndModifyReturningDifference",
-                        "breadcrumbs": [
-                          {
-                            "id": "${json-unit.matches:id}",
-                            "label": "Functional Test Terminology 1",
-                            "domainType": "Terminology",
-                            "finalised": false
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      "value": {
-                        "id": "${json-unit.matches:id}",
-                        "label": "MLO: modifyLeftOnly",
+                        "label": "DLO: deleteLeftOnly",
                         "breadcrumbs": [
                           {
                             "id": "${json-unit.matches:id}",
@@ -662,7 +648,7 @@
                     {
                       "value": {
                         "id": "${json-unit.matches:id}",
-                        "label": "DLO: deleteLeftOnly",
+                        "label": "AAARD: addAndAddReturningDifference",
                         "breadcrumbs": [
                           {
                             "id": "${json-unit.matches:id}",
@@ -676,7 +662,21 @@
                     {
                       "value": {
                         "id": "${json-unit.matches:id}",
-                        "label": "AAARD: addAndAddReturningDifference",
+                        "label": "MAMRD: modifyAndModifyReturningDifference",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test Terminology 1",
+                            "domainType": "Terminology",
+                            "finalised": false
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "MLO: modifyLeftOnly",
                         "breadcrumbs": [
                           {
                             "id": "${json-unit.matches:id}",
@@ -696,7 +696,7 @@
             "leftId": "${json-unit.matches:id}",
             "rightId": "${json-unit.matches:id}",
             "label": "Functional Test DataModel 1",
-            "count": 22,
+            "count": 24,
             "diffs": [
               {
                 "description": {
@@ -711,16 +711,16 @@
                       "value": {
                         "id": "${json-unit.matches:id}",
                         "namespace": "functional.test",
-                        "key": "modifyAndDelete",
-                        "value": "source has modified this also"
+                        "key": "addToSourceOnly",
+                        "value": "adding to source only"
                       }
                     },
                     {
                       "value": {
                         "id": "${json-unit.matches:id}",
                         "namespace": "functional.test",
-                        "key": "addToSourceOnly",
-                        "value": "adding to source only"
+                        "key": "modifyAndDelete",
+                        "value": "source has modified this also"
                       }
                     }
                   ],
@@ -775,6 +775,68 @@
                           }
                         ]
                       }
+                    }
+                  ],
+                  "modified": [
+                    {
+                      "leftId": "${json-unit.matches:id}",
+                      "rightId": "${json-unit.matches:id}",
+                      "label": "Functional Test Model Data Type Pointing Externally",
+                      "leftBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "rightBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "count": 1,
+                      "diffs": [
+                        {
+                          "modelResourcePath": {
+                            "left": "te:Complex Test Terminology$main",
+                            "right": "te:Simple Test Terminology$main"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "leftId": "${json-unit.matches:id}",
+                      "rightId": "${json-unit.matches:id}",
+                      "label": "Functional Test Model Data Type",
+                      "leftBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "rightBreadcrumbs": [
+                        {
+                          "id": "${json-unit.matches:id}",
+                          "label": "Functional Test DataModel 1",
+                          "domainType": "DataModel",
+                          "finalised": false
+                        }
+                      ],
+                      "count": 1,
+                      "diffs": [
+                        {
+                          "modelResourcePath": {
+                            "left": "cs:Functional Test CodeSet 1$source",
+                            "right": "te:Functional Test Terminology 1$main"
+                          }
+                        }
+                      ]
                     }
                   ]
                 }
@@ -1018,7 +1080,7 @@
                               {
                                 "value": {
                                   "id": "${json-unit.matches:id}",
-                                  "label": "addLeftToExistingClass",
+                                  "label": "deleteRightOnlyFromExistingClass",
                                   "breadcrumbs": [
                                     {
                                       "id": "${json-unit.matches:id}",
@@ -1037,7 +1099,7 @@
                               {
                                 "value": {
                                   "id": "${json-unit.matches:id}",
-                                  "label": "deleteRightOnlyFromExistingClass",
+                                  "label": "addLeftToExistingClass",
                                   "breadcrumbs": [
                                     {
                                       "id": "${json-unit.matches:id}",
@@ -1058,7 +1120,7 @@
                               {
                                 "value": {
                                   "id": "${json-unit.matches:id}",
-                                  "label": "deleteLeftOnlyFromExistingClass",
+                                  "label": "addRightToExistingClass",
                                   "breadcrumbs": [
                                     {
                                       "id": "${json-unit.matches:id}",
@@ -1077,7 +1139,7 @@
                               {
                                 "value": {
                                   "id": "${json-unit.matches:id}",
-                                  "label": "addRightToExistingClass",
+                                  "label": "deleteLeftOnlyFromExistingClass",
                                   "breadcrumbs": [
                                     {
                                       "id": "${json-unit.matches:id}",

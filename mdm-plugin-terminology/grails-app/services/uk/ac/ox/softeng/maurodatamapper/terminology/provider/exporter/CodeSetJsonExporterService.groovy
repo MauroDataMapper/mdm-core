@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportMetadata
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportModel
@@ -34,8 +33,13 @@ class CodeSetJsonExporterService extends CodeSetExporterProviderService implemen
     JsonViewTemplateEngine templateEngine
 
     @Override
-    String getFileExtension() {
-        'json'
+    String getDisplayName() {
+        'JSON CodeSet Exporter'
+    }
+
+    @Override
+    String getVersion() {
+        '4.0'
     }
 
     @Override
@@ -44,23 +48,24 @@ class CodeSetJsonExporterService extends CodeSetExporterProviderService implemen
     }
 
     @Override
-    String getDisplayName() {
-        'JSON CodeSet Exporter'
+    String getFileExtension() {
+        'json'
     }
 
     @Override
-    String getVersion() {
-        '3.0'
+    Boolean canExportMultipleDomains() {
+        true
     }
 
     @Override
     ByteArrayOutputStream exportCodeSet(User currentUser, CodeSet codeSet) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel new ExportModel(codeSet, 'codeSet', version, exportMetadata), fileType
+        exportModel(new ExportModel(codeSet, 'codeSet', version, exportMetadata), fileType)
     }
 
     @Override
     ByteArrayOutputStream exportCodeSets(User currentUser, List<CodeSet> codeSets) throws ApiException {
-        throw new ApiBadRequestException('CSES01', "${getName()} cannot export multiple CodeSets")
+        ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
+        exportModel(new ExportModel(codeSets, 'codeSet', 'codeSets', version, exportMetadata), fileType)
     }
 }

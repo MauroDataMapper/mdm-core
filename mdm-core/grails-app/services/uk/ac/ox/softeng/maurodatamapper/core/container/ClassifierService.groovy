@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,13 @@
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
+import uk.ac.ox.softeng.maurodatamapper.core.hibernate.search.HibernateSearchIndexingService
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
+import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -39,20 +41,7 @@ class ClassifierService extends ContainerService<Classifier> {
     @Autowired(required = false)
     List<CatalogueItemService> catalogueItemServices
 
-    @Override
-    boolean handles(Class clazz) {
-        clazz == Classifier
-    }
-
-    @Override
-    boolean handles(String domainType) {
-        domainType == Classifier.simpleName
-    }
-
-    @Override
-    Class<Classifier> getContainerClass() {
-        Classifier
-    }
+    HibernateSearchIndexingService hibernateSearchIndexingService
 
     @Override
     boolean isContainerVirtual() {
@@ -95,40 +84,36 @@ class ClassifierService extends ContainerService<Classifier> {
     }
 
     @Override
-    List<Classifier> findAllContainersInside(UUID containerId) {
-        Classifier.findAllContainedInClassifierId(containerId)
+    List<Classifier> findAllContainersInside(PathNode pathNode) {
+        Classifier.findAllContainedInClassifierPathNode(pathNode)
     }
 
     @Override
     Classifier findDomainByLabel(String label) {
-        return null
+        Classifier.byNoParentClassifier().eq('label', label).get()
     }
 
     @Override
     Classifier findByParentIdAndLabel(UUID parentId, String label) {
-        return null
+        Classifier.byParentClassifierIdAndLabel(parentId, label.trim()).get()
     }
 
     @Override
-    List<Classifier> findAllByParentId(UUID parentId) {
-        return null
-    }
-
-    @Override
-    List<Classifier> findAllByParentId(UUID parentId, Map pagination) {
-        return null
+    List<Classifier> findAllByParentId(UUID parentId, Map pagination = [:]) {
+        Classifier.byParentClassifierId(parentId).list(pagination)
     }
 
     @Override
     DetachedCriteria<Classifier> getCriteriaByParent(Classifier domain) {
-        return null
+        if (domain.parentClassifier) return Classifier.byParentClassifierId(domain.parentClassifier.id)
+        return Classifier.byNoParentClassifier()
     }
 
     @Override
     List<Classifier> findAllReadableContainersBySearchTerm(UserSecurityPolicyManager userSecurityPolicyManager, String searchTerm) {
         log.debug('Searching readable classifiers for search term in label')
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Classifier)
-        Classifier.luceneTreeLabelSearch(readableIds.collect { it.toString() }, searchTerm)
+        Classifier.treeLabelHibernateSearch(readableIds.collect { it.toString() }, searchTerm)
     }
 
     @Override
@@ -158,10 +143,6 @@ class ClassifierService extends ContainerService<Classifier> {
 
     Long count() {
         Classifier.count()
-    }
-
-    Classifier save(Classifier classifier) {
-        classifier.save()
     }
 
     def saveAll(Collection<Classifier> classifiers) {
@@ -243,7 +224,10 @@ class ClassifierService extends ContainerService<Classifier> {
 
     Classifier findOrCreateClassifier(User catalogueUser, Classifier classifier) {
         Classifier exists = Classifier.findByLabel(classifier.label)
-        if (exists) return exists
+        if (exists) {
+            classifier = null
+            return exists
+        }
         classifier.createdBy = catalogueUser.emailAddress
         classifier
     }
@@ -261,19 +245,25 @@ class ClassifierService extends ContainerService<Classifier> {
     }
 
     List<Classifier> findAllByCatalogueItemId(UserSecurityPolicyManager userSecurityPolicyManager, UUID catalogueItemId, Map pagination = [:]) {
-        CatalogueItem catalogueItem
+        CatalogueItem catalogueItem = null
 
         for (CatalogueItemService service : catalogueItemServices) {
             if (catalogueItem) break
             catalogueItem = service.findByIdJoinClassifiers(catalogueItemId)
         }
+        findAllByCatalogueItem(userSecurityPolicyManager, catalogueItem, pagination)
+    }
 
+    List<Classifier> findAllByCatalogueItem(UserSecurityPolicyManager userSecurityPolicyManager, CatalogueItem catalogueItem, Map pagination = [:]) {
+        new PaginatedResultList(findAllReadableByCatalogueItem(userSecurityPolicyManager, catalogueItem), pagination)
+    }
+
+    List<Classifier> findAllReadableByCatalogueItem(UserSecurityPolicyManager userSecurityPolicyManager, CatalogueItem catalogueItem) {
         if (!catalogueItem || !catalogueItem.classifiers) return []
-
         // Filter out all the classifiers which the user can't read
-        Collection<Classifier> allClassifiersInItem = catalogueItem.classifiers
+        Set<Classifier> allClassifiersInItem = catalogueItem.classifiers
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Classifier)
-        new PaginatedResultList(allClassifiersInItem.findAll { it.id in readableIds }.toList(), pagination)
+        allClassifiersInItem.findAll { it.id in readableIds }.toList()
     }
 
     List<Classifier> findAllByParentClassifierId(UUID parentClassifierId, Map pagination = [:]) {
@@ -311,13 +301,16 @@ class ClassifierService extends ContainerService<Classifier> {
 
         classifiedItem.classifiers?.clear()
 
-        List<Classifier> foundOrCreated = classifiers.collect { cls ->
+        List<Classifier> foundOrCreated = classifiers.collect {cls ->
             findOrCreateClassifier(catalogueUser, cls)
         }
 
-        batchSave(foundOrCreated)
+        // Dont batch save as we dont want to clear or flush the session
+        foundOrCreated.each {
+            save(it, flush: true, validate: true)
+        }
 
-        foundOrCreated.each { cls ->
+        foundOrCreated.each {cls ->
             classifiedItem.addToClassifiers(cls)
         }
     }
@@ -325,13 +318,19 @@ class ClassifierService extends ContainerService<Classifier> {
     List<CatalogueItem> findAllReadableCatalogueItemsByClassifierId(UserSecurityPolicyManager userSecurityPolicyManager,
                                                                     UUID classifierId, Map pagination = [:]) {
         Classifier classifier = get(classifierId)
-        catalogueItemServices.collect { service ->
+        catalogueItemServices.collect {service ->
             service.findAllReadableByClassifier(userSecurityPolicyManager, classifier)
         }.findAll().flatten()
     }
 
+    void updateClassifierCatalogueItemsIndex(Classifier classifier) {
+        catalogueItemServices.each {service ->
+            hibernateSearchIndexingService.addEntitiesToIndexingPlan(service.findAllByClassifier(classifier))
+        }
+    }
+
     private void cleanoutClassifier(Classifier classifier) {
-        classifier.childClassifiers.each { cleanoutClassifier(it) }
-        catalogueItemServices.each { it.removeAllFromClassifier(classifier) }
+        classifier.childClassifiers.each {cleanoutClassifier(it)}
+        catalogueItemServices.each {it.removeAllFromClassifier(classifier)}
     }
 }

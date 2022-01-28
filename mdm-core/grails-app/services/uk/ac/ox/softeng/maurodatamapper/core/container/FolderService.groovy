@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CopyPassType
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.path.Path
+import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -60,21 +61,6 @@ class FolderService extends ContainerService<Folder> {
     MessageSource messageSource
 
     @Override
-    boolean handles(Class clazz) {
-        clazz == Folder
-    }
-
-    @Override
-    boolean handles(String domainType) {
-        domainType == Folder.simpleName
-    }
-
-    @Override
-    Class<Folder> getContainerClass() {
-        Folder
-    }
-
-    @Override
     boolean isContainerVirtual() {
         false
     }
@@ -93,12 +79,12 @@ class FolderService extends ContainerService<Folder> {
     List<Folder> findAllReadableContainersBySearchTerm(UserSecurityPolicyManager userSecurityPolicyManager, String searchTerm) {
         log.debug('Searching readable folders for search term in label')
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Folder)
-        Folder.luceneTreeLabelSearch(readableIds.collect {it.toString()}, searchTerm)
+        Folder.treeLabelHibernateSearch(readableIds.collect { it.toString() }, searchTerm)
     }
 
     @Override
-    List<Folder> findAllContainersInside(UUID containerId) {
-        Folder.findAllContainedInFolderId(containerId)
+    List<Folder> findAllContainersInside(PathNode pathNode) {
+        Folder.findAllContainedInFolderPathNode(pathNode)
     }
 
     @Override
@@ -168,11 +154,11 @@ class FolderService extends ContainerService<Folder> {
         if (permanent) {
             folder.childFolders.each {delete(it, permanent, false)}
             modelServices.each {it.deleteAllInContainer(folder)}
+            folder.trackChanges()
+            folder.delete(flush: flush)
             if (securityPolicyManagerService) {
                 securityPolicyManagerService.removeSecurityForSecurableResource(folder, null)
             }
-            folder.trackChanges()
-            folder.delete(flush: flush)
         } else {
             folder.childFolders.each {delete(it)}
             delete(folder)
@@ -200,6 +186,23 @@ class FolderService extends ContainerService<Folder> {
             if (inserting) updateFacetsAfterInsertingMultiFacetAware(folder)
         }
         folder
+    }
+
+    Folder saveFolderHierarchy(Map args, Folder folder) {
+        log.trace('Saving Folder Hierarchy')
+        // Saves folders and the models but not the model contents
+        folder.childFolders.each {cf ->
+            saveFolderHierarchy(cf, validate: false, flush: false)
+        }
+
+        modelServices.each {service ->
+            List<Model> models = service.findAllByContainerId(folder.id) as List<Model>
+            models.each {m ->
+                service.save(m, validate: false, flush: false)
+            }
+        }
+
+        save(args ?: [validate: false, flush: true], folder)
     }
 
     /**
@@ -245,41 +248,6 @@ class FolderService extends ContainerService<Folder> {
     @Override
     List<Folder> findAllByMetadataNamespace(String namespace, Map pagination = [:]) {
         Folder.byMetadataNamespace(namespace).list(pagination)
-    }
-
-    @Deprecated
-    Folder findFolder(String label) {
-        findDomainByLabel(label)
-    }
-
-    @Deprecated
-    Folder findFolder(Folder parentFolder, String label) {
-        findByParentIdAndLabel(parentFolder.id, label)
-    }
-
-    @Deprecated
-    Folder findByFolderPath(String folderPath) {
-        findByPath(folderPath)
-    }
-
-    @Deprecated
-    Folder findByFolderPath(List<String> pathLabels) {
-        findByPath(pathLabels)
-    }
-
-    @Deprecated
-    Folder findByFolderPath(Folder parentFolder, List<String> pathLabels) {
-        findByPath(parentFolder, pathLabels)
-    }
-
-    @Deprecated
-    List<Folder> findAllByParentFolderId(UUID parentFolderId, Map pagination = [:]) {
-        findAllByParentId(parentFolderId, pagination)
-    }
-
-    @Deprecated
-    List<Folder> getFullPathFolders(Folder folder) {
-        getFullPathDomains(folder)
     }
 
     List<Model> findAllModelsInFolder(Folder folder) {
@@ -362,12 +330,14 @@ class FolderService extends ContainerService<Folder> {
                       Version modelCopyDocVersion, boolean throwErrors,
                       UserSecurityPolicyManager userSecurityPolicyManager) {
         log.debug('Copying folder {}[{}]', original.id, original.label)
+        long start = System.currentTimeMillis()
         copyFolderPass(CopyPassType.FIRST_PASS, original, copiedFolder, label, copier, copyPermissions, modelBranchName, modelCopyDocVersion,
                        throwErrors, userSecurityPolicyManager)
         copyFolderPass(CopyPassType.SECOND_PASS, original, copiedFolder, label, copier, copyPermissions, modelBranchName, modelCopyDocVersion,
                        throwErrors, userSecurityPolicyManager)
         copyFolderPass(CopyPassType.THIRD_PASS, original, copiedFolder, label, copier, copyPermissions, modelBranchName, modelCopyDocVersion,
                        throwErrors, userSecurityPolicyManager)
+        log.debug('Folder copy complete in {}', Utils.timeTaken(start))
         get(copiedFolder.id)
     }
 
@@ -377,6 +347,7 @@ class FolderService extends ContainerService<Folder> {
                           Version modelCopyDocVersion, boolean throwErrors,
                           UserSecurityPolicyManager userSecurityPolicyManager) {
         log.debug('{} performing copy folder pass for {}[{}]', copyPassType, original.id, original.label)
+        long start = System.currentTimeMillis()
         if (copyPassType == CopyPassType.FIRST_PASS) {
             copiedFolder = copyBasicFolderInformation(original, copiedFolder, label, copier)
 
@@ -406,7 +377,7 @@ class FolderService extends ContainerService<Folder> {
         copyFolderContents(original, copiedFolder, copier, copyPassType, copyPermissions, modelCopyDocVersion, modelBranchName, throwErrors,
                            userSecurityPolicyManager)
 
-        log.debug('Folder copy complete')
+        log.debug('{} folder copy complete for {}[{}] in {}', copyPassType, original.id, original.label, Utils.timeTaken(start))
         copiedFolder
     }
 
@@ -446,7 +417,6 @@ class FolderService extends ContainerService<Folder> {
         // If changing label then we need to prefix all the new models so the names dont introduce label conflicts as this situation arises in forking
         String labelSuffix = folderCopy.label == original.label ? '' : " (${folderCopy.label})"
 
-        log.debug('{} copying models from original folder into copied folder', copyPassType)
         copyModelsInFolder(original, folderCopy, copier, copyPassType, labelSuffix, copyPermissions, copyDocVersion, branchName,
                            throwErrors, userSecurityPolicyManager)
 
@@ -475,44 +445,50 @@ class FolderService extends ContainerService<Folder> {
                             Version copyDocVersion,
                             String branchName,
                             boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
-        modelServices.each {service ->
-            List<Model> originalModels = service.findAllByContainerId(originalFolder.id) as List<Model>
-            List<Model> copiedModels = originalModels.collect {Model originalModel ->
+        modelServices.each { service ->
 
-                switch (copyPassType) {
-                    case CopyPassType.FIRST_PASS:
-                        // First pass copy/create all the models
-                        // Any links across models will remain pointing to the original VF models
-                        return service.copyModel(originalModel, copiedFolder, copier, copyPermissions,
-                                                 "${originalModel.label}${labelSuffix}",
-                                                 copyDocVersion, branchName, throwErrors,
-                                                 userSecurityPolicyManager)
-                    case CopyPassType.SECOND_PASS:
-                        // Second pass work through all the models and update the links across models
-                        Model copiedModel = service.findByFolderIdAndLabel(copiedFolder.id, "${originalModel.label}${labelSuffix}")
-                        if (!copiedModel) {
-                            throw new ApiInternalException('FSXX', "${originalModel.label}${labelSuffix} does not exist inside ${copiedFolder.label}")
-                        }
-                        return service.updateCopiedCrossModelLinks(copiedModel, originalModel)
-                    case CopyPassType.THIRD_PASS:
-                        return service.findByFolderIdAndLabel(copiedFolder.id, "${originalModel.label}${labelSuffix}")
-                }
-                null
-            }
+            if (service.countByContainerId(originalFolder.id)) {
 
-            if (copyPassType == CopyPassType.FIRST_PASS) {
-                // We can't save until after all copied as the save clears the sessions
-                copiedModels.each {copy ->
-                    log.debug('Validating and saving model copy')
-                    service.validate(copy)
-                    if (copy.hasErrors()) {
-                        throw new ApiInvalidModelException('VFS02', 'Copied Model is invalid', copy.errors, messageSource)
+                List<Model> originalModels = service.findAllByContainerId(originalFolder.id) as List<Model>
+
+                log.debug('{} copying {} {} models from original folder into copied folder', copyPassType, originalModels.size(),
+                          service.getDomainClass().simpleName)
+
+                originalModels.each { Model originalModel ->
+                    Model workingModel = service.get(originalModel.id) as Model
+                    switch (copyPassType) {
+                        case CopyPassType.FIRST_PASS:
+                            Folder workingFolder = get(copiedFolder.id)
+                            // First pass copy/create all the models
+                            // Any links across models will remain pointing to the original VF models
+                            Model copiedModel = service.copyModel(workingModel, workingFolder, copier, copyPermissions,
+                                                                  "${workingModel.label}${labelSuffix}",
+                                                                  copyDocVersion, branchName, throwErrors,
+                                                                  userSecurityPolicyManager)
+                            log.debug('Validating and saving model copy')
+                            service.validate(copiedModel)
+                            if (copiedModel.hasErrors()) {
+                                throw new ApiInvalidModelException('VFS02', 'Copied Model is invalid', copiedModel.errors, messageSource)
+                            }
+                            service.saveModelWithContent(copiedModel)
+                            return copiedModel
+                        case CopyPassType.SECOND_PASS:
+                            // Second pass work through all the models and update the links across models
+                            Model copiedModel = service.findByFolderIdAndLabel(copiedFolder.id, "${workingModel.label}${labelSuffix}")
+                            if (!copiedModel) {
+                                throw new ApiInternalException('FSXX',
+                                                               "${workingModel.label}${labelSuffix} does not exist inside ${copiedFolder.label}")
+                            }
+                            return service.updateCopiedCrossModelLinks(copiedModel, workingModel)
                     }
-                    service.saveModelWithContent(copy)
+                    null
                 }
             }
+
             if (copyPassType == CopyPassType.THIRD_PASS) {
+                // TODO is this necessary???
                 // At the moment just make sure the session is flushed in the third pass, this makes sure all objects are the same
+                service.findAllByContainerId(copiedFolder.id)
                 sessionFactory.currentSession.flush()
             }
         }

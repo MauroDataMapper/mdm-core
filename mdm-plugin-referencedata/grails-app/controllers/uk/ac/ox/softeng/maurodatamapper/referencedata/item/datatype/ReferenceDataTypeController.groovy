@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.databinding.converters.ReferenceModelDataTypeValueConverter
 
+import grails.databinding.DataBindingSource
 import grails.gorm.transactions.Transactional
 import grails.web.http.HttpHeaders
 import grails.web.mime.MimeType
@@ -157,9 +158,14 @@ class ReferenceDataTypeController extends CatalogueItemController<ReferenceDataT
 
     @Override
     protected Object getObjectToBind() {
-        if (request.mimeTypes.any {it == MimeType.JSON || it == MimeType.JSON_API || MimeType.HAL_JSON}) return request.JSON
-        if (request.mimeTypes.any {it == MimeType.XML || it == MimeType.ATOM_XML || MimeType.HAL_XML}) return request.XML
-        return super.getObjectToBind()
+        def object = super.getObjectToBind()
+        if (object instanceof DataBindingSource) {
+            return object
+        } else {
+            if (request.mimeTypes.any {it == MimeType.JSON || it == MimeType.JSON_API || MimeType.HAL_JSON}) return request.JSON
+            if (request.mimeTypes.any {it == MimeType.XML || it == MimeType.ATOM_XML || MimeType.HAL_XML}) return request.XML
+            request
+        }
     }
 
 }

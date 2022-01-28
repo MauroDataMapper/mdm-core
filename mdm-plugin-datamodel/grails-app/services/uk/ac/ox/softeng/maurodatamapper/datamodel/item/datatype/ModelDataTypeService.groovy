@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,22 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
+import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
@@ -38,6 +45,8 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> implements Su
 
     SummaryMetadataService summaryMetadataService
     DataTypeService dataTypeService
+    DataModelService dataModelService
+    PathService pathService
 
     @Override
     boolean handlesPathPrefix(String pathPrefix) {
@@ -91,15 +100,15 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> implements Su
     }
 
     @Override
-    List<ModelDataType> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        ModelDataType.byClassifierId(ModelDataType, classifier.id).list().findAll {
-            userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)
-        }
+    List<ModelDataType> findAllByClassifier(Classifier classifier) {
+        ModelDataType.byClassifierId(ModelDataType, classifier.id).list()
     }
 
     @Override
-    Class<ModelDataType> getModelItemClass() {
-        ModelDataType
+    List<ModelDataType> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
+        findAllByClassifier(classifier).findAll {
+            userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)
+        }
     }
 
     @Override
@@ -118,11 +127,14 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> implements Su
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(DataModel)
         if (!readableIds) return []
 
-        log.debug('Performing lucene label search')
+        log.debug('Performing hs label search')
         long start = System.currentTimeMillis()
         List<ModelDataType> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            results = ModelDataType.luceneLabelSearch(ModelDataType, searchTerm, readableIds.toList()).results
+            results =
+                ModelDataType
+                    .labelHibernateSearch(ModelDataType, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds))
+                    .results
         }
         log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         results
@@ -167,5 +179,48 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> implements Su
     @Override
     List<ModelDataType> findAllByMetadataNamespace(String namespace, Map pagination) {
         ModelDataType.byMetadataNamespace(namespace).list(pagination)
+    }
+
+    /**
+     * Special handler to apply a modification patch to a ModelDataType.modelResourceId and ModelDataType.modelResourceDomainType.
+     * See ModelDataType.diff for how the MergeDiff is constructed. We want to set the correct modelResourceId, but this is difficult
+     * when merging the MDT. In the diff we set a mergeField called modelResourcePath. In this method we use that modelResourcePath
+     * to determine the ID of the correct model to point to.
+     * @param modificationPatch
+     * @param targetDomain
+     * @param fieldName
+     * @return
+     */
+    @Override
+    boolean handlesModificationPatchOfField(FieldPatchData modificationPatch, MdmDomain targetBeingPatched, ModelDataType targetDomain, String fieldName) {
+        if (fieldName == 'modelResourcePath') {
+
+            MdmDomain modelResource = null
+            if (targetBeingPatched.domainType == VersionedFolder.simpleName) {
+                // If the modelResourcePath is a path to something internal to the source VF then this should also exist in the
+                // target VF, either because it existed in the target VF before branching occurred, or because it has already been merged from
+                // the source VF to target VF. So find a resource with the same label in the target VF, and use this.
+                modelResource =
+                    pathService.findResourceByPathFromRootResource(targetBeingPatched, Path.from(modificationPatch.sourceValue), targetBeingPatched.modelIdentifier)
+            }
+
+            if (!modelResource) {
+                // Otherwise, the modelResourcePath is pointing to something external to the source VF. Look up the modelResource directly.
+                // Note that pathService.findResourceByPath does not check security on the pathed resource
+                // Look up the resource.
+                // Note that pathService.findResourceByPath does not check security on the pathed resource
+                modelResource = pathService.findResourceByPath(Path.from(modificationPatch.sourceValue))
+            }
+
+            if (modelResource) {
+                targetDomain.modelResourceId = modelResource.id
+                targetDomain.modelResourceDomainType = modelResource.domainType
+                return true
+            } else {
+                throw new ApiInternalException('MDTS01', "Cannot find modelResource with path ${modificationPatch.sourceValue}")
+            }
+        }
+
+        false
     }
 }

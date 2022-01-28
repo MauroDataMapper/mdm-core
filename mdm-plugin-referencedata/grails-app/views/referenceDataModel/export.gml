@@ -1,12 +1,14 @@
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 
+model {
+    ReferenceDataModel referenceDataModel
+}
+
 ReferenceDataModel rdm = referenceDataModel as ReferenceDataModel
 
 'mdm:referenceDataModel' {
     layout '/catalogueItem/_export.gml', catalogueItem: rdm
-
-    'mdm:type'(rdm.modelType)
 
     if (rdm.author) 'mdm:author' {yield rdm.author}
     if (rdm.organisation) 'mdm:organisation' {yield rdm.organisation}
@@ -16,8 +18,9 @@ ReferenceDataModel rdm = referenceDataModel as ReferenceDataModel
     'mdm:finalised'(rdm.finalised)
     if (rdm.finalised) 'mdm:dateFinalised'(OffsetDateTimeConverter.toString(rdm.dateFinalised))
     if (rdm.modelVersion) 'mdm:modelVersion' rdm.modelVersion.toString()
+    else 'mdm:branchName' rdm.branchName
 
-    layout '/authority/export.gml', authority: rdm.authority, ns: 'mdm'
+    layout '/authority/exportAuthority.gml', authority: rdm.authority
 
     if (rdm.referenceDataTypes) {
         'mdm:referenceDataTypes' {
@@ -38,7 +41,7 @@ ReferenceDataModel rdm = referenceDataModel as ReferenceDataModel
     if (rdm.referenceDataValues) {
         'mdm:referenceDataValues' {
             //Sort by row number and reference data element lable, purely for reproduceability in testing
-            rdm.referenceDataValues.sort{a,b -> 
+            rdm.referenceDataValues.sort{a,b ->
             if (a.rowNumber == b.rowNumber) {
                 a.referenceDataElement.label <=> b.referenceDataElement.label
             } else {

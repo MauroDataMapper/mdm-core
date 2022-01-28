@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,12 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
-import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityResult
+import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityPair
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate.FilterFactory
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate.IdPathSecureFilterFactory
+import uk.ac.ox.softeng.maurodatamapper.lucene.queries.mlt.BoostedMoreLikeThisQuery
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
@@ -36,14 +40,15 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import org.apache.lucene.search.Query
-import org.hibernate.search.engine.ProjectionConstants
-import org.hibernate.search.jpa.FullTextEntityManager
-import org.hibernate.search.jpa.FullTextQuery
-import org.hibernate.search.jpa.Search
-import org.hibernate.search.query.dsl.QueryBuilder
+import org.apache.lucene.analysis.Analyzer
+import org.hibernate.search.backend.lucene.LuceneBackend
+import org.hibernate.search.backend.lucene.LuceneExtension
+import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep
+import org.hibernate.search.engine.search.query.SearchResult
+import org.hibernate.search.mapper.orm.mapping.SearchMapping
+import org.hibernate.search.mapper.orm.session.SearchSession
 
-import javax.persistence.EntityManager
+import java.util.function.BiFunction
 
 @Slf4j
 @Transactional
@@ -51,6 +56,7 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
 
     ReferenceDataTypeService referenceDataTypeService
     ReferenceSummaryMetadataService referenceSummaryMetadataService
+    ReferenceDataModelService referenceDataModelService
 
     @Override
     ReferenceDataElement get(Serializable id) {
@@ -81,7 +87,7 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
 
     @Override
     void deleteAll(Collection<ReferenceDataElement> dataElements) {
-        dataElements.each { delete(it) }
+        dataElements.each {delete(it)}
     }
 
     void delete(UUID id) {
@@ -122,13 +128,13 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
     }
 
     @Override
-    List<ReferenceDataElement> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        ReferenceDataElement.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(ReferenceDataModel, it.model.id) }
+    List<ReferenceDataElement> findAllByClassifier(Classifier classifier) {
+        ReferenceDataElement.byClassifierId(classifier.id).list()
     }
 
     @Override
-    Class<ReferenceDataElement> getModelItemClass() {
-        ReferenceDataElement
+    List<ReferenceDataElement> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
+        findAllByClassifier(classifier).findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(ReferenceDataModel, it.model.id)}
     }
 
     @Override
@@ -145,9 +151,11 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
 
         List<ReferenceDataElement> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            log.debug('Performing lucene label search')
+            log.debug('Performing hs label search')
             long start = System.currentTimeMillis()
-            results = ReferenceDataElement.luceneLabelSearch(ReferenceDataElement, searchTerm, readableIds.toList()).results
+            results =
+                ReferenceDataElement
+                    .labelHibernateSearch(ReferenceDataElement, searchTerm, readableIds.toList(), referenceDataModelService.getAllReadablePathNodes(readableIds)).results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
 
@@ -158,13 +166,13 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
         if (referenceDataModel.referenceDataTypes == null) referenceDataModel.referenceDataTypes = [] as HashSet
         if (dataElements) {
             log.debug("Matching up {} DataElements to a possible {} DataTypes", dataElements.size(), referenceDataModel.referenceDataTypes.size())
-            def grouped = dataElements.groupBy { it.referenceDataType.label }.sort { a, b ->
+            def grouped = dataElements.groupBy {it.referenceDataType.label}.sort {a, b ->
                 def res = a.value.size() <=> b.value.size()
                 if (res == 0) res = a.key <=> b.key
                 res
             }
             log.debug('Grouped {} DataElements by DataType label', grouped.size())
-            grouped.each { label, elements ->
+            grouped.each {label, elements ->
                 log.trace('Matching {} elements to DataType label {}', elements.size(), label)
                 ReferenceDataType dataType = referenceDataModel.findDataTypeByLabel(label)
 
@@ -173,7 +181,7 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
                     dataType = elements.first().referenceDataType
                     referenceDataModel.addToReferenceDataTypes(dataType)
                 }
-                elements.each { dataType.addToDataElements(it) }
+                elements.each {dataType.addToDataElements(it)}
             }
         }
     }
@@ -232,8 +240,8 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
 
         if (!dataElement) {
             dataElement = new ReferenceDataElement(label: cleanLabel, description: description, createdBy: createdBy.emailAddress,
-                                          minMultiplicity: minMultiplicity,
-                                          maxMultiplicity: maxMultiplicity)
+                                                   minMultiplicity: minMultiplicity,
+                                                   maxMultiplicity: maxMultiplicity)
 
             if (!dataType.label) dataType.setLabel("$cleanLabel-dataType")
             dataType.addToDataElements(dataElement)
@@ -241,15 +249,15 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
         }
         if (dataElement.referenceDataType.label != dataType.label) {
             return findOrCreateDataElementForReferenceDataModel(referenceDataModel, "${cleanLabel}.1", description, createdBy, dataType, minMultiplicity,
-                                                       maxMultiplicity)
+                                                                maxMultiplicity)
         }
         dataElement
     }
 
     ReferenceDataElement copyReferenceDataElement(ReferenceDataModel copiedReferenceDataModel, ReferenceDataElement original, User copier,
-                                         UserSecurityPolicyManager userSecurityPolicyManager) {
+                                                  UserSecurityPolicyManager userSecurityPolicyManager) {
         ReferenceDataElement copy = new ReferenceDataElement(minMultiplicity: original.minMultiplicity,
-                                           maxMultiplicity: original.maxMultiplicity)
+                                                             maxMultiplicity: original.maxMultiplicity)
 
         copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
@@ -259,7 +267,7 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
         // If theres no DataType then copy the original's DataType into the DataModel
         if (!referenceDataType) {
             referenceDataType = referenceDataTypeService.copyReferenceDataType(copiedReferenceDataModel, original.referenceDataType, copier,
-                                                    userSecurityPolicyManager)
+                                                                               userSecurityPolicyManager)
         }
 
         copy.referenceDataType = referenceDataType
@@ -288,40 +296,57 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
                                                                                                  ReferenceDataElement referenceDataElementToCompare,
                                                                                                  maxResults = 5) {
 
-        EntityManager entityManager = sessionFactory.createEntityManager()
-        FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager)
+        SearchSession searchSession = org.hibernate.search.mapper.orm.Search.session(sessionFactory.currentSession)
+        SearchMapping searchMapping = org.hibernate.search.mapper.orm.Search.mapping(sessionFactory)
+        Analyzer wordDelimiter = searchMapping.backend().unwrap(LuceneBackend).analyzer('wordDelimiter').get()
+        Analyzer standard = searchMapping.backend().unwrap(LuceneBackend).analyzer('standard').get()
 
+        String[] fields = ['label', 'referenceDataType.label', 'description'] as String[]
 
-        QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory()
-            .buildQueryBuilder()
-            .forEntity(ReferenceDataElement)
-            .get()
-
-        Query moreLikeThisQuery = queryBuilder
-            .bool()
-            .must(queryBuilder.moreLikeThis()
-                      .excludeEntityUsedForComparison()
-                      .comparingField('label').boostedTo(1f)
-                      .andField('description').boostedTo(1f)
-                      .andField('referenceDataType.label').boostedTo(1f)
-                      .toEntity(referenceDataElementToCompare)
-                      .createQuery()
+        List<BoostedMoreLikeThisQuery> moreLikeThisQueries = [
+            new BoostedMoreLikeThisQuery(wordDelimiter, 'label', referenceDataElementToCompare.label, fields)
+                .boostedTo(2f)
+                .withMinWordLength(2)
+                .withMinDocFrequency(2),
+            new BoostedMoreLikeThisQuery(wordDelimiter, 'referenceDataType.label', referenceDataElementToCompare.referenceDataType.label, fields)
+                .boostedTo(1f)
+                .withMinWordLength(2)
+                .withMinDocFrequency(2),
+        ]
+        if (referenceDataElementToCompare.description)
+            moreLikeThisQueries.add(new BoostedMoreLikeThisQuery(standard, 'description', referenceDataElementToCompare.description, fields)
+                                        .boostedTo(1f)
+                                        .withMinWordLength(2)
             )
-            .createQuery()
 
-        SimilarityResult similarityResult = new ReferenceDataElementSimilarityResult(referenceDataElementToCompare)
+        SearchResult<SimilarityPair<ReferenceDataElement>> searchResult = searchSession.search(ReferenceDataElement)
+            .extension(LuceneExtension.get())
+            .select {pf ->
+                pf.composite(new BiFunction<ReferenceDataElement, Float, SimilarityPair<ReferenceDataElement>>() {
 
-        FullTextQuery query = fullTextEntityManager
-            .createFullTextQuery(moreLikeThisQuery, ReferenceDataElement)
-            .setMaxResults(maxResults)
-            .setProjection(ProjectionConstants.THIS, ProjectionConstants.SCORE)
+                    @Override
+                    SimilarityPair<ReferenceDataElement> apply(ReferenceDataElement dataElement, Float score) {
+                        dataElement.referenceDataType = proxyHandler.unwrapIfProxy(dataElement.referenceDataType)
+                        new SimilarityPair<ReferenceDataElement>(dataElement, score)
+                    }
+                }, pf.entity(), pf.score())
+            }
+            .where {lsf ->
+                BooleanPredicateClausesStep boolStep = lsf
+                    .bool()
+                    .filter(IdPathSecureFilterFactory.createFilter(lsf, [referenceDataModelToSearch.id],  [referenceDataModelToSearch.path.last()]))
+                    .filter(FilterFactory.mustNot(lsf, lsf.id().matching(referenceDataElementToCompare.id)))
 
-        query.enableFullTextFilter('idPathSecured').setParameter('allowedIds', [referenceDataModelToSearch.id])
+                moreLikeThisQueries.each {mlt ->
+                    boolStep.should(lsf.bool().must(lsf.fromLuceneQuery(mlt)).boost(mlt.boost))
+                }
 
-        query.getResultList().each {
-            similarityResult.add(get(it[0].id), it[1])
-        }
+                boolStep
+            }
+            .fetch(maxResults)
 
+        ReferenceDataElementSimilarityResult similarityResult = new ReferenceDataElementSimilarityResult(referenceDataElementToCompare, searchResult)
+        log.debug('Found {} similar results in {}', similarityResult.totalSimilar(), Utils.durationToString(similarityResult.took()))
         similarityResult
     }
 
@@ -339,8 +364,8 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
         List<SemanticLink> alreadyExistingLinks =
             semanticLinkService.findAllBySourceMultiFacetAwareItemIdInListAndTargetMultiFacetAwareItemIdInListAndLinkType(
                 dataElements*.id, fromDataElements*.id, SemanticLinkType.IS_FROM)
-        dataElements.each { de ->
-            fromDataElements.each { fde ->
+        dataElements.each {de ->
+            fromDataElements.each {fde ->
                 // If no link already exists then add a new one
                 if (!alreadyExistingLinks.any {it.multiFacetAwareItemId == de.id && it.targetMultiFacetAwareItemId == fde.id}) {
                     setDataElementIsFromDataElement(de, fde, user)

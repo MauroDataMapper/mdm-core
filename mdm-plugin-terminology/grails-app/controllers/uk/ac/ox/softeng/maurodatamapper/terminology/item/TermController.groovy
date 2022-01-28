@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.controller.CatalogueItemController
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelItemTreeItem
-import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSetService
 import uk.ac.ox.softeng.maurodatamapper.terminology.SearchService
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
@@ -56,9 +56,10 @@ class TermController extends CatalogueItemController<Term> {
             params.order = searchParams.order
         }
 
-        PaginatedLuceneResult<ModelItem> result = mdmPluginTerminologySearchService.findAllByTerminologyIdByLuceneSearch(params.terminologyId,
-                                                                                                                         searchParams,
-                                                                                                                         params)
+        PaginatedHibernateSearchResult<ModelItem> result =
+            mdmPluginTerminologySearchService.findAllByTerminologyIdByHibernateSearch(params.terminologyId,
+                                                                                      searchParams,
+                                                                                      params)
 
         respond result
     }

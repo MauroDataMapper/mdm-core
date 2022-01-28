@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.facet.rule
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.test.functional.facet.CatalogueItemRuleFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import spock.lang.Shared
@@ -54,12 +54,12 @@ class TerminologyRuleFunctionalSpec extends CatalogueItemRuleFunctionalSpec {
         // newForkModel doesn't require a destination terminology
     }
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def checkAndSetupData() {
+    def setup() {
         log.debug('Check and setup test data')
-        terminology = new Terminology(label: 'Functional Test Terminology', createdBy: 'functionalTest@test.com',
-                                  folder: folder, authority: testAuthority).save(flush: true)
+        terminology = new Terminology(label: 'Functional Test Terminology', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
+                                      folder: folder, authority: testAuthority).save(flush: true)
         sessionFactory.currentSession.flush()
     }
 

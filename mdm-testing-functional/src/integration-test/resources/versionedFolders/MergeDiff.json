@@ -3,7 +3,7 @@
   "targetId": "${json-unit.matches:id}",
   "path": "vf:Functional Test VersionedFolder Complex$source",
   "label": "Functional Test VersionedFolder Complex",
-  "count": 47,
+  "count": 49,
   "diffs": [
     {
       "fieldName": "description",
@@ -163,6 +163,24 @@
       "isMergeConflict": false,
       "isSourceModificationAndTargetDeletion": false,
       "type": "creation"
+    },
+    {
+      "fieldName": "modelResourcePath",
+      "path": "vf:Functional Test VersionedFolder Complex$source|dm:Functional Test DataModel 1$source|dt:Functional Test Model Data Type@modelResourcePath",
+      "sourceValue": "cs:Functional Test CodeSet 1$source",
+      "targetValue": "te:Functional Test Terminology 1$1.0.0",
+      "commonAncestorValue": "te:Functional Test Terminology 1$1.0.0",
+      "isMergeConflict": false,
+      "type": "modification"
+    },
+    {
+      "fieldName": "modelResourcePath",
+      "path": "vf:Functional Test VersionedFolder Complex$source|dm:Functional Test DataModel 1$source|dt:Functional Test Model Data Type Pointing Externally@modelResourcePath",
+      "sourceValue": "te:Complex Test Terminology$main",
+      "targetValue": "te:Simple Test Terminology$main",
+      "commonAncestorValue": "te:Simple Test Terminology$main",
+      "isMergeConflict": false,
+      "type": "modification"
     },
     {
       "path": "vf:Functional Test VersionedFolder Complex$source|dm:Functional Test DataModel 1$source|md:functional.test.addToSourceOnly",

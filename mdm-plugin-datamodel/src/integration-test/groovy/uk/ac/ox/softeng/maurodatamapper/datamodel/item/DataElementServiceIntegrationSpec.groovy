@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -29,6 +30,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import org.junit.jupiter.api.Tag
 
 @Integration
 @Rollback
@@ -52,28 +54,28 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
     void setupDomainData() {
         log.debug('Setting up DataElementServiceSpec')
-        dataModel = new DataModel(createdByUser: admin, label: 'Integration test model', folder: testFolder, authority: testAuthority)
+        dataModel = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Integration test model', folder: testFolder, authority: testAuthority)
         checkAndSave(dataModel)
 
-        dataModel.addToDataTypes(new PrimitiveType(createdByUser: admin, label: 'string'))
-        dataModel.addToDataTypes(new PrimitiveType(createdByUser: editor, label: 'integer'))
+        dataModel.addToDataTypes(new PrimitiveType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'string'))
+        dataModel.addToDataTypes(new PrimitiveType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'integer'))
         checkAndSave(dataModel)
 
-        DataClass simple = new DataClass(createdByUser: admin, label: 'dc1')
-        DataElement element = new DataElement(createdByUser: admin, label: 'ele1', dataType: dataModel.findDataTypeByLabel('string'))
+        DataClass simple = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'dc1')
+        DataElement element = new DataElement(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'ele1', dataType: dataModel.findDataTypeByLabel('string'))
         simple.addToDataElements(element)
         dataModel.addToDataClasses(simple)
         checkAndSave(dataModel)
 
-        DataClass content = new DataClass(createdByUser: editor, label: 'content', description: 'A dataclass with elements')
-        content.addToDataElements(createdByUser: editor, label: 'ele1', dataType: dataModel.findDataTypeByLabel('string'))
-        content.addToDataElements(createdByUser: reader1, label: 'element2', description: 'another',
+        DataClass content = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'content', description: 'A dataclass with elements')
+        content.addToDataElements(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'ele1', dataType: dataModel.findDataTypeByLabel('string'))
+        content.addToDataElements(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'element2', description: 'another',
                                   dataType: dataModel.findDataTypeByLabel('integer'))
-        content.addToDataElements(createdByUser: reader1, label: 'element3', dataType: dataModel.findDataTypeByLabel('integer'),
+        content.addToDataElements(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'element3', dataType: dataModel.findDataTypeByLabel('integer'),
                                   maxMultiplicity: 1, minMultiplicity: 0)
-        DataClass child = new DataClass(createdByUser: editor, label: 'child')
+        DataClass child = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'child')
 
-        DataElement el2 = new DataElement(createdByUser: editor, label: 'another', minMultiplicity: 1, maxMultiplicity: 1,
+        DataElement el2 = new DataElement(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'another', minMultiplicity: 1, maxMultiplicity: 1,
                                           dataType: dataModel.findDataTypeByLabel('integer'))
 
         child.addToDataElements(el2)
@@ -199,17 +201,17 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     void 'test findAllByDataModelId'() {
         given:
         setupData()
-        DataModel other = new DataModel(createdByUser: admin, label: 'anotherModel', folder: testFolder, authority: testAuthority)
-        other.addToDataTypes(new PrimitiveType(createdByUser: admin, label: 'string'))
-        other.addToDataTypes(new PrimitiveType(createdByUser: editor, label: 'integer'))
-        DataClass simple = new DataClass(createdByUser: admin, label: 'dc1')
+        DataModel other = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'anotherModel', folder: testFolder, authority: testAuthority)
+        other.addToDataTypes(new PrimitiveType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'string'))
+        other.addToDataTypes(new PrimitiveType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'integer'))
+        DataClass simple = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'dc1')
         other.addToDataClasses(simple)
 
         expect:
         checkAndSave(other)
 
         when:
-        simple.addToDataElements(createdByUser: admin, label: 'ele1', dataType: other.findDataTypeByLabel('string'))
+        simple.addToDataElements(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'ele1', dataType: other.findDataTypeByLabel('string'))
 
         then:
         checkAndSave(other)
@@ -222,12 +224,12 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     void 'test findAllByDataModelIdAndLabelIlike'() {
         given:
         setupData()
-        DataModel other = new DataModel(createdByUser: admin, label: 'anotherModel', folder: testFolder, authority: testAuthority)
-        other.addToDataTypes(new PrimitiveType(createdByUser: admin, label: 'string'))
-        other.addToDataTypes(new PrimitiveType(createdByUser: editor, label: 'integer'))
+        DataModel other = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'anotherModel', folder: testFolder, authority: testAuthority)
+        other.addToDataTypes(new PrimitiveType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'string'))
+        other.addToDataTypes(new PrimitiveType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'integer'))
 
-        DataClass simple = new DataClass(createdByUser: admin, label: 'dc1')
-        DataElement element = new DataElement(createdByUser: admin, label: 'element', dataType: other.findDataTypeByLabel('string'))
+        DataClass simple = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'dc1')
+        DataElement element = new DataElement(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'element', dataType: other.findDataTypeByLabel('string'))
         simple.addToDataElements(element)
         other.addToDataClasses(simple)
         checkAndSave(other)
@@ -248,7 +250,7 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         given:
         setupData()
         DataElement original = dataElementService.get(id)
-        DataClass copyClass = new DataClass(label: 'copy', createdByUser: editor)
+        DataClass copyClass = new DataClass(label: 'copy', createdBy: StandardEmailAddress.INTEGRATION_TEST)
         dataModel.addToDataClasses(copyClass)
 
         expect:
@@ -287,7 +289,7 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         given:
         setupData()
         DataElement original = dataElementService.get(id)
-        DataClass copyClass = new DataClass(label: 'copy', createdByUser: editor)
+        DataClass copyClass = new DataClass(label: 'copy', createdBy: StandardEmailAddress.INTEGRATION_TEST)
         dataModel.addToDataClasses(copyClass)
 
         expect:
@@ -327,8 +329,8 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         given:
         setupData()
         DataElement original = dataElementService.get(id)
-        DataModel copyModel = new DataModel(createdByUser: admin, label: 'copy model', folder: testFolder, authority: testAuthority)
-        DataClass copyClass = new DataClass(label: 'copy', createdByUser: editor)
+        DataModel copyModel = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'copy model', folder: testFolder, authority: testAuthority)
+        DataClass copyClass = new DataClass(label: 'copy', createdBy: StandardEmailAddress.INTEGRATION_TEST)
         copyModel.addToDataClasses(copyClass)
 
         expect:
@@ -363,19 +365,23 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
     }
 
+    @Tag('non-parallel')
     void 'test finding all similar DataElements in another model'() {
         given:
         buildComplex = true
+        hibernateSearchIndexingService.purgeAllIndexes()
         setupData()
+        hibernateSearchIndexingService.flushIndexes()
         DataElement original = dataElementService.get(id)
 
         when:
         DataElementSimilarityResult result = dataElementService.findAllSimilarDataElementsInDataModel(complexDataModel, original)
+        log.debug('{}', result)
 
         then:
-        result.size() == 1
+        result.totalSimilar() == 1
         result.first().item.label == 'ele1'
         result.first().item.id != elementId
-        result.first().similarity > 0
+        result.first().score > 0
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,6 +53,13 @@ class UrlMappings {
                 get "/profile/$profileNamespace/$profileName/$profileVersion?"(controller: 'profile', action: 'show')
                 delete "/profile/$profileNamespace/$profileName/$profileVersion?"(controller: 'profile', action: 'delete')
                 post "/profile/$profileNamespace/$profileName/$profileVersion?"(controller: 'profile', action: 'save')
+            }
+
+            // Methods to retrieve and save many profiles for many multiFacetAware items belonging to a Model
+            group "/${modelDomainType}/${modelId}", {
+                post '/profile/getMany'(controller: 'profile', action: 'getMany')
+                post "/profile/validateMany"(controller: 'profile', action: 'validateMany')
+                post "/profile/saveMany"(controller: 'profile', action: 'saveMany')
             }
         }
     }

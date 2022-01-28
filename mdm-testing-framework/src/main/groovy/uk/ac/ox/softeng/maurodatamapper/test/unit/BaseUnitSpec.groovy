@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.test.MdmSpecification
 
 import grails.plugin.json.view.mvc.JsonViewResolver
 import grails.testing.gorm.DataTest
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import org.grails.testing.GrailsUnitTest
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
@@ -46,9 +46,9 @@ abstract class BaseUnitSpec extends MdmSpecification implements DataTest, Grails
     static Path workingDirectory
 
     static Path getGrailsDirectory(def config) {
-        workingDirectory = Paths.get(config.'user.dir' as String)
-        if (config.'grails.project.base.dir' as String) {
-            Path projectDir = Paths.get(config.'grails.project.base.dir' as String)
+        workingDirectory = Paths.get(config.getProperty('user.dir', String))
+        if (config.getProperty('grails.project.base.dir', String)) {
+            Path projectDir = Paths.get(config.getProperty('grails.project.base.dir', String))
             if (projectDir) {
                 workingDirectory = (projectDir.fileName == workingDirectory.fileName) ? workingDirectory : workingDirectory.resolve(projectDir)
             }
@@ -57,9 +57,9 @@ abstract class BaseUnitSpec extends MdmSpecification implements DataTest, Grails
     }
 
     static Path getRootGrailsDirectory(def config) {
-        workingDirectory = Paths.get(config.'user.dir' as String)
-        if (config.'grails.root.base.dir' as String) {
-            Path projectDir = Paths.get(config.'grails.root.base.dir' as String)
+        workingDirectory = Paths.get(config.getProperty('user.dir', String))
+        if (config.getProperty('grails.root.base.dir', String)) {
+            Path projectDir = Paths.get(config.getProperty('grails.root.base.dir', String))
             if (projectDir) {
                 workingDirectory = (projectDir.fileName == workingDirectory.fileName) ? workingDirectory : workingDirectory.resolve(projectDir)
             }
@@ -67,16 +67,14 @@ abstract class BaseUnitSpec extends MdmSpecification implements DataTest, Grails
         workingDirectory
     }
 
-    def setup() {
-        log.debug('Setting up base unit')
-    }
-
     def cleanup() {
         log.debug('Cleaning up base unit')
     }
 
-    @OnceBefore
-    def loadI18nMessages() {
+    @RunOnce
+    def setup() {
+        log.debug('Run Once setting up base unit')
+        log.debug('Load I18n Messages')
         loadI18nMessagesFromPath(getRootGrailsDirectory(config).resolve('mdm-core/grails-app/i18n/messages.properties'))
         loadI18nMessagesFromPath(getGrailsDirectory(config).resolve('grails-app/i18n/messages.properties'))
 
@@ -87,6 +85,7 @@ abstract class BaseUnitSpec extends MdmSpecification implements DataTest, Grails
             JsonViewResolver resolver = applicationContext.getBean(JsonViewResolver)
             resolver.templateEngine.messageSource = applicationContext.getBean(MessageSource)
         } catch (NoSuchBeanDefinitionException ignored) {
+            log.warn 'Failed to load messages into json views'
         }
     }
 

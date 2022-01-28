@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 @GrailsCompileStatic
-trait CatalogueFile extends EditHistoryAware {
+trait CatalogueFile implements EditHistoryAware {
 
     @BindUsing({
         obj, source ->
@@ -80,11 +80,6 @@ trait CatalogueFile extends EditHistoryAware {
     @Override
     String getEditLabel() {
         "${getClass().simpleName}:${fileName}"
-    }
-
-    @Override
-    String getPathIdentifier() {
-        fileName
     }
 
     static <T extends CatalogueFile> DetachedCriteria<T> withBaseFilter(DetachedCriteria<T> criteria, Map filters) {

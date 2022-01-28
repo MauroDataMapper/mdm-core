@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,15 +20,16 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class ReferenceDataValue implements CreatorAware, Diffable<ReferenceDataValue> {
+class ReferenceDataValue implements MdmDomain, Diffable<ReferenceDataValue> {
 
     public final static Integer BATCH_SIZE = 10000
 
@@ -50,8 +51,6 @@ class ReferenceDataValue implements CreatorAware, Diffable<ReferenceDataValue> {
         referenceDataElement index: 'reference_data_value_reference_data_element_idx', cascade: 'save-update', fetch: 'join'
     }
 
-    static mappedBy = [:]
-
     ReferenceDataValue() {
     }
 
@@ -72,6 +71,15 @@ class ReferenceDataValue implements CreatorAware, Diffable<ReferenceDataValue> {
 
     String getEditLabel() {
         "$domainType:$value"
+    }
+
+    def beforeValidate() {
+        checkPath() // get path to ensure its built
+    }
+
+    @Override
+    Path buildPath() {
+        referenceDataElement?.path ? Path.from(referenceDataElement.path, pathPrefix, pathIdentifier) : null
     }
 
     ObjectDiff<ReferenceDataValue> diff(ReferenceDataValue otherValue, String context) {

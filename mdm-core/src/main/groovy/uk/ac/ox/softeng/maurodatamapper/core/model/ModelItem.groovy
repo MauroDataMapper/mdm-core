@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,12 @@ package uk.ac.ox.softeng.maurodatamapper.core.model
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
-import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.Breadcrumb
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.PathAware
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 
 import groovy.transform.SelfType
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
-import org.hibernate.search.annotations.Field
 import org.springframework.core.Ordered
 
 /**
@@ -36,11 +34,13 @@ import org.springframework.core.Ordered
  */
 @SelfType(GormEntity)
 @Slf4j
-trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> implements PathAware, Ordered, Comparable<D> {
+trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> implements Ordered, Comparable<D> {
 
     abstract T getModel()
 
     abstract Boolean hasChildren()
+
+    abstract CatalogueItem getParent()
 
     Integer idx
 
@@ -49,7 +49,7 @@ trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> im
     }
 
     /**
-     * On setting the index, update the indices of siblings. 
+     * On setting the index, update the indices of siblings.
      */
     void setIndex(Integer index) {
         Integer oldIndex = idx
@@ -70,6 +70,7 @@ trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> im
 
     CatalogueItem getIndexedWithin() {
         //no-op
+        null
     }
 
     List<Breadcrumb> getBreadcrumbs() {
@@ -77,16 +78,8 @@ trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> im
     }
 
     @Override
-    String buildPath() {
-        String path = super.buildPath()
-        if (breadcrumbTree) {
-            if (!breadcrumbTree.matchesPath(path)) {
-                breadcrumbTree.update(this)
-            }
-        } else {
-            breadcrumbTree = new BreadcrumbTree(this)
-        }
-        path
+    Path buildPath() {
+        parent?.path ? Path.from(parent.path, pathPrefix, pathIdentifier) : null
     }
 
     def beforeValidateModelItem() {
@@ -94,11 +87,9 @@ trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> im
         //If index is null and this is a thing whose siblings are ordered, add this to the end of the list.
         //If this is a thing which is not ordered, then no action will be taken.
         updateIndices(idx)
-        buildPath()
         beforeValidateCatalogueItem()
     }
 
-    @Field
     String getModelType() {
         model.modelType
     }

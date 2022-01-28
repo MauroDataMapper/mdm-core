@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.dataflow.bootstrap.BootstrapModels as Da
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels as DataModelBootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.referencedata.bootstrap.BootstrapModels as ReferenceDataModelBootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
+import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRoleService
 import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
@@ -51,7 +52,7 @@ class BootStrap implements SecurityDefinition {
 
     AuthorityService authorityService
 
-    def init = { servletContext ->
+    def init = {servletContext ->
 
         log.debug('Main bootstrap complete')
 
@@ -59,15 +60,35 @@ class BootStrap implements SecurityDefinition {
             test {
                 Folder folder
                 Folder folder2
+                Folder parentFolder
+
                 CatalogueUser.withNewTransaction {
 
                     createModernSecurityUsers('functionalTest', false)
-                    checkAndSave(messageSource, editor, reader, authenticated, pending, containerAdmin, author, reviewer)
+                    checkAndSave(messageSource, editor,
+                                 pending,
+                                 containerAdmin,
+                                 author,
+                                 reviewer,
+                                 reader,
+                                 authenticated,
+                                 creator)
 
                     createBasicGroups('functionalTest', false)
-                    checkAndSave(messageSource, editors, readers)
+                    checkAndSave(messageSource,
+                                 editors,
+                                 readers,
+                                 reviewers,
+                                 authors,
+                                 containerAdmins,
+                                 admins)
 
-                    folder = new Folder(label: 'Functional Test Folder', createdBy: userEmailAddresses.functionalTest)
+                    parentFolder = new Folder(label: 'Parent Functional Test Folder', createdBy: userEmailAddresses.functionalTest)
+                    checkAndSave(messageSource, parentFolder)
+
+                    folder = new Folder(label: 'Functional Test Folder',
+                                        parentFolder: parentFolder,
+                                        createdBy: userEmailAddresses.functionalTest)
                     checkAndSave(messageSource, folder)
 
                     // This folder will only be visible to admins as it has no rights
@@ -84,79 +105,33 @@ class BootStrap implements SecurityDefinition {
                                                                            createdBy: userEmailAddresses.functionalTest)
                     checkAndSave(messageSource, versionedFolder2)
 
-                    // Make editors container admin (existing permissions) of the test folder
+                    createGroupedAccessFor(folder)
+                    createGroupedAccessFor(parentFolder)
+                    createGroupedAccessFor(versionedFolder)
+                    createGroupedAccessFor(versionedFolder2)
                     checkAndSave(messageSource, new SecurableResourceGroupRole(
                         createdBy: userEmailAddresses.functionalTest,
-                        securableResource: folder,
-                        userGroup: editors,
+                        securableResource: folder2,
+                        userGroup: containerAdmins,
                         groupRole: groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole)
-                    )
-                    // Make readers reviewers of the test folder, this will allow "comment" adding testing
-                    checkAndSave(messageSource, new SecurableResourceGroupRole(
-                        createdBy: userEmailAddresses.functionalTest,
-                        securableResource: folder,
-                        userGroup: readers,
-                        groupRole: groupRoleService.getFromCache(GroupRole.REVIEWER_ROLE_NAME).groupRole)
-                    )
-
-                    // Make editors container admin (existing permissions) of the test versioned folder
-                    checkAndSave(messageSource, new SecurableResourceGroupRole(
-                        createdBy: userEmailAddresses.functionalTest,
-                        securableResource: versionedFolder,
-                        userGroup: editors,
-                        groupRole: groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole)
-                    )
-                    // Make readers reviewers of the test folder, this will allow "comment" adding testing
-                    checkAndSave(messageSource, new SecurableResourceGroupRole(
-                        createdBy: userEmailAddresses.functionalTest,
-                        securableResource: versionedFolder,
-                        userGroup: readers,
-                        groupRole: groupRoleService.getFromCache(GroupRole.REVIEWER_ROLE_NAME).groupRole)
-                    )
-
-                    // Make editors container admin (existing permissions) of the test versioned folder
-                    checkAndSave(messageSource, new SecurableResourceGroupRole(
-                        createdBy: userEmailAddresses.functionalTest,
-                        securableResource: versionedFolder2,
-                        userGroup: editors,
-                        groupRole: groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole)
-                    )
-                    // Make readers reviewers of the test folder, this will allow "comment" adding testing
-                    checkAndSave(messageSource, new SecurableResourceGroupRole(
-                        createdBy: userEmailAddresses.functionalTest,
-                        securableResource: versionedFolder2,
-                        userGroup: readers,
-                        groupRole: groupRoleService.getFromCache(GroupRole.REVIEWER_ROLE_NAME).groupRole)
                     )
 
                     Classifier classifier = new Classifier(label: 'Functional Test Classifier',
                                                            createdBy: userEmailAddresses.functionalTest)
                     checkAndSave(messageSource, classifier)
-                    // Make editors container admin (existing permissions) of the test folder
-                    checkAndSave(messageSource, new SecurableResourceGroupRole(
-                        createdBy: userEmailAddresses.functionalTest,
-                        securableResource: classifier,
-                        userGroup: editors,
-                        groupRole: groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole)
-                    )
-                    // Make readers reader of the test folder
-                    checkAndSave(messageSource, new SecurableResourceGroupRole(
-                        createdBy: userEmailAddresses.functionalTest,
-                        securableResource: classifier,
-                        userGroup: readers,
-                        groupRole: groupRoleService.getFromCache(GroupRole.REVIEWER_ROLE_NAME).groupRole)
-                    )
+                    createGroupedAccessFor(classifier)
                 }
 
                 Folder.withNewTransaction {
                     folder = Folder.findByLabel('Functional Test Folder')
                     Authority authority = authorityService.getDefaultAuthority()
-                    DataModelBootstrapModels.buildAndSaveComplexDataModel(messageSource, folder, authority)
                     DataModelBootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder, authority)
+                    DataModelBootstrapModels.buildAndSaveComplexDataModel(messageSource, folder, authority)
                     DataModelBootstrapModels.buildAndSaveFinalisedSimpleDataModel(messageSource, folder, authority)
-                    TerminologyBootstrapModels.buildAndSaveComplexTerminology(messageSource, folder, terminologyService, authority)
                     TerminologyBootstrapModels.buildAndSaveSimpleTerminology(messageSource, folder, authority)
+                    TerminologyBootstrapModels.buildAndSaveComplexTerminology(messageSource, folder, terminologyService, authority)
                     TerminologyBootstrapModels.buildAndSaveSimpleCodeSet(messageSource, folder, authority)
+                    TerminologyBootstrapModels.buildAndSaveComplexCodeSet(messageSource, folder, terminologyService, authority)
                     TerminologyBootstrapModels.buildAndSaveUnfinalisedCodeSet(messageSource, folder, authority)
                     DataFlowBootstrapModels.buildAndSaveSourceDataModel(messageSource, folder, authority)
                     DataFlowBootstrapModels.buildAndSaveTargetDataModel(messageSource, folder, authority)
@@ -166,10 +141,42 @@ class BootStrap implements SecurityDefinition {
                 }
                 log.debug('Test environment bootstrap complete')
             }
-
         }
     }
 
     def destroy = {
+    }
+
+    void createGroupedAccessFor(SecurableResource securableResource) {
+        checkAndSave(messageSource, new SecurableResourceGroupRole(
+            createdBy: userEmailAddresses.functionalTest,
+            securableResource: securableResource,
+            userGroup: containerAdmins,
+            groupRole: groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole)
+        )
+        checkAndSave(messageSource, new SecurableResourceGroupRole(
+            createdBy: userEmailAddresses.functionalTest,
+            securableResource: securableResource,
+            userGroup: editors,
+            groupRole: groupRoleService.getFromCache(GroupRole.EDITOR_ROLE_NAME).groupRole)
+        )
+        checkAndSave(messageSource, new SecurableResourceGroupRole(
+            createdBy: userEmailAddresses.functionalTest,
+            securableResource: securableResource,
+            userGroup: authors,
+            groupRole: groupRoleService.getFromCache(GroupRole.AUTHOR_ROLE_NAME).groupRole)
+        )
+        checkAndSave(messageSource, new SecurableResourceGroupRole(
+            createdBy: userEmailAddresses.functionalTest,
+            securableResource: securableResource,
+            userGroup: reviewers,
+            groupRole: groupRoleService.getFromCache(GroupRole.REVIEWER_ROLE_NAME).groupRole)
+        )
+        checkAndSave(messageSource, new SecurableResourceGroupRole(
+            createdBy: userEmailAddresses.functionalTest,
+            securableResource: securableResource,
+            userGroup: readers,
+            groupRole: groupRoleService.getFromCache(GroupRole.READER_ROLE_NAME).groupRole)
+        )
     }
 }

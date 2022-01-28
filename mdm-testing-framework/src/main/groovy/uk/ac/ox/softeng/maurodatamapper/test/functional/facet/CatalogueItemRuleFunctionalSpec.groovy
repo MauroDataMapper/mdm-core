@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
-import spock.lang.Ignore
 
 /**
  *
@@ -37,7 +36,7 @@ import spock.lang.Ignore
  *  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${id}/representations                        | Action: index     |
  *  |  DELETE  | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${id}/representations/${representationId}    | Action: delete    |
  *  |   PUT    | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${id}/representations/${representationId}    | Action: update    |
- *  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${id}/representations/${representationId}    | Action: show      | 
+ *  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${id}/representations/${representationId}    | Action: show      |
  */
 @Slf4j
 abstract class CatalogueItemRuleFunctionalSpec extends CatalogueItemFacetFunctionalSpec<Rule> {
@@ -115,7 +114,7 @@ abstract class CatalogueItemRuleFunctionalSpec extends CatalogueItemFacetFunctio
   "representation": "0 < a < 25",
   "lastUpdated": "${json-unit.matches:offsetDateTime}"
 }'''
-    }  
+    }
 
     String getExpectedRuleRepresentationUpdateJson() {
         '''{
@@ -124,7 +123,7 @@ abstract class CatalogueItemRuleFunctionalSpec extends CatalogueItemFacetFunctio
   "representation": "0 < a < 30",
   "lastUpdated": "${json-unit.matches:offsetDateTime}"
 }'''
-    }       
+    }
 
     @Override
     void verifyR4UpdateResponse() {
@@ -165,84 +164,5 @@ abstract class CatalogueItemRuleFunctionalSpec extends CatalogueItemFacetFunctio
 
         cleanup: 'Remove facet from source catalogue item'
         cleanUpData(id)
-    }
-
-    @Ignore('Known failing test for being unreliable')
-    void 'RR01: Create, update and delete a RuleRepresentation'() {
-        given: 'Create new rule on catalogue item'
-        def ruleId = createNewItem(validJson)
-
-        when: 'Create a RuleRepresentation'
-        POST(getRuleRepresentationResourcePath(ruleId), getValidRuleRepresentationJson(), MAP_ARG, true)
-
-        then: 'RuleRepresentation is created'
-        verifyResponse(HttpStatus.CREATED, response)
-        def ruleRepresentationId = response.body().id
-
-        when: 'Get the RuleRepresentation'
-        GET("${getRuleRepresentationResourcePath(ruleId)}/${ruleRepresentationId}", STRING_ARG, true)
-        
-        then: 'RuleRepresentation is OK'
-        verifyJsonResponse(HttpStatus.OK, getExpectedRuleRepresentationShowJson())
-
-        when: 'Update a RuleRepresentation'
-        PUT("${getRuleRepresentationResourcePath(ruleId)}/${ruleRepresentationId}", getValidRuleRepresentationUpdateJson(), STRING_ARG, true)
-
-        then: 'RuleRepresentation is updated'
-        verifyJsonResponse(HttpStatus.OK, getExpectedRuleRepresentationUpdateJson())   
-
-        when: 'Invalidly update a RuleRepresentation'
-        PUT("${getRuleRepresentationResourcePath(ruleId)}/${ruleRepresentationId}", getInvalidRuleRepresentationJson(), MAP_ARG, true)
-
-        then: 'RuleRepresentation is unprocessable'
-        verifyResponse(HttpStatus.UNPROCESSABLE_ENTITY, response)
-
-        when: 'Delete the RuleRepresentation'
-        DELETE("${getRuleRepresentationResourcePath(ruleId)}/${ruleRepresentationId}", MAP_ARG, true)
-
-        then: 'RuleRepresentation is deleted'
-        verifyResponse(HttpStatus.NO_CONTENT, response)     
-
-        when: 'Get the RuleRepresentations'
-        GET("${getRuleRepresentationResourcePath(ruleId)}/${ruleRepresentationId}", MAP_ARG, true)
-        
-        then: 'RuleRepresentation is not found'
-        verifyResponse(HttpStatus.NOT_FOUND, response)   
-
-        cleanup: 'Remove facet from source catalogue item'
-        cleanUpData(ruleId)                
-    }
-
-    @Ignore('Known failing test for ReferenceDataModelRuleFunctionalSpec')
-    void 'RR02: RuleRepresentation is cascade deleted when Rule is deleted'() {
-        given: 'Create new facet on catalogue item'
-        def ruleId = createNewItem(validJson)
-
-        when: 'Create a RuleRepresentation'
-        POST(getRuleRepresentationResourcePath(ruleId), getValidRuleRepresentationJson(), MAP_ARG, true)
-
-        then: 'RuleRepresentation is created'
-        verifyResponse(HttpStatus.CREATED, response)
-        def ruleRepresentationId = response.body().id
-
-        when: 'Get the RuleRepresentation'
-        GET("${getRuleRepresentationResourcePath(ruleId)}/${ruleRepresentationId}", STRING_ARG, true)
-
-        then: 'RuleRepresentation is OK'
-        verifyJsonResponse(HttpStatus.OK, getExpectedRuleRepresentationShowJson())        
-
-        when: 'Delete the Rule'
-        DELETE(getDeleteEndpoint(ruleId))
-
-        then: 'Rule is deleted'
-        verifyResponse(HttpStatus.NO_CONTENT, response)  
-
-        when: 'Get the RuleRepresentation'
-        GET("${getRuleRepresentationResourcePath(ruleId)}/${ruleRepresentationId}", MAP_ARG, true)
-
-        then: 'RuleRepresentation is not found'
-        verifyResponse(HttpStatus.NOT_FOUND, response)
-
-        //Note: No need to cleanup as we already deleted the Rule              
     }
 }

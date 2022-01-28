@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFile
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -31,7 +32,6 @@ import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.security.authentication.ApiKey
-import uk.ac.ox.softeng.maurodatamapper.security.basic.UnloggedUser
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.VirtualSecurableResourceGroupRole
@@ -39,12 +39,9 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.core.GrailsApplication
 import grails.core.GrailsClass
-import groovy.transform.stc.ClosureParams
-import groovy.transform.stc.SimpleType
+import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import org.grails.orm.hibernate.proxy.HibernateProxyHandler
-
-import java.util.function.Predicate
 
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.AUTHORITY_ADMIN_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.AUTHOR_ACTIONS
@@ -55,12 +52,11 @@ import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.D
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.DISALLOWED_ONCE_FINALISED_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.EDITOR_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.EDITOR_VERSIONING_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.EDIT_DESCRIPTION_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.FINALISED_EDIT_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.FINALISED_READ_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.FINALISE_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.FULL_DELETE_ACTIONS
-import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.IMPORT_ACTION
-import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.INDEX_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MERGE_INTO_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.NEW_BRANCH_MODEL_VERSION_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.NEW_DOCUMENTATION_ACTION
@@ -73,7 +69,6 @@ import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.R
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.REVIEWER_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.SAVE_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.SAVE_IGNORE_FINALISE
-import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.SHOW_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.SOFT_DELETE_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.STANDARD_CREATE_AND_EDIT_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.STANDARD_EDIT_ACTIONS
@@ -113,20 +108,14 @@ import static uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole.USER_ADMI
  * zero calls to the database when ascertaining access. It also means we can make 1 check for rights to access.
  */
 @Slf4j
+@CompileStatic
 class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
 
-    CatalogueUser user
-    Set<UserGroup> userGroups
-    List<SecurableResourceGroupRole> securableResourceGroupRoles
-    Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles
-    Set<GroupRole> applicationPermittedRoles
     HibernateProxyHandler hibernateProxyHandler = new HibernateProxyHandler()
-
-    GrailsApplication grailsApplication
+    private UserSecurityPolicy userPolicy
+    private GrailsApplication grailsApplication
 
     GroupBasedUserSecurityPolicyManager() {
-        userGroups = [] as Set
-        setNoAccess()
     }
 
     GroupBasedUserSecurityPolicyManager inApplication(GrailsApplication grailsApplication) {
@@ -134,123 +123,136 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         this
     }
 
-    GroupBasedUserSecurityPolicyManager forUser(CatalogueUser catalogueUser) {
-        user = catalogueUser
+    GroupBasedUserSecurityPolicyManager withUserPolicy(UserSecurityPolicy userPolicy) {
+        if (this.userPolicy) throw new ApiInternalException('GBUSPM', 'Cannot set a UserPolicy when its already set')
+        this.userPolicy = userPolicy
         this
     }
 
-    GroupBasedUserSecurityPolicyManager inGroups(Set<UserGroup> userGroups) {
-        this.userGroups = userGroups
+    GroupBasedUserSecurityPolicyManager withUpdatedUserPolicy(UserSecurityPolicy userPolicy) {
+        if (!this.userPolicy) throw new ApiInternalException('GBUSPM', 'Cannot update a UserPolicy when its not set')
+        this.userPolicy = userPolicy
         this
     }
 
-    GroupBasedUserSecurityPolicyManager withSecurableRoles(List<SecurableResourceGroupRole> securableResourceGroupRoles) {
-        this.securableResourceGroupRoles = securableResourceGroupRoles
+    GroupBasedUserSecurityPolicyManager lock() {
+        this.userPolicy.lock()
         this
     }
 
-    GroupBasedUserSecurityPolicyManager includeSecurableRoles(List<SecurableResourceGroupRole> securableResourceGroupRoles) {
-        this.securableResourceGroupRoles.addAll(securableResourceGroupRoles)
+    GroupBasedUserSecurityPolicyManager unlock() {
+        this.userPolicy.unlock()
         this
     }
 
-    GroupBasedUserSecurityPolicyManager withVirtualRoles(Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles) {
-        this.virtualSecurableResourceGroupRoles = virtualSecurableResourceGroupRoles
+    boolean isLocked() {
+        this.userPolicy.locked
+    }
+
+    boolean isUnLocked() {
+        !this.userPolicy.locked
+    }
+
+    boolean userPolicyIsManagedByGroup(UserGroup userGroup) {
+        userPolicy.isManagedByGroup(userGroup)
+    }
+
+    boolean userPolicyManagesAccessToSecurableResource(SecurableResource securableResource) {
+        userPolicy.managesVirtualAccessToSecurableResource(securableResource)
+    }
+
+    boolean userPolicyManagesAccessToSecurableResource(String securableResourceDomainType, UUID securableResourceId) {
+        userPolicy.managesVirtualAccessToSecurableResource(securableResourceDomainType, securableResourceId)
+    }
+
+    boolean userPolicyHasApplicationRoles() {
+        userPolicy.applicationPermittedRoles
+    }
+
+    UserSecurityPolicy getUserPolicy() {
+        this.userPolicy
+    }
+
+    GroupBasedUserSecurityPolicyManager ensureCatalogueUser(CatalogueUser catalogueUser) {
+        this.userPolicy.ensureCatalogueUser(catalogueUser)
         this
     }
 
-    GroupBasedUserSecurityPolicyManager withApplicationRoles(Set<GroupRole> applicationPermittedRoles) {
-        this.applicationPermittedRoles = applicationPermittedRoles
+    GroupBasedUserSecurityPolicyManager withUpdatedUserGroups(Set<UserGroup> userGroups) {
+        this.userPolicy.inGroups(userGroups)
         this
     }
 
-    GroupBasedUserSecurityPolicyManager includeApplicationRoles(Set<GroupRole> applicationPermittedRoles) {
-        this.applicationPermittedRoles.addAll(applicationPermittedRoles)
-        this
+    void revoke() {
+        userPolicy.destroy()
     }
 
-    GroupBasedUserSecurityPolicyManager includeVirtualRoles(Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles) {
-        this.virtualSecurableResourceGroupRoles.addAll(virtualSecurableResourceGroupRoles)
-        this
-    }
-
-    GroupBasedUserSecurityPolicyManager hasNoAccess() {
-        setNoAccess()
-        this
-    }
-
-    GroupBasedUserSecurityPolicyManager removeVirtualRoleIf(@ClosureParams(
-        value = SimpleType,
-        options = 'uk.ac.ox.softeng.maurodatamapper.security.role.VirtualSecurableResourceGroupRole') Closure predicate
-                                                           ) {
-        virtualSecurableResourceGroupRoles.removeIf([test: predicate] as Predicate)
-        this
-    }
-
-    GroupBasedUserSecurityPolicyManager removeVirtualRoles(Collection<VirtualSecurableResourceGroupRole> rolesToRemoved) {
-        virtualSecurableResourceGroupRoles.removeAll(rolesToRemoved)
-        this
-    }
-
-    GroupBasedUserSecurityPolicyManager removeAssignedRoleIf(@ClosureParams(
-        value = SimpleType,
-        options = 'uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole') Closure predicate
-                                                            ) {
-        securableResourceGroupRoles.removeIf([test: predicate] as Predicate)
-        this
-    }
-
-    // If the usergroups are set then the entire security policy is unsure so will need to be rebuilt
-    void setUserGroups(Set<UserGroup> userGroups) {
-        setNoAccess()
-        this.userGroups = userGroups.toSet()
-    }
-
-    void setNoAccess() {
-        applicationPermittedRoles = [] as Set
-        securableResourceGroupRoles = []
-        virtualSecurableResourceGroupRoles = [] as Set
+    @Override
+    CatalogueUser getUser() {
+        userPolicy.getUser()
     }
 
     @Override
     List<UUID> listReadableSecuredResourceIds(Class<? extends SecurableResource> securableResourceClass) {
-        virtualSecurableResourceGroupRoles
-            .findAll { it.domainType == securableResourceClass.simpleName || it.alternateDomainType == securableResourceClass.simpleName }
-            .collect { it.domainId }
-            .toSet()
-            .toList()
+        userPolicy.getVirtualSecurableResourceGroupRoles()
+            .findAll {it.value.first().matchesDomainResourceType(securableResourceClass)}
+            .collect {it.key}
     }
 
     @Override
     boolean userCanReadResourceId(Class resourceClass, UUID id,
                                   Class<? extends SecurableResource> owningSecureResourceClass, UUID owningSecureResourceId) {
         if (Utils.parentClassIsAssignableFromChild(SecurableResource, resourceClass)) {
-            return userCanReadSecuredResourceId(resourceClass, id)
+            return userCanReadSecuredResourceId(resourceClass as Class<? extends SecurableResource>, id)
         }
         // Allow users to read any user image files
         if (Utils.parentClassIsAssignableFromChild(UserImageFile, resourceClass) &&
             Utils.parentClassIsAssignableFromChild(CatalogueUser, owningSecureResourceClass)) {
             return true
         }
+
+        // Users can read their own api keys and user admins can do as well
+        if (Utils.parentClassIsAssignableFromChild(ApiKey, resourceClass) &&
+            Utils.parentClassIsAssignableFromChild(CatalogueUser, owningSecureResourceClass)) {
+            return getUser().id == owningSecureResourceId || getSpecificLevelAccessToSecuredResource(owningSecureResourceClass, owningSecureResourceId, USER_ADMIN_ROLE_NAME)
+        }
+
         return userCanReadSecuredResourceId(owningSecureResourceClass, owningSecureResourceId)
     }
 
     @Override
     boolean userCanCreateResourceId(Class resourceClass, UUID id,
                                     Class<? extends SecurableResource> owningSecureResourceClass, UUID owningSecureResourceId) {
-        if (Utils.parentClassIsAssignableFromChild(SecurableResource, resourceClass)) {
-            return userCanCreateSecuredResourceId(resourceClass, id)
+        // Allow editors of folders to create models in that folder
+        if (owningSecureResourceClass && Utils.parentClassIsAssignableFromChild(Model, resourceClass) &&
+            Utils.parentClassIsAssignableFromChild(Folder, owningSecureResourceClass)) {
+            return getSpecificLevelAccessToSecuredResource(owningSecureResourceClass, owningSecureResourceId, EDITOR_ROLE_NAME)
         }
-        // Allow reviewers to create annotations on a model if they have reviewer status
+
+        if (Utils.parentClassIsAssignableFromChild(SecurableResource, resourceClass)) {
+            return userCanCreateSecuredResourceId(resourceClass as Class<? extends SecurableResource>, id)
+        }
+        // Allow reviewers to create annotations on a versioned folders and models
         if (Utils.parentClassIsAssignableFromChild(Annotation, resourceClass) &&
             (Utils.parentClassIsAssignableFromChild(Model, owningSecureResourceClass) ||
-             Utils.parentClassIsAssignableFromChild(Container, owningSecureResourceClass))) {
+             Utils.parentClassIsAssignableFromChild(VersionedFolder, owningSecureResourceClass))) {
             return getSpecificLevelAccessToSecuredResource(owningSecureResourceClass, owningSecureResourceId, REVIEWER_ROLE_NAME)
         }
-        // Allow editors to edit/create permissions on models and containers no matter what state the secured resource is in
-        if (Utils.parentClassIsAssignableFromChild(SecurableResourceGroupRole, resourceClass) &&
+        // Allow authors to create metadata (and therefore profiles) on a versioned folders and models
+        if (Utils.parentClassIsAssignableFromChild(Metadata, resourceClass) &&
             (Utils.parentClassIsAssignableFromChild(Model, owningSecureResourceClass) ||
-             Utils.parentClassIsAssignableFromChild(Container, owningSecureResourceClass))) {
+             Utils.parentClassIsAssignableFromChild(VersionedFolder, owningSecureResourceClass))) {
+            VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(owningSecureResourceClass, owningSecureResourceId, AUTHOR_ROLE_NAME)
+            return role ? !role.isFinalised() : false
+        }
+        // Allow container admins to edit/create permissions on containers no matter what state the secured resource is in
+        if (Utils.parentClassIsAssignableFromChild(SecurableResourceGroupRole, resourceClass) &&
+            Utils.parentClassIsAssignableFromChild(Container, owningSecureResourceClass)) {
+            return getSpecificLevelAccessToSecuredResource(owningSecureResourceClass, owningSecureResourceId, CONTAINER_ADMIN_ROLE_NAME)
+        }
+        // Allow editors to edit/create permissions on models no matter what state the secured resource is in
+        if (Utils.parentClassIsAssignableFromChild(SecurableResourceGroupRole, resourceClass) &&
+            Utils.parentClassIsAssignableFromChild(Model, owningSecureResourceClass)) {
             return getSpecificLevelAccessToSecuredResource(owningSecureResourceClass, owningSecureResourceId, EDITOR_ROLE_NAME)
         }
         // Allow users to create their own user image file
@@ -266,23 +268,14 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     @Override
     boolean userCanEditResourceId(Class resourceClass, UUID id,
                                   Class<? extends SecurableResource> owningSecureResourceClass, UUID owningSecureResourceId) {
-        if (Utils.parentClassIsAssignableFromChild(SecurableResource, resourceClass)) {
-            return userCanEditSecuredResourceId(resourceClass, id)
-        }
-        // Allow users to edit their own user image file
-        if (Utils.parentClassIsAssignableFromChild(UserImageFile, resourceClass) &&
-            Utils.parentClassIsAssignableFromChild(CatalogueUser, owningSecureResourceClass) &&
-            owningSecureResourceId == getUser().id) {
-            return true
-        }
-        return userCanEditSecuredResourceId(owningSecureResourceClass, owningSecureResourceId)
+        userCanWriteResourceId(resourceClass, id, owningSecureResourceClass, owningSecureResourceId, UPDATE_ACTION)
     }
 
     @Override
     boolean userCanDeleteResourceId(Class resourceClass, UUID id,
                                     Class<? extends SecurableResource> owningSecureResourceClass, UUID owningSecureResourceId) {
         if (Utils.parentClassIsAssignableFromChild(SecurableResource, resourceClass)) {
-            return userCanDeleteSecuredResourceId(resourceClass, id, false)
+            return userCanDeleteSecuredResourceId(resourceClass as Class<? extends SecurableResource>, id, false)
         }
         // Allow users to create their own user image file
         if (Utils.parentClassIsAssignableFromChild(UserImageFile, resourceClass) &&
@@ -296,7 +289,52 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
             owningSecureResourceId == getUser().id) {
             return true
         }
+
+        // Allow authors to delete metadata (and therefore profiles) on a versioned folders and models
+        if (Utils.parentClassIsAssignableFromChild(Metadata, resourceClass) &&
+            (Utils.parentClassIsAssignableFromChild(Model, owningSecureResourceClass) ||
+             Utils.parentClassIsAssignableFromChild(VersionedFolder, owningSecureResourceClass))) {
+            VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(owningSecureResourceClass, owningSecureResourceId, AUTHOR_ROLE_NAME)
+            return role ? !role.isFinalised() : false
+        }
+
+        // Allow container admins to delete permissions on containers no matter what state the secured resource is in
+        if (Utils.parentClassIsAssignableFromChild(SecurableResourceGroupRole, resourceClass) &&
+            Utils.parentClassIsAssignableFromChild(Container, owningSecureResourceClass)) {
+            return getSpecificLevelAccessToSecuredResource(owningSecureResourceClass, owningSecureResourceId, CONTAINER_ADMIN_ROLE_NAME)
+        }
+        // Allow editors to delete permissions on models no matter what state the secured resource is in
+        if (Utils.parentClassIsAssignableFromChild(SecurableResourceGroupRole, resourceClass) &&
+            Utils.parentClassIsAssignableFromChild(Model, owningSecureResourceClass)) {
+            return getSpecificLevelAccessToSecuredResource(owningSecureResourceClass, owningSecureResourceId, EDITOR_ROLE_NAME)
+        }
+
         return userCanDeleteSecuredResourceId(owningSecureResourceClass, owningSecureResourceId, false)
+    }
+
+    @Override
+    boolean userCanWriteResourceId(Class resourceClass, UUID id, Class<? extends SecurableResource> owningSecureResourceClass, UUID owningSecureResourceId, String action) {
+        if (Utils.parentClassIsAssignableFromChild(SecurableResource, resourceClass)) {
+            return userCanWriteSecuredResourceId(resourceClass as Class<? extends SecurableResource>, id, action)
+        }
+        // Allow users to edit their own user image file
+        if (Utils.parentClassIsAssignableFromChild(UserImageFile, resourceClass) &&
+            Utils.parentClassIsAssignableFromChild(CatalogueUser, owningSecureResourceClass) &&
+            owningSecureResourceId == getUser().id) {
+            return true
+        }
+        if (Utils.parentClassIsAssignableFromChild(Metadata, resourceClass) &&
+            (Utils.parentClassIsAssignableFromChild(Model, owningSecureResourceClass) ||
+             Utils.parentClassIsAssignableFromChild(VersionedFolder, owningSecureResourceClass))) {
+            if (action in [SAVE_IGNORE_FINALISE, UPDATE_IGNORE_FINALISE])
+                return getSpecificLevelAccessToSecuredResource(owningSecureResourceClass, owningSecureResourceId, AUTHOR_ROLE_NAME)
+            else if (action == UPDATE_ACTION) {
+                VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(owningSecureResourceClass, owningSecureResourceId, AUTHOR_ROLE_NAME)
+                return role ? !role.isFinalised() : false
+            }
+
+        }
+        return userCanWriteSecuredResourceId(owningSecureResourceClass, owningSecureResourceId, action)
     }
 
     @Override
@@ -306,6 +344,10 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         }
         if (Utils.parentClassIsAssignableFromChild(CatalogueUser, securableResourceClass) && !id) {
             return hasApplicationLevelRole(USER_ADMIN_ROLE_NAME)
+        }
+        if (Utils.parentClassIsAssignableFromChild(Authority, securableResourceClass)) {
+            // Anyone who's logged in can index or read an authority
+            return isAuthenticated()
         }
         hasAnyAccessToSecuredResource(securableResourceClass, id)
     }
@@ -328,7 +370,18 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     @Override
     boolean userCanWriteSecuredResourceId(Class<? extends SecurableResource> securableResourceClass, UUID id, String action) {
 
-        if (Utils.parentClassIsAssignableFromChild(Model, securableResourceClass)) {
+        // Initial VF permissions to provide changes where necessary
+        if (Utils.parentClassIsAssignableFromChild(VersionedFolder, securableResourceClass)) {
+            switch (action) {
+                case READ_BY_AUTHENTICATED_ACTION:
+                case READ_BY_EVERYONE_ACTION:
+                    return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, CONTAINER_ADMIN_ROLE_NAME)
+            }
+        }
+
+        // Treat VFs and Models the same for everything else
+        if (Utils.parentClassIsAssignableFromChild(Model, securableResourceClass) ||
+            Utils.parentClassIsAssignableFromChild(VersionedFolder, securableResourceClass)) {
             switch (action) {
                 case DELETE_ACTION:
                     return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, CONTAINER_ADMIN_ROLE_NAME)
@@ -352,11 +405,11 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
                     return role ? role.canVersion() : false
                 case MERGE_INTO_ACTION:
                 case SAVE_ACTION:
+                case UPDATE_ACTION:
                     // If the model is finalised then these actions are NOT allowed
                     VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
                     return role ? !role.isFinalised() : false
-                case IMPORT_ACTION:
-                case UPDATE_ACTION:
+                case EDIT_DESCRIPTION_ACTION:
                     // An author can update a model description, but once a model is finalised the model can NOT be updated
                     VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, AUTHOR_ROLE_NAME)
                     return role ? !role.isFinalised() : false
@@ -374,34 +427,9 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
             }
         }
 
-        // Custom handling for VersionedFolder for the versioning stuff
-        // If doesnt match then falls through to the container switch
-        if (Utils.parentClassIsAssignableFromChild(VersionedFolder, securableResourceClass)) {
-            switch (action) {
-                case FINALISE_ACTION:
-                    // Can the model be finalised
-                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
-                    return role ? role.canFinalise() : false
-                case NEW_MODEL_VERSION_ACTION:
-                case NEW_BRANCH_MODEL_VERSION_ACTION:
-                case NEW_DOCUMENTATION_ACTION:
-                    // If model is finalised then these actions are allowed
-                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
-                    return role ? role.canVersion() : false
-                case MERGE_INTO_ACTION:
-                    // If the model is finalised then these actions are NOT allowed
-                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
-                    return role ? !role.isFinalised() : false
-            }
-        }
-
         if (Utils.parentClassIsAssignableFromChild(Container, securableResourceClass)) {
             // If no id then its a top level container and therefore anyone who's logged in can create
             if (!id) return isAuthenticated()
-            if (action in [SAVE_ACTION, SOFT_DELETE_ACTION, SAVE_IGNORE_FINALISE]) {
-                // Editors can save new folders and models and SOFT DELETE
-                return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
-            }
             return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, CONTAINER_ADMIN_ROLE_NAME)
         }
 
@@ -423,16 +451,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         }
 
         if (Utils.parentClassIsAssignableFromChild(Authority, securableResourceClass)) {
-            switch (action) {
-            // Anyone can index
-                case INDEX_ACTION:
-                    return true
-                    // Check any access for show
-                case SHOW_ACTION:
-                    return hasAnyAccessToSecuredResource(Authority, id)
-                default:
-                    return hasApplicationLevelRole(APPLICATION_ADMIN_ROLE_NAME)
-            }
+            return hasApplicationLevelRole(APPLICATION_ADMIN_ROLE_NAME)
         }
 
         log.warn('Attempt to access secured class {} id {} to {}', securableResourceClass.simpleName, id, action)
@@ -479,7 +498,11 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
 
         List<String> owningResourceActions = userAvailableActions(owningSecureResourceClass, owningSecureResourceId)
         if (Utils.parentClassIsAssignableFromChild(ModelItem, resourceClass)) {
-            return owningResourceActions - DISALLOWED_MODELITEM_ACTIONS
+            if (getSpecificLevelAccessToSecuredResource(owningSecureResourceClass, owningSecureResourceId, EDITOR_ROLE_NAME)) {
+                // Editors can delete model items, but they cant delete the models
+                owningResourceActions << DELETE_ACTION
+            }
+            return (owningResourceActions - DISALLOWED_MODELITEM_ACTIONS).toSet().sort()
         }
         return owningResourceActions
     }
@@ -511,37 +534,17 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
 
     @Override
     boolean isApplicationAdministrator() {
-        applicationPermittedRoles.any { it.name == APPLICATION_ADMIN_ROLE_NAME }
+        hasApplicationLevelRole(APPLICATION_ADMIN_ROLE_NAME)
     }
 
     @Override
     boolean isAuthenticated() {
-        user && user.emailAddress != UnloggedUser.instance.emailAddress
+        userPolicy.isAuthenticated()
     }
 
     @Override
     boolean isPending() {
-        user && user.pending
-    }
-
-    GroupRole getHighestApplicationLevelAccess() {
-        applicationPermittedRoles.sort().first()
-    }
-
-    GroupRole findHighestAccessToSecurableResource(String securableResourceDomainType, UUID securableResourceId) {
-        Set<VirtualSecurableResourceGroupRole> found = virtualSecurableResourceGroupRoles.findAll {
-            it.domainType == securableResourceDomainType && it.domainId == securableResourceId
-        }
-        if (!found) return null
-        found.sort().first().groupRole
-    }
-
-    GroupRole findHighestAssignedAccessToSecurableResource(String securableResourceDomainType, UUID securableResourceId) {
-        List<SecurableResourceGroupRole> found = securableResourceGroupRoles.findAll {
-            it.securableResourceDomainType == securableResourceDomainType && it.securableResourceId == securableResourceId
-        }
-        if (!found) return null
-        found.collect { it.groupRole }.sort().first()
+        user && userPolicy.getUser().pending
     }
 
     boolean hasUserAdminRights() {
@@ -600,9 +603,9 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
             if (getSpecificLevelAccessToSecuredResource(securableResourceClass, id, CONTAINER_ADMIN_ROLE_NAME)) {
                 return CONTAINER_ADMIN_ACTIONS
             }
-            if (getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)) {
-                return EDITOR_ACTIONS
-            }
+            //            if (getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)) {
+            //                return EDITOR_ACTIONS
+            //            }
             if (getSpecificLevelAccessToSecuredResource(securableResourceClass, id, READER_ROLE_NAME)) {
                 return READ_ONLY_ACTIONS
             }
@@ -717,7 +720,6 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
 
     private boolean hasAnyAccessToSecuredResource(Class<? extends SecurableResource> securableResourceClass, UUID id) {
         if (!id) {
-            log.warn('Checking for any access to secured resource class {} without providing an ID', securableResourceClass.simpleName)
 
             // No id means indexing endpoint
             // Users and Groups can be indexed with show actions by the bottom layer of application roles
@@ -728,26 +730,26 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
             if (Utils.parentClassIsAssignableFromChild(CatalogueUser, securableResourceClass)) {
                 return hasApplicationLevelRole(CONTAINER_GROUP_ADMIN_ROLE_NAME)
             }
-            log.info("No id access for read rights for {}, default response is false", securableResourceClass)
-            //        return virtualSecurableResourceGroupRoles.any { it.domainType == securableResourceClass.simpleName }
+            if (Utils.parentClassIsAssignableFromChild(Container, securableResourceClass) || Utils.parentClassIsAssignableFromChild(Model, securableResourceClass)) {
+                // To be clear that containers and models may have open indexing but its not stated in the policy
+                return false
+            }
+
+            log.warn('Checking for any access to secured resource class {} without providing an ID', securableResourceClass.simpleName)
             return false
         }
 
-        return virtualSecurableResourceGroupRoles.any {
-            it.matchesDomainResource(securableResourceClass, id)
-        }
+        userPolicy.managesVirtualAccessToSecurableResource(securableResourceClass, id)
     }
 
     private VirtualSecurableResourceGroupRole getSpecificLevelAccessToSecuredResource(Class<? extends SecurableResource> securableResourceClass,
                                                                                       UUID id,
                                                                                       String roleName) {
-        virtualSecurableResourceGroupRoles.find {
-            it.matchesDomainResource(securableResourceClass, id) && it.matchesGroupRole(roleName)
-        }
+        userPolicy.getVirtualRoleForSecuredResource(securableResourceClass, id, roleName)
     }
 
     private boolean hasApplicationLevelRole(String rolename) {
-        applicationPermittedRoles.any { it.name == rolename }
+        userPolicy.getApplicationPermittedRoles().any {it.name == rolename}
     }
 
     private List<String> getStandardActionsWithControlRole(Class<? extends SecurableResource> securableResourceClass, UUID id, String roleName) {
@@ -759,6 +761,4 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
             return READ_ONLY_ACTIONS
         } else return []
     }
-
-
 }

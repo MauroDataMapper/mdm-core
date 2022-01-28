@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
-import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
+import uk.ac.ox.softeng.maurodatamapper.path.Path
+import uk.ac.ox.softeng.maurodatamapper.test.unit.MdmDomainSpec
 
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
@@ -42,7 +43,7 @@ import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddre
  * @since 21/09/2017
  */
 @Slf4j
-abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSpec<K> {
+abstract class CatalogueItemSpec<K extends CatalogueItem> extends MdmDomainSpec<K> {
 
     abstract K createValidDomain(String label)
 
@@ -83,7 +84,7 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
     }
 
     int getExpectedConstrainedErrors() {
-        1 // label
+        2 // label, path
     }
 
     void setBasicConstrainedBlank() {
@@ -93,7 +94,7 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
     }
 
     int getExpectedConstrainedBlankErrors() {
-        4
+        5
     }
 
     String getExpectedNewlineLabel() {
@@ -104,7 +105,8 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         assert domain.errors.getFieldError('label').code == 'blank'
         assert domain.errors.getFieldError('description').code == 'blank'
         assert domain.errors.getFieldError('aliasesString').code == 'blank'
-        // #4 == breadcrumbtree.label
+        assert domain.errors.getFieldError('path').code == 'nullable' // nullable because label is blank
+        // #5 == breadcrumbtree.label
     }
 
     void 'CI01 : test constrained properties'() {
@@ -127,6 +129,7 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         domain.hasErrors()
         domain.errors.errorCount == expectedConstrainedErrors
         domain.errors.getFieldError('label').code == 'nullable'
+        domain.errors.getFieldError('path').code == 'nullable'
 
         when:
         setBasicConstrainedBlank()
@@ -211,16 +214,18 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         checkAndSave(domain)
 
         when:
-        domain.addToMetadata(namespace: 'http://test.com', key: 'testmd', value: 'a value', createdBy: admin.emailAddress)
+        Metadata md = new Metadata(namespace: 'http://test.com', key: 'testmd', value: 'a value', createdBy: admin.emailAddress)
+        domain.addToMetadata(md)
 
         then:
         checkAndSave(domain)
         domain.count() == 1
         Metadata.count() == 1
+        md.fullPathInsideMultiFacetAwareItem == Path.from(domain.path, 'md', 'http://test.com.testmd')
 
         when:
         item = findById()
-        Metadata md = Metadata.findByNamespaceAndKey('http://test.com', 'testmd')
+        md = Metadata.findByNamespaceAndKey('http://test.com', 'testmd')
 
         then:
         md
@@ -272,16 +277,18 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         checkAndSave(domain)
 
         when:
-        domain.addToAnnotations(createdBy: editor.emailAddress, label: 'test annotation')
+        Annotation ann = new Annotation(createdBy: editor.emailAddress, label: 'test annotation')
+        domain.addToAnnotations(ann)
 
         then:
         checkAndSave(domain)
         domain.count() == 1
         Annotation.count() == 1
+        ann.fullPathInsideMultiFacetAwareItem == Path.from(domain.path, 'ann', 'test annotation')
 
         when:
         item = findById()
-        Annotation ann = Annotation.findByLabel('test annotation')
+        ann = Annotation.findByLabel('test annotation')
 
         then:
         ann
@@ -289,8 +296,7 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
 
         and:
         ann.multiFacetAwareItemId == item.id
-        ann.path == ''
-        ann.depth == 0
+        ann.getFullPathInsideMultiFacetAwareItem(domain) == Path.from(domain.path, 'ann', 'test annotation')
     }
 
     void 'CI05 : test adding classifiers'() {

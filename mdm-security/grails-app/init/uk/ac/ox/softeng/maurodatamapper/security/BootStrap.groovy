@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.security.basic.UnloggedUser
 import uk.ac.ox.softeng.maurodatamapper.security.policy.GroupBasedSecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.policy.GroupBasedUserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.security.policy.UserSecurityPolicyService
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRoleService
 import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
@@ -47,6 +48,7 @@ class BootStrap implements SecurityDefinition {
     GroupRoleService groupRoleService
     GroupBasedSecurityPolicyManagerService groupBasedSecurityPolicyManagerService
     SecurableResourceGroupRoleService securableResourceGroupRoleService
+    UserSecurityPolicyService userSecurityPolicyService
 
     GrailsApplication grailsApplication
 
@@ -58,15 +60,16 @@ class BootStrap implements SecurityDefinition {
             groupRoleService.refreshCacheGroupRoles()
 
             GroupBasedUserSecurityPolicyManager defaultUserSecurityPolicyManager = grailsApplication.mainContext.getBean(
-                MdmCoreGrailsPlugin.DEFAULT_USER_SECURITY_POLICY_MANAGER_BEAN_NAME)
+                MdmCoreGrailsPlugin.DEFAULT_USER_SECURITY_POLICY_MANAGER_BEAN_NAME, GroupBasedUserSecurityPolicyManager)
 
             CatalogueUser unloggedInUser =
                 CatalogueUser.findByEmailAddress(UnloggedUser.UNLOGGED_EMAIL_ADDRESS) ?: CatalogueUser.fromInterface(UnloggedUser.instance)
             unloggedInUser.tempPassword = null
             unloggedInUser.save(flush: true)
 
-            defaultUserSecurityPolicyManager.forUser(unloggedInUser).inApplication(grailsApplication)
-            groupBasedSecurityPolicyManagerService.buildUserSecurityPolicyManager(defaultUserSecurityPolicyManager)
+            defaultUserSecurityPolicyManager
+                .inApplication(grailsApplication)
+                .withUserPolicy(userSecurityPolicyService.buildUserSecurityPolicy(unloggedInUser, unloggedInUser.groups))
             groupBasedSecurityPolicyManagerService.storeUserSecurityPolicyManager(defaultUserSecurityPolicyManager)
         }
         // Only allow bootstrapping to be disabled if environment is prod
@@ -106,7 +109,7 @@ class BootStrap implements SecurityDefinition {
                 CatalogueUser.withNewTransaction {
 
                     getOrCreateModernSecurityUsers('development', false)
-                    checkAndSave(messageSource, editor, reader, authenticated, pending, containerAdmin, author, reviewer)
+                    checkAndSave(messageSource, editor, reader, authenticated, pending, containerAdmin, author, reviewer, creator)
 
                     getOrCreateBasicGroups('development', false)
                     checkAndSave(messageSource, editors, readers)

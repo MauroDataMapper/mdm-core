@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
-class Authority implements InformationAware, SecurableResource, EditHistoryAware {
+class Authority implements MdmDomain, InformationAware, SecurableResource, EditHistoryAware {
 
     public static final String DEFAULT_NAME_CONFIG_PROPERTY = 'maurodatamapper.authority.name'
     public static final String DEFAULT_URL_CONFIG_PROPERTY = 'maurodatamapper.authority.url'

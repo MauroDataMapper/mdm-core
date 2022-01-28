@@ -1,0 +1,15 @@
+import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
+
+model {
+    Profile profileWithErrors
+}
+json {
+    sections tmpl.'/profileSection/profileSection'(profileWithErrors.sections)
+    id profileWithErrors.id
+    label profileWithErrors.label
+    domainType profileWithErrors.domainType
+
+    if (profileWithErrors.hasErrors()) {
+        errors tmpl.'/profile/errors'(errors: profileWithErrors.errors)
+    }
+}

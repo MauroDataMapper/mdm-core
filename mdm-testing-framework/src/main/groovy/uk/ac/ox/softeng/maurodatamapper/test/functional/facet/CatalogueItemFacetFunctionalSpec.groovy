@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 
 import grails.gorm.transactions.Transactional
-import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
 import spock.lang.Shared
@@ -46,10 +45,9 @@ abstract class CatalogueItemFacetFunctionalSpec<D extends GormEntity> extends Re
         "${getCatalogueItemDomainResourcePath()}/${getCatalogueItemId()}/${getFacetResourcePath()}"
     }
 
-    @OnceBefore
     @Transactional
-    def checkAndSetupFolderAndAuthority() {
-        log.debug('Check and setup test data')
+    def setupSpec() {
+        log.debug('Check and setup folder')
         folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
         checkAndSave(folder)
     }

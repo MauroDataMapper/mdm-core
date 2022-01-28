@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,13 +73,13 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
     }
 
     @Override
-    void deleteAllByModelId(UUID modelId) {
+    void deleteAllByModelIds(Set<UUID> modelIds) {
         List<UUID> termRelationshipIds = TermRelationship.by().or {
             sourceTerm {
-                eq('terminology.id', modelId)
+                inList('terminology.id', modelIds)
             }
             targetTerm {
-                eq('terminology.id', modelId)
+                inList('terminology.id', modelIds)
             }
         }.id().list() as List<UUID>
 
@@ -119,6 +119,10 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
         TermRelationship.byRelationshipTypeIdAndId(relationshipTypeId, Utils.toUuid(id)).get()
     }
 
+    List<TermRelationship> findAllBySourceTermIdInList(Collection<UUID> termIds) {
+        TermRelationship.by().inList('sourceTerm.id', termIds).list()
+    }
+
     Long countByTermIdIsParent(UUID termId) {
         TermRelationship.byTermIdIsParent(termId).count()
     }
@@ -132,14 +136,19 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
     }
 
     @Override
-    TermRelationship copy(Model terminology, TermRelationship original, CatalogueItem nonModelParent, UserSecurityPolicyManager userSecurityPolicyManager) {
+    TermRelationship copy(Model terminology, TermRelationship original, CatalogueItem nonModelParent,
+                          UserSecurityPolicyManager userSecurityPolicyManager) {
         copyTermRelationship(terminology as Terminology, original, userSecurityPolicyManager.user)
     }
 
     TermRelationship copyTermRelationship(Terminology terminology, TermRelationship original, User copier) {
+        copyTermRelationship(terminology, original, new TreeMap(terminology.terms.collectEntries {[it.code, it]}), copier)
+    }
 
-        Term source = terminology.findTermByCode(original.sourceTerm.code)
-        Term target = terminology.findTermByCode(original.targetTerm.code)
+    TermRelationship copyTermRelationship(Terminology terminology, TermRelationship original, TreeMap<String, Term> terms, User copier) {
+
+        Term source = terms[original.sourceTerm.code]
+        Term target = terms[original.targetTerm.code]
         TermRelationshipType termRelationshipType = terminology.findRelationshipTypeByLabel(original.relationshipType.label)
 
         TermRelationship copy = new TermRelationship(createdBy: copier.emailAddress, relationshipType: termRelationshipType, sourceTerm: source,
@@ -162,11 +171,6 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
     }
 
     @Override
-    Class<TermRelationship> getModelItemClass() {
-        TermRelationship
-    }
-
-    @Override
     TermRelationship findByIdJoinClassifiers(UUID id) {
         TermRelationship.findById(id, [fetch: [classifiers: 'join']])
     }
@@ -179,9 +183,13 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
     }
 
     @Override
+    List<TermRelationship> findAllByClassifier(Classifier classifier) {
+        TermRelationship.byClassifierId(classifier.id).list()
+    }
+
+    @Override
     List<TermRelationship> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        TermRelationship.byClassifierId(classifier.id).list().
-            findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.model.id) }
+        findAllByClassifier(classifier).findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.model.id)}
     }
 
     @Override

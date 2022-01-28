@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -107,6 +107,47 @@ class BootstrapModels {
         simpleDataModel
     }
 
+    static DataModel buildAndSaveSimpleDataModelWithClassifier(MessageSource messageSource, Folder folder, String dataModelName, String classifierName, Authority authority) {
+        DataModel simpleDataModel = DataModel.findByLabel(dataModelName)
+
+        if (!simpleDataModel) {
+            log.debug("Creating simple datamodel")
+            simpleDataModel = new DataModel(createdBy: DEVELOPMENT, label: dataModelName, folder: folder, authority: authority)
+
+            Classifier classifier
+
+            classifier = Classifier.findByLabel(classifierName)
+
+            if (!classifier) {
+                log.debug("creating ${classifierName}")
+                classifier = new Classifier(createdBy: DEVELOPMENT, label: classifierName, readableByAuthenticatedUsers: true)
+                checkAndSave(messageSource, classifier)
+            } else {
+                log.debug("${classifierName} already exists")
+            }
+            simpleDataModel.addToClassifiers(classifier)
+            checkAndSave(messageSource, simpleDataModel)
+
+            DataClass dataClass = new DataClass(createdBy: DEVELOPMENT, label: 'simple')
+
+            simpleDataModel
+                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'test.com/simple', key: 'mdk1', value: 'mdv1')
+                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'test.com', key: 'mdk2', value: 'mdv2')
+                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'test.com/simple', key: 'mdk2', value: 'mdv2')
+                .addToDataClasses(dataClass)
+
+            checkAndSave(messageSource, simpleDataModel)
+
+            dataClass.addToMetadata(createdBy: DEVELOPMENT, namespace: 'test.com/simple', key: 'mdk1', value: 'mdv1')
+
+            checkAndSave(messageSource, simpleDataModel)
+        }
+
+        log.debug("${dataModelName} DataModel id = {}", simpleDataModel.id.toString())
+        log.debug("${classifierName} id = {}", simpleDataModel.classifiers[0].id.toString())
+        simpleDataModel
+    }
+
     static DataModel buildAndSaveComplexDataModel(MessageSource messageSource, Folder folder, Authority authority) {
         DataModel dataModel = DataModel.findByLabel(COMPLEX_DATAMODEL_NAME)
 
@@ -147,6 +188,7 @@ class BootstrapModels {
 
             DataClass parent =
                 new DataClass(createdBy: DEVELOPMENT, label: 'parent', minMultiplicity: 1, maxMultiplicity: -1, dataModel: dataModel)
+
             DataClass child = new DataClass(createdBy: DEVELOPMENT, label: 'child')
             parent.addToDataClasses(child)
             dataModel.addToDataClasses(child)
@@ -174,6 +216,22 @@ class BootstrapModels {
             DataElement el1 = new DataElement(createdBy: DEVELOPMENT, label: 'child', minMultiplicity: 1, maxMultiplicity: 1)
             refType.addToDataElements(el1)
             parent.addToDataElements(el1)
+
+            Metadata metaclass = new Metadata(createdBy: DEVELOPMENT,
+                                              namespace: 'test.com', key: 'mdcl1', value: 'mdcl1')
+            parent.addToMetadata(metaclass)
+
+            checkAndSave(messageSource, parent)
+            checkAndSave(messageSource, metaclass)
+
+            Metadata metaelement = new Metadata(createdBy: DEVELOPMENT,
+                                                namespace: 'test.com', key: 'mdel1', value: 'mdel1')
+
+            el1.addToMetadata(metaelement)
+            checkAndSave(messageSource, el1)
+            checkAndSave(messageSource, metaelement)
+
+            checkAndSave(messageSource, parent)
 
             DataClass content = new DataClass(createdBy: DEVELOPMENT, label: 'content', description: 'A dataclass with elements',
                                               minMultiplicity: 0, maxMultiplicity: 1)

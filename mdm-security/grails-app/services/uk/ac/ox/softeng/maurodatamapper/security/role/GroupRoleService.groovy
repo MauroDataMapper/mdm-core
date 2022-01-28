@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -30,7 +30,7 @@ import org.grails.plugin.cache.GrailsCacheManager
 import org.springframework.cache.Cache
 
 @Transactional
-class GroupRoleService implements DomainService<GroupRole> {
+class GroupRoleService implements MdmDomainService<GroupRole> {
 
     public static final String GROUP_ROLES_CACHE_NAME = 'mdmSecurityGroupRoles'
 
@@ -40,7 +40,7 @@ class GroupRoleService implements DomainService<GroupRole> {
     void refreshCacheGroupRoles() {
         grailsCacheManager.destroyCache(GROUP_ROLES_CACHE_NAME)
         Cache cache = grailsCacheManager.getCache(GROUP_ROLES_CACHE_NAME)
-        GroupRole.list().each { gr ->
+        GroupRole.list().each {gr ->
             cache.put(gr.name, new VirtualGroupRole(groupRole: gr, allowedRoles: gr.extractAllowedRoles()))
         }
     }
@@ -59,6 +59,11 @@ class GroupRoleService implements DomainService<GroupRole> {
 
     GroupRole get(Serializable id) {
         GroupRole.get(id) ?: id instanceof String ? getFromCache(id)?.groupRole : null
+    }
+
+    @Override
+    List<GroupRole> getAll(Collection<UUID> resourceIds) {
+        GroupRole.getAll(resourceIds)
     }
 
     List<GroupRole> list(Map pagination) {

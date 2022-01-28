@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.admin
 
-import grails.gorm.transactions.Transactional
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
+import uk.ac.ox.softeng.maurodatamapper.security.User
 
+import grails.gorm.transactions.Transactional
 import grails.web.servlet.mvc.GrailsParameterMap
 import groovy.util.logging.Slf4j
-import uk.ac.ox.softeng.maurodatamapper.security.User
 
 @Slf4j
 class ApiPropertyController extends EditLoggingController<ApiProperty> {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.test.provider
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.BaseDataModelIntegrationSpec
 
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import grails.util.BuildSettings
 import groovy.util.logging.Slf4j
 import spock.lang.Shared
@@ -38,34 +37,33 @@ import java.nio.file.Paths
 @Slf4j
 abstract class BaseImportExportSpec extends BaseDataModelIntegrationSpec {
 
+    public static final String COMPLETE_DATAMODEL_EXPORT_FILENAME = 'export_cancer_audits'
+    public static final String DATAMODEL_WITH_DATATYPES_FILENAME = 'export_with_datatypes_only'
+
     @Shared
     Path resourcesPath
 
     @Shared
-    UUID complexDataModelId
-
-    @Shared
     UUID simpleDataModelId
 
-    public static final String DATAMODEL_WITH_DATATYPES_FILENAME = 'export_with_datatypes_only'
-    public static final String COMPLETE_DATAMODEL_EXPORT_FILENAME = 'export_cancer_audits'
+    @Shared
+    UUID complexDataModelId
 
     abstract ImporterProviderService getImporterService()
 
     abstract String getImportType()
 
-    @OnceBefore
-    void setupResourcesPath() {
+    @RunOnce
+    def setup() {
         resourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', importType)
-        assert getImporterService()
     }
 
     @Override
     void setupDomainData() {
         log.debug('Setting up DataModelServiceSpec unit')
 
-        complexDataModelId = buildComplexDataModel().id
         simpleDataModelId = buildSimpleDataModel().id
+        complexDataModelId = buildComplexDataModel().id
     }
 
     byte[] loadTestFile(String filename) {

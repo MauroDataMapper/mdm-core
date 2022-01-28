@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,11 @@ class SubscribedCatalogueInterceptor extends SecurableResourceInterceptor {
         } else if (!currentUserSecurityPolicyManager.isAuthenticated()) {
             notFound(SubscribedCatalogue, getId())
         } else {
-            actionName == 'index' || actionName == 'show' || currentUserSecurityPolicyManager.isApplicationAdministrator() ?: forbiddenDueToNotApplicationAdministrator()
+            actionName == 'index' && params.openAccess ||
+            actionName == 'show' && params.openAccess ||
+            actionName == 'publishedModels' ||
+            actionName == 'newerVersions' ||
+            currentUserSecurityPolicyManager.isApplicationAdministrator() ?: forbiddenDueToNotApplicationAdministrator()
         }
     }
 }

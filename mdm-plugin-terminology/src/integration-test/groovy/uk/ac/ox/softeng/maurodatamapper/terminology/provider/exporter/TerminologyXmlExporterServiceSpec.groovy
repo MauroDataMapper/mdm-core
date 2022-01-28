@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter
 
-import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.TerminologyXmlExporterService
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.TerminologyXmlImporterService
 import uk.ac.ox.softeng.maurodatamapper.terminology.test.provider.DataBindTerminologyImportAndDefaultExporterServiceSpec
 import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlValidator
@@ -27,7 +28,6 @@ import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import org.junit.Assert
-import spock.lang.Unroll
 
 import java.nio.file.Files
 import java.nio.file.Path
@@ -40,9 +40,10 @@ import static org.junit.Assert.assertTrue
 @Integration
 @Rollback
 @Slf4j
-class TerminologyXmlExporterServiceSpec
-    extends DataBindTerminologyImportAndDefaultExporterServiceSpec<TerminologyXmlImporterService, TerminologyXmlExporterService>
+class TerminologyXmlExporterServiceSpec extends DataBindTerminologyImportAndDefaultExporterServiceSpec<TerminologyXmlImporterService, TerminologyXmlExporterService>
     implements XmlValidator {
+
+    private static final String NO_TERMINOLOGY_IDS_TO_EXPORT_CODE = 'TEEP01'
 
     TerminologyXmlImporterService terminologyXmlImporterService
     TerminologyXmlExporterService terminologyXmlExporterService
@@ -71,8 +72,7 @@ class TerminologyXmlExporterServiceSpec
         validateAndCompareXml(Files.readString(expectedPath), exportedModel, 'export', exporterService.version)
     }
 
-    @Unroll
-    void 'test "#testName" xml files are valid'() {
+    void 'test #testName xml files are valid'() {
         given:
         setupData()
 
@@ -93,7 +93,122 @@ class TerminologyXmlExporterServiceSpec
             'terminologyWithAliases',
             'terminologyWithMetadata',
             'terminologyWithAnnotations',
-            'complexImport'
+            'complexImport',
+            'simpleTerminology',
+            'complexTerminology',
+            'simpleAndComplexTerminologies'
         ]
+    }
+
+    void 'test multi-export invalid Terminologies'() {
+        expect:
+        exporterService.canExportMultipleDomains()
+
+        when: 'given null'
+        exportModels(null)
+
+        then:
+        ApiBadRequestException exception = thrown(ApiBadRequestException)
+        exception.errorCode == NO_TERMINOLOGY_IDS_TO_EXPORT_CODE
+
+        when: 'given an empty list'
+        exportModels([])
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == NO_TERMINOLOGY_IDS_TO_EXPORT_CODE
+
+        when: 'given a null model'
+        exportModels([null])
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == NO_TERMINOLOGY_IDS_TO_EXPORT_CODE
+
+        when: 'given a single invalid model'
+        exportModels([UUID.randomUUID()])
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == NO_TERMINOLOGY_IDS_TO_EXPORT_CODE
+
+        when: 'given multiple invalid models'
+        exportModels([UUID.randomUUID(), UUID.randomUUID()])
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == NO_TERMINOLOGY_IDS_TO_EXPORT_CODE
+    }
+
+    void 'test multi-export single Terminology'() {
+        given:
+        setupData()
+        Terminology.count() == 2
+
+        expect:
+        exporterService.canExportMultipleDomains()
+
+        when:
+        String exported = exportModels([simpleTerminologyId])
+
+        then:
+        validateExportedModels('simpleTerminologyInList', replaceWithTestAuthority(exported))
+    }
+
+    void 'test multi-export multiple Terminologies'() {
+        given:
+        setupData()
+        Terminology.count() == 2
+
+        expect:
+        exporterService.canExportMultipleDomains()
+
+        when:
+        String exported = exportModels([simpleTerminologyId, complexTerminologyId])
+
+        then:
+        validateExportedModels('simpleAndComplexTerminologies', replaceWithTestAuthority(exported))
+    }
+
+    void 'test multi-export Terminologies with invalid models'() {
+        given:
+        setupData()
+        Terminology.count() == 2
+
+        expect:
+        exporterService.canExportMultipleDomains()
+
+        when:
+        String exported = exportModels([UUID.randomUUID(), simpleTerminologyId])
+
+        then:
+        validateExportedModels('simpleTerminologyInList', replaceWithTestAuthority(exported))
+
+        when:
+        exported = exportModels([UUID.randomUUID(), simpleTerminologyId, UUID.randomUUID(), complexTerminologyId])
+
+        then:
+        validateExportedModels('simpleAndComplexTerminologies', replaceWithTestAuthority(exported))
+    }
+
+    void 'test multi-export Terminologies with duplicates'() {
+        given:
+        setupData()
+        Terminology.count() == 2
+
+        expect:
+        exporterService.canExportMultipleDomains()
+
+        when:
+        String exported = exportModels([simpleTerminologyId, simpleTerminologyId])
+
+        then:
+        validateExportedModels('simpleTerminologyInList', replaceWithTestAuthority(exported))
+
+        when:
+        exported = exportModels([simpleTerminologyId, complexTerminologyId, complexTerminologyId, simpleTerminologyId])
+
+        then:
+        validateExportedModels('simpleAndComplexTerminologies', replaceWithTestAuthority(exported))
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,14 @@ package uk.ac.ox.softeng.maurodatamapper.security.role
 
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
-import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.gorm.DetachedCriteria
 
-class SecurableResourceGroupRole implements EditHistoryAware {
+class SecurableResourceGroupRole implements MdmDomain, EditHistoryAware {
 
     UUID id
     String securableResourceDomainType
@@ -39,8 +40,8 @@ class SecurableResourceGroupRole implements EditHistoryAware {
     ]
 
     static constraints = {
-        CallableConstraints.call(CreatorAwareConstraints, delegate)
-        securableResourceId validator: { val, obj ->
+        CallableConstraints.call(MdmDomainConstraints, delegate)
+        securableResourceId validator: {val, obj ->
             if (val && obj.userGroup) {
                 if (obj.id) {
                     if (SecurableResourceGroupRole.bySecurableResourceIdAndUserGroupAndNotId(val, obj.userGroup, obj.id).count()) {
@@ -53,8 +54,8 @@ class SecurableResourceGroupRole implements EditHistoryAware {
                 }
             }
         }
-        groupRole validator: { val -> if (val && val.applicationLevelRole) ['invalid.grouprole.cannot.be.application.level.message'] }
-        userGroup validator: { val, obj ->
+        groupRole validator: {val -> if (val && val.applicationLevelRole) ['invalid.grouprole.cannot.be.application.level.message']}
+        userGroup validator: {val, obj ->
             if (val && obj.ident() && obj.isDirty('userGroup')) ['invalid.grouprole.cannot.change.usergroup.message']
         }
     }
@@ -94,6 +95,14 @@ class SecurableResourceGroupRole implements EditHistoryAware {
         "${getEditLabel()} : ${idStr}"
     }
 
+    String getPathPrefix() {
+        null
+    }
+
+    String getPathIdentifier() {
+        null
+    }
+
     static DetachedCriteria<SecurableResourceGroupRole> by() {
         new DetachedCriteria<SecurableResourceGroupRole>(SecurableResourceGroupRole)
     }
@@ -127,6 +136,13 @@ class SecurableResourceGroupRole implements EditHistoryAware {
 
     static DetachedCriteria<SecurableResourceGroupRole> bySecurableResourceIds(List<UUID> securableResourceIds) {
         by().inList('securableResourceId', securableResourceIds)
+    }
+
+    static DetachedCriteria<SecurableResourceGroupRole> bySecurableResourceDomainTypeAndSecurableResourceIdInList(String securableResourceDomainType,
+                                                                                                                  Collection<UUID> securableResourceIds) {
+        by()
+            .eq('securableResourceDomainType', securableResourceDomainType)
+            .inList('securableResourceId', securableResourceIds)
     }
 
     static DetachedCriteria<SecurableResourceGroupRole> bySecurableResourceAndUserGroupId(String securableResourceDomainType,

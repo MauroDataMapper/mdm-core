@@ -16,13 +16,14 @@ CodeSet export = codeSet as CodeSet
     'mdm:finalised'(export.finalised)
     if (export.finalised) 'mdm:dateFinalised'(convertDate(export.dateFinalised))
     if (export.modelVersion) 'mdm:modelVersion' export.modelVersion.toString()
+    else 'mdm:branchName' export.branchName
 
-    layout '/authority/export.gml', authority: export.authority, ns: 'mdm'
+    layout '/authority/exportAuthority.gml', authority: export.authority
 
     if (export.terms) {
         'mdm:termPaths' {
-            export.terms.each {t ->
-                'mdm:termPath'(t.termPath())
+            export.terms.collect { it.termPath() }.sort().each { t ->
+                'mdm:termPath'(t)
             }
         }
     }

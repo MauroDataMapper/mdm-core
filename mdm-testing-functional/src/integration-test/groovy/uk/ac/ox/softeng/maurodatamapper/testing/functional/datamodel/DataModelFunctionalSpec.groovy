@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,20 +17,21 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.datamodel
 
-import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
+import uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
+import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.DataModelPluginMergeBuilder
+import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.TestMergeData
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.ModelUserAccessPermissionChangingAndVersioningFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.web.mime.MimeType
+import groovy.json.JsonOutput
 import groovy.util.logging.Slf4j
-import io.micronaut.http.HttpResponse
-import spock.lang.Unroll
-
-import java.util.regex.Pattern
+import spock.lang.Shared
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -80,14 +81,11 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 @Slf4j
 class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioningFunctionalSpec {
 
-    @Transactional
-    String getTestFolderId() {
-        Folder.findByLabel('Functional Test Folder').id.toString()
-    }
+    @Shared
+    DataModelPluginMergeBuilder builder
 
-    @Transactional
-    String getTestFolder2Id() {
-        Folder.findByLabel('Functional Test Folder 2').id.toString()
+    def setupSpec() {
+        builder = new DataModelPluginMergeBuilder(this)
     }
 
     @Transactional
@@ -101,7 +99,18 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     }
 
     @Transactional
-    String getDataModelFolderId(String id) {
+    String getLeftHandDiffModelId() {
+        DataModel.findByLabel('Complex Test DataModel').id.toString()
+    }
+
+    @Transactional
+    String getRightHandDiffModelId() {
+        DataModel.findByLabel('Simple Test DataModel').id.toString()
+    }
+
+    @Transactional
+    @Override
+    String getModelFolderId(String id) {
         DataModel.get(id).folder.id.toString()
     }
 
@@ -130,82 +139,18 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     }
 
     @Override
-    Map getValidUpdateJson() {
-        [
-            description: 'This is a new testing DataModel'
-        ]
-    }
-
-    @Override
-    String getEditorGroupRoleName() {
-        GroupRole.CONTAINER_ADMIN_ROLE_NAME
-    }
-
-    @Override
-    void verifyL01Response(HttpResponse<Map> response) {
-        verifyResponse OK, response
-        response.body().count == 0
-    }
-
-    @Override
-    void verifyN01Response(HttpResponse<Map> response) {
-        verifyResponse OK, response
-        response.body().count == 0
-    }
-
-    @Override
-    void verifyL03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getTestFolderId()
-    }
-
-    @Override
-    void verifyL03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getTestFolderId()
-    }
-
-    @Override
-    void verifyL03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getTestFolderId()
-    }
-
-    @Override
-    void verifyN03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getTestFolderId()
-    }
-
-    @Override
-    void verifyN03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getTestFolderId()
-    }
-
-    @Override
-    void verifyN03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getTestFolderId()
-    }
-
-    @Override
-    Pattern getExpectedCreatedEditRegex() {
-        ~/\[Data Standard:Functional Test DataModel] created/
-    }
-
-    @Override
-    Pattern getExpectedUpdateEditRegex() {
-        ~/\[Data Standard:Functional Test DataModel] changed properties \[description]/
-    }
-
-    @Override
-    Boolean isDisabledNotDeleted() {
-        true
-    }
-
-    @Override
-    Boolean readerPermissionIsInherited() {
-        true
-    }
-
-    @Override
     String getModelType() {
         'DataModel'
+    }
+
+    @Override
+    String getModelUrlType() {
+        'dataModels'
+    }
+
+    @Override
+    String getModelPrefix() {
+        'dm'
     }
 
     @Override
@@ -298,20 +243,13 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     "defaultAuthority": true
   },
   "availableActions": [
-    "delete",
-    "softDelete",
-    "update",
-    "save",
-    "show",
-    "comment",
-    "editDescription",
-    "finalise"
+    "show"
   ],
   "branchName":"main"
 }'''
     }
 
-    void 'Test getting DataModel types'() {
+    void 'DM01 : Test getting DataModel types'() {
         when: 'not logged in'
         GET('types')
 
@@ -325,11 +263,9 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         then:
         verifyResponse OK, response
         response.getBody(String).get() == '["Data Asset","Data Standard"]'
-
     }
 
-
-    void 'Test getting available DataModel default datatype providers'() {
+    void 'DM02 : Test getting available DataModel default datatype providers'() {
         when: 'not logged in'
         GET("providers/defaultDataTypeProviders")
 
@@ -455,7 +391,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 ]'''
     }
 
-    void 'Test getting available DataModel exporters'() {
+    void 'DM03 : Test getting available DataModel exporters'() {
 
         when: 'not logged in then accessible'
         GET('providers/exporters', STRING_ARG)
@@ -472,7 +408,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     "providerType": "DataModelExporter",
     "fileExtension": "json",
     "fileType": "text/json",
-    "canExportMultipleDomains": false
+    "canExportMultipleDomains": true
   },
   {
     "name": "DataModelXmlExporterService",
@@ -484,12 +420,12 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     "providerType": "DataModelExporter",
     "fileExtension": "xml",
     "fileType": "text/xml",
-    "canExportMultipleDomains": false
+    "canExportMultipleDomains": true
   }
 ]'''
     }
 
-    void 'Test getting available DataModel importers'() {
+    void 'DM04 : Test getting available DataModel importers'() {
 
         when: 'not logged in then inaccessible'
         GET('providers/importers')
@@ -505,7 +441,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         verifyJsonResponse OK, '''[
   {
     "name": "DataModelJsonImporterService",
-    "version": "2.0",
+    "version": "3.0",
     "displayName": "JSON DataModel Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer",
     "allowsExtraMetadataKeys": true,
@@ -514,11 +450,11 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     ],
     "providerType": "DataModelImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters",
-    "canImportMultipleDomains": false
+    "canImportMultipleDomains": true
   },
   {
     "name": "DataModelXmlImporterService",
-    "version": "3.0",
+    "version": "5.0",
     "displayName": "XML DataModel Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer",
     "allowsExtraMetadataKeys": true,
@@ -530,45 +466,34 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     "canImportMultipleDomains": true
   }
 ]'''
-
     }
 
-    void 'L30 : test getting DataModel hierarchy (as not logged in)'() {
+    void 'DM-#prefix-01 : test getting DataModel hierarchy [not allowed] (as #name)'() {
         given:
         String id = getSimpleDataModelId()
 
-        when: 'not logged in'
+        when:
+        login(name)
         GET("${id}/hierarchy")
 
         then:
         verifyNotFound response, id
+
+        where:
+        prefix | name
+        'LO'   | null
+        'NA'   | 'Authenticated'
     }
 
-    void 'N30 : test getting DataModel hierarchy (as authenticated/no access)'() {
-        when: 'authenticated user'
-        String id = getSimpleDataModelId()
-        loginAuthenticated()
-        GET("${id}/hierarchy")
-
-        then:
-        verifyNotFound response, id
-    }
-
-    void 'R30 : test getting DataModel hierarchy (as reader)'() {
-        when: 'logged in as reader'
-        String id = getSimpleDataModelId()
-        loginReader()
-        GET("${id}/hierarchy", STRING_ARG)
-
-        then:
-        verifyJsonResponse OK, '''{
+    void 'DM-#prefix-01 : test getting DataModel hierarchy [allowed] (as #name)'() {
+        given:
+        def miActions = (actions - ResourceActions.DISALLOWED_MODELITEM_ACTIONS)
+        if (name == 'Editor') miActions << ResourceActions.DELETE_ACTION
+        String expectedJson = '''{
   "id": "${json-unit.matches:id}",
   "domainType": "DataModel",
   "label": "Simple Test DataModel",
-  "availableActions": [
-    "show",
-    "comment"
-  ],
+  "availableActions": ''' + JsonOutput.toJson(actions) + ''',
   "branchName": "main",
   "authority": {
     "id": "${json-unit.matches:id}",
@@ -606,10 +531,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
           "finalised": false
         }
       ],
-      "availableActions": [
-        "show",
-        "comment"
-      ],
+      "availableActions":''' + JsonOutput.toJson(miActions) + ''',
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "dataClasses": [
         
@@ -620,107 +542,35 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     }
   ]
 }'''
-    }
 
-    void 'E30a : test getting DataModel hierarchy (as editor)'() {
-        when: 'logged in as editor'
+        when: 'logged in'
         String id = getSimpleDataModelId()
-        loginEditor()
+        login(name)
         GET("${id}/hierarchy", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, '''{
-  "id": "${json-unit.matches:id}",
-  "domainType": "DataModel",
-  "label": "Simple Test DataModel",
-  "availableActions": [
-        "delete",
-        "softDelete",
-        "update",
-        "save",
-        "show",
-        "comment",
-        "editDescription",
-        "finalise"
-      ],
-      "branchName": "main",
-  "authority": {
-    "id": "${json-unit.matches:id}",
-    "url": "http://localhost",
-    "label": "Mauro Data Mapper",
-    "defaultAuthority": true
-  },
-  "lastUpdated": "${json-unit.matches:offsetDateTime}",
-  "classifiers": [
-    {
-      "id": "${json-unit.matches:id}",
-      "label": "test classifier simple",
-      "lastUpdated": "${json-unit.matches:offsetDateTime}"
-    }
-  ],
-  "type": "Data Standard",
-  "documentationVersion": "1.0.0",
-  "finalised": false,
-  "readableByEveryone": false,
-  "readableByAuthenticatedUsers": false,
-  "dataTypes": [
-    
-  ],
-  "childDataClasses": [
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataClass",
-      "label": "simple",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Simple Test DataModel",
-          "domainType": "DataModel",
-          "finalised": false
-        }
-      ],
-      "availableActions": [
-        "delete",
-        "update",
-        "save",
-        "show",
-        "comment",
-        "editDescription"
-      ],
-      "lastUpdated": "${json-unit.matches:offsetDateTime}",
-      "dataClasses": [
-        
-      ],
-      "dataElements": [
-        
-      ]
-    }
-  ]
-}'''
+        verifyJsonResponse OK, expectedJson
+
+        where:
+        prefix | name             | actions
+        'RE'   | 'Reader'         | expectations.readerAvailableActions
+        'RV'   | 'Reviewer'       | expectations.reviewerAvailableActions
+        'AU'   | 'Author'         | expectations.authorAvailableActions
+        'ED'   | 'Editor'         | expectations.editorAvailableActions
+        'CA'   | 'ContainerAdmin' | expectations.containerAdminAvailableActions
+        'AD'   | 'Admin'          | expectations.containerAdminAvailableActions
     }
 
-    void 'E30b : test getting complex DataModel hierarchy (as editor)'() {
-        when: 'logged in as editor'
-        String id = getComplexDataModelId()
-        loginEditor()
-        GET("${id}/hierarchy", STRING_ARG)
-
-        then:
-        verifyJsonResponse OK, '''{
+    void 'DM-#prefix-02 : test getting complex DataModel hierarchy [allowed] (as #name)'() {
+        given:
+        def miActions = (actions - ResourceActions.DISALLOWED_MODELITEM_ACTIONS)
+        if (name == 'Editor') miActions << ResourceActions.DELETE_ACTION
+        String expectedJson = '''{
   "id": "${json-unit.matches:id}",
   "domainType": "DataModel",
   "label": "Complex Test DataModel",
-  "availableActions": [
-    "show",
-    "comment",
-    "editDescription",
-    "update",
-    "save",
-    "softDelete",
-    "delete",
-    "finalise"
-  ],
+  "availableActions": ''' + JsonOutput.toJson(actions) +
+                              ''',
   "branchName": "main",
   "authority": {
     "id": "${json-unit.matches:id}",
@@ -762,14 +612,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
           "finalised": false
         }
       ],
-      "availableActions": [
-        "show",
-        "comment",
-        "editDescription",
-        "update",
-        "save",
-        "delete"
-      ],
+      "availableActions": ''' + JsonOutput.toJson(miActions) + ''',
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "enumerationValues": [
         {
@@ -808,14 +651,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
           "finalised": false
         }
       ],
-      "availableActions": [
-        "show",
-        "comment",
-        "editDescription",
-        "update",
-        "save",
-        "delete"
-      ],
+      "availableActions": ''' + JsonOutput.toJson(miActions) + ''',
       "lastUpdated": "${json-unit.matches:offsetDateTime}"
     },
     {
@@ -831,14 +667,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
           "finalised": false
         }
       ],
-      "availableActions": [
-        "show",
-        "comment",
-        "editDescription",
-        "update",
-        "save",
-        "delete"
-      ],
+      "availableActions": ''' + JsonOutput.toJson(miActions) + ''',
       "lastUpdated": "${json-unit.matches:offsetDateTime}"
     },
     {
@@ -854,14 +683,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
           "finalised": false
         }
       ],
-      "availableActions": [
-        "show",
-        "comment",
-        "editDescription",
-        "update",
-        "save",
-        "delete"
-      ],
+      "availableActions": ''' + JsonOutput.toJson(miActions) + ''',
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "referenceClass": {
         "id": "${json-unit.matches:id}",
@@ -900,14 +722,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         }
       ],
       "description": "A dataclass with elements",
-      "availableActions": [
-        "show",
-        "comment",
-        "editDescription",
-        "update",
-        "save",
-        "delete"
-      ],
+      "availableActions": ''' + JsonOutput.toJson(miActions) + ''',
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "maxMultiplicity": 1,
       "minMultiplicity": 0,
@@ -933,14 +748,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
               "domainType": "DataClass"
             }
           ],
-          "availableActions": [
-            "show",
-            "comment",
-            "editDescription",
-            "update",
-            "save",
-            "delete"
-          ],
+          "availableActions": ''' + JsonOutput.toJson(miActions) + ''',
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "dataClass": "${json-unit.matches:id}",
           "dataType": {
@@ -978,14 +786,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
               "domainType": "DataClass"
             }
           ],
-          "availableActions": [
-            "show",
-            "comment",
-            "editDescription",
-            "update",
-            "save",
-            "delete"
-          ],
+          "availableActions": ''' + JsonOutput.toJson(miActions) + ''',
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "dataClass": "${json-unit.matches:id}",
           "dataType": {
@@ -1021,14 +822,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         }
       ],
       "description": "dataclass with desc",
-      "availableActions": [
-        "show",
-        "comment",
-        "editDescription",
-        "update",
-        "save",
-        "delete"
-      ],
+      "availableActions": ''' + JsonOutput.toJson(miActions) + ''',
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "dataClasses": [
         
@@ -1050,14 +844,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
           "finalised": false
         }
       ],
-      "availableActions": [
-        "show",
-        "comment",
-        "editDescription",
-        "update",
-        "save",
-        "delete"
-      ],
+      "availableActions": ''' + JsonOutput.toJson(miActions) + ''',
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "maxMultiplicity": -1,
       "minMultiplicity": 1,
@@ -1080,14 +867,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
               "domainType": "DataClass"
             }
           ],
-          "availableActions": [
-            "show",
-            "comment",
-            "editDescription",
-            "update",
-            "save",
-            "delete"
-          ],
+          "availableActions": ''' + JsonOutput.toJson(miActions) + ''',
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "parentDataClass": "${json-unit.matches:id}",
           "dataClasses": [
@@ -1118,14 +898,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
               "domainType": "DataClass"
             }
           ],
-          "availableActions": [
-            "show",
-            "comment",
-            "editDescription",
-            "update",
-            "save",
-            "delete"
-          ],
+          "availableActions": ''' + JsonOutput.toJson(miActions) + ''',
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "dataClass": "${json-unit.matches:id}",
           "dataType": {
@@ -1169,279 +942,37 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     }
   ]
 }'''
-    }
-
-    void 'L31 : test changing folder from DataModel context (as not logged in)'() {
-        given:
-        String id = getValidId()
-
-        when: 'not logged in'
-        PUT("$id/folder/${getTestFolder2Id()}", [:])
+        when: 'logged in as editor'
+        String id = getComplexDataModelId()
+        login(name)
+        GET("${id}/hierarchy", STRING_ARG)
 
         then:
-        verifyNotFound response, id
+        verifyJsonResponse OK, expectedJson
 
-        cleanup:
-        removeValidIdObject(id)
+        where:
+        prefix | name             | actions
+        'RE'   | 'Reader'         | expectations.readerAvailableActions
+        'RV'   | 'Reviewer'       | expectations.reviewerAvailableActions
+        'AU'   | 'Author'         | expectations.authorAvailableActions
+        'ED'   | 'Editor'         | expectations.editorAvailableActions
+        'CA'   | 'ContainerAdmin' | expectations.containerAdminAvailableActions
+        'AD'   | 'Admin'          | expectations.containerAdminAvailableActions
     }
 
-    void 'N31 : test changing folder from DataModel context (as authenticated/no access)'() {
-        given:
-        String id = getValidId()
 
-        when:
-        loginAuthenticated()
-        PUT("$id/folder/${getTestFolder2Id()}", [:])
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'R31 : test changing folder from DataModel context (as reader)'() {
-        given:
-        String id = getValidId()
-
-        when: 'logged in as reader'
-        loginReader()
-        PUT("$id/folder/${getTestFolder2Id()}", [:])
-
-        then:
-        verifyForbidden response
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'E31 : test changing folder from DataModel context (as editor)'() {
-        given:
-        String id = getValidId()
-
-        when: 'logged in as editor of the datamodel but not the folder 2'
-        loginEditor()
-        PUT("$id/folder/${getTestFolder2Id()}", [:])
-
-        then:
-        verifyNotFound response, getTestFolder2Id()
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'A31 : test changing folder from DataModel context (as admin)'() {
-        given:
-        String id = getValidId()
-
-        when: 'logged in as admin'
-        loginAdmin()
-        PUT("$id/folder/${getTestFolder2Id()}", [:])
-
-        then:
-        verifyResponse OK, response
-
-        and:
-        getDataModelFolderId(id) == getTestFolder2Id()
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'L32 : test changing folder from Folder context (as not logged in)'() {
-        given:
-        String id = getValidId()
-
-        when: 'not logged in'
-        PUT("folders/${getTestFolder2Id()}/dataModels/$id", [:], MAP_ARG, true)
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'N32 : test changing folder from Folder context (as authenticated/no access)'() {
+    void 'DM-#prefix-06 : test export a single DataModel [allowed] (as #name)'() {
         given:
         String id = getValidId()
 
         when:
-        loginAuthenticated()
-        PUT("folders/${getTestFolder2Id()}/dataModels/$id", [:], MAP_ARG, true)
+        login(name)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.0", canRead ? STRING_ARG : MAP_ARG)
 
         then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'R32 : test changing folder from Folder context (as reader)'() {
-        given:
-        String id = getValidId()
-
-        when: 'logged in as reader'
-        loginReader()
-        PUT("folders/${getTestFolder2Id()}/dataModels/$id", [:], MAP_ARG, true)
-
-        then:
-        verifyForbidden response
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'E32 : test changing folder from Folder context (as editor)'() {
-        given:
-        String id = getValidId()
-
-        when: 'logged in as editor of the datamodel but not the folder 2'
-        loginEditor()
-        PUT("folders/${getTestFolder2Id()}/dataModels/$id", [:], MAP_ARG, true)
-
-        then:
-        verifyNotFound response, getTestFolder2Id()
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'A32 : test changing folder from Folder context (as admin)'() {
-        given:
-        String id = getValidId()
-
-        when: 'logged in as admin'
-        loginAdmin()
-        PUT("folders/${getTestFolder2Id()}/dataModels/$id", [:], MAP_ARG, true)
-
-        then:
-        verifyResponse OK, response
-
-        and:
-        getDataModelFolderId(id) == getTestFolder2Id()
-
-        when: 'logged in as reader as no access to folder 2 or reader share'
-        loginReader()
-        GET(id)
-
-        then:
-        verifyNotFound response, id
-
-        when: 'logged in as editor no access to folder 2 but has direct DM access'
-        loginEditor()
-        GET(id)
-
-        then:
-        verifyResponse OK, response
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-
-    void 'L33 : test diffing 2 DataModels (as not logged in)'() {
-
-        when: 'not logged in'
-        GET("${getComplexDataModelId()}/diff/${getSimpleDataModelId()}")
-
-        then:
-        verifyNotFound response, getComplexDataModelId()
-    }
-
-    void 'N33 : test diffing 2 DataModels (as authenticated/no access)'() {
-        when:
-        loginAuthenticated()
-        GET("${getComplexDataModelId()}/diff/${getSimpleDataModelId()}")
-
-        then:
-        verifyNotFound response, getComplexDataModelId()
-    }
-
-    void 'R33A : test diffing 2 DataModels (as reader of LH model)'() {
-        given:
-        String id = getValidId()
-        loginAdmin()
-        PUT("$id/folder/${getTestFolder2Id()}", [:])
-        logout()
-
-        when: 'able to read right model only'
-        loginReader()
-        GET("${getComplexDataModelId()}/diff/${id}")
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'R33B : test diffing 2 DataModels (as reader of RH model)'() {
-        given:
-        String id = getValidId()
-        loginAdmin()
-        PUT("$id/folder/${getTestFolder2Id()}", [:])
-        logout()
-
-        when:
-        loginReader()
-        GET("${id}/diff/${getComplexDataModelId()}")
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'R33C : test diffing 2 DataModels (as reader of both models)'() {
-        when:
-        loginReader()
-        GET("${getComplexDataModelId()}/diff/${getSimpleDataModelId()}", STRING_ARG)
-
-        then:
-        verifyJsonResponse OK, getExpectedDiffJson()
-    }
-
-    void 'L34 : test export a single DataModel (as not logged in)'() {
-        given:
-        String id = getValidId()
-
-        when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/2.0")
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'N34 : test export a single DataModel (as authenticated/no access)'() {
-        given:
-        String id = getValidId()
-
-        when:
-        loginAuthenticated()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/2.0")
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'R34 : test export a single DataModel (as reader)'() {
-        given:
-        String id = getValidId()
-
-        when:
-        loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/2.0", STRING_ARG)
-
-        then:
-        verifyJsonResponse OK, '''{
+        if (!canRead) verifyNotFound response, id
+        else {
+            verifyJsonResponse OK, '''{
   "dataModel": {
     "id": "${json-unit.matches:id}",
     "label": "Functional Test DataModel",
@@ -1456,109 +987,165 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     }
   },
   "exportMetadata": {
-    "exportedBy": "reader User",
+    "exportedBy": "${json-unit.any-string}",
     "exportedOn": "${json-unit.matches:offsetDateTime}",
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
       "name": "DataModelJsonExporterService",
-      "version": "2.0"
+      "version": "3.0"
     }
   }
 }'''
+        }
 
         cleanup:
         removeValidIdObject(id)
+
+        where:
+        prefix | name             | canRead
+        'LO'   | null             | false
+        'NA'   | 'Authenticated'  | false
+        'RE'   | 'Reader'         | true
+        'RV'   | 'Reviewer'       | true
+        'AU'   | 'Author'         | true
+        'ED'   | 'Editor'         | true
+        'CA'   | 'ContainerAdmin' | true
+        'AD'   | 'Admin'          | true
     }
 
-    void 'L35 : test export multiple DataModels (json only exports first id) (as not logged in)'() {
+    void 'DM-#prefix-07 : test export multiple DataModels (as reader)'() {
         given:
         String id = getValidId()
 
         when:
-        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/2.0',
-             [dataModelIds: [id, getSimpleDataModelId()]]
-        )
+        login(name)
+        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.0',
+             [dataModelIds: [id, getSimpleDataModelId()]], canRead ? STRING_ARG : MAP_ARG)
 
         then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'N35 : test export multiple DataModels (json only exports first id) (as authenticated/no access)'() {
-        given:
-        String id = getValidId()
-
-        when:
-        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/2.0',
-             [dataModelIds: [id, getSimpleDataModelId()]]
-        )
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'R35 : test export multiple DataModels (json only exports first id) (as reader)'() {
-        given:
-        String id = getValidId()
-
-        when:
-        loginReader()
-        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/2.0',
-             [dataModelIds: [id, getSimpleDataModelId()]], STRING_ARG
-        )
-
-        then:
-        verifyJsonResponse OK, '''{
-  "dataModel": {
-    "id": "${json-unit.matches:id}",
-    "label": "Functional Test DataModel",
-    "lastUpdated": "${json-unit.matches:offsetDateTime}",
-    "type": "Data Standard",
-    "documentationVersion": "1.0.0",
-    "finalised": false,
-    "authority": {
+        if (!canRead) verifyNotFound response, id
+        else {
+            verifyJsonResponse OK, '''{
+  "dataModels": [
+    {
       "id": "${json-unit.matches:id}",
-      "url": "http://localhost",
-      "label": "Mauro Data Mapper"
+      "label": "Functional Test DataModel",
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "type": "Data Standard",
+      "documentationVersion": "1.0.0",
+      "finalised": false,
+      "authority": {
+        "id": "${json-unit.matches:id}",
+        "url": "http://localhost",
+        "label": "Mauro Data Mapper"
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "label": "Simple Test DataModel",
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "type": "Data Standard",
+      "documentationVersion": "1.0.0",
+      "finalised": false,
+      "authority": {
+        "id": "${json-unit.matches:id}",
+        "url": "http://localhost",
+        "label": "Mauro Data Mapper"
+      },
+      "childDataClasses": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "simple",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "metadata": [
+            {
+              "id": "${json-unit.matches:id}",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "namespace": "test.com/simple",
+              "key": "mdk1",
+              "value": "mdv1"
+            }
+          ]
+        }
+      ],
+      "classifiers": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "test classifier simple",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+        }
+      ],
+      "metadata": [
+        {
+          "id": "${json-unit.matches:id}",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "namespace": "test.com",
+          "key": "mdk2",
+          "value": "mdv2"
+        },
+        {
+          "id": "${json-unit.matches:id}",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "namespace": "test.com/simple",
+          "key": "mdk1",
+          "value": "mdv1"
+        },
+        {
+          "id": "${json-unit.matches:id}",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "namespace": "test.com/simple",
+          "key": "mdk2",
+          "value": "mdv2"
+        }
+      ]
     }
-  },
+  ],
   "exportMetadata": {
-    "exportedBy": "reader User",
+    "exportedBy": "${json-unit.any-string}",
     "exportedOn": "${json-unit.matches:offsetDateTime}",
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
       "name": "DataModelJsonExporterService",
-      "version": "2.0"
+      "version": "3.0"
     }
   }
 }'''
+        }
 
         cleanup:
         removeValidIdObject(id)
+
+        where:
+        prefix | name             | canRead
+        'LO'   | null             | false
+        'NA'   | 'Authenticated'  | false
+        'RE'   | 'Reader'         | true
+        'RV'   | 'Reviewer'       | true
+        'AU'   | 'Author'         | true
+        'ED'   | 'Editor'         | true
+        'CA'   | 'ContainerAdmin' | true
+        'AD'   | 'Admin'          | true
     }
 
-    void 'L36 : test import basic DataModel (as not logged in)'() {
+    void 'DM-#prefix-08 : test import basic DataModel (as #name)'() {
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/2.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
+        String id2
 
         expect:
         exportedJsonString
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/2.0', [
+        login(name)
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.0', [
             finalised                      : false,
             modelName                      : 'Functional Test Import',
-            folderId                       : testFolderId.toString(),
+            folderId                       : testFolderId,
             importAsNewDocumentationVersion: false,
             importFile                     : [
                 fileName    : 'FT Import',
@@ -1568,123 +1155,42 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         ])
 
         then:
-        verifyForbidden response
+        if (name && !canRead) verifyNotFound(response, testFolderId)
+        else if (canImport) {
+            verifyResponse CREATED, response
+            id2 = response.body().items.first().id
+            response.body().count == 1
+            response.body().items.first().label == 'Functional Test Import'
+            response.body().items.first().id != id
+        } else {
+            verifyForbidden response
+        }
 
         cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'N36 : test import basic DataModel (as authenticated/no access)'() {
-        given:
-        String id = getValidId()
-        loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/2.0", STRING_ARG)
-        verifyResponse OK, jsonCapableResponse
-        String exportedJsonString = jsonCapableResponse.body()
-        logout()
-
-        expect:
-        exportedJsonString
-
-        when:
-        loginAuthenticated()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/2.0', [
-            finalised                      : false,
-            modelName                      : 'Functional Test Import',
-            folderId                       : testFolderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: exportedJsonString.bytes.toList()
-            ]
-        ])
-
-        then:
-        verifyNotFound response, testFolderId
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'R36 : test import basic DataModel (as reader)'() {
-        given:
-        String id = getValidId()
-        loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/2.0", STRING_ARG)
-        verifyResponse OK, jsonCapableResponse
-        String exportedJsonString = jsonCapableResponse.body()
-        logout()
-
-        expect:
-        exportedJsonString
-
-        when:
-        loginReader()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/2.0', [
-            finalised                      : false,
-            modelName                      : 'Functional Test Import',
-            folderId                       : testFolderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: exportedJsonString.bytes.toList()
-            ]
-        ])
-
-        then:
-        verifyForbidden response
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'E36A : test import basic DataModel (as editor)'() {
-        given:
-        String id = getValidId()
-        loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/2.0", STRING_ARG)
-        verifyResponse OK, jsonCapableResponse
-        String exportedJsonString = jsonCapableResponse.body()
-        logout()
-
-        expect:
-        exportedJsonString
-
-        when:
-        loginEditor()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/2.0', [
-            finalised                      : false,
-            modelName                      : 'Functional Test Import',
-            folderId                       : testFolderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: exportedJsonString.bytes.toList()
-            ]
-        ])
-
-        then:
-        verifyResponse CREATED, response
-        response.body().count == 1
-        response.body().items.first().label == 'Functional Test Import'
-        response.body().items.first().id != id
-        String id2 = response.body().items.first().id
-
-        cleanup:
-        removeValidIdObjectUsingTransaction(id2)
         removeValidIdObjectUsingTransaction(id)
-        removeValidIdObject(id2, NOT_FOUND)
+        if (canImport) {
+            removeValidIdObjectUsingTransaction(id2)
+            removeValidIdObject(id2, NOT_FOUND)
+        }
         removeValidIdObject(id, NOT_FOUND)
+
+        where:
+        prefix | name             | canRead | canImport
+        'LO'   | null             | false   | false
+        'NA'   | 'Authenticated'  | false   | false
+        'RE'   | 'Reader'         | true    | false
+        'RV'   | 'Reviewer'       | true    | false
+        'AU'   | 'Author'         | true    | false
+        'ED'   | 'Editor'         | true    | true
+        'CA'   | 'ContainerAdmin' | true    | true
+        'AD'   | 'Admin'          | true    | true
     }
 
-    void 'E36B : test import basic DataModel as new documentation version (as editor)'() {
+    void 'DM-ED-09 : test import basic DataModel as new documentation version (as editor)'() {
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/2.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -1694,7 +1200,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
         when:
         loginEditor()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/2.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.0', [
             finalised                      : false,
             folderId                       : testFolderId.toString(),
             importAsNewDocumentationVersion: true,
@@ -1731,11 +1237,11 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         removeValidIdObject(id, NOT_FOUND)
     }
 
-    void 'E36C : test import basic DataModel as new branch model version (as editor)'() {
+    void 'DM-ED-10 : test import basic DataModel as new branch model version (as editor)'() {
         given:
         String id = getValidFinalisedId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/2.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -1745,7 +1251,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
         when:
         loginEditor()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/2.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.0', [
             finalised                      : false,
             folderId                       : testFolderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1783,6 +1289,72 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         removeValidIdObjectUsingTransaction(id)
         removeValidIdObject(newId, NOT_FOUND)
         removeValidIdObject(id, NOT_FOUND)
+    }
+
+    void 'DM-#prefix-11 : test import multiple DataModels (as #name)'() {
+        given:
+        String id
+        String id2
+        loginReader()
+        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.0',
+             [dataModelIds: [getSimpleDataModelId(), getComplexDataModelId()]], STRING_ARG)
+
+        expect:
+        verifyResponse OK, jsonCapableResponse
+        String exportedJsonString = jsonCapableResponse.body()
+        logout()
+
+        and:
+        exportedJsonString
+
+        when:
+        login(name)
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.0', [
+            finalised                      : false,
+            folderId                       : testFolderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileType    : MimeType.JSON_API.name,
+                fileContents: exportedJsonString
+                    .replace(/${BootstrapModels.SIMPLE_DATAMODEL_NAME}/, 'Simple Test DataModel 2')
+                    .replace(/${BootstrapModels.COMPLEX_DATAMODEL_NAME}/, 'Complex Test DataModel 2').bytes.toList()
+            ]
+        ])
+
+        then:
+        if (name && !canRead) verifyNotFound(response, testFolderId)
+        else if (canImport) {
+            verifyResponse CREATED, response
+            response.body().count == 2
+
+            Object object = response.body().items[0]
+            Object object2 = response.body().items[1]
+            id = object.id
+            id2 = object2.id
+
+            object.label == 'Simple Test DataModel 2'
+            object2.label == 'Complex Test DataModel 2'
+            object.id != object2.id
+        } else verifyForbidden response
+
+        cleanup:
+        if (canImport) {
+            removeValidIdObjectUsingTransaction(id)
+            removeValidIdObjectUsingTransaction(id2)
+            removeValidIdObject(id2, NOT_FOUND)
+            removeValidIdObject(id, NOT_FOUND)
+        }
+
+        where:
+        prefix | name             | canRead | canImport
+        'LO'   | null             | false   | false
+        'NA'   | 'Authenticated'  | false   | false
+        'RE'   | 'Reader'         | true    | false
+        'RV'   | 'Reviewer'       | true    | false
+        'AU'   | 'Author'         | true    | false
+        'ED'   | 'Editor'         | true    | true
+        'CA'   | 'ContainerAdmin' | true    | true
+        'AD'   | 'Admin'          | true    | true
     }
 
     void 'S01 : test searching for label "emptyclass" in complex model'() {
@@ -1892,108 +1464,67 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         responseBody().items[1].domainType == 'DataClass'
     }
 
-    @Unroll
-    void 'IMI01 : test importing DataType (as #info)'() {
+    void 'DM-#prefix-12 : test importing DataType [not allowed] (as #name)'() {
         given:
         Map data = configureImportDataType()
-        if (user) loginUser(userEmailAddresses[user])
+        login(name)
 
         when: 'importing non-existent'
         PUT("$data.id/dataTypes/$data.finalisedId/${data.nonImportableId}", [:])
 
         then:
-        verifyNotFound(response, data.id)
+        if (canRead) verifyForbidden(response) else verifyNotFound(response, data.id)
 
         when: 'importing non importable id'
         PUT("$data.id/dataTypes/$data.otherId/$data.nonImportableId", [:])
 
         then:
-        verifyNotFound(response, data.id)
+        if (canRead) verifyForbidden(response) else verifyNotFound(response, data.id)
 
         when: 'importing internal id'
         PUT("$data.id/dataTypes/$data.id/$data.internalId", [:])
 
         then:
-        verifyNotFound(response, data.id)
+        if (canRead) verifyForbidden(response) else verifyNotFound(response, data.id)
 
         when: 'importing with same label id'
         PUT("$data.id/dataTypes/$data.finalisedId/$data.sameLabelId", [:])
 
         then:
-        verifyNotFound(response, data.id)
+        if (canRead) verifyForbidden(response) else verifyNotFound(response, data.id)
 
         when: 'importing importable id'
         PUT("$data.id/dataTypes/$data.finalisedId/$data.importableId", [:])
 
         then:
-        verifyNotFound(response, data.id)
+        if (canRead) verifyForbidden(response) else verifyNotFound(response, data.id)
 
         when: 'getting list of datatypes'
         GET("$data.id/dataTypes")
 
         then:
-        verifyNotFound(response, data.id)
+        if (canRead) {
+            verifyResponse OK, response
+            responseBody().items.size() == 1
+            responseBody().items.any {it.id == data.internalId && !it.imported}
+        } else verifyNotFound(response, data.id)
 
         cleanup:
         cleanupImportData(data)
 
         where:
-        user << [null, 'authenticated']
-        info = user ?: 'not logged in'
+        prefix | name            | canRead
+        'LO'   | null            | false
+        'NA'   | 'Authenticated' | false
+        'RE'   | 'Reader'        | true
+        'RV'   | 'Reviewer'      | true
+        'AU'   | 'Author'        | true
     }
 
-    void 'IMI02 : test importing DataType (as reader)'() {
+    void 'DM-#prefix-12 : test importing DataType [allowed] (as #name)'() {
         given:
         Map data = configureImportDataType()
-
-        when: 'importing non-existent'
-        loginReader()
-        PUT("$data.id/dataTypes/$data.finalisedId/${data.nonImportableId}", [:])
-
-        then:
-        verifyForbidden(response)
-
-        when: 'importing non importable id'
-        PUT("$data.id/dataTypes/$data.otherId/$data.nonImportableId", [:])
-
-        then:
-        verifyForbidden(response)
-
-        when: 'importing internal id'
-        PUT("$data.id/dataTypes/$data.id/$data.internalId", [:])
-
-        then:
-        verifyForbidden(response)
-
-        when: 'importing with same label id'
-        PUT("$data.id/dataTypes/$data.finalisedId/$data.sameLabelId", [:])
-
-        then:
-        verifyForbidden(response)
-
-        when: 'importing importable id'
-        PUT("$data.id/dataTypes/$data.finalisedId/$data.importableId", [:])
-
-        then:
-        verifyForbidden(response)
-
-        when: 'getting list of datatypes'
-        GET("$data.id/dataTypes")
-
-        then:
-        verifyResponse OK, response
-        responseBody().items.size() == 1
-        responseBody().items.any {it.id == data.internalId && !it.imported}
-
-        cleanup:
-        cleanupImportData(data)
-    }
-
-    @Unroll
-    void 'IMI03 : test importing DataType (as #info)'() {
-        given:
-        Map data = configureImportDataType()
-        loginUser(userEmailAddresses[user])
+        login(name)
 
         when: 'importing non-existent'
         PUT("$data.id/dataTypes/$data.finalisedId/${data.nonImportableId}", [:])
@@ -2042,86 +1573,59 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         cleanupImportData(data)
 
         where:
-        user << ['editor', 'admin']
-        info = user ?: 'not logged in'
+        prefix | name
+        'ED'   | 'Editor'
+        'CA'   | 'ContainerAdmin'
+        'AD'   | 'Admin'
     }
 
-    @Unroll
-    void 'IMI04 : test importing DataType and removing (as #info)'() {
+    void 'DM-#prefix-13 : test importing DataType and removing [not allowed] (as #name)'() {
         given:
         Map data = configureImportDataType()
         loginEditor()
         PUT("$data.id/dataTypes/$data.finalisedId/$data.importableId", [:])
         verifyResponse OK, response
         logout()
-        if (user) loginUser(userEmailAddresses[user])
+        login(name)
 
         when: 'removing non-existent'
         DELETE("$data.id/dataTypes/$data.finalisedId/${UUID.randomUUID()}", [:])
 
         then:
-        verifyNotFound(response, data.id)
+        if (canRead) verifyForbidden(response) else verifyNotFound(response, data.id)
 
         when: 'removing internal id'
         DELETE("$data.id/dataTypes/$data.id/$data.internalId", [:])
 
         then:
-        verifyNotFound(response, data.id)
+        if (canRead) verifyForbidden(response) else verifyNotFound(response, data.id)
 
         when: 'removing importable id'
         DELETE("$data.id/dataTypes/$data.finalisedId/$data.importableId", [:])
 
         then:
-        verifyNotFound(response, data.id)
+        if (canRead) verifyForbidden(response) else verifyNotFound(response, data.id)
 
         cleanup:
         cleanupImportData(data)
 
         where:
-        user << [null, 'authenticated']
-        info = user ?: 'not logged in'
+        prefix | name            | canRead
+        'LO'   | null            | false
+        'NA'   | 'Authenticated' | false
+        'RE'   | 'Reader'        | true
+        'RV'   | 'Reviewer'      | true
+        'AU'   | 'Author'        | true
     }
 
-    void 'IMI05 : test importing DataType and removing (as reader)'() {
+    void 'DM-#prefix-13 : test importing DataType and removing [allowed] (as #name)'() {
         given:
         Map data = configureImportDataType()
         loginEditor()
         PUT("$data.id/dataTypes/$data.finalisedId/$data.importableId", [:])
         verifyResponse OK, response
         logout()
-        loginReader()
-
-        when: 'removing non-existent'
-        DELETE("$data.id/dataTypes/$data.finalisedId/${UUID.randomUUID()}", [:])
-
-        then:
-        verifyForbidden(response)
-
-        when: 'removing internal id'
-        DELETE("$data.id/dataTypes/$data.id/$data.internalId", [:])
-
-        then:
-        verifyForbidden(response)
-
-        when: 'removing importable id'
-        DELETE("$data.id/dataTypes/$data.finalisedId/$data.importableId", [:])
-
-        then:
-        verifyForbidden(response)
-
-        cleanup:
-        cleanupImportData(data)
-    }
-
-    @Unroll
-    void 'IMI06 : test importing DataType and removing (as #info)'() {
-        given:
-        Map data = configureImportDataType()
-        loginEditor()
-        PUT("$data.id/dataTypes/$data.finalisedId/$data.importableId", [:])
-        verifyResponse OK, response
-        logout()
-        loginUser(userEmailAddresses[user])
+        login(name)
         String randomId = UUID.randomUUID().toString()
 
         when: 'removing non-existent'
@@ -2155,106 +1659,73 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         cleanupImportData(data)
 
         where:
-        user << ['admin', 'editor']
-        info = user
+        prefix | name
+        'ED'   | 'Editor'
+        'CA'   | 'ContainerAdmin'
+        'AD'   | 'Admin'
     }
 
-    @Unroll
-    void 'IMI07 : test importing DataClasses (as #info)'() {
+    void 'DM-#prefix-14 : test importing DataClasses [not allowed] (as #name)'() {
         given:
         Map data = configureImportDataClass()
-        if (user) loginUser(userEmailAddresses[user])
+        login(name)
 
         when: 'importing non-existent'
         PUT("$data.id/dataClasses/$data.finalisedId/${data.nonImportableId}", [:])
 
         then:
-        verifyNotFound(response, data.id)
+        if (canRead) verifyForbidden(response) else verifyNotFound(response, data.id)
 
         when: 'importing non importable id'
         PUT("$data.id/dataClasses/$data.otherId/$data.nonImportableId", [:])
 
         then:
-        verifyNotFound(response, data.id)
+        if (canRead) verifyForbidden(response) else verifyNotFound(response, data.id)
 
         when: 'importing internal id'
         PUT("$data.id/dataClasses/$data.id/$data.internalId", [:])
 
         then:
-        verifyNotFound(response, data.id)
+        if (canRead) verifyForbidden(response) else verifyNotFound(response, data.id)
 
         when: 'importing with same label id'
         PUT("$data.id/dataClasses/$data.finalisedId/$data.sameLabelId", [:])
 
         then:
-        verifyNotFound(response, data.id)
+        if (canRead) verifyForbidden(response) else verifyNotFound(response, data.id)
 
         when: 'importing importable id'
         PUT("$data.id/dataClasses/$data.finalisedId/$data.importableId", [:])
 
         then:
-        verifyNotFound(response, data.id)
-
-        cleanup:
-        cleanupImportData(data)
-
-        where:
-        user << [null, 'authenticated']
-        info = user ?: 'not logged in'
-    }
-
-    void 'IMI08 : test importing DataClasses (as reader)'() {
-        given:
-        Map data = configureImportDataClass()
-        loginReader()
-
-        when: 'importing non-existent'
-        PUT("$data.id/dataClasses/$data.finalisedId/${data.nonImportableId}", [:])
-
-        then:
-        verifyForbidden(response)
-
-        when: 'importing non importable id'
-        PUT("$data.id/dataClasses/$data.otherId/$data.nonImportableId", [:])
-
-        then:
-        verifyForbidden(response)
-
-        when: 'importing internal id'
-        PUT("$data.id/dataClasses/$data.id/$data.internalId", [:])
-
-        then:
-        verifyForbidden(response)
-
-        when: 'importing with same label id'
-        PUT("$data.id/dataClasses/$data.finalisedId/$data.sameLabelId", [:])
-
-        then:
-        verifyForbidden(response)
-
-        when: 'importing importable id'
-        PUT("$data.id/dataClasses/$data.finalisedId/$data.importableId", [:])
-
-        then:
-        verifyForbidden(response)
+        if (canRead) verifyForbidden(response) else verifyNotFound(response, data.id)
 
         when: 'getting list of dataclasses'
         GET("$data.id/dataClasses")
 
         then:
-        verifyResponse OK, response
-        responseBody().items.size() == 1
-        responseBody().items.any {it.id == data.internalId && !it.imported}
+        if (canRead) {
+            verifyResponse OK, response
+            responseBody().items.size() == 1
+            responseBody().items.any {it.id == data.internalId && !it.imported}
+        } else verifyNotFound(response, data.id)
 
         cleanup:
         cleanupImportData(data)
+
+        where:
+        prefix | name            | canRead
+        'LO'   | null            | false
+        'NA'   | 'Authenticated' | false
+        'RE'   | 'Reader'        | true
+        'RV'   | 'Reviewer'      | true
+        'AU'   | 'Author'        | true
     }
 
-    @Unroll
-    void 'IMI09 : test importing DataClasses (as #info)'() {
+    void 'DM-#prefix-14 : test importing DataClasses [allowed] (as #name)'() {
         given:
         Map data = configureImportDataClass()
-        loginUser(userEmailAddresses[user])
+        login(name)
 
         when: 'importing non-existent'
         PUT("$data.id/dataClasses/$data.finalisedId/${data.nonImportableId}", [:])
@@ -2303,95 +1774,70 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         cleanupImportData(data)
 
         where:
-        user << ['admin', 'editor']
-        info = user
+        prefix | name
+        'ED'   | 'Editor'
+        'CA'   | 'ContainerAdmin'
+        'AD'   | 'Admin'
     }
 
-    @Unroll
-    void 'IMI10 : test importing DataClass and removing (as #info)'() {
+    void 'DM-#prefix-15 : test importing DataClass and removing [not allowed] (as #name)'() {
         given:
         Map data = configureImportDataClass()
         loginEditor()
         PUT("$data.id/dataClasses/$data.finalisedId/$data.importableId", [:])
         verifyResponse OK, response
         logout()
-        if (user) loginUser(userEmailAddresses[user])
+        login(name)
 
         when: 'removing non-existent'
         DELETE("$data.id/dataClasses/$data.finalisedId/${UUID.randomUUID()}", [:])
 
         then:
-        verifyNotFound(response, data.id)
+        if (canRead) verifyForbidden(response) else verifyNotFound(response, data.id)
 
         when: 'removing internal id'
         DELETE("$data.id/dataClasses/$data.id/$data.internalId", [:])
 
         then:
-        verifyNotFound(response, data.id)
+        if (canRead) verifyForbidden(response) else verifyNotFound(response, data.id)
 
         when: 'removing importable id'
         DELETE("$data.id/dataClasses/$data.finalisedId/$data.importableId", [:])
 
         then:
-        verifyNotFound(response, data.id)
-
-        cleanup:
-        cleanupImportData(data)
-
-        where:
-        user << [null, 'authenticated']
-        info = user ?: 'not logged in'
-    }
-
-    void 'IMI11 : test importing DataClass and removing (as reader)'() {
-        given:
-        Map data = configureImportDataClass()
-        loginEditor()
-        PUT("$data.id/dataClasses/$data.finalisedId/$data.importableId", [:])
-        verifyResponse OK, response
-        logout()
-        loginReader()
-
-        when: 'removing non-existent'
-        DELETE("$data.id/dataClasses/$data.finalisedId/${UUID.randomUUID()}", [:])
-
-        then:
-        verifyForbidden(response)
-
-        when: 'removing internal id'
-        DELETE("$data.id/dataClasses/$data.id/$data.internalId", [:])
-
-        then:
-        verifyForbidden(response)
-
-        when: 'removing importable id'
-        DELETE("$data.id/dataClasses/$data.finalisedId/$data.importableId", [:])
-
-        then:
-        verifyForbidden(response)
+        if (canRead) verifyForbidden(response) else verifyNotFound(response, data.id)
 
         when: 'getting list of dataClasses'
         GET("$data.id/dataClasses")
 
         then:
-        verifyResponse OK, response
-        responseBody().items.size() == 2
-        responseBody().items.any {it.id == data.internalId}
-        responseBody().items.any {it.id == data.importableId}
+        if (canRead) {
+            verifyResponse OK, response
+            responseBody().items.size() == 2
+            responseBody().items.any {it.id == data.internalId}
+            responseBody().items.any {it.id == data.importableId}
+        } else verifyNotFound(response, data.id)
 
         cleanup:
         cleanupImportData(data)
+
+        where:
+        prefix | name            | canRead
+        'LO'   | null            | false
+        'NA'   | 'Authenticated' | false
+        'RE'   | 'Reader'        | true
+        'RV'   | 'Reviewer'      | true
+        'AU'   | 'Author'        | true
     }
 
-    @Unroll
-    void 'IMI12 : test importing DataClass and removing (as #info)'() {
+    void 'DM-#prefix-15 : test importing DataClass and removing [allowed] (as #name)'() {
         given:
         Map data = configureImportDataClass()
         loginEditor()
         PUT("$data.id/dataClasses/$data.finalisedId/$data.importableId", [:])
         verifyResponse OK, response
         logout()
-        loginUser(userEmailAddresses[user])
+        login(name)
 
         when: 'removing non-existent'
         DELETE("$data.id/dataClasses/$data.finalisedId/${UUID.randomUUID()}", [:])
@@ -2424,8 +1870,10 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         cleanupImportData(data)
 
         where:
-        user << ['admin', 'editor']
-        info = user
+        prefix | name
+        'ED'   | 'Editor'
+        'CA'   | 'ContainerAdmin'
+        'AD'   | 'Admin'
     }
 
     void cleanupImportData(Map data) {
@@ -2504,7 +1952,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         Map data = [:]
         // Get DataModel
         data.id = getValidId()
-        loginEditor()
+        loginCreator()
 
         // Get second DataModel
         POST(getSavePath(), [
@@ -2512,7 +1960,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         ], MAP_ARG, true)
         verifyResponse CREATED, response
         data.otherId = response.body().id
-        addReaderShare(data.otherId)
+        addAccessShares(data.otherId)
 
         // Get finalised DataModel
         POST(getSavePath(), [
@@ -2520,493 +1968,9 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         ], MAP_ARG, true)
         verifyResponse CREATED, response
         data.finalisedId = response.body().id
-        addReaderShare(data.finalisedId)
+        addAccessShares(data.finalisedId)
         data
     }
-
-
-    /*
-            void 'test deleting multiple models'() {
-                given:
-                def idstoDelete = []
-                def response
-                loginEditor()
-                (1..4).each {n ->
-                    response = post('') {
-                        json {
-                            folder = Folder.findByLabel('Test Folder').id.toString()
-                            label = "Functional Test Model ${n}"
-                        }
-                    }
-                    verifyResponse CREATED, response
-                    idstoDelete << response.json.id
-                }
-                logout()
-
-                when:
-                loginEditor()
-                response = delete('') {
-                    json {
-                        ids = idstoDelete
-                    }
-                }
-
-                then:
-                verifyUnauthorised response
-
-                when:
-                loginAdmin()
-                response = delete('') {
-                    json {
-                        ids = idstoDelete
-                        permanent = false
-                    }
-                }
-
-                then:
-                verifyResponse(OK, response, '''{
-                          "count": 4,
-                          "items": [
-                            {
-                              "deleted": true,
-                              "domainType": "DataModel",
-                              "documentationVersion": "1.0.0",
-                              "id": "${json-unit.matches:id}",
-                              "label": "Functional Test Model 1",
-                              "type": "Data Standard"
-                            },
-                            {
-                              "deleted": true,
-                              "domainType": "DataModel",
-                              "documentationVersion": "1.0.0",
-                              "id": "${json-unit.matches:id}",
-                              "label": "Functional Test Model 2",
-                              "type": "Data Standard"
-                            },
-                            {
-                              "deleted": true,
-                              "domainType": "DataModel",
-                              "documentationVersion": "1.0.0",
-                              "id": "${json-unit.matches:id}",
-                              "label": "Functional Test Model 3",
-                              "type": "Data Standard"
-                            },
-                            {
-                              "deleted": true,
-                              "domainType": "DataModel",
-                              "documentationVersion": "1.0.0",
-                              "id": "${json-unit.matches:id}",
-                              "label": "Functional Test Model 4",
-                              "type": "Data Standard"
-                            }
-                          ]
-                        }''')
-
-                when:
-                loginAdmin()
-                response = delete('') {
-                    json {
-                        ids = idstoDelete
-                    }
-                }
-
-                then:
-                verifyResponse(NO_CONTENT, response)
-            }
-
-            /*
-
-            void setupForLinkSuggestions() {
-            loginEditor()
-            DataType newDataType = simpleTestDataModel.findDataTypeByLabel("string")
-            def response
-            if (!newDataType) {
-            response = post(apiPath + "/dataModels/${getSimpleDataModelId()}/dataTypes") {
-            json {
-            domainType = 'PrimitiveType'
-            label = 'string'
-            }
-            }
-            assert (response.statusCode.'2xxSuccessful')
-            newDataType = simpleTestDataModel.findDataTypeByLabel("string")
-            }
-            DataClass targetDataClass = DataClass.findByDataModelAndLabel(simpleTestDataModel, "simple")
-
-            response = post(apiPath + "/dataModels/${getSimpleDataModelId()}/dataClasses/${targetDataClass.id}/dataElements") {
-            json {
-            domainType = 'DataElement'
-            label = 'ele1'
-            description = 'most obvious match'
-            dataType = {
-            domainType = 'PrimitiveType'
-            id = newDataType.id.toString()
-            }
-
-            }
-            }
-            assert (response.statusCode.'2xxSuccessful')
-            response = post(apiPath + "/dataModels/${getSimpleDataModelId()}/dataClasses/${targetDataClass.id}/dataElements") {
-            json {
-            domainType = 'DataElement'
-            label = 'ele2'
-            description = 'least obvious match'
-            dataType = {
-            domainType = 'PrimitiveType'
-            id = newDataType.id.toString()
-            }
-
-            }
-            }
-            assert (response.statusCode.'2xxSuccessful')
-            adminService.rebuildLuceneIndexes(new LuceneIndexParameters())
-            logout()
-            }
-
-            void 'test get link suggestions for a model'() {
-            given:
-            setupForLinkSuggestions()
-
-            String endpoint = "${apiPath}/" +
-                  "dataModels/${getComplexDataModelId()}/" +
-                  "suggestLinks/${getSimpleDataModelId()}"
-
-
-            String expectedJson = expectedLinkSuggestions(expectedLinkSuggestionResults())
-
-
-            when: 'not logged in'
-            GET(endpoint)
-
-            then:
-            verifyResponse UNAUTHORIZED, response
-
-            when: 'logged in as reader'
-            loginUser(reader2)
-            GET(endpoint)
-
-            then:
-            verifyResponse OK, response, expectedJson
-
-            when: 'logged in as writer'
-            loginEditor()
-            GET(endpoint)
-
-            then:
-            verifyResponse OK, response, expectedJson
-            }
-
-
-            void 'test get link suggestions for a model with no data elements in the target'() {
-            given:
-
-            String endpoint = "${apiPath}/" +
-                  "dataModels/${getComplexDataModelId()}/" +
-                  "suggestLinks/${getSimpleDataModelId()}"
-
-            String expectedJson = expectedLinkSuggestions(["", "", ""])
-
-            when: 'not logged in'
-            GET(endpoint)
-
-            then:
-            verifyResponse UNAUTHORIZED, response
-
-            when: 'logged in as reader'
-            loginUser(reader2)
-            GET(endpoint)
-
-            then:
-            verifyResponse OK, response, expectedJson
-
-            when: 'logged in as writer'
-            loginEditor()
-            GET(endpoint)
-
-            then:
-            verifyResponse OK, response, expectedJson
-            }
-
-            String expectedLinkSuggestions(List<String> results) {
-            '''{
-              "links": [
-                {
-                  "sourceDataElement": {
-                    "domainType": "DataElement",
-                    "dataClass": "${json-unit.matches:id}",
-                    "dataType": {
-                      "domainType": "ReferenceType",
-                      "dataModel": "${json-unit.matches:id}",
-                      "id": "${json-unit.matches:id}",
-                      "label": "child",
-                      "breadcrumbs": [
-                        {
-                          "domainType": "DataModel",
-                          "finalised": false,
-                          "id": "${json-unit.matches:id}",
-                          "label": "Complex Test DataModel"
-                        }
-                      ],
-                      "referenceClass": {
-                        "domainType": "DataClass",
-                        "dataModel": "${json-unit.matches:id}",
-                        "parentDataClass": "${json-unit.matches:id}",
-                        "id": "${json-unit.matches:id}",
-                        "label": "child",
-                        "breadcrumbs": [
-                          {
-                            "domainType": "DataModel",
-                            "finalised": false,
-                            "id": "${json-unit.matches:id}",
-                            "label": "Complex Test DataModel"
-                          },
-                          {
-                            "domainType": "DataClass",
-                            "id": "${json-unit.matches:id}",
-                            "label": "parent"
-                          }
-                        ]
-                      }
-                    },
-                    "dataModel": "${json-unit.matches:id}",
-                    "maxMultiplicity": 1,
-                    "id": "${json-unit.matches:id}",
-                    "label": "child",
-                    "minMultiplicity": 1,
-                    "breadcrumbs": [
-                      {
-                        "domainType": "DataModel",
-                        "finalised": false,
-                        "id": "${json-unit.matches:id}",
-                        "label": "Complex Test DataModel"
-                      },
-                      {
-                        "domainType": "DataClass",
-                        "id": "${json-unit.matches:id}",
-                        "label": "parent"
-                      }
-                    ]
-                  },
-                  "results": [''' + results[2] + '''
-
-                  ]
-                },
-                {
-                  "sourceDataElement": {
-                    "domainType": "DataElement",
-                    "dataClass": "${json-unit.matches:id}",
-                    "dataType": {
-                      "domainType": "PrimitiveType",
-                      "dataModel": "${json-unit.matches:id}",
-                      "id": "${json-unit.matches:id}",
-                      "label": "string",
-                      "breadcrumbs": [
-                        {
-                          "domainType": "DataModel",
-                          "finalised": false,
-                          "id": "${json-unit.matches:id}",
-                          "label": "Complex Test DataModel"
-                        }
-                      ]
-                    },
-                    "dataModel": "${json-unit.matches:id}",
-                    "maxMultiplicity": 20,
-                    "id": "${json-unit.matches:id}",
-                    "label": "ele1",
-                    "minMultiplicity": 0,
-                    "breadcrumbs": [
-                      {
-                        "domainType": "DataModel",
-                        "finalised": false,
-                        "id": "${json-unit.matches:id}",
-                        "label": "Complex Test DataModel"
-                      },
-                      {
-                        "domainType": "DataClass",
-                        "id": "${json-unit.matches:id}",
-                        "label": "content"
-                      }
-                    ]
-                  },
-                  "results": [''' + results[0] + '''
-
-                  ]
-                },
-                {
-                  "sourceDataElement": {
-                    "domainType": "DataElement",
-                    "dataClass": "${json-unit.matches:id}",
-                    "dataType": {
-                      "domainType": "PrimitiveType",
-                      "dataModel": "${json-unit.matches:id}",
-                      "id": "${json-unit.matches:id}",
-                      "label": "integer",
-                      "breadcrumbs": [
-                        {
-                          "domainType": "DataModel",
-                          "finalised": false,
-                          "id": "${json-unit.matches:id}",
-                          "label": "Complex Test DataModel"
-                        }
-                      ]
-                    },
-                    "dataModel": "${json-unit.matches:id}",
-                    "maxMultiplicity": 1,
-                    "id": "${json-unit.matches:id}",
-                    "label": "element2",
-                    "minMultiplicity": 1,
-                    "breadcrumbs": [
-                      {
-                        "domainType": "DataModel",
-                        "finalised": false,
-                        "id": "${json-unit.matches:id}",
-                        "label": "Complex Test DataModel"
-                      },
-                      {
-                        "domainType": "DataClass",
-                        "id": "${json-unit.matches:id}",
-                        "label": "content"
-                      }
-                    ]
-                  },
-                  "results": [''' + results[1] + '''
-
-                  ]
-                }
-              ]
-            }'''
-            }
-
-            List<String> expectedLinkSuggestionResults() {
-            ['''
-            {
-                "score": 0.70164835,
-                "dataElement": {
-                    "domainType": "DataElement",
-                    "dataClass": "${json-unit.matches:id}",
-                    "dataType": {
-                        "domainType": "PrimitiveType",
-                        "dataModel": "${json-unit.matches:id}",
-                        "id": "${json-unit.matches:id}",
-                        "label": "string",
-                        "breadcrumbs": [
-                            {
-                                "domainType": "DataModel",
-                                "finalised": false,
-                                "id": "${json-unit.matches:id}",
-                                "label": "Simple Test DataModel"
-                            }
-                        ]
-                    },
-                    "dataModel": "${json-unit.matches:id}",
-                    "description": "most obvious match",
-                    "id": "${json-unit.matches:id}",
-                    "label": "ele1",
-                    "breadcrumbs": [
-                        {
-                            "domainType": "DataModel",
-                            "finalised": false,
-                            "id": "${json-unit.matches:id}",
-                            "label": "Simple Test DataModel"
-                        },
-                        {
-                            "domainType": "DataClass",
-                            "id": "${json-unit.matches:id}",
-                            "label": "simple"
-                        }
-                    ]
-                }
-            },
-            {
-                "score": 0.35714078,
-                "dataElement": {
-                    "domainType": "DataElement",
-                    "dataClass": "${json-unit.matches:id}",
-                    "dataType": {
-                        "domainType": "PrimitiveType",
-                        "dataModel": "${json-unit.matches:id}",
-                        "id": "${json-unit.matches:id}",
-                        "label": "string",
-                        "breadcrumbs": [
-                            {
-                                "domainType": "DataModel",
-                                "finalised": false,
-                                "id": "${json-unit.matches:id}",
-                                "label": "Simple Test DataModel"
-                            }
-                        ]
-                    },
-                    "dataModel": "${json-unit.matches:id}",
-                    "description": "least obvious match",
-                    "id": "${json-unit.matches:id}",
-                    "label": "ele2",
-                    "breadcrumbs": [
-                        {
-                            "domainType": "DataModel",
-                            "finalised": false,
-                            "id": "${json-unit.matches:id}",
-                            "label": "Simple Test DataModel"
-                        },
-                        {
-                            "domainType": "DataClass",
-                            "id": "${json-unit.matches:id}",
-                            "label": "simple"
-                        }
-                    ]
-                }
-            }''', '''
-            {
-                "score": 0.05167392,
-                "dataElement": {
-                    "domainType": "DataElement",
-                    "dataClass": "${json-unit.matches:id}",
-                    "dataType": {
-                        "domainType": "PrimitiveType",
-                        "dataModel": "${json-unit.matches:id}",
-                        "id": "${json-unit.matches:id}",
-                        "label": "string",
-                        "breadcrumbs": [
-                            {
-                                "domainType": "DataModel",
-                                "finalised": false,
-                                "id": "${json-unit.matches:id}",
-                                "label": "Simple Test DataModel"
-                            }
-                        ]
-                    },
-                    "dataModel": "${json-unit.matches:id}",
-                    "description": "least obvious match",
-                    "id": "${json-unit.matches:id}",
-                    "label": "ele2",
-                    "breadcrumbs": [
-                        {
-                            "domainType": "DataModel",
-                            "finalised": false,
-                            "id": "${json-unit.matches:id}",
-                            "label": "Simple Test DataModel"
-                        },
-                        {
-                            "domainType": "DataClass",
-                            "id": "${json-unit.matches:id}",
-                            "label": "simple"
-                        }
-                    ]
-                }
-            }''', '''''']
-            }
-
-            @Override
-            void additionalCleanup() {
-            logger.info("Additional cleanup")
-            DataClass toDataClass = DataClass.findByDataModelAndLabel(simpleTestDataModel, 'simple')
-            DataElement.findAllByDataClass(toDataClass).each {
-            dataElementService.delete it
-            }
-            DataType.findAllByDataModel(simpleTestDataModel).each {
-            dataTypeService.delete it
-            }
-            }
-    f
-            */
 
     String getExpectedDiffJson() {
         '''{
@@ -3230,5 +2194,99 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     }
   ]
 }'''
+    }
+
+    void 'MI07 : test merge into of two DMs with a Model Data Type'() {
+        given:
+        String mergeFolderId = getTestFolderId()
+        loginEditor()
+
+        when: 'Get the Complex Test Terminology ID for checking later'
+        GET("terminologies/path/te:Complex%20Test%20Terminology", MAP_ARG, true)
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+        String complexTerminologyId = responseBody().id
+
+        when: 'Get the Simple Test Terminology ID to use in the Model Data Type'
+        GET("terminologies/path/te:Simple%20Test%20Terminology", MAP_ARG, true)
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+        String simpleTerminologyId = responseBody().id
+
+        when:
+        TestMergeData mergeData = builder.buildComplexModelsForMerging(mergeFolderId, simpleTerminologyId)
+
+        then:
+        mergeData.sourceMap.externallyPointingModelDataTypeId
+
+        when: 'get the mergeDiff between source and target'
+        GET("$mergeData.source/mergeDiff/$mergeData.target?isLegacy=false")
+
+        then: 'there are no modification diffs for dataTypes'
+        verifyResponse OK, response
+        !responseBody().diffs.find{it.fieldName == 'modelResourcePath'}
+
+        when: 'get the data types on the source data model'
+        GET("dataModels/$mergeData.source/dataTypes", MAP_ARG, true)
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 2
+        responseBody().items.label as Set == ['addLeftOnly', 'Functional Test Model Data Type Pointing Externally'] as Set
+        def mdt = responseBody().items.find {it.label == 'Functional Test Model Data Type Pointing Externally' }
+
+        and:
+        mdt.modelResourceDomainType == 'Terminology'
+        mdt.modelResourceId == simpleTerminologyId
+        mdt.id == mergeData.sourceMap.externallyPointingModelDataTypeId
+
+        when: 'Update the MDT to point at the Complex Test Terminology'
+        PUT("dataModels/$mergeData.source/dataTypes/$mdt.id", [modelResourceDomainType: 'Terminology', modelResourceId: complexTerminologyId], MAP_ARG, true)
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        when: 'get the mergeDiff between source and target'
+        GET("$mergeData.source/mergeDiff/$mergeData.target?isLegacy=false")
+
+        then: 'the diffs include a modification to the Model Data Type'
+        verifyResponse OK, response
+        def postDiffs = responseBody().diffs
+        def modelResourcePath = responseBody().diffs.find{it.fieldName == 'modelResourcePath'}
+        modelResourcePath.sourceValue.contains("Complex Test Terminology")
+        modelResourcePath.targetValue.contains("Simple Test Terminology")
+        modelResourcePath.type == "modification"
+
+        when: 'Merge the diffs from source to target'
+        loginEditor()
+        PUT("$mergeData.source/mergeInto/$mergeData.target?isLegacy=false", [
+            patch:
+                [
+                    targetId: mergeData.target,
+                    sourceId: mergeData.source,
+                    label   : "Functional Test Model",
+                    count   : postDiffs.size(),
+                    patches : postDiffs
+                ]
+        ])
+
+        then: 'the response is OK'
+        verifyResponse OK, response
+
+        when: 'get the data types on the target data model'
+        GET("dataModels/$mergeData.target/dataTypes", MAP_ARG, true)
+
+        then: 'there is a Model Data Type'
+        verifyResponse OK, response
+        def mergedMdt = responseBody().items.find {it.label == 'Functional Test Model Data Type Pointing Externally' }
+
+        and: 'the Model Data Type now points to the Complex Test Terminology'
+        mergedMdt.modelResourceDomainType == 'Terminology'
+        mergedMdt.modelResourceId == complexTerminologyId
+
+        cleanup:
+        builder.cleanupTestMergeData(mergeData)
     }
 }

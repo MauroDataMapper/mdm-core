@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.MergeDiff
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.terminology.test.BaseTerminologyIntegrationSpec
@@ -37,11 +38,11 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
     void setupDomainData() {
         log.debug('Setting up TerminologyServiceIntegrationSpec')
 
-        Terminology terminology1 = new Terminology(createdByUser: reader1, label: 'test database', folder: testFolder,
+        Terminology terminology1 = new Terminology(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'test database', folder: testFolder,
                                                    authority: testAuthority)
-        Terminology terminology2 = new Terminology(createdByUser: reader2, label: 'test form', folder: testFolder,
+        Terminology terminology2 = new Terminology(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'test form', folder: testFolder,
                                                    authority: testAuthority)
-        Terminology terminology3 = new Terminology(createdByUser: editor, label: 'test standard', folder: testFolder,
+        Terminology terminology3 = new Terminology(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'test standard', folder: testFolder,
                                                    authority: testAuthority)
 
         checkAndSave(terminology1)
@@ -137,7 +138,7 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         setupData()
 
         when:
-        Terminology terminology = new Terminology(createdByUser: reader2, label: 'saving test', folder: testFolder, authority: testAuthority)
+        Terminology terminology = new Terminology(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'saving test', folder: testFolder, authority: testAuthority)
         terminology = terminologyService.validate(terminology)
 
         then:

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,13 @@ package uk.ac.ox.softeng.maurodatamapper.testing.functional.terminology.item
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
-import io.micronaut.http.HttpResponse
+
+import java.util.regex.Pattern
 
 /**
  * <pre>
@@ -78,51 +80,29 @@ class TermFunctionalSpec extends UserAccessFunctionalSpec {
     }
 
     @Override
-    Map getValidUpdateJson() {
+    Map getValidNonDescriptionUpdateJson() {
         [
-            description: 'Adding a description to the Term'
+            definition: 'Updated term'
         ]
     }
 
-
-    Boolean readerPermissionIsInherited() {
-        true
-    }
-
     @Override
-    void verifyL03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getSimpleTerminologyId()
+    Expectations getExpectations() {
+        Expectations.builder()
+            .withDefaultExpectations()
+            .withInheritedAccessPermissions()
+            .whereTestingUnsecuredResource()
+            .whereContainerAdminsCanAction('comment', 'delete', 'editDescription', 'save', 'show', 'update')
+            .whereEditorsCanAction('comment', 'delete', 'editDescription', 'save', 'show', 'update')
+            .whereAuthorsCanAction('comment', 'editDescription', 'show',)
+            .whereReviewersCanAction('comment', 'show')
+            .whereReadersCanAction('show')
     }
 
-    @Override
-    void verifyL03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getSimpleTerminologyId()
+    Pattern getExpectedUpdateEditRegex() {
+        ~/\[\w+( \w+)*:.+?] changed properties \[definition, label]/
     }
 
-    @Override
-    void verifyL03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getSimpleTerminologyId()
-    }
-
-    @Override
-    void verifyN03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getSimpleTerminologyId()
-    }
-
-    @Override
-    void verifyN03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getSimpleTerminologyId()
-    }
-
-    @Override
-    void verifyN03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getSimpleTerminologyId()
-    }
-
-    @Override
-    void verifyR04UnknownIdResponse(HttpResponse<Map> response, String id) {
-        verifyForbidden response
-    }
 
     @Override
     String getShowJson() {
@@ -140,12 +120,7 @@ class TermFunctionalSpec extends UserAccessFunctionalSpec {
     }
   ],
   "availableActions": [
-    "delete",
-    "update",
-    "save",
-    "show",
-    "comment",
-    "editDescription"
+    "show"
   ],
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "code": "FTT01",

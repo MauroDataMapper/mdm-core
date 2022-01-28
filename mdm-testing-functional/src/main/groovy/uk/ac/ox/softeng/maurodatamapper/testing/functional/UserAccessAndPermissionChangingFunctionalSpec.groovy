@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityUtils
 
 import grails.gorm.transactions.Transactional
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 
 import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
@@ -52,9 +52,9 @@ import static io.micronaut.http.HttpStatus.OK
 @Slf4j
 abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessFunctionalSpec {
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def addExtraGroup() {
+    def setup() {
         log.info('Add group with new authenticated user')
         CatalogueUser authenticated2 = new CatalogueUser(emailAddress: userEmailAddresses.authenticated2,
                                                          firstName: 'authenticated2', lastName: 'User',
@@ -80,58 +80,20 @@ abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessF
         super.getPermanentGroupNames() + ['extraGroup']
     }
 
-    String getEditorGroupRoleName() {
-        GroupRole.EDITOR_ROLE_NAME
-    }
-
-    List<String> getEditorAvailableActions() {
-        ['show', 'update', 'delete']
-    }
-
-    List<String> getReaderAvailableActions() {
-        ['show']
-    }
-
-    String getReader1JsonString() {
-        '''{
-      "firstName": "reader1",
-      "lastName": "User",
-      "emailAddress": "reader1@test.com",
-      "needsToResetPassword": true,
-      "disabled": false,
-      "id": "\\\${json-unit.matches:id}",
-      "userRole": "READER"
-    },'''
-    }
-
-    String getReaderGroupJsonString() {
-        '''{
-      "createdBy": {
-        "firstName": "editor",
-        "lastName": "User",
-        "emailAddress": "editor@test.com",
-        "disabled": false,
-        "id": "\\\${json-unit.matches:id}",
-        "userRole": "EDITOR"
-      },
-      "id": "\\\${json-unit.matches:id}",
-      "label": "readers"
-    }'''
-    }
-
     int getExpectedCountOfGroupsWithAccess() {
-        1
+        6
     }
 
     /*
-    * Logged in as editor testing
+    * Logged in as permission changing allowed user testing
     */
 
-    void 'E06 : test adding readable by everyone (as editor)'() {
+    void 'CORE-#prefix-06 : test adding readable by everyone [allowed] (as #name)'() {
+        if (name == 'Editor' && !expectations.editorCanChangePermissions) return
         given:
         String id = getValidId()
         def endpoint = "$id/readByEveryone"
-        loginEditor()
+        login(name)
 
         when: 'getting the list of groups'
         GET("$id/securableResourceGroupRoles")
@@ -145,7 +107,7 @@ abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessF
 
         then:
         verifyResponse(OK, response)
-        response.body().readableByEveryone == true
+        responseBody().readableByEveryone == true
 
         when: 'getting the list of groups'
         GET("$id/securableResourceGroupRoles")
@@ -156,754 +118,200 @@ abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessF
 
         cleanup:
         removeValidIdObject(id)
+
+        where:
+        prefix | name
+        'CA'   | 'ContainerAdmin'
+        'AD'   | 'Admin'
+        'ED'   | 'Editor'
     }
 
-    void 'E07 : test removing readable by everyone (as editor)'() {
+    void 'CORE-#prefix-07 : test removing readable by everyone [allowed] (as container admin)'() {
+        if (name == 'Editor' && !expectations.editorCanChangePermissions) return
         given:
         String id = getValidId()
         def endpoint = "$id/readByEveryone"
-        loginEditor()
+        loginCreator()
         PUT(endpoint, [:])
         verifyResponse OK, response
-        response.body().readableByEveryone == true
+        responseBody().readableByEveryone == true
         logout()
 
         when: 'logged in as user with write access'
-        loginEditor()
+        login(name)
         DELETE(endpoint)
 
         then:
         verifyResponse(OK, response)
-        response.body().readableByEveryone == false
+        responseBody().readableByEveryone == false
 
         cleanup:
         removeValidIdObject(id)
+
+        where:
+        prefix | name
+        'CA'   | 'ContainerAdmin'
+        'AD'   | 'Admin'
+        'ED'   | 'Editor'
     }
 
-    void 'E08 : test accessing when readable by everyone (as editor)'() {
+    void 'CORE-#prefix-08 : test accessing when readable by everyone [allowed] (as container admin)'() {
+        if (name == 'Editor' && !expectations.editorCanChangePermissions) return
         given:
         String id = getValidId()
-        loginEditor()
+        loginCreator()
         PUT("$id/readByEveryone", [:])
         verifyResponse OK, response
         logout()
 
         when: 'logged in as user with write access'
-        loginEditor()
+        login(name)
         GET(id)
 
         then:
         verifyResponse OK, response
-        response.body().readableByEveryone == true
-        response.body().availableActions == getEditorAvailableActions().sort()
+        responseBody().readableByEveryone == true
+        responseBody().availableActions == actions.sort()
 
         when: 'removing readable by everyone'
-        loginEditor()
+        loginCreator()
         DELETE("$id/readByEveryone", [:])
         verifyResponse OK, response
         logout()
 
         and:
-        loginEditor()
+        login(name)
         GET(id)
 
         then:
         verifyResponse OK, response
-        response.body().readableByEveryone == false
-        response.body().availableActions == getEditorAvailableActions().sort()
+        responseBody().readableByEveryone == false
+        responseBody().availableActions == actions.sort()
 
         cleanup:
         removeValidIdObject(id)
+
+        where:
+        prefix | name             | actions
+        'CA'   | 'ContainerAdmin' | expectations.getContainerAdminAvailableActions()
+        'AD'   | 'Admin'          | expectations.getContainerAdminAvailableActions()
+        'ED'   | 'Editor'         | expectations.getEditorAvailableActions()
     }
 
-    /*
-     * Logged out testing
-     */
 
-    void 'L06 : test adding readable by everyone (not logged in)'() {
-        given:
-        String id = getValidId()
-
-        when: 'not logged in'
-        PUT("$id/readByEveryone", [:])
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'L07 : test removing readable by everyone (not logged in)'() {
-        given:
-        String id = getValidId()
-        def endpoint = "$id/readByEveryone"
-        loginEditor()
-        PUT(endpoint, [:])
-        verifyResponse OK, response
-        logout()
-
-        when: 'not logged in'
-        DELETE(endpoint)
-
-        then:
-        verifyForbidden response
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'L08 : test accessing when readable by everyone (not logged in)'() {
-        given:
-        String id = getValidId()
-        loginEditor()
-        PUT("$id/readByEveryone", [:])
-        verifyResponse OK, response
-        logout()
-
-        when: 'not logged in'
-        GET(id)
-
-        then:
-        verifyResponse(OK, response)
-        response.body().readableByEveryone == true
-        response.body().availableActions == ['show']
-
-        when: 'removing readable by everyone'
-        loginEditor()
-        DELETE("$id/readByEveryone", [:])
-        verifyResponse OK, response
-        logout()
-
-        and:
-        GET(id)
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    /**
-     * Testing when logged in as a no access/authenticated user
-     */
-    void 'N06 : test adding readable by everyone (as no access/authenticated)'() {
-        given:
-        String id = getValidId()
-
-        when: 'logged in as user with no access'
-        loginAuthenticated()
-        PUT("$id/readByEveryone", [:])
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'N07 : test removing readable by everyone (as no access/authenticated)'() {
-        given:
-        String id = getValidId()
-        def endpoint = "$id/readByEveryone"
-        loginEditor()
-        PUT(endpoint, [:])
-        verifyResponse OK, response
-        logout()
-
-        when: 'logged in as user with no access'
-        loginAuthenticated()
-        DELETE(endpoint)
-
-        then:
-        verifyForbidden response
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'N08 : test accessing when readable by everyone (as no access/authenticated)'() {
-        given:
-        String id = getValidId()
-        loginEditor()
-        PUT("$id/readByEveryone", [:])
-        verifyResponse OK, response
-        logout()
-
-        when: 'logged in as user with no access'
-        loginAuthenticated()
-        GET(id)
-
-        then:
-        verifyResponse(OK, response)
-        response.body().readableByEveryone == true
-        response.body().availableActions == ['show']
-
-        when: 'removing readable by everyone'
-        loginEditor()
-        DELETE("$id/readByEveryone", [:])
-        verifyResponse OK, response
-        logout()
-
-        and:
-        loginAuthenticated()
-        GET(id)
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    /**
-     * Testing when logged in as a reader only user
-     */
-    void 'R06 : test adding readable by everyone (as reader)'() {
-        given:
-        String id = getValidId()
-        def endpoint = "$id/readByEveryone"
-
-        when: 'logged in as user with read access'
-        loginReader()
-        PUT(endpoint, [:])
-
-        then:
-        verifyForbidden response
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'R07 : test removing readable by everyone (as reader)'() {
-        given:
-        String id = getValidId()
-        def endpoint = "$id/readByEveryone"
-        loginEditor()
-        PUT(endpoint, [:])
-        verifyResponse OK, response
-        logout()
-
-        when: 'logged in as user with read access'
-        loginReader()
-        DELETE(endpoint)
-
-        then:
-        verifyForbidden response
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'R08 : test accessing when readable by everyone (as reader)'() {
-        given:
-        String id = getValidId()
-        loginEditor()
-        PUT("$id/readByEveryone", [:])
-        verifyResponse OK, response
-        logout()
-
-        when: 'logged in as user with read access'
-        loginReader()
-        GET(id)
-
-        then:
-        verifyResponse(OK, response)
-        response.body().readableByEveryone == true
-        response.body().availableActions == getReaderAvailableActions().sort()
-
-        when: 'removing readable by everyone'
-        loginEditor()
-        DELETE("$id/readByEveryone", [:])
-        verifyResponse OK, response
-        logout()
-
-        and:
-        loginReader()
-        GET(id)
-
-        then:
-        verifyResponse OK, response
-        response.body().readableByEveryone == false
-        response.body().availableActions == getReaderAvailableActions().sort()
-
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    /*
-    * Logged in as admin testing
-    */
-
-    void 'A06 : test adding readable by everyone (as admin)'() {
-        given:
-        String id = getValidId()
-        def endpoint = "$id/readByEveryone"
-
-        when: 'logged in as user with write access'
-        loginAdmin()
-        PUT(endpoint, [:])
-
-        then:
-        verifyResponse(OK, response)
-        response.body().readableByEveryone == true
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'A07 : test removing readable by everyone (as admin)'() {
-        given:
-        String id = getValidId()
-        def endpoint = "$id/readByEveryone"
-        loginEditor()
-        PUT(endpoint, [:])
-        verifyResponse OK, response
-        response.body().readableByEveryone == true
-        logout()
-
-        when: 'logged in as user with write access'
-        loginAdmin()
-        DELETE(endpoint)
-
-        then:
-        verifyResponse(OK, response)
-        response.body().readableByEveryone == false
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'A08 : test accessing when readable by everyone (as admin)'() {
-        given:
-        String id = getValidId()
-        loginEditor()
-        PUT("$id/readByEveryone", [:])
-        verifyResponse OK, response
-        logout()
-
-        when: 'logged in as user with write access'
-        loginAdmin()
-        GET(id)
-
-        then:
-        verifyResponse OK, response
-        response.body().readableByEveryone == true
-        response.body().availableActions == getEditorAvailableActions().sort()
-
-        when: 'removing readable by everyone'
-        loginEditor()
-        DELETE("$id/readByEveryone", [:])
-        verifyResponse OK, response
-        logout()
-
-        and:
-        loginAdmin()
-        GET(id)
-
-        then:
-        verifyResponse OK, response
-        response.body().readableByEveryone == false
-        response.body().availableActions == getEditorAvailableActions().sort()
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    /*
-    * Logged in as editor testing
-    */
-
-    void 'E09 : test adding readable by authenticated (as editor)'() {
+    void 'CORE-#prefix-09 : test adding readable by authenticated [allowed] (as #name)'() {
+        if (name == 'Editor' && !expectations.editorCanChangePermissions) return
         given:
         String id = getValidId()
         def endpoint = "$id/readByAuthenticated"
 
         when: 'logged in as user with write access'
-        loginEditor()
+        login(name)
         PUT(endpoint, [:])
 
         then:
         verifyResponse(OK, response)
-        response.body().readableByAuthenticatedUsers == true
+        responseBody().readableByAuthenticatedUsers == true
 
         cleanup:
         removeValidIdObject(id)
+
+        where:
+        prefix | name
+        'CA'   | 'ContainerAdmin'
+        'AD'   | 'Admin'
+        'ED'   | 'Editor'
     }
 
-    void 'E10 : test removing readable by authenticated (as editor)'() {
+    void 'CORE-#prefix-10 : test removing readable by authenticated [allowed] (as #name)'() {
+        if (name == 'Editor' && !expectations.editorCanChangePermissions) return
         given:
         String id = getValidId()
         def endpoint = "$id/readByAuthenticated"
-        loginEditor()
+        loginCreator()
         PUT(endpoint, [:])
         verifyResponse OK, response
-        response.body().readableByAuthenticatedUsers == true
+        responseBody().readableByAuthenticatedUsers == true
         logout()
 
         when: 'logged in as user with write access'
-        loginEditor()
+        login(name)
         DELETE(endpoint)
 
         then:
         verifyResponse(OK, response)
-        response.body().readableByAuthenticatedUsers == false
+        responseBody().readableByAuthenticatedUsers == false
 
         cleanup:
         removeValidIdObject(id)
+
+        where:
+        prefix | name
+        'CA'   | 'ContainerAdmin'
+        'AD'   | 'Admin'
+        'ED'   | 'Editor'
     }
 
-    void 'E11 : test accessing when readable by authenticated (as editor)'() {
+    void 'CORE-#prefix-11 : test accessing when readable by authenticated [allowed] (as #name)'() {
+        if (name == 'Editor' && !expectations.editorCanChangePermissions) return
         given:
         String id = getValidId()
-        loginEditor()
+        loginCreator()
         PUT("$id/readByAuthenticated", [:])
         verifyResponse OK, response
         logout()
 
         when: 'logged in as user with write access'
-        loginEditor()
+        login(name)
         GET(id)
 
         then:
         verifyResponse OK, response
-        response.body().readableByAuthenticatedUsers == true
-        response.body().availableActions == getEditorAvailableActions().sort()
+        responseBody().readableByAuthenticatedUsers == true
+        responseBody().availableActions == actions.sort()
 
         when: 'removing readable by everyone'
-        loginEditor()
+        loginCreator()
         DELETE("$id/readByAuthenticated", [:])
         verifyResponse OK, response
         logout()
 
         and:
-        loginEditor()
+        login(name)
         GET(id)
 
         then:
         verifyResponse OK, response
-        response.body().readableByAuthenticatedUsers == false
-        response.body().availableActions == getEditorAvailableActions().sort()
+        responseBody().readableByAuthenticatedUsers == false
+        responseBody().availableActions == actions.sort()
 
         cleanup:
         removeValidIdObject(id)
+
+        where:
+        prefix | name             | actions
+        'CA'   | 'ContainerAdmin' | expectations.getContainerAdminAvailableActions()
+        'AD'   | 'Admin'          | expectations.getContainerAdminAvailableActions()
+        'ED'   | 'Editor'         | expectations.getEditorAvailableActions()
     }
 
-    /*
-     * Logged out testing
-     */
-
-    void 'L09 : test adding readable by authenticated (not logged in)'() {
-        given:
-        String id = getValidId()
-
-        when: 'not logged in'
-        PUT("$id/readByAuthenticated", [:])
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'L10 : test removing readable by authenticated (not logged in)'() {
-        given:
-        String id = getValidId()
-        def endpoint = "$id/readByAuthenticated"
-        loginEditor()
-        PUT(endpoint, [:])
-        verifyResponse OK, response
-        logout()
-
-        when: 'not logged in'
-        DELETE(endpoint)
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'L11 : test accessing when readable by authenticated (not logged in)'() {
-        given:
-        String id = getValidId()
-        loginEditor()
-        PUT("$id/readByAuthenticated", [:])
-        verifyResponse OK, response
-        logout()
-
-        when: 'not logged in'
-        GET(id)
-
-        then:
-        verifyNotFound response, id
-
-        when: 'removing readable by authenticated'
-        loginEditor()
-        DELETE("$id/readByAuthenticated", [:])
-        verifyResponse OK, response
-        logout()
-
-        and:
-        GET(id)
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    /**
-     * Testing when logged in as a no access/authenticated user
-     */
-    void 'N09 : test adding readable by authenticated (as no access/authenticated)'() {
-        given:
-        String id = getValidId()
-
-        when: 'logged in as user with no access'
-        loginAuthenticated()
-        PUT("$id/readByAuthenticated", [:])
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'N10 : test removing readable by authenticated (as no access/authenticated)'() {
-        given:
-        String id = getValidId()
-        def endpoint = "$id/readByAuthenticated"
-        loginEditor()
-        PUT(endpoint, [:])
-        verifyResponse OK, response
-        logout()
-
-        when: 'logged in as user with no access'
-        loginAuthenticated()
-        DELETE(endpoint)
-
-        then:
-        verifyForbidden response
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'N11 : test accessing when readable by authenticated (as no access/authenticated)'() {
-        given:
-        String id = getValidId()
-        loginEditor()
-        PUT("$id/readByAuthenticated", [:])
-        verifyResponse OK, response
-        logout()
-
-        when: 'logged in as user with no access'
-        loginAuthenticated()
-        GET(id)
-
-        then:
-        verifyResponse(OK, response)
-        response.body().readableByAuthenticatedUsers == true
-        response.body().availableActions == ['show']
-
-        when: 'removing readable by authenticated'
-        loginEditor()
-        DELETE("$id/readByAuthenticated", [:])
-        verifyResponse OK, response
-        logout()
-
-        and:
-        loginAuthenticated()
-        GET(id)
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    /**
-     * Testing when logged in as a reader only user
-     */
-    void 'R09 : test adding readable by authenticated (as reader)'() {
-        given:
-        String id = getValidId()
-        def endpoint = "$id/readByAuthenticated"
-
-        when: 'logged in as user with read access'
-        loginReader()
-        PUT(endpoint, [:])
-
-        then:
-        verifyForbidden response
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'R10 : test removing readable by authenticated (as reader)'() {
-        given:
-        String id = getValidId()
-        def endpoint = "$id/readByAuthenticated"
-        loginEditor()
-        PUT(endpoint, [:])
-        verifyResponse OK, response
-        logout()
-
-        when: 'logged in as user with read access'
-        loginReader()
-        DELETE(endpoint)
-
-        then:
-        verifyForbidden response
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'R11 : test accessing when readable by authenticated (as reader)'() {
-        given:
-        String id = getValidId()
-        loginEditor()
-        PUT("$id/readByAuthenticated", [:])
-        verifyResponse OK, response
-        logout()
-
-        when: 'logged in as user with read access'
-        loginReader()
-        GET(id)
-
-        then:
-        verifyResponse(OK, response)
-        response.body().readableByAuthenticatedUsers == true
-        response.body().availableActions == getReaderAvailableActions().sort()
-
-        when: 'removing readable by authenticated'
-        loginEditor()
-        DELETE("$id/readByAuthenticated", [:])
-        verifyResponse OK, response
-        logout()
-
-        and:
-        loginReader()
-        GET(id)
-
-        then:
-        verifyResponse OK, response
-        response.body().readableByAuthenticatedUsers == false
-        response.body().availableActions == getReaderAvailableActions().sort()
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    /*
-    * Logged in as admin testing
-    */
-
-    void 'A09 : test adding readable by authenticated (as admin)'() {
-        given:
-        String id = getValidId()
-        def endpoint = "$id/readByAuthenticated"
-
-        when: 'logged in as user with write access'
-        loginAdmin()
-        PUT(endpoint, [:])
-
-        then:
-        verifyResponse(OK, response)
-        response.body().readableByAuthenticatedUsers == true
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'A10 : test removing readable by authenticated (as admin)'() {
-        given:
-        String id = getValidId()
-        def endpoint = "$id/readByAuthenticated"
-        loginEditor()
-        PUT(endpoint, [:])
-        verifyResponse OK, response
-        response.body().readableByAuthenticatedUsers == true
-        logout()
-
-        when: 'logged in as user with write access'
-        loginAdmin()
-        DELETE(endpoint)
-
-        then:
-        verifyResponse(OK, response)
-        response.body().readableByAuthenticatedUsers == false
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'A11 : test accessing when readable by authenticated (as admin)'() {
-        given:
-        String id = getValidId()
-        loginEditor()
-        PUT("$id/readByAuthenticated", [:])
-        verifyResponse OK, response
-        logout()
-
-        when: 'logged in as user with write access'
-        loginAdmin()
-        GET(id)
-
-        then:
-        verifyResponse OK, response
-        response.body().readableByAuthenticatedUsers == true
-        response.body().availableActions == getEditorAvailableActions().sort()
-
-        when: 'removing readable by authenticated'
-        loginEditor()
-        DELETE("$id/readByAuthenticated", [:])
-        verifyResponse OK, response
-        logout()
-
-        and:
-        loginAdmin()
-        GET(id)
-
-        then:
-        verifyResponse OK, response
-        response.body().readableByAuthenticatedUsers == false
-        response.body().availableActions == getEditorAvailableActions().sort()
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    /*
-   * Logged in as editor testing
-   */
-
-    void 'E12 : test adding reader share (as editor)'() {
+    void 'CORE-#prefix-12 : test adding reader share [allowed] (as #name)'() {
+        if (name == 'Editor' && !expectations.editorCanChangePermissions) return
         given:
         String id = getValidId()
         String groupRoleId = getGroupRole(GroupRole.READER_ROLE_NAME).id.toString()
-        String readerGroupId = getUserGroup('extraGroup').id.toString()
-        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
+        String groupId = getUserGroup('extraGroup').id.toString()
+        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$groupId"
 
         when: 'logged in as writer'
-        loginEditor()
+        login(name)
         POST(endpoint, [:])
 
         then:
         verifyResponse CREATED, response
-        response.body().securableResourceId == id
-        response.body().userGroup.id == readerGroupId
-        response.body().groupRole.id == groupRoleId
+        responseBody().securableResourceId == id
+        responseBody().userGroup.id == groupId
+        responseBody().groupRole.id == groupRoleId
 
         when: 'getting item as new reader'
         loginAuthenticated2()
@@ -911,25 +319,32 @@ abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessF
 
         then:
         verifyResponse OK, response
-        response.body().availableActions == ['show']
-        response.body().id == id
+        responseBody().availableActions == expectations.getReaderAvailableActions()
+        responseBody().id == id
 
         cleanup:
         removeValidIdObject(id)
+
+        where:
+        prefix | name
+        'CA'   | 'ContainerAdmin'
+        'AD'   | 'Admin'
+        'ED'   | 'Editor'
     }
 
-    void 'E13 : test removing reader share (as editor)'() {
+    void 'CORE-#prefix-13 : test removing reader share [allowed] (as #name)'() {
+        if (name == 'Editor' && !expectations.editorCanChangePermissions) return
         given:
         String id = getValidId()
         String groupRoleId = getGroupRole(GroupRole.READER_ROLE_NAME).id.toString()
-        String readerGroupId = getUserGroup('extraGroup').id.toString()
-        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
-        loginEditor()
+        String groupId = getUserGroup('extraGroup').id.toString()
+        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$groupId"
+        loginCreator()
         POST(endpoint, [:])
         logout()
 
         when: 'logged in as writer'
-        loginEditor()
+        login(name)
         DELETE(endpoint, [:])
 
         then:
@@ -944,24 +359,243 @@ abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessF
 
         cleanup:
         removeValidIdObject(id)
+
+        where:
+        prefix | name
+        'CA'   | 'ContainerAdmin'
+        'AD'   | 'Admin'
+        'ED'   | 'Editor'
     }
 
-    /*
-   * Logged in as not logged in testing
-   */
+    /**
+     * Testing when logged in as a not allowed to change permissions user
+     */
+    void 'CORE-#prefix-06 : test adding readable by everyone [not allowed] (as #name)'() {
+        if (name == 'Editor' && expectations.editorCanChangePermissions) return
+        given:
+        String id = getValidId()
 
-    void 'L12 : test adding reader share (not logged in)'() {
+        when: 'logged in as user with read access'
+        login(name)
+        PUT("$id/readByEveryone", [:])
+
+        then:
+        if (canRead) verifyForbidden response
+        else verifyNotFound response, id
+
+        cleanup:
+        removeValidIdObject(id)
+
+        where:
+        prefix | name            | canRead
+        'LO'   | null            | false
+        'NA'   | 'Authenticated' | false
+        'RE'   | 'Reader'        | true
+        'RV'   | 'Reviewer'      | true
+        'AU'   | 'Author'        | true
+    }
+
+    void 'CORE-#prefix-07 : test removing readable by everyone [not allowed] (as #name)'() {
+        if (name == 'Editor' && expectations.editorCanChangePermissions) return
+        given:
+        String id = getValidId()
+        loginCreator()
+        PUT("$id/readByEveryone", [:])
+        verifyResponse OK, response
+        logout()
+
+        when: 'logged in as user with read access'
+        login(name)
+        DELETE("$id/readByEveryone")
+
+        then:
+        verifyForbidden response
+
+        cleanup:
+        removeValidIdObject(id)
+
+        where:
+        prefix | name
+        'LO'   | null
+        'NA'   | 'Authenticated'
+        'RE'   | 'Reader'
+        'RV'   | 'Reviewer'
+        'AU'   | 'Author'
+        'ED'   | 'Editor'
+    }
+
+    void 'CORE-#prefix-08 : test accessing when readable by everyone [not allowed] (as #name)'() {
+        if (name == 'Editor' && expectations.editorCanChangePermissions) return
+        given:
+        String id = getValidId()
+        loginCreator()
+        PUT("$id/readByEveryone", [:])
+        verifyResponse OK, response
+        logout()
+
+        when: 'logged in as user with read access'
+        login(name)
+        GET(id)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().readableByEveryone == true
+        responseBody().availableActions == actions.sort()
+
+        when: 'removing readable by everyone'
+        loginCreator()
+        DELETE("$id/readByEveryone", [:])
+        verifyResponse OK, response
+        logout()
+
+        and:
+        login(name)
+        GET(id)
+
+        then:
+        if (canRead) {
+            verifyResponse OK, response
+            responseBody().readableByEveryone == false
+            responseBody().availableActions == actions.sort()
+        } else verifyNotFound response, id
+
+
+        cleanup:
+        removeValidIdObject(id)
+
+        where:
+        prefix | name            | canRead | actions
+        'LO'   | null            | false   | expectations.getReaderAvailableActions()
+        'NA'   | 'Authenticated' | false   | expectations.getReaderAvailableActions()
+        'RE'   | 'Reader'        | true    | expectations.getReaderAvailableActions()
+        'RV'   | 'Reviewer'      | true    | expectations.getReviewerAvailableActions()
+        'AU'   | 'Author'        | true    | expectations.getAuthorAvailableActions()
+        'ED'   | 'Editor'        | true    | expectations.getEditorAvailableActions()
+    }
+
+    void 'CORE-#prefix-09 : test adding readable by authenticated [not allowed] (as #name)'() {
+        if (name == 'Editor' && expectations.editorCanChangePermissions) return
+        given:
+        String id = getValidId()
+
+        when: 'logged in as user with no access'
+        login(name)
+        PUT("$id/readByAuthenticated", [:])
+
+        then:
+        if (canRead) verifyForbidden response
+        else verifyNotFound response, id
+
+        cleanup:
+        removeValidIdObject(id)
+
+        where:
+        prefix | name            | canRead
+        'LO'   | null            | false
+        'NA'   | 'Authenticated' | false
+        'RE'   | 'Reader'        | true
+        'RV'   | 'Reviewer'      | true
+        'AU'   | 'Author'        | true
+        'ED'   | 'Editor'        | true
+    }
+
+    void 'CORE-#prefix-10 : test removing readable by authenticated [not allowed] (as #name)'() {
+        if (name == 'Editor' && expectations.editorCanChangePermissions) return
+        given:
+
+        String id = getValidId()
+        def endpoint = "$id/readByAuthenticated"
+        loginCreator()
+        PUT(endpoint, [:])
+        verifyResponse OK, response
+        logout()
+
+        when: 'logged in as user with no access'
+        login(name)
+        DELETE(endpoint)
+
+        then:
+        if (name) verifyForbidden response
+        else verifyNotFound response, id
+
+        cleanup:
+        removeValidIdObject(id)
+
+        where:
+        prefix | name
+        'LO'   | null
+        'NA'   | 'Authenticated'
+        'RE'   | 'Reader'
+        'RV'   | 'Reviewer'
+        'AU'   | 'Author'
+        'ED'   | 'Editor'
+    }
+
+    void 'CORE-#prefix-11 : test accessing when readable by authenticated [not allowed] (as #name)'() {
+        if (name == 'Editor' && expectations.editorCanChangePermissions) return
+        given:
+        String id = getValidId()
+        loginCreator()
+        PUT("$id/readByAuthenticated", [:])
+        verifyResponse OK, response
+        logout()
+
+        when: 'logged in as user with no access'
+        login(name)
+        GET(id)
+
+        then:
+        if (name) {
+            verifyResponse(OK, response)
+            responseBody().readableByAuthenticatedUsers == true
+            responseBody().availableActions == actions.sort()
+        } else verifyNotFound response, id
+
+        when: 'removing readable by authenticated'
+        loginCreator()
+        DELETE("$id/readByAuthenticated", [:])
+        verifyResponse OK, response
+        logout()
+
+        and:
+        login(name)
+        GET(id)
+
+        then:
+        if (canRead) {
+            verifyResponse(OK, response)
+            responseBody().readableByAuthenticatedUsers == false
+            responseBody().availableActions == actions.sort()
+        } else verifyNotFound response, id
+
+        cleanup:
+        removeValidIdObject(id)
+
+        where:
+        prefix | name            | canRead | actions
+        'LO'   | null            | false   | []
+        'NA'   | 'Authenticated' | false   | expectations.getReaderAvailableActions()
+        'RE'   | 'Reader'        | true    | expectations.getReaderAvailableActions()
+        'RV'   | 'Reviewer'      | true    | expectations.getReviewerAvailableActions()
+        'AU'   | 'Author'        | true    | expectations.getAuthorAvailableActions()
+        'ED'   | 'Editor'        | true    | expectations.getEditorAvailableActions()
+    }
+
+    void 'CORE-#prefix-12 : test adding reader share [not allowed] (as #name)'() {
+        if (name == 'Editor' && expectations.editorCanChangePermissions) return
         given:
         String id = getValidId()
         String groupRoleId = getGroupRole(GroupRole.READER_ROLE_NAME).id.toString()
         String readerGroupId = getUserGroup('extraGroup').id.toString()
         String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
 
-        when: 'not logged in'
+        when: 'logged in as user'
+        login(name)
         POST(endpoint, [:])
 
         then:
-        verifyNotFound response, id
+        if (canRead) verifyForbidden response
+        else verifyNotFound response, id
 
         when: 'getting item as new reader'
         loginAuthenticated2()
@@ -972,23 +606,35 @@ abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessF
 
         cleanup:
         removeValidIdObject(id)
+
+        where:
+        prefix | name            | canRead
+        'LO'   | null            | false
+        'NA'   | 'Authenticated' | false
+        'RE'   | 'Reader'        | true
+        'RV'   | 'Reviewer'      | true
+        'AU'   | 'Author'        | true
+        'ED'   | 'Editor'        | true
     }
 
-    void 'L13 : test removing reader share (not logged in)'() {
+    void 'CORE-#prefix-13 : test removing reader share [not allowed] (as #name)'() {
+        if (name == 'Editor' && expectations.editorCanChangePermissions) return
         given:
         String id = getValidId()
         String groupRoleId = getGroupRole(GroupRole.READER_ROLE_NAME).id.toString()
         String readerGroupId = getUserGroup('extraGroup').id.toString()
         String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
-        loginEditor()
+        loginCreator()
         POST(endpoint, [:])
         logout()
 
-        when: 'not logged in'
+        when: 'logged in as user'
+        login(name)
         DELETE(endpoint, [:])
 
         then:
-        verifyNotFound response, id
+        if (canRead) verifyForbidden response
+        else verifyNotFound response, id
 
         when: 'getting item as new reader permission not revoked'
         loginAuthenticated2()
@@ -996,489 +642,19 @@ abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessF
 
         then:
         verifyResponse OK, response
-        response.body().availableActions == ['show']
-        response.body().id == id
+        responseBody().availableActions == expectations.readerAvailableActions
+        responseBody().id == id
 
         cleanup:
         removeValidIdObject(id)
-    }
 
-    /*
-  * Logged in as no access/authenticated user
-  */
-
-    void 'N12 : test adding reader share (no access/authenticated)'() {
-        given:
-        String id = getValidId()
-        String groupRoleId = getGroupRole(GroupRole.READER_ROLE_NAME).id.toString()
-        String readerGroupId = getUserGroup('extraGroup').id.toString()
-        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
-
-        when: 'logged in as user'
-        loginAuthenticated()
-        POST(endpoint, [:])
-
-        then:
-        verifyNotFound response, id
-
-        when: 'getting item as new reader'
-        loginAuthenticated2()
-        GET(id)
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'N13 : test removing reader share (no access/authenticated)'() {
-        given:
-        String id = getValidId()
-        String groupRoleId = getGroupRole(GroupRole.READER_ROLE_NAME).id.toString()
-        String readerGroupId = getUserGroup('extraGroup').id.toString()
-        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
-        loginEditor()
-        POST(endpoint, [:])
-        logout()
-
-        when: 'logged in as user'
-        loginAuthenticated()
-        DELETE(endpoint, [:])
-
-        then:
-        verifyNotFound response, id
-
-        when: 'getting item as new reader permission not revoked'
-        loginAuthenticated2()
-        GET(id)
-
-        then:
-        verifyResponse OK, response
-        response.body().availableActions == ['show']
-        response.body().id == id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    /*
-  * Logged in as reader
-  */
-
-    void 'R12 : test adding reader share (as reader)'() {
-        given:
-        String id = getValidId()
-        String groupRoleId = getGroupRole(GroupRole.READER_ROLE_NAME).id.toString()
-        String readerGroupId = getUserGroup('extraGroup').id.toString()
-        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
-
-        when: 'logged in as user'
-        loginReader()
-        POST(endpoint, [:])
-
-        then:
-        verifyForbidden response
-
-        when: 'getting item as new reader'
-        loginAuthenticated2()
-        GET(id)
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'R13 : test removing reader share (as reader)'() {
-        given:
-        String id = getValidId()
-        String groupRoleId = getGroupRole(GroupRole.READER_ROLE_NAME).id.toString()
-        String readerGroupId = getUserGroup('extraGroup').id.toString()
-        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
-        loginEditor()
-        POST(endpoint, [:])
-        logout()
-
-        when: 'logged in as user'
-        loginReader()
-        DELETE(endpoint, [:])
-
-        then:
-        verifyForbidden response
-
-        when: 'getting item as new reader permission not revoked'
-        loginAuthenticated2()
-        GET(id)
-
-        then:
-        verifyResponse OK, response
-        response.body().availableActions == ['show']
-        response.body().id == id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    /*
-   * Logged in as admin testing
-   */
-
-    void 'A12 : test adding reader share (as admin)'() {
-        given:
-        String id = getValidId()
-        String groupRoleId = getGroupRole(GroupRole.READER_ROLE_NAME).id.toString()
-        String readerGroupId = getUserGroup('extraGroup').id.toString()
-        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
-
-        when: 'logged in as admin'
-        loginAdmin()
-        POST(endpoint, [:])
-
-        then:
-        verifyResponse CREATED, response
-        response.body().securableResourceId == id
-        response.body().userGroup.id == readerGroupId
-        response.body().groupRole.id == groupRoleId
-
-        when: 'getting item as new reader'
-        loginAuthenticated2()
-        GET(id)
-
-        then:
-        verifyResponse OK, response
-        response.body().availableActions == ['show']
-        response.body().id == id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'A13 : test removing reader share (as admin)'() {
-        given:
-        String id = getValidId()
-        String groupRoleId = getGroupRole(GroupRole.READER_ROLE_NAME).id.toString()
-        String readerGroupId = getUserGroup('extraGroup').id.toString()
-        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
-        loginEditor()
-        POST(endpoint, [:])
-        logout()
-
-        when: 'logged in as admin'
-        loginAdmin()
-        DELETE(endpoint, [:])
-
-        then:
-        verifyResponse NO_CONTENT, response
-
-        when: 'getting item as new reader'
-        loginAuthenticated2()
-        GET(id)
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    /*
-  * Logged in as editor testing
-  */
-
-    void 'E14 : test adding "editor" share (as editor)'() {
-        given:
-        String id = getValidId()
-        String groupRoleId = getGroupRole(getEditorGroupRoleName()).id.toString()
-        String readerGroupId = getUserGroup('extraGroup').id.toString()
-        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
-
-        when: 'logged in as writer'
-        loginEditor()
-        POST(endpoint, [:])
-
-        then:
-        verifyResponse CREATED, response
-        response.body().securableResourceId == id
-        response.body().userGroup.id == readerGroupId
-        response.body().groupRole.id == groupRoleId
-
-        when: 'getting item as new reader'
-        loginAuthenticated2()
-        GET(id)
-
-        then:
-        verifyResponse OK, response
-        response.body().availableActions == getEditorAvailableActions().sort()
-        response.body().id == id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'E15 : test removing "editor" share (as editor)'() {
-        given:
-        String id = getValidId()
-        String groupRoleId = getGroupRole(getEditorGroupRoleName()).id.toString()
-        String readerGroupId = getUserGroup('extraGroup').id.toString()
-        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
-        loginEditor()
-        POST(endpoint, [:])
-        logout()
-
-        when: 'logged in as writer'
-        loginEditor()
-        DELETE(endpoint, [:])
-
-        then:
-        verifyResponse NO_CONTENT, response
-
-        when: 'getting item as new reader'
-        loginAuthenticated2()
-        GET(id)
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    /*
-   * Logged in as not logged in testing
-   */
-
-    void 'L14 : test adding "editor" share (not logged in)'() {
-        given:
-        String id = getValidId()
-        String groupRoleId = getGroupRole(getEditorGroupRoleName()).id.toString()
-        String readerGroupId = getUserGroup('extraGroup').id.toString()
-        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
-
-        when: 'not logged in'
-        POST(endpoint, [:])
-
-        then:
-        verifyNotFound response, id
-
-        when: 'getting item as new reader'
-        loginAuthenticated2()
-        GET(id)
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'L15 : test removing "editor" share (not logged in)'() {
-        given:
-        String id = getValidId()
-        String groupRoleId = getGroupRole(getEditorGroupRoleName()).id.toString()
-        String readerGroupId = getUserGroup('extraGroup').id.toString()
-        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
-        loginEditor()
-        POST(endpoint, [:])
-        logout()
-
-        when: 'not logged in'
-        DELETE(endpoint, [:])
-
-        then:
-        verifyNotFound response, id
-
-        when: 'getting item as new reader access not revoked'
-        loginAuthenticated2()
-        GET(id)
-
-        then:
-        verifyResponse OK, response
-        response.body().availableActions == getEditorAvailableActions().sort()
-        response.body().id == id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    /*
-  * Logged in as no access/authenticated user
-  */
-
-    void 'N14 : test adding "editor" share (no access/authenticated)'() {
-        given:
-        String id = getValidId()
-        String groupRoleId = getGroupRole(getEditorGroupRoleName()).id.toString()
-        String readerGroupId = getUserGroup('extraGroup').id.toString()
-        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
-
-        when: 'logged in as user'
-        loginAuthenticated()
-        POST(endpoint, [:])
-
-        then:
-        verifyNotFound response, id
-
-        when: 'getting item as new reader'
-        loginAuthenticated2()
-        GET(id)
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'N15 : test removing "editor" share (no access/authenticated)'() {
-        given:
-        String id = getValidId()
-        String groupRoleId = getGroupRole(getEditorGroupRoleName()).id.toString()
-        String readerGroupId = getUserGroup('extraGroup').id.toString()
-        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
-        loginEditor()
-        POST(endpoint, [:])
-        logout()
-
-        when: 'logged in as user'
-        loginAuthenticated()
-        DELETE(endpoint, [:])
-
-        then:
-        verifyNotFound response, id
-
-        when: 'getting item as new reader access not revoked'
-        loginAuthenticated2()
-        GET(id)
-
-        then:
-        verifyResponse OK, response
-        response.body().availableActions == getEditorAvailableActions().sort()
-        response.body().id == id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    /*
-  * Logged in as reader
-  */
-
-    void 'R14 : test adding "editor" share (as reader)'() {
-        given:
-        String id = getValidId()
-        String groupRoleId = getGroupRole(getEditorGroupRoleName()).id.toString()
-        String readerGroupId = getUserGroup('extraGroup').id.toString()
-        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
-
-        when: 'logged in as user'
-        loginReader()
-        POST(endpoint, [:])
-
-        then:
-        verifyForbidden response
-
-        when: 'getting item as new reader'
-        loginAuthenticated2()
-        GET(id)
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'R15 : test removing "editor" share (as reader)'() {
-        given:
-        String id = getValidId()
-        String groupRoleId = getGroupRole(getEditorGroupRoleName()).id.toString()
-        String readerGroupId = getUserGroup('extraGroup').id.toString()
-        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
-        loginEditor()
-        POST(endpoint, [:])
-        logout()
-
-        when: 'logged in as user'
-        loginReader()
-        DELETE(endpoint, [:])
-
-        then:
-        verifyForbidden response
-
-        when: 'getting item as new reader access not revoked'
-        loginAuthenticated2()
-        GET(id)
-
-        then:
-        verifyResponse OK, response
-        response.body().availableActions == getEditorAvailableActions().sort()
-        response.body().id == id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    /*
-   * Logged in as admin testing
-   */
-
-    void 'A14 : test adding "editor" share (as admin)'() {
-        given:
-        String id = getValidId()
-        String groupRoleId = getGroupRole(getEditorGroupRoleName()).id.toString()
-        String readerGroupId = getUserGroup('extraGroup').id.toString()
-        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
-
-        when: 'logged in as admin'
-        loginAdmin()
-        POST(endpoint, [:])
-
-        then:
-        verifyResponse CREATED, response
-        response.body().securableResourceId == id
-        response.body().userGroup.id == readerGroupId
-        response.body().groupRole.id == groupRoleId
-
-        when: 'getting item as new reader'
-        loginAuthenticated2()
-        GET(id)
-
-        then:
-        verifyResponse OK, response
-        response.body().availableActions == getEditorAvailableActions().sort()
-        response.body().id == id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'A15 : test removing "editor" share (as admin)'() {
-        given:
-        String id = getValidId()
-        String groupRoleId = getGroupRole(getEditorGroupRoleName()).id.toString()
-        String readerGroupId = getUserGroup('extraGroup').id.toString()
-        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
-        loginEditor()
-        POST(endpoint, [:])
-        logout()
-
-        when: 'logged in as admin'
-        loginAdmin()
-        DELETE(endpoint, [:])
-
-        then:
-        verifyResponse NO_CONTENT, response
-
-        when: 'getting item as new reader'
-        loginAuthenticated2()
-        GET(id)
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
+        where:
+        prefix | name            | canRead
+        'LO'   | null            | false
+        'NA'   | 'Authenticated' | false
+        'RE'   | 'Reader'        | true
+        'RV'   | 'Reviewer'      | true
+        'AU'   | 'Author'        | true
+        'ED'   | 'Editor'        | true
     }
 }

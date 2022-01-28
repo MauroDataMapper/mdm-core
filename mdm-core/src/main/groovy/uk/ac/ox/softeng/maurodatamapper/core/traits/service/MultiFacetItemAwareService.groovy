@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired
  * @since 31/01/2020
  */
 @Slf4j
-trait MultiFacetItemAwareService<M extends MultiFacetItemAware> extends DomainService<M> {
+trait MultiFacetItemAwareService<M extends MultiFacetItemAware> extends MdmDomainService<M> {
 
     @Autowired(required = false)
     List<CatalogueItemService> catalogueItemServices

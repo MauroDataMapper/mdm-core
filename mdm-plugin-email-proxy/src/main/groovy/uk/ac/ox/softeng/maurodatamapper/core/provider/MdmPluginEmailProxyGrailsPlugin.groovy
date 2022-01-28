@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,9 @@ import grails.plugins.Plugin
 class MdmPluginEmailProxyGrailsPlugin extends Plugin {
 
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = "4.0.0 > *"
+    def grailsVersion = "5.1.1 > *"
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
-        "grails-app/views/error.gsp"
     ]
 
     def title = "Mauro Data Mapper Plugin Email Proxy"
@@ -58,6 +57,6 @@ An email proxy service provider for the Mauro Data Mapper.
     def scm = [url: "https://github.com/mauroDataMapper/mdm-core"]
 
     def dependsOn = [
-        mdmCore: '4.0.0 > *'
+        mdmCore: '5.0.0 > *'
     ]
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,51 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile
 
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiProperty
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyService
+import uk.ac.ox.softeng.maurodatamapper.profile.domain.ConfigurableProfileFieldTypes
+import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
+
+import groovy.util.logging.Slf4j
+import org.springframework.context.MessageSource
+
+import static uk.ac.ox.softeng.maurodatamapper.core.BootStrap.BootStrapUser
+
+@Slf4j
 class BootStrap {
 
+    ApiPropertyService apiPropertyService
+    MessageSource messageSource
+
     def init = { servletContext ->
+
+        try {
+            loadAndSetConfigurableFieldType(ConfigurableProfileFieldTypes.DATE_FORMAT_KEY,
+                                            ConfigurableProfileFieldTypes.DATE_FORMAT_DEFAULT)
+            loadAndSetConfigurableFieldType(ConfigurableProfileFieldTypes.DATETIME_FORMAT_KEY,
+                                            ConfigurableProfileFieldTypes.DATETIME_FORMAT_DEFAULT)
+            loadAndSetConfigurableFieldType(ConfigurableProfileFieldTypes.TIME_FORMAT_KEY,
+                                            ConfigurableProfileFieldTypes.TIME_FORMAT_DEFAULT)
+        } catch (Exception ignored) {
+            log.warn('Couldn\'t load configurable profile field types from ApiProperties, will use defaults')
+        }
     }
     def destroy = {
+    }
+
+    void loadAndSetConfigurableFieldType(String key, String[] defaultValues) {
+        ApiProperty.withNewTransaction {
+            ApiProperty apiProperty = apiPropertyService.findByKey(key)
+            if (!apiProperty) {
+                apiProperty = new ApiProperty(key: key,
+                                              value: defaultValues.join(','),
+                                              publiclyVisible: false,
+                                              category: 'profile',
+                                              lastUpdatedBy: BootStrapUser.instance.emailAddress,
+                                              createdBy: BootStrapUser.instance.emailAddress)
+                GormUtils.checkAndSave(messageSource, apiProperty)
+            }
+            ConfigurableProfileFieldTypes.instance.dateFormats = apiProperty.value.split(',')
+        }
     }
 }

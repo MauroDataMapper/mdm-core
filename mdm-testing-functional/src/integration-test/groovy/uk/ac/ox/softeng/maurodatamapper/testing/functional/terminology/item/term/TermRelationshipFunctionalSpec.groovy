@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
@@ -106,54 +107,28 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
     }
 
     @Override
-    Map getValidUpdateJson() {
+    Map getValidNonDescriptionUpdateJson() {
         [
             relationshipType: [id: getOtherRelationshipTypeId()],
         ]
     }
 
-    Boolean readerPermissionIsInherited() {
-        true
-    }
-
     @Override
-    void verifyL03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getComplexTerminologyId()
-    }
-
-    @Override
-    void verifyL03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getComplexTerminologyId()
-    }
-
-    @Override
-    void verifyL03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getComplexTerminologyId()
-    }
-
-    @Override
-    void verifyN03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getComplexTerminologyId()
-    }
-
-    @Override
-    void verifyN03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getComplexTerminologyId()
-    }
-
-    @Override
-    void verifyN03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getComplexTerminologyId()
-    }
-
-    @Override
-    void verifyR04UnknownIdResponse(HttpResponse<Map> response, String id) {
-        verifyForbidden response
+    Expectations getExpectations() {
+        Expectations.builder()
+            .withDefaultExpectations()
+            .withInheritedAccessPermissions()
+            .whereTestingUnsecuredResource()
+            .whereContainerAdminsCanAction('comment', 'delete', 'editDescription', 'save', 'show', 'update')
+            .whereEditorsCanAction('comment', 'delete', 'editDescription', 'save', 'show', 'update')
+            .whereAuthorsCanAction('comment', 'editDescription', 'show',)
+            .whereReviewersCanAction('comment', 'show')
+            .whereReadersCanAction('show')
     }
 
     @Override
     Pattern getExpectedUpdateEditRegex() {
-        ~/\[\w+:.+?] changed properties \[relationshipType, label]/
+        ~/\[\w+:.+?] changed properties \[relationshipType, path, label]/
     }
 
     @Override
@@ -161,7 +136,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
         verifyResponse HttpStatus.CREATED, response
     }
 
-    void verifyE03ValidResponseBody(HttpResponse<Map> response) {
+    void verify03ValidResponseBody(HttpResponse<Map> response) {
         assert response.body().id
         assert response.body().relationshipType.id == getRelationshipTypeId()
         assert response.body().sourceTerm.id == getTopTermId()
@@ -190,12 +165,7 @@ class TermRelationshipFunctionalSpec extends UserAccessFunctionalSpec {
     }
   ],
   "availableActions": [
-    "comment",
-    "delete",
-    "editDescription",
-    "save",
-    "show",
-    "update"
+    "show"
   ],
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "relationshipType": {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,5 +45,16 @@ class MetadataController extends FacetController<Metadata> {
     protected boolean validateResource(Metadata instance, String view) {
         metadataService.validate(instance)
         super.validateResource(instance, view)
+    }
+
+    @Override
+    protected Metadata updateResource(Metadata resource) {
+        List<String> dirtyPropertyNames = resource.getDirtyPropertyNames()
+        metadataService.updateMultiFacetAwareItemIndex(resource)
+        resource.save flush: true, validate: false
+        getFacetService().addUpdatedEditToMultiFacetAwareItem(currentUser, resource,
+                                                              params[getOwnerDomainTypeField()],
+                                                              params[getOwnerIdField()],
+                                                              dirtyPropertyNames)
     }
 }

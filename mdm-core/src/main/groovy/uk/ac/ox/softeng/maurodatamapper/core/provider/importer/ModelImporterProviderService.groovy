@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ abstract class ModelImporterProviderService<M extends Model, P extends ModelImpo
     List<M> importDomains(User currentUser, ModelImporterProviderServiceParameters params) {
         List<M> models = importModels(currentUser, params as P)
         models?.collect {
-            M updated = updateImportedModelFromParameters(it, params as P, true)
+            M updated = updateImportedModelFromParameters(it, params as P, models?.size() > 1)
             checkImport(currentUser, updated, params as P)
         }
         models
@@ -79,7 +79,8 @@ abstract class ModelImporterProviderService<M extends Model, P extends ModelImpo
     }
 
     M updateImportedModelFromParameters(M importedModel, P params, boolean list = false) {
-        if (params.finalised != null) importedModel.finalised = params.finalised
+        // Dont allow finalisation state to be overridden to unfinalised
+        if (params.finalised != null && !importedModel.finalised) importedModel.finalised = params.finalised
         if (!list && params.modelName) importedModel.label = params.modelName
         if (params.author) importedModel.author = params.author
         if (params.organisation) importedModel.organisation = params.organisation

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import grails.gorm.transactions.Rollback
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Shared
-import spock.lang.Unroll
 
 import java.nio.charset.Charset
 
@@ -61,6 +60,10 @@ abstract class DataBindTerminologyImportAndDefaultExporterServiceSpec<I extends 
 
     abstract void validateExportedModel(String testName, String exportedModel)
 
+    void validateExportedModels(String testName, String exportedModels) {
+        validateExportedModel(testName, exportedModels)
+    }
+
     Terminology importAndConfirm(byte[] bytes) {
         def imported = importerService.importTerminology(admin, bytes)
 
@@ -75,9 +78,7 @@ abstract class DataBindTerminologyImportAndDefaultExporterServiceSpec<I extends 
         assert terminologyService.count() == 3
 
         Terminology tm = Terminology.listOrderByDateCreated().last()
-
         log.info('Confirming imported model')
-
         confirmTerminology(tm)
         tm
     }
@@ -87,10 +88,18 @@ abstract class DataBindTerminologyImportAndDefaultExporterServiceSpec<I extends 
         new String(byteArrayOutputStream.toByteArray(), Charset.defaultCharset())
     }
 
+    String exportModels(List<UUID> terminologyIds) {
+        new String(exporterService.exportDomains(admin, terminologyIds).toByteArray(), Charset.defaultCharset())
+    }
+
     String importAndExport(byte[] bytes) {
         Terminology tm = importAndConfirm(bytes)
         assert tm, 'Must have a datamodel imported to be able to export'
         exportModel(tm.id)
+    }
+
+    static String replaceWithTestAuthority(String exported) {
+        exported.replace(/Mauro Data Mapper/, 'Test Authority')
     }
 
     void 'E01 : test empty data import export'() {
@@ -103,11 +112,9 @@ abstract class DataBindTerminologyImportAndDefaultExporterServiceSpec<I extends 
         then:
         ApiInternalException exception = thrown(ApiInternalException)
         exception.errorCode == 'TEEP01'
-
     }
 
-    @Unroll
-    void 'E02 : test "#testName" data export'() {
+    void 'E02 : test #testName data export'() {
         given:
         setupData()
 
@@ -155,7 +162,7 @@ abstract class DataBindTerminologyImportAndDefaultExporterServiceSpec<I extends 
         ObjectDiff diff = terminologyService.getDiffForModels(terminologyService.get(complexTerminologyId), imported)
 
         then:
-        if (!diff.objectsAreIdentical()) {
+        if (!diff.objectsAreIdentical() && diff.numberOfDiffs != 4) {
             log.error('{}', diff.toString())
         }
         // Rules are not exported/imported and therefore will exist as diffs
@@ -193,5 +200,4 @@ abstract class DataBindTerminologyImportAndDefaultExporterServiceSpec<I extends 
         then:
         diff.objectsAreIdentical()
     }
-
 }

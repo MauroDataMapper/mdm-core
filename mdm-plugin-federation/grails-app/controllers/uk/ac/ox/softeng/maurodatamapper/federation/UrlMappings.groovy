@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,15 +28,30 @@ class UrlMappings {
            */
             get "/feeds/all"(controller: 'feed', action: 'index')
 
-            '/subscribedCatalogues'(resources: 'subscribedCatalogue') {
-                get '/availableModels'(controller: 'subscribedCatalogue', action: 'publishedModels') // to be removed
-                get '/publishedModels'(controller: 'subscribedCatalogue', action: 'publishedModels')
-                get '/testConnection'(controller: 'subscribedCatalogue', action: 'testConnection')
-                '/subscribedModels'(resources: 'subscribedModel', excludes: DEFAULT_EXCLUDES)
+            group '/admin', {
+                '/subscribedCatalogues'(resources: 'subscribedCatalogue') {
+                    get '/testConnection'(controller: 'subscribedCatalogue', action: 'testConnection')
+                }
             }
-            post "/subscribedModels/$subscribedModelId/federate"(controller: 'subscribedModel', action: 'federate')
+
+            group '/subscribedCatalogues', {
+                get '/'(controller: 'subscribedCatalogue', action: 'index') {
+                    openAccess = true
+                }
+                group "/$subscribedCatalogueId", {
+                    get '/'(controller: 'subscribedCatalogue', action: 'show') {
+                        openAccess = true
+                    }
+                    get '/testConnection'(controller: 'subscribedCatalogue', action: 'testConnection')
+                    get '/publishedModels'(controller: 'subscribedCatalogue', action: 'publishedModels')
+                    get "/publishedModels/$publishedModelId/newerVersions"(controller: 'subscribedCatalogue', action: 'newerVersions')
+                    '/subscribedModels'(resources: 'subscribedModel', excludes: DEFAULT_EXCLUDES)
+                    get "/subscribedModels/$id/newerVersions"(controller: 'subscribedModel', action: 'newerVersions')
+                }
+            }
 
             get '/published/models'(controller: 'publish', action: 'index')
+            get "/published/models/$publishedModelId/newerVersions"(controller: 'publish', action: 'newerVersions')
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRoleService
@@ -52,7 +52,7 @@ class UserGroupServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
 
         funGroup.addToGroupMembers(reviewer)
 
-        checkAndSave new UserGroup(createdByUser: reviewer, name: 'empty').addToGroupMembers(reviewer)
+        checkAndSave new UserGroup(createdBy: StandardEmailAddress.INTEGRATION_TEST, name: 'empty').addToGroupMembers(reviewer)
 
         id = readers.id
     }
@@ -86,10 +86,8 @@ class UserGroupServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
         funGroup.description == 'A group which has fun people in it'
 
         and:
-        readers.groupMembers.size() == 3
-        checkGroupUser readers, author
+        readers.groupMembers.size() == 1
         checkGroupUser readers, reader
-        checkGroupUser readers, reviewer
 
         and:
         funGroup.groupMembers.size() == 2

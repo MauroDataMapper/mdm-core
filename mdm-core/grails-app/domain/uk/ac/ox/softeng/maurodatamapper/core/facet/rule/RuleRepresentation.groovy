@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,14 +23,15 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
-import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class RuleRepresentation implements Diffable<RuleRepresentation>, EditHistoryAware {
+class RuleRepresentation implements MdmDomain, Diffable<RuleRepresentation>, EditHistoryAware {
 
     UUID id
 
@@ -40,7 +41,7 @@ class RuleRepresentation implements Diffable<RuleRepresentation>, EditHistoryAwa
     static belongsTo = [rule: Rule]
 
     static constraints = {
-        CallableConstraints.call(CreatorAwareConstraints, delegate)
+        CallableConstraints.call(MdmDomainConstraints, delegate)
         rule nullable: false
         language blank: false, nullable: false
         representation blank: false, nullable: false
@@ -53,8 +54,8 @@ class RuleRepresentation implements Diffable<RuleRepresentation>, EditHistoryAwa
     }
 
     static search = {
-        language index: 'yes'
-        representation index: 'yes'
+        language searchable: 'yes'
+        representation searchable: 'yes'
     }
 
     RuleRepresentation() {

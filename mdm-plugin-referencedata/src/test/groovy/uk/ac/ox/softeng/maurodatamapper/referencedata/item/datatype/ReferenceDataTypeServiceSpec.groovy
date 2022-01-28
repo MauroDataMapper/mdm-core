@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype
 
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
@@ -42,34 +43,34 @@ class ReferenceDataTypeServiceSpec extends CatalogueItemServiceSpec implements S
         mockArtefact(ReferencePrimitiveTypeService)
         mockArtefact(ReferenceEnumerationTypeService)
         mockArtefact(ReferenceSummaryMetadataService)
-        mockDomains(ReferenceDataModel, ReferenceDataType, ReferencePrimitiveType, ReferenceDataType, ReferenceEnumerationType, ReferenceEnumerationValue, ReferenceDataElement)
+        mockDomains(ReferenceDataModel, ReferenceDataType, ReferencePrimitiveType, ReferenceDataType, ReferenceEnumerationType, ReferenceEnumerationValue,
+                    ReferenceDataElement)
 
-        referenceDataModel = new ReferenceDataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder, authority: testAuthority)
+        referenceDataModel = new ReferenceDataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'Unit test model', folder: testFolder, authority: testAuthority)
         checkAndSave(referenceDataModel)
 
-        ReferencePrimitiveType primitiveType = new ReferencePrimitiveType(createdByUser: editor, label: 'varchar')
+        ReferencePrimitiveType primitiveType = new ReferencePrimitiveType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'varchar')
 
         referenceDataModel.addToReferenceDataTypes(primitiveType)
-        referenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: admin, label: 'string'))
-        referenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: editor, label: 'integer'))
+        referenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'string'))
+        referenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'integer'))
 
-        ReferenceEnumerationType et1 = new ReferenceEnumerationType(createdByUser: editor, label: 'et1')
-            .addToReferenceEnumerationValues(createdByUser: admin, key: 'key1', value: 'val1')
-            .addToReferenceEnumerationValues(new ReferenceEnumerationValue(createdByUser: admin, key: 'key2', value: 'val2')
+        ReferenceEnumerationType et1 = new ReferenceEnumerationType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'et1')
+            .addToReferenceEnumerationValues(createdBy: StandardEmailAddress.UNIT_TEST, key: 'key1', value: 'val1')
+            .addToReferenceEnumerationValues(new ReferenceEnumerationValue(createdBy: StandardEmailAddress.UNIT_TEST, key: 'key2', value: 'val2')
             )
         referenceDataModel.addToReferenceDataTypes(et1)
-        referenceDataModel.addToReferenceDataTypes(new ReferenceEnumerationType(createdByUser: editor, label: 'moreet')
-                                     .addToReferenceEnumerationValues(createdByUser: admin, key: 'key1', value: 'val1')
-                                     .addToReferenceEnumerationValues(createdByUser: admin, key: 'key2', value: 'val2')
-                                     .addToReferenceEnumerationValues(createdByUser: admin, key: 'key3', value: 'val3')
-                                     .addToReferenceEnumerationValues(createdByUser: admin, key: 'key4', value: 'val4')
+        referenceDataModel.addToReferenceDataTypes(new ReferenceEnumerationType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'moreet')
+                                                       .addToReferenceEnumerationValues(createdBy: StandardEmailAddress.UNIT_TEST, key: 'key1', value: 'val1')
+                                                       .addToReferenceEnumerationValues(createdBy: StandardEmailAddress.UNIT_TEST, key: 'key2', value: 'val2')
+                                                       .addToReferenceEnumerationValues(createdBy: StandardEmailAddress.UNIT_TEST, key: 'key3', value: 'val3')
+                                                       .addToReferenceEnumerationValues(createdBy: StandardEmailAddress.UNIT_TEST, key: 'key4', value: 'val4')
         )
-        referenceDataModel.addToReferenceDataTypes(new ReferenceEnumerationType(createdByUser: admin, label: 'yesnounknown')
-                                     .addToReferenceEnumerationValues(key: 'Y', value: 'Yes')
-                                     .addToReferenceEnumerationValues(key: 'N', value: 'No')
-                                     .addToReferenceEnumerationValues(key: 'U', value: 'Unknown'))
+        referenceDataModel.addToReferenceDataTypes(new ReferenceEnumerationType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'yesnounknown')
+                                                       .addToReferenceEnumerationValues(key: 'Y', value: 'Yes')
+                                                       .addToReferenceEnumerationValues(key: 'N', value: 'No')
+                                                       .addToReferenceEnumerationValues(key: 'U', value: 'Unknown'))
 
-        
 
         checkAndSave(referenceDataModel)
 
@@ -131,7 +132,7 @@ class ReferenceDataTypeServiceSpec extends CatalogueItemServiceSpec implements S
     void "test save"() {
 
         when:
-        ReferenceDataType dataType = new ReferencePrimitiveType(createdByUser: reader2, label: 'saving test', referenceDataModel: referenceDataModel)
+        ReferenceDataType dataType = new ReferencePrimitiveType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'saving test', referenceDataModel: referenceDataModel)
         service.save(dataType)
 
         then:
@@ -141,7 +142,7 @@ class ReferenceDataTypeServiceSpec extends CatalogueItemServiceSpec implements S
     void 'test copying primitive datatype'() {
         given:
         ReferenceDataType original = ReferencePrimitiveType.findByLabel('string')
-        ReferenceDataModel copyModel = new ReferenceDataModel(createdByUser: admin, label: 'copy model', folder: testFolder, authority: testAuthority)
+        ReferenceDataModel copyModel = new ReferenceDataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'copy model', folder: testFolder, authority: testAuthority)
 
         expect:
         checkAndSave(copyModel)
@@ -173,7 +174,7 @@ class ReferenceDataTypeServiceSpec extends CatalogueItemServiceSpec implements S
     void 'test copying enumeration datatype'() {
         given:
         ReferenceDataType original = ReferenceEnumerationType.findByLabel('yesnounknown')
-        ReferenceDataModel copyModel = new ReferenceDataModel(createdByUser: admin, label: 'copy model', folder: testFolder, authority: testAuthority)
+        ReferenceDataModel copyModel = new ReferenceDataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'copy model', folder: testFolder, authority: testAuthority)
 
         expect:
         checkAndSave(copyModel)

@@ -20,4 +20,8 @@ json {
     if (subscribedCatalogue.apiKey) {
         apiKey subscribedCatalogue.apiKey
     }
+
+    if (subscribedCatalogue.connectionTimeout) {
+        connectionTimeout subscribedCatalogue.connectionTimeout
+    }
 }

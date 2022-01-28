@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ class SecurableResourceGroupRoleServiceIntegrationSpec extends BaseIntegrationSp
         SecurableResourceGroupRole folderEditors = new SecurableResourceGroupRole(securableResource: folder,
                                                                                   userGroup: editors,
                                                                                   groupRole: groupRoleService.getFromCache('editor').groupRole,
-                                                                                  createdBy: userEmailAddresses.integrationTest)
+                                                                                  createdBy: userEmailAddresses.development)
         checkAndSave(folderEditors)
         checkAndSave(new SecurableResourceGroupRole(securableResource: folder,
                                                     userGroup: readers,
@@ -401,5 +401,29 @@ class SecurableResourceGroupRoleServiceIntegrationSpec extends BaseIntegrationSp
 
         then:
         !resource
+    }
+
+    void 'test anonymisation'() {
+        given:
+        setupData()
+
+        when: 'list securable resource group roles'
+        List<SecurableResourceGroupRole> securableResourceGroupRoleList = securableResourceGroupRoleService.list(max:1000, offset: 0)
+
+        then: 'there are 4; 3 created by integrationTest and 1 by development'
+        securableResourceGroupRoleList.size() == 4
+        securableResourceGroupRoleList.findAll{it.createdBy == userEmailAddresses.integrationTest}.size() == 3
+        securableResourceGroupRoleList.findAll{it.createdBy == userEmailAddresses.development}.size() == 1
+        securableResourceGroupRoleList.findAll{it.createdBy == 'anonymous@maurodatamapper.com'}.size() == 0
+
+        when: 'anonymise the development user'
+        securableResourceGroupRoleService.anonymise(userEmailAddresses.development)
+        securableResourceGroupRoleList = securableResourceGroupRoleService.list(max:1000, offset: 0)
+
+        then: 'the securable resource group role which was created by development is anonymised'
+        securableResourceGroupRoleList.size() == 4
+        securableResourceGroupRoleList.findAll{it.createdBy == userEmailAddresses.integrationTest}.size() == 3
+        securableResourceGroupRoleList.findAll{it.createdBy == userEmailAddresses.development}.size() == 0
+        securableResourceGroupRoleList.findAll{it.createdBy == 'anonymous@maurodatamapper.com'}.size() == 1
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
@@ -28,7 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.version.Version
 import grails.gorm.transactions.Rollback
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
@@ -85,9 +85,9 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
     @Shared
     Folder folder
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def checkAndSetupData() {
+    def setup() {
         log.debug('Check and setup test data')
         folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
         checkAndSave(folder)
@@ -117,7 +117,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
     @Transactional
     def cleanupSpec() {
         log.debug('CleanupSpec DataClassFunctionalSpec')
-        cleanUpResources(DataType, DataModel, Folder)
+        cleanUpResources(DataType, DataModel, Folder, Classifier)
     }
 
     @Override
@@ -126,7 +126,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
             sleep(20)
             GET(getResourcePath(otherDataModelId), MAP_ARG, true)
             def items = responseBody().items
-            items.each {i ->
+            items.each { i ->
                 DELETE("${getResourcePath(otherDataModelId)}/$i.id", MAP_ARG, true)
                 assert response.status() == HttpStatus.NO_CONTENT
                 sleep(20)
@@ -169,7 +169,6 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
             label: null
         ]
     }
-
 
     @Override
     Map getValidUpdateJson() {
@@ -223,7 +222,6 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         response.status() == OK
         responseBody().count == 0
         responseBody().items.size() == 0
-
     }
 
     void 'Test getting all content of a DataClass'() {
@@ -292,12 +290,12 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         responseBody().items.size() == 2
 
         and:
-        responseBody().items.any {it.id == id}
-        responseBody().items.any {it.id == childId}
+        responseBody().items.any { it.id == id }
+        responseBody().items.any { it.id == childId }
 
         and:
-        responseBody().items.find {it.id == id}.breadcrumbs.size() == 1
-        responseBody().items.find {it.id == childId}.breadcrumbs.size() == 2
+        responseBody().items.find { it.id == id }.breadcrumbs.size() == 1
+        responseBody().items.find { it.id == childId }.breadcrumbs.size() == 2
     }
 
     void 'CC01 : test copying from datamodel root to other datamodel root'() {
@@ -400,8 +398,8 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         then:
         verifyResponse(OK, response)
         responseBody().count == 2
-        responseBody().items.any {it.label == 'Functional Test DataElement'}
-        responseBody().items.any {it.label == 'Functional Test DataElement 2'}
+        responseBody().items.any { it.label == 'Functional Test DataElement' }
+        responseBody().items.any { it.label == 'Functional Test DataElement 2' }
 
         when:
         GET("dataModels/$otherDataModelId/dataTypes", MAP_ARG, true)
@@ -409,8 +407,8 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         then:
         verifyResponse(OK, response)
         responseBody().count == 2
-        responseBody().items.any {it.label == 'wibble'}
-        responseBody().items.any {it.label == 'string'}
+        responseBody().items.any { it.label == 'wibble' }
+        responseBody().items.any { it.label == 'string' }
     }
 
     @Rollback
@@ -438,13 +436,11 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         responseBody().id != id
         responseBody().label == validJson.label
 
-
         when: 'trying to copy and rename non-existent object'
         POST("${getResourcePath(otherDataModelId)}/$dataModelId/${UUID.randomUUID()}", getValidCopyLabel(), MAP_ARG, true)
 
         then:
         response.status() == NOT_FOUND
-
     }
 
     @Rollback
@@ -485,22 +481,22 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
 
         then:
         verifyResponse(OK, response)
-        responseBody().items.any {it.label == 'Functional Test DataElement 3' }
-        responseBody().items.any {it.label == 'Functional Test DataElement 4' }
+        responseBody().items.any { it.label == 'Functional Test DataElement 3' }
+        responseBody().items.any { it.label == 'Functional Test DataElement 4' }
 
         when:
         GET("dataModels/$otherDataModelId/dataTypes", MAP_ARG, true)
 
         then:
         verifyResponse(OK, response)
-        responseBody().items.any {it.label == 'wobble' }
-        responseBody().items.any {it.label == 'string' }
+        responseBody().items.any { it.label == 'wobble' }
+        responseBody().items.any { it.label == 'string' }
     }
 
     @Rollback
     void 'test searching for metadata "mdk1" in content dataclass'() {
         given:
-        POST('dataModels/import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/2.0', [
+        POST('dataModels/import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.0', [
             finalised                      : false,
             folderId                       : folder.id.toString(),
             importAsNewDocumentationVersion: false,
@@ -549,13 +545,12 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         sessionFactory.currentSession.flush()
         DELETE("dataModels/${importedId}?permanent=true", MAP_ARG, true)
         assert response.status() == HttpStatus.NO_CONTENT
-
     }
 
     @Rollback
     void 'test searching for metadata "mdk1" in empty dataclass'() {
         given:
-        POST('dataModels/import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/2.0', [
+        POST('dataModels/import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.0', [
             finalised                      : false,
             folderId                       : folder.id.toString(),
             importAsNewDocumentationVersion: false,
@@ -626,7 +621,6 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         responseBody().items[2].id == child3Id
         responseBody().items[2].parentDataClass == bId
 
-
         when: 'All items are listed'
         GET('')
 
@@ -659,7 +653,6 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         responseBody().items[1].label == 'content'
         responseBody().items[2].label == 'emptyclass'
 
-
         when: 'All children of parent are listed'
         GET("${bId}/dataClasses")
 
@@ -685,7 +678,6 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         ])
         verifyResponse CREATED, response
         String internalExtendableId = responseBody().id
-
 
         // Get a DC which we will not be able to extend
         POST(getResourcePath(otherDataModelId), validJson, MAP_ARG, true)
@@ -731,8 +723,8 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         then:
         verifyResponse OK, response
         responseBody().extendsDataClasses.size() == 2
-        responseBody().extendsDataClasses.any {it.id == externalExtendableId && it.model == finalisedDataModelId.toString()}
-        responseBody().extendsDataClasses.any {it.id == internalExtendableId && it.model == dataModelId.toString()}
+        responseBody().extendsDataClasses.any { it.id == externalExtendableId && it.model == finalisedDataModelId.toString() }
+        responseBody().extendsDataClasses.any { it.id == internalExtendableId && it.model == dataModelId.toString() }
 
         cleanup:
         cleanUpData(id)
@@ -839,9 +831,9 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         then:
         verifyResponse OK, response
         responseBody().items.size() == 3
-        responseBody().items.any {it.id == internalId && !it.imported}
-        responseBody().items.any {it.id == sameModelImportableId && it.imported}
-        responseBody().items.any {it.id == importableId && it.imported}
+        responseBody().items.any { it.id == internalId && !it.imported }
+        responseBody().items.any { it.id == sameModelImportableId && it.imported }
+        responseBody().items.any { it.id == importableId && it.imported }
 
         cleanup:
         cleanUpData(id)
@@ -906,7 +898,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         then:
         verifyResponse OK, response
         responseBody().items.size() == 1
-        responseBody().items.any {it.id == internalId}
+        responseBody().items.any { it.id == internalId }
 
         cleanup:
         cleanUpData(id)
@@ -996,9 +988,9 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         then:
         verifyResponse OK, response
         responseBody().items.size() == 3
-        responseBody().items.any {it.id == internalId && !it.imported}
-        responseBody().items.any {it.id == importableId && it.imported}
-        responseBody().items.any {it.id == sameModelImportableId && it.imported}
+        responseBody().items.any { it.id == internalId && !it.imported }
+        responseBody().items.any { it.id == importableId && it.imported }
+        responseBody().items.any { it.id == sameModelImportableId && it.imported }
 
         cleanup:
         cleanUpData(id)
@@ -1057,7 +1049,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         then:
         verifyResponse OK, response
         responseBody().items.size() == 1
-        responseBody().items.any {it.id == internalId}
+        responseBody().items.any { it.id == internalId }
 
         cleanup:
         cleanUpData(id)

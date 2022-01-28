@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,20 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.path.Path
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import grails.core.GrailsApplication
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
+import grails.util.Holders
+import org.grails.datastore.gorm.GormEntity
 
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
 @Resource(readOnly = false, formats = ['json', 'xml'])
@@ -31,7 +40,7 @@ class ModelDataType extends DataType<ModelDataType> {
     String modelResourceDomainType
 
     static constraints = {
-        modelResourceDomainType validator: { source, obj ->
+        modelResourceDomainType validator: {source, obj ->
             if (source == DataModel.simpleName) ['invalid.model.type.datatype']
         }
     }
@@ -41,10 +50,34 @@ class ModelDataType extends DataType<ModelDataType> {
     }
 
     ObjectDiff<ModelDataType> diff(ModelDataType otherDataType, String context) {
-        catalogueItemDiffBuilder(ModelDataType, this, otherDataType)
-            .appendString('modelResourceId', this.modelResourceId.toString(), otherDataType.modelResourceId.toString())
-            .appendString('modelResourceDomainType', this.modelResourceDomainType, otherDataType.modelResourceDomainType)
+        ObjectDiff<ModelDataType> diff = catalogueItemDiffBuilder(ModelDataType, this, otherDataType)
 
+        // Aside from branch and version, is the model pointed to by the modelDataType really different by path?
+        // Could be a different model entirely
+        Model thisResourceModel = getModelResource(this)
+        Model otherResourceModel = getModelResource(otherDataType)
+        if (thisResourceModel && otherResourceModel) {
+            if (!thisResourceModel.getPath().matches(otherResourceModel.getPath(), thisResourceModel.getPath().last().modelIdentifier)) {
+                diff.
+                    appendString('modelResourcePath',
+                                 thisResourceModel.getPath().toString(),
+                                 otherResourceModel.getPath().toString())
+            }
+        }
+        diff
+    }
+
+    static Model getModelResource(ModelDataType modelDataType) {
+        GrailsApplication grailsApplication = Holders.getGrailsApplication()
+        Class<GormEntity> resourceClass = Utils.lookupGrailsDomain(grailsApplication, modelDataType.modelResourceDomainType)?.getClazz()
+        if (resourceClass && modelDataType.modelResourceId) {
+            Model model = resourceClass.get(modelDataType.modelResourceId)
+            if (model) return model
+            throw new ApiInternalException('MDT',
+                                           "ModelDataType exists which points to a non-existent model " +
+                                           "${modelDataType.modelResourceDomainType}:${modelDataType.modelResourceId}")
+        }
+        return null
     }
 
     static DetachedCriteria<ModelDataType> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {

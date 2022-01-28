@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,16 +22,16 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
-import io.micronaut.http.HttpStatus
-
-import java.util.regex.Pattern
 
 import static io.micronaut.http.HttpStatus.CREATED
+import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 
 /**
@@ -80,13 +80,6 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
     Map getInvalidJson() {
         [
             label: null
-        ]
-    }
-
-    @Override
-    Map getValidUpdateJson() {
-        [
-            description: 'Testing folder description'
         ]
     }
 
@@ -141,68 +134,43 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
     }
 
     @Override
-    Pattern getExpectedCreatedEditRegex() {
-        ~/\[Folder:Functional Test Folder 3] created/
-    }
-
-    @Override
-    Pattern getExpectedUpdateEditRegex() {
-        ~/\[Folder:Functional Test Folder 3] changed properties \[description]/
-    }
-
-    @Override
-    Boolean isDisabledNotDeleted() {
-        true
-    }
-
-    @Override
-    Boolean hasDefaultCreation() {
-        true
-    }
-
-    Boolean getAuthenticatedUsersCanCreate() {
-        true
-    }
-
-    @Override
-    Boolean getReaderCanCreate() {
-        true
-    }
-
-    @Override
-    List<String> getEditorAvailableActions() {
-        ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'delete']
-    }
-
-    @Override
-    String getEditorGroupRoleName() {
-        GroupRole.CONTAINER_ADMIN_ROLE_NAME
-    }
-
-    @Override
-    void verifyL01Response(HttpResponse<Map> response) {
-        verifyResponse OK, response
-        assert response.body().count == 0
-    }
-
-    @Override
-    void verifyN01Response(HttpResponse<Map> response) {
-        verifyResponse OK, response
-        response.body().count == 0
-        response.body().items.size() == 0
+    Expectations getExpectations() {
+        Expectations.builder()
+            .withDefaultExpectations()
+            .withSoftDeleteByDefault()
+            .withDefaultCreation()
+            .whereEditorsCannotChangePermissions()
+            .whereAnonymousUsers {
+                canIndex()
+            }
+            .whereAuthenticatedUsers {
+                canCreate()
+                cannotSee()
+            }
+            .whereReaders {
+                canCreate()
+            }
+            .whereReviewers {
+                canCreate()
+            }
+            .whereAuthors {
+                canCreate()
+                cannotEditDescription()
+            }
+            .whereEditors {
+                cannotDelete()
+                cannotUpdate()
+            }
+            .whereContainerAdminsCanAction('comment', 'delete', 'editDescription', 'save', 'show', 'softDelete', 'update')
+            .whereEditorsCanAction('show')
     }
 
     @Override
     void verifyDefaultCreationResponse(HttpResponse<Map> response, int count) {
         assert response.body().label == count ? "New Folder (${count})".toString() : 'New Folder'
-        assert response.body().availableActions == getEditorAvailableActions().sort()
+        assert response.body().availableActions == expectations.containerAdminAvailableActions
         assert response.body().readableByEveryone == false
         assert response.body().readableByAuthenticatedUsers == false
-    }
-
-    @Override
-    int getExpectedCountOfGroupsWithAccess() {
-        2
     }
 
     @Transactional
@@ -216,7 +184,7 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
     @Override
     String getEditorIndexJson() {
         '''{
-  "count": 3,
+  "count": 4,
   "items": [
     {
       "id": "${json-unit.matches:id}",
@@ -238,16 +206,28 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "domainType": "VersionedFolder",
       "hasChildFolders": false
+    },
+    { "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "id": "${json-unit.matches:id}",
+      "hasChildFolders": true,
+      "domainType": "Folder",
+      "label": "Parent Functional Test Folder"
     }
   ]
 }'''
     }
 
     @Override
-    String getAdminIndexJson() {
+    String getContainerAdminIndexJson() {
         '''{
-  "count": 4,
+  "count": 5,
   "items": [
+    { "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "id": "${json-unit.matches:id}",
+      "hasChildFolders": true,
+      "domainType": "Folder",
+      "label": "Parent Functional Test Folder"
+    },
     {
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "id": "${json-unit.matches:id}",
@@ -291,7 +271,7 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
   "label": "Functional Test Folder 3",
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
-  "availableActions": ["comment","delete","editDescription","save","show","softDelete","update"]
+  "availableActions": ["show"]
 }'''
     }
 
@@ -598,25 +578,26 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
         when: 'Creating a top folder'
         String id = getValidId()
 
-        loginEditor()
+        loginCreator()
         POST("$id/folders", validJson)
 
         then: 'The response is correct'
-        response.status == HttpStatus.CREATED
+        response.status == CREATED
         response.body().id
 
         when: 'When the delete action is executed on an existing instance'
+        loginContainerAdmin()
         String subFolderId = responseBody().id
         DELETE("${id}?permanent=true")
 
         then: 'The response is correct'
-        response.status == HttpStatus.NO_CONTENT
+        response.status == NO_CONTENT
 
         when: 'Trying to get the folder'
         GET(id)
 
         then:
-        response.status() == HttpStatus.NOT_FOUND
+        response.status() == NOT_FOUND
 
         cleanup:
         //Shouldn't be necessary to cleanup roles but log files indicates that occasionally they are left over
@@ -629,11 +610,11 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
         when: 'Creating a top folder'
         String id = getValidId()
 
-        loginEditor()
+        loginCreator()
         POST("$id/folders", validJson)
 
         then: 'The response is correct'
-        response.status == HttpStatus.CREATED
+        response.status == CREATED
         response.body().id
 
         when: 'The save action is executed with valid data for a datamodel'
@@ -643,20 +624,21 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
         ])
 
         then: 'The response is correct'
-        response.status == HttpStatus.CREATED
+        response.status == CREATED
         response.body().id
 
         when: 'When the delete action is executed on an existing instance'
+        loginContainerAdmin()
         DELETE("${id}?permanent=true")
 
         then: 'The response is correct'
-        response.status == HttpStatus.NO_CONTENT
+        response.status == NO_CONTENT
 
         when: 'Trying to get the folder'
         GET(id)
 
         then:
-        response.status() == HttpStatus.NOT_FOUND
+        response.status() == NOT_FOUND
 
         cleanup:
         //Shouldn't be necessary to cleanup roles but log files indicates that occasionally they are left over
@@ -667,11 +649,11 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
 
     void 'Test create folder with one user group specified'() {
         when: 'logged in as reader user'
-        loginReader()
+        loginCreator()
         POST("", getValidJsonWithOneGroup())
 
         then:
-        response.status == HttpStatus.CREATED
+        response.status == CREATED
         response.body().id
         String folderId = response.body().id
 
@@ -680,26 +662,34 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
 
         then:
         verifyJsonResponse OK, '''{
-            "count": 1,
-            "items": [
-                {
-                    "id": "${json-unit.matches:id}",
-                    "availableActions": ["comment","delete","editDescription","save","show","softDelete","update"],
-                    "createdBy": "reader@test.com",
-                    "securableResourceDomainType": "Folder",
-                    "securableResourceId": "${json-unit.matches:id}",
-                    "userGroup": {
-                        "id": "${json-unit.matches:id}",
-                        "name": "editors"
-                    },
-                    "groupRole": {
-                        "id": "${json-unit.matches:id}",
-                        "name": "editor",
-                        "displayName": "Editor"
-                    }
-                }
-            ]
-        }'''
+  "count": 1,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "availableActions": [
+        "comment",
+        "delete",
+        "editDescription",
+        "save",
+        "show",
+        "softDelete",
+        "update"
+      ],
+      "createdBy": "creator@test.com",
+      "securableResourceDomainType": "Folder",
+      "securableResourceId": "${json-unit.matches:id}",
+      "userGroup": {
+        "id": "${json-unit.matches:id}",
+        "name": "editors"
+      },
+      "groupRole": {
+        "id": "${json-unit.matches:id}",
+        "name": "editor",
+        "displayName": "Editor"
+      }
+    }
+  ]
+}'''
 
         cleanup:
         removeValidIdObject(folderId)
@@ -707,11 +697,11 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
 
     void 'Test create folder with two user groups specified'() {
         when: 'logged in as reader user'
-        loginReader()
+        loginCreator()
         POST("", getValidJsonWithTwoGroups())
 
         then:
-        response.status == HttpStatus.CREATED
+        response.status == CREATED
         response.body().id
         String folderId = response.body().id
 
@@ -720,42 +710,58 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
 
         then:
         verifyJsonResponse OK, '''{
-            "count": 2,
-            "items": [
-                {
-                    "id": "${json-unit.matches:id}",
-                    "availableActions": ["comment","delete","editDescription","save","show","softDelete","update"],
-                    "createdBy": "reader@test.com",
-                    "securableResourceDomainType": "Folder",
-                    "securableResourceId": "${json-unit.matches:id}",
-                    "userGroup": {
-                        "id": "${json-unit.matches:id}",
-                        "name": "editors"
-                    },
-                    "groupRole": {
-                        "id": "${json-unit.matches:id}",
-                        "name": "editor",
-                        "displayName": "Editor"
-                    }
-                },
-                {
-                    "id": "${json-unit.matches:id}",
-                    "availableActions": ["comment","delete","editDescription","save","show","softDelete","update"],
-                    "createdBy": "reader@test.com",
-                    "securableResourceDomainType": "Folder",
-                    "securableResourceId": "${json-unit.matches:id}",
-                    "userGroup": {
-                        "id": "${json-unit.matches:id}",
-                        "name": "readers"
-                    },
-                    "groupRole": {
-                        "id": "${json-unit.matches:id}",
-                        "name": "editor",
-                        "displayName": "Editor"
-                    }
-                }
-            ]
-        }'''
+  "count": 2,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "availableActions": [
+        "comment",
+        "delete",
+        "editDescription",
+        "save",
+        "show",
+        "softDelete",
+        "update"
+      ],
+      "createdBy": "creator@test.com",
+      "securableResourceDomainType": "Folder",
+      "securableResourceId": "${json-unit.matches:id}",
+      "userGroup": {
+        "id": "${json-unit.matches:id}",
+        "name": "editors"
+      },
+      "groupRole": {
+        "id": "${json-unit.matches:id}",
+        "name": "editor",
+        "displayName": "Editor"
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "availableActions": [
+        "comment",
+        "delete",
+        "editDescription",
+        "save",
+        "show",
+        "softDelete",
+        "update"
+      ],
+      "createdBy": "creator@test.com",
+      "securableResourceDomainType": "Folder",
+      "securableResourceId": "${json-unit.matches:id}",
+      "userGroup": {
+        "id": "${json-unit.matches:id}",
+        "name": "readers"
+      },
+      "groupRole": {
+        "id": "${json-unit.matches:id}",
+        "name": "editor",
+        "displayName": "Editor"
+      }
+    }
+  ]
+}'''
 
         cleanup:
         removeValidIdObject(folderId)
@@ -763,7 +769,7 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
 
     void 'Test create folder with one user group invalidly specified'() {
         when: 'logged in as reader user'
-        loginReader()
+        loginCreator()
         POST("", getInvalidJsonWithOneGroup())
 
         then:
@@ -785,71 +791,39 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
         removeValidIdObject(folderId)
     }
 
-    void 'test changing folder (as not logged in)'() {
-        given:
-        String id = getValidId()
-
-        when: 'not logged in'
-        PUT("$id/folder/${getTestFolder2Id()}", [:])
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'test changing folder (as authenticated/no access)'() {
+    void '#prefix-14 : test moving folder with #name role into admin folder [not allowed] (as #name)'() {
         given:
         String id = getValidId()
 
         when:
-        loginAuthenticated()
+        login(name)
         PUT("$id/folder/${getTestFolder2Id()}", [:])
 
         then:
-        verifyNotFound response, id
+        if (canUpdate) verifyNotFound response, getTestFolder2Id()
+        else if (canRead) verifyForbidden response
+        else verifyNotFound response, id
 
         cleanup:
         removeValidIdObject(id)
+
+        where:
+        prefix | name            | canRead | canUpdate
+        'LO'   | null            | false   | false
+        'NA'   | 'Authenticated' | false   | false
+        'RE'   | 'Reader'        | true    | false
+        'RV'   | 'Reviewer'      | true    | false
+        'AU'   | 'Author'        | true    | false
+        'ED'   | 'Editor'        | true    | expectations.editorsCan('update')
+
     }
 
-    void 'test changing folder (as reader)'() {
+    void '#prefix-14 : test moving folder with admin role into admin folder [allowed] (as #name)'() {
         given:
         String id = getValidId()
 
-        when: 'logged in as reader'
-        loginReader()
-        PUT("$id/folder/${getTestFolder2Id()}", [:])
-
-        then:
-        verifyForbidden response
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'test changing folder (as editor)'() {
-        given:
-        String id = getValidId()
-
-        when: 'logged in as editor of the datamodel but not the folder 2'
-        loginEditor()
-        PUT("$id/folder/${getTestFolder2Id()}", [:])
-
-        then:
-        verifyNotFound response, getTestFolder2Id()
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'test changing folder (as admin)'() {
-        given:
-        String id = getValidId()
-
-        when: 'logged in as admin'
-        loginAdmin()
+        when: 'logged in'
+        login(name)
         PUT("$id/folder/${getTestFolder2Id()}", [:])
 
         then:
@@ -859,6 +833,172 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
         getFolderParentFolderId(id) == getTestFolder2Id()
 
         cleanup:
+        removeValidIdObject(id)
+
+        where:
+        prefix | name
+        'CA'   | 'ContainerAdmin'
+        'AD'   | 'Admin'
+    }
+
+    void '#prefix-15 : test moving folder with #name role into #name folder (as #name)'() {
+        given:
+        String id = getValidId()
+        loginCreator()
+        POST(getSavePath(), [
+            label: 'Functional Test Folder 4'
+        ], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String otherId = response.body().id
+        addAccessShares(otherId)
+        logout()
+
+        when:
+        login(name)
+        PUT("$id/folder/${otherId}", [:])
+
+        then:
+        if (canUpdate) {
+            verifyResponse OK, response
+            assert getFolderParentFolderId(id) == otherId
+        } else if (canRead) verifyForbidden response
+        else verifyNotFound response, id
+
+        cleanup:
+        removeValidIdObject(id)
+        removeValidIdObject(otherId)
+
+        where:
+        prefix | name             | canRead | canUpdate
+        'LO'   | null             | false   | false
+        'NA'   | 'Authenticated'  | false   | false
+        'RE'   | 'Reader'         | true    | false
+        'RV'   | 'Reviewer'       | true    | false
+        'AU'   | 'Author'         | true    | false
+        'ED'   | 'Editor'         | true    | expectations.editorsCan('update')
+        'CA'   | 'ContainerAdmin' | true    | true
+        'AD'   | 'Admin'          | true    | true
+    }
+
+    void 'P01 : test changing public status with public model access maintained'() {
+
+        given: 'create folder with publically readable DM'
+        String id = getValidId()
+        loginCreator()
+        POST("$id/dataModels", [
+            label: 'Functional Test DataModel'
+        ])
+        verifyResponse(CREATED, response)
+        String dmId = responseBody().id
+        POST("$id/dataModels", [
+            label: 'Functional Test DataModel 2'
+        ])
+        verifyResponse(CREATED, response)
+        String dmId2 = responseBody().id
+        PUT("dataModels/${dmId}/readByEveryone", [:], MAP_ARG, true)
+        verifyResponse(OK, response)
+
+
+        when: 'getting the folder its not public but its readable due to the DM'
+        // it has to be readable as it will be "clickable" in the tree
+        logout()
+        GET("$id")
+
+        then:
+        verifyResponse(OK, response)
+
+        when: 'getting the datamodel it is public'
+        GET("dataModels/${dmId}", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+
+        when: 'getting the datamodel 2 it is not public'
+        GET("dataModels/${dmId2}", MAP_ARG, true)
+
+        then:
+        verifyResponse(NOT_FOUND, response)
+
+        when: 'setting folder public'
+        loginContainerAdmin()
+        PUT("${id}/readByEveryone", [:])
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().readableByEveryone
+
+        when: 'getting the folder it is public'
+        logout()
+        GET("$id")
+
+        then:
+        verifyResponse(OK, response)
+
+        when: 'getting the datamodel it is public'
+        GET("dataModels/${dmId}", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+
+        when: 'getting the datamodel 2 it is public due to the folder being public'
+        GET("dataModels/${dmId2}", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+
+        when: 'setting folder not public'
+        loginContainerAdmin()
+        DELETE("${id}/readByEveryone", [:])
+
+        then:
+        verifyResponse(OK, response)
+        !responseBody().readableByEveryone
+
+        when: 'getting the folder its not public but its readable due to the DM'
+        // it has to be readable as it will be "clickable" in the tree
+        logout()
+        GET("$id")
+
+        then:
+        verifyResponse(OK, response)
+
+        when: 'getting the datamodel it is public'
+        GET("dataModels/${dmId}", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+
+        when: 'getting the datamodel 2 it is not public'
+        GET("dataModels/${dmId2}", MAP_ARG, true)
+
+        then:
+        verifyResponse(NOT_FOUND, response)
+
+        when: 'datamodel is deleted the folder is no longer readable'
+        loginAdmin()
+        DELETE("dataModels/${dmId}?permanent=true", MAP_ARG, true)
+
+        then:
+        verifyResponse(NO_CONTENT, response)
+
+        when:
+        logout()
+        GET("$id")
+
+        then:
+        verifyResponse(NOT_FOUND, response)
+
+        when: 'getting the datamodel 2 it is not public'
+        GET("dataModels/${dmId2}", MAP_ARG, true)
+
+        then:
+        verifyResponse(NOT_FOUND, response)
+
+
+        cleanup:
+        loginAdmin()
+        DELETE("dataModels/${dmId2}?permanent=true", MAP_ARG, true)
+        verifyResponse(NO_CONTENT, response)
         removeValidIdObject(id)
     }
 }

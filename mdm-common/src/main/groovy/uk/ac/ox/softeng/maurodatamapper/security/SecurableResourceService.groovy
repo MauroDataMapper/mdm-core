@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ interface SecurableResourceService<K> {
 
     boolean handles(String domainType)
 
-    List<K> getAll(Collection<UUID> containerIds)
+    List<K> getAll(Collection<UUID> securableResourceIds)
 
     List<K> list()
 

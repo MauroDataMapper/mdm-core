@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
     @Override
     String getResourcePath() {
         "dataModels/${getComplexDataModelId()}/dataTypes"
-    }  
+    }
 
     @Override
     String getEditsPath() {
@@ -83,13 +83,6 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
     Map getInvalidJson() {
         [
             domainType: 'PrimitiveType'
-        ]
-    }
-
-    @Override
-    Map getValidUpdateJson() {
-        [
-            description: 'describes a date only'
         ]
     }
 
@@ -224,12 +217,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
     }
   ],
   "availableActions": [
-    "delete",
-    "update",
-    "save",
-    "show",
-    "comment",
-    "editDescription"
+    "show"
   ],
   "lastUpdated": "${json-unit.matches:offsetDateTime}"
 }'''
@@ -254,9 +242,9 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
         assert body.lastUpdated
     }
 
-    void "E03: Test the save action correctly persists an instance for enumeration type (as editor)"() {
+    void "DT01: Test the save action correctly persists an instance for enumeration type"() {
         given:
-        loginEditor()
+        loginCreator()
         Map validJson = [
             domainType       : 'EnumerationType',
             label            : 'Functional Enumeration Type',
@@ -320,9 +308,9 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
         removeValidIdObject(id)
     }
 
-    void "E03: Test the save action correctly persists an instance for reference type (as editor)"() {
+    void "DT02: Test the save action correctly persists an instance for reference type"() {
         given:
-        loginEditor()
+        loginCreator()
 
 
         when: "The save action is executed with valid data"
@@ -383,10 +371,10 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
         removeValidIdObject(id)
     }
 
-    void "E03: Test the save action correctly persists an instance for model data type (as editor)"() {
+    void "DT03: Test the save action correctly persists an instance for model data type"() {
         given:
         UUID modelId = UUID.randomUUID()
-        loginEditor()
+        loginCreator()
         Map validJson = [
             domainType             : 'ModelDataType',
             label                  : 'Functional ModelData Type',

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,15 +22,15 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 import uk.ac.ox.softeng.maurodatamapper.version.VersionChangeType
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
-import spock.lang.Unroll
+import io.micronaut.http.HttpResponse
 
 import static io.micronaut.http.HttpStatus.CREATED
-import static io.micronaut.http.HttpStatus.FORBIDDEN
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
@@ -65,9 +65,6 @@ import static io.micronaut.http.HttpStatus.OK
  *  |  GET     | /api/dataModels/providers/exporters                      | Action: exporterProviders
  *  |  GET     | /api/dataModels/${dataModelId}/diff/${otherModelId}  | Action: diff
  *
- *  |  POST    | /api/dataModels/import/${importerNamespace}/${importerName}/${importerVersion}                 | Action: importDataModels
- *  |  POST    | /api/dataModels/export/${exporterNamespace}/${exporterName}/${exporterVersion}                 | Action: exportDataModels
- *  |  GET     | /api/dataModels/${dataModelId}/export/${exporterNamespace}/${exporterName}/${exporterVersion}  | Action: exportDataModel
  *
  *  |   GET    | /api/dataModels/${dataModelId}/search  | Action: search
  *  |   POST   | /api/dataModels/${dataModelId}/search  | Action: search
@@ -80,61 +77,108 @@ import static io.micronaut.http.HttpStatus.OK
 @Slf4j
 abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec {
 
+    abstract String getModelType()
+
+    abstract String getModelUrlType()
+
+    abstract String getModelPrefix()
+
+    abstract String getModelFolderId(String id)
+
+    abstract String getLeftHandDiffModelId()
+
+    abstract String getRightHandDiffModelId()
+
+    abstract String getExpectedDiffJson()
+
     String getValidFinalisedId() {
         String id = getValidId()
-        loginEditor()
+        loginCreator()
         PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
         logout()
         id
     }
 
-    abstract String getModelType()
-
     @Override
     void removeValidIdObjectUsingTransaction(String id) {
         log.info('Removing valid id {} using permanent API call', id)
-        loginAdmin()
+        loginCreator()
         DELETE("${id}?permanent=true")
         response.status() in [NO_CONTENT, NOT_FOUND]
     }
 
-    boolean mergingIsNotAvailable() {
-        false
+    @Override
+    Expectations getExpectations() {
+        Expectations.builder()
+            .withDefaultExpectations()
+            .withSoftDeleteByDefault()
+            .withInheritedAccessPermissions()
+            .whereAuthenticatedUsers {
+                canIndex()
+            }
+            .whereAnonymousUsers {
+                canIndex()
+            }
+            .whereContainerAdminsCanAction('comment', 'delete', 'editDescription', 'finalise', 'save', 'show', 'softDelete', 'update')
+            .whereEditorsCanAction('comment', 'editDescription', 'finalise', 'save', 'show', 'softDelete', 'update')
+            .whereAuthorsCanAction('comment', 'editDescription', 'show',)
+            .whereReviewersCanAction('comment', 'show')
+            .whereReadersCanAction('show')
     }
 
     @Override
-    List<String> getEditorAvailableActions() {
-        ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'finalise', 'delete'].sort()
+    void verify03CannotCreateResponse(HttpResponse<Map> response, String name) {
+        if (name in ['Anonymous', 'Authenticated']) verifyNotFound response, null
+        else if ((expectations.can(name, 'see') && expectations.accessPermissionIsInherited) ||
+                 (!expectations.can(name, 'create') && expectations.isSecuredResource)) verifyForbidden(response)
+        else verifyNotFound response, null
     }
 
-    List<String> getReaderAvailableActions() {
-        ['show', 'comment'].sort()
+    @Override
+    int getExpectedCountOfGroupsWithAccess() {
+        1 // Just the creator's group as all other groups have inherited access from the folder
     }
 
     List<String> getFinalisedReaderAvailableActions() {
-        [
-            'show',
-            'createNewVersions',
-            'newForkModel',
-            'finalisedReadActions'
-        ].sort()
+        ['show',
+         'createNewVersions',
+         'newForkModel',
+         'finalisedReadActions'].sort()
     }
 
-    List<String> getFinalisedEditorAvailableActions() {
-        [
-            'show',
-            'createNewVersions',
-            'newForkModel',
-            'comment',
-            'newModelVersion',
-            'newDocumentationVersion',
-            'newBranchModelVersion',
-            'softDelete',
-            'delete',
-            'finalisedEditActions'
+    List<String> getFinalisedReviewerAvailableActions() {
+        ['comment',
+         'show',
+         'createNewVersions',
+         'newForkModel',
+         'finalisedReadActions'].sort()
+    }
 
-        ].sort()
+
+    List<String> getFinalisedEditorAvailableActions() {
+        ['show',
+         'createNewVersions',
+         'newForkModel',
+         'comment',
+         'newModelVersion',
+         'newDocumentationVersion',
+         'newBranchModelVersion',
+         'softDelete',
+         'finalisedEditActions'].sort()
+    }
+
+    List<String> getFinalisedContainerAdminAvailableActions() {
+        ['show',
+         'createNewVersions',
+         'newForkModel',
+         'comment',
+         'delete',
+         'newModelVersion',
+         'newDocumentationVersion',
+         'newBranchModelVersion',
+         'softDelete',
+         'finalisedEditActions'].sort()
     }
 
     @Transactional
@@ -142,62 +186,216 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         Folder.findByLabel('Functional Test VersionedFolder').id.toString()
     }
 
-    void 'L16 : Test finalising Model (as not logged in)'() {
-        given:
-        String id = getValidId()
+    @Transactional
+    String getTestFolderId() {
+        Folder.findByLabel('Functional Test Folder').id.toString()
+    }
 
-        when: 'not logged in'
-        PUT("$id/finalise", [versionChangeType: 'Major'])
+    @Transactional
+    String getTestFolder2Id() {
+        Folder.findByLabel('Functional Test Folder 2').id.toString()
+    }
+
+
+    void 'CORE-#prefix-08b : test accessing finalised when readable by everyone [not allowed] (as #name)'() {
+        given:
+        String id = getValidFinalisedId()
+        loginCreator()
+        PUT("$id/readByEveryone", [:])
+        verifyResponse OK, response
+
+        when:
+        login(name)
+        GET(id)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().readableByEveryone == true
+        responseBody().availableActions == actions
+
+        when: 'removing readable by everyone'
+        loginCreator()
+        DELETE("$id/readByEveryone", [:])
+        verifyResponse OK, response
+
+        and:
+        login(name)
+        GET(id)
+
+        then:
+        if (canRead) {
+            verifyResponse OK, response
+            assert responseBody().readableByEveryone == false
+            assert responseBody().availableActions == actions
+        } else verifyNotFound response, id
+
+        cleanup:
+        removeValidIdObject(id)
+
+        where:
+        prefix | name            | canRead | actions
+        'LO'   | null            | false   | ['finalisedReadActions', 'show'] // Authenticated users can fork
+        'NA'   | 'Authenticated' | false   | getFinalisedReaderAvailableActions()
+        'RE'   | 'Reader'        | true    | getFinalisedReaderAvailableActions()
+        'RV'   | 'Reviewer'      | true    | getFinalisedReviewerAvailableActions()
+        'AU'   | 'Author'        | true    | getFinalisedReviewerAvailableActions()
+    }
+
+    void 'CORE-#prefix-09b : test adding readable by authenticated once finalised [allowed] (as #name)'() {
+        given:
+        String id = getValidFinalisedId()
+        def endpoint = "$id/readByAuthenticated"
+
+        when: 'logged in as user with write access'
+        login(name)
+        PUT(endpoint, [:])
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().readableByAuthenticatedUsers == true
+
+        cleanup:
+        removeValidIdObject(id)
+
+        where:
+        prefix | name
+        'ED'   | 'Editor'
+        'CA'   | 'ContainerAdmin'
+        'AD'   | 'Admin'
+    }
+
+    void 'CORE-#prefix-10b : test removing readable by authenticated once finalised [allowed] (as #name)'() {
+        given:
+        String id = getValidFinalisedId()
+        def endpoint = "$id/readByAuthenticated"
+        loginCreator()
+        PUT(endpoint, [:])
+        verifyResponse OK, response
+        responseBody().readableByAuthenticatedUsers == true
+
+        when: 'logged in as user with write access'
+        login(name)
+        DELETE(endpoint)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().readableByAuthenticatedUsers == false
+
+        cleanup:
+        removeValidIdObject(id)
+
+        where:
+        prefix | name
+        'ED'   | 'Editor'
+        'CA'   | 'ContainerAdmin'
+        'AD'   | 'Admin'
+    }
+
+    void 'CORE-#prefix-12b : test adding reader share once finalised (as #name)'() {
+        given:
+        String id = getValidFinalisedId()
+        String groupRoleId = getGroupRole(GroupRole.READER_ROLE_NAME).id.toString()
+        String readerGroupId = getUserGroup('extraGroup').id.toString()
+        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
+
+        when: 'logged in as writer'
+        login(name)
+        POST(endpoint, [:])
+
+        then:
+        verifyResponse CREATED, response
+        responseBody().securableResourceId == id
+        responseBody().userGroup.id == readerGroupId
+        responseBody().groupRole.id == groupRoleId
+
+        when: 'getting item as new reader'
+        loginAuthenticated2()
+        GET(id)
+
+        then:
+        verifyResponse OK, response
+        responseBody().availableActions == getFinalisedReaderAvailableActions()
+        responseBody().id == id
+
+        cleanup:
+        removeValidIdObject(id)
+
+        where:
+        prefix | name
+        'ED'   | 'Editor'
+        'CA'   | 'ContainerAdmin'
+        'AD'   | 'Admin'
+    }
+
+    void 'CORE-#prefix-13b : test removing reader share once finalised (as #name)'() {
+        given:
+        String id = getValidFinalisedId()
+        String groupRoleId = getGroupRole(GroupRole.READER_ROLE_NAME).id.toString()
+        String readerGroupId = getUserGroup('extraGroup').id.toString()
+        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
+        loginCreator()
+        POST(endpoint, [:])
+
+        when: 'logged in as writer'
+        login(name)
+        DELETE(endpoint, [:])
+
+        then:
+        verifyResponse NO_CONTENT, response
+
+        when: 'getting item as new reader'
+        loginAuthenticated2()
+        GET(id)
 
         then:
         verifyNotFound response, id
 
         cleanup:
         removeValidIdObject(id)
+
+        where:
+        prefix | name
+        'ED'   | 'Editor'
+        'CA'   | 'ContainerAdmin'
+        'AD'   | 'Admin'
     }
 
-    void 'N16 : Test finalising Model (as authenticated/no access)'() {
+    void 'CORE-#prefix-14 : Test finalising Model [not allowed] (as #name)'() {
         given:
         String id = getValidId()
 
-        when: 'authenticated user'
+        when:
+        login(name)
         PUT("$id/finalise", [versionChangeType: 'Major'])
 
         then:
-        verifyNotFound response, id
+        if (canRead) verifyForbidden response else verifyNotFound response, id
 
         cleanup:
         removeValidIdObject(id)
+
+        where:
+        prefix | name            | canRead
+        'LO'   | null            | false
+        'NA'   | 'Authenticated' | false
+        'RE'   | 'Reader'        | true
+        'RV'   | 'Reviewer'      | true
+        'AU'   | 'Author'        | true
     }
 
-    void 'R16 : Test finalising Model (as reader)'() {
-        given:
-        String id = getValidId()
-
-        when: 'logged in as reader'
-        loginReader()
-        PUT("$id/finalise", ["version": "3.9.0"])
-
-        then:
-        verifyForbidden response
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'E16 : Test finalising Model (as editor)'() {
+    void 'CORE-#prefix-14 : Test finalising Model [allowed] (as #name)'() {
         given:
         String id = getValidId()
 
         when: 'logged in as editor'
-        loginEditor()
+        login(name)
         PUT("$id/finalise", [versionChangeType: 'Major'])
 
         then:
         verifyResponse OK, response
         responseBody().finalised == true
         responseBody().dateFinalised
-        responseBody().availableActions == getFinalisedEditorAvailableActions().sort()
+        responseBody().availableActions == actions
         responseBody().modelVersion == '1.0.0'
 
         when: 'log out and log back in again in as editor available actions are correct'
@@ -207,7 +405,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
 
         then:
         verifyResponse OK, response
-        responseBody().availableActions == getFinalisedEditorAvailableActions().sort()
+        responseBody().availableActions == getFinalisedEditorAvailableActions()
 
         when: 'log out and log back in again in as admin available actions are correct'
         logout()
@@ -216,25 +414,31 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
 
         then:
         verifyResponse OK, response
-        responseBody().availableActions == getFinalisedEditorAvailableActions().sort()
+        responseBody().availableActions == getFinalisedContainerAdminAvailableActions()
 
         cleanup:
         removeValidIdObject(id)
+
+        where:
+        prefix | name             | actions
+        'ED'   | 'Editor'         | getFinalisedEditorAvailableActions()
+        'CA'   | 'ContainerAdmin' | getFinalisedContainerAdminAvailableActions()
+        'AD'   | 'Admin'          | getFinalisedContainerAdminAvailableActions()
     }
 
-    void 'E16b : Test finalising Model (as editor) with a versionTag'() {
+    void 'CORE-#prefix-14b : Test finalising Model with a versionTag [allowed] (as #name)'() {
         given:
         String id = getValidId()
 
         when: 'logged in as editor'
-        loginEditor()
+        login(name)
         PUT("$id/finalise", [versionChangeType: 'Major', versionTag: 'Functional Test Release'])
 
         then:
         verifyResponse OK, response
         responseBody().finalised == true
         responseBody().dateFinalised
-        responseBody().availableActions == getFinalisedEditorAvailableActions().sort()
+        responseBody().availableActions == actions
         responseBody().modelVersion == '1.0.0'
         responseBody().modelVersionTag == 'Functional Test Release'
 
@@ -245,7 +449,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
 
         then:
         verifyResponse OK, response
-        responseBody().availableActions == getFinalisedEditorAvailableActions().sort()
+        responseBody().availableActions == getFinalisedEditorAvailableActions()
         responseBody().modelVersionTag == 'Functional Test Release'
 
         when: 'log out and log back in again in as admin available actions are correct and modelVersionTag is set'
@@ -255,55 +459,84 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
 
         then:
         verifyResponse OK, response
-        responseBody().availableActions == getFinalisedEditorAvailableActions().sort()
+        responseBody().availableActions == getFinalisedContainerAdminAvailableActions()
         responseBody().modelVersionTag == 'Functional Test Release'
 
         cleanup:
         removeValidIdObject(id)
+
+        where:
+        prefix | name             | actions
+        'ED'   | 'Editor'         | getFinalisedEditorAvailableActions()
+        'CA'   | 'ContainerAdmin' | getFinalisedContainerAdminAvailableActions()
+        'AD'   | 'Admin'          | getFinalisedContainerAdminAvailableActions()
+
     }
 
-    void 'E16c : Test attempting to finalise a model inside a versioned folder (as editor)'() {
+    void 'CORE-#prefix-14c : Test attempting to finalise a model inside a versioned folder (as #name)'() {
         given:
-        loginEditor()
-        POST('versionedFolders', [label: 'Functional Test Versioned Folder',], MAP_ARG, true)
-        verifyResponse(CREATED, response)
-        String versionedFolderId = responseBody().id
-        POST("folders/$versionedFolderId/${getResourcePath()}", validJson, MAP_ARG, true)
+        loginCreator()
+        POST("folders/$testVersionedFolderId/${getResourcePath()}", validJson, MAP_ARG, true)
         verifyResponse CREATED, response
         String id = responseBody().id
 
         when:
-        loginEditor()
+        login(name)
         PUT("$id/finalise", [versionChangeType: 'Major', versionTag: 'Functional Test Release'])
 
         then:
-        verifyResponse(FORBIDDEN, response)
-
-        cleanup:
-        DELETE("folders/$versionedFolderId?permanent=true", MAP_ARG, true)
-        verifyResponse NO_CONTENT, response
-    }
-
-    void 'L17 : test creating a new fork model of a Model<T> (as not logged in)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when: 'not logged in'
-        PUT("$id/newForkModel", [label: "Functional Test ${modelType} v2" as String])
-
-        then:
-        verifyNotFound response, id
+        if (canRead) verifyForbidden response else verifyNotFound response, id
 
         cleanup:
         removeValidIdObject(id)
+
+        where:
+        prefix | name             | canRead
+        'LO'   | null             | false
+        'NA'   | 'Authenticated'  | false
+        'RE'   | 'Reader'         | true
+        'RV'   | 'Reviewer'       | true
+        'AU'   | 'Author'         | true
+        'ED'   | 'Editor'         | true
+        'CA'   | 'ContainerAdmin' | true
+        'AD'   | 'Admin'          | true
     }
 
-    void 'N17 : test creating a new fork model of a Model<T> (as authenticated/no access)'() {
+    void 'CORE-#prefix-14d : test getting a finalised model (as #name)'() {
         given:
         String id = getValidFinalisedId()
 
         when:
-        loginAuthenticated()
+        login(name)
+        GET(id)
+
+        then:
+        if (canRead) {
+            verifyResponse OK, response
+            responseBody().availableActions == actions
+        } else verifyNotFound response, id
+
+        cleanup:
+        removeValidIdObject(id)
+
+        where:
+        prefix | name             | canRead | actions
+        'LO'   | null             | false   | null
+        'NA'   | 'Authenticated'  | false   | null
+        'RE'   | 'Reader'         | true    | getFinalisedReaderAvailableActions()
+        'RV'   | 'Reviewer'       | true    | getFinalisedReviewerAvailableActions()
+        'AU'   | 'Author'         | true    | getFinalisedReviewerAvailableActions()
+        'ED'   | 'Editor'         | true    | getFinalisedEditorAvailableActions()
+        'CA'   | 'ContainerAdmin' | true    | getFinalisedContainerAdminAvailableActions()
+        'AD'   | 'Admin'          | true    | getFinalisedContainerAdminAvailableActions()
+    }
+
+    void 'CORE-#prefix-15 : test creating a new fork model of a Model<T> [not allowed] (as #name)'() {
+        given:
+        String id = getValidFinalisedId()
+
+        when:
+        login(name)
         PUT("$id/newForkModel", [label: "Functional Test ${modelType} v2" as String])
 
         then:
@@ -311,23 +544,29 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
 
         cleanup:
         removeValidIdObject(id)
+
+        where:
+        prefix | name
+        'LO'   | null
+        'NA'   | 'Authenticated'
     }
 
-    void 'R17 : test creating a new fork model of a Model<T> (as reader)'() {
+    void 'CORE-#prefix-15 : test creating a new fork model of a Model<T> [allowed] (as #name)'() {
         given:
         String id = getValidFinalisedId()
 
-        when: 'logged in as reader'
-        loginReader()
+        when: 'logged in'
+        login(name)
         PUT("$id/newForkModel", [label: "Functional Test ${modelType} v2" as String])
 
         then:
         verifyResponse CREATED, response
+        String forkId = responseBody().id
         responseBody().id != id
         responseBody().label == "Functional Test ${modelType} v2"
+        responseBody().availableActions == actions
 
         when:
-        String forkId = responseBody().id
         GET("$forkId/versionLinks")
 
         then:
@@ -343,100 +582,58 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         removeValidIdObjectUsingTransaction(forkId)
         removeValidIdObjectUsingTransaction(id)
         cleanUpRoles(forkId, id)
+
+        where:
+        prefix | name             | actions
+        'RE'   | 'Reader'         | expectations.editorAvailableActions
+        'RV'   | 'Reviewer'       | expectations.editorAvailableActions
+        'AU'   | 'Author'         | expectations.editorAvailableActions
+        'ED'   | 'Editor'         | expectations.editorAvailableActions
+        'CA'   | 'ContainerAdmin' | expectations.containerAdminAvailableActions
+        'AD'   | 'Admin'          | expectations.containerAdminAvailableActions
     }
 
-    void 'E17 : test creating a new fork model of a Model<T> (as editor)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when: 'logged in as writer'
-        loginEditor()
-        PUT("$id/newForkModel", [label: "Functional Test ${modelType} v2" as String])
-
-        then:
-        verifyResponse CREATED, response
-        responseBody().id != id
-        responseBody().label == "Functional Test ${modelType} v2"
-
-        when:
-        String forkId = responseBody().id
-        GET("$forkId/versionLinks")
-
-        then:
-        verifyResponse OK, response
-        responseBody().count == 1
-        responseBody().items.first().domainType == 'VersionLink'
-        responseBody().items.first().linkType == VersionLinkType.NEW_FORK_OF.label
-        responseBody().items.first().sourceModel.id == forkId
-        responseBody().items.first().targetModel.id == id
-        responseBody().items.first().sourceModel.domainType == responseBody().items.first().targetModel.domainType
-
-        cleanup:
-        removeValidIdObjectUsingTransaction(forkId)
-        removeValidIdObjectUsingTransaction(id)
-        cleanUpRoles(forkId, id)
-    }
-
-    void 'L18 : test creating a new documentation version of a Model<T> (as not logged in)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when: 'not logged in'
-        PUT("$id/newDocumentationVersion", [:])
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'N18 : test creating a new documentation version of a Model<T> (as authenticated/no access)'() {
+    void 'CORE-#prefix-16 : test creating a new documentation version of a Model<T> [not allowed] (as #name)'() {
         given:
         String id = getValidFinalisedId()
 
         when:
-        loginAuthenticated()
+        login(name)
         PUT("$id/newDocumentationVersion", [:])
 
         then:
-        verifyNotFound response, id
+        if (canRead) verifyForbidden response else verifyNotFound response, id
 
         cleanup:
         removeValidIdObject(id)
+
+        where:
+        prefix | name            | canRead
+        'LO'   | null            | false
+        'NA'   | 'Authenticated' | false
+        'RE'   | 'Reader'        | true
+        'RV'   | 'Reviewer'      | true
+        'AU'   | 'Author'        | true
     }
 
-    void 'R18 : test creating a new documentation version of a Model<T> (as reader)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when:
-        loginReader()
-        PUT("$id/newDocumentationVersion", [:])
-
-        then:
-        verifyForbidden response
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'E18 : test creating a new documentation version of a Model<T> (as editor)'() {
+    void 'CORE-#prefix-16 : test creating a new documentation version of a Model<T> [allowed] (as #name)'() {
         given:
         String id = getValidFinalisedId()
 
         when: 'logged in as editor'
-        loginEditor()
+        login(name)
         PUT("$id/newDocumentationVersion", [:])
 
         then:
         verifyResponse CREATED, response
+        String docId = responseBody().id
+        responseBody().id
         responseBody().id != id
         responseBody().label == validJson.label
         responseBody().documentationVersion == '2.0.0'
+        responseBody().availableActions == actions
 
         when:
-        String docId = responseBody().id
         GET("$docId/versionLinks")
 
         then:
@@ -452,70 +649,57 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         removeValidIdObjectUsingTransaction(id)
         removeValidIdObjectUsingTransaction(docId)
         cleanUpRoles(id, docId)
+
+        where:
+        prefix | name             | actions
+        'ED'   | 'Editor'         | expectations.editorAvailableActions
+        'CA'   | 'ContainerAdmin' | expectations.containerAdminAvailableActions
+        'AD'   | 'Admin'          | expectations.containerAdminAvailableActions
     }
 
-    void 'L19 : test creating a new branch model version of a Model<T> (as not logged in)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when: 'not logged in'
-        PUT("$id/newBranchModelVersion", [:])
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'N19 : test creating a new branch model version of a Model<T> (as authenticated/no access)'() {
+    void 'CORE-#prefix-17 : test creating a new branch model version of a Model<T> [not allowed] (as #name)'() {
         given:
         String id = getValidFinalisedId()
 
         when:
-        loginAuthenticated()
+        login(name)
         PUT("$id/newBranchModelVersion", [:])
 
         then:
-        verifyNotFound response, id
+        if (canRead) verifyForbidden response else verifyNotFound response, id
 
         cleanup:
         removeValidIdObject(id)
+
+        where:
+        prefix | name            | canRead
+        'LO'   | null            | false
+        'NA'   | 'Authenticated' | false
+        'RE'   | 'Reader'        | true
+        'RV'   | 'Reviewer'      | true
+        'AU'   | 'Author'        | true
     }
 
-    void 'R19 : test creating a new branch model version of a Model<T> (as reader)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when:
-        loginReader()
-        PUT("$id/newBranchModelVersion", [:])
-
-        then:
-        verifyForbidden response
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'E19a : test creating a new model version of a Model<T> (no branch name) (as editor)'() {
+    void 'CORE-#prefix-17a : test creating a new model version of a Model<T> (no branch name) [allowed] (as #name)'() {
         given:
         String id = getValidFinalisedId()
 
         when: 'logged in as editor'
-        loginEditor()
+        login(name)
         PUT("$id/newBranchModelVersion", [:])
 
         then:
         verifyResponse CREATED, response
+        String branchId = responseBody().id
         responseBody().id != id
         responseBody().label == validJson.label
         responseBody().documentationVersion == '1.0.0'
         responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         !responseBody().modelVersion
+        // The creator gets editor level rights to a model
+        responseBody().availableActions == actions
 
         when:
-        String branchId = responseBody().id
         GET("$branchId/versionLinks")
 
         then:
@@ -531,27 +715,33 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         removeValidIdObjectUsingTransaction(id)
         removeValidIdObjectUsingTransaction(branchId)
         cleanUpRoles(id, branchId)
+
+        where:
+        prefix | name             | actions
+        'ED'   | 'Editor'         | expectations.editorAvailableActions
+        'CA'   | 'ContainerAdmin' | expectations.containerAdminAvailableActions
+        'AD'   | 'Admin'          | expectations.containerAdminAvailableActions
     }
 
-    void 'E19b : test creating a new branch model version of a Model<T> (as editor)'() {
+    void 'CORE-#prefix-17b : test creating a new branch model version of a Model<T> [allowed] (as #name)'() {
         given:
         String id = getValidFinalisedId()
 
         when: 'logged in as editor'
-        loginEditor()
+        login(name)
         PUT("$id/newBranchModelVersion", [branchName: 'newBranchModelVersion'])
 
         then:
         verifyResponse CREATED, response
+        String branchId = responseBody().id
         responseBody().id != id
         responseBody().label == validJson.label
         responseBody().documentationVersion == '1.0.0'
-        responseBody().availableActions == (getEditorAvailableActions() + 'mergeInto').sort() - 'finalise'
+        responseBody().availableActions == (actions + [ResourceActions.MERGE_INTO_ACTION]).sort() - [ResourceActions.FINALISE_ACTION]
         responseBody().branchName == 'newBranchModelVersion'
         !responseBody().modelVersion
 
         when:
-        String branchId = responseBody().id
         GET("$branchId/versionLinks")
 
         then:
@@ -572,10 +762,9 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         responseBody().count >= 3
 
         when:
-        log.debug(responseBody().toString())
+        //        log.debug(responseBody().toString())
         String mainBranchId = responseBody().items.find {
-            it.label == validJson.label &&
-            !(it.id in [branchId, id])
+            it.label == validJson.label && !(it.id in [branchId, id])
         }?.id
 
         then:
@@ -594,14 +783,20 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         removeValidIdObjectUsingTransaction(branchId)
         removeValidIdObjectUsingTransaction(mainBranchId)
         cleanUpRoles(id, branchId, mainBranchId)
+
+        where:
+        prefix | name             | actions
+        'ED'   | 'Editor'         | expectations.editorAvailableActions
+        'CA'   | 'ContainerAdmin' | expectations.containerAdminAvailableActions
+        'AD'   | 'Admin'          | expectations.containerAdminAvailableActions
     }
 
-    void 'E19c : test creating a new model version of a Model<T> and finalising (as editor)'() {
+    void 'CORE-#prefix-17c : test creating a new model version of a Model<T> and finalising [allowed] (as #name)'() {
         given:
         String id = getValidFinalisedId()
 
-        when: 'logged in as editor'
-        loginEditor()
+        when: 'logged in'
+        login(name)
         PUT("$id/newBranchModelVersion", [:])
 
         then:
@@ -615,26 +810,32 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         verifyResponse OK, response
         responseBody().finalised == true
         responseBody().dateFinalised
-        responseBody().availableActions == getFinalisedEditorAvailableActions().sort()
+        responseBody().availableActions == actions
         responseBody().modelVersion == '2.0.0'
 
         cleanup:
         removeValidIdObjectUsingTransaction(id)
         removeValidIdObjectUsingTransaction(branchId)
         cleanUpRoles(id, branchId)
+
+        where:
+        prefix | name             | actions
+        'ED'   | 'Editor'         | finalisedEditorAvailableActions
+        'CA'   | 'ContainerAdmin' | finalisedContainerAdminAvailableActions
+        'AD'   | 'Admin'          | finalisedContainerAdminAvailableActions
     }
 
-    void 'E19d : test creating a new branch model version of a Model<T> and trying to finalise(as editor)'() {
+    void 'CORE-#prefix-17d : test creating a new branch model version of a Model<T> and trying to finalise [allowed] (as #name)'() {
         given:
         String id = getValidFinalisedId()
 
-        when: 'logged in as editor'
-        loginEditor()
+        when: 'logged in'
+        login(name)
         PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
 
         then:
         verifyResponse CREATED, response
-        responseBody().availableActions == getEditorAvailableActions().sort()
+        responseBody().availableActions == actions
         String mainBranchId = responseBody().id
 
         when:
@@ -648,13 +849,12 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         responseBody().documentationVersion == '1.0.0'
         responseBody().branchName == 'newBranchModelVersion'
         !responseBody().modelVersion
-        responseBody().availableActions ==
-        (getEditorAvailableActions() + [ResourceActions.MERGE_INTO_ACTION] - [ResourceActions.FINALISE_ACTION]).sort()
+        responseBody().availableActions == (actions + [ResourceActions.MERGE_INTO_ACTION] - [ResourceActions.FINALISE_ACTION]).sort()
 
         when:
         PUT("$branchId/finalise", [versionChangeType: 'Major'])
 
-        then:
+        then: 'No matter who you are, you cant finalise a non-main branch'
         verifyForbidden response
 
         when:
@@ -669,12 +869,21 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         removeValidIdObjectUsingTransaction(branchId)
         removeValidIdObjectUsingTransaction(mainBranchId)
         cleanUpRoles(id, branchId, mainBranchId)
+
+        where:
+        prefix | name             | actions
+        'ED'   | 'Editor'         | expectations.editorAvailableActions
+        'CA'   | 'ContainerAdmin' | expectations.containerAdminAvailableActions
+        'AD'   | 'Admin'          | expectations.containerAdminAvailableActions
     }
 
-    void 'E20 : test finding common ancestor of two Model<T> (as editor)'() {
+    void 'CORE-#prefix-18 : test finding common ancestor of two Model<T> [not allowed] (as #name)'() {
         given:
         String id = getValidFinalisedId()
-        loginEditor()
+        loginCreator()
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String mainBranchId = responseBody().id
         PUT("$id/newBranchModelVersion", [branchName: 'left'])
         verifyResponse CREATED, response
         String leftId = responseBody().id
@@ -682,7 +891,42 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         verifyResponse CREATED, response
         String rightId = responseBody().id
 
-        when: 'logged in as editor'
+        when: 'logged in'
+        login(name)
+        GET("$leftId/commonAncestor/$rightId")
+
+        then:
+        verifyNotFound(response, leftId)
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(leftId)
+        removeValidIdObjectUsingTransaction(rightId)
+        removeValidIdObjectUsingTransaction(mainBranchId)
+        cleanUpRoles(id, leftId, rightId, mainBranchId)
+
+        where:
+        prefix | name
+        'LO'   | null
+        'NA'   | 'Authenticated'
+    }
+
+    void 'CORE-#prefix-18 : test finding common ancestor of two Model<T> [allowed] (as #name)'() {
+        given:
+        String id = getValidFinalisedId()
+        loginCreator()
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String mainBranchId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'left'])
+        verifyResponse CREATED, response
+        String leftId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'right'])
+        verifyResponse CREATED, response
+        String rightId = responseBody().id
+
+        when: 'logged in'
+        login(name)
         GET("$leftId/commonAncestor/$rightId")
 
         then:
@@ -698,32 +942,31 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         verifyResponse OK, response
         responseBody().count >= 3
 
-        when:
-        log.debug(responseBody().toString())
-        String mainBranchId = responseBody().items.find {
-            it.label == validJson.label &&
-            !(it.id in [leftId, rightId, id])
-        }?.id
-
-        then:
-        mainBranchId
-
         cleanup:
         removeValidIdObjectUsingTransaction(id)
         removeValidIdObjectUsingTransaction(leftId)
         removeValidIdObjectUsingTransaction(rightId)
         removeValidIdObjectUsingTransaction(mainBranchId)
         cleanUpRoles(id, leftId, rightId, mainBranchId)
+
+        where:
+        prefix | name
+        'RE'   | 'Reader'
+        'RV'   | 'Reviewer'
+        'AU'   | 'Author'
+        'ED'   | 'Editor'
+        'CA'   | 'ContainerAdmin'
+        'AD'   | 'Admin'
     }
 
-    void 'E21 : test finding latest version of a Model<T> (as editor)'() {
+    void 'CORE-#prefix-19 : test finding latest version of a Model<T> [not allowed] (as #name)'() {
         /*
         id (finalised) -- expectedId (finalised) -- latestDraftId (draft)
           \_ newBranchId (draft)
         */
         given:
         String id = getValidFinalisedId()
-        loginEditor()
+        loginCreator()
         PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String expectedId = responseBody().id
@@ -736,7 +979,75 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         verifyResponse CREATED, response
         String latestDraftId = responseBody().id
 
-        when: 'logged in as editor'
+        when: 'logged in'
+        login(name)
+        GET("$newBranchId/latestFinalisedModel")
+
+        then:
+        verifyNotFound(response, newBranchId)
+
+        when:
+        GET("$latestDraftId/latestFinalisedModel")
+
+        then:
+        verifyNotFound(response, latestDraftId)
+
+        when:
+        GET("$newBranchId/latestModelVersion")
+
+        then:
+        verifyNotFound(response, newBranchId)
+
+        when:
+        GET("$latestDraftId/latestModelVersion")
+
+        then:
+        verifyNotFound(response, latestDraftId)
+
+        when:
+        GET('')
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 0
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(newBranchId)
+        removeValidIdObjectUsingTransaction(expectedId)
+        removeValidIdObjectUsingTransaction(latestDraftId)
+        cleanUpRoles(id, newBranchId, expectedId, latestDraftId)
+
+        where:
+        prefix | name
+        'LO'   | null
+        'NA'   | 'Authenticated'
+    }
+
+    /**
+     * The following only need read access to perform, so no need to check above that*/
+    void 'CORE-RE-19 : test finding latest version of a Model<T>'() {
+        /*
+        id (finalised) -- expectedId (finalised) -- latestDraftId (draft)
+          \_ newBranchId (draft)
+        */
+        given:
+        String id = getValidFinalisedId()
+        loginCreator()
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String expectedId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
+        verifyResponse CREATED, response
+        String newBranchId = responseBody().id
+        PUT("$expectedId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$expectedId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String latestDraftId = responseBody().id
+
+        when: 'logged in'
+        loginReader()
         GET("$newBranchId/latestFinalisedModel")
 
         then:
@@ -754,7 +1065,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         responseBody().label == validJson.label
         responseBody().modelVersion == '2.0.0'
 
-        when: 'logged in as editor'
+        when:
         GET("$newBranchId/latestModelVersion")
 
         then:
@@ -783,14 +1094,12 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         cleanUpRoles(id, newBranchId, expectedId, latestDraftId)
     }
 
-    void 'E22 : test finding merge difference of two Model<T> (as editor)'() {
-        if (mergingIsNotAvailable()) {
-            return
-        }
+    void 'CORE-#prefix-20 : test finding merge difference of two Model<T> [not allowed] (as #name)'() {
+        if (expectations.mergingIsAvailable) return
 
         given:
         String id = getValidFinalisedId()
-        loginEditor()
+        loginCreator()
         PUT("$id/newBranchModelVersion", [:])
         verifyResponse CREATED, response
         String mainId = responseBody().id
@@ -802,28 +1111,78 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         String rightId = responseBody().id
 
         when:
+        login(name)
+        GET("$leftId/mergeDiff/$rightId")
+
+        then:
+        verifyNotFound(response, leftId)
+
+        when:
+        GET("$leftId/mergeDiff/$mainId")
+
+        then:
+        verifyNotFound(response, leftId)
+
+        when:
+        GET("$rightId/mergeDiff/$mainId")
+
+        then:
+        verifyNotFound(response, rightId)
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(mainId)
+        removeValidIdObjectUsingTransaction(leftId)
+        removeValidIdObjectUsingTransaction(rightId)
+        removeValidIdObjectUsingTransaction(id)
+        cleanUpRoles(mainId, leftId, rightId, id)
+
+        where:
+        prefix | name
+        'LO'   | null
+        'NA'   | 'Authenticated'
+    }
+
+
+    void 'CORE-RE-20 : test finding merge difference of two Model<T>'() {
+        if (expectations.mergingIsAvailable) return
+
+        given:
+        String id = getValidFinalisedId()
+        loginCreator()
+        PUT("$id/newBranchModelVersion", [:])
+        verifyResponse CREATED, response
+        String mainId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'left'])
+        verifyResponse CREATED, response
+        String leftId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'right'])
+        verifyResponse CREATED, response
+        String rightId = responseBody().id
+
+        when:
+        loginReader()
         GET("$leftId/mergeDiff/$rightId")
 
         then:
         verifyResponse OK, response
-        responseBody().leftId == rightId
-        responseBody().rightId == leftId
+        responseBody().targetId == rightId
+        responseBody().sourceId == leftId
 
         when:
         GET("$leftId/mergeDiff/$mainId")
 
         then:
         verifyResponse OK, response
-        responseBody().leftId == mainId
-        responseBody().rightId == leftId
+        responseBody().targetId == mainId
+        responseBody().sourceId == leftId
 
         when:
         GET("$rightId/mergeDiff/$mainId")
 
         then:
         verifyResponse OK, response
-        responseBody().leftId == mainId
-        responseBody().rightId == rightId
+        responseBody().targetId == mainId
+        responseBody().sourceId == rightId
 
         cleanup:
         removeValidIdObjectUsingTransaction(mainId)
@@ -833,7 +1192,47 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         cleanUpRoles(mainId, leftId, rightId, id)
     }
 
-    void 'E23 : test getting current draft model on main branch from side branch (as editor)'() {
+    void 'CORE-#prefix-21 : test getting current draft model on main branch from side branch [not allowed] (as #name)'() {
+        /*
+        id (finalised) -- finalisedId (finalised) -- latestDraftId (draft)
+          \_ newBranchId (draft)
+        */
+        given:
+        String id = getValidFinalisedId()
+        loginCreator()
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String finalisedId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
+        verifyResponse CREATED, response
+        String newBranchId = responseBody().id
+        PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$finalisedId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String latestDraftId = responseBody().id
+
+        when: 'logged in'
+        login(name)
+        GET("$newBranchId/currentMainBranch")
+
+        then:
+        verifyNotFound(response, newBranchId)
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(newBranchId)
+        removeValidIdObjectUsingTransaction(finalisedId)
+        removeValidIdObjectUsingTransaction(latestDraftId)
+        cleanUpRoles(id, newBranchId, finalisedId, latestDraftId)
+
+        where:
+        prefix | name
+        'LO'   | null
+        'NA'   | 'Authenticated'
+    }
+
+    void 'CORE-RE-21 : test getting current draft model on main branch from side branch'() {
         /*
         id (finalised) -- finalisedId (finalised) -- latestDraftId (draft)
           \_ newBranchId (draft)
@@ -853,7 +1252,8 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         verifyResponse CREATED, response
         String latestDraftId = responseBody().id
 
-        when: 'logged in as editor'
+        when: 'logged in'
+        loginReader()
         GET("$newBranchId/currentMainBranch")
 
         then:
@@ -869,14 +1269,14 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         cleanUpRoles(id, newBranchId, finalisedId, latestDraftId)
     }
 
-    void 'E24 : test getting all draft models (as editor)'() {
+    void 'CORE-#prefix-22 : test getting all draft models [not allowed] (as #name)'() {
         /*
         id (finalised) -- finalisedId (finalised) -- latestDraftId (draft)
           \_ newBranchId (draft)
         */
         given:
         String id = getValidFinalisedId()
-        loginEditor()
+        loginCreator()
         PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String finalisedId = responseBody().id
@@ -889,14 +1289,56 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         verifyResponse CREATED, response
         String latestDraftId = responseBody().id
 
-        when: 'logged in as editor'
+        when: 'logged in'
+        login(name)
+        GET("$id/availableBranches")
+
+        then:
+        verifyNotFound(response, id)
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(newBranchId)
+        removeValidIdObjectUsingTransaction(finalisedId)
+        removeValidIdObjectUsingTransaction(latestDraftId)
+        cleanUpRoles(id, newBranchId, finalisedId, latestDraftId)
+
+        where:
+        prefix | name
+        'LO'   | null
+        'NA'   | 'Authenticated'
+    }
+
+
+    void 'CORE-RE-22 : test getting all draft models'() {
+        /*
+        id (finalised) -- finalisedId (finalised) -- latestDraftId (draft)
+          \_ newBranchId (draft)
+        */
+        given:
+        String id = getValidFinalisedId()
+        loginCreator()
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String finalisedId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
+        verifyResponse CREATED, response
+        String newBranchId = responseBody().id
+        PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$finalisedId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String latestDraftId = responseBody().id
+
+        when: 'logged in'
+        loginReader()
         GET("$id/availableBranches")
 
         then:
         verifyResponse OK, response
         responseBody().count == 2
-        responseBody().items.each { it.id in [newBranchId, latestDraftId] }
-        responseBody().items.each { it.label == validJson.label }
+        responseBody().items.each {it.id in [newBranchId, latestDraftId]}
+        responseBody().items.each {it.label == validJson.label}
 
         cleanup:
         removeValidIdObjectUsingTransaction(id)
@@ -906,65 +1348,70 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         cleanUpRoles(id, newBranchId, finalisedId, latestDraftId)
     }
 
-    void 'R25 : test merging object diff into a draft main model'() {
+    void 'CORE-#prefix-23 : test merging object diff into a draft main model [not allowed] (as #name)'() {
         given:
         // a source and draft main branch
         String id = getValidFinalisedId()
-        loginEditor()
+        loginCreator()
         PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String target = responseBody().id
         PUT("$id/newBranchModelVersion", [branchName: 'source'])
         verifyResponse CREATED, response
         String source = responseBody().id
-        logout()
 
         when:
-        // attempt merge as reader
-        loginReader()
+        login(name)
         PUT("$source/mergeInto/$target", [patch: [test: 'value']])
 
         then:
-        verifyResponse FORBIDDEN, response
+        if (canRead) verifyForbidden response else verifyNotFound response, source
 
         cleanup:
         removeValidIdObjectUsingTransaction(target)
         removeValidIdObjectUsingTransaction(source)
         removeValidIdObjectUsingTransaction(id)
         cleanUpRoles(target, source, id)
+
+        where:
+        prefix | name            | canRead
+        'LO'   | null            | false
+        'NA'   | 'Authenticated' | false
+        'RE'   | 'Reader'        | true
+        'RV'   | 'Reviewer'      | true
+        'AU'   | 'Author'        | true
     }
 
-    void 'E25 : test merging object diff into a draft main model'() {
-        if (mergingIsNotAvailable()) {
-            return
-        }
+    void 'CORE-#prefix-23 : test merging object diff into a draft main model [allowed] (as #name)'() {
+        if (expectations.mergingIsAvailable) return
 
         given:
         // a source and draft main branch
         String id = getValidFinalisedId()
-        loginEditor()
+        loginCreator()
         PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String target = responseBody().id
         PUT("$id/newBranchModelVersion", [branchName: 'source'])
         verifyResponse CREATED, response
         String source = responseBody().id
+        String label = responseBody().label
+        String pathToChange = "${getModelPrefix()}:${label}\$source@description"
 
         when:
-        def patchJson = [patch: [
-            leftId : "$target" as String,
-            rightId: "$source" as String,
-            label  : "Functional Test Model",
-            count  : 10,
-            diffs  : [
-                [
-                    fieldName: "description",
-                    value    : "modifiedDescriptionSource"
-                ]
-            ]
-        ]
-        ]
+        def patchJson = [patch: [targetId: target,
+                                 sourceId: source,
+                                 label   : label,
+                                 count   : 1,
+                                 patches : [[fieldName          : "description",
+                                             path               : pathToChange,
+                                             sourceValue        : "modifiedDescriptionSource",
+                                             targetValue        : null,
+                                             commonAncestorValue: null,
+                                             isMergeConflict    : false,
+                                             type               : "modification",]]]]
         // merging a patch
+        login(name)
         PUT("$source/mergeInto/$target", patchJson)
 
         then:
@@ -999,6 +1446,12 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         removeValidIdObjectUsingTransaction(source)
         removeValidIdObjectUsingTransaction(id)
         cleanUpRoles(target, source, id)
+
+        where:
+        prefix | name
+        'ED'   | 'Editor'
+        'CA'   | 'ContainerAdmin'
+        'AD'   | 'Admin'
     }
 
     Map<String, String> buildModelVersionTree() {
@@ -1010,7 +1463,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
       */
         // V1
         String v1 = getValidFinalisedId()
-        loginEditor()
+        loginCreator()
 
         // Fork and finalise fork
         PUT("$v1/newForkModel", [label: "Functional Test Fork ${modelType}" as String])
@@ -1091,22 +1544,19 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         logout()
         [v1       : v1, v2: v2, v3: v3, v4: v4, v5: v5,
          newBranch: newBranch, testBranch: testBranch, main: main, anotherBranch: anotherBranch, interestingBranch: interestingBranch,
-         fork     : fork, anotherFork: anotherFork, forkMain: forkMain
-        ]
+         fork     : fork, anotherFork: anotherFork, forkMain: forkMain]
     }
 
     void cleanupModelVersionTree(Map<String, String> data) {
-        data.each { k, v ->
-            removeValidIdObjectUsingTransaction(v)
+        data.each {k, v -> removeValidIdObjectUsingTransaction(v)
         }
         cleanUpRoles(data.values())
     }
 
-    @Unroll
-    void 'E26a : Test getting versionTreeModel at #tag (as editor)'() {
+    void 'CORE-RE-24a : Test getting versionTreeModel at #tag'() {
         given:
         Map data = buildModelVersionTree()
-        loginEditor()
+        loginReader()
 
         when: 'getting the tree'
         GET("${data[tag]}/modelVersionTree", STRING_ARG)
@@ -1125,10 +1575,9 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
                 'newBranch', 'testBranch', 'main', 'anotherBranch', 'interestingBranch']
     }
 
-    void 'E26b : Test getting versionTreeModel at fork only shows the fork and its branch'() {
+    void 'CORE-RE-24b : Test getting versionTreeModel at fork only shows the fork and its branch'() {
         given:
         Map data = buildModelVersionTree()
-        loginEditor()
         String expectedJson = """[{
     "id": "${data.fork}",
     "label": "Functional Test Fork ${modelType}",
@@ -1160,6 +1609,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
   }]"""
 
         when: 'getting the tree'
+        loginReader()
         GET("${data.fork}/modelVersionTree", STRING_ARG)
 
         then:
@@ -1170,10 +1620,9 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         cleanupModelVersionTree(data)
     }
 
-    void 'E26c : Test getting versionTreeModel at anotherFork only shows the fork'() {
+    void 'CORE-RE-24c : Test getting versionTreeModel at anotherFork only shows the fork'() {
         given:
         Map data = buildModelVersionTree()
-        loginEditor()
         String expectedJson = """[{
     "id": "${data.anotherFork}",
     "label": "Functional Test AnotherFork ${modelType}",
@@ -1187,6 +1636,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
   }]"""
 
         when: 'getting the tree'
+        loginReader()
         GET("${data.anotherFork}/modelVersionTree", STRING_ARG)
 
         then:
@@ -1197,110 +1647,66 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         cleanupModelVersionTree(data)
     }
 
-    void 'L27 : Test undoing a soft delete (as not logged in)'() {
+    void 'CORE-#prefix-25 : Test undoing a soft delete (as #name)'() {
         given: 'model is deleted'
         String id = getValidId()
-        loginEditor()
+        loginCreator()
         DELETE(id)
         verifyResponse(OK, response)
         assert responseBody().deleted
-
-        when:
         logout()
-        PUT("admin/$resourcePath/$id/undoSoftDelete", [:], MAP_ARG, true)
-
-        then:
-        verifyForbidden(response)
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'N27 : Test undoing a soft delete (as authenticated/no access)'() {
-        given: 'model is deleted'
-        String id = getValidId()
-        loginEditor()
-        DELETE(id)
-        verifyResponse(OK, response)
-        assert responseBody().deleted
 
         when:
-        loginAuthenticated()
+        login(name)
         PUT("admin/$resourcePath/$id/undoSoftDelete", [:], MAP_ARG, true)
 
         then:
-        verifyForbidden(response)
+        if (canUndo) {
+            verifyResponse(OK, response)
+            !responseBody().deleted
+        } else verifyForbidden response
 
         cleanup:
         removeValidIdObject(id)
+
+        where:
+        prefix | name             | canUndo
+        'LO'   | null             | false
+        'NA'   | 'Authenticated'  | false
+        'RE'   | 'Reader'         | false
+        'RV'   | 'Reviewer'       | false
+        'AU'   | 'Author'         | false
+        'ED'   | 'Editor'         | false
+        'CA'   | 'ContainerAdmin' | false
+        'AD'   | 'Admin'          | true
     }
 
-    void 'R27 : Test undoing a soft delete (as reader)'() {
-        given: 'model is deleted'
-        String id = getValidId()
-        loginEditor()
-        DELETE(id)
-        verifyResponse(OK, response)
-        assert responseBody().deleted
-
-        when:
-        loginReader()
-        PUT("admin/$resourcePath/$id/undoSoftDelete", [:], MAP_ARG, true)
-
-        then:
-        verifyForbidden(response)
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'E27 : Test undoing a soft delete (as editor)'() {
-        given: 'model is deleted'
-        String id = getValidId()
-        loginEditor()
-        DELETE(id)
-        verifyResponse(OK, response)
-        assert responseBody().deleted
-
-        when:
-        loginEditor()
-        PUT("admin/$resourcePath/$id/undoSoftDelete", [:], MAP_ARG, true)
-
-        then:
-        verifyForbidden(response)
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'A27 : Test undoing a soft delete (as admin)'() {
-        given: 'model is deleted'
-        String id = getValidId()
-        loginEditor()
-        DELETE(id)
-        verifyResponse(OK, response)
-        assert responseBody().deleted
-
-        when:
-        loginAdmin()
-        PUT("admin/$resourcePath/$id/undoSoftDelete", [:], MAP_ARG, true)
-
-        then:
-        verifyResponse(OK, response)
-        !responseBody().deleted
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-
-    @Unroll
-    void 'E28a : Test getting simple versionTreeModel at #tag (as editor)'() {
+    void 'CORE-#prefix-26 : Test getting simple versionTreeModel [not allowed] (as #name)'() {
         given:
         Map data = buildModelVersionTree()
-        loginEditor()
 
         when: 'getting the tree'
+        login(name)
+        GET("${data.v1}/simpleModelVersionTree")
+
+        then:
+        verifyNotFound(response, data.v1)
+
+        cleanup:
+        cleanupModelVersionTree(data)
+
+        where:
+        prefix | name
+        'LO'   | null
+        'NA'   | 'Authenticated'
+    }
+
+    void 'CORE-RE-26a : Test getting simple versionTreeModel at #tag'() {
+        given:
+        Map data = buildModelVersionTree()
+
+        when: 'getting the tree'
+        loginReader()
         GET("${data[tag]}/simpleModelVersionTree", STRING_ARG)
 
         then:
@@ -1317,10 +1723,9 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
                 'newBranch', 'testBranch', 'main', 'anotherBranch', 'interestingBranch']
     }
 
-    void 'E28b : Test getting simple versionTreeModel at fork only shows the fork and its branch'() {
+    void 'CORE-RE-26b : Test getting simple versionTreeModel at fork only shows the fork and its branch'() {
         given:
         Map data = buildModelVersionTree()
-        loginEditor()
         String expectedJson = """[{
     "id": "${data.fork}",
     "branch": null,
@@ -1337,6 +1742,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
   }]"""
 
         when: 'getting the tree'
+        loginReader()
         GET("${data.fork}/simpleModelVersionTree", STRING_ARG)
 
         then:
@@ -1347,10 +1753,9 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         cleanupModelVersionTree(data)
     }
 
-    void 'E28c : Test getting simple versionTreeModel at anotherFork only shows the fork'() {
+    void 'CORE-RE-26c : Test getting simple versionTreeModel at anotherFork only shows the fork'() {
         given:
         Map data = buildModelVersionTree()
-        loginEditor()
         String expectedJson = """[{
     "id": "${data.anotherFork}",
     "branch": "main",
@@ -1360,6 +1765,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
   }]"""
 
         when: 'getting the tree'
+        loginReader()
         GET("${data.anotherFork}/simpleModelVersionTree", STRING_ARG)
 
         then:
@@ -1370,10 +1776,9 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         cleanupModelVersionTree(data)
     }
 
-    void 'E28d : Test getting simple versionTreeModel for merge shows only branches and not the selected model'() {
+    void 'CORE-RE-26d : Test getting simple versionTreeModel for merge shows only branches and not the selected model'() {
         given:
         Map data = buildModelVersionTree()
-        loginEditor()
         String expectedJson = """[
   {
     "id": "${data.newBranch}",
@@ -1406,6 +1811,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
 ]"""
 
         when: 'getting the tree'
+        loginReader()
         GET("${data.interestingBranch}/simpleModelVersionTree?forMerge=true", STRING_ARG)
 
         then:
@@ -1416,7 +1822,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         cleanupModelVersionTree(data)
     }
 
-    void 'E28e : Test getting simple versionTreeModel with branches only shows only branches'() {
+    void 'CORE-RE-26e : Test getting simple versionTreeModel with branches only shows only branches'() {
         given:
         Map data = buildModelVersionTree()
         loginEditor()
@@ -1469,41 +1875,49 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         cleanupModelVersionTree(data)
     }
 
-    void 'R29a : Test available actions inside a VersionedFolder (as reader)'() {
+    void 'CORE-#prefix-27a : Test available actions inside a VersionedFolder (as #name)'() {
         given:
-        loginEditor()
+        loginCreator()
         POST("folders/${testVersionedFolderId}/${getResourcePath()}", validJson, MAP_ARG, true)
         verifyResponse CREATED, response
-        String id = response.body().id
+        String id = responseBody().id
         logout()
 
         when:
-        loginReader()
+        login(name)
         GET(id)
 
         then:
         verifyResponse(OK, response)
-        responseBody().availableActions == getReaderAvailableActions()
+        responseBody().availableActions == actions - ResourceActions.FINALISE_ACTION
 
         cleanup:
-        loginEditor()
         removeValidIdObjectUsingTransaction(id)
         cleanUpRoles(id)
+
+        where:
+        prefix | name             | actions
+        'RE'   | 'Reader'         | expectations.readerAvailableActions
+        'RV'   | 'Reviewer'       | expectations.reviewerAvailableActions
+        'AU'   | 'Author'         | expectations.authorAvailableActions
+        'ED'   | 'Editor'         | expectations.editorAvailableActions
+        'CA'   | 'ContainerAdmin' | expectations.containerAdminAvailableActions
+        'AD'   | 'Admin'          | expectations.containerAdminAvailableActions
     }
 
-    void 'R29b : Test available actions inside a Folder inside a VersionedFolder (as reader)'() {
+    void 'CORE-#prefix-27b : Test available actions inside a Folder inside a VersionedFolder (as #name)'() {
         given:
-        loginEditor()
+        loginCreator()
         POST("folders/${testVersionedFolderId}/folders/", [label: 'folder in versionedfolder'], MAP_ARG, true)
         verifyResponse CREATED, response
-        String folderId = response.body().id
+        String folderId = responseBody().id
         POST("folders/${folderId}/${getResourcePath()}", validJson, MAP_ARG, true)
         verifyResponse CREATED, response
-        String id = response.body().id
+        String id = responseBody().id
         logout()
 
         when:
-        loginReader()
+        login(name)
         GET("folders/${testVersionedFolderId}", MAP_ARG, true)
         verifyResponse(OK, response)
         GET("folders/${folderId}", MAP_ARG, true)
@@ -1512,87 +1926,181 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
 
         then:
         verifyResponse(OK, response)
-        responseBody().availableActions == getReaderAvailableActions()
+        responseBody().availableActions == actions - ResourceActions.FINALISE_ACTION
 
         cleanup:
-        loginEditor()
+        loginCreator()
         DELETE("folders/${folderId}?permanent=true", MAP_ARG, true)
         verifyResponse(NO_CONTENT, response)
         cleanUpRoles(id)
+
+        where:
+        prefix | name             | actions
+        'RE'   | 'Reader'         | expectations.readerAvailableActions
+        'RV'   | 'Reviewer'       | expectations.reviewerAvailableActions
+        'AU'   | 'Author'         | expectations.authorAvailableActions
+        'ED'   | 'Editor'         | expectations.editorAvailableActions
+        'CA'   | 'ContainerAdmin' | expectations.containerAdminAvailableActions
+        'AD'   | 'Admin'          | expectations.containerAdminAvailableActions
     }
 
-    void 'E29a : Test available actions inside a VersionedFolder (as editor)'() {
+    void 'CORE-#prefix-28 : test changing folder from Model<T> context [not allowed] (as #name)'() {
         given:
-        loginEditor()
-        POST("folders/${testVersionedFolderId}/${getResourcePath()}", validJson, MAP_ARG, true)
-        verifyResponse CREATED, response
-        String id = response.body().id
-        logout()
-
-        when:
-        loginEditor()
-        GET(id)
-
-        then:
-        verifyResponse(OK, response)
-        responseBody().availableActions == getEditorAvailableActions() - 'finalise'
-
-        cleanup:
-        loginEditor()
-        removeValidIdObjectUsingTransaction(id)
-        cleanUpRoles(id)
-    }
-
-    void 'E29b : Test available actions inside a Folder inside a VersionedFolder (as editor)'() {
-        given:
-        loginEditor()
-        POST("folders/${testVersionedFolderId}/folders/", [label: 'folder in versionedfolder'], MAP_ARG, true)
-        verifyResponse CREATED, response
-        String folderId = response.body().id
-        POST("folders/${folderId}/${getResourcePath()}", validJson, MAP_ARG, true)
-        verifyResponse CREATED, response
-        String id = response.body().id
-        logout()
-
-        when:
-        loginEditor()
-        GET(id)
-
-        then:
-        verifyResponse(OK, response)
-        responseBody().availableActions == getEditorAvailableActions() - 'finalise'
-
-        cleanup:
-        loginEditor()
-        DELETE("folders/${folderId}?permanent=true", MAP_ARG, true)
-        verifyResponse(NO_CONTENT, response)
-        cleanUpRoles(id)
-    }
-
-    void 'L08b : test accessing finalised when readable by everyone (not logged in)'() {
-        given:
-        String id = getValidFinalisedId()
-        loginEditor()
-        PUT("$id/readByEveryone", [:])
-        verifyResponse OK, response
-        logout()
+        String id = getValidId()
 
         when: 'not logged in'
-        GET(id)
+        login(name)
+        PUT("$id/folder/${getTestFolder2Id()}", [:])
 
         then:
-        verifyResponse(OK, response)
-        response.body().readableByEveryone == true
-        response.body().availableActions == ['finalisedReadActions', 'show']
+        if (name in ['Editor', 'Author']) verifyNotFound response, getTestFolder2Id()
+        else if (canRead) verifyForbidden response
+        else verifyNotFound response, id
 
-        when: 'removing readable by everyone'
-        loginEditor()
-        DELETE("$id/readByEveryone", [:])
+        cleanup:
+        removeValidIdObject(id)
+
+        where:
+        prefix | name            | canRead
+        'LO'   | null            | false
+        'NA'   | 'Authenticated' | false
+        'RE'   | 'Reader'        | true
+        'RV'   | 'Reviewer'      | true
+        'AU'   | 'Author'        | true
+        'ED'   | 'Editor'        | true
+
+    }
+
+    void 'CORE-#prefix-28 : test changing folder from Model<T> context [allowed] (as #name)'() {
+        given:
+        String id = getValidId()
+
+        when: 'logged in'
+        login(name)
+        PUT("$id/folder/${getTestFolder2Id()}", [:])
+
+        then:
         verifyResponse OK, response
-        logout()
 
         and:
+        getModelFolderId(id) == getTestFolder2Id()
+
+        cleanup:
+        removeValidIdObject(id)
+
+        where:
+        prefix | name
+        'CA'   | 'ContainerAdmin'
+        'AD'   | 'Admin'
+    }
+
+    void 'CORE-#prefix-29 : test changing folder from Folder context [not allowed] (as #name)'() {
+        given:
+        String id = getValidId()
+
+        when:
+        login(name)
+        PUT("folders/${getTestFolder2Id()}/${modelUrlType}/$id", [:], MAP_ARG, true)
+
+        then:
+        if (name in ['Editor', 'Author']) verifyNotFound response, getTestFolder2Id()
+        else if (canRead) verifyForbidden response
+        else verifyNotFound response, id
+
+        cleanup:
+        removeValidIdObject(id)
+
+        where:
+        prefix | name            | canRead
+        'LO'   | null            | false
+        'NA'   | 'Authenticated' | false
+        'RE'   | 'Reader'        | true
+        'RV'   | 'Reviewer'      | true
+        'AU'   | 'Author'        | true
+        'ED'   | 'Editor'        | true
+    }
+
+    void 'CORE-#prefix-29 : test changing folder from Folder context [allowed] (as #name)'() {
+        given:
+        String id = getValidId()
+        loginCreator()
+        // Add a reader share for the editors group directly to the DM
+        addShare(id, 'editors', GroupRole.READER_ROLE_NAME)
+
+        when: 'checking access before move logged in as reader'
+        loginReader()
         GET(id)
+
+        then:
+        verifyResponse OK, response
+
+
+        when: 'checking access before move logged in as editor'
+        loginEditor()
+        GET(id)
+
+        then:
+        verifyResponse OK, response
+
+        when: 'logged in as admin'
+        login(name)
+        PUT("folders/${getTestFolder2Id()}/${modelUrlType}/$id", [:], MAP_ARG, true)
+
+        then:
+        verifyResponse OK, response
+
+        and:
+        getModelFolderId(id) == getTestFolder2Id()
+
+        when: 'logged in as reader who has no access to folder 2 and has lost inherited access to DM'
+        loginReader()
+        GET(id)
+
+        then:
+        verifyNotFound response, id
+
+        when: 'logged in as editor no access to folder 2 but has direct DM access'
+        loginEditor()
+        GET(id)
+
+        then:
+        verifyResponse OK, response
+
+        cleanup:
+        removeValidIdObject(id)
+
+        where:
+        prefix | name
+        'CA'   | 'ContainerAdmin'
+        'AD'   | 'Admin'
+    }
+
+
+    void 'CORE-#prefix-30 : test diffing 2 Models<T> [not allowed] (as #name)'() {
+
+        when:
+        login(name)
+        GET("${getLeftHandDiffModelId()}/diff/${getRightHandDiffModelId()}")
+
+        then:
+        verifyNotFound response, getLeftHandDiffModelId()
+
+        where:
+        prefix | name
+        'LO'   | null
+        'NA'   | 'Authenticated'
+    }
+
+    void 'CORE-RE-30a : test diffing 2 Models<T> (as reader of LH model)'() {
+        given:
+        String id = getValidId()
+        loginCreator()
+        PUT("$id/folder/${getTestFolder2Id()}", [:])
+        logout()
+
+        when: 'able to read right model only'
+        loginReader()
+        GET("${getLeftHandDiffModelId()}/diff/${id}")
 
         then:
         verifyNotFound response, id
@@ -1601,95 +2109,16 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         removeValidIdObject(id)
     }
 
-    void 'E09b : test adding readable by authenticated once finalised (as editor)'() {
+    void 'CORE-RE-30b : test diffing 2 Models<T> (as reader of RH model)'() {
         given:
-        String id = getValidFinalisedId()
-        def endpoint = "$id/readByAuthenticated"
-
-        when: 'logged in as user with write access'
-        loginEditor()
-        PUT(endpoint, [:])
-
-        then:
-        verifyResponse(OK, response)
-        response.body().readableByAuthenticatedUsers == true
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'E10b : test removing readable by authenticated once finalised (as editor)'() {
-        given:
-        String id = getValidFinalisedId()
-        def endpoint = "$id/readByAuthenticated"
-        loginEditor()
-        PUT(endpoint, [:])
-        verifyResponse OK, response
-        response.body().readableByAuthenticatedUsers == true
+        String id = getValidId()
+        loginCreator()
+        PUT("$id/folder/${getTestFolder2Id()}", [:])
         logout()
 
-        when: 'logged in as user with write access'
-        loginEditor()
-        DELETE(endpoint)
-
-        then:
-        verifyResponse(OK, response)
-        response.body().readableByAuthenticatedUsers == false
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'E12b : test adding reader share once finalised (as editor)'() {
-        given:
-        String id = getValidFinalisedId()
-        String groupRoleId = getGroupRole(GroupRole.READER_ROLE_NAME).id.toString()
-        String readerGroupId = getUserGroup('extraGroup').id.toString()
-        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
-
-        when: 'logged in as writer'
-        loginEditor()
-        POST(endpoint, [:])
-
-        then:
-        verifyResponse CREATED, response
-        response.body().securableResourceId == id
-        response.body().userGroup.id == readerGroupId
-        response.body().groupRole.id == groupRoleId
-
-        when: 'getting item as new reader'
-        loginAuthenticated2()
-        GET(id)
-
-        then:
-        verifyResponse OK, response
-        response.body().availableActions == getFinalisedReaderAvailableActions()
-        response.body().id == id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'E13b : test removing reader share once finalised (as editor)'() {
-        given:
-        String id = getValidFinalisedId()
-        String groupRoleId = getGroupRole(GroupRole.READER_ROLE_NAME).id.toString()
-        String readerGroupId = getUserGroup('extraGroup').id.toString()
-        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
-        loginEditor()
-        POST(endpoint, [:])
-        logout()
-
-        when: 'logged in as writer'
-        loginEditor()
-        DELETE(endpoint, [:])
-
-        then:
-        verifyResponse NO_CONTENT, response
-
-        when: 'getting item as new reader'
-        loginAuthenticated2()
-        GET(id)
+        when:
+        loginReader()
+        GET("${id}/diff/${getLeftHandDiffModelId()}")
 
         then:
         verifyNotFound response, id
@@ -1698,62 +2127,13 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         removeValidIdObject(id)
     }
 
-    void 'E14b : test adding "editor" share once finalised (as editor)'() {
-        given:
-        String id = getValidFinalisedId()
-        String groupRoleId = getGroupRole(getEditorGroupRoleName()).id.toString()
-        String readerGroupId = getUserGroup('extraGroup').id.toString()
-        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
-
-        when: 'logged in as writer'
-        loginEditor()
-        POST(endpoint, [:])
+    void 'CORE-RE-30c : test diffing 2 Models<T> (as reader of both models)'() {
+        when:
+        loginReader()
+        GET("${getLeftHandDiffModelId()}/diff/${getRightHandDiffModelId()}", STRING_ARG)
 
         then:
-        verifyResponse CREATED, response
-        response.body().securableResourceId == id
-        response.body().userGroup.id == readerGroupId
-        response.body().groupRole.id == groupRoleId
-
-        when: 'getting item as new reader'
-        loginAuthenticated2()
-        GET(id)
-
-        then:
-        verifyResponse OK, response
-        response.body().availableActions == getFinalisedEditorAvailableActions()
-        response.body().id == id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'E15b : test removing "editor" share once finalised (as editor)'() {
-        given:
-        String id = getValidFinalisedId()
-        String groupRoleId = getGroupRole(getEditorGroupRoleName()).id.toString()
-        String readerGroupId = getUserGroup('extraGroup').id.toString()
-        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
-        loginEditor()
-        POST(endpoint, [:])
-        logout()
-
-        when: 'logged in as writer'
-        loginEditor()
-        DELETE(endpoint, [:])
-
-        then:
-        verifyResponse NO_CONTENT, response
-
-        when: 'getting item as new reader'
-        loginAuthenticated2()
-        GET(id)
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
+        verifyJsonResponse OK, getExpectedDiffJson()
     }
 
     String getExpectedModelTreeVersionString(Map data) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.test.functional.facet.ContainerMetadataF
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import groovy.util.logging.Slf4j
 import spock.lang.Shared
 
@@ -38,9 +38,9 @@ class ClassifierMetadataFunctionalSpec extends ContainerMetadataFunctionalSpec {
     @Shared
     Classifier classifier
 
-    @OnceBefore
+    @RunOnce
     @Transactional
-    def checkAndSetupData() {
+    def setup() {
         log.debug('Check and setup test data')
         classifier = new Classifier(label: 'Functional Test Classifier', createdBy: 'functionalTest@test.com').save(flush: true)
         sessionFactory.currentSession.flush()

@@ -1,5 +1,5 @@
 <?xml version='1.0'?>
-<exp:exportModel xmlns:exp='http://maurodatamapper.com/export/4.0' xmlns:mdm='http://maurodatamapper.com/referenceDataModel/4.0'>
+<exp:exportModel xmlns:exp='http://maurodatamapper.com/export/5.0' xmlns:mdm='http://maurodatamapper.com/referenceDataModel/5.0'>
     <mdm:referenceDataModel>
         <mdm:id>941f6774-9eae-4bfa-890e-e819eb1af281</mdm:id>
         <mdm:label>Imported Reference Data Model</mdm:label>
@@ -33,12 +33,12 @@
                 <mdm:value>mdv2</mdm:value>
                 <mdm:lastUpdated>2020-10-27T15:00:33.755Z</mdm:lastUpdated>
             </mdm:metadata>
-        </mdm:metadata>       
-        <mdm:type>ReferenceDataModel</mdm:type>
+        </mdm:metadata>
         <mdm:author>Test Author</mdm:author>
         <mdm:organisation>Test Organisation</mdm:organisation>
         <mdm:documentationVersion>1.0.0</mdm:documentationVersion>
         <mdm:finalised>false</mdm:finalised>
+        <mdm:branchName>main</mdm:branchName>
         <mdm:authority>
             <mdm:id>107adf2e-7051-4ffc-b785-1122f598f13a</mdm:id>
             <mdm:label>Mauro Data Mapper</mdm:label>
@@ -84,7 +84,7 @@
                     <mdm:domainType>ReferencePrimitiveType</mdm:domainType>
                 </mdm:referenceDataType>
             </mdm:referenceDataElement>
-        </mdm:referenceDataElements>     
+        </mdm:referenceDataElements>
         <mdm:referenceDataValues>
             <mdm:referenceDataValue>
                 <mdm:id>073b70c2-01fb-4727-97b6-1e236af42e57</mdm:id>
@@ -3894,7 +3894,7 @@
         <exp:exporter>
             <exp:namespace>uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter</exp:namespace>
             <exp:name>ReferenceDataXmlExporterService</exp:name>
-            <exp:version>4.0</exp:version>
+            <exp:version>5.0</exp:version>
         </exp:exporter>
     </exp:exportMetadata>
 </exp:exportModel>

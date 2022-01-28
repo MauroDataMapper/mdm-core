@@ -8,5 +8,5 @@ model {
 
 json {
     call(Introspector.decapitalize(similarityPair.item.domainType), g.render(similarityPair.item))
-    score similarityPair.similarity
+    score similarityPair.score
 }

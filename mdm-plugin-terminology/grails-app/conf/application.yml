@@ -3,10 +3,6 @@ database:
     port: 5432
     name: maurodatamapper
 ---
-apiUser:
-    username: admin@maurodatamapper.com
-    password: password
----
 #Default for plugins/applications
 ---
 maurodatamapper:
@@ -111,8 +107,9 @@ grails:
     cors:
         enabled: true
         # The following are the defaults
-        allowedOrigins: ['*']
-        allowedMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD']
+        # allowedOrigins: ['*'] # Cannot use allowedOrigins with *, they have to be clearly stated origins
+        allowedOriginPatterns: [ '*' ]
+        allowedMethods: [ 'GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD' ]
         allowedHeaders: [ 'origin', 'content-type', 'accept', 'authorization', 'pragma', 'cache-control' ]
         #exposedHeaders: null
         #maxAge: 1800
@@ -146,7 +143,9 @@ hibernate:
             provider: org.ehcache.jsr107.EhcacheCachingProvider
             missing_cache_strategy: create
     search:
-        default.indexBase: '/tmp/lucene/plugin/terminology'
+        backend:
+            directory:
+                root: 'build/lucene'
 
 ---
 dataSource:

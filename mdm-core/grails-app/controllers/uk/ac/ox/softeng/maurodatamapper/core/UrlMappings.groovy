@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ class UrlMappings {
 
             group '/admin', {
                 get '/modules'(controller: 'mauroDataMapperProvider', action: 'modules')
-                post '/rebuildLuceneIndexes'(controller: 'admin', action: 'rebuildLuceneIndexes')
+                post '/rebuildHibernateSearchIndexes'(controller: 'admin', action: 'rebuildHibernateSearchIndexes') // 5.0.0 New URL
                 get '/status'(controller: 'admin', action: 'status')
                 get '/activeSessions'(controller: 'session', action: 'activeSessions')
                 '/emails'(resources: 'email', includes: INCLUDES_INDEX_ONLY)

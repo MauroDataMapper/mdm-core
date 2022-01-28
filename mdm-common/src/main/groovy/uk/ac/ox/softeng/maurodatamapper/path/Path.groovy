@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,18 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.path
 
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
+import groovy.transform.CompileDynamic
+import groovy.transform.CompileStatic
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.SimpleType
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.PathAware
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 /**
  * @since 28/08/2020
  */
-class Path {
+@CompileStatic
+class Path implements Serializable {
 
     //Need to escape the vertical bar which we are using as the split delimiter
     static String PATH_DELIMITER = '\\|'
@@ -92,7 +93,7 @@ class Path {
         }
     }
 
-    boolean isAbsoluteTo(CreatorAware creatorAware, String modelIdentifierOverride = null) {
+    boolean isAbsoluteTo(MdmDomain creatorAware, String modelIdentifierOverride = null) {
         // If the first node in this path matches the supplied object then this path is absolute against the supplied object,
         // otherwise it may be relative or may not be inside this object
         Path rootPath = from(creatorAware)
@@ -122,6 +123,7 @@ class Path {
     }
 
     Path getChildPath() {
+        if (pathNodes.size() < 1) return null
         clone().tap {
             pathNodes.removeAt(0)
         }
@@ -134,14 +136,19 @@ class Path {
     Path clone() {
         Path local = this
         new Path().tap {
-            pathNodes = local.pathNodes.collect { it.clone() }
+            pathNodes = local.pathNodes.collect {it.clone()}
         }
     }
 
-    boolean matches(Path otherPath) {
+    Path resolve(String prefix, String pathIdentifier) {
+        from(this, prefix, pathIdentifier)
+    }
+
+    boolean matches(Path otherPath, String modelIdentifierOverride = null) {
+        if (!otherPath) return false
         if (size() != otherPath.size()) return false
         for (i in 0..<size()) {
-            if (!this[i].matches(otherPath[i])) return false
+            if (!this[i].matches(otherPath[i], modelIdentifierOverride)) return false
         }
         true
     }
@@ -177,6 +184,10 @@ class Path {
         }
     }
 
+    static Path from(MdmDomain parent, String prefix, String pathIdentifier) {
+        from(parent.path, prefix, pathIdentifier)
+    }
+
     static Path from(Path parentPath, String prefix, String pathIdentifier) {
         parentPath ? parentPath.clone().addToPathNodes(prefix, pathIdentifier, false) : from(prefix, pathIdentifier)
     }
@@ -185,7 +196,7 @@ class Path {
         from(from(parentPath), prefix, pathIdentifier)
     }
 
-    static Path from(Path parentPath, CreatorAware domain) {
+    static Path from(Path parentPath, MdmDomain domain) {
         from(parentPath, domain.pathPrefix, domain.pathIdentifier)
     }
 
@@ -197,7 +208,7 @@ class Path {
         // Allows us to add 2 paths together which may share the same some of the same nodes
         Path cleanPath = parentPath.clone()
 
-        int firstSharedNode = cleanPath.pathNodes.findIndexOf { pn ->
+        int firstSharedNode = cleanPath.pathNodes.findIndexOf {pn ->
             pn == childPath.first()
         }
 
@@ -225,19 +236,25 @@ class Path {
         cleanPath
     }
 
-    static Path from(CreatorAware... domains) {
+    static Path from(MdmDomain... domains) {
         new Path().tap {
-            domains.eachWithIndex {CreatorAware domain, int i ->
+            domains.eachWithIndex {MdmDomain domain, int i ->
                 pathNodes << new PathNode(domain.pathPrefix, domain.pathIdentifier, false)
             }
         }
     }
 
-    static Path from(List<CreatorAware> domains) {
+    static Path from(List<MdmDomain> domains) {
         new Path().tap {
-            domains.eachWithIndex {CreatorAware domain, int i ->
+            domains.eachWithIndex {MdmDomain domain, int i ->
                 pathNodes << new PathNode(domain.pathPrefix, domain.pathIdentifier, false)
             }
+        }
+    }
+
+    static Path fromNodes(List<PathNode> nodes) {
+        new Path().tap {
+            nodes.each {nodes << it.clone()}
         }
     }
 
@@ -251,13 +268,13 @@ class Path {
         from(possiblePath).toString() == possiblePath
     }
 
-    static Path toPathPrefix(CreatorAware domain, String prefix)
-    {
-        List<CreatorAware> objectsInPath  = []
+    @CompileDynamic
+    static Path toPathPrefix(MdmDomain domain, String prefix) {
+        List<MdmDomain> objectsInPath = []
         objectsInPath.push(domain)
 
-        while (objectsInPath.first().getPathPrefix() != prefix && Utils.parentClassIsAssignableFromChild(PathAware, objectsInPath.first().class)) {
-            objectsInPath.push(objectsInPath.first().getPathParent())
+        while (objectsInPath.first().getPathPrefix() != prefix && objectsInPath.first().respondsTo('getParent')) {
+            objectsInPath.push(objectsInPath.first().getParent())
         }
 
         Path.from(objectsInPath)

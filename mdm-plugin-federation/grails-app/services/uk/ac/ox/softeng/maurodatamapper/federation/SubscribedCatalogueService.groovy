@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,23 +21,28 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.XmlImportMapping
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.AnonymisableService
 import uk.ac.ox.softeng.maurodatamapper.federation.web.FederationClient
+import uk.ac.ox.softeng.maurodatamapper.security.basic.AnonymousUser
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
+import grails.core.GrailsApplication
 import grails.gorm.transactions.Transactional
 import grails.util.Environment
 import groovy.util.logging.Slf4j
 import io.micronaut.http.client.HttpClientConfiguration
-import io.micronaut.http.client.ssl.NettyClientSslBuilder
+import io.micronaut.http.client.netty.ssl.NettyClientSslBuilder
 import io.micronaut.http.codec.MediaTypeCodecRegistry
 import org.springframework.beans.factory.annotation.Autowired
 
+import java.time.Duration
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
 @Transactional
 @Slf4j
-class SubscribedCatalogueService implements XmlImportMapping {
+class SubscribedCatalogueService implements XmlImportMapping, AnonymisableService {
 
     @Autowired
     HttpClientConfiguration httpClientConfiguration
@@ -46,6 +51,7 @@ class SubscribedCatalogueService implements XmlImportMapping {
     @Autowired
     MediaTypeCodecRegistry mediaTypeCodecRegistry
 
+    GrailsApplication grailsApplication
     AuthorityService authorityService
 
     SubscribedCatalogue get(Serializable id) {
@@ -70,8 +76,9 @@ class SubscribedCatalogueService implements XmlImportMapping {
 
     void verifyConnectionToSubscribedCatalogue(SubscribedCatalogue subscribedCatalogue) {
         try {
-            FederationClient client = getFederationClientForSubscribedCatalogue(subscribedCatalogue)
-            Map<String, Object> catalogueModels = client.getSubscribedCatalogueModels(subscribedCatalogue.apiKey)
+            Map<String, Object> catalogueModels = getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
+                client.getSubscribedCatalogueModels(subscribedCatalogue.apiKey)
+            }
             if (!catalogueModels.containsKey('publishedModels') || !catalogueModels.authority) {
                 subscribedCatalogue.errors.reject('invalid.subscription.url.response',
                                                   [subscribedCatalogue.url].toArray(),
@@ -109,21 +116,22 @@ class SubscribedCatalogueService implements XmlImportMapping {
      * 1. Connect to the endpoint /api/published/models on the remote, authenticating by setting an api key in the header
      * 2. Return list of PublishedModels received in JSON from the remote catalogue
      *
-     * @param subscribedCatalogue   The catalogue we want to query
+     * @param subscribedCatalogue The catalogue we want to query
      * @return List<PublishedModel> The list of published models returned by the catalogue
      *
      */
     List<PublishedModel> listPublishedModels(SubscribedCatalogue subscribedCatalogue) {
-
-        FederationClient client = getFederationClientForSubscribedCatalogue(subscribedCatalogue)
-
-        Map<String, Object> subscribedCatalogueModels = client.getSubscribedCatalogueModels(subscribedCatalogue.apiKey)
+        Map<String, Object> subscribedCatalogueModels = getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
+            client.getSubscribedCatalogueModels(subscribedCatalogue.apiKey)
+        }
         if (subscribedCatalogueModels.publishedModels.isEmpty()) return []
 
         (subscribedCatalogueModels.publishedModels as List<Map<String, String>>).collect {pm ->
             new PublishedModel().tap {
                 modelId = Utils.toUuid(pm.modelId)
-                title = pm.title
+                title = pm.title // for compatibility with remote catalogue versions prior to 4.12
+                if (pm.label) modelLabel = pm.label
+                if (pm.version) modelVersion = Version.from(pm.version)
                 modelType = pm.modelType
                 lastUpdated = OffsetDateTime.parse(pm.lastUpdated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
                 dateCreated = OffsetDateTime.parse(pm.dateCreated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
@@ -131,24 +139,39 @@ class SubscribedCatalogueService implements XmlImportMapping {
                 author = pm.author
                 description = pm.description
             }
-        }
+        }.sort()
     }
 
     List<Map<String, Object>> getAvailableExportersForResourceType(SubscribedCatalogue subscribedCatalogue, String urlResourceType) {
-        getFederationClientForSubscribedCatalogue(subscribedCatalogue).getAvailableExporters(subscribedCatalogue.apiKey, urlResourceType)
+        getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
+            client.getAvailableExporters(subscribedCatalogue.apiKey, urlResourceType)
+        }
     }
 
     Map<String, Object> getVersionLinksForModel(SubscribedCatalogue subscribedCatalogue, String urlModelType, UUID modelId) {
-        getFederationClientForSubscribedCatalogue(subscribedCatalogue).getVersionLinksForModel(subscribedCatalogue.apiKey, urlModelType, modelId)
+        getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
+            client.getVersionLinksForModel(subscribedCatalogue.apiKey, urlModelType, modelId)
+        }
+    }
+
+    Map<String, Object> getNewerPublishedVersionsForPublishedModel(SubscribedCatalogue subscribedCatalogue, UUID modelId) {
+        getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
+            client.getNewerPublishedVersionsForPublishedModel(subscribedCatalogue.apiKey, modelId)
+        }
     }
 
     String getStringResourceExport(SubscribedCatalogue subscribedCatalogue, String urlResourceType, UUID resourceId, Map exporterInfo) {
-        getFederationClientForSubscribedCatalogue(subscribedCatalogue).getStringResourceExport(subscribedCatalogue.apiKey, urlResourceType,
-                                                                                               resourceId, exporterInfo)
+        getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
+            client.getStringResourceExport(subscribedCatalogue.apiKey, urlResourceType,
+                                           resourceId, exporterInfo)
+        }
     }
 
     private FederationClient getFederationClientForSubscribedCatalogue(SubscribedCatalogue subscribedCatalogue) {
-        new FederationClient(subscribedCatalogue.url,
+        httpClientConfiguration.setReadTimeout(Duration.ofMinutes(
+            subscribedCatalogue.connectionTimeout ?: grailsApplication.config.getProperty(SubscribedCatalogue.DEFAULT_CONNECTION_TIMEOUT_CONFIG_PROPERTY, Integer)
+        ))
+        new FederationClient(subscribedCatalogue,
                              httpClientConfiguration,
                              nettyClientSslBuilder,
                              mediaTypeCodecRegistry)
@@ -179,5 +202,12 @@ class SubscribedCatalogueService implements XmlImportMapping {
         int lastPos = url.lastIndexOf(separator)
 
         return url.substring(lastPos + 1)
+    }
+
+    void anonymise(String createdBy) {
+        SubscribedCatalogue.findAllByCreatedBy(createdBy).each { subscribedCatalogue ->
+            subscribedCatalogue.createdBy = AnonymousUser.ANONYMOUS_EMAIL_ADDRESS
+            subscribedCatalogue.save(validate: false)
+        }
     }
 }

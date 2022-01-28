@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.core.admin
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.BootStrap
-import uk.ac.ox.softeng.maurodatamapper.core.hibernate.search.LuceneIndexingService
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.LuceneIndexParameters
+import uk.ac.ox.softeng.maurodatamapper.core.hibernate.search.HibernateSearchIndexingService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.HibernateSearchIndexParameters
 import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec
 
@@ -59,8 +59,8 @@ class AdminControllerSpec extends BaseUnitSpec implements ControllerUnitTest<Adm
         adminService.apiPropertyService = apiPropertyService
         controller.adminService = adminService
 
-        controller.luceneIndexingService = Stub(LuceneIndexingService) {
-            rebuildLuceneIndexes(_) >> {sleep(1000)}
+        controller.hibernateSearchIndexingService = Stub(HibernateSearchIndexingService) {
+            rebuildHibernateSearchIndexes(_) >> { sleep(1000) }
         }
 
         BootStrap bootStrap = new BootStrap()
@@ -74,13 +74,13 @@ class AdminControllerSpec extends BaseUnitSpec implements ControllerUnitTest<Adm
         currentVersion = Files.readAllLines(gradleProperties).find {it.startsWith('version')}.find(/version=(.+)/) {it[1]}
     }
 
-    void 'test rebuild lucene indexes from the UI'() {
+    void 'test rebuild hs indexes from the UI'() {
         given:
-        LuceneIndexParameters indexParameters = new LuceneIndexParameters()
+        HibernateSearchIndexParameters indexParameters = new HibernateSearchIndexParameters()
 
         when:
         params.currentUserSecurityPolicyManager = PublicAccessSecurityPolicyManager.instance
-        controller.rebuildLuceneIndexes(indexParameters)
+        controller.rebuildHibernateSearchIndexes(indexParameters)
 
         then:
         status == HttpStatus.OK.code

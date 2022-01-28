@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,6 +63,10 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
 
     abstract void validateExportedModel(String testName, String exportedModel)
 
+    void validateExportedModels(String testName, String exportedModels) {
+        validateExportedModel(testName, exportedModels)
+    }
+
     DataModel importAndConfirm(byte[] bytes) {
         def imported = importerService.importDataModel(admin, bytes)
 
@@ -77,9 +81,7 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
         assert dataModelService.count() == 3
 
         DataModel dm = DataModel.listOrderByDateCreated().last()
-
         log.info('Confirming imported model')
-
         confirmDataModel(dm)
         dm
     }
@@ -89,10 +91,18 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
         new String(byteArrayOutputStream.toByteArray(), Charset.defaultCharset())
     }
 
+    String exportModels(List<UUID> dataModelIds) {
+        new String(exporterService.exportDomains(admin, dataModelIds).toByteArray(), Charset.defaultCharset())
+    }
+
     String importAndExport(byte[] bytes) {
         DataModel dm = importAndConfirm(bytes)
         assert dm, 'Must have a datamodel imported to be able to export'
         exportModel(dm.id)
+    }
+
+    static String replaceWithTestAuthority(String exported) {
+        exported.replace(/Mauro Data Mapper/, 'Test Authority')
     }
 
     void 'test empty data import export'() {
@@ -105,7 +115,6 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
         then:
         ApiInternalException exception = thrown(ApiInternalException)
         exception.errorCode == 'DMEP01'
-
     }
 
     @Unroll
@@ -150,7 +159,6 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
         String exported
 
         expect:
-
         DataModel.count() == 2
 
         when:
@@ -159,8 +167,8 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
 
         if (test) {
             String xml = Files.readString(testFilePath)
-                .replaceAll(/"lastUpdated": "\$\{json-unit\.matches:offsetDateTime}"/, '')
-                .replaceAll(/"id": "\$\{json-unit.ignore}",/, '')
+                              .replaceAll(/"lastUpdated": "\$\{json-unit\.matches:offsetDateTime}"/, '')
+                              .replaceAll(/"id": "\$\{json-unit.ignore}",/, '')
             exported = importAndExport(xml.bytes)
         } else log.info('{} does not exist, skipping', testFilePath)
 
@@ -175,9 +183,10 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
             '2.0',
             '3.0',
             '3.1',
-            '3.2'
+            '3.2',
+            '4.0',
+            '5.0'
         ]
-
     }
 
     @Unroll
@@ -195,8 +204,8 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
 
         if (test) {
             String xml = Files.readString(testFilePath)
-                .replaceAll(/"lastUpdated": "\$\{json-unit\.matches:offsetDateTime}"/, '')
-                .replaceAll(/"id": "\$\{json-unit.ignore}",/, '')
+                              .replaceAll(/"lastUpdated": "\$\{json-unit\.matches:offsetDateTime}"/, '')
+                              .replaceAll(/"id": "\$\{json-unit.ignore}",/, '')
             exported = importAndExport(xml.bytes)
         } else log.info('{} does not exist, skipping', testFilePath)
 
@@ -211,7 +220,9 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
             '2.0',
             '3.0',
             '3.1',
-            '3.2'
+            '3.2',
+            '4.0',
+            '5.0'
         ]
     }
 
@@ -244,10 +255,10 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
         }
         // Rules are not exported/imported and therefore will exist as diffs
         diff.numberOfDiffs == 4
-        diff.diffs.find {it.fieldName == 'rule'}.deleted.size() == 1
-        diff.diffs.find {it.fieldName == 'dataTypes'}.modified.first().diffs.deleted.size() == 1
-        diff.diffs.find {it.fieldName == 'dataClasses'}.modified[0].diffs.deleted.size() == 1 // DC rule missing
-        diff.diffs.find {it.fieldName == 'dataClasses'}.modified[1].diffs.deleted.size() == 1 // DE inside DC rule missing
+        diff.diffs.find { it.fieldName == 'rule' }.deleted.size() == 1
+        diff.diffs.find { it.fieldName == 'dataTypes' }.modified.first().diffs.deleted.size() == 1
+        diff.diffs.find { it.fieldName == 'dataClasses' }.modified[0].diffs.deleted.size() == 1 // DC rule missing
+        diff.diffs.find { it.fieldName == 'dataClasses' }.modified[1].diffs.deleted.size() == 1 // DE inside DC rule missing
     }
 
     void 'test export and import simple DataModel'() {
@@ -281,5 +292,4 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
         then:
         diff.objectsAreIdentical()
     }
-
 }

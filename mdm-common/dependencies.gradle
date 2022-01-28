@@ -1,45 +1,47 @@
 dependencies {
 
-    api platform("org.springframework.boot:spring-boot-dependencies:$springBootVersion")
-
+    implementation platform("org.springframework.boot:spring-boot-dependencies:$springBootVersion")
+    implementation platform("org.grails:grails-bom:$grailsVersion")
     implementation group: 'org.codehaus.groovy', name: 'groovy'
-    implementation group: 'com.google.guava', name: 'guava' , version: '30.1-jre'
-
-    // Logging
-    api group: 'org.slf4j', name: 'slf4j-api'
-    implementation group: 'ch.qos.logback', name: 'logback-classic'
-
+    implementation group: 'com.google.guava', name: 'guava', version: guavaVersion
     implementation group: 'org.grails', name: 'grails-core', version: grailsVersion
     implementation group: 'org.grails', name: 'grails-datastore-gorm'
     implementation group: 'org.grails', name: 'grails-datastore-gorm-hibernate5'
     implementation group: 'org.grails', name: 'grails-plugin-validation'
     implementation "org.grails.plugins:views-json:$grailsViewsVersion"
-
-    api group: 'com.bertramlabs.plugins', name: 'asset-pipeline-core', version: assetPipelineVersion
-
-    api group: 'io.micronaut', name: 'micronaut-http'
-
-    //mathpere/grails-hibernate-search-plugin
-    implementation "org.grails.plugins:hibernate-search:$hibernateSearchVersion", {
-        exclude group: 'org.hibernate', module: 'hibernate-ehcache'
-    }
-    implementation('org.hibernate:hibernate-core'){
-        version{
-            strictly project.ext['hibernate.version']
-        }
-    }
-    api group: 'org.hibernate', name: 'hibernate-search-orm', version: hibernateSearchOrmVersion, {
-        exclude group: 'org.hibernate', module: 'hibernate-core'
-    }
-    api 'org.apache.lucene:lucene-analyzers-common'
-
-    constraints {
-        api("org.apache.lucene:lucene-analyzers-common:$luceneVersion") {
-            because 'hibernate-search-orm requires the older version, it has not been updated beyong'
-        }
-    }
-
+    implementation group: 'io.micronaut', name: 'micronaut-http'
     implementation group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: spotbugsAnnotationVersion
 
     testImplementation 'org.spockframework:spock-core'
+
+    /*
+    Libraries required transitively
+     */
+    api 'org.javassist:javassist:3.28.0-GA'
+    api group: 'com.bertramlabs.plugins', name: 'asset-pipeline-core', version: assetPipelineVersion
+    api group: 'org.slf4j', name: 'slf4j-api'
+    api group: 'ch.qos.logback', name: 'logback-classic'
+
+    /*
+        Hibernate Search
+     */
+
+    //mathpere/grails-hibernate-search-plugin
+    api "org.grails.plugins:hibernate-search:$hibernateSearchVersion"
+    implementation('org.hibernate:hibernate-core') {
+        version {
+            strictly project.ext['hibernate.version']
+        }
+    }
+    api group: 'org.hibernate.search', name: 'hibernate-search-mapper-orm', version: hibernateSearchOrmVersion
+    api group: 'org.hibernate.search', name: 'hibernate-search-backend-lucene', version: hibernateSearchOrmVersion
+    api group: 'org.hibernate.search', name: 'hibernate-search-v5migrationhelper-orm', version:hibernateSearchOrmVersion
+
+    constraints {
+        api("org.apache.lucene:lucene-analyzers-common:$luceneVersion") {
+            because 'hibernate-search-orm requires the older version, it has not been updated beyond'
+        }
+    }
+
+
 }

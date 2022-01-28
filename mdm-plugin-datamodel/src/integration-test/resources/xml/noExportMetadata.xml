@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2020 University of Oxford
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+    SPDX-License-Identifier: Apache-2.0
+
+-->
+<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/5.0" xmlns:mdm="http://maurodatamapper.com/dataModel/4.0">
+  <mdm:dataModel>
+    <mdm:id>4e321c7d-9299-452b-b4cc-456c666f1cec</mdm:id>
+    <mdm:label>Simple Test DataModel</mdm:label>
+    <mdm:lastUpdated>2020-04-13T13:11:39.233648Z</mdm:lastUpdated>
+    <mdm:classifiers>
+      <mdm:classifier>
+        <mdm:id>7861d9a2-e436-4674-89f7-ccf20c38fb1f</mdm:id>
+        <mdm:label>test classifier simple</mdm:label>
+        <mdm:lastUpdated>2020-04-13T13:11:39.213809Z</mdm:lastUpdated>
+      </mdm:classifier>
+    </mdm:classifiers>
+    <mdm:metadata>
+      <mdm:metadata>
+        <mdm:id>8826c68c-464f-45a2-a1fa-98fe729742d8</mdm:id>
+        <mdm:namespace>test.com/simple</mdm:namespace>
+        <mdm:key>mdk1</mdm:key>
+        <mdm:value>mdv1</mdm:value>
+        <mdm:lastUpdated>2020-04-13T13:11:39.226513Z</mdm:lastUpdated>
+      </mdm:metadata>
+      <mdm:metadata>
+        <mdm:id>9a0877b2-dba3-4869-b99c-74d5d3e5d284</mdm:id>
+        <mdm:namespace>test.com</mdm:namespace>
+        <mdm:key>mdk2</mdm:key>
+        <mdm:value>mdv2</mdm:value>
+        <mdm:lastUpdated>2020-04-13T13:11:39.226796Z</mdm:lastUpdated>
+      </mdm:metadata>
+      <mdm:metadata>
+        <mdm:id>3c5519b7-a30d-4052-870b-ece2056c401e</mdm:id>
+        <mdm:namespace>test.com/simple</mdm:namespace>
+        <mdm:key>mdk2</mdm:key>
+        <mdm:value>mdv2</mdm:value>
+        <mdm:lastUpdated>2020-04-13T13:11:39.227027Z</mdm:lastUpdated>
+      </mdm:metadata>
+    </mdm:metadata>
+    <mdm:documentationVersion>1.0.0</mdm:documentationVersion>
+    <mdm:finalised>false</mdm:finalised>
+    <mdm:branchName>main</mdm:branchName>
+    <mdm:authority>
+      <mdm:id>04b2fb71-539b-4273-988b-6f440d0139ce</mdm:id>
+      <mdm:label>Test Authority</mdm:label>
+      <mdm:url>http://localhost</mdm:url>
+      <mdm:lastUpdated>2020-08-12T11:40:05.038Z</mdm:lastUpdated>
+    </mdm:authority>
+    <mdm:type>Data Standard</mdm:type>
+    <mdm:childDataClasses>
+      <mdm:dataClass>
+        <mdm:id>21f29e11-9898-4ad5-a6a4-df16edaaa78c</mdm:id>
+        <mdm:label>simple</mdm:label>
+        <mdm:lastUpdated>2020-04-13T13:11:39.234483Z</mdm:lastUpdated>
+        <mdm:metadata>
+          <mdm:metadata>
+            <mdm:id>18bda043-47a4-4fa1-aa03-6f870a9f78c3</mdm:id>
+            <mdm:namespace>test.com/simple</mdm:namespace>
+            <mdm:key>mdk1</mdm:key>
+            <mdm:value>mdv1</mdm:value>
+            <mdm:lastUpdated>2020-04-13T13:11:39.233267Z</mdm:lastUpdated>
+          </mdm:metadata>
+        </mdm:metadata>
+      </mdm:dataClass>
+    </mdm:childDataClasses>
+  </mdm:dataModel>
+</exp:exportModel>

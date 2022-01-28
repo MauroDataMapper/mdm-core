@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,11 @@ package uk.ac.ox.softeng.maurodatamapper.security
 import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFile
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
-import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
 import uk.ac.ox.softeng.maurodatamapper.security.authentication.ApiKey
 import uk.ac.ox.softeng.maurodatamapper.security.utils.SecureRandomStringGenerator
 import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityUtils
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.databinding.BindUsing
 import grails.gorm.DetachedCriteria
@@ -34,7 +34,7 @@ import java.security.Principal
 import java.time.OffsetDateTime
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class CatalogueUser implements Principal, EditHistoryAware, User {
+class CatalogueUser implements Principal, MdmDomain, EditHistoryAware, User {
 
     UUID id
     String emailAddress
@@ -43,7 +43,7 @@ class CatalogueUser implements Principal, EditHistoryAware, User {
     OffsetDateTime lastLogin
     String organisation
 
-    @BindUsing({ obj, source ->
+    @BindUsing({obj, source ->
         SecurityUtils.getHash(source['password'] as String, obj.salt)
     })
     byte[] password
@@ -65,7 +65,7 @@ class CatalogueUser implements Principal, EditHistoryAware, User {
     ]
 
     static constraints = {
-        CallableConstraints.call(CreatorAwareConstraints, delegate)
+        CallableConstraints.call(MdmDomainConstraints, delegate)
         emailAddress email: true, unique: true, blank: false
         pending nullable: false
         firstName blank: false
@@ -106,12 +106,13 @@ class CatalogueUser implements Principal, EditHistoryAware, User {
     }
 
     def beforeValidate() {
+        checkPath()
         if (!creationMethod) creationMethod = 'Standard'
         if (pending == null) pending = false
         if (disabled == null) disabled = false
     }
 
-    Boolean ownsItem(CreatorAware item) {
+    Boolean ownsItem(MdmDomain item) {
         item.createdBy == emailAddress
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.security.basic.UnloggedUser
 import uk.ac.ox.softeng.maurodatamapper.security.policy.GroupBasedSecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.policy.GroupBasedUserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.security.policy.UserSecurityPolicyService
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRoleService
 import uk.ac.ox.softeng.maurodatamapper.security.role.VirtualGroupRole
@@ -32,7 +33,6 @@ import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
 import org.spockframework.util.Assert
@@ -63,17 +63,9 @@ class ApiKeyFunctionalSpec extends ResourceFunctionalSpec<ApiKey> implements Sec
     @Autowired
     GroupBasedSecurityPolicyManagerService groupBasedSecurityPolicyManagerService
     @Autowired
+    UserSecurityPolicyService userSecurityPolicyService
+    @Autowired
     GroupRoleService groupRoleService
-
-    @OnceBefore
-    @Transactional
-    def checkAndSetupData() {
-        log.debug('Check and setup test data')
-        sessionFactory.currentSession.flush()
-        assert CatalogueUser.count() == 2 // Unlogged user & admin user
-        implementSecurityUsers('functionalTest')
-        assert CatalogueUser.count() == 9
-    }
 
     @Transactional
     def cleanupSpec() {
@@ -139,8 +131,15 @@ class ApiKeyFunctionalSpec extends ResourceFunctionalSpec<ApiKey> implements Sec
         verifyResponse(HttpStatus.NOT_FOUND, jsonCapableResponse)
     }
 
+    @Transactional
     @Override
     def setup() {
+        log.debug('Check and setup test data')
+        sessionFactory.currentSession.flush()
+        if (CatalogueUser.count() == 2) {
+            implementSecurityUsers('functionalTest')
+        }
+        assert CatalogueUser.count() == 9
         reconfigureDefaultUserPrivileges(true)
     }
 
@@ -155,15 +154,15 @@ class ApiKeyFunctionalSpec extends ResourceFunctionalSpec<ApiKey> implements Sec
 
         GroupBasedUserSecurityPolicyManager defaultUserSecurityPolicyManager = applicationContext.getBean(
             MdmCoreGrailsPlugin.DEFAULT_USER_SECURITY_POLICY_MANAGER_BEAN_NAME)
-
+        defaultUserSecurityPolicyManager.lock()
         if (accessGranted) {
             VirtualGroupRole applicationLevelRole = groupRoleService.getFromCache(GroupRole.USER_ADMIN_ROLE_NAME)
-            defaultUserSecurityPolicyManager.withApplicationRoles(applicationLevelRole.allowedRoles).withVirtualRoles(
-                groupBasedSecurityPolicyManagerService.buildCatalogueUserVirtualRoles([applicationLevelRole.groupRole] as HashSet)
+            defaultUserSecurityPolicyManager.userPolicy.withApplicationRoles(applicationLevelRole.allowedRoles).withVirtualRoles(
+                userSecurityPolicyService.buildCatalogueUserVirtualRoles([applicationLevelRole.groupRole] as HashSet)
             )
         } else {
-            defaultUserSecurityPolicyManager.withApplicationRoles([] as HashSet)
-            groupBasedSecurityPolicyManagerService.buildUserSecurityPolicyManager(defaultUserSecurityPolicyManager)
+            defaultUserSecurityPolicyManager.userPolicy.withApplicationRoles([] as HashSet)
+            userSecurityPolicyService.buildUserSecurityPolicy(defaultUserSecurityPolicyManager.userPolicy)
         }
         groupBasedSecurityPolicyManagerService.storeUserSecurityPolicyManager(defaultUserSecurityPolicyManager)
     }

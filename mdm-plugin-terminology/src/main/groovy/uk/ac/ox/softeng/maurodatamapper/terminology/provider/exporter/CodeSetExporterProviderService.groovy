@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.provider.ProviderType
@@ -54,12 +55,14 @@ abstract class CodeSetExporterProviderService extends ExporterProviderService {
     @Override
     ByteArrayOutputStream exportDomains(User currentUser, List<UUID> domainIds) throws ApiException {
         List<CodeSet> codeSets = []
-        domainIds.each {
+        List<UUID> cannotExport = []
+        domainIds?.unique()?.each {
             CodeSet codeSet = codeSetService.get(it)
-            if (!codeSet) {
-                getLogger().warn('Cannot find codeSet id [{}] to export', it)
-            } else codeSets += codeSet
+            if (codeSet) codeSets << codeSet
+            else cannotExport << it
         }
+        if (!codeSets) throw new ApiBadRequestException('CSEP01', "Cannot find CodeSet IDs [${cannotExport}] to export")
+        if (cannotExport) log.warn('Cannot find CodeSet IDs [{}] to export', cannotExport)
         exportCodeSets(currentUser, codeSets)
     }
 

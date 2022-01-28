@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,10 @@ package uk.ac.ox.softeng.maurodatamapper.security
 
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
-import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
@@ -30,7 +31,7 @@ import grails.rest.Resource
 import java.security.Principal
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class UserGroup implements EditHistoryAware, SecurableResource, Principal {
+class UserGroup implements MdmDomain, EditHistoryAware, SecurableResource, Principal {
 
     UUID id
     String name
@@ -45,7 +46,7 @@ class UserGroup implements EditHistoryAware, SecurableResource, Principal {
     static belongsTo = [applicationGroupRole: GroupRole]
 
     static constraints = {
-        CallableConstraints.call(CreatorAwareConstraints, delegate)
+        CallableConstraints.call(MdmDomainConstraints, delegate)
         name unique: true, blank: false
         description nullable: true
         groupMembers nullable: false, minSize: 1
@@ -65,6 +66,10 @@ class UserGroup implements EditHistoryAware, SecurableResource, Principal {
         groupMembers = []
         securableResourceGroupRoles = []
         undeleteable = false
+    }
+
+    def beforeValidate() {
+        checkPath()
     }
 
     @Override

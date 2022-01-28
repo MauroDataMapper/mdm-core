@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.security
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRoleService
 
@@ -26,12 +26,17 @@ import grails.gorm.transactions.Transactional
 import grails.validation.ValidationException
 
 @Transactional
-class UserGroupService implements DomainService<UserGroup> {
+class UserGroupService implements MdmDomainService<UserGroup> {
 
     GroupRoleService groupRoleService
 
     UserGroup get(Serializable id) {
         UserGroup.get(id)
+    }
+
+    @Override
+    List<UserGroup> getAll(Collection<UUID> resourceIds) {
+        UserGroup.getAll(resourceIds)
     }
 
     List<UserGroup> list(Map pagination) {

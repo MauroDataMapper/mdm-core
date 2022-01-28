@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 package uk.ac.ox.softeng.maurodatamapper.security.authentication
-
 
 import uk.ac.ox.softeng.maurodatamapper.core.session.SessionController
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.ResourcelessMdmController
@@ -76,10 +75,10 @@ class AuthenticatingController implements ResourcelessMdmController {
             return false
         }
 
+       String alreadyLoggedInEmailAddress
         if (authenticatingService.isAuthenticatedSession(session)) {
             log.warn("Login attempt while a user currently logged in")
-            errorResponse(CONFLICT, 'A user is already logged in, logout first')
-            return false
+            alreadyLoggedInEmailAddress = authenticatingService.getEmailAddressForSession(session)
         }
 
         authenticationInformation.session = session
@@ -95,6 +94,10 @@ class AuthenticatingController implements ResourcelessMdmController {
             return unauthorised('Invalid credentials')
         }
 
+        if (alreadyLoggedInEmailAddress && alreadyLoggedInEmailAddress != user.emailAddress) {
+            errorResponse(CONFLICT, 'A user is already logged in, logout first')
+            return false
+        }
         setCurrentUserSecurityPolicyManager(authenticatingService.buildUserSecurityPolicyManager(user))
 
         authenticatingService.registerUserAsLoggedIn(user, session)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,10 +34,8 @@ import spock.lang.Shared
  */
 @Rollback
 @Slf4j
-@SuppressWarnings("DuplicatedCode")
+@SuppressWarnings('DuplicatedCode')
 abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBindTerminologyImporterProviderService> extends BaseImportExportTerminologySpec {
-
-    abstract K getImporterService()
 
     @Shared
     TerminologyImporterProviderServiceParameters basicParameters
@@ -47,6 +45,17 @@ abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBind
             importAsNewBranchModelVersion = false
             importAsNewDocumentationVersion = false
             finalised = false
+        }
+    }
+
+    abstract K getImporterService()
+
+    void cleanupParameters() {
+        basicParameters.tap {
+            importAsNewBranchModelVersion = false
+            importAsNewDocumentationVersion = false
+            finalised = false
+            propagateFromPreviousVersion = false
         }
     }
 
@@ -66,10 +75,41 @@ abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBind
         terminologyService.get(imported.id)
     }
 
+    List<Terminology> importModels(byte[] bytes) {
+        log.trace('Importing:\n {}', new String(bytes))
+
+        List<Terminology> imported = importerService.importTerminologies(admin, bytes)
+        imported.each {
+            it.folder = testFolder
+            log.debug('Check and save imported model')
+            importerService.checkImport(admin, it, basicParameters)
+            check(it)
+            terminologyService.saveModelWithContent(it)
+        }
+        sessionFactory.currentSession.flush()
+        log.debug('Terminologies saved')
+        imported.collect { terminologyService.get(it.id) }
+    }
+
     Terminology importAndConfirm(byte[] bytes) {
         Terminology tm = importAndSave(bytes)
         confirmTerminology(tm)
         tm
+    }
+
+    List<Terminology> clearExpectedDiffsFromModels(List<UUID> modelIds) {
+        // Rules are not imported/exported and will therefore exist as diffs
+        Closure<Boolean> removeRule = {it.rules?.removeIf {rule -> rule.name == 'Bootstrapped Functional Test Rule'}}
+        List<Terminology> terminologies = modelIds.collect {
+            Terminology terminology = terminologyService.get(it)
+            removeRule(terminology)
+            ['terms', 'allTermRelationships', 'termRelationshipTypes'].each {
+                terminology.getProperty(it)?.each(removeRule)
+            }
+            terminology
+        }
+        sessionFactory.currentSession.clear()
+        terminologies
     }
 
     void 'I01 : test empty data import'() {
@@ -82,7 +122,6 @@ abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBind
 
         then:
         thrown(ApiBadRequestException)
-
     }
 
     @Ignore
@@ -104,8 +143,8 @@ abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBind
         terminology.terms.size() == 2
 
         when:
-        Term a = terminology.terms.find {it.code == 'STT01'}
-        Term b = terminology.terms.find {it.code == 'STT02'}
+        Term a = terminology.terms.find { it.code == 'STT01' }
+        Term b = terminology.terms.find { it.code == 'STT02' }
 
         then:
         a
@@ -116,7 +155,6 @@ abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBind
         b
         b.definition == 'Simple Test Term 02'
         b.depth == 1
-
     }
 
     void 'I03 : test inc classifiers import'() {
@@ -134,11 +172,9 @@ abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBind
         !terminology.metadata
         terminology.classifiers.size() == 2
         !terminology.termRelationshipTypes
-
     }
 
     void 'I04 : test importing aliases'() {
-
         given:
         setupData()
 
@@ -173,7 +209,7 @@ abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBind
         terminology.metadata.size() == 3
 
         and:
-        terminology.metadata.every {it.multiFacetAwareItemId == terminology.id}
+        terminology.metadata.every { it.multiFacetAwareItemId == terminology.id }
         terminology.metadata.any {
             it.namespace == 'terminology.test.com/simple' &&
             it.key == 'mdk1' &&
@@ -228,7 +264,6 @@ abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBind
         when:
         Terminology terminology = importAndConfirm(loadTestFile('complexImport'))
 
-
         then:
         terminology.annotations.size() == 2
         terminology.metadata.size() == 3
@@ -238,22 +273,7 @@ abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBind
 
         and:
         for (int i = 0; i <= 100; i++) {
-            terminology.terms.any {it.code == "CTT${i}" && it.definition == "Complex Test Term ${i}"}
+            terminology.terms.any { it.code == "CTT${i}" && it.definition == "Complex Test Term ${i}" }
         }
-    }
-
-    void 'I08 : test that trying to import multiple terminologies fails'() {
-        given:
-        setupData()
-
-        expect:
-        !importerService.canImportMultipleDomains()
-
-        when:
-        importerService.importTerminologies(admin, loadTestFile('simpleImport'))
-
-        then:
-        ApiBadRequestException exception = thrown(ApiBadRequestException)
-        exception.message.contains('cannot import multiple Terminologies')
     }
 }

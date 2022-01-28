@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,15 +23,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmInterceptor
  * @since 13/01/2021
  */
 trait SecurityPolicyManagerInterceptor extends MdmInterceptor {
-
-    /**
-     * No longer needed as this is only an issue under test/development
-     * In the real world when a session is destroyed the next request causes grails to autocreate a new session
-     * which calls the createSession hook inside our SessionService which results in a new session being properly stored.
-     */
-    @Deprecated
-    void checkSessionIsValid() {
-    }
 
     boolean securityPolicyManagerIsSet() {
         params.currentUserSecurityPolicyManager

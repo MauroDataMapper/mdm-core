@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -40,6 +41,7 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> implements Su
 
     SummaryMetadataService summaryMetadataService
     DataTypeService dataTypeService
+    DataModelService dataModelService
 
     @Override
     boolean handlesPathPrefix(String pathPrefix) {
@@ -81,11 +83,12 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> implements Su
         dataType.delete(flush: flush)
     }
 
-    void deleteAllByModelId(UUID dataModelId) {
+    @Override
+    void deleteAllByModelIds(Set<UUID> dataModelIds) {
         List<UUID> referenceTypeIds = ReferenceType.by()
             .where {
                 referenceClass {
-                    eq('dataModel.id', dataModelId)
+                    inList('dataModel.id', dataModelIds)
                 }
             }.id().list() as List<UUID>
 
@@ -129,15 +132,15 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> implements Su
     }
 
     @Override
-    List<ReferenceType> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        ReferenceType.byClassifierId(ReferenceType, classifier.id).list().findAll {
-            userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)
-        }
+    List<ReferenceType> findAllByClassifier(Classifier classifier) {
+        ReferenceType.byClassifierId(ReferenceType, classifier.id).list()
     }
 
     @Override
-    Class<ReferenceType> getModelItemClass() {
-        ReferenceType
+    List<ReferenceType> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
+        findAllByClassifier(classifier).findAll {
+            userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)
+        }
     }
 
     @Override
@@ -157,9 +160,12 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> implements Su
 
         List<ReferenceType> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            log.debug('Performing lucene label search')
+            log.debug('Performing hs label search')
             long start = System.currentTimeMillis()
-            results = ReferenceType.luceneLabelSearch(ReferenceType, searchTerm, readableIds.toList()).results
+            results =
+                ReferenceType
+                    .labelHibernateSearch(ReferenceType, searchTerm, readableIds.toList(), dataModelService.getAllReadablePathNodes(readableIds))
+                    .results
             log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         }
         results

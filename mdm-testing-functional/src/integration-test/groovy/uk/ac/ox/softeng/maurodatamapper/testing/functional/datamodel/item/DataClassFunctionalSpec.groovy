@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -134,13 +134,6 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
     }
 
     @Override
-    Map getValidUpdateJson() {
-        [
-            description: 'Adding a description to the DataClass'
-        ]
-    }
-
-    @Override
     String getShowJson() {
         '''{
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
@@ -157,12 +150,7 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
     }
   ],
   "availableActions": [
-    "delete",
-    "update",
-    "save",
-    "show",
-    "comment",
-    "editDescription"
+    "show"
   ]
 }'''
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
@@ -30,7 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.FinaliseData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.search.SearchService
-import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 
@@ -73,8 +74,8 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
             params.order = searchParams.order
         }
 
-        PaginatedLuceneResult<CatalogueItem> result =
-            mdmCoreSearchService.findAllByFolderIdByLuceneSearch(params.versionedFolderId, searchParams, params)
+        PaginatedHibernateSearchResult<CatalogueItem> result =
+            mdmCoreSearchService.findAllByFolderIdByHibernateSearch(params.versionedFolderId, searchParams, params)
         respond result
     }
 
@@ -100,7 +101,7 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
             }
 
             request.withFormat {
-                '*' { render status: NO_CONTENT } // NO CONTENT STATUS CODE
+                '*' {render status: NO_CONTENT} // NO CONTENT STATUS CODE
             }
             return
         }
@@ -162,7 +163,7 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
 
         Set<String> changedProperties = instance.getDirtyPropertyNames()
 
-        updateResource(instance)
+        updateResourceAndHierarchy(instance, changedProperties)
         updateSecurity(instance, changedProperties)
         updateResponse(instance)
     }
@@ -189,7 +190,7 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
 
         if (!validateResource(copy, 'create')) return
 
-        saveResource(copy)
+        saveResourceAndHierarchy(copy)
 
         saveResponse(copy)
     }
@@ -220,7 +221,7 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
 
         if (!validateResource(copy, 'create')) return
 
-        saveResource(copy)
+        saveResourceAndHierarchy(copy)
 
         saveResponse(copy)
     }
@@ -248,7 +249,7 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
 
         if (!validateResource(copy, 'create')) return
 
-        saveResource(copy)
+        saveResourceAndHierarchy(copy)
 
         saveResponse(copy)
     }
@@ -409,9 +410,17 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
         folder
     }
 
+    protected VersionedFolder saveResourceAndHierarchy(VersionedFolder resource) {
+        versionedFolderService.saveFolderHierarchy(resource)
+        saveResource(resource)
+    }
+
     @Override
     protected VersionedFolder updateResource(VersionedFolder resource) {
-        Set<String> changedProperties = resource.getDirtyPropertyNames()
+        updateResource resource, resource.getDirtyPropertyNames().toSet()
+    }
+
+    protected VersionedFolder updateResource(VersionedFolder resource, Set<String> changedProperties) {
         VersionedFolder folder = super.updateResource(resource) as VersionedFolder
         if (securityPolicyManagerService) {
             currentUserSecurityPolicyManager = securityPolicyManagerService.updateSecurityForSecurableResource(folder,
@@ -419,6 +428,11 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
                                                                                                                currentUser)
         }
         folder
+    }
+
+    protected VersionedFolder updateResourceAndHierarchy(VersionedFolder resource, Set<String> changedProperties) {
+        versionedFolderService.saveFolderHierarchy(resource)
+        updateResource(resource, changedProperties)
     }
 
     @Override
@@ -431,16 +445,13 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
 
     @Override
     protected void serviceDeleteResource(VersionedFolder resource) {
-        if (securityPolicyManagerService) {
-            currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(resource, currentUser)
-        }
-        versionedFolderService.delete(resource)
+        throw new ApiNotYetImplementedException('MC01', 'serviceDeleteResource')
     }
 
     protected VersionedFolder updateSecurity(VersionedFolder instance, Set<String> changedProperties) {
-        modelServices.each { service ->
+        modelServices.each {service ->
             Collection<Model> modelsInFolder = service.findAllByFolderId(instance.id)
-            modelsInFolder.each { model ->
+            modelsInFolder.each {model ->
                 if (securityPolicyManagerService) {
                     currentUserSecurityPolicyManager = securityPolicyManagerService.updateSecurityForSecurableResource(model as SecurableResource,
                                                                                                                        changedProperties,

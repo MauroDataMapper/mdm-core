@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,12 @@ package uk.ac.ox.softeng.maurodatamapper.federation
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
+import groovy.transform.Sortable
+
 import java.time.OffsetDateTime
+import java.util.regex.Pattern
 
-
+@Sortable(includes = ['modelLabel', 'modelVersion'])
 class PublishedModel {
 
     UUID modelId
@@ -34,6 +37,7 @@ class PublishedModel {
     OffsetDateTime dateCreated
     OffsetDateTime datePublished
     String author
+    UUID previousModelId
 
     PublishedModel() {
     }
@@ -55,9 +59,10 @@ class PublishedModel {
     }
 
     void setTitle(String label) {
-        String version = label.find(Version.VERSION_PATTERN)
+        Pattern titleVersionPattern = ~/ $Version.VERSION_PATTERN$/
+        String version = label.find(titleVersionPattern)
         if (version) {
-            modelVersion = Version.from(version)
+            modelVersion = Version.from(version.trim())
             modelLabel = (label - version).trim()
         } else {
             modelLabel = label

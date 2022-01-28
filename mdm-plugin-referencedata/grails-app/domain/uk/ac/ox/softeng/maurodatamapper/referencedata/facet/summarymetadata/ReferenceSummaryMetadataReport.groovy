@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata
 
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
-import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
@@ -31,7 +31,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class ReferenceSummaryMetadataReport implements CreatorAware {
+class ReferenceSummaryMetadataReport implements MdmDomain {
 
     static final DateTimeFormatter PATH_FORMATTER = DateTimeFormatter.ofPattern('yyyyMMddHHmmssSSSSSSX')
 
@@ -45,7 +45,7 @@ class ReferenceSummaryMetadataReport implements CreatorAware {
     ]
 
     static constraints = {
-        CallableConstraints.call(CreatorAwareConstraints, delegate)
+        CallableConstraints.call(MdmDomainConstraints, delegate)
         reportValue blank: false
     }
 
@@ -66,7 +66,7 @@ class ReferenceSummaryMetadataReport implements CreatorAware {
 
     @Override
     String getPathIdentifier() {
-        reportDate.withOffsetSameInstant(ZoneOffset.UTC).format(PATH_FORMATTER)
+        reportDate?.withOffsetSameInstant(ZoneOffset.UTC)?.format(PATH_FORMATTER)
     }
 
     String getEditLabel() {

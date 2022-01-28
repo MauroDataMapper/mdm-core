@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.admin
 
-import uk.ac.ox.softeng.maurodatamapper.core.hibernate.search.LuceneIndexingService
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.LuceneIndexParameters
+import uk.ac.ox.softeng.maurodatamapper.core.hibernate.search.HibernateSearchIndexingService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.HibernateSearchIndexParameters
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.ResourcelessMdmController
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -29,13 +29,13 @@ import static org.springframework.http.HttpStatus.OK
 class AdminController implements ResourcelessMdmController {
 
     AdminService adminService
-    LuceneIndexingService luceneIndexingService
+    HibernateSearchIndexingService hibernateSearchIndexingService
 
     static responseFormats = ['json', 'xml']
 
-    def rebuildLuceneIndexes(LuceneIndexParameters indexParameters) {
+    def rebuildHibernateSearchIndexes(HibernateSearchIndexParameters indexParameters) {
         long start = System.currentTimeMillis()
-        luceneIndexingService.rebuildLuceneIndexes(indexParameters)
+        hibernateSearchIndexingService.rebuildHibernateSearchIndexes(indexParameters)
         long end = System.currentTimeMillis()
 
         Map info = [
@@ -63,8 +63,8 @@ class AdminController implements ResourcelessMdmController {
         }
 
         respond([
-                    'Mauro Data Mapper Version'       : grailsApplication.config.info.app.version,
-                    'Grails Version'                  : grailsApplication.config.info.app.grailsVersion,
+                    'Mauro Data Mapper Version'       : grailsApplication.config.getProperty('info.app.version', String),
+                    'Grails Version'                  : grailsApplication.config.getProperty('info.app.grailsVersion', String),
                     'Java Version'                    : System.getProperty('java.version'),
                     'Java Vendor'                     : System.getProperty('java.vendor'),
                     'OS Name'                         : System.getProperty('os.name'),

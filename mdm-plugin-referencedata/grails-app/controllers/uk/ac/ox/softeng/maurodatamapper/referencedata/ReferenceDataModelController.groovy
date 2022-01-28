@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.controller.ModelController
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.ReferenceDataModelExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.ReferenceDataModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.rest.transport.DeleteAllParams
-import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
@@ -144,8 +144,8 @@ class ReferenceDataModelController extends ModelController<ReferenceDataModel> {
             params.order = searchParams.order
         }
 
-        PaginatedLuceneResult<ModelItem> result = mdmPluginReferenceDataModelSearchService.findAllByReferenceDataModelIdByLuceneSearch(params.referenceDataModelId,
-                                                                                                                     searchParams, params)
+        PaginatedHibernateSearchResult<ModelItem> result = mdmPluginReferenceDataModelSearchService.findAllByReferenceDataModelIdByHibernateSearch(params.referenceDataModelId,
+                                                                                                                                                   searchParams, params)
         respond result
     }
 

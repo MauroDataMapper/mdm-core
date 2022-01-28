@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,12 @@
 package uk.ac.ox.softeng.maurodatamapper.security.role
 
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
-import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.AddsEditHistory
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.security.policy.GroupBasedUserSecurityPolicyManager
 
+import groovy.util.logging.Slf4j
+
+@Slf4j
 class GroupRoleController extends EditLoggingController<GroupRole> {
     static responseFormats = ['json', 'xml']
 
@@ -51,7 +54,7 @@ class GroupRoleController extends EditLoggingController<GroupRole> {
     protected GroupRole saveResource(GroupRole resource) {
         log.trace('save resource and refresh cache')
         groupRoleService.save(resource)
-        if (resource.instanceOf(AddsEditHistory) && !params.boolean('noHistory')) resource.addCreatedEdit(currentUser)
+        if (resource.instanceOf(EditHistoryAware) && !params.boolean('noHistory')) resource.addCreatedEdit(currentUser)
         resource
     }
 

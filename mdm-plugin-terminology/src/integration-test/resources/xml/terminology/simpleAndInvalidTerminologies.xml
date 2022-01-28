@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2020 University of Oxford
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+    SPDX-License-Identifier: Apache-2.0
+
+-->
+<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/5.0" xmlns:mdm="http://maurodatamapper.com/terminology/4.0">
+  <mdm:terminologies>
+    <mdm:terminology>
+      <mdm:id>Invalid Terminology ID</mdm:id>
+      <mdm:label>Invalid Terminology</mdm:label>
+    </mdm:terminology>
+    <mdm:terminology>
+      <mdm:id>dd1d02c8-8450-4c92-8c66-c0ee61cc0f76</mdm:id>
+      <mdm:label>Simple Test Terminology</mdm:label>
+      <mdm:lastUpdated>2021-05-21T09:30:26.717Z</mdm:lastUpdated>
+      <mdm:classifiers>
+        <mdm:classifier>
+          <mdm:id>e3908957-b9dc-4613-8170-fd4c6fde8d41</mdm:id>
+          <mdm:label>test classifier simple</mdm:label>
+          <mdm:lastUpdated>2021-05-21T09:30:26.699Z</mdm:lastUpdated>
+        </mdm:classifier>
+      </mdm:classifiers>
+      <mdm:metadata>
+        <mdm:metadata>
+          <mdm:id>ad6d887a-3680-4c88-9593-732e5d33d3f3</mdm:id>
+          <mdm:namespace>terminology.test.com/simple</mdm:namespace>
+          <mdm:key>mdk1</mdm:key>
+          <mdm:value>mdv1</mdm:value>
+          <mdm:lastUpdated>2021-05-21T09:30:26.715Z</mdm:lastUpdated>
+        </mdm:metadata>
+        <mdm:metadata>
+          <mdm:id>64cb7057-b787-4247-a91b-5b4994eee162</mdm:id>
+          <mdm:namespace>terminology.test.com</mdm:namespace>
+          <mdm:key>mdk2</mdm:key>
+          <mdm:value>mdv2</mdm:value>
+          <mdm:lastUpdated>2021-05-21T09:30:26.715Z</mdm:lastUpdated>
+        </mdm:metadata>
+        <mdm:metadata>
+          <mdm:id>c0ee7afa-19ec-450d-80f3-9e4e0e075c85</mdm:id>
+          <mdm:namespace>terminology.test.com/simple</mdm:namespace>
+          <mdm:key>mdk2</mdm:key>
+          <mdm:value>mdv2</mdm:value>
+          <mdm:lastUpdated>2021-05-21T09:30:26.715Z</mdm:lastUpdated>
+        </mdm:metadata>
+      </mdm:metadata>
+      <mdm:author>Test Bootstrap</mdm:author>
+      <mdm:organisation>Oxford BRC</mdm:organisation>
+      <mdm:documentationVersion>1.0.0</mdm:documentationVersion>
+      <mdm:finalised>false</mdm:finalised>
+      <mdm:authority>
+        <mdm:id>fd29b6c0-00d5-4962-9492-7d7f1239e95d</mdm:id>
+        <mdm:label>Test Authority</mdm:label>
+        <mdm:url>http://localhost</mdm:url>
+        <mdm:lastUpdated>2021-05-21T09:30:26.695Z</mdm:lastUpdated>
+      </mdm:authority>
+      <mdm:terms>
+        <mdm:term>
+          <mdm:id>607940f8-c043-4715-a1c1-7f627812a94b</mdm:id>
+          <mdm:code>STT01</mdm:code>
+          <mdm:definition>Simple Test Term 01</mdm:definition>
+          <mdm:depth>1</mdm:depth>
+          <mdm:lastUpdated>2021-05-21T09:30:26.713Z</mdm:lastUpdated>
+        </mdm:term>
+        <mdm:term>
+          <mdm:id>b794b452-7e2a-4027-8033-208286929bce</mdm:id>
+          <mdm:code>STT02</mdm:code>
+          <mdm:definition>Simple Test Term 02</mdm:definition>
+          <mdm:depth>1</mdm:depth>
+          <mdm:lastUpdated>2021-05-21T09:30:26.714Z</mdm:lastUpdated>
+        </mdm:term>
+      </mdm:terms>
+    </mdm:terminology>
+  </mdm:terminologies>
+  <exp:exportMetadata>
+    <exp:exportedBy>Admin User</exp:exportedBy>
+    <exp:exportedOn>2021-05-21T10:30:27.495337+01:00</exp:exportedOn>
+    <exp:exporter>
+      <exp:namespace>uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter</exp:namespace>
+      <exp:name>TerminologyXmlExporterService</exp:name>
+      <exp:version>5.0</exp:version>
+    </exp:exporter>
+  </exp:exportMetadata>
+</exp:exportModel>

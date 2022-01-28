@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
@@ -39,8 +42,10 @@ import groovy.util.logging.Slf4j
 @Integration
 @Rollback
 @Slf4j
-class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProviderServiceSpec<TerminologyJsonImporterService>
-    implements JsonComparer {
+class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProviderServiceSpec<TerminologyJsonImporterService> implements JsonComparer {
+
+    private static final String CANNOT_IMPORT_EMPTY_CONTENT_CODE = 'JIS02'
+    private static final String CANNOT_IMPORT_JSON_CODE = 'JIS03'
 
     TerminologyJsonImporterService terminologyJsonImporterService
 
@@ -101,15 +106,18 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
 
         Terminology terminology = Terminology.findById(simpleTerminologyId)
 
-        Annotation testAnnotation = new Annotation(label: 'propagationTest', description: 'propagationTest', createdBy: admin.emailAddress)
-        Classifier testClassifier = new Classifier(label: 'propagationTest', createdBy: admin.emailAddress)
-        Metadata testMetadata = new Metadata(namespace: 'propagationTest', key: 'key', value: 'value', createdBy: admin.emailAddress)
-        Rule testRule = new Rule(name: 'propagationTest', createdBy: admin.emailAddress).addToRuleRepresentations(language: 'e', representation:
-            'a+b', createdBy: admin.emailAddress)
-        SemanticLink testSemanticLink = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdByUser: admin,
+        Annotation testAnnotation = new Annotation(label: 'propagationTest', description: 'propagationTest',
+                                                   createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        Classifier testClassifier = new Classifier(label: 'propagationTest', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        Metadata testMetadata = new Metadata(namespace: 'propagationTest', key: 'key', value: 'value',
+                                             createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        Rule testRule = new Rule(name: 'propagationTest', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+            .addToRuleRepresentations(language: 'e', representation:
+                'a+b', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        SemanticLink testSemanticLink = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdBy: StandardEmailAddress.INTEGRATION_TEST,
                                                          targetMultiFacetAwareItem: Term.findByCode('STT01'))
         ReferenceFile testReferenceFile = new ReferenceFile(fileName: 'propagationTest', fileType: 'text', fileContents: 'hello'.bytes, fileSize:
-            'hello'.bytes.size(), createdBy: admin.emailAddress)
+            'hello'.bytes.size(), createdBy: StandardEmailAddress.INTEGRATION_TEST)
 
         terminology.addToAnnotations(testAnnotation)
         terminology.addToClassifiers(testClassifier)
@@ -133,6 +141,8 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
         term.semanticLinks.find { it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType }
         term.referenceFiles.find { it.fileName == testReferenceFile.fileName }
 
+        cleanup:
+        cleanupParameters()
     }
 
     void 'PG02 : test propagating child content'() {
@@ -144,17 +154,20 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
         basicParameters.propagateFromPreviousVersion = true
 
         Terminology terminology = Terminology.findById(complexTerminologyId)
-        Term term = terminology.terms.find {it.code == 'CTT1'}
+        Term term = terminology.terms.find { it.code == 'CTT1' }
 
-        Annotation testAnnotation = new Annotation(label: 'propagationTest', description: 'propagationTest', createdBy: admin.emailAddress)
-        Classifier testClassifier = new Classifier(label: 'propagationTest', createdBy: admin.emailAddress).save()
-        Metadata testMetadata = new Metadata(namespace: 'propagationTest', key: 'key', value: 'value', createdBy: admin.emailAddress)
-        Rule testRule = new Rule(name: 'propagationTest', createdBy: admin.emailAddress).addToRuleRepresentations(language: 'e', representation:
-            'a+b', createdBy: admin.emailAddress)
-        SemanticLink testSemanticLink = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdByUser: admin,
+        Annotation testAnnotation = new Annotation(label: 'propagationTest', description: 'propagationTest',
+                                                   createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        Classifier testClassifier = new Classifier(label: 'propagationTest', createdBy: StandardEmailAddress.INTEGRATION_TEST).save()
+        Metadata testMetadata = new Metadata(namespace: 'propagationTest', key: 'key', value: 'value',
+                                             createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        Rule testRule = new Rule(name: 'propagationTest', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+            .addToRuleRepresentations(language: 'e', representation:
+                'a+b', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        SemanticLink testSemanticLink = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdBy: StandardEmailAddress.INTEGRATION_TEST,
                                                          targetMultiFacetAwareItem: Term.findByCode('STT01'))
         ReferenceFile testReferenceFile = new ReferenceFile(fileName: 'propagationTest', fileType: 'text', fileContents: 'hello'.bytes, fileSize:
-            'hello'.bytes.size(), createdBy: admin.emailAddress)
+            'hello'.bytes.size(), createdBy: StandardEmailAddress.INTEGRATION_TEST)
 
         term.addToAnnotations(testAnnotation)
         term.addToClassifiers(testClassifier)
@@ -165,39 +178,285 @@ class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProv
 
         checkAndSave(term)
 
-        term = terminology.terms.find {it.code == 'CTT2'}
+        term = terminology.terms.find { it.code == 'CTT2' }
         term.description = 'Some interesting thing we should preserve'
 
         checkAndSave(term)
 
-        term = terminology.terms.find {it.code == 'CTT101'}
+        term = terminology.terms.find { it.code == 'CTT101' }
         term.description = 'Some interesting thing we should lose'
 
         checkAndSave(term)
 
         when:
         Terminology tm = importAndSave(loadTestFile('complexTerminology'))
-        term = tm.terms.find {it.code == 'CTT1'}
+        term = tm.terms.find { it.code == 'CTT1' }
 
         then:
-        term.metadata.find {it.namespace == testMetadata.namespace}
-        term.annotations.find {it.label == testAnnotation.label}
-        term.classifiers.find {it.label == testClassifier.label}
-        term.rules.find {it.name == testRule.name}
-        term.semanticLinks.find {it.targetMultiFacetAwareItemId == testSemanticLink.targetMultiFacetAwareItemId}
-        term.semanticLinks.find {it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType}
-        term.referenceFiles.find {it.fileName == testReferenceFile.fileName}
+        term.metadata.find { it.namespace == testMetadata.namespace }
+        term.annotations.find { it.label == testAnnotation.label }
+        term.classifiers.find { it.label == testClassifier.label }
+        term.rules.find { it.name == testRule.name }
+        term.semanticLinks.find { it.targetMultiFacetAwareItemId == testSemanticLink.targetMultiFacetAwareItemId }
+        term.semanticLinks.find { it.multiFacetAwareItemDomainType == testSemanticLink.multiFacetAwareItemDomainType }
+        term.referenceFiles.find { it.fileName == testReferenceFile.fileName }
 
         when:
-        term = tm.terms.find {it.code == 'CTT2'}
+        term = tm.terms.find { it.code == 'CTT2' }
 
         then:
         term.description == 'Some interesting thing we should preserve'
 
         when:
-        term = tm.terms.find {it.code == 'CTT101'}
+        term = tm.terms.find { it.code == 'CTT101' }
 
         then: 'description is not overwritten as it was included in the import'
         term.description == 'Example of truncated term label when code and definition are the same'
+
+        cleanup:
+        cleanupParameters()
+    }
+
+    void 'test multi-import invalid Terminology content'() {
+        expect:
+        importerService.canImportMultipleDomains()
+
+        when: 'given empty content'
+        importModels(''.bytes)
+
+        then:
+        ApiBadRequestException exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_EMPTY_CONTENT_CODE
+
+        when: 'given an empty JSON map'
+        importModels('{}'.bytes)
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_JSON_CODE
+
+        when: 'given neither models list or model map (backwards compatibility)'
+        importModels(loadTestFile('exportMetadataOnly'))
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_JSON_CODE
+
+        when: 'given an empty model map (backwards compatibility)'
+        importModels(loadTestFile('emptyTerminology'))
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_JSON_CODE
+
+        when: 'given an empty models list'
+        importModels(loadTestFile('emptyTerminologyList'))
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_JSON_CODE
+    }
+
+    void 'test multi-import invalid Terminologies'() {
+        given:
+        setupData()
+
+        expect:
+        importerService.canImportMultipleDomains()
+
+        when: 'given an invalid model map (backwards compatibility)'
+        importModels(loadTestFile('invalidTerminology'))
+
+        then:
+        ApiBadRequestException exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_JSON_CODE
+
+        when: 'given a single invalid model'
+        importModels(loadTestFile('invalidTerminologyInList'))
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_JSON_CODE
+
+        when: 'given multiple invalid models'
+        importModels(loadTestFile('invalidTerminologies'))
+
+        then:
+        exception = thrown(ApiBadRequestException)
+        exception.errorCode == CANNOT_IMPORT_JSON_CODE
+
+        // when: 'not given export metadata'
+        // importModels(loadTestFile('noExportMetadata'))
+        //
+        // then:
+        // exception = thrown(ApiBadRequestException)
+        // exception.errorCode == 'TODO'
+    }
+
+    void 'test multi-import single Terminology (backwards compatibility)'() {
+        given:
+        setupData()
+        Terminology.count() == 2
+        List<Terminology> terminologies = clearExpectedDiffsFromModels([simpleTerminologyId])
+        basicParameters.importAsNewBranchModelVersion = true // Needed to import the same models
+
+        expect:
+        importerService.canImportMultipleDomains()
+
+        when:
+        List<Terminology> imported = importModels(loadTestFile('simpleTerminology'))
+
+        then:
+        imported
+        imported.size() == 1
+
+        when:
+        ObjectDiff simpleDiff = terminologyService.getDiffForModels(terminologies.pop(), imported.pop())
+
+        then:
+        simpleDiff.objectsAreIdentical()
+
+        cleanup:
+        basicParameters.importAsNewBranchModelVersion = false
+    }
+
+    void 'test multi-import single Terminology'() {
+        given:
+        setupData()
+        Terminology.count() == 2
+        List<Terminology> terminologies = clearExpectedDiffsFromModels([simpleTerminologyId])
+        basicParameters.importAsNewBranchModelVersion = true // Needed to import the same models
+
+        expect:
+        importerService.canImportMultipleDomains()
+
+        when:
+        List<Terminology> imported = importModels(loadTestFile('simpleTerminologyInList'))
+
+        then:
+        imported
+        imported.size() == 1
+
+        when:
+        ObjectDiff simpleDiff = terminologyService.getDiffForModels(terminologies.pop(), imported.pop())
+
+        then:
+        simpleDiff.objectsAreIdentical()
+
+        cleanup:
+        basicParameters.importAsNewBranchModelVersion = false
+    }
+
+    void 'test multi-import multiple Terminologies'() {
+        given:
+        setupData()
+        Terminology.count() == 2
+        List<Terminology> terminologies = clearExpectedDiffsFromModels([simpleTerminologyId, complexTerminologyId])
+        basicParameters.importAsNewBranchModelVersion = true // Needed to import the same models
+
+        expect:
+        importerService.canImportMultipleDomains()
+
+        when:
+        List<Terminology> imported = importModels(loadTestFile('simpleAndComplexTerminologies'))
+
+        then:
+        imported
+        imported.size() == 2
+
+        when:
+        ObjectDiff simpleDiff = terminologyService.getDiffForModels(terminologies[0], imported[0])
+        ObjectDiff complexDiff = terminologyService.getDiffForModels(terminologies[1], imported[1])
+
+        then:
+        simpleDiff.objectsAreIdentical()
+        complexDiff.objectsAreIdentical()
+
+        cleanup:
+        basicParameters.importAsNewBranchModelVersion = false
+    }
+
+    void 'test multi-import Terminologies with invalid models'() {
+        given:
+        setupData()
+        Terminology.count() == 2
+        List<Terminology> terminologies = clearExpectedDiffsFromModels([simpleTerminologyId, complexTerminologyId])
+        basicParameters.importAsNewBranchModelVersion = true // Needed to import the same models
+
+        expect:
+        importerService.canImportMultipleDomains()
+
+        when:
+        List<Terminology> imported = importModels(loadTestFile('simpleAndInvalidTerminologies'))
+
+        then:
+        imported
+        imported.size() == 1
+
+        when:
+        ObjectDiff simpleDiff = terminologyService.getDiffForModels(terminologies[0], imported.pop())
+
+        then:
+        simpleDiff.objectsAreIdentical()
+
+        when:
+        imported = importModels(loadTestFile('simpleComplexAndInvalidTerminologies'))
+
+        then:
+        imported
+        imported.size() == 2
+
+        when:
+        simpleDiff = terminologyService.getDiffForModels(terminologies[0], imported[0])
+        ObjectDiff complexDiff = terminologyService.getDiffForModels(terminologies[1], imported[1])
+
+        then:
+        simpleDiff.objectsAreIdentical()
+        complexDiff.objectsAreIdentical()
+
+        cleanup:
+        basicParameters.importAsNewBranchModelVersion = false
+    }
+
+    void 'test multi-import Terminologies with duplicates'() {
+        given:
+        setupData()
+        Terminology.count() == 2
+        List<Terminology> dataModels = clearExpectedDiffsFromModels([simpleTerminologyId, complexTerminologyId])
+        basicParameters.importAsNewBranchModelVersion = true // Needed to import the same models
+
+        expect:
+        importerService.canImportMultipleDomains()
+
+        when:
+        List<Terminology> imported = importModels(loadTestFile('simpleDuplicateTerminologies'))
+
+        then:
+        imported
+        imported.size() == 1
+
+        when:
+        ObjectDiff simpleDiff = terminologyService.getDiffForModels(dataModels[0], imported.pop())
+
+        then:
+        simpleDiff.objectsAreIdentical()
+
+        when:
+        imported = importModels(loadTestFile('simpleAndComplexDuplicateTerminologies'))
+
+        then:
+        imported
+        imported.size() == 2
+
+        when:
+        simpleDiff = terminologyService.getDiffForModels(dataModels[0], imported[0])
+        ObjectDiff complexDiff = terminologyService.getDiffForModels(dataModels[1], imported[1])
+
+        then:
+        simpleDiff.objectsAreIdentical()
+        complexDiff.objectsAreIdentical()
+
+        cleanup:
+        basicParameters.importAsNewBranchModelVersion = false
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ class DataElementController extends CatalogueItemController<DataElement> {
         if (!originalDataElement) return notFound(params.dataElementId)
         DataElement copy
         try {
-            copy = dataElementService.copyDataElement(destinationDataModel, originalDataElement, currentUser, currentUserSecurityPolicyManager, copyInformation)
+            copy = dataElementService.copyDataElement(destinationDataModel, originalDataElement, currentUser, currentUserSecurityPolicyManager, false, copyInformation)
             destinationDataClass.addToDataElements(copy)
             dataClassService.matchUpAndAddMissingReferenceTypeClasses(destinationDataModel, sourceDataModel, currentUser,
                                                                       currentUserSecurityPolicyManager)
@@ -133,7 +133,7 @@ class DataElementController extends CatalogueItemController<DataElement> {
         if (params.all) removePaginationParameters()
 
         if (!params.dataClassId) {
-            params.sort = params.sort ?: ['dataClass.idx': 'asc', 'depth': 'asc', 'idx': 'asc']
+            params.sort = params.sort ?: ['dataClass.idx': 'asc', 'idx': 'asc']
             return dataElementService.findAllByDataModelId(params.dataModelId, params)
         }
 

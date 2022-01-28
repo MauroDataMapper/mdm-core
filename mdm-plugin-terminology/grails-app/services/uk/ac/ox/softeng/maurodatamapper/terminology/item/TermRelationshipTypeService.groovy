@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -126,13 +126,8 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
     }
 
     @Override
-    Class<TermRelationshipType> getModelItemClass() {
-        TermRelationshipType
-    }
-
-    @Override
-    void deleteAllByModelId(UUID modelId) {
-        List<UUID> termRelationshipTypeIds = TermRelationshipType.byTerminologyId(modelId).id().list() as List<UUID>
+    void deleteAllByModelIds(Set<UUID> modelIds) {
+        List<UUID> termRelationshipTypeIds = TermRelationshipType.byTerminologyIdInList(modelIds).id().list() as List<UUID>
 
         if (termRelationshipTypeIds) {
             // Assume relationships have been removed by this point
@@ -143,8 +138,8 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
 
             log.trace('Removing {} TermRelationshipTypes', termRelationshipTypeIds.size())
             sessionFactory.currentSession
-                .createSQLQuery('DELETE FROM terminology.term_relationship_type WHERE terminology_id = :id')
-                .setParameter('id', modelId)
+                .createSQLQuery('DELETE FROM terminology.term_relationship_type WHERE terminology_id IN :ids')
+                .setParameter('ids', modelIds)
                 .executeUpdate()
 
             log.trace('TermRelationshipTypes removed')
@@ -165,9 +160,13 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
     }
 
     @Override
+    List<TermRelationshipType> findAllByClassifier(Classifier classifier) {
+        TermRelationshipType.byClassifierId(classifier.id).list()
+    }
+
+    @Override
     List<TermRelationshipType> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        TermRelationshipType.byClassifierId(classifier.id).list().
-            findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.model.id)}
+        findAllByClassifier(classifier).findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.model.id)}
     }
 
     @Override

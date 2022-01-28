@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,13 +40,9 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.databinding.BindUsing
 import grails.gorm.DetachedCriteria
+import grails.plugins.hibernate.search.config.SearchMappingEntityConfig
 import grails.rest.Resource
 import groovy.util.logging.Slf4j
-import org.grails.datastore.gorm.GormEntity
-import org.hibernate.search.annotations.Field
-import org.hibernate.search.annotations.FieldBridge
-import org.hibernate.search.annotations.Index
-import org.hibernate.search.bridge.builtin.UUIDBridge
 
 import javax.persistence.criteria.JoinType
 
@@ -112,10 +108,12 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
         importingDataClasses: 'none'
     ]
 
-    static search = {
+    static search = SearchMappingEntityConfig.entityMapping {
         CallableSearch.call(ModelItemSearch, delegate)
-        dataClass indexEmbedded: true
-        dataType indexEmbedded: true
+        modelType searchable: 'yes', analyze: false, indexingDependency: [reindexOnUpdate: 'shallow', derivedFrom: ['dataClass', 'dataModel']]
+        modelId searchable: 'yes', indexingDependency: [reindexOnUpdate: 'shallow', derivedFrom: ['dataClass', 'dataModel']]
+        dataClass indexEmbedded: [associationInverseSide: 'dataElements', includePaths: ['label']]
+        dataType indexEmbedded: [associationInverseSide: 'dataElements', includePaths: ['label']]
     }
 
     DataElement() {
@@ -131,17 +129,15 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
         'de'
     }
 
-    @Field(index = Index.YES, bridge = @FieldBridge(impl = UUIDBridge))
     UUID getModelId() {
         model.id
     }
 
     @Override
-    GormEntity getPathParent() {
+    DataClass getParent() {
         dataClass
     }
 
-    @Override
     def beforeValidate() {
         long st = System.currentTimeMillis()
         beforeValidateModelItem()
@@ -151,22 +147,12 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
         }
         // If datatype is newly created with dataelement and the datamodel is not new
         // If the DM is new then DT validation will happen at the DM level
-        if (dataType && !dataType.ident() && getModel().id) {
+        if (dataType && !dataType.ident() && getModel().id && !dataType.shouldSkipValidation()) {
             dataType.dataModel = model
             dataType.createdBy = createdBy
             dataType.beforeValidate()
         }
         log.trace('DE before validate {} took {}', this.label, Utils.timeTaken(st))
-    }
-
-    @Override
-    def beforeInsert() {
-        buildPath()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPath()
     }
 
     @Override
@@ -194,7 +180,8 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
      */
     @Override
     DataClass getIndexedWithin() {
-        dataClass
+        // Hack around the code, its indexed with the DC but if the DC has no id then the DE will be sorted and idx'd as part of the DC beforeValidate
+        dataClass?.id ? dataClass : null
     }
 
     ObjectDiff<DataElement> diff(DataElement otherDataElement, String context) {

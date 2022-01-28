@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,11 +44,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 import groovy.util.logging.Slf4j
-import org.grails.datastore.gorm.GormEntity
-import org.hibernate.search.annotations.Field
-import org.hibernate.search.annotations.FieldBridge
-import org.hibernate.search.annotations.Index
-import org.hibernate.search.bridge.builtin.UUIDBridge
 
 import javax.persistence.criteria.JoinType
 
@@ -109,12 +104,13 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     }
 
     static mapping = {
+        breadcrumbTree fetch: 'join'
         dataElements cascade: 'all-delete-orphan'
         dataClasses cascade: 'all-delete-orphan'
         referenceTypes cascade: 'none'
         summaryMetadata cascade: 'all-delete-orphan'
         dataModel index: 'data_class_data_model_idx' //, cascade: 'none', cascadeValidate: 'none'
-        parentDataClass index: 'data_class_parent_data_class_idx' , cascade: 'save-update'
+        parentDataClass index: 'data_class_parent_data_class_idx', cascade: 'save-update'
         extendedDataClasses cascade: 'none', cascadeValidate: 'none', joinTable: [
             name  : 'join_dataclass_to_extended_data_class',
             key   : 'dataclass_id',
@@ -155,6 +151,8 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
 
     static search = {
         CallableSearch.call(ModelItemSearch, delegate)
+        modelType searchable: 'yes', analyze: false, indexingDependency: [reindexOnUpdate: 'shallow', derivedFrom: 'dataModel']
+        modelId searchable: 'yes', indexingDependency: [reindexOnUpdate: 'shallow', derivedFrom: 'dataModel']
     }
 
     DataClass() {
@@ -170,13 +168,12 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         'dc'
     }
 
-    @Field(index = Index.YES, bridge = @FieldBridge(impl = UUIDBridge))
     UUID getModelId() {
         dataModel.id
     }
 
     @Override
-    GormEntity getPathParent() {
+    CatalogueItem getParent() {
         parentDataClass ?: dataModel
     }
 
@@ -190,7 +187,6 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         }
     }
 
-    @Override
     def beforeValidate() {
         long st = System.currentTimeMillis()
         dataModel = dataModel ?: parentDataClass?.getModel()
@@ -199,17 +195,13 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
             if (!it.createdBy) it.createdBy = createdBy
             it.multiFacetAwareItem = this
         }
+        // New save/validate so all DEs and DCs are also new so sort the indexes now
+        // This avoids repeated calls to the individual DE or DC during their beforeValidate
+        if (!id) {
+            if (dataElements) fullSortOfChildren(dataElements)
+            if (dataClasses) fullSortOfChildren(dataClasses)
+        }
         log.trace('DC before validate {} took {}', this.label, Utils.timeTaken(st))
-    }
-
-    @Override
-    def beforeInsert() {
-        buildPath()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPath()
     }
 
     @Override
@@ -237,16 +229,16 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         "${parentDataClass.getDiffIdentifier(context)}/${this.pathIdentifier}"
     }
 
-    CatalogueItem getParent() {
-        parentDataClass ?: dataModel
-    }
-
     /**
      * A DataClass is indexed within its parent, which is either a DataModel or DataClass
      */
     @Override
     CatalogueItem getIndexedWithin() {
-        getParent()
+        // Hack around the code, its indexed with the DC or DM but if the DC has no id then the DC will be sorted and idx'd as part of the DC beforeValidate
+        if (parentDataClass) {
+            return parentDataClass.id ? parentDataClass : null
+        }
+        return dataModel?.id ? dataModel : null
     }
 
     @Override
@@ -282,6 +274,10 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
 
     static DetachedCriteria<DataClass> byDataModelId(UUID dataModelId) {
         new DetachedCriteria<DataClass>(DataClass).eq('dataModel.id', dataModelId)
+    }
+
+    static DetachedCriteria<DataClass> byDataModelIdInList(Collection<UUID> dataModelIds) {
+        new DetachedCriteria<DataClass>(DataClass).inList('dataModel.id', dataModelIds)
     }
 
     static DetachedCriteria<DataClass> byDataModelIdIncludingImported(UUID dataModelId) {

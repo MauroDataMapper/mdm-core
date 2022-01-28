@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.federation.test
 
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
@@ -25,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FilePar
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.federation.PublishedModel
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogue
+import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogueService
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedModel
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedModelService
 import uk.ac.ox.softeng.maurodatamapper.test.integration.BaseIntegrationSpec
@@ -47,6 +49,8 @@ abstract class BaseSubscribedModelServiceIntegrationSpec<K extends Model> extend
     PublishedModel availableModelVersion2
 
     SubscribedCatalogue subscribedCatalogue
+    SubscribedCatalogue subscribedCatalogue2
+    SubscribedCatalogueService subscribedCatalogueService
     SubscribedModelService subscribedModelService
 
     SubscribedModel subscribedModelVersion1
@@ -66,15 +70,21 @@ abstract class BaseSubscribedModelServiceIntegrationSpec<K extends Model> extend
     void setupDomainData() {
         log.debug('Setting up BaseSubscribedCatalogueServiceIntegrationSpec')
 
-        folder = new Folder(label: 'Federation Folder', createdByUser: admin)
+        folder = new Folder(label: 'Federation Folder', createdBy: StandardEmailAddress.INTEGRATION_TEST)
         checkAndSave(folder)
 
         //Mock a subscription to a remote catalogue
         subscribedCatalogue = new SubscribedCatalogue(url: 'http://remote.example.com',
                                                       apiKey: UUID.randomUUID(),
                                                       label: 'Test Remote Catalogue',
-                                                      createdByUser: admin)
+                                                      createdBy: StandardEmailAddress.ADMIN)
         checkAndSave(subscribedCatalogue)
+
+        subscribedCatalogue2 = new SubscribedCatalogue(url: 'http://remote2.example.com',
+                                                       apiKey: UUID.randomUUID(),
+                                                       label: 'Test Remote Catalogue 2',
+                                                       createdBy: editor.emailAddress)
+        checkAndSave(subscribedCatalogue2)
 
 
         //Note: ID is hardcoded because we are mocking an external input rather than a domain created locally.
@@ -94,14 +104,14 @@ abstract class BaseSubscribedModelServiceIntegrationSpec<K extends Model> extend
         subscribedModelVersion1 = new SubscribedModel(subscribedModelId: Utils.toUuid("c8023de6-5329-4b8b-8a1b-27c2abeaffcd"),
                                                       folderId: getFolder().id,
                                                       subscribedCatalogue: subscribedCatalogue,
-                                                      createdByUser: admin,
+                                                      createdBy: StandardEmailAddress.ADMIN,
                                                       subscribedModelType: getModelType())
         checkAndSave(subscribedModelVersion1)
 
         subscribedModelVersion2 = new SubscribedModel(subscribedModelId: Utils.toUuid("d8023de6-5329-4b8b-8a1b-27c2abeaffcd"),
                                                       folderId: getFolder().id,
                                                       subscribedCatalogue: subscribedCatalogue,
-                                                      createdByUser: admin,
+                                                      createdBy: editor.emailAddress,
                                                       subscribedModelType: getModelType())
         checkAndSave(subscribedModelVersion2)
     }
@@ -179,5 +189,36 @@ abstract class BaseSubscribedModelServiceIntegrationSpec<K extends Model> extend
         importedModelVersion2.versionLinks.size() == 1
         importedModelVersion2.versionLinks[0].targetModel.id == importedModelVersion1.id
         importedModelVersion2.versionLinks[0].model.id == importedModelVersion2.id
+    }
+
+    void 'test anonymisation of subscribed catalogues and models'() {
+        given:
+        setupData()
+
+        when: 'list all subscribed catalogues and models'
+        List<SubscribedCatalogue> subscribedCatalogues = subscribedCatalogueService.list()
+        List<SubscribedModel> subscribedModels = subscribedModelService.list()
+
+        then: 'there are two of each, in each case 1 created by admin, 1 created by editor and none by anonymous'
+        subscribedModels.findAll{it.createdBy == admin.emailAddress}.size() == 1
+        subscribedModels.findAll{it.createdBy == editor.emailAddress}.size() == 1
+        subscribedModels.findAll{it.createdBy == 'anonymous@maurodatamapper.com'}.size() == 0
+        subscribedCatalogues.findAll{it.createdBy == admin.emailAddress}.size() == 1
+        subscribedCatalogues.findAll{it.createdBy == editor.emailAddress}.size() == 1
+        subscribedCatalogues.findAll{it.createdBy == 'anonymous@maurodatamapper.com'}.size() == 0
+
+        when: 'anonymise editor on catalogues and models'
+        subscribedCatalogueService.anonymise(editor.emailAddress)
+        subscribedModelService.anonymise(editor.emailAddress)
+        subscribedCatalogues = subscribedCatalogueService.list()
+        subscribedModels = subscribedModelService.list()
+
+        then: 'the catalogue and models that were created by editor are now created by anonymous'
+        subscribedModels.findAll{it.createdBy == admin.emailAddress}.size() == 1
+        subscribedModels.findAll{it.createdBy == editor.emailAddress}.size() == 0
+        subscribedModels.findAll{it.createdBy == 'anonymous@maurodatamapper.com'}.size() == 1
+        subscribedCatalogues.findAll{it.createdBy == admin.emailAddress}.size() == 1
+        subscribedCatalogues.findAll{it.createdBy == editor.emailAddress}.size() == 0
+        subscribedCatalogues.findAll{it.createdBy == 'anonymous@maurodatamapper.com'}.size() == 1
     }
 }

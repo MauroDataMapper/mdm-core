@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ interface SecurityPolicyManagerService {
     UserSecurityPolicyManager addSecurityForSecurableResource(SecurableResource securableResource, User creator, String resourceName)
 
     UserSecurityPolicyManager removeSecurityForSecurableResource(SecurableResource securableResource, User actor)
+
+    void removeSecurityForSecurableResourceIds(String securableResourceDomainType, Collection<UUID> ids)
 
     UserSecurityPolicyManager updateSecurityForSecurableResource(SecurableResource securableResource, Set<String> changedProperties,
                                                                  User currentUser)

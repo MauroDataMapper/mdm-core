@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,15 @@
 package uk.ac.ox.softeng.maurodatamapper.core.path
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.core.GrailsApplication
 import grails.gorm.transactions.Transactional
@@ -41,7 +42,7 @@ class PathService {
     List<CatalogueItemService> catalogueItemServices
 
     @Autowired(required = false)
-    List<DomainService> domainServices
+    List<MdmDomainService> domainServices
 
     @Autowired(required = false)
     List<SecurableResourceService> securableResourceServices
@@ -55,11 +56,11 @@ class PathService {
     }
 
     Map<String, String> listAllPrefixMappings() {
-        List<CreatorAware> domains = grailsApplication.getArtefacts(DomainClassArtefactHandler.TYPE)
-            .findAll {CreatorAware.isAssignableFrom(it.clazz) && !it.isAbstract()}
+        List<MdmDomain> domains = grailsApplication.getArtefacts(DomainClassArtefactHandler.TYPE)
+            .findAll {MdmDomain.isAssignableFrom(it.clazz) && !it.isAbstract()}
             .collect {grailsClass ->
                 // Allow unqualified path domains to exist without breaking the system
-                CreatorAware domain = grailsClass.newInstance() as CreatorAware
+                MdmDomain domain = grailsClass.newInstance() as MdmDomain
                 domain.pathPrefix ? domain : null
             }.findAll()
 
@@ -68,7 +69,7 @@ class PathService {
         }.sort() as Map<String, String>
     }
 
-    CreatorAware findResourceByPathFromRootResource(CreatorAware rootResourceOfPath, Path path, String modelIdentifierOverride = null) {
+    MdmDomain findResourceByPathFromRootResource(MdmDomain rootResourceOfPath, Path path, String modelIdentifierOverride = null) {
         log.trace('Searching for path {} inside {}:{}', path.toString(modelIdentifierOverride), rootResourceOfPath.pathPrefix,
                   rootResourceOfPath.pathIdentifier)
         if (path.isEmpty()) {
@@ -85,7 +86,7 @@ class PathService {
         // Find the first child in the path
         PathNode childNode = pathToFind.first()
 
-        DomainService domainService = domainServices.find {service ->
+        MdmDomainService domainService = domainServices.find {service ->
             service.handlesPathPrefix(childNode.prefix)
         }
 
@@ -106,11 +107,11 @@ class PathService {
         findResourceByPathFromRootResource(child, pathToFind, modelIdentifierOverride)
     }
 
-    CreatorAware findResourceByPathFromRootClass(Class<? extends SecurableResource> rootClass, Path path) {
+    MdmDomain findResourceByPathFromRootClass(Class<? extends SecurableResource> rootClass, Path path) {
         findResourceByPathFromRootClass(rootClass, path, null)
     }
 
-    CreatorAware findResourceByPathFromRootClass(Class<? extends SecurableResource> rootClass, Path path, UserSecurityPolicyManager userSecurityPolicyManager) {
+    MdmDomain findResourceByPathFromRootClass(Class<? extends SecurableResource> rootClass, Path path, UserSecurityPolicyManager userSecurityPolicyManager) {
         if (path.isEmpty()) {
             throw new ApiBadRequestException('PS05', 'Must have a path to search')
         }
@@ -121,11 +122,11 @@ class PathService {
         if (!securableResourceService) {
             throw new ApiBadRequestException('PS03', "No service available to handle [${rootClass.simpleName}]")
         }
-        if (!(securableResourceService instanceof DomainService)) {
+        if (!(securableResourceService instanceof MdmDomainService)) {
             throw new ApiBadRequestException('PS04', "[${rootClass.simpleName}] is not a pathable resource")
         }
 
-        CreatorAware rootResource = securableResourceService.findByParentIdAndPathIdentifier(null, rootNode.getFullIdentifier())
+        MdmDomain rootResource = securableResourceService.findByParentIdAndPathIdentifier(null, rootNode.getFullIdentifier())
         if (!rootResource) return null
 
         // Confirm root resource exists and its prefix matches the pathed prefix
@@ -145,5 +146,63 @@ class PathService {
         }
 
         findResourceByPathFromRootResource(rootResource, path)
+    }
+
+    /**
+     * CAUTION: This method does not check whether the resource found by Path is readable by any user.
+     * @param path
+     * @return CreatorAware resource found by Path
+     */
+    MdmDomain findResourceByPath(Path path) {
+        if (path.isEmpty()) {
+            throw new ApiBadRequestException('PS05', 'Must have a path to search')
+        }
+
+        PathNode rootNode = path.first()
+
+        MdmDomainService domainService = domainServices.find {service ->
+            service.handlesPathPrefix(rootNode.prefix)
+        }
+
+        if (!domainService) {
+            log.warn("Unknown path prefix [${rootNode.prefix}] in path")
+            return null
+        }
+
+        MdmDomain rootResource = domainService.findByParentIdAndPathIdentifier(null, rootNode.getFullIdentifier())
+
+        if (!rootResource) return null
+
+        findResourceByPathFromRootResource(rootResource, path)
+    }
+
+    List<UUID> findAllResourceIdsInPath(Path path) {
+
+        List<UUID> ids = []
+        UUID parentId = null
+        path.each {node ->
+            MdmDomainService domainService = findDomainServiceForPrefix(node.prefix)
+            MdmDomain domain = domainService.findByParentIdAndPathIdentifier(parentId, node.getFullIdentifier())
+            if (!domain) {
+                throw new ApiInternalException('PSXX', "No domain found for path node [${node}] in path [${path}]")
+            }
+            ids << domain.id
+            parentId = domain.id
+        }
+        ids
+    }
+
+    List<Path> findAllPathsForIds(List<UUID> ids) {
+        domainServices
+            .collectMany {it.getAll(ids) ?: []}
+            .findAll()
+            .collect {MdmDomain d -> d.path}
+    }
+
+    MdmDomainService findDomainServiceForPrefix(String prefix) {
+        for (MdmDomainService service : domainServices) {
+            if (service.handlesPathPrefix(prefix)) return service
+        }
+        throw new ApiInternalException('PSXX', "No domain service found for prefix [${prefix}]")
     }
 }

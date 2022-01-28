@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge
 
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.legacy.LegacyFieldPatchData
 
 import grails.validation.Validateable
 
@@ -31,53 +30,22 @@ class ObjectPatchData<T> implements Validateable {
     String label
     private List<FieldPatchData> patches
 
-    @Deprecated
-    List<LegacyFieldPatchData> diffs
-
     static constraints = {
         sourceId nullable: false
         targetId nullable: false
         label nullable: true, blank: false
-        patches validator: {val, obj ->
-            if (!val && !obj.diffs) ['default.invalid.min.message', 1]
-        }
+        patches minSize: 1
     }
 
     ObjectPatchData() {
         patches = []
-        diffs = []
     }
 
     boolean hasPatches() {
-        patches || getDiffsWithContent()
+        patches
     }
 
     List<FieldPatchData> getPatches() {
         return patches
-    }
-
-    @Deprecated
-    List<LegacyFieldPatchData> getDiffsWithContent() {
-        diffs.findAll {it.hasPatches()}
-    }
-
-    @Deprecated
-    void setLeftId(UUID leftId) {
-        this.targetId = leftId
-    }
-
-    @Deprecated
-    void setRightId(UUID rightId) {
-        this.sourceId = rightId
-    }
-
-    @Deprecated
-    UUID getLeftId() {
-        this.targetId
-    }
-
-    @Deprecated
-    UUID getRightId() {
-        this.sourceId
     }
 }

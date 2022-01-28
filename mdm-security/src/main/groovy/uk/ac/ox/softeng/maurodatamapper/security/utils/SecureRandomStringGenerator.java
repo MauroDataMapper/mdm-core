@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ public class SecureRandomStringGenerator {
      * @return RandomStringGenerator for generating alphanumeric strings.
      */
     public static RandomStringGenerator alphanumericGenerator() {
-        UniformRandomProvider rng = RandomSource.create(RandomSource.MT);
+        UniformRandomProvider rng = RandomSource.MT.create();
         return new RandomStringGenerator.Builder()
             .withinRange(MINIMUM_CODEPOINT, MAXIMUM_CODEPOINT)
             .usingRandom(rng::nextInt)
@@ -62,7 +62,7 @@ public class SecureRandomStringGenerator {
      * @return RandomStringGenerator for generating alphanumeric strings including punctuation.
      */
     public static RandomStringGenerator fullGenerator() {
-        UniformRandomProvider rng = RandomSource.create(RandomSource.MT);
+        UniformRandomProvider rng = RandomSource.MT.create();
         return new RandomStringGenerator.Builder()
             .withinRange(MINIMUM_CODEPOINT, MAXIMUM_CODEPOINT)
             .usingRandom(rng::nextInt)

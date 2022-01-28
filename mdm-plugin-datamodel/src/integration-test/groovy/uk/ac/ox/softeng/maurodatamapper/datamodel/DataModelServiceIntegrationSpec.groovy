@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,9 +29,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchData
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.legacy.ItemPatchData
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.legacy.LegacyFieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.summarymetadata.SummaryMetadataReport
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClassService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
@@ -46,10 +47,13 @@ import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
+import groovy.json.JsonBuilder
 import groovy.util.logging.Slf4j
+import org.junit.jupiter.api.Tag
 import org.spockframework.util.Assert
 import spock.lang.PendingFeature
 
+import java.time.OffsetDateTime
 import java.util.function.Predicate
 
 @Slf4j
@@ -70,25 +74,89 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         complexDataModel = buildComplexDataModel()
         simpleDataModel = buildSimpleDataModel()
 
-        DataModel dataModel1 = new DataModel(createdByUser: reader1, label: 'test database', type: DataModelType.DATA_ASSET, folder: testFolder,
+        DataModel dataModel1 = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'test database', type: DataModelType.DATA_ASSET, folder: testFolder,
                                              authority: testAuthority)
-        DataModel dataModel2 = new DataModel(createdByUser: reader2, label: 'test form', type: DataModelType.DATA_ASSET, folder: testFolder,
+        DataModel dataModel2 = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'test form', type: DataModelType.DATA_ASSET, folder: testFolder,
                                              authority: testAuthority)
-        DataModel dataModel3 = new DataModel(createdByUser: editor, label: 'test standard', type: DataModelType.DATA_STANDARD, folder: testFolder,
+        DataModel dataModel3 = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'test standard', type: DataModelType.DATA_STANDARD, folder: testFolder,
                                              authority: testAuthority)
-
         checkAndSave(dataModel1)
         checkAndSave(dataModel2)
         checkAndSave(dataModel3)
 
-        DataType dt = new PrimitiveType(createdByUser: admin, label: 'string')
+        DataType dt = new PrimitiveType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'string')
         dataModel1.addToDataTypes(dt)
-        DataElement dataElement = new DataElement(label: 'sdmelement', createdByUser: editor, dataType: dt)
-        dataModel1.addToDataClasses(new DataClass(label: 'sdmclass', createdByUser: editor).addToDataElements(dataElement))
+        DataElement dataElement = new DataElement(label: 'sdmelement', createdBy: StandardEmailAddress.INTEGRATION_TEST, dataType: dt)
+        dataModel1.addToDataClasses(new DataClass(label: 'sdmclass', createdBy: StandardEmailAddress.INTEGRATION_TEST).addToDataElements(dataElement))
 
         checkAndSave(dataModel1)
 
         id = dataModel1.id
+    }
+
+    void setupDataModelWithSummaryMetadata() {
+        DataModel dataModel = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Data Model having Summary Metadata', type: DataModelType.DATA_ASSET, folder: testFolder,
+            authority: testAuthority)
+
+        checkAndSave(dataModel)
+
+        // Add summary metadata with report to data model
+        SummaryMetadata dataModelSummaryMetadata = new SummaryMetadata(label: 'Data Model Summary Metadata', createdBy: editor.emailAddress,
+            summaryMetadataType: SummaryMetadataType.MAP)
+        SummaryMetadataReport dataModelSummaryMetadataReport = new SummaryMetadataReport(
+            reportDate: OffsetDateTime.now(),
+            reportValue: new JsonBuilder([A: 1, B: 2]).toString(),
+            createdBy: editor.emailAddress
+        )
+        dataModelSummaryMetadata.addToSummaryMetadataReports(dataModelSummaryMetadataReport)
+        dataModel.addToSummaryMetadata(dataModelSummaryMetadata)
+
+        // Add summary metadata with report to data type
+        DataType dataType = new PrimitiveType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Data Type having Summary Metadata')
+        dataModel.addToDataTypes(dataType)
+        checkAndSave(dataModel)
+        SummaryMetadata dataTypeSummaryMetadata = new SummaryMetadata(label: 'Data Type Summary Metadata', createdBy: editor.emailAddress,
+            summaryMetadataType: SummaryMetadataType.MAP)
+        SummaryMetadataReport dataTypeSummaryMetadataReport = new SummaryMetadataReport(
+            reportDate: OffsetDateTime.now(),
+            reportValue: new JsonBuilder([A: 1, B: 2]).toString(),
+            createdBy: editor.emailAddress
+        )
+        dataTypeSummaryMetadata.addToSummaryMetadataReports(dataTypeSummaryMetadataReport)
+        dataType.addToSummaryMetadata(dataTypeSummaryMetadata)
+
+        // Add summary metadata with report to data class
+        DataClass dataClass = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Data Class having Summary Metadata', dataModel: dataModel)
+        checkAndSave(dataClass)
+        SummaryMetadata dataClassSummaryMetadata = new SummaryMetadata(label: 'Data Class Summary Metadata', createdBy: editor.emailAddress,
+            summaryMetadataType: SummaryMetadataType.MAP)
+        SummaryMetadataReport dataClassSummaryMetadataReport = new SummaryMetadataReport(
+            reportDate: OffsetDateTime.now(),
+            reportValue: new JsonBuilder([A: 1, B: 2]).toString(),
+            createdBy: editor.emailAddress
+        )
+        dataClassSummaryMetadata.addToSummaryMetadataReports(dataClassSummaryMetadataReport)
+        dataClass.addToSummaryMetadata(dataClassSummaryMetadata)
+
+        dataModel.addToDataClasses(dataClass)
+        checkAndSave(dataModel)
+
+        // Add summary metadata with report to data element
+        DataElement dataElement = new DataElement(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Data Element having Summary Metadata', dataType: dataType)
+        dataClass.addToDataElements(dataElement)
+        checkAndSave(dataElement)
+
+        SummaryMetadata dataElementSummaryMetadata = new SummaryMetadata(label: 'Data Element Summary Metadata', createdBy: editor.emailAddress,
+            summaryMetadataType: SummaryMetadataType.MAP)
+        SummaryMetadataReport dataElementSummaryMetadataReport = new SummaryMetadataReport(
+            reportDate: OffsetDateTime.now(),
+            reportValue: new JsonBuilder([A: 1, B: 2]).toString(),
+            createdBy: editor.emailAddress
+        )
+        dataElementSummaryMetadata.addToSummaryMetadataReports(dataElementSummaryMetadataReport)
+        dataElement.addToSummaryMetadata(dataElementSummaryMetadata)
+
+        checkAndSave(dataModel)
     }
 
     protected DataModel checkAndSaveNewVersion(DataModel dataModel) {
@@ -182,7 +250,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         setupData()
 
         when:
-        DataModel dataModel = new DataModel(createdByUser: reader2, label: 'saving test', type: DataModelType.DATA_STANDARD, folder: testFolder,
+        DataModel dataModel = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'saving test', type: DataModelType.DATA_STANDARD, folder: testFolder,
                                             authority: testAuthority)
         dataModel = dataModelService.validate(dataModel)
 
@@ -869,6 +937,93 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         latestVersion == Version.from('2')
     }
 
+    void 'DMSF02a : test finding latest finalised model version works after v9.0.0'() {
+        given:
+        setupData()
+
+        when:
+        DataModel v1 = getAndFinaliseDataModel()
+        String label = v1.label
+
+        then:
+        v1.modelVersion == Version.from('1')
+        dataModelService.findLatestFinalisedModelByLabel(label).modelVersion == Version.from('1')
+
+        when:
+        DataModel v2 = getAndFinaliseDataModel(createSaveAndGetNewBranchModel('main', v1).id)
+
+        then:
+        v2.modelVersion == Version.from('2')
+        dataModelService.findLatestFinalisedModelByLabel(label).modelVersion == Version.from('2')
+
+        when:
+        DataModel v3 = getAndFinaliseDataModel(createSaveAndGetNewBranchModel('main', v2).id)
+
+        then:
+        v3.modelVersion == Version.from('3')
+        dataModelService.findLatestFinalisedModelByLabel(label).modelVersion == Version.from('3')
+
+        when:
+        DataModel v4 = getAndFinaliseDataModel(createSaveAndGetNewBranchModel('main', v3).id)
+
+        then:
+        v4.modelVersion == Version.from('4')
+        dataModelService.findLatestFinalisedModelByLabel(label).modelVersion == Version.from('4')
+
+        when:
+        DataModel v5 = getAndFinaliseDataModel(createSaveAndGetNewBranchModel('main', v4).id)
+
+        then:
+        v5.modelVersion == Version.from('5')
+        dataModelService.findLatestFinalisedModelByLabel(label).modelVersion == Version.from('5')
+
+        when:
+        DataModel v6 = getAndFinaliseDataModel(createSaveAndGetNewBranchModel('main', v5).id)
+
+        then:
+        v6.modelVersion == Version.from('6')
+        dataModelService.findLatestFinalisedModelByLabel(label).modelVersion == Version.from('6')
+
+        when:
+        DataModel v7 = getAndFinaliseDataModel(createSaveAndGetNewBranchModel('main', v6).id)
+
+        then:
+        v7.modelVersion == Version.from('7')
+        dataModelService.findLatestFinalisedModelByLabel(label).modelVersion == Version.from('7')
+
+        when:
+        DataModel v8 = getAndFinaliseDataModel(createSaveAndGetNewBranchModel('main', v7).id)
+
+        then:
+        v8.modelVersion == Version.from('8')
+        dataModelService.findLatestFinalisedModelByLabel(label).modelVersion == Version.from('8')
+
+        when:
+        DataModel v9 = getAndFinaliseDataModel(createSaveAndGetNewBranchModel('main', v8).id)
+
+        then:
+        v9.modelVersion == Version.from('9')
+        dataModelService.findLatestFinalisedModelByLabel(label).modelVersion == Version.from('9')
+
+        /**
+         * The point of this test is to test that versions above v9 are correctly retrieved when they
+         * are the latest version.
+         */
+        when: 'we create a v10 model'
+        DataModel v10 = getAndFinaliseDataModel(createSaveAndGetNewBranchModel('main', v9).id)
+
+        then: 'the latest version is retrieved as v10 rather than v9'
+        v10.modelVersion == Version.from('10')
+        dataModelService.findLatestFinalisedModelByLabel(label).modelVersion == Version.from('10')
+
+        when: 'we create a v11 model'
+        DataModel v11 = getAndFinaliseDataModel(createSaveAndGetNewBranchModel('main', v10).id)
+
+        then: 'the latest version is retrieved as v11 rather than v9'
+        v11.modelVersion == Version.from('11')
+        dataModelService.findLatestFinalisedModelByLabel(label).modelVersion == Version.from('11')
+    }
+
     void 'DMSF03 : test getting current draft model on main branch from side branch'() {
         /*
         dataModel (finalised) -- finalisedModel (finalised) -- draftModel (draft)
@@ -1142,144 +1297,6 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         existingClassDiff.deleted.first().commonAncestor
     }
 
-    void 'DMSM02 : test merging legacy diff into draft model'() {
-        given:
-        setupData()
-
-        when: 'generate models'
-        Map<String, UUID> mergeData = BootstrapModels.buildMergeModelsForTestingOnly(id, admin, dataModelService, dataClassService, metadataService, sessionFactory,
-                                                                                     messageSource)
-        DataModel rightMain = dataModelService.get(mergeData.targetId)
-        DataModel leftTest = dataModelService.get(mergeData.sourceId)
-        MergeDiff mergeDiff = dataModelService.getMergeDiffForModels(leftTest, rightMain)
-
-        then:
-        !mergeDiff.isEmpty()
-        mergeDiff.numberOfDiffs == 15
-
-        when:
-        DataClass targetExistingClass = dataClassService.findByParentAndLabel(rightMain, 'existingClass')
-        DataClass sourceExistingClass = dataClassService.findByParentAndLabel(leftTest, 'existingClass')
-
-        def patch = new ObjectPatchData(
-            targetId: rightMain.id,
-            sourceId: leftTest.id,
-            diffs: [
-                new LegacyFieldPatchData(
-                    fieldName: 'description',
-                    value: 'DescriptionLeft'
-                ),
-                new LegacyFieldPatchData(
-                    fieldName: 'dataClasses',
-                    deleted: [
-                        new ItemPatchData(
-                            id: dataClassService.findByParentAndLabel(rightMain, 'deleteSourceAndModifyTarget').id,
-                            label: 'deleteSourceAndModifyTarget'
-                        ),
-                        new ItemPatchData(
-                            id: dataClassService.findByParentAndLabel(rightMain, 'deleteSourceOnly').id,
-                            label: 'deleteSourceOnly'
-                        )
-                    ],
-                    created: [
-                        new ItemPatchData(
-                            id: dataClassService.findByParentAndLabel(leftTest, 'addSourceOnly').id,
-                            label: 'addSourceOnly'
-                        ),
-                        new ItemPatchData(
-                            id: dataClassService.findByParentAndLabel(leftTest, 'modifySourceAndDeleteTarget').id,
-                            label: 'modifySourceAndDeleteTarget'
-                        )
-                    ],
-                    modified: [
-                        new ObjectPatchData(
-                            targetId: dataClassService.findByParentAndLabel(rightMain, 'addBothReturningDifference').id,
-                            label: 'addBothReturningDifference',
-                            diffs: [
-                                new LegacyFieldPatchData(
-                                    fieldName: 'description',
-                                    value: 'addedDescriptionSource'
-                                )
-                            ]
-                        ),
-                        new ObjectPatchData(
-                            targetId: targetExistingClass.id,
-                            label: 'existingClass',
-                            diffs: [
-                                new LegacyFieldPatchData(
-                                    fieldName: "dataClasses",
-                                    deleted: [
-                                        new ItemPatchData(
-                                            id: dataClassService.findByParentAndLabel(targetExistingClass, 'deleteSourceOnlyFromExistingClass').id,
-                                            label: 'deleteSourceOnlyFromExistingClass'
-                                        )
-                                    ],
-                                    created: [
-                                        new ItemPatchData(
-                                            id: dataClassService.findByParentAndLabel(sourceExistingClass, 'addSourceToExistingClass').id,
-                                            label: 'addSourceToExistingClass'
-                                        )
-                                    ]
-
-                                )
-                            ]
-                        ),
-                        new ObjectPatchData(
-                            targetId: dataClassService.findByParentAndLabel(rightMain, 'modifyBothReturningDifference').id,
-                            label: 'modifyBothReturningDifference',
-                            diffs: [
-                                new LegacyFieldPatchData(
-                                    fieldName: 'description',
-                                    value: 'DescriptionSource'
-                                ),
-                            ]
-                        ),
-                        new ObjectPatchData(
-                            targetId: dataClassService.findByParentAndLabel(rightMain, 'modifySourceOnly').id,
-                            label: 'modifySourceOnly',
-                            diffs: [
-                                new LegacyFieldPatchData(
-                                    fieldName: 'description',
-                                    value: 'DescriptionSource'
-                                )
-                            ]
-
-                        )
-                    ]
-
-                )
-            ]
-        )
-        then:
-        check(patch)
-
-        when:
-        def mergedModel = dataModelService.mergeLegacyObjectPatchDataIntoModel(patch, rightMain, adminSecurityPolicyManager)
-        List<String> dataClassLabels = mergedModel.dataClasses*.label
-
-        then:
-        mergedModel.description == 'DescriptionLeft'
-        mergedModel.dataClasses.size() == 15
-
-        and: 'created are present'
-        'addSourceOnly' in dataClassLabels
-        'modifySourceAndDeleteTarget' in dataClassLabels
-
-        and: 'deleted are not present'
-        !('deleteSourceOnly' in dataClassLabels)
-        !('deleteSourceAndModifyTarget' in dataClassLabels)
-
-
-        and: 'existing class has correct child content'
-        mergedModel.dataClasses.find {it.label == 'existingClass'}.dataClasses*.label as Set == ['addTargetToExistingClass', 'addSourceToExistingClass'] as Set
-
-        and: 'modifications are correct'
-        mergedModel.dataClasses.find {it.label == 'addBothReturningDifference'}.description == 'addedDescriptionSource'
-        mergedModel.dataClasses.find {it.label == 'modifyBothReturningDifference'}.description == 'DescriptionSource'
-        mergedModel.dataClasses.find {it.label == 'modifySourceOnly'}.description == 'DescriptionSource'
-    }
-
-
     void 'DMSM03 : test merging new style single modification diff into draft model'() {
         given:
         setupData()
@@ -1480,7 +1497,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     }
 
     DataModel mergeObjectPatchDataIntoModel(ObjectPatchData patch, DataModel targetModel, DataModel sourceModel) {
-        DataModel mergedModel = dataModelService.mergeObjectPatchDataIntoModel(patch, targetModel, sourceModel, false, adminSecurityPolicyManager)
+        DataModel mergedModel = dataModelService.mergeObjectPatchDataIntoModel(patch, targetModel, sourceModel, adminSecurityPolicyManager)
         sessionFactory.currentSession.flush()
         dataModelService.get(mergedModel.id)
     }
@@ -1624,17 +1641,19 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     void 'DMSV02 : test validation on invalid simple model'() {
         given:
         setupData()
-        DataModel check = new DataModel(createdByUser: reader1, type: DataModelType.DATA_ASSET, folder: testFolder, authority: testAuthority)
+        DataModel check = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, type: DataModelType.DATA_ASSET, folder: testFolder, authority: testAuthority)
 
         when:
         DataModel invalid = dataModelService.validate(check)
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 1
+        invalid.errors.errorCount == 3
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 1
+        invalid.errors.fieldErrorCount == 3
         invalid.errors.getFieldError('label')
+        invalid.errors.getFieldError('path')
+        invalid.errors.getFieldError('breadcrumbTree.path')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -1643,18 +1662,18 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     void 'DMSV03 : test validation on invalid primitive datatype model'() {
         given:
         setupData()
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+        DataModel check = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
                                         authority: testAuthority)
-        check.addToDataTypes(new PrimitiveType(createdByUser: admin))
+        check.addToDataTypes(new PrimitiveType(createdBy: StandardEmailAddress.INTEGRATION_TEST))
 
         when:
         DataModel invalid = dataModelService.validate(check)
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 1
+        invalid.errors.errorCount == 3
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 1
+        invalid.errors.fieldErrorCount == 3
         invalid.errors.getFieldError('primitiveTypes[0].label')
 
         cleanup:
@@ -1664,18 +1683,18 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     void 'DMSV04 : test validation on invalid dataclass model'() {
         given:
         setupData()
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+        DataModel check = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
                                         authority: testAuthority)
-        check.addToDataClasses(new DataClass(createdByUser: admin))
+        check.addToDataClasses(new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST))
 
         when:
         DataModel invalid = dataModelService.validate(check)
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 1
+        invalid.errors.errorCount == 3
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 1
+        invalid.errors.fieldErrorCount == 3
         invalid.errors.getFieldError('dataClasses[0].label')
 
         cleanup:
@@ -1685,10 +1704,10 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     void 'DMSV05 : test validation on invalid dataclass dataelement model'() {
         given:
         setupData()
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+        DataModel check = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
                                         authority: testAuthority)
-        DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
-        parent.addToDataElements(createdByUser: admin)
+        DataClass parent = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'parent')
+        parent.addToDataElements(createdBy: StandardEmailAddress.INTEGRATION_TEST)
         check.addToDataClasses(parent)
 
         when:
@@ -1696,9 +1715,9 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 2
+        invalid.errors.errorCount == 4
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 2
+        invalid.errors.fieldErrorCount == 4
         invalid.errors.getFieldError('dataClasses[0].dataElements[0].label')
 
         cleanup:
@@ -1708,11 +1727,11 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     void 'DMSV06 : test validation on invalid reference datatype model'() {
         given:
         setupData()
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+        DataModel check = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
                                         authority: testAuthority)
-        DataClass dc = new DataClass(createdByUser: admin, label: 'ref')
+        DataClass dc = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'ref')
         check.addToDataClasses(dc)
-        check.addToDataTypes(new ReferenceType(createdByUser: admin, label: 'ref'))
+        check.addToDataTypes(new ReferenceType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'ref'))
 
         when:
         DataModel invalid = dataModelService.validate(check)
@@ -1731,20 +1750,20 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     void 'DMSV07 : test validation on invalid nested reference datatype model'() {
         given:
         setupData()
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+        DataModel check = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
                                         authority: testAuthority)
-        DataClass dc = new DataClass(createdByUser: admin)
+        DataClass dc = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST)
         check.addToDataClasses(dc)
-        check.addToDataTypes(new ReferenceType(createdByUser: admin, label: 'ref', referenceClass: dc))
+        check.addToDataTypes(new ReferenceType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'ref', referenceClass: dc))
 
         when:
         DataModel invalid = dataModelService.validate(check)
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 1
+        invalid.errors.errorCount == 3
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 1
+        invalid.errors.fieldErrorCount == 3
         invalid.errors.fieldErrors.any {it.field == 'dataClasses[0].label'}
 
         cleanup:
@@ -1754,21 +1773,21 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     void 'DMSV08 : test validation on invalid nested dataclass model'() {
         given:
         setupData()
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+        DataModel check = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
                                         authority: testAuthority)
-        DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
-        parent.addToDataClasses(new DataClass(createdByUser: admin))
+        DataClass parent = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'parent')
+        parent.addToDataClasses(new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST))
         check.addToDataClasses(parent)
-        check.addToDataClasses(new DataClass(createdByUser: admin, label: 'other'))
+        check.addToDataClasses(new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'other'))
 
         when:
         DataModel invalid = dataModelService.validate(check)
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 1
+        invalid.errors.errorCount == 3
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 1
+        invalid.errors.fieldErrorCount == 3
         invalid.errors.getFieldError('dataClasses[0].dataClasses[0].label')
 
         cleanup:
@@ -1778,14 +1797,14 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     void 'DMSV09 : test validation on invalid nested dataclass dataelement model'() {
         given:
         setupData()
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+        DataModel check = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
                                         authority: testAuthority)
-        DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
-        DataClass child = new DataClass(createdByUser: admin, label: 'child')
-        child.addToDataElements(createdByUser: admin, label: 'el')
+        DataClass parent = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'parent')
+        DataClass child = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'child')
+        child.addToDataElements(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'el')
         parent.addToDataClasses(child)
         check.addToDataClasses(parent)
-        check.addToDataClasses(new DataClass(createdByUser: admin, label: 'other'))
+        check.addToDataClasses(new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'other'))
 
         when:
         DataModel invalid = dataModelService.validate(check)
@@ -1804,23 +1823,23 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     void 'DMSV10 : test validation on invalid double nested dataclass model'() {
         given:
         setupData()
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+        DataModel check = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
                                         authority: testAuthority)
-        DataClass grandparent = new DataClass(createdByUser: admin, label: 'grandparent')
-        DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
+        DataClass grandparent = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'grandparent')
+        DataClass parent = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'parent')
         grandparent.addToDataClasses(parent)
-        parent.addToDataClasses(new DataClass(createdByUser: admin))
+        parent.addToDataClasses(new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST))
         check.addToDataClasses(grandparent)
-        check.addToDataClasses(new DataClass(createdByUser: admin, label: 'other'))
+        check.addToDataClasses(new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'other'))
 
         when:
         DataModel invalid = dataModelService.validate(check)
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 1
+        invalid.errors.errorCount == 3
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 1
+        invalid.errors.fieldErrorCount == 3
         invalid.errors.getFieldError('dataClasses[0].dataClasses[0].dataClasses[0].label')
 
         cleanup:
@@ -1830,16 +1849,16 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     void 'DMSV11 : test validation on invalid double nested dataclass dataelement model'() {
         given:
         setupData()
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+        DataModel check = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
                                         authority: testAuthority)
-        DataClass grandparent = new DataClass(createdByUser: admin, label: 'grandparent')
-        DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
+        DataClass grandparent = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'grandparent')
+        DataClass parent = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'parent')
         grandparent.addToDataClasses(parent)
-        DataClass child = new DataClass(createdByUser: admin, label: 'child')
-        child.addToDataElements(createdByUser: admin, label: 'el')
+        DataClass child = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'child')
+        child.addToDataElements(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'el')
         parent.addToDataClasses(child)
         check.addToDataClasses(grandparent)
-        check.addToDataClasses(new DataClass(createdByUser: admin, label: 'other'))
+        check.addToDataClasses(new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'other'))
 
         when:
         DataModel invalid = dataModelService.validate(check)
@@ -1855,9 +1874,12 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         GormUtils.outputDomainErrors(messageSource, invalid)
     }
 
+    @Tag('non-parallel')
     void 'test suggesting links between models'() {
         given:
+        hibernateSearchIndexingService.purgeAllIndexes()
         setupData()
+        hibernateSearchIndexingService.flushIndexes()
         DataModel dataModel = dataModelService.get(id)
 
         when:
@@ -1870,23 +1892,67 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         DataElementSimilarityResult childRes = results.find {it.source.label == 'child'}
         DataElementSimilarityResult ele1Res = results.find {it.source.label == 'ele1'}
         DataElementSimilarityResult ele2Res = results.find {it.source.label == 'element2'}
+        log.debug('{}', childRes)
+        log.debug('{}', ele1Res)
+        log.debug('{}', ele2Res)
 
         then:
         ele1Res
-        ele1Res.size() == 1
+        ele1Res.totalSimilar() == 1
         ele1Res.source.dataType.label == 'string'
         ele1Res.first().item.id != ele1Res.source.id
         ele1Res.first().item.label == 'sdmelement'
         ele1Res.first().item.dataType.label == 'string'
-        ele1Res.first().similarity > 0
+        ele1Res.first().score > 0
 
         and:
         childRes
-        childRes.size() == 0
+        childRes.totalSimilar() == 0
 
         then:
         ele2Res
-        ele2Res.size() == 0
+        ele2Res.totalSimilar() == 0
+    }
+
+    void 'test summary metadata is copied to new version'() {
+        given:
+        setupData()
+        setupDataModelWithSummaryMetadata()
+        DataModel dataModel4 = dataModelService.findByLabel('Data Model having Summary Metadata')
+
+        when: 'finalising model and then creating a new doc version is allowed'
+        DataModel dataModel = getAndFinaliseDataModel(dataModel4.id)
+        def result = dataModelService.
+            createNewBranchModelVersion(VersionAwareConstraints.DEFAULT_BRANCH_NAME, dataModel, editor, false, editorSecurityPolicyManager, [
+                moveDataFlows: false,
+                throwErrors  : true
+            ])
+
+        then:
+        checkAndSaveNewVersion(result)
+
+        when: 'load new branch from DB'
+        DataModel newBranch = dataModelService.get(result.id)
+
+        then: 'there is summary metadata on the branch Data Model'
+        newBranch.summaryMetadata.find {it.label == 'Data Model Summary Metadata'}
+        SummaryMetadata foundDataModelSummaryMetadata = newBranch.summaryMetadata.find {it.label == 'Data Model Summary Metadata'}
+        foundDataModelSummaryMetadata.summaryMetadataReports.size() == 1
+
+        and: 'there is summary metadata on the Data Class'
+        DataClass dc = newBranch.childDataClasses.find{it.label =='Data Class having Summary Metadata'}
+        SummaryMetadata foundDataClassSummaryMetadata = dc.summaryMetadata.find {it.label == 'Data Class Summary Metadata'}
+        foundDataClassSummaryMetadata.summaryMetadataReports.size() == 1
+
+        and: 'there is summary metadata on the Data Type'
+        PrimitiveType dt = newBranch.dataTypes.find{it.label =='Data Type having Summary Metadata'}
+        SummaryMetadata foundDataTypeSummaryMetadata = dt.summaryMetadata.find {it.label == 'Data Type Summary Metadata'}
+        foundDataTypeSummaryMetadata.summaryMetadataReports.size() == 1
+
+        and: 'there is summary metadata on the Data Element'
+        DataElement de = dc.dataElements.find{it.label =='Data Element having Summary Metadata'}
+        SummaryMetadata foundDataElementSummaryMetadata = de.summaryMetadata.find {it.label == 'Data Element Summary Metadata'}
+        foundDataElementSummaryMetadata.summaryMetadataReports.size() == 1
     }
 }
 

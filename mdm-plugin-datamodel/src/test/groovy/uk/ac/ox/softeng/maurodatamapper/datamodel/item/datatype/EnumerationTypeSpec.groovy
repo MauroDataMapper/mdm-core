@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.DataTypeSpec
 
@@ -32,8 +32,8 @@ class EnumerationTypeSpec extends DataTypeSpec<EnumerationType> implements Domai
     def setup() {
         log.debug('Setting up EnumerationTypeSpec unit')
         mockDomain(EnumerationValue)
-        ev1 = new EnumerationValue(createdByUser: admin, label: 'ev1', key: 'key1', value: 'val1', index: 0)
-        ev2 = new EnumerationValue(createdByUser: admin, label: 'ev2', key: 'key2', value: 'val2', index: 1)
+        ev1 = new EnumerationValue(createdBy: StandardEmailAddress.UNIT_TEST, label: 'ev1', key: 'key1', value: 'val1', index: 0)
+        ev2 = new EnumerationValue(createdBy: StandardEmailAddress.UNIT_TEST, label: 'ev2', key: 'key2', value: 'val2', index: 1)
     }
 
     @Override
@@ -52,7 +52,7 @@ class EnumerationTypeSpec extends DataTypeSpec<EnumerationType> implements Domai
     @Override
     EnumerationType createValidDomain(String label) {
         EnumerationType et = super.createValidDomain(label)
-        et.addToEnumerationValues(new EnumerationValue(createdByUser: admin, label: 'ev3', key: 'key3', value: 'val3'))
+        et.addToEnumerationValues(new EnumerationValue(createdBy: StandardEmailAddress.UNIT_TEST, label: 'ev3', key: 'key3', value: 'val3'))
     }
 
     @Override
@@ -65,7 +65,7 @@ class EnumerationTypeSpec extends DataTypeSpec<EnumerationType> implements Domai
         setValidDomainValues()
 
         when:
-        domain.addToEnumerationValues(createdByUser: admin, label: 'ev1', key: 'key1', value: 'val12')
+        domain.addToEnumerationValues(createdBy: StandardEmailAddress.UNIT_TEST, label: 'ev1', key: 'key1', value: 'val12')
         checkAndSave(domain)
 
         then:
@@ -85,7 +85,7 @@ class EnumerationTypeSpec extends DataTypeSpec<EnumerationType> implements Domai
         setValidDomainValues()
 
         when:
-        EnumerationValue ev = new EnumerationValue(createdByUser: admin, label: 'ev1', key: 'key3', value: 'val3', idx: 0)
+        EnumerationValue ev = new EnumerationValue(createdBy: StandardEmailAddress.UNIT_TEST, label: 'ev1', key: 'key3', value: 'val3', idx: 0)
         domain.addToEnumerationValues(ev)
         checkAndSave(domain)
 
@@ -109,7 +109,7 @@ class EnumerationTypeSpec extends DataTypeSpec<EnumerationType> implements Domai
         setValidDomainValues()
 
         when:
-        EnumerationValue ev = new EnumerationValue(createdByUser: admin, label: 'ev1', key: 'key3', value: 'val3', idx: 1)
+        EnumerationValue ev = new EnumerationValue(createdBy: StandardEmailAddress.UNIT_TEST, label: 'ev1', key: 'key3', value: 'val3', idx: 1)
         domain.addToEnumerationValues(ev)
         checkAndSave(domain)
 

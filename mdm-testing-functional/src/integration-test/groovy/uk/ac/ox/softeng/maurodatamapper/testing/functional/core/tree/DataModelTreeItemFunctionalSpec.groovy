@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ class DataModelTreeItemFunctionalSpec extends FunctionalSpec{
         GET(getComplexDataModelId(), STRING_ARG)
 
         then:
-        verifyJsonResponse(HttpStatus.OK, getFullTreeRender())
+        verifyJsonResponse(HttpStatus.OK, getFullTreeRender('[]'))
 
     }
 
@@ -98,18 +98,31 @@ class DataModelTreeItemFunctionalSpec extends FunctionalSpec{
         GET(getComplexDataModelId(), STRING_ARG)
 
         then:
-        verifyJsonResponse(HttpStatus.OK, getFullTreeRender())
+        verifyJsonResponse(HttpStatus.OK, getFullTreeRender('''[
+    "createModelItem",
+    "delete",
+    "moveToContainer",
+    "moveToFolder",
+    "moveToVersionedFolder",
+    "softDelete"
+  ]'''))
 
     }
 
 
-    String getFullTreeRender(){
+    String getFullTreeRender(String actions = '''[
+    "createModelItem",
+    "moveToContainer",
+    "moveToFolder",
+    "moveToVersionedFolder",
+    "softDelete"
+  ]''') {
         '''{
   "id": "${json-unit.matches:id}",
   "domainType": "DataModel",
   "label": "Complex Test DataModel",
   "hasChildren": true,
-  "availableActions": [],
+  "availableActions": ''' + actions + ''',
   "deleted": false,
   "finalised": false,
   "superseded": false,

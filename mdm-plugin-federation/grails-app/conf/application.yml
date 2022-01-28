@@ -3,13 +3,13 @@ database:
     port: 5432
     name: maurodatamapper
 ---
-apiUser:
-    username: admin@maurodatamapper.com
-    password: password
----
 #Default for plugins/applications
 ---
 maurodatamapper:
+    federation:
+        subscribedcatalogue:
+            default:
+                timeout: 5
     security:
         public: true
     authority:
@@ -146,7 +146,9 @@ hibernate:
             provider: org.ehcache.jsr107.EhcacheCachingProvider
             missing_cache_strategy: create
     search:
-        default.indexBase: '/tmp/lucene/plugin/federation'
+        backend:
+            directory:
+                root: 'build/federation'
 
 ---
 dataSource:

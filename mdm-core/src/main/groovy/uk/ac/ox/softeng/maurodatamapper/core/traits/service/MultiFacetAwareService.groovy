@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.RuleService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 
 import grails.core.GrailsApplication
 import groovy.transform.SelfType
@@ -42,7 +43,7 @@ import org.hibernate.SessionFactory
 /**
  * @since 17/03/2021
  */
-@SelfType(DomainService)
+@SelfType(MdmDomainService)
 @Slf4j
 trait MultiFacetAwareService<K extends MultiFacetAware> {
 
@@ -66,7 +67,7 @@ trait MultiFacetAwareService<K extends MultiFacetAware> {
 
     abstract List<K> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination = [:])
 
-    abstract boolean isMultiFacetAwareFinalised (K multiFacetAwareItem)
+    abstract boolean isMultiFacetAwareFinalised(K multiFacetAwareItem)
 
     void removeMetadataFromMultiFacetAware(UUID multiFacetAwareId, Metadata metadata) {
         removeFacetFromDomain(multiFacetAwareId, metadata.id, 'metadata')
@@ -214,4 +215,18 @@ trait MultiFacetAwareService<K extends MultiFacetAware> {
         ruleService.deleteAllByMultiFacetAwareItemIds(multiFacetAwareIds)
         semanticLinkService.deleteAllByMultiFacetAwareItemIds(multiFacetAwareIds)
     }
+
+    CopyInformation cacheFacetInformationForCopy(List<UUID> originalIds, CopyInformation copyInformation = null) {
+        // If no ids or only 1 id then caching is not of any advantage
+        if (!originalIds || originalIds.size() == 1) return copyInformation
+        CopyInformation cachedInformation = copyInformation ?: new CopyInformation()
+        List<Metadata> md = Metadata.byMultiFacetAwareItemIdInList(originalIds).list()
+        cachedInformation.preloadedFacets.metadata = new TreeMap(md.groupBy { it.multiFacetAwareItemId })
+        List<Rule> r = Rule.byMultiFacetAwareItemIdInList(originalIds).list()
+        cachedInformation.preloadedFacets.rules = new TreeMap(r.groupBy { it.multiFacetAwareItemId })
+        List<SemanticLink> sl = SemanticLink.byMultiFacetAwareItemIdInList(originalIds).list()
+        cachedInformation.preloadedFacets.semanticLinks = new TreeMap(sl.groupBy { it.multiFacetAwareItemId })
+        cachedInformation
+    }
+
 }

@@ -1,6 +1,10 @@
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
 
+model {
+    CatalogueItem catalogueItem
+    Boolean addContents
+}
 CatalogueItem export = catalogueItem as CatalogueItem
 Boolean add = addContents == null ? true : addContents
 
@@ -24,21 +28,23 @@ if (add) {
     if (export.classifiers) {
         'mdm:classifiers' {
             export.classifiers.each {cl ->
-                layout '/classifier/export.gml', classifier: cl, ns: 'mdm'
+                layout '/classifier/exportClassifier.gml', classifier: cl
             }
         }
     }
+
     if (export.metadata) {
         'mdm:metadata' {
             export.metadata.each {md ->
-                layout '/metadata/export.gml', metadata: md, ns: 'mdm'
+                layout '/metadata/exportMetadata.gml', metadata: md
             }
         }
     }
+
     if (export.annotations) {
         'mdm:annotations' {
             export.annotations.each {ann ->
-                layout '/annotation/export.gml', annotation: ann, ns: 'mdm'
+                layout '/annotation/exportAnnotation.gml', annotation: ann
             }
         }
     }

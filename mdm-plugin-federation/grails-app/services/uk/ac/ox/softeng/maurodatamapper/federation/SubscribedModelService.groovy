@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.federation
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
@@ -28,9 +29,12 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FileParameter
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.AnonymisableService
+import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.security.basic.AnonymousUser
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
@@ -40,7 +44,7 @@ import java.time.OffsetDateTime
 
 @Slf4j
 @Transactional
-class SubscribedModelService {
+class SubscribedModelService implements SecurableResourceService<SubscribedModel>, AnonymisableService {
 
     @Autowired(required = false)
     List<ModelService> modelServices
@@ -51,8 +55,14 @@ class SubscribedModelService {
     @Autowired(required = false)
     SecurityPolicyManagerService securityPolicyManagerService
 
+    @Override
     SubscribedModel get(Serializable id) {
         SubscribedModel.get(id)
+    }
+
+    @Override
+    List<SubscribedModel> getAll(Collection<UUID> containerIds) {
+        SubscribedModel.getAll(containerIds)
     }
 
     SubscribedModel findBySubscribedCatalogueIdAndSubscribedModelId(UUID subscribedCatalogueId, UUID subscribedModelId) {
@@ -76,12 +86,36 @@ class SubscribedModelService {
         SubscribedModel.bySubscribedCatalogueId(subscribedCatalogueId).list(pagination)
     }
 
+    @Override
+    List<SubscribedModel> findAllReadableByEveryone() {
+        SubscribedModel.findAllByReadableByEveryone(true)
+    }
+
+    @Override
+    List<Authority> findAllReadableByAuthenticatedUsers() {
+        SubscribedModel.findAllByReadableByAuthenticatedUsers(true)
+    }
+
     Long count() {
         SubscribedModel.count()
     }
 
+    @Override
     void delete(SubscribedModel subscribedModel) {
         subscribedModel.delete(flush: true)
+        if (securityPolicyManagerService) {
+            securityPolicyManagerService.removeSecurityForSecurableResource(subscribedModel, null)
+        }
+    }
+
+    @Override
+    boolean handles(Class clazz) {
+        clazz == SubscribedModel
+    }
+
+    @Override
+    boolean handles(String domainType) {
+        domainType == SubscribedModel.simpleName
     }
 
     SubscribedModel save(SubscribedModel subscribedModel) {
@@ -152,7 +186,7 @@ class SubscribedModelService {
             Model savedModel = modelService.saveModelWithContent(model)
             log.debug('Saved model')
 
-            if (userSecurityPolicyManager) {
+            if (securityPolicyManagerService) {
                 log.debug("add security to saved model")
                 userSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(savedModel,
                                                                                                          userSecurityPolicyManager.user,
@@ -196,6 +230,10 @@ class SubscribedModelService {
             getVersionLinksForModel(subscribedModel.subscribedCatalogue, urlModelResourceType, subscribedModel.subscribedModelId)
     }
 
+    Map getNewerPublishedVersions(SubscribedModel subscribedModel) {
+        subscribedCatalogueService.getNewerPublishedVersionsForPublishedModel(subscribedModel.subscribedCatalogue, subscribedModel.subscribedModelId)
+    }
+
     /**
      * Export a model as Json from a remote SubscribedCatalogue
      * 1. Find an exporter on the remote SubscribedCatalogue
@@ -232,7 +270,7 @@ class SubscribedModelService {
             matches.each {vl ->
                 log.debug("matched")
                 //Get Subscribed models for the new (source) and old (target) versions of the model
-                SubscribedModel sourceSubscribedModel = findBySubscribedModelId(UUID.fromString(vl.sourceModel.id))
+                SubscribedModel sourceSubscribedModel = subscribedModel
                 SubscribedModel targetSubscribedModel = findBySubscribedModelId(UUID.fromString(vl.targetModel.id))
 
                 if (sourceSubscribedModel && targetSubscribedModel) {
@@ -287,4 +325,10 @@ class SubscribedModelService {
         exporterMap
     }
 
+    void anonymise(String createdBy) {
+        SubscribedModel.findAllByCreatedBy(createdBy).each { subscribedModel ->
+            subscribedModel.createdBy = AnonymousUser.ANONYMOUS_EMAIL_ADDRESS
+            subscribedModel.save(validate: false)
+        }
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,10 +27,9 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.search.searchparamfilter.DataModelTypeFilter
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
-import uk.ac.ox.softeng.maurodatamapper.profile.provider.MapBasedDataModelProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
-import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 import groovy.util.logging.Slf4j
@@ -53,14 +52,15 @@ class SearchService extends AbstractCatalogueItemSearchService<DataModel> {
         super.getSearchParamFilters() + ([DataModelTypeFilter] as HashSet<Class<SearchParamFilter>>)
     }
 
-    PaginatedLuceneResult<CatalogueItem> findAllReadableByLuceneSearch(UserSecurityPolicyManager userSecurityPolicyManager, SearchParams searchParams,
-                                                                       Map pagination = [:]) {
-        mdmCoreSearchService.findAllReadableByLuceneSearch(userSecurityPolicyManager, searchParams, pagination)
+    PaginatedHibernateSearchResult<CatalogueItem> findAllReadableByHibernateSearch(UserSecurityPolicyManager userSecurityPolicyManager,
+                                                                                   SearchParams searchParams,
+                                                                                   Map pagination = [:]) {
+        mdmCoreSearchService.findAllReadableByHibernateSearch(userSecurityPolicyManager, searchParams, pagination)
     }
 
-    List<Profile> findAllDataModelProfileObjectsForProfileProviderByLuceneSearch(UserSecurityPolicyManager userSecurityPolicyManager,
-                                                                                 ProfileProviderService dataModelProfileProviderService,
-                                                                                 SearchParams searchParams, Map pagination = [:]) {
+    List<Profile> findAllDataModelProfileObjectsForProfileProviderByHibernateSearch(UserSecurityPolicyManager userSecurityPolicyManager,
+                                                                                    ProfileProviderService dataModelProfileProviderService,
+                                                                                    SearchParams searchParams, Map pagination = [:]) {
 
         // Limit domain types to only those we know we care about
         if (searchParams.domainTypes) {
@@ -75,8 +75,9 @@ class SearchService extends AbstractCatalogueItemSearchService<DataModel> {
         System.setProperty("hibernate.search.index_uninverting_allowed", "true")
 
         // Find all catalogue items which meet the initial search parameters
-        PaginatedLuceneResult<CatalogueItem> result = mdmCoreSearchService.findAllReadableByLuceneSearch(userSecurityPolicyManager, searchParams,
-                                                                                                         pagination)
+        PaginatedHibernateSearchResult<CatalogueItem> result =
+            mdmCoreSearchService.findAllReadableByHibernateSearch(userSecurityPolicyManager, searchParams,
+                                                                  pagination)
         log.debug("Results size: " + result.count)
         if (result.isEmpty()) return []
 
@@ -97,18 +98,14 @@ class SearchService extends AbstractCatalogueItemSearchService<DataModel> {
 
         // Set the sort parameter
         if (searchParams.sort) {
-            if (dataModelProfileProviderService instanceof MapBasedDataModelProfileProviderService &&
-                searchParams.sort.equalsIgnoreCase(dataModelProfileProviderService.getTitleFieldName())) {
-                searchParams.sort = "label"
-            }
             searchParams.sort = "${dataModelProfileProviderService.metadataNamespace} | ${searchParams.sort}".toString()
         }
         searchParams.labelOnly = false
 
-        PaginatedLuceneResult<DataModel> filteredDataModels = filterSearchResultsByProfile(dataModelProfileProviderService,
-                                                                                           foundDataModelIds,
-                                                                                           searchParams,
-                                                                                           pagination)
+        PaginatedHibernateSearchResult<DataModel> filteredDataModels = filterSearchResultsByProfile(dataModelProfileProviderService,
+                                                                                                    foundDataModelIds,
+                                                                                                    searchParams,
+                                                                                                    pagination)
 
         List<Profile> profiledResults = filteredDataModels.results.collect { dataModel ->
             dataModelProfileProviderService.createProfileFromEntity(dataModel)
@@ -127,9 +124,9 @@ class SearchService extends AbstractCatalogueItemSearchService<DataModel> {
         [DataModel] as HashSet<Class<DataModel>>
     }
 
-    PaginatedLuceneResult<DataModel> filterSearchResultsByProfile(ProfileProviderService dataModelProfileProviderService,
-                                                                  Set<UUID> foundDataModelIds,
-                                                                  SearchParams searchParams, Map<String, Object> pagination) {
+    PaginatedHibernateSearchResult<DataModel> filterSearchResultsByProfile(ProfileProviderService dataModelProfileProviderService,
+                                                                           Set<UUID> foundDataModelIds,
+                                                                           SearchParams searchParams, Map<String, Object> pagination) {
         log.debug('Filtering found DataModel ids')
         // Execute the profile filtered search on the found datamodels
 
@@ -140,23 +137,24 @@ class SearchService extends AbstractCatalogueItemSearchService<DataModel> {
         log.debug('Filtering on {}', filters.keySet())
 
         if (!filters) {
-            return PaginatedLuceneResult.paginateFullResultSet(dataModelService.getAll(foundDataModelIds), pagination)
+            return PaginatedHibernateSearchResult.paginateFullResultSet(dataModelService.getAll(foundDataModelIds), pagination)
         }
 
-        PaginatedLuceneResult<DataModel> filteredDataModels = findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch(foundDataModelIds.toList(),
-                                                                                                                   searchParams,
-                                                                                                                   false,
-                                                                                                                   pagination) {
-            filters.each { metadataKey, filter ->
-                if (filter instanceof String) {
-                    simpleQueryString(filter as String,
-                                      "${dataModelProfileProviderService.metadataNamespace} | ${metadataKey}")
-                } else {
-                    // We've got a list of filters
-                    should {
-                        ((List<String>) filter).each { filterValue ->
-                            simpleQueryString(filterValue, "${dataModelProfileProviderService.metadataNamespace} | ${metadataKey}")
-                        }
+        PaginatedHibernateSearchResult<DataModel> filteredDataModels =
+            findAllCatalogueItemsOfTypeByOwningIdsByHibernateSearch(foundDataModelIds.toList(),
+                                                                    searchParams,
+                                                                    false,
+                                                                    pagination) {
+                filters.each { metadataKey, filter ->
+                    if (filter instanceof String) {
+                        simpleQueryString(filter as String,
+                                          "${dataModelProfileProviderService.metadataNamespace} | ${metadataKey}")
+                    } else {
+                        // We've got a list of filters
+                        should {
+                            ((List<String>) filter).each { filterValue ->
+                                simpleQueryString(filterValue, "${dataModelProfileProviderService.metadataNamespace} | ${metadataKey}")
+                            }
                     }
                 }
             }

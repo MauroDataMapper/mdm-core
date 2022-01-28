@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,10 +29,12 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.Informatio
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.validator.FolderLabelValidator
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
-import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.UniqueValuesValidator
-import uk.ac.ox.softeng.maurodatamapper.search.PathTokenizerAnalyzer
-import uk.ac.ox.softeng.maurodatamapper.search.bridge.OffsetDateTimeBridge
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate.IdSecureFilterFactory
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.mapper.pojo.bridge.binder.PathBinder
+import uk.ac.ox.softeng.maurodatamapper.path.Path
+import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 
 import grails.gorm.DetachedCriteria
 import grails.plugins.hibernate.search.HibernateSearchApi
@@ -65,7 +67,7 @@ class Folder implements Container, Diffable<Folder> {
     static belongsTo = [Folder]
 
     static constraints = {
-        CallableConstraints.call(CreatorAwareConstraints, delegate)
+        CallableConstraints.call(MdmDomainConstraints, delegate)
         CallableConstraints.call(InformationAwareConstraints, delegate)
         label validator: {val, obj -> new FolderLabelValidator(obj).isValid(val)}
         parentFolder nullable: true
@@ -84,11 +86,11 @@ class Folder implements Container, Diffable<Folder> {
     ]
 
     static search = {
-        label index: 'yes', analyzer: 'wordDelimiter'
-        path index: 'yes', analyzer: PathTokenizerAnalyzer
+        label searchable: 'yes', analyzer: 'wordDelimiter'
+        path valueBinder: new PathBinder()
         description termVector: 'with_positions'
-        lastUpdated index: 'yes', bridge: ['class': OffsetDateTimeBridge]
-        dateCreated index: 'yes', bridge: ['class': OffsetDateTimeBridge]
+        lastUpdated searchable: 'yes'
+        dateCreated searchable: 'yes'
     }
 
     Folder() {
@@ -137,25 +139,8 @@ class Folder implements Container, Diffable<Folder> {
         Folder.countByParentFolder(this)
     }
 
-    @Override
-    Folder getPathParent() {
-        parentFolder
-    }
-
-    @Override
     def beforeValidate() {
-        buildPath()
         childFolders.each {it.beforeValidate()}
-    }
-
-    @Override
-    def beforeInsert() {
-        buildPath()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPath()
     }
 
     @Override
@@ -173,6 +158,11 @@ class Folder implements Container, Diffable<Folder> {
         !childFolders.isEmpty()
     }
 
+    @Override
+    Container getParent() {
+        parentFolder
+    }
+
     static DetachedCriteria<Folder> by() {
         new DetachedCriteria<Folder>(Folder)
     }
@@ -186,45 +176,40 @@ class Folder implements Container, Diffable<Folder> {
     }
 
     static DetachedCriteria<Folder> byParentFolderId(UUID id) {
-        by().eq('parentFolder.id', id)
+        id ?
+        by().eq('parentFolder.id', id) :
+        by().isNull('parentFolder')
     }
 
     static DetachedCriteria<Folder> byParentFolderIdAndLabel(UUID id, String label) {
-        byParentFolderId(id).eq('label', label)
+        if (id) {
+            byParentFolderId(id).eq('label', label)
+        } else {
+            byNoParentFolder().eq('label', label)
+        }
     }
 
     static Folder getMiscellaneousFolder() {
         findByLabel(MISCELLANEOUS_FOLDER_LABEL)
     }
 
-    static List<Folder> luceneList(@DelegatesTo(HibernateSearchApi) Closure closure) {
+    static List<Folder> hibernateSearchList(@DelegatesTo(HibernateSearchApi) Closure closure) {
         Folder.search().list closure
     }
 
-    static List<Folder> findAllWithIdsInPath(List<String> ids) {
-        by()
-            .isNotNull('path')
-            .ne('path', '')
-            .findAll {f ->
-                ids.any {
-                    it in f.path.split('/')
-                }
-            }
-    }
-
-    static List<Folder> findAllContainedInFolderId(UUID folderId) {
-        luceneList {
+    static List<Folder> findAllContainedInFolderPathNode(PathNode pathNode) {
+        hibernateSearchList {
             should {
-                keyword 'path', folderId.toString()
+                keyword 'path', Path.from(pathNode)
             }
         }
     }
 
-    static List<Folder> luceneTreeLabelSearch(List<String> allowedIds, String searchTerm) {
+    static List<Folder> treeLabelHibernateSearch(List<String> allowedIds, String searchTerm) {
         if (!allowedIds) return []
-        luceneList {
+        hibernateSearchList {
             keyword 'label', searchTerm
-            filter name: 'idSecured', params: [allowedIds: allowedIds]
+            filter IdSecureFilterFactory.createFilterPredicate(searchPredicateFactory, allowedIds)
         }
     }
 

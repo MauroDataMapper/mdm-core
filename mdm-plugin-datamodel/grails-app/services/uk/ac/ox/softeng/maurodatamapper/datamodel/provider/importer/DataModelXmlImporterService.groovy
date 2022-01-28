@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,9 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import asset.pipeline.grails.AssetResourceLocator
 import groovy.util.logging.Slf4j
-import groovy.util.slurpersupport.GPathResult
-import groovy.util.slurpersupport.NodeChild
+import groovy.xml.XmlSlurper
+import groovy.xml.slurpersupport.GPathResult
+import groovy.xml.slurpersupport.NodeChild
 import org.springframework.core.io.Resource
 
 import java.nio.charset.Charset
@@ -36,8 +37,7 @@ import javax.xml.transform.stream.StreamSource
 import javax.xml.validation.SchemaFactory
 
 @Slf4j
-class DataModelXmlImporterService extends DataBindDataModelImporterProviderService<DataModelFileImporterProviderServiceParameters> 
-    implements XmlImportMapping {
+class DataModelXmlImporterService extends DataBindDataModelImporterProviderService<DataModelFileImporterProviderServiceParameters> implements XmlImportMapping {
 
     AssetResourceLocator assetResourceLocator
 
@@ -48,7 +48,7 @@ class DataModelXmlImporterService extends DataBindDataModelImporterProviderServi
 
     @Override
     String getVersion() {
-        '3.0'
+        '5.0'
     }
 
     @Override
@@ -70,7 +70,7 @@ class DataModelXmlImporterService extends DataBindDataModelImporterProviderServi
         Map map = convertToMap(result)
 
         log.debug('Importing DataModel map')
-        bindMapToDataModel currentUser, backwardsCompatibleExtractDataModelMap(result, map)
+        bindMapToDataModel(currentUser, backwardsCompatibleExtractDataModelMap(result, map))
     }
 
     @Override
@@ -82,32 +82,20 @@ class DataModelXmlImporterService extends DataBindDataModelImporterProviderServi
 
         log.debug('Parsing in file content using XmlSlurper')
         GPathResult result = new XmlSlurper().parseText(xml)
+        result = result.children()[0].name() == 'dataModels' ? result.children()[0] : result
 
-        List<DataModel> imported = []
         if (result.name() == 'dataModels') {
             log.debug('Importing DataModel list')
-            List list = convertToList(result as NodeChild)
-            list.each {
-                imported += bindMapToDataModel(currentUser, it as Map)
-            }
-        } else {
-            // Handle single DM map or exportModel being passed to this method
-            Map map = convertToMap(result)
-            log.debug('Importing DataModel map')
-            imported += bindMapToDataModel currentUser, backwardsCompatibleExtractDataModelMap(result, map)
+            return convertToList(result as NodeChild).collect {bindMapToDataModel(currentUser, it)}
         }
 
-        imported
-    }
+        // Handle single DataModel map or exportModel passed to this method, for backwards compatibility
 
-    Map backwardsCompatibleExtractDataModelMap(GPathResult result, Map map) {
-        switch (result.name()) {
-            case 'exportModel':
-                return map.dataModel as Map
-            case 'dataModel':
-                return map
-        }
-        throw new ApiBadRequestException('XIS03', 'Cannot import XML as dataModel is not present')
+        log.debug('Converting result to Map')
+        Map map = convertToMap(result)
+
+        log.debug('Importing DataModel map')
+        [bindMapToDataModel(currentUser, backwardsCompatibleExtractDataModelMap(result, map))]
     }
 
     List convertToList(NodeChild nodeChild) {
@@ -115,7 +103,6 @@ class DataModelXmlImporterService extends DataBindDataModelImporterProviderServi
     }
 
     String validateXml(String xml) {
-
         Resource xsdResource = assetResourceLocator.findAssetForURI("dataModel_${version}.xsd")
 
         def factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
@@ -127,5 +114,11 @@ class DataModelXmlImporterService extends DataBindDataModelImporterProviderServi
             return ex.getMessage()
         }
         null
+    }
+
+    private Map backwardsCompatibleExtractDataModelMap(GPathResult result, Map map) {
+        if (result.name() == 'exportModel' && map.dataModel && map.dataModel instanceof Map) return map.dataModel as Map
+        if (result.name() == 'dataModel') return map
+        throw new ApiBadRequestException('XIS03', 'Cannot import XML as dataModel is not present')
     }
 }

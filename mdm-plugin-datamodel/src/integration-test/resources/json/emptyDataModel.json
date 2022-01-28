@@ -1,0 +1,12 @@
+{
+  "dataModel": {},
+  "exportMetadata": {
+    "exportedBy": "Admin User",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
+      "name": "DataModelJsonExporterService",
+      "version": "3.0"
+    }
+  }
+}

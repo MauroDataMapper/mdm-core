@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,25 +17,22 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.referencedata
 
-import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
-import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.ModelUserAccessPermissionChangingAndVersioningFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import grails.util.BuildSettings
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
-import io.micronaut.http.HttpResponse
 import spock.lang.Shared
 
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.regex.Pattern
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -84,25 +81,20 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
     @Shared
     Path resourcesPath
 
-    @OnceBefore
-    void setupResourcesPath() {
+    @RunOnce
+    def setup() {
         resourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', 'referencedata').toAbsolutePath()
+    }
+
+    @Override
+    Expectations getExpectations() {
+        super.getExpectations().withoutMergingAvailable()
     }
 
     byte[] loadTestFile(String filename) {
         Path testFilePath = resourcesPath.resolve("${filename}").toAbsolutePath()
         assert Files.exists(testFilePath)
         Files.readAllBytes(testFilePath)
-    }
-
-    @Transactional
-    String getTestFolderId() {
-        Folder.findByLabel('Functional Test Folder').id.toString()
-    }
-
-    @Transactional
-    String getTestFolder2Id() {
-        Folder.findByLabel('Functional Test Folder 2').id.toString()
     }
 
     @Transactional
@@ -116,7 +108,17 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
     }
 
     @Transactional
-    String getDataModelFolderId(String id) {
+    String getLeftHandDiffModelId() {
+        ReferenceDataModel.findByLabel('Second Simple Reference Data Model').id.toString()
+    }
+
+    @Transactional
+    String getRightHandDiffModelId() {
+        ReferenceDataModel.findByLabel('Simple Reference Data Model').id.toString()
+    }
+
+    @Transactional
+    String getModelFolderId(String id) {
         ReferenceDataModel.get(id).folder.id.toString()
     }
 
@@ -145,87 +147,18 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
     }
 
     @Override
-    Map getValidUpdateJson() {
-        [
-            description: 'This is a new testing Reference Data'
-        ]
-    }
-
-    @Override
-    String getEditorGroupRoleName() {
-        GroupRole.CONTAINER_ADMIN_ROLE_NAME
-    }
-
-    @Override
-    void verifyL01Response(HttpResponse<Map> response) {
-        verifyResponse OK, response
-        response.body().count == 0
-    }
-
-    @Override
-    void verifyN01Response(HttpResponse<Map> response) {
-        verifyResponse OK, response
-        response.body().count == 0
-    }
-
-    @Override
-    void verifyL03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getTestFolderId()
-    }
-
-    @Override
-    void verifyL03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getTestFolderId()
-    }
-
-    @Override
-    void verifyL03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getTestFolderId()
-    }
-
-    @Override
-    void verifyN03NoContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getTestFolderId()
-    }
-
-    @Override
-    void verifyN03InvalidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getTestFolderId()
-    }
-
-    @Override
-    void verifyN03ValidContentResponse(HttpResponse<Map> response) {
-        verifyNotFound response, getTestFolderId()
-    }
-
-    @Override
-    Pattern getExpectedCreatedEditRegex() {
-        ~/\[ReferenceDataModel:Functional Test ReferenceDataModel] created/
-    }
-
-    @Override
-    Pattern getExpectedUpdateEditRegex() {
-        ~/\[ReferenceDataModel:Functional Test ReferenceDataModel] changed properties \[description]/
-    }
-
-    @Override
-    Boolean isDisabledNotDeleted() {
-        true
-    }
-
-    @Override
-    Boolean readerPermissionIsInherited() {
-        true
-    }
-
-    @Override
     String getModelType() {
         'ReferenceDataModel'
     }
 
     @Override
-    boolean mergingIsNotAvailable() {
-        true
+    String getModelUrlType() {
+        'referenceDataModels'
+    }
+
+    @Override
+    String getModelPrefix() {
+        'rdm'
     }
 
     @Override
@@ -275,14 +208,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
   "domainType": "ReferenceDataModel",
   "label": "Functional Test ReferenceDataModel",
   "availableActions": [
-    "show",
-    "comment",
-    "editDescription",
-    "update",
-    "save",
-    "softDelete",
-    "finalise",
-    "delete"
+    "show"
   ],
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "type": "ReferenceDataModel",
@@ -796,5 +722,154 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
         cleanup:
         logout()
         removeValidIdObjectUsingTransaction(id)
+    }
+
+    @Override
+    String getExpectedDiffJson() {
+        '''{
+  "leftId": "${json-unit.matches:id}",
+  "rightId": "${json-unit.matches:id}",
+  "label": "Second Simple Reference Data Model",
+  "count": 8,
+  "diffs": [
+    {
+      "label": {
+        "left": "Second Simple Reference Data Model",
+        "right": "Simple Reference Data Model"
+      }
+    },
+    {
+      "rule": {
+        "created": [
+          {
+            "value": {
+              "id": "${json-unit.matches:id}"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "referenceDataTypes": {
+        "modified": [
+          {
+            "leftId": "${json-unit.matches:id}",
+            "rightId": "${json-unit.matches:id}",
+            "label": "string",
+            "leftBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Second Simple Reference Data Model",
+                "domainType": "ReferenceDataModel",
+                "finalised": false
+              }
+            ],
+            "rightBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Simple Reference Data Model",
+                "domainType": "ReferenceDataModel",
+                "finalised": false
+              }
+            ],
+            "count": 1,
+            "diffs": [
+              {
+                "rule": {
+                  "created": [
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "referenceDataElements": {
+        "deleted": [
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "Column C",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Second Simple Reference Data Model",
+                  "domainType": "ReferenceDataModel",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "Column A",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Second Simple Reference Data Model",
+                  "domainType": "ReferenceDataModel",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "Column B",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Second Simple Reference Data Model",
+                  "domainType": "ReferenceDataModel",
+                  "finalised": false
+                }
+              ]
+            }
+          }
+        ],
+        "created": [
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "Organisation code",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Simple Reference Data Model",
+                  "domainType": "ReferenceDataModel",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "Organisation name",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Simple Reference Data Model",
+                  "domainType": "ReferenceDataModel",
+                  "finalised": false
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+'''
     }
 }

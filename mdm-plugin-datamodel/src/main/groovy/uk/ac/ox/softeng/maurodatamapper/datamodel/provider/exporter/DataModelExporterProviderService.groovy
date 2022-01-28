@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.provider.ProviderType
@@ -57,13 +58,13 @@ abstract class DataModelExporterProviderService extends ExporterProviderService 
     ByteArrayOutputStream exportDomains(User currentUser, List<UUID> domainIds) throws ApiException {
         List<DataModel> dataModels = []
         List<UUID> cannotExport = []
-        domainIds.each {
+        domainIds?.unique()?.each {
             DataModel dataModel = dataModelService.get(it)
-            if (!dataModel) {
-                cannotExport.add it
-            } else dataModels.add dataModel
+            if (dataModel) dataModels << dataModel
+            else cannotExport << it
         }
-        log.warn('Cannot find model ids [{}] to export', cannotExport)
+        if (!dataModels) throw new ApiBadRequestException('DMEP01', "Cannot find DataModel IDs [${cannotExport}] to export")
+        if (cannotExport) log.warn('Cannot find DataModel IDs [{}] to export', cannotExport)
         exportDataModels(currentUser, dataModels)
     }
 

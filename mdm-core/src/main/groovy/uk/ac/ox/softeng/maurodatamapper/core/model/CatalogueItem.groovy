@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.container.CatalogueItemClassi
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
-import uk.ac.ox.softeng.maurodatamapper.search.Lucene
-import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.HibernateSearch
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
+import uk.ac.ox.softeng.maurodatamapper.path.PathNode
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.gorm.DetachedCriteria
 import grails.plugins.hibernate.search.HibernateSearchApi
@@ -42,7 +44,7 @@ import org.grails.datastore.gorm.GormEntity
  */
 @Slf4j
 @SelfType(GormEntity)
-trait CatalogueItem<D extends Diffable> implements InformationAware, EditHistoryAware, Diffable<D>, CatalogueItemClassifierAware, MultiFacetAware {
+trait CatalogueItem<D extends Diffable> implements MdmDomain, InformationAware, EditHistoryAware, Diffable<D>, CatalogueItemClassifierAware, MultiFacetAware {
 
     String aliasesString
     BreadcrumbTree breadcrumbTree
@@ -65,6 +67,14 @@ trait CatalogueItem<D extends Diffable> implements InformationAware, EditHistory
     }
 
     void beforeValidateCatalogueItem() {
+        checkPath() // get path to ensure its built
+        if (breadcrumbTree) {
+            if (!breadcrumbTree.matchesPath(path)) {
+                breadcrumbTree.update(this)
+            }
+        } else {
+            breadcrumbTree = new BreadcrumbTree(this)
+        }
         metadata?.each {
             it.multiFacetAwareItem = this
             if (!it.createdBy) it.createdBy = createdBy
@@ -112,11 +122,13 @@ trait CatalogueItem<D extends Diffable> implements InformationAware, EditHistory
         criteria
     }
 
-    static <T extends CatalogueItem> PaginatedLuceneResult<T> luceneStandardSearch(Class<T> clazz, String searchTerm, List<UUID> allowedIds,
-                                                                                   Map pagination,
-                                                                                   @DelegatesTo(HibernateSearchApi) Closure additional = null) {
+    static <T extends CatalogueItem> PaginatedHibernateSearchResult<T> standardHibernateSearch(Class<T> clazz, String searchTerm,
+                                                                                               List<UUID> allowedIds,
+                                                                                               List<PathNode> allowedPathNodes, Map pagination,
+                                                                                               @DelegatesTo(HibernateSearchApi)
+                                                                                                   Closure additional = null) {
 
-        Lucene.securedPaginatedList(clazz, allowedIds, pagination) {
+        HibernateSearch.securedPaginatedList(clazz, allowedIds, allowedPathNodes, pagination) {
             if (searchTerm) {
                 simpleQueryString(searchTerm, 'label', 'description', 'aliasesString', 'metadata.key', 'metadata.value')
             }
@@ -128,22 +140,24 @@ trait CatalogueItem<D extends Diffable> implements InformationAware, EditHistory
         }
     }
 
-    static <T extends CatalogueItem> PaginatedLuceneResult<T> luceneCustomSearch(Class<T> clazz, List<UUID> allowedIds,
-                                                                                 Map pagination,
-                                                                                 @DelegatesTo(HibernateSearchApi) Closure... customSearches) {
-        Lucene.securedPaginatedList(clazz, allowedIds, pagination, customSearches)
+    static <T extends CatalogueItem> PaginatedHibernateSearchResult<T> customHibernateSearch(Class<T> clazz, List<UUID> allowedIds,
+                                                                                             List<PathNode> allowedPathNodes, Map pagination,
+                                                                                             @DelegatesTo(HibernateSearchApi)
+                                                                                                 Closure... customSearches) {
+        HibernateSearch.securedPaginatedList(clazz, allowedIds, allowedPathNodes, pagination, customSearches)
     }
 
-    static <T extends CatalogueItem> PaginatedLuceneResult<T> luceneLabelSearch(Class<T> clazz, String searchTerm,
-                                                                                List<UUID> allowedIds,
-                                                                                @DelegatesTo(HibernateSearchApi) Closure additional) {
-        luceneLabelSearch(clazz, searchTerm, allowedIds, [:], additional)
+    static <T extends CatalogueItem> PaginatedHibernateSearchResult<T> labelHibernateSearch(Class<T> clazz, String searchTerm,
+                                                                                            List<UUID> allowedIds, List<PathNode> allowedPathNodes,
+                                                                                            @DelegatesTo(HibernateSearchApi) Closure additional) {
+        labelHibernateSearch(clazz, searchTerm, allowedIds, allowedPathNodes, [:], additional)
     }
 
-    static <T extends CatalogueItem> PaginatedLuceneResult<T> luceneLabelSearch(Class<T> clazz, String searchTerm, List<UUID> allowedIds,
-                                                                                Map pagination = [:],
-                                                                                @DelegatesTo(HibernateSearchApi) Closure additional = null) {
-        Lucene.securedPaginatedList(clazz, allowedIds, pagination, additional) {
+    static <T extends CatalogueItem> PaginatedHibernateSearchResult<T> labelHibernateSearch(Class<T> clazz, String searchTerm, List<UUID> allowedIds,
+                                                                                            List<PathNode> allowedPathNodes, Map pagination = [:],
+                                                                                            @DelegatesTo(HibernateSearchApi)
+                                                                                                Closure additional = null) {
+        HibernateSearch.securedPaginatedList(clazz, allowedIds, allowedPathNodes, pagination, additional) {
             simpleQueryString searchTerm, 'label'
         }
     }

@@ -18,6 +18,6 @@ json {
     if (export.finalised) dateFinalised OffsetDateTimeConverter.toString(export.dateFinalised)
     if (export.modelVersion) modelVersion export.modelVersion
     authority tmpl.'/authority/export'(export.authority)
-    if (export.dataTypes) dataTypes tmpl.'/dataType/export'(export.dataTypes.sort())
+    if (export.dataTypes) dataTypes g.render(template: '/dataType/export', collection: export.dataTypes.sort(), var: 'export')
     if (export.childDataClasses) childDataClasses tmpl.'/dataClass/export'(export.childDataClasses)
 }

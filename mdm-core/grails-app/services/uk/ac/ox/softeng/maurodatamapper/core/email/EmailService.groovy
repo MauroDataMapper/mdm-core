@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.email.EmailProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.AnonymisableService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import grails.gorm.transactions.Transactional
@@ -33,7 +34,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 @Slf4j
-class EmailService {
+class EmailService implements AnonymisableService {
 
     MauroDataMapperServiceProviderService mauroDataMapperServiceProviderService
     ApiPropertyService apiPropertyService
@@ -104,6 +105,16 @@ class EmailService {
             .body(getApiPropertyAndSubstitute(bodyProperty, propertiesMap))
 
         executorService.submit(task)
+    }
+
+    /**
+     * Delete all emails sent to the specified address
+     * @param sentTo
+     */
+    void anonymise(String sentTo) {
+        Email.findAllBySentToEmailAddress(sentTo).each { email ->
+            email.delete()
+        }
     }
 
     @Transactional

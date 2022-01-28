@@ -12,3 +12,8 @@ UPDATE datamodel.flyway_schema_history
 SET checksum = -440622816
 WHERE version = '2.10.0' AND
       checksum = 446604726;
+
+UPDATE datamodel.flyway_schema_history
+SET checksum = 1326997038
+WHERE version = '2.11.0' AND
+      checksum = -738055149;

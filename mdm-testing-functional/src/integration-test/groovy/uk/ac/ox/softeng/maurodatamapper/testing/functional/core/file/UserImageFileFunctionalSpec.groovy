@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
+import grails.testing.spock.RunOnce
 import grails.util.BuildSettings
 import groovy.util.logging.Slf4j
 import spock.lang.Shared
@@ -49,18 +49,15 @@ class UserImageFileFunctionalSpec extends FunctionalSpec {
 
     @Override
     String getResourcePath() {
+        assert userId
         "catalogueUsers/${userId}/image"
     }
 
-    @OnceBefore
-    void setupResourcesPath() {
+    @RunOnce
+    @Transactional
+    def setup() {
         resourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources').toAbsolutePath()
         assert Files.exists(resourcesPath.resolve('image_data_file.txt'))
-    }
-
-    @OnceBefore
-    @Transactional
-    def checkAndSetupData() {
         log.debug('Check and setup test data')
         userId = CatalogueUser.findByEmailAddress(userEmailAddresses.editor).id
         assert userId

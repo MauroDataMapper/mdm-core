@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.test.unit.core.ModelSpec
 
 import grails.testing.gorm.DomainUnitTest
@@ -123,8 +124,7 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
         DataClass empty = DataClass.findByLabel('emptyclass')
 
         then:
-        empty.path == "/${domain.id}"
-        empty.depth == 1
+        empty.path == Path.from('dm', 'test$main').resolve('dc', 'emptyclass')
         !empty.parentDataClass
         empty.dataModel.id == domain.id
 
@@ -143,14 +143,12 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
         DataClass childS = DataClass.findByLabel('child')
 
         then:
-        parentS.path == "/${domain.id}"
-        parentS.depth == 1
+        parentS.path == Path.from(domain).resolve('dc', 'parent')
         !parentS.parentDataClass
         parentS.dataModel.id == domain.id
 
         and:
-        childS.path == "/${domain.id}/$parent.id"
-        childS.depth == 2
+        childS.path == Path.from(domain).resolve('dc', 'parent').resolve('dc', 'child')
         childS.parentDataClass.id == parent.id
         childS.dataModel
         childS.dataModel.id == domain.id

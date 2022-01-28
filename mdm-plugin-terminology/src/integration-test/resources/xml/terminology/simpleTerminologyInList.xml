@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/5.0" xmlns:mdm="http://maurodatamapper.com/terminology/4.0">
+  <mdm:terminologies>
+    <mdm:terminology>
+      <mdm:id>49798e20-9773-4dda-b8cf-2f7062a747b6</mdm:id>
+      <mdm:label>Simple Test Terminology</mdm:label>
+      <mdm:lastUpdated>2022-01-12T09:51:12.552Z</mdm:lastUpdated>
+      <mdm:classifiers>
+        <mdm:classifier>
+          <mdm:id>adc42b19-e8f7-461d-88b0-bab90edc422d</mdm:id>
+          <mdm:label>test classifier simple</mdm:label>
+          <mdm:lastUpdated>2022-01-12T09:51:12.529Z</mdm:lastUpdated>
+        </mdm:classifier>
+      </mdm:classifiers>
+      <mdm:metadata>
+        <mdm:metadata>
+          <mdm:id>d6763df3-936b-4242-8096-2fd7f8ca28f9</mdm:id>
+          <mdm:namespace>terminology.test.com/simple</mdm:namespace>
+          <mdm:key>mdk1</mdm:key>
+          <mdm:value>mdv1</mdm:value>
+          <mdm:lastUpdated>2022-01-12T09:51:12.551Z</mdm:lastUpdated>
+        </mdm:metadata>
+        <mdm:metadata>
+          <mdm:id>c88a2b22-8c44-4a13-a0a2-09a6542e1512</mdm:id>
+          <mdm:namespace>terminology.test.com</mdm:namespace>
+          <mdm:key>mdk2</mdm:key>
+          <mdm:value>mdv2</mdm:value>
+          <mdm:lastUpdated>2022-01-12T09:51:12.551Z</mdm:lastUpdated>
+        </mdm:metadata>
+        <mdm:metadata>
+          <mdm:id>73f66077-221c-47bb-a02e-c9f3398c57aa</mdm:id>
+          <mdm:namespace>terminology.test.com/simple</mdm:namespace>
+          <mdm:key>mdk2</mdm:key>
+          <mdm:value>mdv2</mdm:value>
+          <mdm:lastUpdated>2022-01-12T09:51:12.551Z</mdm:lastUpdated>
+        </mdm:metadata>
+      </mdm:metadata>
+      <mdm:author>Test Bootstrap</mdm:author>
+      <mdm:organisation>Oxford BRC</mdm:organisation>
+      <mdm:documentationVersion>1.0.0</mdm:documentationVersion>
+      <mdm:finalised>false</mdm:finalised>
+      <mdm:branchName>main</mdm:branchName>
+      <mdm:authority>
+        <mdm:id>86cf1f35-efa5-46f1-99d6-bb31a4c52dc5</mdm:id>
+        <mdm:label>Test Authority</mdm:label>
+        <mdm:url>http://localhost</mdm:url>
+        <mdm:lastUpdated>2022-01-12T09:49:18.254Z</mdm:lastUpdated>
+      </mdm:authority>
+      <mdm:terms>
+        <mdm:term>
+          <mdm:id>8e7e8e53-114d-4a3f-8441-2756f8a3e606</mdm:id>
+          <mdm:label>STT01: Simple Test Term 01</mdm:label>
+          <mdm:lastUpdated>2022-01-12T09:51:12.546Z</mdm:lastUpdated>
+          <mdm:code>STT01</mdm:code>
+          <mdm:definition>Simple Test Term 01</mdm:definition>
+          <mdm:depth>1</mdm:depth>
+        </mdm:term>
+        <mdm:term>
+          <mdm:id>17ea1e39-3295-4025-a8f9-a537dcecf92f</mdm:id>
+          <mdm:label>STT02: Simple Test Term 02</mdm:label>
+          <mdm:lastUpdated>2022-01-12T09:51:12.547Z</mdm:lastUpdated>
+          <mdm:code>STT02</mdm:code>
+          <mdm:definition>Simple Test Term 02</mdm:definition>
+          <mdm:depth>1</mdm:depth>
+        </mdm:term>
+      </mdm:terms>
+    </mdm:terminology>
+  </mdm:terminologies>
+  <exp:exportMetadata>
+    <exp:exportedBy>Admin User</exp:exportedBy>
+    <exp:exportedOn>2022-01-12T09:51:17.971767Z</exp:exportedOn>
+    <exp:exporter>
+      <exp:namespace>uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter</exp:namespace>
+      <exp:name>TerminologyXmlExporterService</exp:name>
+      <exp:version>5.0</exp:version>
+    </exp:exporter>
+  </exp:exportMetadata>
+</exp:exportModel>

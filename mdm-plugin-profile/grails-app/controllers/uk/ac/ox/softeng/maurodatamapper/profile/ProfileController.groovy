@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,22 +17,28 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.ResourcelessMdmController
 import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
+import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ItemsProfilesDataBinding
+import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ProfileProvided
+import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ProfileProvidedCollection
 
 import grails.gorm.transactions.Transactional
+import grails.web.databinding.DataBinder
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 
 import static org.springframework.http.HttpStatus.NO_CONTENT
 
 @Slf4j
-class ProfileController implements ResourcelessMdmController {
+class ProfileController implements ResourcelessMdmController, DataBinder {
     static responseFormats = ['json', 'xml']
 
     ProfileService profileService
@@ -57,7 +63,7 @@ class ProfileController implements ResourcelessMdmController {
         if (!multiFacetAware) {
             return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
-        respond profileProviderServices: profileService.getUsedProfileServices(multiFacetAware)
+        respond profileProviderServices: profileService.getUsedProfileServices(multiFacetAware, true)
     }
 
     def unusedProfiles() {
@@ -66,7 +72,7 @@ class ProfileController implements ResourcelessMdmController {
         if (!multiFacetAware) {
             return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
-        respond profileProviderServices: profileService.getUnusedProfileServices(multiFacetAware)
+        respond profileProviderServices: profileService.getUnusedProfileServices(multiFacetAware, true)
     }
 
     def nonProfileMetadata() {
@@ -119,6 +125,24 @@ class ProfileController implements ResourcelessMdmController {
         respond profile: profileService.createProfile(profileProviderService, multiFacetAware), format: params.format
     }
 
+    /**
+     * The request must contain a collection of IDs of items which belong to the multi facet aware item, and a collection
+     * of profile namespaces/names/version. The response returns all matching profiles for the requested items and profiles.
+     */
+    def getMany(ItemsProfilesDataBinding itemsProfiles) {
+        // this multiFacetAware item is expected to be a model
+        MultiFacetAware model = profileService.findMultiFacetAwareItemByDomainTypeAndId(
+            params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
+        if (!model) {
+            return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
+        }
+        if (!(model instanceof Model)) {
+            throw new ApiBadRequestException('PC01', 'Cannot use this endpoint on a item which is not a Model')
+        }
+
+        respond([view: 'many'], [profileProvidedList: profileService.getMany(model.id, itemsProfiles)])
+    }
+
     @Transactional
     def save() {
 
@@ -142,6 +166,11 @@ class ProfileController implements ResourcelessMdmController {
 
         // Create the profile as the stored profile may only be segments of the profile and we now want to get everything
         respond profileService.createProfile(profileProviderService, profiled)
+    }
+
+    @Transactional
+    def saveMany(ProfileProvidedCollection profileProvidedCollection) {
+        handleMany(false, profileProvidedCollection)
     }
 
     def validate() {
@@ -170,6 +199,33 @@ class ProfileController implements ResourcelessMdmController {
         respond validatedInstance
     }
 
+    def validateMany(ProfileProvidedCollection profileProvidedCollection) {
+        handleMany(true, profileProvidedCollection)
+    }
+
+    /**
+     * Validate or save many profile instances
+     * @param validateOnly
+     * @param ProfileProvidedCollection bound data from the request
+     * @return
+     */
+    private handleMany(boolean validateOnly, ProfileProvidedCollection profileProvidedCollection) {
+        log.debug("Handling many items profiles")
+
+        // The multiFacetAware item referenced in the URI, is expected to be a model
+        MultiFacetAware model = profileService.findMultiFacetAwareItemByDomainTypeAndId(
+            params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
+
+        if (!model) {
+            return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
+        }
+        if (!(model instanceof Model)) {
+            throw new ApiBadRequestException('PC02', 'Cannot use this endpoint on a item which is not a Model')
+        }
+
+        List<ProfileProvided> handled = profileService.handleMany(validateOnly, profileProvidedCollection, model, currentUserSecurityPolicyManager, currentUser)
+        respond([view: 'many'], [profileProvidedList: handled])
+    }
 
     def listModelsInProfile() {
         ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName,
@@ -220,7 +276,7 @@ class ProfileController implements ResourcelessMdmController {
         params.offset = 0
         params.max = null
 
-        List<Profile> profileObjects = mdmPluginProfileSearchService.findAllDataModelProfileObjectsForProfileProviderByLuceneSearch(
+        List<Profile> profileObjects = mdmPluginProfileSearchService.findAllDataModelProfileObjectsForProfileProviderByHibernateSearch(
             currentUserSecurityPolicyManager, profileProviderService, searchParams, params
         )
 

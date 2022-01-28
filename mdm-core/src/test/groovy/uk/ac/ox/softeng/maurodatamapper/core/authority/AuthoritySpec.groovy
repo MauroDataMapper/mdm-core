@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,11 @@
 package uk.ac.ox.softeng.maurodatamapper.core.authority
 
 
-import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
+import uk.ac.ox.softeng.maurodatamapper.test.unit.MdmDomainSpec
 
 import grails.testing.gorm.DomainUnitTest
 
-class AuthoritySpec extends CreatorAwareSpec<Authority> implements DomainUnitTest<Authority> {
+class AuthoritySpec extends MdmDomainSpec<Authority> implements DomainUnitTest<Authority> {
 
     @Override
     void setValidDomainOtherValues() {

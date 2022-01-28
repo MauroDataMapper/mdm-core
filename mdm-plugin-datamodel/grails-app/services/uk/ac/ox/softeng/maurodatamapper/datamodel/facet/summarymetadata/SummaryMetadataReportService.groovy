@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import grails.gorm.transactions.Transactional
@@ -32,13 +32,18 @@ import java.time.OffsetDateTime
 
 @Slf4j
 @Transactional
-class SummaryMetadataReportService implements DomainService<SummaryMetadataReport> {
+class SummaryMetadataReportService implements MdmDomainService<SummaryMetadataReport> {
 
     @Autowired(required = false)
     List<CatalogueItemService> catalogueItemServices
 
     SummaryMetadataReport get(Serializable id) {
         SummaryMetadataReport.get(id)
+    }
+
+    @Override
+    List<SummaryMetadataReport> getAll(Collection<UUID> resourceIds) {
+        SummaryMetadataReport.getAll(resourceIds)
     }
 
     List<SummaryMetadataReport> list(Map args) {
