@@ -61,7 +61,6 @@ import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
-//TODO import uk.ac.ox.softeng.maurodatamapper.util.CreatorAwareUtils
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 import uk.ac.ox.softeng.maurodatamapper.version.VersionChangeType
@@ -585,8 +584,6 @@ abstract class ModelService<K extends Model>
         log.debug('Modifying [{}] in [{}]', fieldName, modificationPatch)
 
         MdmDomainService domainService = getDomainServices().find {it.handles(domain.class)}
-        //TODO CreatorAwareUtils.patchCreatorAwareField(domain, fieldName, modificationPatch.sourceValue)
-        //TODO DomainService domainService = getDomainServices().find {it.handles(domain.class)}
         if (!domainService) throw new ApiInternalException('MSXX', "No domain service to handle modification of [${domain.domainType}]")
 
         // If the domainService provides a special handler for modifying this field then use it,
