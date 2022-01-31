@@ -1443,9 +1443,9 @@
                           }
                         },
                         {
-                          "referenceDataType.label": {
-                            "left": "addLeftOnly",
-                            "right": "addRightOnly"
+                          "referenceDataTypePath": {
+                            "left": "rdm:Functional Test ReferenceData 1$source|rdt:addLeftOnly",
+                            "right": "rdm:Functional Test ReferenceData 1$main|rdt:addRightOnly"
                           }
                         }
                       ]
@@ -1473,9 +1473,9 @@
                       "count": 1,
                       "diffs": [
                         {
-                          "referenceDataType.label": {
-                            "left": "addLeftOnly",
-                            "right": "addRightOnly"
+                          "referenceDataTypePath": {
+                            "left": "rdm:Functional Test ReferenceData 1$source|rdt:addLeftOnly",
+                            "right": "rdm:Functional Test ReferenceData 1$main|rdt:addRightOnly"
                           }
                         }
                       ]

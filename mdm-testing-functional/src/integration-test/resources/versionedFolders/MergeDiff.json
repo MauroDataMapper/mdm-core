@@ -279,19 +279,19 @@
       "type": "modification"
     },
     {
-      "fieldName": "referenceDataType.label",
-      "path": "vf:Functional Test VersionedFolder Complex$source|rdm:Functional Test ReferenceData 1$source|rde:addAndAddReturningDifference@referenceDataType.label",
-      "sourceValue": "addLeftOnly",
-      "targetValue": "addRightOnly",
+      "fieldName": "referenceDataTypePath",
+      "path": "vf:Functional Test VersionedFolder Complex$source|rdm:Functional Test ReferenceData 1$source|rde:addAndAddReturningDifference@referenceDataTypePath",
+      "sourceValue": "rdm:Functional Test ReferenceData 1$source|rdt:addLeftOnly",
+      "targetValue": "rdm:Functional Test ReferenceData 1$main|rdt:addRightOnly",
       "commonAncestorValue": null,
       "isMergeConflict": true,
       "type": "modification"
     },
     {
-      "fieldName": "referenceDataType.label",
-      "path": "vf:Functional Test VersionedFolder Complex$source|rdm:Functional Test ReferenceData 1$source|rde:addAndAddReturningNoDifference@referenceDataType.label",
-      "sourceValue": "addLeftOnly",
-      "targetValue": "addRightOnly",
+      "fieldName": "referenceDataTypePath",
+      "path": "vf:Functional Test VersionedFolder Complex$source|rdm:Functional Test ReferenceData 1$source|rde:addAndAddReturningNoDifference@referenceDataTypePath",
+      "sourceValue": "rdm:Functional Test ReferenceData 1$source|rdt:addLeftOnly",
+      "targetValue": "rdm:Functional Test ReferenceData 1$main|rdt:addRightOnly",
       "commonAncestorValue": null,
       "isMergeConflict": true,
       "type": "modification"

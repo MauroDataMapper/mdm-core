@@ -59,7 +59,6 @@ import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
-//TODO import uk.ac.ox.softeng.maurodatamapper.util.CreatorAwareUtils
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 import uk.ac.ox.softeng.maurodatamapper.version.VersionChangeType
@@ -886,9 +885,6 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         if (!domainService.handlesModificationPatchOfField(modificationPatch, targetVersionedFolder, domain, fieldName)) {
             domain."${fieldName}" = modificationPatch.sourceValue
         }
-        //TODO CreatorAwareUtils.patchCreatorAwareField(domain, fieldName, modificationPatch.sourceValue)
-        //TODO DomainService domainService = getDomainServices().find {it.handles(domain.class)}
-        if (!domainService) throw new ApiInternalException('MSXX', "No domain service to handle modification of [${domain.domainType}]")
 
         if (!domain.validate())
             throw new ApiInvalidModelException('MS01', 'Modified domain is invalid', domain.errors, messageSource)

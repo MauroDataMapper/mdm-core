@@ -150,13 +150,20 @@ class ReferenceDataElement implements ModelItem<ReferenceDataElement, ReferenceD
         false
     }
 
-    ObjectDiff<ReferenceDataElement> diff(ReferenceDataElement otherDataElement, String context) {
-        catalogueItemDiffBuilder(ReferenceDataElement, this, otherDataElement)
-            .appendString('referenceDataType.label', this.referenceDataType.label, otherDataElement.referenceDataType.label)
-            .appendNumber('minMultiplicity', this.minMultiplicity, otherDataElement.minMultiplicity)
-            .appendNumber('maxMultiplicity', this.maxMultiplicity, otherDataElement.maxMultiplicity)
+    ObjectDiff<ReferenceDataElement> diff(ReferenceDataElement otherReferenceDataElement, String context) {
+        ObjectDiff<ReferenceDataElement> diff = catalogueItemDiffBuilder(ReferenceDataElement, this, otherReferenceDataElement)
+            .appendNumber('minMultiplicity', this.minMultiplicity, otherReferenceDataElement.minMultiplicity)
+            .appendNumber('maxMultiplicity', this.maxMultiplicity, otherReferenceDataElement.maxMultiplicity)
 
+        // Aside from branch and version, is this Reference Data Element pointing to a different Reference Data Type?
+        if (!this.referenceDataType.getPath().matches(otherReferenceDataElement.referenceDataType.getPath(), this.referenceDataModel.getPath().last().modelIdentifier)) {
+            diff.
+                appendString('referenceDataTypePath',
+                    this.referenceDataType.getPath().toString(),
+                    otherReferenceDataElement.referenceDataType.getPath().toString())
+        }
 
+        diff
     }
 
     static DetachedCriteria<ReferenceDataElement> byReferenceDataModelIdAndId(Serializable referenceDataModelId, Serializable resourceId) {
