@@ -27,7 +27,6 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataValue
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
-import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.DataModelPluginMergeBuilder
 import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.ReferenceDataPluginMergeBuilder
 import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.TestMergeData
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -1109,8 +1108,8 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
         then:
         verifyResponse OK, response
-        responseBody().leftId == mainId
-        responseBody().rightId == leftId
+        responseBody().targetId == mainId
+        responseBody().sourceId == leftId
 
         when:
         GET("$rightId/mergeDiff/$mainId", STRING_ARG)
@@ -1119,8 +1118,8 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
         then:
         verifyResponse OK, response
-        responseBody().leftId == mainId
-        responseBody().rightId == rightId
+        responseBody().targetId == mainId
+        responseBody().sourceId == rightId
 
         cleanup:
         cleanUpData(mainId)
@@ -1138,7 +1137,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
         then:
         log.debug('{}', jsonResponseBody())
-        verifyJsonResponse OK, expectedLegacyMergeDiffJson
+        verifyJsonResponse OK, expectedMergeDiffJson
 
         cleanup:
         cleanUpData(mergeData.source)
@@ -1162,9 +1161,9 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         String rightId = responseBody().id
 
         when:
-        GET("$leftId/mergeDiff/$mainId?isLegacy=false", STRING_ARG)
+        GET("$leftId/mergeDiff/$mainId", STRING_ARG)
         log.debug('{}', jsonResponseBody())
-        GET("$leftId/mergeDiff/$mainId?isLegacy=false")
+        GET("$leftId/mergeDiff/$mainId")
 
         then:
         verifyResponse OK, response
@@ -1172,9 +1171,9 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         responseBody().sourceId == leftId
 
         when:
-        GET("$rightId/mergeDiff/$mainId?isLegacy=false", STRING_ARG)
+        GET("$rightId/mergeDiff/$mainId", STRING_ARG)
         log.debug('{}', jsonResponseBody())
-        GET("$rightId/mergeDiff/$mainId?isLegacy=false")
+        GET("$rightId/mergeDiff/$mainId")
 
         then:
         verifyResponse OK, response
@@ -1186,22 +1185,6 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(leftId)
         cleanUpData(rightId)
         cleanUpData(id)
-    }
-
-    void 'MD04 : test finding merge difference of two complex referencedata with the new style'() {
-        given:
-        TestMergeData mergeData = builder.buildComplexModelsForMerging(folderId.toString())
-
-        when:
-        GET("$mergeData.source/mergeDiff/$mergeData.target?isLegacy=false", STRING_ARG)
-
-        then:
-        verifyJsonResponse OK, expectedMergeDiffJson
-
-        cleanup:
-        cleanUpData(mergeData.source)
-        cleanUpData(mergeData.target)
-        cleanUpData(mergeData.commonAncestor)
     }
 
     void 'MD05 : test finding merge diff with new style diff with aliases gh-112'() {
@@ -1220,9 +1203,9 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         verifyResponse OK, response
 
         when:
-        GET("$source/mergeDiff/$target?isLegacy=false", STRING_ARG)
+        GET("$source/mergeDiff/$target", STRING_ARG)
         log.warn('{}', jsonResponseBody())
-        GET("$source/mergeDiff/$target?isLegacy=false")
+        GET("$source/mergeDiff/$target")
 
         then:
         verifyResponse OK, response
@@ -1241,10 +1224,10 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     void 'MD06 : test finding merge diff on a branch which has already been merged'() {
         given:
         TestMergeData mergeData = builder.buildComplexModelsForMerging(folderId.toString())
-        GET("$mergeData.source/mergeDiff/$mergeData.target?isLegacy=false")
+        GET("$mergeData.source/mergeDiff/$mergeData.target")
         verifyResponse OK, response
         List<Map> patches = responseBody().diffs
-        PUT("$mergeData.source/mergeInto/$mergeData.target?isLegacy=false", [
+        PUT("$mergeData.source/mergeInto/$mergeData.target", [
             patch: [
                 targetId: responseBody().targetId,
                 sourceId: responseBody().sourceId,
@@ -1261,7 +1244,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         log.debug('-------------- Second Merge Request ------------------')
 
         and:
-        GET("$mergeData.source/mergeDiff/$mergeData.target?isLegacy=false", STRING_ARG)
+        GET("$mergeData.source/mergeDiff/$mergeData.target", STRING_ARG)
 
         then: 'the merge diff is correct'
         verifyJsonResponse OK, expectedSecondMergeDiffJson
@@ -1315,8 +1298,8 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         when:
         PUT("$source/mergeInto/$target", [patch:
             [
-                leftId : "$target" as String,
-                rightId: "${UUID.randomUUID().toString()}" as String,
+                targetId : target,
+                sourceId: UUID.randomUUID().toString(),
                 label  : "Reference Data Functional Test Model",
                 count  : 0,
                 diffs  : []
@@ -1330,8 +1313,8 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         when:
         PUT("$source/mergeInto/$target", [patch:
             [
-                leftId : "${UUID.randomUUID().toString()}" as String,
-                rightId: "$source" as String,
+                targetId : UUID.randomUUID().toString(),
+                sourceId: source,
                 label  : "Reference Data Functional Test Model",
                 count  : 0,
                 diffs  : []
@@ -1346,125 +1329,6 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(source)
         cleanUpData(target)
         cleanUpData(id)
-    }
-
-    void 'MI03 : test merging diff into draft model'() {
-        given:
-        TestMergeData mergeData = builder.buildComplexModelsForMerging(folderId.toString())
-
-        when:
-        GET("$mergeData.source/mergeDiff/$mergeData.target", STRING_ARG)
-
-        then:
-        verifyJsonResponse OK, expectedLegacyMergeDiffJson
-
-        when:
-        String modifiedDescriptionSource = 'modifiedDescriptionSource'
-
-        def requestBody = [
-            changeNotice: 'Functional Test Merge Change Notice',
-            patch : [
-                leftId : mergeData.target,
-                rightId: mergeData.source,
-                label  : "Reference Data Functional Test Model",
-                diffs  : [
-                    [
-                        fieldName: "description",
-                        value    : modifiedDescriptionSource
-                    ],
-                    [
-                        fieldName: "referenceDataElements",
-                        deleted  : [
-                            [
-                                id   : mergeData.targetMap.deleteAndModify,
-                                label: "deleteAndModify"
-                            ],
-                            [
-                                id   : mergeData.targetMap.deleteLeftOnly,
-                                label: "deleteLeftOnly"
-                            ]
-                        ],
-                        created  : [
-                            [
-                                id   : mergeData.sourceMap.addLeftOnly,
-                                label: "addLeftOnly"
-                            ],
-                            [
-                                id   : mergeData.sourceMap.modifyAndDelete,
-                                label: "modifyAndDelete"
-                            ]
-                        ],
-                        modified : [
-                            [
-                                leftId: mergeData.targetMap.addAndAddReturningDifference,
-                                label : "addAndAddReturningDifference",
-                                diffs : [
-                                    [
-                                        fieldName: "description",
-                                        value    : "addedDescriptionSource"
-                                    ]
-                                ]
-                            ],
-                            [
-                                leftId: mergeData.targetMap.modifyAndModifyReturningDifference,
-                                label : "modifyAndModifyReturningDifference",
-                                diffs : [
-                                    [
-                                        fieldName: "description",
-                                        value    : modifiedDescriptionSource
-                                    ]
-                                ]
-                            ],
-                            [
-                                leftId: mergeData.targetMap.modifyLeftOnly,
-                                label : "modifyLeftOnly",
-                                diffs : [
-                                    [
-                                        fieldName: "description",
-                                        value    : "modifiedDescriptionSourceOnly"
-                                    ]
-                                ]
-                            ]
-                        ]
-                   ]
-                ]
-            ]
-        ]
-
-        PUT("$mergeData.source/mergeInto/$mergeData.target", requestBody)
-
-        then:
-        verifyResponse OK, response
-        responseBody().id == mergeData.target
-        responseBody().description == modifiedDescriptionSource
-
-        when:
-        GET("$mergeData.target/referenceDataElements")
-
-        then:
-        responseBody().items.label as Set == ['modifyAndModifyReturningDifference', 'modifyLeftOnly',
-                                              'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly',
-                                              'modifyRightOnly', 'addRightOnly', 'modifyAndModifyReturningNoDifference', 'addAndAddReturningNoDifference'] as Set
-        responseBody().items.find { rde -> rde.label == 'modifyAndDelete' }.description == 'Description'
-        responseBody().items.find { rde -> rde.label == 'addAndAddReturningDifference' }.description == 'addedDescriptionSource'
-        responseBody().items.find { rde -> rde.label == 'modifyAndModifyReturningDifference' }.description == modifiedDescriptionSource
-        responseBody().items.find { rde -> rde.label == 'modifyLeftOnly' }.description == 'modifiedDescriptionSourceOnly'
-
-        when: 'List edits for the Target ReferenceDataModel'
-        GET("$mergeData.target/edits", MAP_ARG)
-
-        then: 'The response is OK'
-        verifyResponse OK, response
-
-        and: 'There is a CHANGE NOTICE edit'
-        response.body().items.find {
-            it.title == "CHANGENOTICE" && it.description == "Functional Test Merge Change Notice"
-        }
-
-        cleanup:
-        cleanUpData(mergeData.source)
-        cleanUpData(mergeData.target)
-        cleanUpData(mergeData.commonAncestor)
     }
 
     void 'MI04 : test merging metadata diff into draft model'() {
@@ -1554,196 +1418,27 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         modifyMetadataSource = responseBody().items.find { it.key == "modifyMetadataSource" }.id
 
         GET("$source/mergeDiff/$target", STRING_ARG)
+        log.info('{}', jsonResponseBody())
+        GET("$source/mergeDiff/$target")
 
         then:
-        verifyJsonResponse OK, '''
-{
-  "leftId": "${json-unit.matches:id}",
-  "rightId": "${json-unit.matches:id}",
-  "label": "Reference Data Functional Test Model",
-  "count": 6,
-  "diffs": [
-    {
-      "description": {
-        "left": "DescriptionRight",
-        "right": "DescriptionLeft",
-        "isMergeConflict": true,
-        "commonAncestorValue": null
-      }
-    },
-    {
-      "referenceDataElements": {
-        "modified": [
-          {
-            "leftId": "${json-unit.matches:id}",
-            "rightId": "${json-unit.matches:id}",
-            "label": "modifyLeftOnly",
-            "leftBreadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Reference Data Functional Test Model",
-                "domainType": "ReferenceDataModel",
-                "finalised": true
-              }
-            ],
-            "rightBreadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Reference Data Functional Test Model",
-                "domainType": "ReferenceDataModel",
-                "finalised": true
-              }
-            ],
-            "count": 2,
-            "diffs": [
-              {
-                "description": {
-                  "left": null,
-                  "right": "Description",
-                  "isMergeConflict": false
-                }
-              },
-              {
-                "metadata": {
-                  "created": [
-                    {
-                      "value": {
-                        "id": "${json-unit.matches:id}",
-                        "namespace": "functional.test.namespace",
-                        "key": "addMetadataModifyLeftOnly",
-                        "value": "original"
-                      },
-                      "isMergeConflict": false
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "metadata": {
-        "deleted": [
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "namespace": "functional.test.namespace",
-              "key": "deleteMetadataSource",
-              "value": "original"
-            },
-            "isMergeConflict": false
-          }
-        ],
-        "created": [
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "namespace": "functional.test.namespace",
-              "key": "addMetadataSource",
-              "value": "original"
-            },
-            "isMergeConflict": false
-          }
-        ],
-        "modified": [
-          {
-            "leftId": "${json-unit.matches:id}",
-            "rightId": "${json-unit.matches:id}",
-            "namespace": "functional.test.namespace",
-            "key": "modifyMetadataSource",
-            "count": 1,
-            "diffs": [
-              {
-                "value": {
-                  "left": "original",
-                  "right": "Modified Description",
-                  "isMergeConflict": false
-                }
-              }
-            ]
-          }
-        ]
-      }
-    }
-  ]
-}'''
+        verifyResponse OK, response
+        responseBody().diffs.size() == 6
 
         when:
-        String modifiedDescriptionSource = 'modifiedDescriptionSource'
-
-        def requestBody = [
-            patch: [
-                leftId : target,
-                rightId: source,
-                label  : "Reference Data Functional Test Model",
-                diffs  : [
-                    [
-                        fieldName: "description",
-                        value    : modifiedDescriptionSource
-                    ],
-                    [
-                        fieldName: "metadata",
-                        deleted  : [
-                            [
-                                id   : deleteMetadataSource,
-                                label: "deleteMetadataSource"
-                            ]
-                        ],
-                        created  : [
-                            [
-                                id   : addMetadataSource,
-                                label: "addMetadataSource"
-                            ]
-                        ],
-                        modified : [
-                            [
-                                leftId: modifyMetadataSource,
-                                label : "modifyMetadataSource",
-                                diffs : [
-                                    [
-                                        fieldName: "value",
-                                        value    : modifiedDescriptionSource
-                                    ]
-                                ]
-                            ]
-                        ]
-                    ],
-                    [
-                        fieldName: "referenceDataElements",
-                        modified : [
-                            [
-                                leftId: modifyLeftOnly,
-                                label : "modifyLeftOnly",
-                                diffs : [
-                                    [
-                                        fieldName: "description",
-                                        value    : "modifiedDescriptionSourceOnly"
-                                    ],
-                                    [
-                                        fieldName: "metadata",
-                                        created  : [
-                                            [
-                                                id   : addMetadataModifyLeftOnly,
-                                                label: "addMetadataModifyLeftOnly"
-                                            ]
-                                        ]
-                                    ]
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
-            ]
-        ]
-
-        PUT("$source/mergeInto/$target", requestBody)
+        List<Map> patches = responseBody().diffs
+        PUT("$source/mergeInto/$target", [
+                patch: [
+                        targetId: responseBody().targetId,
+                        sourceId: responseBody().sourceId,
+                        label   : responseBody().label,
+                        count   : patches.size(),
+                        patches : patches]
+        ])
 
         then:
         verifyResponse OK, response
         responseBody().id == target
-        responseBody().description == modifiedDescriptionSource
 
         when:
         GET("$target/referenceDataElements")
@@ -1751,7 +1446,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         then:
         verifyResponse OK, response
         responseBody().items.label as Set == ['modifyLeftOnly'] as Set
-        responseBody().items.find { rde -> rde.label == 'modifyLeftOnly' }.description == 'modifiedDescriptionSourceOnly'
+        responseBody().items.find { rde -> rde.label == 'modifyLeftOnly' }.description == 'Description'
 
         when:
         verifyResponse OK, response
@@ -1759,7 +1454,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
         then:
         responseBody().items.key as Set == ['addMetadataSource', 'modifyMetadataSource'] as Set
-        responseBody().items.find { metadata -> metadata.key == 'modifyMetadataSource' }.value == 'modifiedDescriptionSource'
+        responseBody().items.find { metadata -> metadata.key == 'modifyMetadataSource' }.value == 'Modified Description'
 
         when:
         GET("referenceDataElements/$modifyLeftOnly/metadata", MAP_ARG, true)
@@ -1802,6 +1497,13 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         verifyResponse OK, response
 
         when: 'A new model version is created'
+        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+
+        then: 'The response is CREATED'
+        verifyResponse CREATED, response
+        def mainReferenceDataModelId = response.body().id
+
+        when: 'A new model version is created'
         PUT("$id/newBranchModelVersion", [branchName: 'source'])
 
         then: 'The response is CREATED'
@@ -1830,41 +1532,27 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         verifyResponse CREATED, response
         String sourceReferenceDataElement2Id = response.body().id
 
-        when:
-        def requestBody = [
-            patch: [
-                "rightId": sourceReferenceDataModelId,
-                "leftId" : id,
-                "diffs"  : [
-                        [
-                            "fieldName": "referenceDataTypes",
-                            "created"  : [["id": dataTypeId, "label": "B"]],
-                            "deleted"  : [],
-                            "modified" : []
-                        ],
-                        [
-                            "fieldName": "referenceDataElements",
-                            "created"  : [["id": sourceReferenceDataElement2Id, "label": "RDE2"]],
-                            "deleted"  : [],
-                            "modified" : []
-                        ],
-                        [
-                            "fieldName": "metadata",
-                            "created"  : [],
-                            "deleted"  : [],
-                            "modified" : []
-                        ]
-                ]
-            ]
-        ]
+        GET("$sourceReferenceDataModelId/mergeDiff/$mainReferenceDataModelId")
 
-        PUT("$sourceReferenceDataModelId/mergeInto/$id", requestBody)
+        then:
+        verifyResponse OK, response
+
+        when:
+        List<Map> patches = responseBody().diffs
+        PUT("$sourceReferenceDataModelId/mergeInto/$mainReferenceDataModelId", [
+                patch: [
+                        targetId: responseBody().targetId,
+                        sourceId: responseBody().sourceId,
+                        label   : responseBody().label,
+                        count   : patches.size(),
+                        patches : patches]
+        ])
 
         then: 'The response is OK'
         verifyResponse OK, response
 
         when: 'Get the ReferenceDataElements on the main branch model'
-        GET("$id/referenceDataElements")
+        GET("$mainReferenceDataModelId/referenceDataElements")
 
         then: 'The response is OK and there are two ReferenceDataElements'
         verifyResponse OK, response
@@ -1891,7 +1579,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         String source = responseBody().id
 
         when:
-        PUT("$source/mergeInto/$target?isLegacy=false", [:])
+        PUT("$source/mergeInto/$target", [:])
 
         then:
         verifyResponse(UNPROCESSABLE_ENTITY, response)
@@ -1918,7 +1606,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         String source = responseBody().id
 
         when:
-        PUT("$source/mergeInto/$target?isLegacy=false", [patch:
+        PUT("$source/mergeInto/$target", [patch:
                                                                  [
                                                                      targetId: target,
                                                                      sourceId: UUID.randomUUID().toString(),
@@ -1973,7 +1661,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         TestMergeData mergeData = builder.buildComplexModelsForMerging(folderId.toString())
 
         when:
-        GET("$mergeData.source/mergeDiff/$mergeData.target?isLegacy=false")
+        GET("$mergeData.source/mergeDiff/$mergeData.target")
 
         then:
         verifyResponse OK, response
@@ -1981,7 +1669,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
         when:
         List<Map> patches = responseBody().diffs
-        PUT("$mergeData.source/mergeInto/$mergeData.target?isLegacy=false", [
+        PUT("$mergeData.source/mergeInto/$mergeData.target", [
             patch: [
                 targetId: responseBody().targetId,
                 sourceId: responseBody().sourceId,
@@ -2012,7 +1700,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         GET("$mergeData.target/referenceDataTypes")
 
         then:
-        responseBody().items.label as Set == ['addLeftOnly', 'commonReferenceDataType'] as Set
+        responseBody().items.label as Set == ['addLeftOnly', 'addRightOnly', 'commonReferenceDataType'] as Set
 
         when:
         GET("${mergeData.target}/metadata")
@@ -2055,7 +1743,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         verifyResponse(CREATED, response)
 
         when:
-        PUT("$source/mergeInto/$target?isLegacy=false", [
+        PUT("$source/mergeInto/$target", [
             changeNotice: "Metadata test",
             deleteBranch: false,
             patch       : [
@@ -2114,14 +1802,14 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         PUT(source, [aliases: ['not main branch', 'mergeInto']])
 
         when:
-        GET("$source/mergeDiff/$target?isLegacy=false")
+        GET("$source/mergeDiff/$target")
 
         then:
         verifyResponse OK, response
 
         when:
         List<Map> patches = responseBody().diffs
-        PUT("$source/mergeInto/$target?isLegacy=false", [
+        PUT("$source/mergeInto/$target", [
             patch: [
                 targetId: responseBody().targetId,
                 sourceId: responseBody().sourceId,
@@ -2146,10 +1834,10 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     void 'MI11 : test merge into on a branch which has already been merged'() {
         given:
         TestMergeData mergeData = builder.buildComplexModelsForMerging(folderId.toString())
-        GET("$mergeData.source/mergeDiff/$mergeData.target?isLegacy=false")
+        GET("$mergeData.source/mergeDiff/$mergeData.target")
         verifyResponse OK, response
         List<Map> patches = responseBody().diffs
-        PUT("$mergeData.source/mergeInto/$mergeData.target?isLegacy=false", [
+        PUT("$mergeData.source/mergeInto/$mergeData.target", [
             patch: [
                 targetId: responseBody().targetId,
                 sourceId: responseBody().sourceId,
@@ -2175,14 +1863,14 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         log.debug('-------------- Second Merge Request ------------------')
 
         and:
-        GET("$mergeData.source/mergeDiff/$mergeData.target?isLegacy=false")
+        GET("$mergeData.source/mergeDiff/$mergeData.target")
 
         then:
         verifyResponse OK, response
 
         when:
         patches = responseBody().diffs
-        PUT("$mergeData.source/mergeInto/$mergeData.target?isLegacy=false", [
+        PUT("$mergeData.source/mergeInto/$mergeData.target", [
             patch: [
                 targetId: responseBody().targetId,
                 sourceId: responseBody().sourceId,
@@ -3994,334 +3682,6 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(id)
     }
 
-    String getExpectedLegacyMergeDiffJson() {
-        '''{
-  "leftId": "${json-unit.matches:id}",
-  "rightId": "${json-unit.matches:id}",
-  "label": "Functional Test ReferenceData 1",
-  "count": 15,
-  "diffs": [
-    {
-      "description": {
-        "left": "DescriptionRight",
-        "right": "DescriptionLeft",
-        "isMergeConflict": true,
-        "commonAncestorValue": null
-      }
-    },
-    {
-      "metadata": {
-        "deleted": [
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "namespace": "functional.test",
-              "key": "deleteFromSource",
-              "value": "some other original value"
-            },
-            "isMergeConflict": false
-          }
-        ],
-        "created": [
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "namespace": "functional.test",
-              "key": "addToSourceOnly",
-              "value": "adding to source only"
-            },
-            "isMergeConflict": false
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "namespace": "functional.test",
-              "key": "modifyAndDelete",
-              "value": "source has modified this also"
-            },
-            "isMergeConflict": true,
-            "commonAncestorValue": {
-              "id": "${json-unit.matches:id}",
-              "namespace": "functional.test",
-              "key": "modifyAndDelete",
-              "value": "some other original value 2"
-            }
-          }
-        ],
-        "modified": [
-          {
-            "leftId": "${json-unit.matches:id}",
-            "rightId": "${json-unit.matches:id}",
-            "namespace": "functional.test",
-            "key": "modifyOnSource",
-            "count": 1,
-            "diffs": [
-              {
-                "value": {
-                  "left": "some original value",
-                  "right": "source has modified this",
-                  "isMergeConflict": false
-                }
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "referenceDataElements": {
-        "deleted": [
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "deleteAndModify",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test ReferenceData 1",
-                  "domainType": "ReferenceDataModel",
-                  "finalised": true
-                }
-              ]
-            },
-            "isMergeConflict": true,
-            "commonAncestorValue": {
-              "id": "${json-unit.matches:id}",
-              "label": "deleteAndModify",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test ReferenceData 1",
-                  "domainType": "ReferenceDataModel",
-                  "finalised": true
-                }
-              ]
-            }
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "deleteLeftOnly",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test ReferenceData 1",
-                  "domainType": "ReferenceDataModel",
-                  "finalised": true
-                }
-              ]
-            },
-            "isMergeConflict": false
-          }
-        ],
-        "created": [
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "addLeftOnly",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test ReferenceData 1",
-                  "domainType": "ReferenceDataModel",
-                  "finalised": false
-                }
-              ]
-            },
-            "isMergeConflict": false
-          },
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "modifyAndDelete",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test ReferenceData 1",
-                  "domainType": "ReferenceDataModel",
-                  "finalised": false
-                }
-              ]
-            },
-            "isMergeConflict": true,
-            "commonAncestorValue": {
-              "id": "${json-unit.matches:id}",
-              "label": "modifyAndDelete",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test ReferenceData 1",
-                  "domainType": "ReferenceDataModel",
-                  "finalised": true
-                }
-              ]
-            }
-          }
-        ],
-        "modified": [
-          {
-            "leftId": "${json-unit.matches:id}",
-            "rightId": "${json-unit.matches:id}",
-            "label": "modifyLeftOnly",
-            "leftBreadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Functional Test ReferenceData 1",
-                "domainType": "ReferenceDataModel",
-                "finalised": true
-              }
-            ],
-            "rightBreadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Functional Test ReferenceData 1",
-                "domainType": "ReferenceDataModel",
-                "finalised": true
-              }
-            ],
-            "count": 1,
-            "diffs": [
-              {
-                "description": {
-                  "left": null,
-                  "right": "Description",
-                  "isMergeConflict": false
-                }
-              }
-            ]
-          },
-          {
-            "leftId": "${json-unit.matches:id}",
-            "rightId": "${json-unit.matches:id}",
-            "label": "modifyAndModifyReturningDifference",
-            "leftBreadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Functional Test ReferenceData 1",
-                "domainType": "ReferenceDataModel",
-                "finalised": false
-              }
-            ],
-            "rightBreadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Functional Test ReferenceData 1",
-                "domainType": "ReferenceDataModel",
-                "finalised": false
-              }
-            ],
-            "count": 1,
-            "diffs": [
-              {
-                "description": {
-                  "left": "DescriptionRight",
-                  "right": "DescriptionLeft",
-                  "isMergeConflict": true,
-                  "commonAncestorValue": null
-                }
-              }
-            ]
-          },
-          {
-            "leftId": "${json-unit.matches:id}",
-            "rightId": "${json-unit.matches:id}",
-            "label": "addAndAddReturningDifference",
-            "leftBreadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Functional Test ReferenceData 1",
-                "domainType": "ReferenceDataModel",
-                "finalised": false
-              }
-            ],
-            "rightBreadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Functional Test ReferenceData 1",
-                "domainType": "ReferenceDataModel",
-                "finalised": false
-              }
-            ],
-            "count": 2,
-            "diffs": [
-              {
-                "description": {
-                  "left": "DescriptionRight",
-                  "right": "DescriptionLeft",
-                  "isMergeConflict": true,
-                  "commonAncestorValue": null
-                }
-              },
-              {
-                "referenceDataType.label": {
-                  "left": "addRightOnly",
-                  "right": "addLeftOnly",
-                  "isMergeConflict": true,
-                  "commonAncestorValue": null
-                }
-              }
-            ]
-          },
-          {
-            "leftId": "${json-unit.matches:id}",
-            "rightId": "${json-unit.matches:id}",
-            "label": "addAndAddReturningNoDifference",
-            "leftBreadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Functional Test ReferenceData 1",
-                "domainType": "ReferenceDataModel",
-                "finalised": false
-              }
-            ],
-            "rightBreadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Functional Test ReferenceData 1",
-                "domainType": "ReferenceDataModel",
-                "finalised": false
-              }
-            ],
-            "count": 1,
-            "diffs": [
-              {
-                "referenceDataType.label": {
-                  "left": "addRightOnly",
-                  "right": "addLeftOnly",
-                  "isMergeConflict": true,
-                  "commonAncestorValue": null
-                }
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "referenceDataTypes": {
-        "created": [
-          {
-            "value": {
-              "id": "${json-unit.matches:id}",
-              "label": "addLeftOnly",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test ReferenceData 1",
-                  "domainType": "ReferenceDataModel",
-                  "finalised": false
-                }
-              ]
-            },
-            "isMergeConflict": false
-          }
-        ]
-      }
-    }
-  ]
-}'''
-    }
-
     String getExpectedMergeDiffJson() {
         '''{
   "sourceId": "${json-unit.matches:id}",
@@ -4400,19 +3760,19 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
       "type": "modification"
     },
     {
-      "fieldName": "referenceDataType.label",
-      "path": "rdm:Functional Test ReferenceData 1$source|rde:addAndAddReturningDifference@referenceDataType.label",
-      "sourceValue": "addLeftOnly",
-      "targetValue": "addRightOnly",
+      "fieldName": "referenceDataTypePath",
+      "path": "rdm:Functional Test ReferenceData 1$source|rde:addAndAddReturningDifference@referenceDataTypePath",
+      "sourceValue": "rdm:Functional Test ReferenceData 1$source|rdt:addLeftOnly",
+      "targetValue": "rdm:Functional Test ReferenceData 1$main|rdt:addRightOnly",
       "commonAncestorValue": null,
       "isMergeConflict": true,
       "type": "modification"
     },
     {
-      "fieldName": "referenceDataType.label",
-      "path": "rdm:Functional Test ReferenceData 1$source|rde:addAndAddReturningNoDifference@referenceDataType.label",
-      "sourceValue": "addLeftOnly",
-      "targetValue": "addRightOnly",
+      "fieldName": "referenceDataTypePath",
+      "path": "rdm:Functional Test ReferenceData 1$source|rde:addAndAddReturningNoDifference@referenceDataTypePath",
+      "sourceValue": "rdm:Functional Test ReferenceData 1$source|rdt:addLeftOnly",
+      "targetValue": "rdm:Functional Test ReferenceData 1$main|rdt:addRightOnly",
       "commonAncestorValue": null,
       "isMergeConflict": true,
       "type": "modification"
