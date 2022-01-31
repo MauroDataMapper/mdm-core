@@ -2611,8 +2611,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         when:
         GET("referenceDataModels/$targetReferenceDataModelMap.referenceDataModelId/referenceDataTypes", MAP_ARG, true)
 
-        then:
-        responseBody().items.label as Set == ['addLeftOnly', 'commonReferenceDataType'] as Set
+        then: 'addLeftOnly has been added to the referenceDataTypes'
+        responseBody().items.label as Set == ['addRightOnly', 'addLeftOnly', 'commonReferenceDataType'] as Set
 
         when:
         GET("referenceDataModels/$targetReferenceDataModelMap.referenceDataModelId/metadata", MAP_ARG, true)
@@ -2834,7 +2834,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         GET("referenceDataModels/$targetReferenceDataModelMap.referenceDataModelId/referenceDataTypes", MAP_ARG, true)
 
         then:
-        responseBody().items.label as Set == ['addLeftOnly', 'commonReferenceDataType'] as Set
+        responseBody().items.label as Set == ['addRightOnly', 'addLeftOnly', 'commonReferenceDataType'] as Set
 
         when:
         GET("referenceDataModels/$targetReferenceDataModelMap.referenceDataModelId/metadata", MAP_ARG, true)
