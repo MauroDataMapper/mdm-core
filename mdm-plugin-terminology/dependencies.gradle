@@ -1,6 +1,6 @@
 dependencies {
 
-    implementation group: 'com.google.guava', name: 'guava', version: guavaVersion
+    implementation group: 'com.google.guava', name: 'guava'
 
     runtimeOnly "io.methvin:directory-watcher", {
         exclude group: 'com.google.guava', module: 'guava'

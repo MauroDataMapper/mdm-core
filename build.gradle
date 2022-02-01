@@ -294,40 +294,41 @@ subprojects {
                 project.mergeTestReports.reportOn(project.file("${project.testResultsDir}/nonParallelIntegrationTest/binary"))
             }
         }
-        project.publishing {
-            publications {
-                mavenJar {
-                    pom {
-                        name = project.name
-                        url = 'https://github.com/MauroDataMapper/mdm-core'
-                        licenses {
-                            license {
-                                name = 'The Apache License, Version 2.0'
-                                url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                            }
-                        }
-                        developers {
-                            developer {
-                                id = 'olliefreeman'
-                                name = 'Oliver Freeman'
-                                email = 'ollie.freeman@gmail.com'
-                            }
-                            developer {
-                                id = 'jameswelch'
-                                name = 'James Welch'
-                                email = 'james.welch@bdi.ox.ac.uk'
-                            }
-                        }
-                        scm {
-                            connection = 'git@github.com:MauroDataMapper/mdm-core.git'
-                            developerConnection = 'git@github.com:MauroDataMapper/mdm-core.git'
+        if (project.name != 'mdm-bom') {
+            project.publishing {
+                publications {
+                    mavenJar {
+                        pom {
+                            name = project.name
                             url = 'https://github.com/MauroDataMapper/mdm-core'
+                            licenses {
+                                license {
+                                    name = 'The Apache License, Version 2.0'
+                                    url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                                }
+                            }
+                            developers {
+                                developer {
+                                    id = 'olliefreeman'
+                                    name = 'Oliver Freeman'
+                                    email = 'ollie.freeman@gmail.com'
+                                }
+                                developer {
+                                    id = 'jameswelch'
+                                    name = 'James Welch'
+                                    email = 'james.welch@bdi.ox.ac.uk'
+                                }
+                            }
+                            scm {
+                                connection = 'git@github.com:MauroDataMapper/mdm-core.git'
+                                developerConnection = 'git@github.com:MauroDataMapper/mdm-core.git'
+                                url = 'https://github.com/MauroDataMapper/mdm-core'
+                            }
                         }
                     }
                 }
             }
         }
-
     }
 
 }

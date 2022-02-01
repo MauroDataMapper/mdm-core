@@ -1,6 +1,6 @@
 dependencies {
 
-    implementation group: 'org.apache.commons', name: 'commons-rng-simple', version: commonsRngVersion
+    implementation group: 'org.apache.commons', name: 'commons-rng-simple'
 
     runtimeOnly "io.methvin:directory-watcher", {
         exclude group: 'com.google.guava', module: 'guava'
