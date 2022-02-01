@@ -15,19 +15,29 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.terminology
+package uk.ac.ox.softeng.maurodatamapper.core.logback.filter
 
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.boolex.EvaluationException
+import ch.qos.logback.core.boolex.EventEvaluatorBase
 
-import grails.boot.GrailsApp
-import grails.boot.config.GrailsAutoConfiguration
-import grails.plugins.metadata.PluginSource
-import org.springframework.context.annotation.ComponentScan
+import java.util.regex.Pattern
 
-@PluginSource
-@ComponentScan(basePackages = ['uk.ac.ox.softeng.maurodatamapper'])
-class Application extends GrailsAutoConfiguration {
-    static void main(String[] args) {
-        GrailsApp.run(Application, args)
+/**
+ * @since 01/02/2022
+ */
+class PatternMatchingEvaluator extends EventEvaluatorBase<ILoggingEvent> {
+
+    private List<Pattern> patterns
+
+    PatternMatchingEvaluator(List<Pattern> patterns) {
+        name = 'Pattern Matching Evaluator'
+        this.patterns = patterns
+        start()
+    }
+
+    @Override
+    boolean evaluate(ILoggingEvent event) throws NullPointerException, EvaluationException {
+        patterns.any {event.message.matches(it)}
     }
 }

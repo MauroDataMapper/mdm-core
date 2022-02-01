@@ -15,19 +15,27 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.terminology
+package uk.ac.ox.softeng.maurodatamapper.core.logback.filter
 
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.filter.EvaluatorFilter
+import ch.qos.logback.core.spi.FilterReply
 
-import grails.boot.GrailsApp
-import grails.boot.config.GrailsAutoConfiguration
-import grails.plugins.metadata.PluginSource
-import org.springframework.context.annotation.ComponentScan
+import java.util.regex.Pattern
 
-@PluginSource
-@ComponentScan(basePackages = ['uk.ac.ox.softeng.maurodatamapper'])
-class Application extends GrailsAutoConfiguration {
-    static void main(String[] args) {
-        GrailsApp.run(Application, args)
+/**
+ * @since 01/02/2022
+ */
+class HibernateLogFilter extends EvaluatorFilter<ILoggingEvent> {
+
+    static final List<Pattern> matchingPatterns = [
+        ~/.*Specified config option \[importFrom].*/,
+        ~/HHH90000022.*/,
+        ~/HHH000179.*/,
+    ]
+
+    HibernateLogFilter() {
+        onMatch = FilterReply.DENY
+        evaluator = new PatternMatchingEvaluator(matchingPatterns)
     }
 }

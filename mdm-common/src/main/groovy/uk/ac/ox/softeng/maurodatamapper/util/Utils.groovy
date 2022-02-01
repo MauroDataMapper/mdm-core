@@ -163,7 +163,7 @@ class Utils {
 
     static Map<String, Object> cleanPrefixFromMap(Map<String, Object> map, String prefix) {
         map.findAll {it.key.startsWith(prefix)}
-            .collectEntries {k, v -> [k.replace(/$prefix./, ''), v]}
+            .collectEntries {k, v -> [k.replace(/$prefix./, ''), v]} as Map<String, Object>
     }
 
     static byte[] copyOf(byte[] contents) {
