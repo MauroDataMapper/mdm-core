@@ -201,7 +201,8 @@ class PathNode implements Serializable {
 
     static safeUrlDecode(String value) {
         try {
-            URLDecoder.decode(value, Charset.defaultCharset())
+            // To allow our paths to contain the legitimate + character we do NOT allow it to be used as a url encoded "space"
+            URLDecoder.decode(value.replaceAll(/\+/, '%2b'), Charset.defaultCharset())
         } catch (IllegalArgumentException | NullPointerException ignored) {
             value
         }
