@@ -51,7 +51,7 @@ class ReferenceFileControllerSpec extends ResourceControllerSpec<ReferenceFile> 
         basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
                                     authority: testAuthority)
         checkAndSave(basicModel)
-        Path lf = Paths.get('grails-app/conf/logback.groovy')
+        Path lf = Paths.get('src/test/resources/userimagefile_string_content.txt')
 
         domain.fileName = lf.fileName
         domain.fileContents = Files.readAllBytes(lf)
@@ -87,11 +87,11 @@ class ReferenceFileControllerSpec extends ResourceControllerSpec<ReferenceFile> 
   "items": [
     {
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
-      "fileName": "logback.groovy",
+      "fileName": "userimagefile_string_content.txt",
       "domainType": "ReferenceFile",
       "fileSize": "${json-unit.any-number}",
       "id": "${json-unit.matches:id}",
-      "fileType": "Unknown"
+      "fileType": "text/plain"
     },
     {
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
@@ -182,7 +182,7 @@ class ReferenceFileControllerSpec extends ResourceControllerSpec<ReferenceFile> 
     String getExpectedValidUpdatedJson() {
         '''{
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
-      "fileName": "logback.groovy",
+      "fileName": "userimagefile_string_content.txt",
       "domainType": "ReferenceFile",
       "fileSize": 7,
       "id": "${json-unit.matches:id}",

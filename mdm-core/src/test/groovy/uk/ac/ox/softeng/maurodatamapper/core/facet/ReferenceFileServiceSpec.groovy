@@ -47,7 +47,7 @@ class ReferenceFileServiceSpec extends MultiFacetItemAwareServiceSpec<ReferenceF
         basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
                                     authority: testAuthority)
         checkAndSave(basicModel)
-        Path lf = Paths.get('grails-app/conf/logback.groovy')
+        Path lf = Paths.get('src/test/resources/userimagefile_string_content.txt')
         logFile = new ReferenceFile().with {
             fileName = lf.fileName
             fileContents = Files.readAllBytes(lf)

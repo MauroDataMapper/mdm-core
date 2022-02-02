@@ -33,11 +33,11 @@ class UserImageFileServiceSpec extends BaseUnitSpec implements ServiceUnitTest<U
 
     def setup() {
         mockDomain(UserImageFile)
-        checkAndSave service.createNewFile(Paths.get('grails-app/conf/logback.groovy'), admin)
+        checkAndSave service.createNewFile(Paths.get('src/test/resources/userimagefile_string_content.txt'), admin)
         UserImageFile userImageFile = service.createNewFile('test2', 'jhsdkjfhsdgfsdnmbhfjhsdjghsdjgjfhsd'.bytes,
                                                             MimeType.MULTIPART_FORM.toString(), editor)
         checkAndSave(userImageFile)
-        checkAndSave service.createNewFile(Paths.get('grails-app/conf/logback.groovy'), reader1)
+        checkAndSave service.createNewFile(Paths.get('src/test/resources/userimagefile_string_content.txt'), reader1)
         checkAndSave service.createNewFile('testfile', 'this is a test file'.bytes, MimeType.ALL.toString(), reader2)
         id = userImageFile.id
     }
@@ -63,11 +63,11 @@ class UserImageFileServiceSpec extends BaseUnitSpec implements ServiceUnitTest<U
         userImageFileList[0].userId == editorId
 
         and:
-        userImageFileList[1].fileName == 'logback.groovy'
+        userImageFileList[1].fileName == 'userimagefile_string_content.txt'
         userImageFileList[1].fileType in ['text/plain', 'Unknown']
         userImageFileList[1].createdBy == reader1.emailAddress
         userImageFileList[1].fileSize
-        userImageFileList[1].fileSize == Files.size(Paths.get('grails-app/conf/logback.groovy'))
+        userImageFileList[1].fileSize == Files.size(Paths.get('src/test/resources/userimagefile_string_content.txt'))
         userImageFileList[1].userId == reader1Id
     }
 
@@ -89,7 +89,7 @@ class UserImageFileServiceSpec extends BaseUnitSpec implements ServiceUnitTest<U
 
     void "test save"() {
         when:
-        UserImageFile userImageFile = service.createNewFile(Paths.get('grails-app/conf/logback.groovy'), reader1)
+        UserImageFile userImageFile = service.createNewFile(Paths.get('src/test/resources/userimagefile_string_content.txt'), reader1)
         checkAndSave(userImageFile)
 
         then:
