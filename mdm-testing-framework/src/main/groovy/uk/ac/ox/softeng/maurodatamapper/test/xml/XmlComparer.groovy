@@ -68,8 +68,8 @@ trait XmlComparer {
             .checkForIdentical()
             .build()
         if (myDiffIdentical.hasDifferences()) {
-            log.error('\n----------------------------------- expected -----------------------------------\n{}', prettyPrint(expected))
-            log.error('\n----------------------------------- actual   -----------------------------------\n{}', prettyPrint(actual))
+            log.error('\n----------------------------------- expected -----------------------------------\n{}', prettyPrintXml(expected))
+            log.error('\n----------------------------------- actual   -----------------------------------\n{}', prettyPrintXml(actual))
             failureReason = myDiffIdentical.toString()
             log.error(failureReason)
         }
@@ -93,7 +93,7 @@ trait XmlComparer {
         new CommentLessSource(getSource(xml))
     }
 
-    String prettyPrint(String xml) {
+    String prettyPrintXml(String xml) {
         Document document = DocumentHelper.parseText(xml)
         OutputFormat format = OutputFormat.createPrettyPrint()
         StringWriter stringWriter = new StringWriter()

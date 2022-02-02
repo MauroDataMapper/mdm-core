@@ -67,7 +67,7 @@ class FeedFunctionalSpec extends BaseFunctionalSpec implements XmlComparer {
 
         then:
         verifyResponse(HttpStatus.OK, localResponse)
-        log.warn(prettyPrint(localResponse.body()))
+        log.warn(prettyPrintXml(localResponse.body()))
     }
 
     void 'test getting published models when model available'() {
@@ -86,7 +86,7 @@ class FeedFunctionalSpec extends BaseFunctionalSpec implements XmlComparer {
 
         then:
         verifyResponse(HttpStatus.OK, localResponse)
-        log.warn(prettyPrint(localResponse.body()))
+        log.warn(prettyPrintXml(localResponse.body()))
     }
 
     String expectedNoModelsAtom() {

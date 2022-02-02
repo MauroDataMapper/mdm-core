@@ -67,7 +67,7 @@ class DataFlowXmlExporterServiceSpec extends DataBindImportAndDefaultExporterSer
 
         Path expectedPath = resourcesPath.resolve("${CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, testName)}.xml")
         if (!Files.exists(expectedPath)) {
-            Files.writeString(expectedPath, (prettyPrint(exportedModel)))
+ml Files.writeString(expectedPath, (prettyPrintXml(exportedModel)))
             Assert.fail("Expected export file ${expectedPath} does not exist")
         }
         validateAndCompareXml(Files.readString(expectedPath), exportedModel, 'export', dataFlowExporterService.version)
