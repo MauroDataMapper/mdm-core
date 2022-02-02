@@ -33,7 +33,7 @@ BEGIN
         WHERE parent_annotation_id = parentId
         LOOP
             UPDATE core.annotation c
-            SET path = REPLACE(path, REPLACE(p.label, '+', ' '), p.label)
+            SET path = REPLACE(c.path, REPLACE(p.label, '+', ' '), p.label)
             FROM core.annotation p
             WHERE c.id = cid AND
                   c.parent_annotation_id = p.id AND
@@ -93,7 +93,7 @@ BEGIN
         WHERE parent_classifier_id = parentId
         LOOP
             UPDATE core.classifier c
-            SET path = REPLACE(path, REPLACE(p.label, '+', ' '), p.label)
+            SET path = REPLACE(c.path, REPLACE(p.label, '+', ' '), p.label)
             FROM core.classifier p
             WHERE c.id = cid AND
                   c.parent_classifier_id = p.id AND
@@ -142,7 +142,7 @@ BEGIN
         WHERE parent_folder_id = parentId
         LOOP
             UPDATE core.folder c
-            SET path = REPLACE(path, REPLACE(p.label, '+', ' '), p.label)
+            SET path = REPLACE(c.path, REPLACE(p.label, '+', ' '), p.label)
             FROM core.folder p
             WHERE c.id = cid AND
                   c.parent_folder_id = p.id AND
