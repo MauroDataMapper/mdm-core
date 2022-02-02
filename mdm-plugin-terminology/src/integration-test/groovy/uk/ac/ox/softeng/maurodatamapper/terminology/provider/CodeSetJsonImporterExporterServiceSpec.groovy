@@ -224,11 +224,16 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
     }
 
     List<CodeSet> clearExpectedDiffsFromModels(List<UUID> modelIds) {
-        modelIds.collect {
-            codeSetService.get(it).tap {
-                dateFinalised = null
-            }
+        // Rules are not imported/exported and will therefore exist as diffs
+        Closure<Boolean> removeRule = {it.rules?.removeIf {rule -> rule.name == 'Bootstrapped Functional Test Rule'}}
+        List<CodeSet> codeSets = modelIds.collect {
+            CodeSet codeSet = codeSetService.get(it)
+            removeRule(codeSet)
+            codeSet.dateFinalised = null
+            codeSet
         }
+        sessionFactory.currentSession.clear()
+        codeSets
     }
 
     void 'test that trying to export when specifying a null codeSetId fails with an exception'() {
@@ -836,7 +841,6 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         basicParameters.importAsNewBranchModelVersion = false
     }
 
-    @PendingFeature(reason = 'Failed to lazily initialize a collection of role: Term.metadata, could not initialize proxy - no Session')
     void 'test multi-import CodeSets with invalid models'() {
         given:
         setupData()
@@ -863,7 +867,9 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         simpleDiff.objectsAreIdentical()
 
         when:
-        imported = importModels(loadTestFile('simpleComplexAndInvalidCodeSets'))
+        imported = importModels(loadTestFile('simpleComplexAndInvalidCodeSets')).each {
+            clearExpectedDiffsFromImport(it)
+        }
 
         then:
         imported
@@ -881,7 +887,6 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         basicParameters.importAsNewBranchModelVersion = false
     }
 
-    @PendingFeature(reason = 'Failed to lazily initialize a collection of role: Term.metadata, could not initialize proxy - no Session')
     void 'test multi-import CodeSets with duplicates'() {
         given:
         setupData()
@@ -908,7 +913,9 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         simpleDiff.objectsAreIdentical()
 
         when:
-        imported = importModels(loadTestFile('simpleAndComplexDuplicateCodeSets'))
+        imported = importModels(loadTestFile('simpleAndComplexDuplicateCodeSets')).each {
+            clearExpectedDiffsFromImport(it)
+        }
 
         then:
         imported

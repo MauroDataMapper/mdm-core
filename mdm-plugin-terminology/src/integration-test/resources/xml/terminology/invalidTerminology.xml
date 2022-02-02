@@ -21,7 +21,6 @@
 <exp:exportModel xmlns:exp="http://maurodatamapper.com/export/5.0" xmlns:mdm="http://maurodatamapper.com/terminology/4.0">
   <mdm:terminology>
     <mdm:id>Invalid Terminology ID</mdm:id>
-    <mdm:label>Invalid Terminology</mdm:label>
   </mdm:terminology>
   <exp:exportMetadata>
     <exp:exportedBy>Admin User</exp:exportedBy>

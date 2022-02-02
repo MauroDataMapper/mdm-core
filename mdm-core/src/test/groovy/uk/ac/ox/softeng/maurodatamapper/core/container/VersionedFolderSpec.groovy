@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.testing.gorm.DomainUnitTest
+import groovy.util.logging.Slf4j
 import org.spockframework.util.InternalSpockError
 import spock.lang.PendingFeature
 
@@ -28,6 +29,7 @@ import java.time.OffsetDateTime
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
 
+@Slf4j
 class VersionedFolderSpec extends FolderContainerSpec<VersionedFolder> implements DomainUnitTest<VersionedFolder> {
 
     @Override
@@ -52,7 +54,7 @@ class VersionedFolderSpec extends FolderContainerSpec<VersionedFolder> implement
 
     @Override
     def setup() {
-        mockDomains(Authority)
+        mockDomains(Authority, Folder)
         checkAndSave(new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST))
     }
 
@@ -64,6 +66,7 @@ class VersionedFolderSpec extends FolderContainerSpec<VersionedFolder> implement
     void setValidDomainOtherValues() {
         super.setValidDomainOtherValues()
         domain.authority = testAuthority
+        domain.documentationVersion = Version.from('1')
     }
 
     @Override
@@ -335,7 +338,7 @@ class VersionedFolderSpec extends FolderContainerSpec<VersionedFolder> implement
         domain.errors.getFieldError('modelVersion').code == 'version.aware.model.version.cannot.be.set.on.branch'
     }
 
-    @PendingFeature
+    @PendingFeature(reason = 'ModelVersion field just will not set into the "database" which means the label checks all fail')
     void 'M13 : test creating a new model with the same name as existing and no model version is allowed'() {
         when: 'branch name == main'
         setValidDomainValues()
@@ -348,7 +351,7 @@ class VersionedFolderSpec extends FolderContainerSpec<VersionedFolder> implement
 
         then:
         VersionedFolder.count() == 1
-        versionedFolder.modelVersion
+        VersionedFolder.get(domain.id).modelVersion
 
         when: 'branch name == main'
         VersionedFolder second = createValidDomain(versionedFolder.label)
@@ -358,7 +361,7 @@ class VersionedFolderSpec extends FolderContainerSpec<VersionedFolder> implement
         noExceptionThrown()
     }
 
-    @PendingFeature
+    @PendingFeature(reason = 'ModelVersion field just will not set into the "database" which means the label checks all fail')
     void 'M14 : test setting model version on model with same name and branch is allowed'() {
         when: 'branch name == main'
         setValidDomainValues()
@@ -412,7 +415,7 @@ class VersionedFolderSpec extends FolderContainerSpec<VersionedFolder> implement
         noExceptionThrown()
     }
 
-    @PendingFeature
+    @PendingFeature(reason = 'ModelVersion field just will not set into the "database" which means the label checks all fail')
     void 'M16 : test creating a model with the same label, same branch versions, same model version and same doc versions is not allowed'() {
         when: 'branch name == main'
         setValidDomainValues()
@@ -438,7 +441,7 @@ class VersionedFolderSpec extends FolderContainerSpec<VersionedFolder> implement
         second.errors.getFieldError('label').code == 'version.aware.label.not.unique.same.versions'
     }
 
-    @PendingFeature
+    @PendingFeature(reason = 'ModelVersion field just will not set into the "database" which means the label checks all fail')
     void 'M17 : test creating models as various branches'() {
         when: 'branch name == main, domain is finalised model version'
         setValidDomainValues()

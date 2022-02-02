@@ -22,7 +22,6 @@
   <mdm:dataModels>
     <mdm:dataModel>
       <mdm:id>Invalid DataModel ID</mdm:id>
-      <mdm:label>Invalid DataModel</mdm:label>
     </mdm:dataModel>
     <mdm:dataModel>
       <mdm:id>68446996-5df6-444b-975e-e7d0dc33d982</mdm:id>
@@ -87,7 +86,6 @@
     </mdm:dataModel>
     <mdm:dataModel>
       <mdm:id>Invalid DataModel ID 2</mdm:id>
-      <mdm:label>Invalid DataModel 2</mdm:label>
     </mdm:dataModel>
     <mdm:dataModel>
       <mdm:id>78922c24-8837-4170-8d30-a01924e65b37</mdm:id>

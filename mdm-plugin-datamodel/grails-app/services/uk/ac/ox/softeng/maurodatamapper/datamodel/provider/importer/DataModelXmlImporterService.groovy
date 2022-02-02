@@ -86,7 +86,13 @@ class DataModelXmlImporterService extends DataBindDataModelImporterProviderServi
 
         if (result.name() == 'dataModels') {
             log.debug('Importing DataModel list')
-            return convertToList(result as NodeChild).collect {bindMapToDataModel(currentUser, it)}
+            List<Map> xmlMaps = convertToList(result as NodeChild)
+            List<Map> dataModelMaps = xmlMaps.findAll {it}
+            if (!dataModelMaps) throw new ApiBadRequestException('XIS03', 'Cannot import XML as dataModel/s is not present')
+            if (dataModelMaps.size() < xmlMaps.size()) log.warn('Cannot import certain XML as dataModel/s is not present')
+
+            log.debug('Importing list of DataModel maps')
+            return dataModelMaps.collect {bindMapToDataModel(currentUser, new HashMap(it))}
         }
 
         // Handle single DataModel map or exportModel passed to this method, for backwards compatibility

@@ -259,73 +259,6 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
         }
     }
 
-    @PendingFeature(reason = 'ReferenceDataModel permission copying')
-    void 'DMSC03 : test creating a new documentation version on finalised model with permission copying'() {
-        when: 'finalising model and then creating a new doc version is allowed'
-        ReferenceDataModel referenceDataModel = service.get(id)
-        service.finaliseModel(referenceDataModel, admin, null, null, null)
-        checkAndSave(referenceDataModel)
-        def result = service.createNewDocumentationVersion(referenceDataModel, editor, true, userSecurityPolicyManager, [
-            moveDataFlows: false,
-            throwErrors  : true
-        ])
-
-        then:
-        checkAndSave(result)
-
-        when: 'load from DB to make sure everything is saved'
-        referenceDataModel = service.get(id)
-        ReferenceDataModel newDocVersion = service.get(result.id)
-
-        then: 'old model is finalised and superseded'
-        referenceDataModel.finalised
-        referenceDataModel.dateFinalised
-        referenceDataModel.documentationVersion == Version.from('1')
-
-        and: 'new doc version model is draft v2'
-        newDocVersion.documentationVersion == Version.from('2')
-        !newDocVersion.finalised
-        !newDocVersion.dateFinalised
-
-        and: 'new doc version model matches old model'
-        newDocVersion.label == referenceDataModel.label
-        newDocVersion.description == referenceDataModel.description
-        newDocVersion.author == referenceDataModel.author
-        newDocVersion.organisation == referenceDataModel.organisation
-        newDocVersion.modelType == referenceDataModel.modelType
-
-        newDocVersion.dataTypes.size() == referenceDataModel.dataTypes.size()
-        newDocVersion.dataClasses.size() == referenceDataModel.dataClasses.size()
-
-        and: 'annotations and edits are not copied'
-        !newDocVersion.annotations
-        newDocVersion.edits.size() == 1
-
-        and: 'new version of link between old and new version'
-        newDocVersion.versionLinks.any { it.targetModel.id == referenceDataModel.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF }
-
-        and:
-        referenceDataModel.dataTypes.every { odt ->
-            newDocVersion.dataTypes.any {
-                it.label == odt.label &&
-                it.id != odt.id &&
-                it.domainType == odt.domainType
-            }
-        }
-        referenceDataModel.dataClasses.every { odc ->
-            newDocVersion.dataClasses.any {
-                int idcs = it.dataClasses?.size() ?: 0
-                int odcs = odc.dataClasses?.size() ?: 0
-                int ides = it.referenceDataElements?.size() ?: 0
-                int odes = odc.referenceDataElements?.size() ?: 0
-                it.label == odc.label &&
-                idcs == odcs &&
-                ides == odes
-            }
-        }
-    }
-
-
     void 'DMSC04 : test creating a new documentation version on finalised superseded model'() {
 
         when: 'creating new doc version'
@@ -341,31 +274,6 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
 
         when: 'trying to create a new doc version on the old datamodel'
         def result = service.createNewDocumentationVersion(referenceDataModel, editor, false, userSecurityPolicyManager, [
-            moveDataFlows: false,
-            throwErrors  : true
-        ])
-
-        then:
-        result.errors.allErrors.size() == 1
-        result.errors.allErrors.find { it.code == 'invalid.version.aware.new.version.superseded.message' }
-    }
-
-    @PendingFeature(reason = 'ReferenceDataModel permission copying')
-    void 'DMSC05 : test creating a new documentation version on finalised superseded model with permission copying'() {
-
-        when: 'creating new doc version'
-        ReferenceDataModel referenceDataModel = service.get(id)
-        service.finaliseModel(referenceDataModel, editor, null, null, null)
-        def newDocVersion = service.createNewDocumentationVersion(referenceDataModel, editor, true, userSecurityPolicyManager, [
-            moveDataFlows: false,
-            throwErrors  : true
-        ])
-
-        then:
-        checkAndSave(newDocVersion)
-
-        when: 'trying to create a new doc version on the old datamodel'
-        def result = service.createNewDocumentationVersion(referenceDataModel, editor, true, userSecurityPolicyManager, [
             moveDataFlows: false,
             throwErrors  : true
         ])
@@ -451,75 +359,6 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
-            }
-        }
-    }
-
-    @PendingFeature(reason = 'ReferenceDataModel permission copying')
-    void 'DMSC08 : test creating a new model version on finalised model with permission copying'() {
-
-        when: 'finalising model and then creating a new version is allowed'
-        ReferenceDataModel referenceDataModel = service.get(id)
-        service.finaliseModel(referenceDataModel, admin, null, null, null)
-        checkAndSave(referenceDataModel)
-        def result = service.createNewForkModel("${referenceDataModel.label}-1", referenceDataModel, editor, true, userSecurityPolicyManager, [
-            moveDataFlows: false,
-            throwErrors  : true
-        ])
-
-        then:
-        result.instanceOf(ReferenceDataModel)
-        checkAndSave(result)
-
-        when: 'load from DB to make sure everything is saved'
-        referenceDataModel = service.get(id)
-        ReferenceDataModel newVersion = service.get(result.id)
-
-        then: 'old model is finalised and superseded'
-        referenceDataModel.finalised
-        referenceDataModel.dateFinalised
-        referenceDataModel.documentationVersion == Version.from('1')
-
-        and: 'new  version model is draft v2'
-        newVersion.documentationVersion == Version.from('1')
-        !newVersion.finalised
-        !newVersion.dateFinalised
-
-        and: 'new  version model matches old model'
-        newVersion.label != referenceDataModel.label
-        newVersion.description == referenceDataModel.description
-        newVersion.author == referenceDataModel.author
-        newVersion.organisation == referenceDataModel.organisation
-        newVersion.modelType == referenceDataModel.modelType
-
-        newVersion.dataTypes.size() == referenceDataModel.dataTypes.size()
-        newVersion.dataClasses.size() == referenceDataModel.dataClasses.size()
-
-        and: 'annotations and edits are not copied'
-        !newVersion.annotations
-        newVersion.edits.size() == 1
-
-
-        and: 'link between old and new version'
-        newVersion.versionLinks.any { it.targetModel.id == referenceDataModel.id && it.linkType == VersionLinkType.NEW_FORK_OF }
-
-        and:
-        referenceDataModel.dataTypes.every { odt ->
-            newVersion.dataTypes.any {
-                it.label == odt.label &&
-                it.id != odt.id &&
-                it.domainType == odt.domainType
-            }
-        }
-        referenceDataModel.dataClasses.every { odc ->
-            newVersion.dataClasses.any {
-                int idcs = it.dataClasses?.size() ?: 0
-                int odcs = odc.dataClasses?.size() ?: 0
-                int ides = it.referenceDataElements?.size() ?: 0
-                int odes = odc.referenceDataElements?.size() ?: 0
-                it.label == odc.label &&
-                idcs == odcs &&
-                ides == odes
             }
         }
     }

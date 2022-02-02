@@ -30,9 +30,9 @@ trait XmlImportMapping {
         if (nodes.children().isEmpty()) {
             map[nodes.name()] = nodes.text()
         } else {
-            map = ((NodeChildren) nodes.children()).collectEntries {NodeChild child ->
+            map = ((NodeChildren) nodes.children()).findAll {it.name() != 'id'}.collectEntries {NodeChild child ->
                 String name = child.name()
-                def content = name == 'id' ? null : child.text()
+                def content = child.text()
 
                 if (child.childNodes()) {
                     Collection<String> childrenNames = child.children().list().collect {it.name().toLowerCase()}.toSet()

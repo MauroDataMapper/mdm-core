@@ -21,7 +21,6 @@
 <exp:exportModel xmlns:exp="http://maurodatamapper.com/export/5.1" xmlns:mdm="http://maurodatamapper.com/dataModel/4.1">
   <mdm:dataModel>
     <mdm:id>Invalid DataModel ID</mdm:id>
-    <mdm:label>Invalid DataModel</mdm:label>
   </mdm:dataModel>
   <exp:exportMetadata>
     <exp:exportedBy>Admin User</exp:exportedBy>

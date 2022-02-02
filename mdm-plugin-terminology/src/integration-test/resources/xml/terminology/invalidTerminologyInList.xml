@@ -22,7 +22,6 @@
   <mdm:terminologies>
     <mdm:terminology>
       <mdm:id>Invalid Terminology ID</mdm:id>
-      <mdm:label>Invalid Terminology</mdm:label>
     </mdm:terminology>
   </mdm:terminologies>
   <exp:exportMetadata>

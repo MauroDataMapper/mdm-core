@@ -43,7 +43,6 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
         'admin/providers'
     }
 
-    @PendingFeature(reason = "Not yet implemented")
     void 'test get exporters'() {
         when:
         GET('exporters', Argument.of(String))
@@ -51,29 +50,29 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
         then:
         verifyJsonResponse(OK, '''[
   {
-    "name": "JsonExporterService",
-    "version": "${json-unit.matches:version}",
-    "displayName": "JSON DataModel Exporter",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
+    "name": "ReferenceDataJsonExporterService",
+    "version": "4.0",
+    "displayName": "JSON Reference Data Exporter",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
       
     ],
-    "providerType": "DataModelExporter",
+    "providerType": "ReferenceDataModelExporter",
     "fileExtension": "json",
     "fileType": "text/json",
     "canExportMultipleDomains": false
   },
   {
-    "name": "XmlExporterService",
-    "version": "${json-unit.matches:version}",
-    "displayName": "XML DataModel Exporter",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
+    "name": "ReferenceDataXmlExporterService",
+    "version": "5.0",
+    "displayName": "XML Reference Data Exporter",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
       
     ],
-    "providerType": "DataModelExporter",
+    "providerType": "ReferenceDataModelExporter",
     "fileExtension": "xml",
     "fileType": "text/xml",
     "canExportMultipleDomains": false

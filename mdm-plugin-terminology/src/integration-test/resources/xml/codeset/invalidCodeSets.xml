@@ -22,11 +22,9 @@
   <mdm:codeSets>
     <mdm:codeSet>
       <mdm:id>Invalid CodeSet ID</mdm:id>
-      <mdm:label>Invalid CodeSet</mdm:label>
     </mdm:codeSet>
     <mdm:codeSet>
       <mdm:id>Invalid CodeSet ID 2</mdm:id>
-      <mdm:label>Invalid CodeSet 2</mdm:label>
     </mdm:codeSet>
   </mdm:codeSets>
   <exp:exportMetadata>
