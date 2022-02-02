@@ -27,16 +27,13 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter.DataModelExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelImporterProviderService
-import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.DeleteAllParams
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpStatus
 
 import static org.springframework.http.HttpStatus.NO_CONTENT
-import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 @Slf4j
 class DataModelController extends ModelController<DataModel> {
@@ -114,30 +111,6 @@ class DataModelController extends ModelController<DataModel> {
         dataModelService.deleteAllUnusedDataTypes(dataModel)
 
         render status: NO_CONTENT // NO CONTENT STATUS CODE
-    }
-
-    @Transactional
-    def deleteAll() {
-        // Command object binding is not performed when the HTTP method id DELETE
-        DeleteAllParams deleteAllParams = new DeleteAllParams()
-        bindData deleteAllParams, request.inputStream
-        deleteAllParams.validate()
-
-        if (deleteAllParams.hasErrors()) {
-            respond deleteAllParams.errors, status: UNPROCESSABLE_ENTITY
-            return
-        }
-
-        List<DataModel> deleted = dataModelService.deleteAll(deleteAllParams.ids, deleteAllParams.permanent)
-
-        if (deleted) {
-            deleted.each {
-                updateResource(it)
-            }
-            respond deleted, status: HttpStatus.OK, view: 'index'
-        } else {
-            render status: NO_CONTENT
-        }
     }
 
     def search(SearchParams searchParams) {

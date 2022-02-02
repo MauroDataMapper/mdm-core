@@ -39,7 +39,6 @@ import grails.testing.spock.RunOnce
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
-import spock.lang.PendingFeature
 import spock.lang.Shared
 
 import java.nio.file.Files
@@ -1262,11 +1261,10 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
         cleanUpData(id)
     }
 
-    @PendingFeature(reason = 'not yet implemented')
-    void 'test delete multiple models'() {
+    void 'DA : test delete multiple models'() {
         given:
         def idstoDelete = []
-        (1..4).each { n ->
+        (1..4).each {n ->
             idstoDelete << createNewItem([
                 folder: folderId,
                 label : UUID.randomUUID().toString()
@@ -1281,38 +1279,67 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
 
         then:
         verifyJsonResponse OK, '''{
-                  "count": 4,
-                  "items": [
-                    {
-                      "deleted": true,
-                      "domainType": "Terminology",
-                      "id": "${json-unit.matches:id}",
-                      "label": "${json-unit.matches:id}",
-                      "type": "Data Standard"
-                    },
-                    {
-                      "deleted": true,
-                      "domainType": "Terminology",
-                      "id": "${json-unit.matches:id}",
-                      "label": "${json-unit.matches:id}",
-                      "type": "Data Standard"
-                    },
-                    {
-                      "deleted": true,
-                      "domainType": "Terminology",
-                      "id": "${json-unit.matches:id}",
-                      "label": "${json-unit.matches:id}",
-                      "type": "Data Standard"
-                    },
-                    {
-                      "deleted": true,
-                      "domainType": "Terminology",
-                      "id": "${json-unit.matches:id}",
-                      "label": "${json-unit.matches:id}",
-                      "type": "Data Standard"
-                    }
-                  ]
-                }'''
+  "count": 4,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "Terminology",
+      "label": "${json-unit.matches:id}",
+      "branchName": "main",
+      "documentationVersion": "1.0.0",
+      "deleted": true,
+      "authority": {
+        "id": "${json-unit.matches:id}",
+        "url": "http://localhost",
+        "label": "Test Authority",
+        "defaultAuthority": true
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "Terminology",
+      "label": "${json-unit.matches:id}",
+      "branchName": "main",
+      "documentationVersion": "1.0.0",
+      "deleted": true,
+      "authority": {
+        "id": "${json-unit.matches:id}",
+        "url": "http://localhost",
+        "label": "Test Authority",
+        "defaultAuthority": true
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "Terminology",
+      "label": "${json-unit.matches:id}",
+      "branchName": "main",
+      "documentationVersion": "1.0.0",
+      "deleted": true,
+      "authority": {
+        "id": "${json-unit.matches:id}",
+        "url": "http://localhost",
+        "label": "Test Authority",
+        "defaultAuthority": true
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "Terminology",
+      "label": "${json-unit.matches:id}",
+      "branchName": "main",
+      "documentationVersion": "1.0.0",
+      "deleted": true,
+      "authority": {
+        "id": "${json-unit.matches:id}",
+        "url": "http://localhost",
+        "label": "Test Authority",
+        "defaultAuthority": true
+      }
+    }
+  ]
+}
+'''
 
         when:
         DELETE('', [

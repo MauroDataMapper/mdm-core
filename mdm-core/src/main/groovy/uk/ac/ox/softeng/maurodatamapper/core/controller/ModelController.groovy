@@ -36,6 +36,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProv
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.MergeIntoData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CreateNewVersionData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.DeleteAllParams
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.FinaliseData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
@@ -46,6 +47,7 @@ import grails.gorm.transactions.Transactional
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.web.multipart.support.AbstractMultipartHttpServletRequest
 
 import static org.springframework.http.HttpStatus.CREATED
@@ -690,6 +692,30 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
                                                                                          currentUserSecurityPolicyManager)
         respond versionTreeModelList.findAll {
             (!(it.newFork || (forMerge && it.id == instance.id.toString())))
+        }
+    }
+
+    @Transactional
+    def deleteAll() {
+        // Command object binding is not performed when the HTTP method id DELETE
+        DeleteAllParams deleteAllParams = new DeleteAllParams()
+        bindData deleteAllParams, request.inputStream
+        deleteAllParams.validate()
+
+        if (deleteAllParams.hasErrors()) {
+            respond deleteAllParams.errors, status: UNPROCESSABLE_ENTITY
+            return
+        }
+
+        List<T> deleted = modelService.deleteAll(deleteAllParams.ids, deleteAllParams.permanent)
+
+        if (deleted) {
+            deleted.each {
+                updateResource(it)
+            }
+            respond deleted, status: HttpStatus.OK, view: 'index'
+        } else {
+            render status: NO_CONTENT
         }
     }
 
