@@ -164,7 +164,7 @@ pipeline {
                             'mdm-plugin-profile',
                             'mdm-plugin-referencedata',
                             'mdm-plugin-terminology',
-                            'mdm-security',
+//                            'mdm-security',
                         ].collect {":${it}:integrationTest"}.join(' ')
                     }
                     post {

@@ -79,8 +79,8 @@ function integrationTest(){
    :mdm-plugin-federation:integrationTest \
    :mdm-plugin-profile:integrationTest \
    :mdm-plugin-referencedata:integrationTest \
-   :mdm-plugin-terminology:integrationTest \
-   :mdm-security:integrationTest
+   :mdm-plugin-terminology:integrationTest
+#   :mdm-security:integrationTest
 
 ./gradlew --build-cache -Dgradle.integrationTest=true -Dgradle.nonParallel=true \
    :mdm-core:integrationTest \

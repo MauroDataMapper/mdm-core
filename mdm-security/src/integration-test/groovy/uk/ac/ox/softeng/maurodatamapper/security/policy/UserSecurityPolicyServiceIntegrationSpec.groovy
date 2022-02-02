@@ -31,10 +31,12 @@ import uk.ac.ox.softeng.maurodatamapper.test.integration.BaseIntegrationSpec
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import org.junit.jupiter.api.Tag
 
 @Integration
 @Rollback
 @Slf4j
+@Tag('non-parallel')
 class UserSecurityPolicyServiceIntegrationSpec extends BaseIntegrationSpec implements SecurityUsers {
 
     GroupRole editorRole

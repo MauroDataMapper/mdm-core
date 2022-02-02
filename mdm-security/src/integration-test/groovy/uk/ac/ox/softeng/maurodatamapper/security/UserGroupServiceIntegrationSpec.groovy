@@ -28,10 +28,12 @@ import uk.ac.ox.softeng.maurodatamapper.test.integration.BaseIntegrationSpec
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import org.junit.jupiter.api.Tag
 
 @Slf4j
 @Rollback
 @Integration
+@Tag('non-parallel')
 class UserGroupServiceIntegrationSpec extends BaseIntegrationSpec implements SecurityUsers {
 
     UserGroupService userGroupService
