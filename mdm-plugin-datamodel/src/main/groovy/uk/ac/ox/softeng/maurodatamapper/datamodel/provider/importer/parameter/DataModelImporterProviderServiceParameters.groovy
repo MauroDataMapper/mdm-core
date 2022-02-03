@@ -19,8 +19,11 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter
 
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 
+import groovy.transform.AutoClone
+
 /**
  * Created by james on 01/06/2017.
  */
+@AutoClone
 class DataModelImporterProviderServiceParameters extends ModelImporterProviderServiceParameters {
 }

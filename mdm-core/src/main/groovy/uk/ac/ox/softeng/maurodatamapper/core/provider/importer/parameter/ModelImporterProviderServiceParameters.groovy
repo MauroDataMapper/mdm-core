@@ -20,8 +20,10 @@ package uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.config.ImportGroupConfig
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.config.ImportParameterConfig
 
+import groovy.transform.AutoClone
 import groovy.transform.CompileStatic
 
+@AutoClone
 @CompileStatic
 class ModelImporterProviderServiceParameters implements ImporterProviderServiceParameters {
 
