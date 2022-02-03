@@ -1126,10 +1126,10 @@ class ProfileFunctionalSpec extends FunctionalSpec {
             id        : simpleModelId,
             domainType: 'DataModel',
             namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
-            name      : 'Dynamic+Profile+Model'
+            name: 'Dynamic%20Profile%20Model'
         ]
         loginAuthor()
-        POST("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model", dynamicProfileMap)
+        POST("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic%20Profile%20Model", dynamicProfileMap)
 
         then:
         verifyResponse(OK, response)
@@ -1143,12 +1143,12 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         then:
         verifyResponse(OK, localResponse)
         localResponse.body().size() == 1
-        localResponse.body().first().name == 'Dynamic+Profile+Model'
+        localResponse.body().first().name == 'Dynamic%20Profile%20Model'
         localResponse.body().first().namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
 
         when:
         loginReader()
-        GET("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model", STRING_ARG)
+        GET("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic%20Profile%20Model", STRING_ARG)
 
         then:
         verifyResponse(OK, jsonCapableResponse)
@@ -1315,16 +1315,16 @@ class ProfileFunctionalSpec extends FunctionalSpec {
             id        : simpleModelId,
             domainType: 'DataModel',
             namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
-            name      : 'Dynamic+Profile+Model'
+            name: 'Dynamic%20Profile%20Model'
         ]
-        POST("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model", dynamicProfileMap)
+        POST("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic%20Profile%20Model", dynamicProfileMap)
         verifyResponse(OK, response)
 
         when:
         loginAuthor()
         optionalFieldMap.currentValue = ''
         defaultOptionalFieldMap.currentValue = 'edited value'
-        POST("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model", dynamicProfileMap)
+        POST("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic%20Profile%20Model", dynamicProfileMap)
 
         then:
         verifyResponse(OK, response)
@@ -1399,7 +1399,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
                         domainType: 'DataElement'],
                     profileProviderService: [
                         namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
-                        name      : 'Dynamic+Profile+Model'
+                        name: 'Dynamic%20Profile%20Model'
                     ]
                 ],
                 [
@@ -1419,7 +1419,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
                         domainType: 'DataElement'],
                     profileProviderService: [
                         namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
-                        name      : 'Second+Dynamic+Profile+Model'
+                        name: 'Second%20Dynamic%20Profile%20Model'
                     ]
                 ]
             ]
@@ -1526,7 +1526,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
                         domainType: 'DataElement'],
                     profileProviderService: [
                         namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
-                        name      : 'Dynamic+Profile+Model'
+                        name: 'Dynamic%20Profile%20Model'
                     ]
                 ],
                 [
@@ -1546,7 +1546,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
                         domainType: 'DataElement'],
                     profileProviderService: [
                         namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
-                        name      : 'Second+Dynamic+Profile+Model'
+                        name: 'Second%20Dynamic%20Profile%20Model'
                     ]
                 ]
             ]
@@ -1667,7 +1667,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
                         domainType: 'DataElement'],
                     profileProviderService: [
                         namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
-                        name      : 'Dynamic+Profile+Model'
+                        name: 'Dynamic%20Profile%20Model'
                     ]
                 ],
                 [
@@ -1687,7 +1687,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
                         domainType: 'DataElement'],
                     profileProviderService: [
                         namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
-                        name      : 'Second+Dynamic+Profile+Model'
+                        name: 'Second%20Dynamic%20Profile%20Model'
                     ]
                 ]
             ]
@@ -1728,14 +1728,14 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         then: 'the saved profile is returned'
         verifyResponse(OK, localResponse)
         localResponse.body().size() == 2
-        localResponse.body()[0].name == 'Dynamic+Profile+Model'
+        localResponse.body()[0].name == 'Dynamic%20Profile%20Model'
         localResponse.body()[0].namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
-        localResponse.body()[1].name == 'Second+Dynamic+Profile+Model'
+        localResponse.body()[1].name == 'Second%20Dynamic%20Profile%20Model'
         localResponse.body()[1].namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
 
         when:
         loginReader()
-        GET("dataElements/$secondModelFirstDataElementId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model", STRING_ARG)
+        GET("dataElements/$secondModelFirstDataElementId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic%20Profile%20Model", STRING_ARG)
 
         then:
         verifyResponse(OK, jsonCapableResponse)
@@ -1853,7 +1853,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
                         domainType: 'DataElement'],
                     profileProviderService: [
                         namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
-                        name      : 'Dynamic+Profile+Model'
+                        name: 'Dynamic%20Profile%20Model'
                     ]
                 ],
                 [
@@ -1873,7 +1873,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
                         domainType: 'DataElement'],
                     profileProviderService: [
                         namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
-                        name      : 'Dynamic+Profile+Model'
+                        name: 'Dynamic%20Profile%20Model'
                     ]
                 ]
             ]
@@ -1903,13 +1903,13 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         then:
         verifyResponse(OK, localResponse)
         localResponse.body().size() == 2
-        localResponse.body()[0].name == 'Dynamic+Profile+Model'
+        localResponse.body()[0].name == 'Dynamic%20Profile%20Model'
         localResponse.body()[0].namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
-        localResponse.body()[1].name == 'Second+Dynamic+Profile+Model'
+        localResponse.body()[1].name == 'Second%20Dynamic%20Profile%20Model'
         localResponse.body()[1].namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
 
         when:
-        GET("dataElements/$secondModelFirstDataElementId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model", STRING_ARG)
+        GET("dataElements/$secondModelFirstDataElementId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic%20Profile%20Model", STRING_ARG)
 
         then:
         verifyResponse(OK, jsonCapableResponse)
@@ -1981,11 +1981,11 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         then:
         verifyResponse(OK, localResponse)
         localResponse.body().size() == 1
-        localResponse.body().first().name == 'Dynamic+Profile+Model'
+        localResponse.body().first().name == 'Dynamic%20Profile%20Model'
         localResponse.body().first().namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
 
         when:
-        GET("dataElements/$secondModelSecondDataElementId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model", STRING_ARG)
+        GET("dataElements/$secondModelSecondDataElementId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic%20Profile%20Model", STRING_ARG)
 
         then:
         verifyResponse(OK, jsonCapableResponse)
@@ -2118,7 +2118,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
                         domainType: 'DataElement'],
                     profileProviderService: [
                         namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
-                        name      : 'Dynamic+Profile+Model'
+                        name: 'Dynamic%20Profile%20Model'
                     ]
                 ],
                 [
@@ -2138,7 +2138,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
                         domainType: 'DataElement'],
                     profileProviderService: [
                         namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
-                        name      : 'Dynamic+Profile+Model'
+                        name: 'Dynamic%20Profile%20Model'
                     ]
                 ],
                 [
@@ -2158,7 +2158,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
                         domainType: 'DataElement'],
                     profileProviderService: [
                         namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
-                        name      : 'Second+Dynamic+Profile+Model'
+                        name: 'Second%20Dynamic%20Profile%20Model'
                     ]
                 ]
             ]
@@ -2188,13 +2188,13 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         then:
         verifyResponse(OK, localResponse)
         localResponse.body().size() == 2
-        localResponse.body()[0].name == 'Dynamic+Profile+Model'
+        localResponse.body()[0].name == 'Dynamic%20Profile%20Model'
         localResponse.body()[0].namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
-        localResponse.body()[1].name == 'Second+Dynamic+Profile+Model'
+        localResponse.body()[1].name == 'Second%20Dynamic%20Profile%20Model'
         localResponse.body()[1].namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
 
         when:
-        GET("dataElements/$secondModelFirstDataElementId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model", STRING_ARG)
+        GET("dataElements/$secondModelFirstDataElementId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic%20Profile%20Model", STRING_ARG)
 
         then:
         verifyResponse(OK, jsonCapableResponse)
@@ -2266,11 +2266,11 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         then:
         verifyResponse(OK, localResponse)
         localResponse.body().size() == 1
-        localResponse.body().first().name == 'Dynamic+Profile+Model'
+        localResponse.body().first().name == 'Dynamic%20Profile%20Model'
         localResponse.body().first().namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
 
         when:
-        GET("dataElements/$secondModelSecondDataElementId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model", STRING_ARG)
+        GET("dataElements/$secondModelSecondDataElementId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic%20Profile%20Model", STRING_ARG)
 
         then:
         verifyResponse(OK, jsonCapableResponse)
@@ -2380,7 +2380,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
             ],
             "profileProviderServices": [
                 [
-                    "name"     : "Dynamic+Profile+Model",
+                    "name"     : "Dynamic%20Profile%20Model",
                     "namespace": "uk.ac.ox.softeng.maurodatamapper.profile.provider"
                 ]
             ]
@@ -2436,7 +2436,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         localResponse.body().findAll{it.displayName == 'Dynamic Profile Model'}.size() == 1
 
         when: 'get the finalised profile against the simple data model'
-        GET("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model", STRING_ARG)
+        GET("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic%20Profile%20Model", STRING_ARG)
 
         then: 'the response is OK'
         verifyResponse(OK, jsonCapableResponse)
@@ -2469,7 +2469,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         localResponse.body().findAll{it.displayName == 'Dynamic Profile Model'}.size() == 2
 
         when: 'get the finalised profile against the simple data model now that there are two versions of the profile'
-        GET("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model", MAP_ARG)
+        GET("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic%20Profile%20Model", MAP_ARG)
 
         then: 'the response is OK'
         verifyResponse(OK, response)

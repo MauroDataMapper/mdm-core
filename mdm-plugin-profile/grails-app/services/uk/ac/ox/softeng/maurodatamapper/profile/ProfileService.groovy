@@ -36,6 +36,7 @@ import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ProfileProvided
 import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ProfileProvidedCollection
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import grails.web.databinding.DataBinder
@@ -70,13 +71,13 @@ class ProfileService implements DataBinder {
         if (profileVersion) {
             return getAllProfileProviderServices().find {
                 it.namespace == profileNamespace &&
-                it.getName() == profileName &&
+                it.getName() in [profileName, Utils.safeUrlEncode(profileName)] &&
                 it.version == profileVersion
             }
         }
         getAllProfileProviderServices().findAll {
             it.namespace == profileNamespace &&
-            it.getName() == profileName
+            it.getName() in [profileName, Utils.safeUrlEncode(profileName)]
         }.max()
     }
 
@@ -234,7 +235,7 @@ class ProfileService implements DataBinder {
     def getMany(UUID modelId, ItemsProfilesDataBinding itemsProfiles) {
         List<ProfileProvided> profiles = []
 
-        itemsProfiles.multiFacetAwareItems.each { multiFacetAwareItemDataBinding ->
+        itemsProfiles.multiFacetAwareItems.each {multiFacetAwareItemDataBinding ->
             MultiFacetAware multiFacetAware = findMultiFacetAwareItemByDomainTypeAndId(
                 multiFacetAwareItemDataBinding.multiFacetAwareItemDomainType,
                 multiFacetAwareItemDataBinding.multiFacetAwareItemId)
@@ -248,7 +249,7 @@ class ProfileService implements DataBinder {
                 multiFacetAware instanceof ModelItem &&
                 multiFacetAware.model.id == modelId) {
 
-                itemsProfiles.profileProviderServices.each { profileProviderServiceDataBinding ->
+                itemsProfiles.profileProviderServices.each {profileProviderServiceDataBinding ->
                     ProfileProviderService profileProviderService = findProfileProviderService(
                         profileProviderServiceDataBinding.namespace,
                         profileProviderServiceDataBinding.name,
@@ -315,10 +316,14 @@ class ProfileService implements DataBinder {
 
                         if (profileProviderService.canBeEditedAfterFinalisation()) {
                             saveAllowed = userSecurityPolicyManager.userCanWriteResourceId(Metadata, null, model.class, model.id, 'saveIgnoreFinalise')
-                            log.debug("Profile can be edited after finalisation ${profileProviderService.namespace}.${profileProviderService.name} and saveAllowed is ${saveAllowed}")
+                            log.debug(
+                                "Profile can be edited after finalisation ${profileProviderService.namespace}.${profileProviderService.name} and saveAllowed is " +
+                                "${saveAllowed}")
                         } else {
                             saveAllowed = userSecurityPolicyManager.userCanCreateResourceId(Metadata, null, model.class, model.id)
-                            log.debug("Profile cannot be edited after finalisation ${profileProviderService.namespace}.${profileProviderService.name} and saveAllowed is ${saveAllowed}")
+                            log.debug(
+                                "Profile cannot be edited after finalisation ${profileProviderService.namespace}.${profileProviderService.name} and saveAllowed is " +
+                                "${saveAllowed}")
                         }
 
                         if (saveAllowed) {

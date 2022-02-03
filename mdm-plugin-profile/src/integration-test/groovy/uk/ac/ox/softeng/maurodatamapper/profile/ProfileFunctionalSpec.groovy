@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -677,7 +678,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         localResponse.body().isEmpty()
     }
 
-    void 'N05 : test saving a dynamic profile (as editor)'() {
+    void 'N05 : test saving a dynamic profile'() {
         given:
         String simpleModelId = getSimpleDataModelId()
 
@@ -756,6 +757,13 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         verifyResponse OK, response
 
         when:
+        HttpResponse<List<Map>> localResponse = GET('profiles/providers', Argument.listOf(Map))
+
+        then:
+        verifyResponse(OK, localResponse)
+        localResponse.body().any {it.name == Utils.safeUrlEncode('Dynamic Profile Model')}
+
+        when:
         Map optionalFieldMap = [
             fieldName   : 'Dynamic Profile Elem (Optional)',
             currentValue: 'abc'
@@ -769,7 +777,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
             currentValue: ''
         ]
         Map dynamicProfileMap = [
-            sections  : [
+            sections: [
                 [
                     fields: [
                         optionalFieldMap,
@@ -782,10 +790,10 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
             id        : simpleModelId,
             domainType: 'DataModel',
             namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
-            name      : 'Dynamic+Profile+Model'
+            name    : 'Dynamic%20Profile%20Model'
         ]
 
-        POST("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model", dynamicProfileMap)
+        POST("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic%20Profile%20Model", dynamicProfileMap)
 
         then:
         verifyResponse(OK, response)
@@ -794,16 +802,16 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         responseBody().sections.first().fields.find {it.fieldName == defaultOptionalFieldMap.fieldName}.currentValue == defaultOptionalFieldMap.currentValue
 
         when:
-        HttpResponse<List<Map>> localResponse = GET("dataModels/$simpleModelId/profiles/used", Argument.listOf(Map))
+        localResponse = GET("dataModels/$simpleModelId/profiles/used", Argument.listOf(Map))
 
         then:
         verifyResponse(OK, localResponse)
         localResponse.body().size() == 1
-        localResponse.body().first().name == 'Dynamic+Profile+Model'
+        localResponse.body().first().name == 'Dynamic%20Profile%20Model'
         localResponse.body().first().namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
 
         when:
-        GET("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model", STRING_ARG)
+        GET("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic%20Profile%20Model", STRING_ARG)
 
         then:
         verifyResponse(OK, jsonCapableResponse)
@@ -870,7 +878,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
 }'''
 
         cleanup:
-        DELETE("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model")
+        DELETE("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic%20Profile%20Model")
         verifyResponse(NO_CONTENT, response)
         DELETE("dataModels/$dynamicProfileModelId?permanent=true")
         verifyResponse(NO_CONTENT, response)
@@ -970,15 +978,15 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
             id        : simpleModelId,
             domainType: 'DataModel',
             namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
-            name      : 'Dynamic+Profile+Model'
+            name      : 'Dynamic%20Profile%20Model'
         ]
-        POST("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model", dynamicProfileMap)
+        POST("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic%20Profile%20Model", dynamicProfileMap)
         verifyResponse(OK, response)
 
         when:
         optionalFieldMap.currentValue = ''
         defaultOptionalFieldMap.currentValue = 'edited value'
-        POST("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model", dynamicProfileMap)
+        POST("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic%20Profile%20Model", dynamicProfileMap)
 
         then:
         verifyResponse(OK, response)
@@ -987,7 +995,213 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         responseBody().sections.first().fields.find {it.fieldName == defaultOptionalFieldMap.fieldName}.currentValue == defaultOptionalFieldMap.currentValue
 
         cleanup:
-        DELETE("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic+Profile+Model")
+        DELETE("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic%20Profile%20Model")
+        verifyResponse(NO_CONTENT, response)
+        DELETE("dataModels/$dynamicProfileModelId?permanent=true")
+        verifyResponse(NO_CONTENT, response)
+    }
+
+    void 'N07 : test saving a dynamic profile with brackets in the name'() {
+        given:
+        String simpleModelId = getSimpleDataModelId()
+        String label = "Dynamic Profile Model (Standard)"
+
+        POST("folders/${folder.id}/dataModels?defaultDataTypeProvider=ProfileSpecificationDataTypeProvider", [label: label])
+        verifyResponse(CREATED, response)
+        String dynamicProfileModelId = responseBody().id
+
+        POST("dataModels/$dynamicProfileModelId/dataClasses", [label: 'Profile Section Class'])
+        verifyResponse(CREATED, response)
+        String dataClassId = responseBody().id
+
+        GET("dataModels/$dynamicProfileModelId/dataTypes")
+        verifyResponse(OK, response)
+        Map<String, String> dataTypes = (responseBody().items as List<Map>).collectEntries {
+            [it.label, it.id]
+        }
+
+        POST("dataModels/$dynamicProfileModelId/dataClasses/$dataClassId/dataElements", [
+            label          : 'Dynamic Profile Elem (Optional)',
+            dataType       : dataTypes.string,
+            maxMultiplicity: 1,
+            minMultiplicity: 0
+        ])
+        verifyResponse(CREATED, response)
+
+        POST("dataModels/$dynamicProfileModelId/dataClasses/$dataClassId/dataElements", [
+            label          : 'Dynamic Profile Elem (Mandatory)',
+            dataType       : dataTypes.string,
+            maxMultiplicity: 1,
+            minMultiplicity: 1
+        ])
+        verifyResponse(CREATED, response)
+
+        POST("dataModels/$dynamicProfileModelId/dataClasses/$dataClassId/dataElements", [
+            label   : 'Dynamic Profile Elem (Default Optional)',
+            dataType: dataTypes.string
+        ])
+        verifyResponse(CREATED, response)
+
+        Map namespaceFieldMap = [
+            currentValue        : 'functional.test.profile',
+            metadataPropertyName: 'metadataNamespace',
+        ]
+        Map domainsFieldMap = [
+            currentValue        : '',
+            metadataPropertyName: 'domainsApplicable',
+        ]
+        Map profileMap = [
+            sections  : [
+                [
+                    description: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
+                    fields     : [
+                        namespaceFieldMap,
+                        domainsFieldMap
+                    ],
+                    name       : 'Profile Specification'
+                ]
+            ],
+            id        : dynamicProfileModelId.toString(),
+            label     : label,
+            domainType: 'DataModel',
+            namespace : profileSpecificationProfileService.namespace,
+            name      : profileSpecificationProfileService.name
+        ]
+
+        when:
+        POST("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${dynamicProfileModelId}", profileMap)
+
+        then:
+        verifyResponse(OK, response)
+
+        when:
+        PUT("dataModels/$dynamicProfileModelId/finalise", [versionChangeType: 'Major'])
+
+        then:
+        verifyResponse OK, response
+
+        when:
+        HttpResponse<List<Map>> localResponse = GET('profiles/providers', Argument.listOf(Map))
+
+        then:
+        verifyResponse(OK, localResponse)
+        localResponse.body().any {it.name == Utils.safeUrlEncode(label)}
+
+        when:
+        Map optionalFieldMap = [
+            fieldName   : 'Dynamic Profile Elem (Optional)',
+            currentValue: 'abc'
+        ]
+        Map mandatoryFieldMap = [
+            fieldName   : 'Dynamic Profile Elem (Mandatory)',
+            currentValue: 'def'
+        ]
+        Map defaultOptionalFieldMap = [
+            fieldName   : 'Dynamic Profile Elem (Default Optional)',
+            currentValue: ''
+        ]
+        Map dynamicProfileMap = [
+            sections  : [
+                [
+                    fields: [
+                        optionalFieldMap,
+                        mandatoryFieldMap,
+                        defaultOptionalFieldMap
+                    ],
+                    name  : 'Profile Section Class'
+                ]
+            ],
+            id        : simpleModelId,
+            domainType: 'DataModel',
+            namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
+            name      : Utils.safeUrlEncode(label)
+        ]
+
+        POST("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/${Utils.safeUrlEncode(label)}", dynamicProfileMap)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().sections.first().fields.find {it.fieldName == optionalFieldMap.fieldName}.currentValue == optionalFieldMap.currentValue
+        responseBody().sections.first().fields.find {it.fieldName == mandatoryFieldMap.fieldName}.currentValue == mandatoryFieldMap.currentValue
+        responseBody().sections.first().fields.find {it.fieldName == defaultOptionalFieldMap.fieldName}.currentValue == defaultOptionalFieldMap.currentValue
+
+        when:
+        localResponse = GET("dataModels/$simpleModelId/profiles/used", Argument.listOf(Map))
+
+        then:
+        verifyResponse(OK, localResponse)
+        localResponse.body().size() == 1
+        localResponse.body().first().name == Utils.safeUrlEncode(label)
+        localResponse.body().first().namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
+
+        when:
+        GET("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/${Utils.safeUrlEncode(label)}", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "sections": [
+    {
+      "name": "Profile Section Class",
+      "description": null,
+      "fields": [
+        {
+          "fieldName": "Dynamic Profile Elem (Optional)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Optional)",
+          "description": null,
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "allowedValues": [],
+          "regularExpression": null,
+          "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
+          "defaultValue":null,
+          "editableAfterFinalisation": true,
+          "currentValue": "abc"
+        },
+        {
+          "fieldName": "Dynamic Profile Elem (Mandatory)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Mandatory)",
+          "description": null,
+          "maxMultiplicity": 1,
+          "minMultiplicity": 1,
+          "allowedValues": [],
+          "regularExpression": null,
+          "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
+          "defaultValue":null,
+          "editableAfterFinalisation": true,
+          "currentValue": "def"
+        },
+        {
+          "fieldName": "Dynamic Profile Elem (Default Optional)",
+          "metadataPropertyName": "Profile Section Class/Dynamic Profile Elem (Default Optional)",
+          "description": null,
+          "maxMultiplicity": 1,
+          "minMultiplicity": 0,
+          "allowedValues": [],
+          "regularExpression": null,
+          "dataType": "string",
+          "derived": false,
+          "derivedFrom": null,
+          "uneditable": false,
+          "defaultValue":null,
+          "editableAfterFinalisation": true,
+          "currentValue": ""
+        }
+      ]
+    }
+  ],
+  "id": "${json-unit.matches:id}",
+  "label": "Simple Test DataModel",
+  "domainType": "DataModel"
+}'''
+
+        cleanup:
+        DELETE("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/${Utils.safeUrlEncode(label)}")
         verifyResponse(NO_CONTENT, response)
         DELETE("dataModels/$dynamicProfileModelId?permanent=true")
         verifyResponse(NO_CONTENT, response)
