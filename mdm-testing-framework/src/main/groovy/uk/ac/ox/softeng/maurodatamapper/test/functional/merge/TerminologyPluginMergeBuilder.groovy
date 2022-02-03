@@ -20,10 +20,9 @@ package uk.ac.ox.softeng.maurodatamapper.test.functional.merge
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.BaseTestMergeBuilder
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
-
-import java.nio.charset.Charset
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NO_CONTENT
@@ -445,7 +444,7 @@ class TerminologyPluginMergeBuilder extends BaseTestMergeBuilder {
     }
 
     String getIdFromPath(String rootResourceId, String path, String resourceDomainType) {
-        GET("$resourceDomainType/$rootResourceId/path/${URLEncoder.encode(path, Charset.defaultCharset())}")
+        GET("$resourceDomainType/$rootResourceId/path/${Utils.safeUrlEncode(path)}")
         verifyResponse OK, response
         assert responseBody().id
         responseBody().id

@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory
 
 import java.lang.management.ManagementFactory
 import java.lang.management.RuntimeMXBean
+import java.nio.charset.Charset
 import java.time.Duration
 
 /**
@@ -167,5 +168,20 @@ class Utils {
 
     static byte[] copyOf(byte[] contents) {
         Arrays.copyOf(contents, contents.size())
+    }
+
+    static String safeUrlEncode(String value) {
+        // URLEncoder converts spaces to + which we dont allow
+        String encoded = URLEncoder.encode(value, Charset.defaultCharset())
+        encoded.replaceAll(/\+/, '%20')
+    }
+
+    static String safeUrlDecode(String value) {
+        try {
+            // To allow our paths to contain the legitimate + character we do NOT allow it to be used as a url encoded "space"
+            URLDecoder.decode(value.replaceAll(/\+/, '%2b'), Charset.defaultCharset())
+        } catch (IllegalArgumentException | NullPointerException ignored) {
+            value
+        }
     }
 }

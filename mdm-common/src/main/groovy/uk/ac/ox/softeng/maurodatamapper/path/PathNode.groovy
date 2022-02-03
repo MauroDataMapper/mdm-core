@@ -18,11 +18,10 @@
 package uk.ac.ox.softeng.maurodatamapper.path
 
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import groovy.util.logging.Slf4j
-
-import java.nio.charset.Charset
 
 /**
  * @since 28/08/2020
@@ -67,7 +66,7 @@ class PathNode implements Serializable {
     }
 
     void parseIdentifier(String fullIdentifier, boolean isLast) {
-        String parsed = safeUrlDecode(fullIdentifier)
+        String parsed = Utils.safeUrlDecode(fullIdentifier)
         if (!parsed) return
 
         if (isLast) {
@@ -197,14 +196,5 @@ class PathNode implements Serializable {
 
     PathNode clone() {
         new PathNode(this.prefix, this.identifier, this.modelIdentifier, this.attribute)
-    }
-
-    static safeUrlDecode(String value) {
-        try {
-            // To allow our paths to contain the legitimate + character we do NOT allow it to be used as a url encoded "space"
-            URLDecoder.decode(value.replaceAll(/\+/, '%2b'), Charset.defaultCharset())
-        } catch (IllegalArgumentException | NullPointerException ignored) {
-            value
-        }
     }
 }

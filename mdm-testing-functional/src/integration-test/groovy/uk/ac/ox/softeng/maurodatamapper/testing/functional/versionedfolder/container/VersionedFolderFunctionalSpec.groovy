@@ -28,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.TestMergeData
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.merge.VersionedFolderMergeBuilder
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.VersionChangeType
 
 import grails.gorm.transactions.Transactional
@@ -41,7 +42,6 @@ import org.junit.Assert
 import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Shared
 
-import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Paths
 
@@ -3295,7 +3295,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     }
 
     String getIdFromPath(String rootResourceId, String path) {
-        GET("$rootResourceId/path/${URLEncoder.encode(path, Charset.defaultCharset())}")
+        GET("$rootResourceId/path/${Utils.safeUrlEncode(path)}")
         verifyResponse OK, response
         assert responseBody().id
         responseBody().id

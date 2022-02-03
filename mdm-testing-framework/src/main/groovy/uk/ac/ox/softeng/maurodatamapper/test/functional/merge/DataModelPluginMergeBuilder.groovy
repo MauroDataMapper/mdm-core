@@ -19,8 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.test.functional.merge
 
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
-
-import java.nio.charset.Charset
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NO_CONTENT
@@ -137,7 +136,7 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         verifyResponse(CREATED, response)
         String modelDataTypeId = responseBody().id
 
-        GET("dataModels/$dataModelId/path/${URLEncoder.encode('dc:existingClass', Charset.defaultCharset())}")
+        GET("dataModels/$dataModelId/path/${Utils.safeUrlEncode('dc:existingClass')}")
         verifyResponse OK, response
         assert responseBody().id
         String dataClassId = responseBody().id
@@ -168,7 +167,7 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         verifyResponse(CREATED, response)
         String modelDataTypeId = responseBody().id
 
-        GET("dataModels/$dataModelId/path/${URLEncoder.encode('dc:existingClass', Charset.defaultCharset())}")
+        GET("dataModels/$dataModelId/path/${Utils.safeUrlEncode('dc:existingClass')}")
         verifyResponse OK, response
         assert responseBody().id
         String dataClassId = responseBody().id

@@ -25,8 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileField
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
 import uk.ac.ox.softeng.maurodatamapper.profile.object.JsonProfile
-
-import java.nio.charset.StandardCharsets
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 /**
  * @since 28/04/2021
@@ -120,7 +119,7 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
 
     @Override
     String getName() {
-        return URLEncoder.encode(dataModelLabel, StandardCharsets.UTF_8);
+        return Utils.safeUrlEncode(dataModelLabel)
     }
 
     @Override

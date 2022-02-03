@@ -22,14 +22,13 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.artefact.DomainClass
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
-
-import java.nio.charset.Charset
 
 import static io.micronaut.http.HttpStatus.OK
 
@@ -99,8 +98,7 @@ class PathFunctionalSpec extends FunctionalSpec {
     }
 
     String makePath(String node) {
-        //java.net.URLEncoder.encode turns spaces into +, and these are decoded by grails as +. So do a replace.
-        URLEncoder.encode(node, Charset.defaultCharset()).replace("+", "%20")
+        Utils.safeUrlEncode(node)
     }
 
     def cleanup() {
