@@ -24,6 +24,8 @@ import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.SimpleType
+import org.grails.datastore.gorm.GormEntity
+import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 
 import java.time.OffsetDateTime
 
@@ -35,6 +37,8 @@ Always in relation to the lhs
  */
 
 class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
+
+    private final static HibernateProxyHandler proxyHandler = new HibernateProxyHandler()
 
     List<FieldDiff> diffs
 
@@ -121,12 +125,23 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
     }
 
     def <K extends Diffable> ObjectDiff<O> appendList(Class<K> diffableClass, String fieldName,
-                                                      Collection<K> lhs, Collection<K> rhs, String context = null,
+                                                      Collection<K> appendingLhs, Collection<K> appendingRhs, String context = null,
                                                       boolean addIfEmpty = false) throws ApiDiffException {
 
         validateFieldNameNotNull(fieldName)
 
         List<K> diffableList = []
+
+        // Just make sure all objects are unwrapped. Unlikely but it can happen
+        Collection<K> lhs
+        Collection<K> rhs
+        if(GormEntity.isAssignableFrom(diffableClass)){
+            lhs = appendingLhs.collect {proxyHandler.unwrapIfProxy(it)} as Collection<K>
+            rhs = appendingRhs.collect {proxyHandler.unwrapIfProxy(it)} as Collection<K>
+        }else{
+            lhs = appendingLhs
+            rhs = appendingRhs
+        }
 
         ArrayDiff<K> diff = arrayDiff(diffableList.class)
             .fieldName(fieldName)

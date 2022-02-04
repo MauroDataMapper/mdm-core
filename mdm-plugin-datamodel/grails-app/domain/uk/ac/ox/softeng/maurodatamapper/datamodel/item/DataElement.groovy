@@ -152,7 +152,7 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
             dataType.createdBy = createdBy
             dataType.beforeValidate()
         }
-        log.trace('DE before validate {} took {}', this.label, Utils.timeTaken(st))
+//        log.trace('DE {} before validate took {}', this.label, Utils.timeTaken(st))
     }
 
     @Override

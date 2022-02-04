@@ -63,7 +63,7 @@ class CodeSetService extends ModelService<CodeSet> {
 
     @Override
     List<CodeSet> getAll(Collection<UUID> ids) {
-        CodeSet.getAll(ids).findAll().collect { unwrapIfProxy(it) }
+        CodeSet.getAll(ids).findAll().collect {unwrapIfProxy(it)}
     }
 
     @Override
@@ -73,7 +73,7 @@ class CodeSetService extends ModelService<CodeSet> {
 
     @Override
     List<CodeSet> list() {
-        CodeSet.list().collect { unwrapIfProxy(it) }
+        CodeSet.list().collect {unwrapIfProxy(it)}
     }
 
     @Override
@@ -90,7 +90,7 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     CodeSet validate(CodeSet codeSet) {
-        log.debug('Validating codeSet')
+        log.trace('Validating codeSet')
         codeSet.validate()
         codeSet
     }
@@ -114,20 +114,21 @@ class CodeSetService extends ModelService<CodeSet> {
 
     @Override
     CodeSet save(CodeSet codeSet) {
-        log.debug('Saving {}({}) without batching', codeSet.label, codeSet.ident())
-        save(failOnError: true, validate: false, flush: false, codeSet)
+        log.debug('Saving {}', codeSet.label, codeSet.ident())
+        long start = System.currentTimeMillis()
+        CodeSet saved = save(failOnError: true, validate: false, flush: false, codeSet)
+        log.debug('Complete save of CodeSet complete in {}', Utils.timeTaken(start))
+        saved
     }
 
     @Override
     CodeSet saveModelWithContent(CodeSet model) {
-        log.debug('Saving {}({}) without batching', model.label, model.ident())
-        save(failOnError: true, validate: false, flush: true, model)
+        save(model)
     }
 
     @Override
     CodeSet saveModelNewContentOnly(CodeSet model) {
-        log.debug('Saving {}({}) without batching', model.label, model.ident())
-        save(failOnError: true, validate: false, flush: true, model)
+        save(model)
     }
 
     @Override
@@ -248,7 +249,7 @@ class CodeSetService extends ModelService<CodeSet> {
         copy.trackChanges()
 
         List<Term> terms = termService.findAllByCodeSetId(original.id)
-        terms.each { term ->
+        terms.each {term ->
             copy.addToTerms(term)
         }
         log.debug('Copy of codeset took {}', Utils.timeTaken(start))
@@ -294,7 +295,7 @@ class CodeSetService extends ModelService<CodeSet> {
 
     @Override
     List<CodeSet> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        findAllByClassifier(classifier).findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(CodeSet, it.id) }
+        findAllByClassifier(classifier).findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(CodeSet, it.id)}
     }
 
     @Override
@@ -482,14 +483,14 @@ class CodeSetService extends ModelService<CodeSet> {
         List<Term> terms = new ArrayList<>(copiedModel.terms)
         Path copiedCodeSetPath = getFullPathForModel(copiedModel)
         Path originalCodeSetPath = getFullPathForModel(originalModel)
-        terms.each { term ->
+        terms.each {term ->
 
             Terminology terminology = term.terminology
             Path fullContextTerminologyPath = getFullPathForModel(terminology)
             Path termPath = Path.from(terminology, term)
             // Need to check if the CS is inside the same VF as the terminology
-            PathNode terminologyVersionedFolderPathNode = fullContextTerminologyPath.find { it.prefix == 'vf' }
-            if (terminologyVersionedFolderPathNode && originalCodeSetPath.any { it == terminologyVersionedFolderPathNode }) {
+            PathNode terminologyVersionedFolderPathNode = fullContextTerminologyPath.find {it.prefix == 'vf'}
+            if (terminologyVersionedFolderPathNode && originalCodeSetPath.any {it == terminologyVersionedFolderPathNode}) {
                 log.debug('Original codeset is inside the same context path as terminology for term [{}]', termPath)
                 Term branchedTerm = pathService.findResourceByPathFromRootResource(copiedModel, termPath,
                                                                                    copiedCodeSetPath.last().modelIdentifier) as Term

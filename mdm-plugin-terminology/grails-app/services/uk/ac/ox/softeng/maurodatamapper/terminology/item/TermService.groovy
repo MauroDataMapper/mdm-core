@@ -128,16 +128,16 @@ class TermService extends ModelItemService<Term> {
         }
     }
 
-    Collection<TermRelationship> saveAllAndGetTermRelationships(Collection<Term> terms) {
-
-        List<Classifier> classifiers = terms.collectMany { it.classifiers ?: [] } as List<Classifier>
+    Collection<TermRelationship> saveAllAndGetTermRelationships(Collection<Term> terms, Integer batchSize = BATCH_SIZE) {
+        if (!terms) return []
+        List<Classifier> classifiers = terms.collectMany {it.classifiers ?: []} as List<Classifier>
         if (classifiers) {
             log.trace('Saving {} classifiers')
             classifierService.saveAll(classifiers)
         }
 
-        Collection<Term> alreadySaved = terms.findAll { it.ident() && it.isDirty() }
-        Collection<Term> notSaved = terms.findAll { !it.ident() }
+        Collection<Term> alreadySaved = terms.findAll {it.ident() && it.isDirty()}
+        Collection<Term> notSaved = terms.findAll {!it.ident()}
 
         Collection<TermRelationship> termRelationships = []
 
@@ -147,7 +147,7 @@ class TermService extends ModelItemService<Term> {
         }
 
         if (notSaved) {
-            log.trace('Batch saving {} new {} in batches of {}', notSaved.size(), getDomainClass().simpleName, BATCH_SIZE)
+            log.trace('Batch saving {} new {} in batches of {}', notSaved.size(), getDomainClass().simpleName, batchSize)
             List batch = []
             int count = 0
 
@@ -161,7 +161,7 @@ class TermService extends ModelItemService<Term> {
 
                 batch << t
                 count++
-                if (count % BATCH_SIZE == 0) {
+                if (count % batchSize == 0) {
                     batchSave(batch)
                     batch.clear()
                 }

@@ -28,6 +28,7 @@ import groovy.util.logging.Slf4j
 trait IndexedSiblingAware {
 
     void fullSortOfChildren(Collection<? extends ModelItem> children) {
+        log.trace('Full sort of {} children', children.size())
         if (!children) return
         children.sort().eachWithIndex { ModelItem mi, int i ->
             if (mi.idx != i) mi.idx = i

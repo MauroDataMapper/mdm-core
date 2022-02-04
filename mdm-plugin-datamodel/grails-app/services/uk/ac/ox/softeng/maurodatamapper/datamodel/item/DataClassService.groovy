@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
@@ -100,14 +101,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
             this.updateDataClassHierarchyAfterInsert(args, domain)
         }
 
-        DataClass saved = super.save(args, domain)
-
-        if(newDataTypes){
-            newDataTypes.each{dt ->
-                dataTypeService.updateFacetsAfterInsertingCatalogueItem(dt)
-            }
-        }
-        saved
+        super.save(args, domain)
     }
 
     void updateDataClassHierarchyAfterInsert(Map args, DataClass dataClass){
@@ -229,20 +223,6 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     void deleteAllFacetDataByMultiFacetAwareIds(List<UUID> catalogueItemIds) {
         super.deleteAllFacetDataByMultiFacetAwareIds(catalogueItemIds)
         summaryMetadataService.deleteAllByMultiFacetAwareItemIds(catalogueItemIds)
-    }
-
-    @Override
-    DataClass updateFacetsAfterInsertingCatalogueItem(DataClass catalogueItem) {
-        super.updateFacetsAfterInsertingCatalogueItem(catalogueItem)
-        if (catalogueItem.summaryMetadata) {
-            catalogueItem.summaryMetadata.each {
-                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
-                it.multiFacetAwareItemId = catalogueItem.getId()
-            }
-            SummaryMetadata.saveAll(catalogueItem.summaryMetadata)
-        }
-
-        catalogueItem
     }
 
     @Override

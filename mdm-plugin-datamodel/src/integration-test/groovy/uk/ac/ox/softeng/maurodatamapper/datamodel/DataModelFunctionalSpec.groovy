@@ -1688,7 +1688,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData(mergeData.commonAncestor)
     }
 
-    void 'MI08 : test merging new style diff with metadata creation gh-111'() {
+    void 'MI08 : test merging diff with metadata creation gh-111'() {
         given:
         String id = createNewItem(validJson)
         POST("$id/rules", [name: 'Bootstrapped versioning V2Model Rule'])

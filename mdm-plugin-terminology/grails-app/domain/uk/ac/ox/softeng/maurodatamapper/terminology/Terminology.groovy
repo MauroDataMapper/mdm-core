@@ -50,6 +50,8 @@ class Terminology implements Model<Terminology> {
 
     Boolean hasChild
 
+    TreeMap<String,Term> optimisedCodeSearchMap
+
     static hasMany = [
         terms                : Term,
         termRelationshipTypes: TermRelationshipType,
@@ -65,7 +67,7 @@ class Terminology implements Model<Terminology> {
 
     static belongsTo = [Folder]
 
-    static transients = ['hasChild', 'aliases']
+    static transients = ['hasChild', 'aliases', 'optimisedCodeSearchMap']
 
     static constraints = {
         CallableConstraints.call(ModelConstraints, delegate)
@@ -144,7 +146,10 @@ class Terminology implements Model<Terminology> {
     }
 
     Term findTermByCode(String code) {
-        terms.find {it.code == code}
+        if(!optimisedCodeSearchMap || optimisedCodeSearchMap.size() != terms.size()) {
+            optimisedCodeSearchMap = new TreeMap<>(terms.collectEntries {[it.code, it]})
+        }
+        optimisedCodeSearchMap[code]
     }
 
     TermRelationshipType findRelationshipTypeByLabel(String label) {

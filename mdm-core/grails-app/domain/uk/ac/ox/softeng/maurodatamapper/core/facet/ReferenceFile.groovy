@@ -68,6 +68,11 @@ class ReferenceFile implements CatalogueFile, MultiFacetItemAware {
     }
 
     @Override
+    def beforeInsert(){
+        beforeInsertCheck()
+    }
+
+    @Override
     String getEditLabel() {
         "${domainType}:${fileName}"
     }

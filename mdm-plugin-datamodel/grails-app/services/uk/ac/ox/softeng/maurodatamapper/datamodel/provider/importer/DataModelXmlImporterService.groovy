@@ -46,7 +46,6 @@ class DataModelXmlImporterService extends DataBindDataModelImporterProviderServi
         'XML DataModel Importer'
     }
 
-    @Override
     String getVersion() {
         '5.1'
     }

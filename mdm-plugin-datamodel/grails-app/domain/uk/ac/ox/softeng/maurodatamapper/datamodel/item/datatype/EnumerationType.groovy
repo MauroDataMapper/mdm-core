@@ -68,7 +68,7 @@ class EnumerationType extends DataType<EnumerationType> implements IndexedSiblin
                 ev.beforeValidate()
             }
         }
-        log.trace('DT before validate {} took {}', this.label, Utils.timeTaken(st))
+        log.debug('DT {} before validate took {}', this.label, Utils.timeTaken(st))
     }
 
     ObjectDiff<EnumerationType> diff(EnumerationType otherDataType, String context) {

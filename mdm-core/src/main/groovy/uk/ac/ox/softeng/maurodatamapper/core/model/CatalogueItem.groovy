@@ -90,6 +90,10 @@ trait CatalogueItem<D extends Diffable> implements MdmDomain, InformationAware, 
             if (!it.createdBy) it.createdBy = createdBy
             it.beforeValidate()
         }
+        rules?.each {
+            it.multiFacetAwareItem = this
+            if (!it.createdBy) it.createdBy = createdBy
+        }
     }
 
     @Override

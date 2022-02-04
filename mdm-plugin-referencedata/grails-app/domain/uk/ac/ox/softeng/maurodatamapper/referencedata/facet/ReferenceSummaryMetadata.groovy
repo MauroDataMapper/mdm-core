@@ -59,6 +59,11 @@ class ReferenceSummaryMetadata implements MultiFacetItemAware, InformationAware 
     }
 
     @Override
+    def beforeInsert(){
+        beforeInsertCheck()
+    }
+
+    @Override
     String getDomainType() {
         ReferenceSummaryMetadata.simpleName
     }

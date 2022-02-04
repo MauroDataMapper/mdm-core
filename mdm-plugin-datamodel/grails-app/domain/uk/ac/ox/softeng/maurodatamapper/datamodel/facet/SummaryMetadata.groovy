@@ -60,6 +60,11 @@ class SummaryMetadata implements MultiFacetItemAware, InformationAware, MdmDomai
     }
 
     @Override
+    def beforeInsert(){
+        beforeInsertCheck()
+    }
+
+    @Override
     String getDomainType() {
         SummaryMetadata.simpleName
     }

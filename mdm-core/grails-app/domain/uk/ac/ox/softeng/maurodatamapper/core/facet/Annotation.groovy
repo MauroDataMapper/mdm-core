@@ -108,6 +108,11 @@ class Annotation implements MultiFacetItemAware, InformationAware, Diffable<Anno
     }
 
     @Override
+    def beforeInsert() {
+        beforeInsertCheck()
+    }
+
+    @Override
     String getEditLabel() {
         "Annotation:${label}"
     }

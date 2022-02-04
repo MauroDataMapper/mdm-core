@@ -68,6 +68,11 @@ class SemanticLink implements MultiFacetItemAware {
     }
 
     @Override
+    def beforeInsert(){
+        beforeInsertCheck()
+    }
+
+    @Override
     String getDomainType() {
         SemanticLink.simpleName
     }

@@ -143,19 +143,6 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     }
 
     @Override
-    DataElement updateFacetsAfterInsertingCatalogueItem(DataElement catalogueItem) {
-        super.updateFacetsAfterInsertingCatalogueItem(catalogueItem)
-        if (catalogueItem.summaryMetadata) {
-            catalogueItem.summaryMetadata.each {
-                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
-                it.multiFacetAwareItemId = catalogueItem.getId()
-            }
-            SummaryMetadata.saveAll(catalogueItem.summaryMetadata)
-        }
-        catalogueItem
-    }
-
-    @Override
     DataElement checkFacetsAfterImportingCatalogueItem(DataElement catalogueItem) {
         super.checkFacetsAfterImportingCatalogueItem(catalogueItem)
         if (catalogueItem.summaryMetadata) {

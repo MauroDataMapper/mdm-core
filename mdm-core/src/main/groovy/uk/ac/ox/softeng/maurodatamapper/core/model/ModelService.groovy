@@ -833,19 +833,6 @@ abstract class ModelService<K extends Model>
         model
     }
 
-    @Override
-    K updateFacetsAfterInsertingCatalogueItem(K catalogueItem) {
-        super.updateFacetsAfterInsertingCatalogueItem(catalogueItem)
-        if (catalogueItem.versionLinks) {
-            catalogueItem.versionLinks.each {
-                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
-                it.multiFacetAwareItemId = catalogueItem.getId()
-            }
-            VersionLink.saveAll(catalogueItem.versionLinks)
-        }
-        catalogueItem
-    }
-
     Version getNextModelVersion(K model, Version requestedModelVersion, VersionChangeType requestedVersionChangeType) {
         if (requestedModelVersion) {
             // Prefer requested model version

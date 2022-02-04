@@ -144,19 +144,6 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
         save(failOnError: true, validate: false, flush: false, referenceDataModel)
     }
 
-    @Override
-    ReferenceDataModel updateFacetsAfterInsertingCatalogueItem(ReferenceDataModel catalogueItem) {
-        super.updateFacetsAfterInsertingCatalogueItem(catalogueItem)
-        if (catalogueItem.referenceSummaryMetadata) {
-            catalogueItem.referenceSummaryMetadata.each {
-                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
-                it.multiFacetAwareItemId = catalogueItem.getId()
-            }
-            ReferenceSummaryMetadata.saveAll(catalogueItem.referenceSummaryMetadata)
-        }
-        catalogueItem
-    }
-
     ReferenceDataModel saveModelWithContent(ReferenceDataModel referenceDataModel) {
 
         if (referenceDataModel.referenceDataTypes.any { it.id } ||
@@ -186,7 +173,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
         }
 
         if (referenceDataModel.breadcrumbTree.children) {
-            referenceDataModel.breadcrumbTree.children.each { it.skipValidation(true) }
+            referenceDataModel.breadcrumbTree.disableValidation()
         }
 
         if (referenceDataModel.referenceDataValues) {
@@ -194,7 +181,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
             referenceDataModel.referenceDataValues.clear()
         }
 
-        save(referenceDataModel)
+        save(failOnError: true, validate: false, flush: false, ignoreBreadcrumbs: true, referenceDataModel)
         sessionFactory.currentSession.flush()
 
         saveContent(referenceDataTypes, referenceDataElements, referenceDataValues)

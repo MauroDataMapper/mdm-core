@@ -126,7 +126,7 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
             if (!it.createdBy) it.createdBy = createdBy
             it.multiFacetAwareItem = this
         }
-        if (domainType != ENUMERATION_DOMAIN_TYPE) log.trace('DT before validate {} took {}', this.label, Utils.timeTaken(st))
+        if (domainType != ENUMERATION_DOMAIN_TYPE) log.trace('DT {} before validate took {}', this.label, Utils.timeTaken(st))
     }
 
     @Override

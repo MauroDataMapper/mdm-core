@@ -110,19 +110,6 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
     }
 
     @Override
-    ReferenceDataElement updateFacetsAfterInsertingCatalogueItem(ReferenceDataElement catalogueItem) {
-        super.updateFacetsAfterInsertingCatalogueItem(catalogueItem)
-        if (catalogueItem.referenceSummaryMetadata) {
-            catalogueItem.referenceSummaryMetadata.each {
-                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
-                it.multiFacetAwareItemId = catalogueItem.getId()
-            }
-            ReferenceSummaryMetadata.saveAll(catalogueItem.referenceSummaryMetadata)
-        }
-        catalogueItem
-    }
-
-    @Override
     ReferenceDataElement findByIdJoinClassifiers(UUID id) {
         ReferenceDataElement.findById(id, [fetch: [classifiers: 'join']])
     }

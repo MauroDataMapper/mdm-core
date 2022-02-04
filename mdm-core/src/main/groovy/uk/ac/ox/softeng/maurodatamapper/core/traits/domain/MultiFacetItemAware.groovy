@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.traits.domain
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
@@ -38,6 +39,25 @@ trait MultiFacetItemAware extends MdmDomain {
     MultiFacetAware multiFacetAwareItem
 
     abstract String getEditLabel()
+
+  abstract def beforeInsert()
+
+    /**
+     * Checks the status of the multiFacetAwareItemId field and sets it from the multiFacetAwareItem.
+     * This was done in a service as an update after the insert as it didnt work before in Grails 4, now it works such that we can just set just as it does the insert
+     * This reduces the number of DB calls and code calls so is faster.
+     * For now we will throw exceptions if the id cannot be set as this should help alert us to situations where we need to do something like the old update
+     *
+     * @return boolean true if allowed to continue insert, false otherwise
+     */
+  def beforeInsertCheck(){
+        if(!multiFacetAwareItemId && !multiFacetAwareItem) throw new ApiInternalException('MFIA', 'No multiFacetAwareItemId and no multiFacetAwareItem')
+        if(!multiFacetAwareItemId) {
+            if (!multiFacetAwareItem.getId()) throw new ApiInternalException('MFIA', 'No multiFacetAwareItemId and no multiFacetAwareItem.id')
+            multiFacetAwareItemId = multiFacetAwareItem.getId()
+        }
+      true
+    }
 
     //static transients = ['multiFacetAwareItem']
 
