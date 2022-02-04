@@ -58,6 +58,9 @@ class UrlMappings {
                 put "/folder/$folderId"(controller: 'dataModel', action: 'changeFolder')
                 get "/export/$exporterNamespace/$exporterName/$exporterVersion"(controller: 'dataModel', action: 'exportModel')
 
+                put "/subset/$otherModelId"(controller: 'dataModel', action: 'subset')
+                get "/intersects/$otherModelId"(controller: 'dataModel', action: 'intersects')
+
                 delete '/dataTypes/clean'(controller: 'dataModel', action: 'deleteAllUnusedDataTypes')
                 delete '/dataClasses/clean'(controller: 'dataModel', action: 'deleteAllUnusedDataClasses')
 

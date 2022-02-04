@@ -72,6 +72,7 @@ import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.S
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.SOFT_DELETE_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.STANDARD_CREATE_AND_EDIT_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.STANDARD_EDIT_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.SUBSET_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.UPDATE_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.UPDATE_IGNORE_FINALISE
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.USER_ADMIN_ACTIONS
@@ -405,6 +406,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
                     return role ? role.canVersion() : false
                 case MERGE_INTO_ACTION:
                 case SAVE_ACTION:
+                case SUBSET_ACTION:
                 case UPDATE_ACTION:
                     // If the model is finalised then these actions are NOT allowed
                     VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)

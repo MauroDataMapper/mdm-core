@@ -85,7 +85,7 @@ class DataModelInterceptor extends ModelInterceptor {
 
         boolean canReadId = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, getId())
 
-        if (actionName in ['suggestLinks']) {
+        if (actionName in ['suggestLinks', 'intersects']) {
             if (!canReadId) {
                 return notFound(DataModel, getId())
             }

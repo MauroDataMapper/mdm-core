@@ -52,6 +52,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.Enum
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.DefaultDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter.DataModelJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelJsonImporterService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.Subset
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
 import uk.ac.ox.softeng.maurodatamapper.path.Path
@@ -1027,5 +1028,123 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     CopyInformation cacheFacetInformationForCopy(List<UUID> originalIds, CopyInformation copyInformation = null) {
         CopyInformation cachedInformation = super.cacheFacetInformationForCopy(originalIds, copyInformation)
         cacheSummaryMetadataInformationForCopy(originalIds, cachedInformation)
+    }
+
+    /**
+     * Subset a DataModel by creating and deleting Data Elements in targetDataModel based on those found in sourceDataModel.
+     * The purpose of the targetModel is to record a subset of Data Elements which have been chosen from the sourceDataModel.
+     * @param sourceDataModel
+     * @param targetDataModel
+     * @param subsetData
+     * @param user
+     * @param userSecurityPolicyManager
+     * @return
+     */
+    def subset(DataModel sourceDataModel, DataModel targetDataModel, Subset subsetData, User user, UserSecurityPolicyManager userSecurityPolicyManager) {
+        subsetData.additions.each {dataElementId ->
+            subsetAddition(sourceDataModel, targetDataModel, UUID.fromString(dataElementId), user, userSecurityPolicyManager)
+        }
+
+        subsetData.deletions.each {dataElementId ->
+            subsetDeletion(sourceDataModel, targetDataModel, UUID.fromString(dataElementId), user, userSecurityPolicyManager)
+        }
+
+        // Remove any Data Classes which are not used i.e. have no Data Classes belonging to them, and no Data Elements
+        /*targetDataModel.dataClasses.findAll {
+            it.dataClasses.size() == 0 && it.dataElements.size() == 0
+        }.each {
+            dataClassService.delete(it)
+        }*/
+
+        validate(targetDataModel)
+        save(flush: true, targetDataModel)
+    }
+
+    /**
+     * Make a copy of a Data Element from the sourceDataModel in the targetDataModel.
+     * 1. Check that the Data Element with ID dataElementId exists in the sourceDataModel
+     * 2. Get the path of this Data Element in the sourceDataModel
+     * 3. Find if there is already a Data Element matching the same path in targetDataModel
+     * 4. If not then create one, creating any necessary Data Class hierarchy
+     * @param sourceDataModel
+     * @param targetDataModel
+     * @param dataElementId
+     * @param user
+     * @param userSecurityPolicyManager
+     * @return
+     */
+    private subsetAddition(DataModel sourceDataModel, DataModel targetDataModel, UUID dataElementId, User user, UserSecurityPolicyManager userSecurityPolicyManager) {
+        DataElement dataElementInSource = sourceDataModel.getAllDataElements().find{it.id == dataElementId}
+
+        if (!dataElementInSource)
+            throw new ApiInternalException("DMSXX", "Data Element ${dataElementId} not found in source model")
+
+        Path pathInSource = dataElementInSource.getPath()
+
+        DataElement dataElementInTarget = pathService.findResourceByPathFromRootResource(targetDataModel, pathInSource.getChildPath())
+
+        if (!dataElementInTarget) {
+            // The path of the DataElement that we want to see in the target.
+            // It should look like dc:label of a data class|optionally more dc nodes|de:label of data element
+            Path pathInTarget = pathInSource.getChildPath()
+
+            if (pathInTarget.size() < 2)
+                throw new ApiInternalException("DMSXX", "Path ${pathInTarget} was shorter than expected")
+
+            // Now iterate forwards through the path, making sure that a domain exists for each node of the path
+            // Assumption is that the first node of pathInTarget is a dc.
+            dataClassService.subset(sourceDataModel, targetDataModel, dataElementInSource, pathInTarget, user, userSecurityPolicyManager)
+        }
+    }
+
+    /**
+     * Delete a Data Element identified by dataElementId in sourceDataModel from the targetDataModel
+     * 1. Check that the Data Element with ID dataElementId exists in the sourceDataModel
+     * 2. Get the path of this Data Element in the sourceDataModel
+     * 3. Find if there is a Data Element matching the same path in targetDataModel
+     * 4. If yes then delete that Data Element from targetDataModel
+     * @param sourceDataModel
+     * @param targetDataModel
+     * @param dataElementId
+     * @param user
+     * @param userSecurityPolicyManager
+     * @return
+     */
+    private subsetDeletion(DataModel sourceDataModel, DataModel targetDataModel, UUID dataElementId, User user, UserSecurityPolicyManager userSecurityPolicyManager) {
+        DataElement dataElementInSource = sourceDataModel.getAllDataElements().find{it.id == dataElementId}
+
+        if (!dataElementInSource)
+            throw new ApiInternalException("DMSXX", "Data Element ${dataElementId} not found in source model")
+
+        Path pathInSource = dataElementInSource.getPath()
+
+        DataElement dataElementInTarget = pathService.findResourceByPathFromRootResource(targetDataModel, pathInSource.getChildPath())
+
+        if (dataElementInTarget) {
+            dataElementService.delete(dataElementInTarget.id)
+        }
+    }
+
+    /**
+     * Return the Data Element intersection between source and target Data Models. i.e. a collection of Data Elements
+     * in sourceDataModel which are also present (i.e. match by path) in targetDataModel
+     * @param sourceDataModel
+     * @param targetDataModel
+     * @return
+     */
+    Collection<UUID> intersects(DataModel sourceDataModel, DataModel targetDataModel) {
+        Collection<UUID> intersection = []
+
+        sourceDataModel.getAllDataElements().each {
+            Path pathInSource = it.getPath()
+
+            DataElement dataElementInTarget = pathService.findResourceByPathFromRootResource(targetDataModel, pathInSource.getChildPath())
+
+            if (dataElementInTarget) {
+                intersection << it.id
+            }
+        }
+
+        intersection
     }
 }
