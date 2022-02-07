@@ -227,8 +227,8 @@ class DataModelController extends ModelController<DataModel> {
         DataModel sourceModel = queryForResource params[alternateParamsIdKey]
         if (!sourceModel) return notFound(params[alternateParamsIdKey])
 
-        DataModel targetModel = queryForResource params.otherModelId
-        if (!targetModel) return notFound(params.otherModelId)
+        DataModel targetModel = queryForResource params.otherDataModelId
+        if (!targetModel) return notFound(params.otherDataModelId)
 
         dataModelService.subset(sourceModel, targetModel, subsetData, currentUser, currentUserSecurityPolicyManager)
 
@@ -240,8 +240,8 @@ class DataModelController extends ModelController<DataModel> {
         DataModel sourceModel = queryForResource params[alternateParamsIdKey]
         if (!sourceModel) return notFound(params[alternateParamsIdKey])
 
-        DataModel targetModel = queryForResource params.otherModelId
-        if (!targetModel) return notFound(params.otherModelId)
+        DataModel targetModel = queryForResource params.otherDataModelId
+        if (!targetModel) return notFound(params.otherDataModelId)
 
         respond(intersection: dataModelService.intersects(sourceModel, targetModel))
     }

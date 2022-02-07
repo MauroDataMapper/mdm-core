@@ -105,6 +105,18 @@ class DataModelInterceptor extends ModelInterceptor {
             return true
         }
 
+        if (actionName in ['subset']) {
+            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(getSecuredClass(), getId())) {
+                return notFound(getSecuredClass(), getId())
+            }
+            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(getSecuredClass(), params.otherDataModelId)) {
+                return notFound(getSecuredClass(), params.otherDataModelId)
+            }
+
+            return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(getSecuredClass(), params.otherDataModelId, actionName) ?:
+                forbiddenDueToPermissions(currentUserSecurityPolicyManager.userAvailableActions(getSecuredClass(), params.otherDataModelId))
+        }
+
         checkModelActionsAuthorised()
     }
 
