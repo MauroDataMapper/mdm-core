@@ -1049,15 +1049,33 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             subsetDeletion(sourceDataModel, targetDataModel, UUID.fromString(dataElementId), user, userSecurityPolicyManager)
         }
 
-        // Remove any Data Classes which are not used i.e. have no Data Classes belonging to them, and no Data Elements
-        /*targetDataModel.dataClasses.findAll {
-            it.dataClasses.size() == 0 && it.dataElements.size() == 0
-        }.each {
-            dataClassService.delete(it)
-        }*/
+        if (subsetData.deletions.size() > 0) {
+            // Remove any Data Classes which are no longer used
+            deleteUnSubsettedDataClasses(targetDataModel)
+        }
 
         validate(targetDataModel)
         save(flush: true, targetDataModel)
+    }
+
+    /**
+     * Remove from a Data Model any Data Classes which contain no Data Classes, Data Elements or Reference Types
+     * @param dataModel
+     * @return
+     */
+    private deleteUnSubsettedDataClasses(DataModel dataModel) {
+        Collection<DataClass> dataClassesToDelete = dataModel.dataClasses.findAll {
+            !it.dataClasses && !it.dataElements && !it.referenceTypes
+        }
+
+        if (dataClassesToDelete.size() > 0) {
+            dataClassesToDelete.each {
+                dataClassService.delete(it)
+            }
+
+            // By removing a Data Class we may have emptied a parent Data Class, so recurse
+            deleteUnSubsettedDataClasses(dataModel)
+        }
     }
 
     /**

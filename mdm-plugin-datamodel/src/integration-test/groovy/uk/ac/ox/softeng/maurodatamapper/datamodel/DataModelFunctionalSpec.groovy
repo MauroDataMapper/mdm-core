@@ -4264,15 +4264,12 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         then: 'The response is OK'
         verifyResponse OK, response
 
-        //TODO test cleanup of the DC
-        /*when: 'Get Data Classes on targetDataModel'
-        GET("/$targetDataModelId/dataClasses")
+        when: 'Get Data Classes on targetDataModel'
+        GET("/${target.dataModelId}/dataClasses")
 
-        then: 'There is the content Data Class'
+        then: 'There are no Data Classes'
         verifyResponse OK, response
-        response.body().items.size() == 1
-        response.body().items[0].label == 'content'
-        String contentIdInTarget = response.body().items[0].id*/
+        response.body().items.size() == 0
 
         when: 'Get Data Elements on targetDataModel'
         GET("/${target.dataModelId}/dataElements")
@@ -4297,12 +4294,12 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
          */
         when: 'subset ele1, element2 and child'
         PUT("/${source.dataModelId}/subset/${target.dataModelId}", [
-                "additions": [
-                        source.contentClass.ele1.id,
-                        source.contentClass.element2.id,
-                        source.parentClass.childClass.grandchild.id
-                ],
-                "deletions": []
+            "additions": [
+                source.contentClass.ele1.id,
+                source.contentClass.element2.id,
+                source.parentClass.childClass.grandchild.id
+            ],
+            "deletions": []
         ])
 
         then: 'The response is OK'
@@ -4353,6 +4350,22 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         response.body().intersects.contains(source.contentClass.ele1.id)
         response.body().intersects.contains(source.contentClass.element2.id)
         response.body().intersects.contains(source.parentClass.childClass.grandchild.id)
+
+        when: 'Delete the grandchild from the subset'
+        PUT("/${source.dataModelId}/subset/${target.dataModelId}", [
+            "additions": [],
+            "deletions": [source.parentClass.childClass.grandchild.id]
+        ])
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        when: 'Get Data Classes on targetDataModel'
+        GET("/${target.dataModelId}/dataClasses")
+
+        then: 'The parent Data Classes has been deleted from the targetDataModel'
+        response.body().items.find{it.label == 'content'}
+        !response.body().items.find{it.label == 'parent'}
 
         cleanup:
         cleanUpData(source.dataModelId)
