@@ -26,4 +26,11 @@ DataType dt = dataType as DataType
         PrimitiveType pt = dt as PrimitiveType
         if (pt.units) 'mdm:units' {yield pt.units}
     }
+    if (dt.summaryMetadata) {
+        'mdm:summaryMetadata' {
+            dt.summaryMetadata.each {sm ->
+                layout '/summaryMetadata/export.gml', summaryMetadata: sm
+            }
+        }
+    }
 }

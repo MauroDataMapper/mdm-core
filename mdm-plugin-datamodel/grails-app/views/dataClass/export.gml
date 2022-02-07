@@ -21,4 +21,11 @@ DataClass dc = dataClass as DataClass
             }
         }
     }
+    if (dc.summaryMetadata) {
+        'mdm:summaryMetadata' {
+            dc.summaryMetadata.each {sm ->
+                layout '/summaryMetadata/export.gml', summaryMetadata: sm
+            }
+        }
+    }
 }

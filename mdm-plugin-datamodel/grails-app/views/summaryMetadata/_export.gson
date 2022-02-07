@@ -6,8 +6,8 @@ model {
 
 json {
     if (export.id) id export.id
-    createdBy export.createdBy
-    lastUpdated export.lastUpdated
+    if (export.createdBy) createdBy export.createdBy
+    if (export.lastUpdated) lastUpdated export.lastUpdated
     label export.label
     if (export.description) description export.description
     summaryMetadataType export.summaryMetadataType

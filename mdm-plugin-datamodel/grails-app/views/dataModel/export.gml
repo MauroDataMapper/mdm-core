@@ -37,4 +37,11 @@ DataModel dm = dataModel as DataModel
             }
         }
     }
+    if (dm.summaryMetadata) {
+        'mdm:summaryMetadata' {
+            dm.summaryMetadata.each {sm ->
+                layout '/summaryMetadata/export.gml', summaryMetadata: sm
+            }
+        }
+    }
 }
