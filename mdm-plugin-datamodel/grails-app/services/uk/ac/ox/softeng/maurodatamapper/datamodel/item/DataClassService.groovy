@@ -928,7 +928,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
                      DataClass parentDataClassInSource = null, DataClass parentDataClassInTarget = null) {
 
         if (pathInTarget.size() < 2)
-            throw new ApiInternalException("DCSXX", "Path ${pathInTarget} was shorter than expected")
+            throw new ApiInternalException("DCS03", "Path ${pathInTarget} was shorter than expected")
 
         // Get the first node, which should be a dc
         PathNode dataClassNode = pathInTarget.getPathNodes()[0]
@@ -938,12 +938,11 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
                 findByDataModelIdAndLabel(sourceDataModel.id, dataClassNode.identifier)
 
         if (!sourceDataClass)
-            throw new ApiInternalException("DCSXX", "Source Data Class does not exist")
+            throw new ApiInternalException("DCS04", "Source Data Class does not exist")
 
         DataClass targetDataClass = parentDataClassInTarget ?
-                parentDataClassInTarget.getDataClasses().find{it.label == dataClassNode.identifier} :
-                targetDataModel.getChildDataClasses().find{it.label == dataClassNode.identifier}
-                //targetDataModel.getChildDataClasses().find{it.label == dataClassNode.identifier && !it.parentDataClass}
+            parentDataClassInTarget.getDataClasses().find{it.label == dataClassNode.identifier} :
+            targetDataModel.getChildDataClasses().find{it.label == dataClassNode.identifier}
 
         if (!targetDataClass) {
             //Create it
@@ -953,10 +952,8 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
             )
 
             targetDataClass = copyCatalogueItemInformation(sourceDataClass, targetDataClass, user, userSecurityPolicyManager, false, null)
-            //setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
             if (parentDataClassInTarget) {
-                //targetDataClass.parentDataClass = parentDataClassInTarget
                 parentDataClassInTarget.addToDataClasses(targetDataClass)
             } else {
                 targetDataModel.addToDataClasses(targetDataClass)
@@ -964,7 +961,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
 
 
             if (!targetDataClass.validate())
-                throw new ApiInvalidModelException('DCS01', 'Subsetted DataClass is invalid', targetDataClass.errors, messageSource)
+                throw new ApiInvalidModelException('DCS05', 'Subsetted DataClass is invalid', targetDataClass.errors, messageSource)
 
             save(targetDataClass)
         }
@@ -981,7 +978,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
             dataElementService.validate(dataElementInTarget)
             dataElementService.save(dataElementInTarget)
         } else {
-            throw new ApiInternalException('DCS01', "Unexpected node prefix ${nextNode.prefix}")
+            throw new ApiInternalException('DCS06', "Unexpected node prefix ${nextNode.prefix}")
         }
 
         validate(targetDataClass)
