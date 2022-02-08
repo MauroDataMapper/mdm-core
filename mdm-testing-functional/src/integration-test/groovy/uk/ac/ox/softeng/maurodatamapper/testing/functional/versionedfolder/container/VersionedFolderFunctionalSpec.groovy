@@ -509,7 +509,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         when:
         loginEditor()
-        POST('dataModels/import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.0', [
+        POST('dataModels/import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
             finalised : false,
             modelName : 'Functional Test Import',
             folderId  : id,
@@ -537,7 +537,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                 "exporter": {
                     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
                     "name": "DataModelJsonExporterService",
-                    "version": "3.0"
+                    "version": "3.1"
                 }
             }
         }'''.bytes.toList()
@@ -561,7 +561,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         when:
         loginEditor()
-        POST('dataModels/import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.0', [
+        POST('dataModels/import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
             finalised : false,
             modelName : 'Functional Test Import',
             folderId  : id,
@@ -589,7 +589,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                 "exporter": {
                     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
                     "name": "DataModelJsonExporterService",
-                    "version": "3.0"
+                    "version": "3.1"
                 }
             }
         }'''.bytes.toList()

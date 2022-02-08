@@ -245,19 +245,18 @@ If you have not provided all the information at the DataModel level then a DataT
   </xs:complexType>
   <xs:complexType name="summaryMetadataCollectionType">
     <xs:sequence>
-      <xs:element maxOccurs="unbounded" name="summaryMetadataType" type="mdm:summaryMetadataType"/>
+      <xs:element maxOccurs="unbounded" name="summaryMetadata" type="mdm:summaryMetadataType"/>
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="summaryMetadataType">
     <xs:sequence>
       <xs:element name="id" type="mdm:uuid" minOccurs="0"/>
-      <xs:element name="createdBy" type="xs:dateTime" minOccurs="0"/>
+      <xs:element name="createdBy" type="mdm:mandatoryString"/>
       <xs:element name="lastUpdated" type="xs:dateTime" minOccurs="0"/>
       <xs:element name="label" type="mdm:mandatoryString"/>
       <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string"/>
       <xs:element minOccurs="1" name="summaryMetadataType" type="mdm:summaryMetadataTypeEnum"/>
-      <xs:element minOccurs="0" name="summaryMetadataReports"
-        type="mdm:summaryMetadataCollectionType"/>
+      <xs:element minOccurs="0" name="summaryMetadataReports" type="mdm:summaryMetadataReports"/>
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="summaryMetadataReports">

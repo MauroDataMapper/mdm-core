@@ -24,6 +24,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FileParameter
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
@@ -155,6 +157,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         !dm.annotations
         !dm.metadata
         !dm.classifiers
+        !dm.summaryMetadata
         !dm.dataTypes
         !dm.dataClasses
     }
@@ -173,6 +176,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         !dm.annotations
         !dm.metadata
         dm.classifiers.size() == 2
+        !dm.summaryMetadata
         !dm.dataTypes
         !dm.dataClasses
     }
@@ -206,6 +210,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         then:
         !dm.annotations
         !dm.classifiers
+        !dm.summaryMetadata
         !dm.dataTypes
         !dm.dataClasses
 
@@ -235,6 +240,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         then:
         !dm.metadata
         !dm.classifiers
+        !dm.summaryMetadata
         !dm.dataTypes
         !dm.dataClasses
 
@@ -263,6 +269,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         then:
         !dm.annotations
         !dm.classifiers
+        !dm.summaryMetadata
         !dm.dataClasses
 
         and:
@@ -277,6 +284,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         (dataType as PrimitiveType).units == 'mg'
         !dataType.annotations
         !dataType.metadata
+        !dataType.summaryMetadata
     }
 
     void 'I07a : test inc single primitive type with newline data import'() {
@@ -292,6 +300,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         then:
         !dm.annotations
         !dm.classifiers
+        !dm.summaryMetadata
         !dm.dataClasses
 
         and:
@@ -306,6 +315,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         (dataType as PrimitiveType).units == 'mg'
         !dataType.annotations
         !dataType.metadata
+        !dataType.summaryMetadata
     }
 
     void 'I08 : test inc single primitive type with metadata data import'() {
@@ -321,6 +331,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         then:
         !dm.annotations
         !dm.classifiers
+        !dm.summaryMetadata
         !dm.dataClasses
 
         and:
@@ -333,6 +344,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         dataType.instanceOf(PrimitiveType)
         dataType.label == 'openworld_tick'
         !dataType.annotations
+        !dataType.summaryMetadata
 
         and:
         dataType.metadata.size() == 1
@@ -360,6 +372,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         then:
         !dm.annotations
         !dm.classifiers
+        !dm.summaryMetadata
         !dm.dataClasses
 
         and:
@@ -372,6 +385,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         dataType.instanceOf(PrimitiveType)
         dataType.label == 'openworld_tick'
         !dataType.metadata
+        !dataType.summaryMetadata
 
         and:
         dataType.annotations.size() == 1
@@ -398,6 +412,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         then:
         !dm.annotations
         !dm.classifiers
+        !dm.summaryMetadata
         !dm.dataClasses
 
         and:
@@ -414,6 +429,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         and:
         !dataType.annotations
         !dataType.metadata
+        !dataType.summaryMetadata
 
         when:
         EnumerationValue val1 = ((EnumerationType) dataType).enumerationValues.find { it.key == 'M' }
@@ -448,6 +464,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         then:
         !dm.annotations
         !dm.classifiers
+        !dm.summaryMetadata
         !dm.dataClasses
 
         and:
@@ -475,6 +492,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
 
         and:
         !dataType.annotations
+        !dataType.summaryMetadata
 
         when:
         EnumerationValue val1 = ((EnumerationType) dataType).enumerationValues.find { it.key == 'M' }
@@ -505,6 +523,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         then:
         !dm.annotations
         !dm.classifiers
+        !dm.summaryMetadata
         !dm.dataTypes
 
         and:
@@ -517,6 +536,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         dataClass.label == 'Core'
         !dataClass.annotations
         !dataClass.metadata
+        !dataClass.summaryMetadata
         !dataClass.dataElements
         !dataClass.dataClasses
 
@@ -538,6 +558,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         then:
         !dm.annotations
         !dm.classifiers
+        !dm.summaryMetadata
         !dm.dataTypes
 
         and:
@@ -551,6 +572,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         !dataClass.maxMultiplicity
         !dataClass.minMultiplicity
         !dataClass.annotations
+        !dataClass.summaryMetadata
         !dataClass.dataElements
         !dataClass.dataClasses
 
@@ -584,6 +606,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         then:
         !dm.annotations
         !dm.classifiers
+        !dm.summaryMetadata
         !dm.dataTypes
 
         and:
@@ -597,6 +620,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         !dataClass.maxMultiplicity
         !dataClass.minMultiplicity
         !dataClass.metadata
+        !dataClass.summaryMetadata
         !dataClass.dataElements
         !dataClass.dataClasses
 
@@ -629,6 +653,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         then:
         !dm.annotations
         !dm.classifiers
+        !dm.summaryMetadata
         !dm.dataTypes
 
         when:
@@ -644,6 +669,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         !dataClass.minMultiplicity
         !dataClass.annotations
         !dataClass.metadata
+        !dataClass.summaryMetadata
         !dataClass.dataElements
 
         and:
@@ -659,6 +685,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         then:
         child.label == 'Primary lung cancer pathological (post-op) TNM staging'
         !child.annotations
+        !child.summaryMetadata
         !child.dataElements
         !child.dataClasses
 
@@ -681,6 +708,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         then:
         !dm.annotations
         !dm.classifiers
+        !dm.summaryMetadata
 
         and:
         dm.dataTypes.size() == 1
@@ -693,6 +721,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         dataType.label == 'openworld_tick'
         !dataType.annotations
         !dataType.metadata
+        !dataType.summaryMetadata
 
         when:
         DataClass dataClass = dm.dataClasses.find { it.label == 'Core' }
@@ -706,6 +735,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         !dataClass.minMultiplicity
         !dataClass.annotations
         !dataClass.metadata
+        !dataClass.summaryMetadata
 
         and:
         dataClass.breadcrumbTree.domainId == dataClass.id
@@ -722,6 +752,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         dataElement.description == 'Is the patient undergoing'
         dataElement.maxMultiplicity == 1
         dataElement.minMultiplicity == 1
+        !dataElement.summaryMetadata
 
         and:
         dataElement.metadata.size() == 2
@@ -753,6 +784,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         then:
         !dm.annotations
         !dm.classifiers
+        !dm.summaryMetadata
 
         and:
         dm.dataTypes.size() == 1
@@ -765,6 +797,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         dataType.label == 'child'
         !dataType.annotations
         !dataType.metadata
+        !dataType.summaryMetadata
         dataType.referenceClass.label == 'child'
 
         when:
@@ -780,6 +813,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         dataClass.minMultiplicity == 1
         !dataClass.annotations
         !dataClass.metadata
+        !dataClass.summaryMetadata
 
         and:
         dataClass.breadcrumbTree.domainId == dataClass.id
@@ -823,7 +857,236 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         dataElement.breadcrumbTree.parent.parent.domainId == dm.id
     }
 
-    void 'I18 : test load datamodel with datatypes'() {
+    void 'I18 : test inc summary metadata without summary metadata reports data import'() {
+        given:
+        setupData()
+
+        expect:
+        DataModel.count() == 2
+
+        when:
+        DataModel dm = importAndConfirm(loadTestFile('incSummaryMetadataWithoutReports'))
+
+        then:
+        !dm.metadata
+        !dm.annotations
+        !dm.classifiers
+
+        and:
+        dm.summaryMetadata.size() == 1
+
+        when:
+        SummaryMetadata dmSm = dm.summaryMetadata[0]
+
+        then:
+        dmSm.label == 'Heads and Tails'
+        dmSm.description == 'Instance Count'
+        dmSm.summaryMetadataType == SummaryMetadataType.NUMBER
+
+        and:
+        !dmSm.summaryMetadataReports
+
+        when:
+        DataClass dataClass = dm.dataClasses.find {it.label == 'Heads and Tails'}
+
+        then:
+        dm.dataClasses.size() == 1
+        dm.childDataClasses.size() == 1
+
+        and:
+        dataClass
+        !dataClass.maxMultiplicity
+        !dataClass.minMultiplicity
+        !dataClass.annotations
+        !dataClass.metadata
+
+        and:
+        dataClass.summaryMetadata.size() == 1
+
+        when:
+        SummaryMetadata dcSm = dataClass.summaryMetadata[0]
+
+        then:
+        dcSm.label == 'Coin'
+        dcSm.description == 'Value Distribution'
+        dcSm.summaryMetadataType == SummaryMetadataType.MAP
+
+        and:
+        !dcSm.summaryMetadataReports
+
+        when:
+        DataElement dataElement = dataClass.dataElements.find {it.label == 'Coin'}
+
+        then:
+        dataClass.dataElements.size() == 1
+
+        and:
+        dataElement
+        dataElement.maxMultiplicity == 1
+        dataElement.minMultiplicity == 1
+        !dataElement.annotations
+        !dataElement.metadata
+        dataElement.dataType
+
+        and:
+        dataElement.summaryMetadata.size() == 1
+
+        when:
+        SummaryMetadata deSm = dataElement.summaryMetadata[0]
+
+        then:
+        deSm.label == 'Coin'
+        deSm.description == 'Value Distribution'
+        deSm.summaryMetadataType == SummaryMetadataType.MAP
+
+        and:
+        !deSm.summaryMetadataReports
+
+        when:
+        DataType dataType = dataElement.dataType
+
+        then:
+        dm.dataTypes.size() == 1
+        dataType.id == dm.dataTypes.find {it.label == 'Coin'}.id
+
+        and:
+        !dataType.annotations
+        !dataType.metadata
+        dataType.instanceOf(EnumerationType)
+        dataType.enumerationValues.size() == 2
+        dataType.summaryMetadata.size() == 1
+
+        when:
+        SummaryMetadata dtSm = dataType.summaryMetadata[0]
+
+        then:
+        dtSm.label == 'Coin'
+        dtSm.description == 'Value Distribution'
+        dtSm.summaryMetadataType == SummaryMetadataType.MAP
+
+        and:
+        !dtSm.summaryMetadataReports
+    }
+
+    void 'I19 : test inc summary metadata with summary metadata reports data import'() {
+        given:
+        setupData()
+
+        expect:
+        DataModel.count() == 2
+
+        when:
+        DataModel dm = importAndConfirm(loadTestFile('incSummaryMetadataWithReports'))
+
+        then:
+        !dm.annotations
+        !dm.classifiers
+
+        and:
+        dm.summaryMetadata.size() == 1
+
+        when:
+        SummaryMetadata dmSm = dm.summaryMetadata[0]
+
+        then:
+        dmSm.label == 'Heads and Tails'
+        dmSm.description == 'Instance Count'
+        dmSm.summaryMetadataType == SummaryMetadataType.NUMBER
+
+        and:
+        dmSm.summaryMetadataReports.size() == 1
+        dmSm.summaryMetadataReports[0].reportDate
+        dmSm.summaryMetadataReports[0].reportValue == '27'
+
+        when:
+        DataClass dataClass = dm.dataClasses.find {it.label == 'Heads and Tails'}
+
+        then:
+        dm.dataClasses.size() == 1
+        dm.childDataClasses.size() == 1
+
+        and:
+        dataClass
+        !dataClass.maxMultiplicity
+        !dataClass.minMultiplicity
+        !dataClass.annotations
+        !dataClass.metadata
+
+        and:
+        dataClass.summaryMetadata.size() == 1
+
+        when:
+        SummaryMetadata dcSm = dataClass.summaryMetadata[0]
+
+        then:
+        dcSm.label == 'Coin'
+        dcSm.description == 'Value Distribution'
+        dcSm.summaryMetadataType == SummaryMetadataType.MAP
+
+        and:
+        dcSm.summaryMetadataReports.size() == 1
+        dcSm.summaryMetadataReports[0].reportDate
+        dcSm.summaryMetadataReports[0].reportValue == '{"False":17,"True":10}'
+
+        when:
+        DataElement dataElement = dataClass.dataElements.find {it.label == 'Coin'}
+
+        then:
+        dataClass.dataElements.size() == 1
+
+        and:
+        dataElement
+        dataElement.maxMultiplicity == 1
+        dataElement.minMultiplicity == 1
+        !dataElement.annotations
+        !dataElement.metadata
+        dataElement.dataType
+
+        and:
+        dataElement.summaryMetadata.size() == 1
+
+        when:
+        SummaryMetadata deSm = dataElement.summaryMetadata[0]
+
+        then:
+        deSm.label == 'Coin'
+        deSm.description == 'Value Distribution'
+        deSm.summaryMetadataType == SummaryMetadataType.MAP
+
+        and:
+        deSm.summaryMetadataReports.size() == 1
+        deSm.summaryMetadataReports[0].reportDate
+        deSm.summaryMetadataReports[0].reportValue == '{"False":17,"True":10}'
+
+        when:
+        DataType dataType = dataElement.dataType
+
+        then:
+        dm.dataTypes.size() == 1
+        dataType.id == dm.dataTypes.find {it.label == 'Coin'}.id
+
+        and:
+        !dataType.annotations
+        !dataType.metadata
+        dataType.instanceOf(EnumerationType)
+        dataType.enumerationValues.size() == 2
+        dataType.summaryMetadata.size() == 1
+
+        when:
+        SummaryMetadata dtSm = dataType.summaryMetadata[0]
+
+        then:
+        dtSm.label == 'Coin'
+        dtSm.description == 'Value Distribution'
+        dtSm.summaryMetadataType == SummaryMetadataType.MAP
+
+        and:
+        dtSm.summaryMetadataReports.size() == 1
+        dtSm.summaryMetadataReports[0].reportDate
+        dtSm.summaryMetadataReports[0].reportValue == '{"False":17,"True":10}'
+    }
+
+    void 'I20 : test load datamodel with datatypes'() {
         given:
         setupData()
 
@@ -836,6 +1099,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         then:
         !dm.annotations
         !dm.classifiers
+        !dm.summaryMetadata
         !dm.dataClasses
 
         and:
@@ -860,7 +1124,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         EnumerationValue.count() == 20
     }
 
-    void 'I19 : test load complete exported datamodel from cancer audit dataloader'() {
+    void 'I21 : test load complete exported datamodel from cancer audit dataloader'() {
         given:
         setupData()
 
@@ -873,6 +1137,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         then:
         !dm.annotations
         !dm.classifiers
+        !dm.summaryMetadata
 
         and:
         dm.metadata.size() == 1
@@ -908,6 +1173,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         !dataClass.minMultiplicity
         !dataClass.annotations
         !dataClass.metadata
+        !dataClass.summaryMetadata
 
         and:
         dataClass.dataClasses.size() == 12
