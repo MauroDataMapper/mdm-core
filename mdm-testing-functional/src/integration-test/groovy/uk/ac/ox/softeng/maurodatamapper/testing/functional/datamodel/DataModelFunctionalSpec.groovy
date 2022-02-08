@@ -2331,10 +2331,15 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         verifyResponse OK, response
         source.parentClass.childClass = response.body().items.find{it.label == "child"}
 
+        and:
+        GET("/${source.dataModelId}/dataTypes")
+        verifyResponse OK, response
+        def dataTypeId = responseBody().items.find{it.label == "string"}.id
+
         and: 'there is a Data Element called grandchild on the child Data Class'
         POST("/${source.dataModelId}/dataClasses/${source.parentClass.childClass.id}/dataElements", [
             "label": "grandchild",
-            "dataType": ["label": "string", "domainType": "PrimitiveType"]
+            "dataType": dataTypeId
         ])
         verifyResponse CREATED, response
         source.parentClass.childClass.grandchild = response.body()
