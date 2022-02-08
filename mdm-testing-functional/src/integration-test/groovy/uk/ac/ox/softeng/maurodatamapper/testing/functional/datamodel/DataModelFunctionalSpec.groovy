@@ -75,6 +75,9 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
  *
  *  |   GET    | /api/dataModels/${dataModelId}/search  | Action: search
  *  |   POST   | /api/dataModels/${dataModelId}/search  | Action: search
+ *
+ *  |   POST   | /api/dataModels/${dataModelId}/subset/${otherDataModelId}      | Action: subset
+ *  |   GET    | /api/dataModels/${dataModelId}/intersects/${otherDataModelId}  | Action: search
  * </pre>
  * @see uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelController
  */
@@ -2519,6 +2522,10 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         !response.body().items.find{it.label == 'parent'}
 
         cleanup:
-        DELETE("$target.dataModelId")
+        loginAdmin()
+        DELETE("/${target.dataModelId}?permanent=true")
+        verifyResponse NO_CONTENT, response
+        DELETE("/${source.dataModelId}/dataClasses/${source.parentClass.childClass.id}/dataElements/${source.parentClass.childClass.grandchild.id}")
+        verifyResponse NO_CONTENT, response
     }
 }
