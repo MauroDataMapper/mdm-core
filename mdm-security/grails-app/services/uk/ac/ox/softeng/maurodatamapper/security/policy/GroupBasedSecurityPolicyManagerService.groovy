@@ -153,11 +153,11 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
             updateBuiltInSecurity(securableResource, changedSecurityProperties)
         }
         if (Utils.parentClassIsAssignableFromChild(Model, securableResource.class)) {
-            log.info('Updating security for model due to {} changes', changedSecurityProperties)
+            log.debug('Updating security for model due to {} changes', changedSecurityProperties)
             refreshAllUserSecurityPolicyManagersByModel(currentUser, securableResource as Model, changedSecurityProperties)
         }
         if (Utils.parentClassIsAssignableFromChild(VersionedFolder, securableResource.class)) {
-            log.info('Updating security for VersionedFolder due to {} changes', changedSecurityProperties)
+            log.debug('Updating security for VersionedFolder due to {} changes', changedSecurityProperties)
             refreshAllUserSecurityPolicyManagersByVersionedFolder(currentUser, securableResource as VersionedFolder, changedSecurityProperties)
         }
 
