@@ -320,19 +320,23 @@ class FolderService extends ContainerService<Folder> {
     Folder copyFolder(Folder original, Folder folderToCopyInto, User copier, boolean copyPermissions, String modelBranchName,
                       Version modelCopyDocVersion, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
         Folder copiedFolder = new Folder(deleted: false, parentFolder: folderToCopyInto)
-        copyFolder(original, copiedFolder, original.label, copier, copyPermissions, modelBranchName, modelCopyDocVersion, throwErrors,
+        copyFolder(original, copiedFolder, original.label, copier, copyPermissions, modelBranchName, modelCopyDocVersion, throwErrors, false,
                    userSecurityPolicyManager)
     }
 
     Folder copyFolder(Folder original, Folder copiedFolder, String label, User copier, boolean copyPermissions, String modelBranchName,
-                      Version modelCopyDocVersion, boolean throwErrors,
+                      Version modelCopyDocVersion, boolean throwErrors, boolean clearSession,
                       UserSecurityPolicyManager userSecurityPolicyManager) {
         log.debug('Copying folder {}[{}]', original.id, original.label)
         long start = System.currentTimeMillis()
         copyFolderPass(CopyPassType.FIRST_PASS, original, copiedFolder, label, copier, copyPermissions, modelBranchName, modelCopyDocVersion,
                        throwErrors, userSecurityPolicyManager)
+        sessionFactory.currentSession.flush()
+        if (clearSession) sessionFactory.currentSession.clear()
         copyFolderPass(CopyPassType.SECOND_PASS, original, copiedFolder, label, copier, copyPermissions, modelBranchName, modelCopyDocVersion,
                        throwErrors, userSecurityPolicyManager)
+        sessionFactory.currentSession.flush()
+        if (clearSession) sessionFactory.currentSession.clear()
         copyFolderPass(CopyPassType.THIRD_PASS, original, copiedFolder, label, copier, copyPermissions, modelBranchName, modelCopyDocVersion,
                        throwErrors, userSecurityPolicyManager)
         log.debug('Folder copy complete in {}', Utils.timeTaken(start))
@@ -463,7 +467,7 @@ class FolderService extends ContainerService<Folder> {
                                                                   "${workingModel.label}${labelSuffix}",
                                                                   copyDocVersion, branchName, throwErrors,
                                                                   userSecurityPolicyManager)
-                            log.debug('Validating and saving model copy')
+                            log.debug('Validating and saving model copy {}', copiedModel.path)
                             service.validate(copiedModel)
                             if (copiedModel.hasErrors()) {
                                 throw new ApiInvalidModelException('VFS02', 'Copied Model is invalid', copiedModel.errors, messageSource)

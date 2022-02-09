@@ -531,7 +531,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
                                                          parentFolder: parentFolder,
                                                          branchName: branchName,
                                                          authority: authorityService.defaultAuthority)
-        folderService.copyFolder(original, folderCopy, label, copier, copyPermissions, branchName, copyDocVersion, throwErrors,
+        folderService.copyFolder(original, folderCopy, label, copier, copyPermissions, branchName, copyDocVersion, throwErrors, true,
                                  userSecurityPolicyManager) as VersionedFolder
     }
 
@@ -893,13 +893,13 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     void processDeletionPatchOfFolder(Folder folder) {
         log.debug('Deleting Folder from VersionedFolder')
-        folderService.delete(folder, true)
+        folderService.delete(folder, true, false)
     }
 
     void processDeletionPatchOfModel(Model model) {
         ModelService modelService = folderService.findModelServiceForModel(model)
         log.debug('Deleting Model from VersionedFolder')
-        modelService.delete(model, true)
+        modelService.delete(model, true, false)
     }
 
     void processDeletionPatchOfModelItem(ModelItem modelItem, VersionedFolder targetVersionedFolder, Path relativePathToRemoveFrom) {
@@ -914,7 +914,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         if (!multiFacetItemAwareService) throw new ApiInternalException('MSXX',
                                                                         "No domain service to handle deletion of [${multiFacetItemAware.domainType}]")
         log.debug('Deleting Facet from path [{}]', path)
-        multiFacetItemAwareService.delete(multiFacetItemAware)
+        multiFacetItemAwareService.delete(multiFacetItemAware, false)
 
         MultiFacetAware multiFacetAwareItem =
             pathService.findResourceByPathFromRootResource(targetVersionedFolder, path.getParent(),
