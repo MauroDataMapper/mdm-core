@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.traits.domain
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 
 import groovy.util.logging.Slf4j
+import org.hibernate.TransientObjectException
 
 /**
  * @since 24/09/2020
@@ -28,10 +29,21 @@ import groovy.util.logging.Slf4j
 trait IndexedSiblingAware {
 
     void fullSortOfChildren(Collection<? extends ModelItem> children) {
-        log.trace('Full sort of {} children', children.size())
         if (!children) return
-        children.sort().eachWithIndex { ModelItem mi, int i ->
-            if (mi.idx != i) mi.idx = i
+        //        Map<String, Collection<ModelItem>> idxExists = children.groupBy {(it.idx != null && it.idx != Integer.MAX_VALUE).toString()}
+        //        if(!idxExists.false) return
+        //        log.debug('Full sort of {} children. {} have idx; {} do not', children.size(), idxExists.true?.size()?:0, idxExists.false?.size()?:0)
+        //        Integer offset = idxExists.true?.max {it.idx}?.idx?:0
+        //        idxExists.false.sort().eachWithIndex { ModelItem mi, int i ->
+        //            if (mi.idx != i+offset) mi.idx = i+offset
+        //        }
+        if (children.size() == 1) {
+            children.first().idx = 0
+        } else {
+            log.trace('Full sort of {} children', children.size())
+            children.sort().eachWithIndex {ModelItem mi, int i ->
+                if (mi.idx != i) mi.idx = i
+            }
         }
     }
 
@@ -42,23 +54,17 @@ trait IndexedSiblingAware {
      * @param Set <ModelItem>  siblings   The siblings of the updated item
      */
     void updateSiblingIndexes(ModelItem updated, Collection<ModelItem> siblings) {
-        log.trace('Updating sibling indexes {}:{}, siblings size {}, currentIndex {}, indexChanged {}, original value {}',
+        log.trace('Updating sibling indexes {}:{}:{}, siblings size {}, currentIndex {}, original value {}',
                   updated.domainType,
                   updated.label,
+                  updated.id,
                   siblings.size(),
                   updated.idx,
-                  updated.hasChanged('idx'),
                   updated.getOriginalValue('idx'))
         //If the updated item does not currently have an index then add it to the end of the indexed list
         if (updated.idx == null) {
             log.trace('>> No idx')
             updated.idx = siblings ? siblings.size() - 1 : 0
-            return
-        }
-
-        //If the update did not actually change the index then do nothing
-        if (!updated.hasChanged('idx')) {
-            log.trace('>> IDX hasnt changed')
             return
         }
 
@@ -68,8 +74,17 @@ trait IndexedSiblingAware {
             return
         }
 
-        log.trace('>> Sorting and reordering idxes')
+        // MI has previously been saved which means we want to be optimised about what we do
+        // If not saved then "hasChanged" will always return true, if saved then "hasChanged" may not work.
+        // If not saved then "isDirty" will return false, if saved then isDirty will always work
+        // If the update did not actually change the index then do nothing
+        if (updated.id && !hasIdxChanged(updated)) {
+            log.trace('>> idx hasnt changed')
+            return
+        }
 
+        // If never saved before or has been saved and the idx has changed then we need to make sure all the siblings are ordered
+        log.trace('>> Sorting and reordering idxes')
         sortAndReorderAllIndexes(updated, siblings)
     }
 
@@ -109,6 +124,14 @@ trait IndexedSiblingAware {
                 mi.save(flush: false, validate: false)
             }
             log.trace('After >> EV {} has idx {} (Dirty: {})', mi.label, mi.idx, mi.isDirty())
+        }
+    }
+
+    boolean hasIdxChanged(ModelItem modelItem){
+        try{
+            return modelItem.isDirty('idx')
+        }catch(TransientObjectException ignored){
+            return modelItem.hasChanged('idx')
         }
     }
 

@@ -67,6 +67,10 @@ class SemanticLink implements MultiFacetItemAware {
         unconfirmed = false
     }
 
+//    def beforeValidate(){
+//        beforeValidateCheck()
+//    }
+
     @Override
     def beforeInsert(){
         beforeInsertCheck()

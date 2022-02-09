@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
 import grails.compiler.GrailsCompileStatic
+import groovy.transform.CompileDynamic
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -50,13 +51,20 @@ trait MultiFacetItemAware extends MdmDomain {
      *
      * @return boolean true if allowed to continue insert, false otherwise
      */
-  def beforeInsertCheck(){
-        if(!multiFacetAwareItemId && !multiFacetAwareItem) throw new ApiInternalException('MFIA', 'No multiFacetAwareItemId and no multiFacetAwareItem')
-        if(!multiFacetAwareItemId) {
+    def beforeInsertCheck() {
+        if (!multiFacetAwareItemId && !multiFacetAwareItem) throw new ApiInternalException('MFIA', 'No multiFacetAwareItemId and no multiFacetAwareItem')
+        if (!multiFacetAwareItemId) {
             if (!multiFacetAwareItem.getId()) throw new ApiInternalException('MFIA', 'No multiFacetAwareItemId and no multiFacetAwareItem.id')
             multiFacetAwareItemId = multiFacetAwareItem.getId()
         }
-      true
+        true
+    }
+
+    @CompileDynamic
+    def beforeValidateCheck(MultiFacetAware multiFacetAware) {
+        if (!createdBy) createdBy = multiFacetAware.createdBy
+        setMultiFacetAwareItem(multiFacetAware)
+        if (this.respondsTo('beforeValidate')) this.beforeValidate()
     }
 
     //static transients = ['multiFacetAwareItem']

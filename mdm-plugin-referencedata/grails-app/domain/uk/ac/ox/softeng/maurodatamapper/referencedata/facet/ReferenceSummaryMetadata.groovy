@@ -58,6 +58,10 @@ class ReferenceSummaryMetadata implements MultiFacetItemAware, InformationAware 
         summaryMetadataReports cascade: 'all-delete-orphan'
     }
 
+//    def beforeValidate(){
+//        beforeValidateCheck()
+//    }
+
     @Override
     def beforeInsert(){
         beforeInsertCheck()

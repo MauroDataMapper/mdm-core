@@ -57,7 +57,7 @@ trait CatalogueItem<D extends Diffable> implements MdmDomain, InformationAware, 
                 list = aliases.collect {(it as Map).alias as String}
             } else list = aliases
 
-            aliasString = list.collect { (it as String).trim() }?.join('|')
+            aliasString = list.collect {(it as String).trim()}?.join('|')
         }
         aliasesString = aliasString ?: null
     }
@@ -76,23 +76,16 @@ trait CatalogueItem<D extends Diffable> implements MdmDomain, InformationAware, 
             breadcrumbTree = new BreadcrumbTree(this)
         }
         metadata?.each {
-            it.multiFacetAwareItem = this
-            if (!it.createdBy) it.createdBy = createdBy
-            it.beforeValidate()
+            it.beforeValidateCheck(this)
         }
         annotations?.each {
-            it.multiFacetAwareItem = this
-            if (!it.createdBy) it.createdBy = createdBy
-            it.beforeValidate()
+            it.beforeValidateCheck(this)
         }
         referenceFiles?.each {
-            it.multiFacetAwareItem = this
-            if (!it.createdBy) it.createdBy = createdBy
-            it.beforeValidate()
+            it.beforeValidateCheck(this)
         }
         rules?.each {
-            it.multiFacetAwareItem = this
-            if (!it.createdBy) it.createdBy = createdBy
+            it.beforeValidateCheck(this)
         }
     }
 

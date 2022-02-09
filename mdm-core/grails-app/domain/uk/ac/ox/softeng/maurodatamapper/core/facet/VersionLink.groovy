@@ -67,6 +67,10 @@ class VersionLink implements MultiFacetItemAware {
     VersionLink() {
     }
 
+//    def beforeValidate(){
+//        beforeValidateCheck()
+//    }
+
     @Override
     def beforeInsert(){
         beforeInsertCheck()

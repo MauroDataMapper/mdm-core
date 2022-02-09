@@ -87,6 +87,7 @@ class Metadata implements MultiFacetItemAware, Diffable<Metadata> {
 
     def beforeValidate() {
         value = value ?: 'N/A'
+//        beforeValidateCheck()
     }
 
     @Override

@@ -249,6 +249,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     }
 
     Collection<DataElement> saveAllAndGetDataElements(Collection<DataClass> dataClasses) {
+        if(!dataClasses) return []
 
         List<Classifier> classifiers = dataClasses.collectMany { it.classifiers ?: [] } as List<Classifier>
         if (classifiers) {

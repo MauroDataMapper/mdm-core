@@ -94,7 +94,7 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
 
     static mapping = {
         summaryMetadata cascade: 'all-delete-orphan'
-        dataClass index: 'data_element_data_class_idx', cascade: 'none'
+        dataClass index: 'data_element_data_class_idx', cascade: 'none', cascadeValidate: 'none'
         dataType index: 'data_element_data_type_idx', cascade: 'none', fetch: 'join', cascadeValidate: 'dirty'
         model cascade: 'none'
         importingDataClasses cascade: 'none', cascadeValidate: 'none', joinTable: [
@@ -141,10 +141,9 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
     def beforeValidate() {
         long st = System.currentTimeMillis()
         beforeValidateModelItem()
-        summaryMetadata?.each {
-            if (!it.createdBy) it.createdBy = createdBy
-            it.multiFacetAwareItem = this
-        }
+            summaryMetadata?.each {
+                it.beforeValidateCheck(this)
+            }
         // If datatype is newly created with dataelement and the datamodel is not new
         // If the DM is new then DT validation will happen at the DM level
         if (dataType && !dataType.ident() && getModel().id && !dataType.shouldSkipValidation()) {
@@ -152,7 +151,7 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
             dataType.createdBy = createdBy
             dataType.beforeValidate()
         }
-//        log.trace('DE {} before validate took {}', this.label, Utils.timeTaken(st))
+//        log.debug('DE {} before validate took {}', this.label, Utils.timeTaken(st))
     }
 
     @Override

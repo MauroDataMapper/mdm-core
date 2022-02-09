@@ -95,6 +95,7 @@ class Annotation implements MultiFacetItemAware, InformationAware, Diffable<Anno
     }
 
     def beforeValidate() {
+//        beforeValidateCheck()
         childAnnotations.eachWithIndex { ann, i ->
             if (!ann.label) ann.label = "$label [$i]"
             if (multiFacetAwareItem) {

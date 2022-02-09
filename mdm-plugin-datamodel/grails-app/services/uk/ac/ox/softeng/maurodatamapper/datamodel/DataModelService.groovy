@@ -114,12 +114,6 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         "dataModels"
     }
 
-    /**
-     * DataModel allows the import of DataType and DataClass
-     *
-     @Override
-      List<Class>                domainImportableModelItemClasses() {[DataType, DataClass, PrimitiveType, EnumerationType, ReferenceType]}
-     */
     Long count() {
         DataModel.count()
     }
@@ -132,7 +126,11 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         log.debug('Validating DataModel {}', dataModel.label)
         long totalStart = System.currentTimeMillis()
 
-        dataModel.validate()
+        if (dataModel.id) {
+            validateFullExistingModel(dataModel)
+        } else {
+            dataModel.validate()
+        }
 
         if (dataModel.hasErrors()) {
             Errors existingErrors = dataModel.errors
@@ -147,6 +145,66 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         }
         log.debug('Validated DataModel in {}', Utils.timeTaken(totalStart))
         dataModel
+    }
+
+    /**
+     *  If DM has an id and we want to validate the whole DM then there are massive speedups available due to checks which are in place for validating
+     *  components when they're added to a DM. Therefore use this optimised faster validation for a DM which has an id
+     * @param dataModel
+     * @return
+     */
+    DataModel validateFullExistingModel(DataModel dataModel) {
+        // Extract DCs to validate separately
+        Collection<DataClass> dataClasses = []
+        if (dataModel.dataClasses) {
+            dataClasses.addAll dataModel.dataClasses
+            dataModel.dataClasses.clear()
+        }
+
+        long st = System.currentTimeMillis()
+
+        dataModel.fullSortOfChildren(dataModel.getDataTypes())
+
+        dataModel.validate()
+        log.debug('DataModel base content validation took {}', Utils.timeTaken(st))
+
+        st = System.currentTimeMillis()
+        validateDataClassesForDataModel(dataClasses, dataModel)
+        log.debug('DataModel dataClasses validation took {}', Utils.timeTaken(st))
+
+        dataModel
+    }
+
+    void validateDataClassesForDataModel(Collection<DataClass> allDataClasses, DataModel dataModel) {
+        if (!allDataClasses) return
+
+        log.trace('{} dataclasses to validate', allDataClasses.count {!it.parentDataClass}, allDataClasses.size())
+
+        dataModel.fullSortOfChildren(allDataClasses.findAll {!it.parentDataClass})
+
+        allDataClasses.each {
+            it.dataModel.skipValidation(true)
+            it.skipValidation(true)
+        }
+        dataModel.dataTypes.each {it.skipValidation(true)}
+        allDataClasses.eachWithIndex {dc, i ->
+            long st = System.currentTimeMillis()
+            dc.skipValidation(false)
+            dataClassService.validate(dc)
+            dc.skipValidation(true)
+            long tt = System.currentTimeMillis() - st
+            if (tt >= 1000) log.debug('{} validated in {}', dc.label, Utils.getTimeString(tt))
+        }
+        dataModel.dataClasses.addAll(allDataClasses)
+
+        // To be able to register the errors in the DM we need to add the DCs back to the DM
+        allDataClasses.eachWithIndex {dc, i ->
+            if (dc.hasErrors()) {
+                dc.errors.fieldErrors.each {err ->
+                    dataModel.errors.rejectValue("dataClasses[${i}].${err.field}", err.code, err.arguments, err.defaultMessage)
+                }
+            }
+        }
     }
 
     void delete(UUID id) {
@@ -195,7 +253,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
     @Override
     DataModel saveModelWithContent(DataModel dataModel) {
-        saveModelWithContent(dataModel, ModelItemService.BATCH_SIZE)
+        saveModelWithContent(dataModel, 1000)
     }
 
     DataModel saveModelWithContent(DataModel dataModel, Integer modelItemBatchSize) {
@@ -289,6 +347,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     @Override
     void updateCopiedCrossModelLinks(DataModel copiedDataModel, DataModel originalDataModel) {
         super.updateCopiedCrossModelLinks(copiedDataModel, originalDataModel)
+        if (!copiedDataModel.modelDataTypes) return
 
         copiedDataModel.modelDataTypes.each {ModelDataType mdt ->
 
@@ -310,17 +369,19 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
 
             if (originalModelResourceVersionedFolderPathNode && originalModelResourceVersionedFolderPathNode == originalDataModelVersionedFolderPathNode) {
-                log.debug('Original model resource is inside the same context path as data model for modelDataType [{}]', mdt)
+                log.debug('Original model resource is inside the same context path as data model for modelDataType [{}]', mdt.path)
 
                 // Construct a path from the prefix and label of the model pointed to originally, but with the branch name now used,
                 // to get the copy of the model in the copied folder
                 // Note: Using a method in PathService which does not check security on the securable resource owning the model
                 PathNode originalModelPathNode = fullContextOriginalModelResourcePath.last()
                 MdmDomain replacementModelResource =
-                    pathService.findResourceByPath(Path.from(originalModelPathNode.prefix, originalModelPathNode.getFullIdentifier(copiedDataModel.branchName)))
+                    pathService.findResourceByPath(
+                        Path.from(originalModelPathNode.prefix, originalModelPathNode.getFullIdentifier(copiedDataModel.branchName)))
 
                 if (!replacementModelResource) {
-                    throw new ApiInternalException('DMSXX', "Could not find branched model resource ${originalModelResource.label} in branch ${copiedDataModel.branchName}")
+                    throw new ApiInternalException('DMSXX',
+                                                   "Could not find branched model resource ${originalModelResource.label} in branch ${copiedDataModel.branchName}")
                 }
 
                 // Update the model data type to point to the copy of the model
@@ -370,19 +431,19 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         dataTypeService.saveAll(primitiveTypes, modelItemBatchSize)
         dataTypeService.saveAll(modelDataTypes, modelItemBatchSize)
         int totalDts = enumerationTypes.size() + primitiveTypes.size() + modelDataTypes.size()
-        log.debug('Saved {} dataTypes in {}', totalDts, Utils.timeTaken(subStart))
+        if(totalDts)   log.debug('Saved {} dataTypes in {}', totalDts, Utils.timeTaken(subStart))
 
         subStart = System.currentTimeMillis()
         dataElements.addAll dataClassService.saveAllAndGetDataElements(dataClasses)
-        log.debug('Saved {} dataClasses in {}', dataClasses.size(), Utils.timeTaken(subStart))
+       if(dataClasses) log.debug('Saved {} dataClasses in {}', dataClasses.size(), Utils.timeTaken(subStart))
 
         subStart = System.currentTimeMillis()
         dataTypeService.saveAll(referenceTypes as Collection<DataType>, modelItemBatchSize)
-        log.debug('Saved {} reference datatypes in {}', referenceTypes.size(), Utils.timeTaken(subStart))
+        if(referenceTypes) log.debug('Saved {} reference datatypes in {}', referenceTypes.size(), Utils.timeTaken(subStart))
 
         subStart = System.currentTimeMillis()
         dataElementService.saveAll(dataElements, modelItemBatchSize)
-        log.debug('Saved {} dataElements in {}', dataElements.size(), Utils.timeTaken(subStart))
+       if(dataElements) log.debug('Saved {} dataElements in {}', dataElements.size(), Utils.timeTaken(subStart))
 
 
         log.trace('Content save of DataModel complete in {}', Utils.timeTaken(start))

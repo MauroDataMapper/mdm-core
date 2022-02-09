@@ -200,8 +200,7 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
         modelType = DataModelType.findFor(modelType)?.label
         beforeValidateCatalogueItem()
         summaryMetadata?.each {
-            if (!it.createdBy) it.createdBy = createdBy
-            it.multiFacetAwareItem = this
+            it.beforeValidateCheck(this)
         }
         // New save/validate so all DEs and DCs are also new so sort the indexes now
         // This avoids repeated calls to the individual DE or DC during their beforeValidate
