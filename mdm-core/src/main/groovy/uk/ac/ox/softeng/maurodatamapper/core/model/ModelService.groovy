@@ -297,17 +297,19 @@ abstract class ModelService<K extends Model>
 
     K finaliseModel(K model, User user, Version requestedModelVersion, VersionChangeType versionChangeType,
                     String versionTag) {
-        log.debug('Finalising model')
+        log.debug('Finalising model {}', model.path)
         long start = System.currentTimeMillis()
 
         model.finalised = true
         model.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
-        // No requirement to have a breadcrumbtree
-        breadcrumbTreeService.finalise(model.breadcrumbTree)
-
         model.modelVersion = getNextModelVersion(model, requestedModelVersion, versionChangeType)
-
         model.modelVersionTag = versionTag
+
+        if(model.breadcrumbTree) {
+            // No requirement to have a breadcrumbtree
+            model.breadcrumbTree.update(model)
+            breadcrumbTreeService.finalise(model.breadcrumbTree)
+        }
 
         model.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised Model',
                                description: "${getDomainClass().simpleName} finalised by ${user.firstName} ${user.lastName} on " +
@@ -316,7 +318,7 @@ abstract class ModelService<K extends Model>
                                       "${getDomainClass().simpleName} finalised by ${user.firstName} ${user.lastName} on " +
                                       "${OffsetDateTimeConverter.toString(model.dateFinalised)}",
                                       user)
-        log.debug('Model finalised took {}', Utils.timeTaken(start))
+        log.trace('Model finalised took {}', Utils.timeTaken(start))
         model
     }
 

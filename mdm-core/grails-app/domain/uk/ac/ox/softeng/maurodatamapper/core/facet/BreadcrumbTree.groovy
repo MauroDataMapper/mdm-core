@@ -197,7 +197,7 @@ class BreadcrumbTree {
     }
 
     void update(CatalogueItem catalogueItem) {
-
+        this.domainEntity = catalogueItem
         if (catalogueItem.instanceOf(ModelItem)) {
 
             ModelItem modelItem = catalogueItem as ModelItem
@@ -214,6 +214,7 @@ class BreadcrumbTree {
         }
         buildTree()
         this.path = catalogueItem.path
+        catalogueItem.markDirty('breadcrumbTree')
     }
 
     Breadcrumb getBreadcrumb() {
