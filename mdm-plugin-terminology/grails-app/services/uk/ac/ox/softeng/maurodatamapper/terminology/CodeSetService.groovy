@@ -439,6 +439,11 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
+    void updateModelItemPathsAfterFinalisationOfModel(CodeSet model) {
+// no-op
+    }
+
+    @Override
     List<CodeSet> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
         CodeSet.byMetadataNamespaceAndKey(namespace, key).list(pagination)
     }

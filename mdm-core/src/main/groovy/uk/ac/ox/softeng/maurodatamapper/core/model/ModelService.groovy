@@ -172,6 +172,8 @@ abstract class ModelService<K extends Model>
 
     abstract ExporterProviderService getJsonModelExporterProviderService()
 
+    abstract void updateModelItemPathsAfterFinalisationOfModel(K model)
+
     void deleteModelAndContent(K model) {
         deleteModelsAndContent(Collections.singleton(model.id))
     }
@@ -305,11 +307,16 @@ abstract class ModelService<K extends Model>
         model.modelVersion = getNextModelVersion(model, requestedModelVersion, versionChangeType)
         model.modelVersionTag = versionTag
 
+        // ModelItem paths are like BT treestrings then need to be updated to replace the branch with the model version
+        updateModelItemPathsAfterFinalisationOfModel(model)
+
         if(model.breadcrumbTree) {
             // No requirement to have a breadcrumbtree
             model.breadcrumbTree.update(model)
             breadcrumbTreeService.finalise(model.breadcrumbTree)
         }
+
+
 
         model.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised Model',
                                description: "${getDomainClass().simpleName} finalised by ${user.firstName} ${user.lastName} on " +
@@ -1065,5 +1072,16 @@ abstract class ModelService<K extends Model>
     @Override
     boolean isMultiFacetAwareFinalised(K multiFacetAwareItem) {
         multiFacetAwareItem.finalised
+    }
+
+    void updateModelItemPathsAfterFinalisationOfModel(String pathBefore, String pathAfter, String schema, String table){
+        String pathLike = "${pathBefore}%"
+        sessionFactory.currentSession.createSQLQuery("UPDATE ${schema}.${table} " +
+                                                     'SET path = REPLACE(path, :pathBefore, :pathAfter) ' +
+                                                     'WHERE path LIKE :pathLike')
+            .setParameter('pathBefore', pathBefore)
+            .setParameter('pathAfter', pathAfter)
+            .setParameter('pathLike', pathLike)
+            .executeUpdate()
     }
 }

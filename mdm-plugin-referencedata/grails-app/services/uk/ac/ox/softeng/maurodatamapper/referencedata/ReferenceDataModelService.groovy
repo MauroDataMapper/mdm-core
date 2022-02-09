@@ -670,10 +670,19 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
     }
 
     @Override
-    ReferenceDataJsonExporterService getJsonModelExporterProviderService () {
+    ReferenceDataJsonExporterService getJsonModelExporterProviderService() {
         referenceDataJsonExporterService
     }
 
+    @Override
+    void updateModelItemPathsAfterFinalisationOfModel(ReferenceDataModel model) {
+        String pathBefore = model.uncheckedPath.toString()
+        String pathAfter = model.path.toString()
+        updateModelItemPathsAfterFinalisationOfModel(pathBefore, pathAfter, 'referencedata', 'reference_data_element')
+        updateModelItemPathsAfterFinalisationOfModel(pathBefore, pathAfter, 'referencedata', 'reference_data_type')
+        updateModelItemPathsAfterFinalisationOfModel(pathBefore, pathAfter, 'referencedata', 'reference_data_value')
+        updateModelItemPathsAfterFinalisationOfModel(pathBefore, pathAfter, 'referencedata', 'reference_enumeration_value')
+    }
 
     @Override
     List<ReferenceDataModel> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {

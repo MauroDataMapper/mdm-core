@@ -50,7 +50,7 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         referenceDataPluginMergeBuilder = new ReferenceDataPluginMergeBuilder(functionalSpec)
     }
 
-    Map buildComplexModelsForBranching() {
+    Map buildComplexModelsForFinalisation() {
         // Somethings up with the MD, when running properly the diff happily returns the changed MD, but under test it doesnt.
         // The MD exists in the daabase and is returned if using the MD endpoint but when calling folder.metadata the collection is empty.
         // When run-app all the tables are correctly populated and the collection is not empty
@@ -62,24 +62,12 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         ])
         verifyResponse(CREATED, response)
         String commonAncestorId = responseBody().id
-        //        POST("$commonAncestorId/metadata", [namespace: 'functional.test', key: 'nothingDifferent', value: 'this shouldnt change'])
-        //        verifyResponse CREATED, response
-        //        POST("$commonAncestorId/metadata", [namespace: 'functional.test', key: 'modifyOnSource', value: 'some original value'])
-        //        verifyResponse CREATED, response
-        //        POST("$commonAncestorId/metadata", [namespace: 'functional.test', key: 'deleteFromSource', value: 'some other original value'])
-        //        verifyResponse CREATED, response
-        //        POST("$commonAncestorId/metadata", [namespace: 'functional.test', key: 'modifyAndDelete', value: 'some other original value 2'])
-        //        verifyResponse CREATED, response3
 
         String dataModelCa = dataModelPluginMergeBuilder.buildCommonAncestorDataModel(commonAncestorId, '1', simpleTerminologyId)
         String terminologyCa = terminologyPluginMergeBuilder.buildCommonAncestorTerminology(commonAncestorId)
         String codeSetCa = terminologyPluginMergeBuilder.buildCommonAncestorCodeSet(commonAncestorId, terminologyCa)
         dataModelPluginMergeBuilder.buildCommonAncestorModelDataType(dataModelCa, terminologyCa)
         String referenceDataModelCa = referenceDataPluginMergeBuilder.buildCommonAncestorReferenceDataModel(commonAncestorId)
-
-        // Finalise
-        PUT("versionedFolders/$commonAncestorId/finalise", [versionChangeType: 'Major'])
-        verifyResponse OK, response
 
         [
             commonAncestorId     : commonAncestorId,
@@ -88,6 +76,16 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
             codeSetCaId          : codeSetCa,
             referenceDataModelCa : referenceDataModelCa
         ]
+    }
+
+    Map buildComplexModelsForBranching() {
+        Map data = buildComplexModelsForFinalisation()
+
+        // Finalise
+        PUT("versionedFolders/$data.commonAncestorId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        data
     }
 
     Map buildSubFolderModelsForBranching() {

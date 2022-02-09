@@ -611,6 +611,15 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
+    void updateModelItemPathsAfterFinalisationOfModel(Terminology model) {
+        String pathBefore = model.uncheckedPath.toString()
+        String pathAfter = model.path.toString()
+        updateModelItemPathsAfterFinalisationOfModel(pathBefore, pathAfter, 'terminology','term')
+        updateModelItemPathsAfterFinalisationOfModel(pathBefore, pathAfter, 'terminology','term_relationship')
+        updateModelItemPathsAfterFinalisationOfModel(pathBefore, pathAfter, 'terminology','term_relationship_type')
+    }
+
+    @Override
     void propagateContentsInformation(Terminology catalogueItem, Terminology previousVersionCatalogueItem) {
         previousVersionCatalogueItem.terms.each { previousTerm ->
             Term term = catalogueItem.terms.find { it.label == previousTerm.label }
