@@ -101,7 +101,9 @@ class ApiPropertyController extends EditLoggingController<ApiProperty> {
         Collection instances = createResources()
 
         instances.each {instance ->
-            saveResource instance
+            if (instance.validate()) {
+                saveResource instance
+            }
         }
 
         // Respond with the index listing
