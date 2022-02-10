@@ -103,14 +103,14 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
         [count: 2,
          items: [
                  [id: 'e2b3398f-f3e5-4d70-8793-25526bbe0dbe',
-                  key     : 'functional.test.key1',
+                  key     : 'functional.test.key.one',
                   value   : 'Some random thing1',
                   category: 'Functional Test',
                   publiclyVisible: false,
                   lastUpdatedBy: 'hello@example.com',
                   lastUpdated: '2021-10-27T11:02:32.682Z'],
                  [id: 'e2b3398f-f3e5-4d70-8793-25526bbe0dbf',
-                  key     : 'functional.test.key2',
+                  key     : 'functional.test.key.two',
                   value   : 'Some random thing2',
                   category: 'Functional Test',
                   publiclyVisible: false,
@@ -128,7 +128,7 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
             <items>
                 <apiProperty>
                     <id>e2b3398f-f3e5-4d70-8793-25526bbe0dbe</id>
-                    <key>functional.test.xml.key.1</key>
+                    <key>functional.test.xml.key.one</key>
                     <value>XML value 1</value>
                     <category>XMLTests</category>
                     <publiclyVisible>false</publiclyVisible>
@@ -138,7 +138,7 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
                 </apiProperty>
                 <apiProperty>
                     <id>e2b3398f-f3e5-4d70-8793-25526bbe0dbf</id>
-                    <key>functional.test.xml.key.2</key>
+                    <key>functional.test.xml.key.two</key>
                     <value>XML value 2</value>
                     <category>XMLTests</category>
                     <publiclyVisible>false</publiclyVisible>
@@ -325,16 +325,24 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
 
         then: 'The response is correct and contains properties with keys functional.test.key1 and functional.test.key2'
         verifyResponse(HttpStatus.OK, response)
-        response.body().items.any{it.key == "functional.test.key1"}
-        response.body().items.any{it.key == "functional.test.key2"}
+        response.body().items.findAll{it.key == "functional.test.key.one"}.size() == 1
+        response.body().items.findAll{it.key == "functional.test.key.two"}.size() == 1
 
         and: 'The lastUpdatedBy property was ignored from the posted data'
-        response.body().items.find{it.key == "functional.test.key1"}.lastUpdatedBy == "unlogged_user@mdm-core.com"
-        response.body().items.find{it.key == "functional.test.key2"}.lastUpdatedBy == "unlogged_user@mdm-core.com"
+        response.body().items.find{it.key == "functional.test.key.one"}.lastUpdatedBy == "unlogged_user@mdm-core.com"
+        response.body().items.find{it.key == "functional.test.key.two"}.lastUpdatedBy == "unlogged_user@mdm-core.com"
+
+        when: 'Replay the POST'
+        POST(getSaveCollectionPath(), getValidJsonCollection(), MAP_ARG, true)
+
+        then: 'There are not duplicates in the response'
+        verifyResponse(HttpStatus.OK, response)
+        response.body().items.findAll{it.key == "functional.test.key.one"}.size() == 1
+        response.body().items.findAll{it.key == "functional.test.key.two"}.size() == 1
 
         cleanup:
-        String id1 = response.body().items.find{it.key == "functional.test.key1"}.id
-        String id2 = response.body().items.find{it.key == "functional.test.key2"}.id
+        String id1 = response.body().items.find{it.key == "functional.test.key.one"}.id
+        String id2 = response.body().items.find{it.key == "functional.test.key.two"}.id
         DELETE(getDeleteEndpoint(id1))
         assert response.status() == HttpStatus.NO_CONTENT
         DELETE(getDeleteEndpoint(id2))
@@ -348,16 +356,24 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
 
         then: 'The response is correct and contains properties with keys functional.test.xml.key.1 and functional.test.xml.key.2'
         verifyResponse(HttpStatus.OK, response)
-        response.body().items.any{it.key == "functional.test.xml.key.1"}
-        response.body().items.any{it.key == "functional.test.xml.key.2"}
+        response.body().items.findAll{it.key == "functional.test.xml.key.one"}.size() == 1
+        response.body().items.findAll{it.key == "functional.test.xml.key.two"}.size() == 1
 
         and: 'The lastUpdatedBy property was ignored from the posted data'
-        response.body().items.find{it.key == "functional.test.xml.key.1"}.lastUpdatedBy == "unlogged_user@mdm-core.com"
-        response.body().items.find{it.key == "functional.test.xml.key.2"}.lastUpdatedBy == "unlogged_user@mdm-core.com"
+        response.body().items.find{it.key == "functional.test.xml.key.one"}.lastUpdatedBy == "unlogged_user@mdm-core.com"
+        response.body().items.find{it.key == "functional.test.xml.key.two"}.lastUpdatedBy == "unlogged_user@mdm-core.com"
+
+        when: 'Replay the POST'
+        POST(getSaveCollectionPath(), getValidXmlCollection(), MAP_ARG, true, 'application/xml')
+
+        then: 'There are not duplicates in the response'
+        verifyResponse(HttpStatus.OK, response)
+        response.body().items.findAll{it.key == "functional.test.xml.key.one"}.size() == 1
+        response.body().items.findAll{it.key == "functional.test.xml.key.two"}.size() == 1
 
         cleanup:
-        String id1 = response.body().items.find{it.key == "functional.test.xml.key.1"}.id
-        String id2 = response.body().items.find{it.key == "functional.test.xml.key.2"}.id
+        String id1 = response.body().items.find{it.key == "functional.test.xml.key.one"}.id
+        String id2 = response.body().items.find{it.key == "functional.test.xml.key.two"}.id
         DELETE(getDeleteEndpoint(id1))
         assert response.status() == HttpStatus.NO_CONTENT
         DELETE(getDeleteEndpoint(id2))
@@ -371,12 +387,20 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
 
         then: 'The response is correct and contains properties with keys a.csv.collection.key and another.csv.collection.key'
         verifyResponse(HttpStatus.OK, response)
-        response.body().items.any{it.key == "a.csv.collection.key"}
-        response.body().items.any{it.key == "another.csv.collection.key"}
+        response.body().items.findAll{it.key == "a.csv.collection.key"}.size() == 1
+        response.body().items.findAll{it.key == "another.csv.collection.key"}.size() == 1
 
         and: 'The lastUpdatedBy property was ignored from the posted data'
         response.body().items.find{it.key == "a.csv.collection.key"}.lastUpdatedBy == "unlogged_user@mdm-core.com"
         response.body().items.find{it.key == "another.csv.collection.key"}.lastUpdatedBy == "unlogged_user@mdm-core.com"
+
+        when: 'Replay the POST'
+        POST(getSaveCollectionPath(), getValidCsvCollection(), MAP_ARG, true, 'text/csv')
+
+        then: 'There are not duplicates in the response'
+        verifyResponse(HttpStatus.OK, response)
+        response.body().items.findAll{it.key == "a.csv.collection.key"}.size() == 1
+        response.body().items.findAll{it.key == "another.csv.collection.key"}.size() == 1
 
         cleanup:
         String id1 = response.body().items.find{it.key == "a.csv.collection.key"}.id
