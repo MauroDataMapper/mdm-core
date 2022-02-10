@@ -140,6 +140,8 @@ abstract class ModelService<K extends Model>
 
     abstract List<K> findAllByFolderId(UUID folderId)
 
+
+
     abstract K validate(K model)
 
     abstract K saveModelWithContent(K model)
@@ -173,6 +175,10 @@ abstract class ModelService<K extends Model>
     abstract ExporterProviderService getJsonModelExporterProviderService()
 
     abstract void updateModelItemPathsAfterFinalisationOfModel(K model)
+
+    List<K> findAllByFolderIdInList(Collection<UUID> folderIds){
+        getDomainClass().byFolderIdInList(folderIds).list() as List<K>
+    }
 
     void deleteModelAndContent(K model) {
         deleteModelsAndContent(Collections.singleton(model.id))

@@ -123,6 +123,10 @@ trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableRes
         .eq('folder.id', folderId)
     }
 
+    static <T extends Model> DetachedCriteria<T> byFolderIdInList(Collection<UUID> folderIds) {
+        by().inList('folder.id', folderIds)
+    }
+
     static <T extends Model> DetachedCriteria<T> byClassifierId(UUID classifierId) {
         where {
             classifiers {
