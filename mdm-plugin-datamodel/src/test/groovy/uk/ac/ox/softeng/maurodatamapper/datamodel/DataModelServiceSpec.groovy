@@ -40,6 +40,7 @@ import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.testing.services.ServiceUnitTest
 import groovy.util.logging.Slf4j
+import org.hibernate.SessionFactory
 
 @Slf4j
 class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUnitTest<DataModelService> {
@@ -68,7 +69,6 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
             }
         }
-
 
         complexDataModel = buildComplexDataModel()
         simpleDataModel = buildSimpleDataModel()
@@ -174,31 +174,6 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         and:
         service.findAllDataStandards().size() == 3
-    }
-
-    void 'test finalising model'() {
-
-        when:
-        DataModel dataModel = service.get(id)
-
-        then:
-        !dataModel.finalised
-        !dataModel.dateFinalised
-        dataModel.documentationVersion == Version.from('1')
-
-        when:
-        service.finaliseModel(dataModel, admin, null, null, null)
-
-        then:
-        checkAndSave(dataModel)
-
-        when:
-        dataModel = service.get(id)
-
-        then:
-        dataModel.finalised
-        dataModel.dateFinalised
-        dataModel.documentationVersion == Version.from('1')
     }
 
     void 'DMSV01 : test validation on valid model'() {

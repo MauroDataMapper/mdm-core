@@ -717,7 +717,7 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
         modelTreeItem
         modelTreeItem.children.size() == 7
 
-        modelTreeItem.children.collect {it.label} == ['emptyclass', 'integer', 'string', 'child', 'yesnounknown', 'parent', 'content']
+        modelTreeItem.children.collect {it.label} == ['emptyclass', 'integer', 'string', 'child', 'parent', 'content', 'yesnounknown']
 
         when:
         ModelItemTreeItem et = modelTreeItem.children.find {it.label == 'yesnounknown'}
