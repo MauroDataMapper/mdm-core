@@ -447,8 +447,8 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec implements CsvComparer, X
         when: 'Replay the POST'
         POST('/apply', getValidJsonCollection(), MAP_ARG, false)
 
-        then: 'There are still only 2 extra items in the index'
-        response.body().count == propertyCount + 2
+        then: 'It is unprocessable'
+        verifyResponse UNPROCESSABLE_ENTITY, response
 
         cleanup:
         removeValidIdObject(id1)
@@ -479,16 +479,16 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec implements CsvComparer, X
         response.body().items.find{it.key == "another.csv.collection.key"}.lastUpdatedBy == "admin@maurodatamapper.com"
         response.body().items.find{it.key == "a.csv.collection.key"}.createdBy == "admin@maurodatamapper.com"
         response.body().items.find{it.key == "another.csv.collection.key"}.createdBy == "admin@maurodatamapper.com"
-
-        when: 'Replay the POST'
-        POST('/apply', getValidCsvCollection(), MAP_ARG, false)
-
-        then: 'There are still only 2 extra items in the index'
-        response.body().count == propertyCount + 2
-
-        cleanup:
         String id1 = response.body().items.find{it.key == "a.csv.collection.key"}.id
         String id2 = response.body().items.find{it.key == "another.csv.collection.key"}.id
+
+        when: 'Replay the POST'
+        POST('/apply', getValidCsvCollection(), MAP_ARG, false, 'text/csv')
+
+        then: 'It is unprocessable'
+        verifyResponse UNPROCESSABLE_ENTITY, response
+
+        cleanup:
         removeValidIdObject(id1)
         removeValidIdObject(id2)
     }
@@ -517,16 +517,16 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec implements CsvComparer, X
         response.body().items.find{it.key == "functional.test.xml.key.two"}.lastUpdatedBy == "admin@maurodatamapper.com"
         response.body().items.find{it.key == "functional.test.xml.key.one"}.createdBy == "admin@maurodatamapper.com"
         response.body().items.find{it.key == "functional.test.xml.key.two"}.createdBy == "admin@maurodatamapper.com"
-
-        when: 'Replay the POST'
-        POST('/apply', getValidXmlCollection(), MAP_ARG, false)
-
-        then: 'There are still only 2 extra items in the index'
-        response.body().count == propertyCount + 2
-
-        cleanup:
         String id1 = response.body().items.find{it.key == "functional.test.xml.key.one"}.id
         String id2 = response.body().items.find{it.key == "functional.test.xml.key.two"}.id
+
+        when: 'Replay the POST'
+        POST('/apply', getValidXmlCollection(), MAP_ARG, false,'application/xml')
+
+        then: 'It is unprocessable'
+        verifyResponse UNPROCESSABLE_ENTITY, response
+
+        cleanup:
         removeValidIdObject(id1)
         removeValidIdObject(id2)
     }

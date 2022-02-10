@@ -120,6 +120,28 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
         ]
     }
 
+    // Duplicate keys in the same file
+    Map getInvalidJsonCollection() {
+        [count: 2,
+         items: [
+             [id: 'e2b3398f-f3e5-4d70-8793-25526bbe0dbe',
+              key     : 'functional.test.key.ten',
+              value   : 'Some random thing1',
+              category: 'Functional Test',
+              publiclyVisible: false,
+              lastUpdatedBy: 'hello@example.com',
+              lastUpdated: '2021-10-27T11:02:32.682Z'],
+             [id: 'e2b3398f-f3e5-4d70-8793-25526bbe0dbf',
+              key     : 'functional.test.key.ten',
+              value   : 'Some random thing2',
+              category: 'Functional Test',
+              publiclyVisible: false,
+              lastUpdatedBy: 'hello@example.com',
+              lastUpdated: '2021-10-27T11:02:32.682Z']
+         ]
+        ]
+    }
+
     String getValidXmlCollection() {
         """\
         <?xml version='1.0'?>
@@ -151,10 +173,47 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
         """.stripIndent()
     }
 
+    String getInvalidXmlCollection() {
+        """\
+        <?xml version='1.0'?>
+        <apiProperties>
+            <count>2</count>
+            <items>
+                <apiProperty>
+                    <id>e2b3398f-f3e5-4d70-8793-25526bbe0dbe</id>
+                    <key>functional.test.xml.key.ten</key>
+                    <value>XML value 1</value>
+                    <category>XMLTests</category>
+                    <publiclyVisible>false</publiclyVisible>
+                    <lastUpdatedBy>bootstrap.user@maurodatamapper.com</lastUpdatedBy>
+                    <createdBy>example@maurodatamapper.com</createdBy>
+                    <lastUpdated>2021-10-26T13:57:57.342140+01:00</lastUpdated>
+                </apiProperty>
+                <apiProperty>
+                    <id>e2b3398f-f3e5-4d70-8793-25526bbe0dbf</id>
+                    <key>functional.test.xml.key.ten</key>
+                    <value>XML value 2</value>
+                    <category>XMLTests</category>
+                    <publiclyVisible>false</publiclyVisible>
+                    <lastUpdatedBy>bootstrap.user@maurodatamapper.com</lastUpdatedBy>
+                    <createdBy>example@maurodatamapper.com</createdBy>
+                    <lastUpdated>2021-10-26T13:57:57.342140+01:00</lastUpdated>
+                </apiProperty>                
+            </items>
+        </apiProperties>
+        """.stripIndent()
+    }
+
     String getValidCsvCollection() {
         "id,key,value,category,publiclyVisible,lastUpdatedBy,createdBy,lastUpdated\r\n" +
         "e2b3398f-f3e5-4d70-8793-25526bbe0dbe,a.csv.collection.key,a.csv.collection.value,csvs,false,updater@example.com,creator@example.com,2021-10-27T11:02:32.682Z\r\n" +
         "d2b3398f-f3e5-4d70-8793-25526bbe0dbe,another.csv.collection.key,another.csv.collection.value,csvs,false,updater@example.com,creator@example.com,2021-10-27T11:02:32.682Z"
+    }
+
+    String getInvalidCsvCollection() {
+        "id,key,value,category,publiclyVisible,lastUpdatedBy,createdBy,lastUpdated\r\n" +
+        "e2b3398f-f3e5-4d70-8793-25526bbe0dbe,a.csv.collection.key,a.csv.collection.value,csvs,false,updater@example.com,creator@example.com,2021-10-27T11:02:32.682Z\r\n" +
+        "d2b3398f-f3e5-4d70-8793-25526bbe0dbe,a.csv.collection.key,another.csv.collection.value,csvs,false,updater@example.com,creator@example.com,2021-10-27T11:02:32.682Z"
     }
 
 
@@ -335,7 +394,13 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
         when: 'Replay the POST'
         POST(getSaveCollectionPath(), getValidJsonCollection(), MAP_ARG, true)
 
-        then: 'There are not duplicates in the response'
+        then: 'The response in unprocessable'
+        verifyResponse(HttpStatus.UNPROCESSABLE_ENTITY, response)
+
+        when: 'Get the properties'
+        GET("")
+
+        then: 'There are not duplicates of functional.test.key.one and functional.test.key.two'
         verifyResponse(HttpStatus.OK, response)
         response.body().items.findAll{it.key == "functional.test.key.one"}.size() == 1
         response.body().items.findAll{it.key == "functional.test.key.two"}.size() == 1
@@ -366,7 +431,13 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
         when: 'Replay the POST'
         POST(getSaveCollectionPath(), getValidXmlCollection(), MAP_ARG, true, 'application/xml')
 
-        then: 'There are not duplicates in the response'
+        then: 'The response in unprocessable'
+        verifyResponse(HttpStatus.UNPROCESSABLE_ENTITY, response)
+
+        when: 'Get the properties'
+        GET("")
+
+        then: 'There are not duplicates of functional.test.xml.key.one and functional.test.xml.key.two'
         verifyResponse(HttpStatus.OK, response)
         response.body().items.findAll{it.key == "functional.test.xml.key.one"}.size() == 1
         response.body().items.findAll{it.key == "functional.test.xml.key.two"}.size() == 1
@@ -397,6 +468,12 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
         when: 'Replay the POST'
         POST(getSaveCollectionPath(), getValidCsvCollection(), MAP_ARG, true, 'text/csv')
 
+        then: 'The response in unprocessable'
+        verifyResponse(HttpStatus.UNPROCESSABLE_ENTITY, response)
+
+        when: 'Get the properties'
+        GET("")
+
         then: 'There are not duplicates in the response'
         verifyResponse(HttpStatus.OK, response)
         response.body().items.findAll{it.key == "a.csv.collection.key"}.size() == 1
@@ -409,5 +486,37 @@ class ApiPropertyFunctionalSpec extends ResourceFunctionalSpec<ApiProperty> impl
         assert response.status() == HttpStatus.NO_CONTENT
         DELETE(getDeleteEndpoint(id2))
         assert response.status() == HttpStatus.NO_CONTENT
+    }
+
+    void 'Test the apply action does not persist a collection containing properties with duplicate keys'() {
+        given: 'Count the existing properties'
+        GET("")
+        verifyResponse HttpStatus.OK, response
+        def propertyCount = response.body().count
+
+        when: 'The save action is executed with invalid JSON collection data'
+        POST(getSaveCollectionPath(), getInvalidJsonCollection(), MAP_ARG, true)
+
+        then: 'The response in unprocessable'
+        verifyResponse(HttpStatus.UNPROCESSABLE_ENTITY, response)
+
+        when: 'The save action is executed with invalid XML collection data'
+        POST(getSaveCollectionPath(), getInvalidXmlCollection(), MAP_ARG, true, 'application/xml')
+
+        then: 'The response in unprocessable'
+        verifyResponse(HttpStatus.UNPROCESSABLE_ENTITY, response)
+
+        when: 'The save action is executed with invalid CSV collection data'
+        POST(getSaveCollectionPath(), getInvalidCsvCollection(), MAP_ARG, true, 'text/csv')
+
+        then: 'The response in unprocessable'
+        verifyResponse(HttpStatus.UNPROCESSABLE_ENTITY, response)
+
+        when: 'Count the properties'
+        GET("")
+        verifyResponse HttpStatus.OK, response
+
+        then: 'The count has not changed'
+        response.body().count == propertyCount
     }
 }
