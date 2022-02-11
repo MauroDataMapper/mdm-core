@@ -36,7 +36,7 @@ class DataModelJsonImporterService extends DataBindDataModelImporterProviderServ
 
     @Override
     String getVersion() {
-        '3.0'
+        '3.1'
     }
 
     @Override

@@ -18,4 +18,5 @@ json {
         if (pt.units) units pt.units
 
     }
+    if (export.summaryMetadata) summaryMetadata tmpl.'/summaryMetadata/export'(export.summaryMetadata)
 }

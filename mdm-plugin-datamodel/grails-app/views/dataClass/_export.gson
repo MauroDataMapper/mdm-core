@@ -12,4 +12,5 @@ json {
         if (export.dataClasses) dataClasses tmpl.'/dataClass/export'(export.dataClasses)
         if (export.dataElements) dataElements tmpl.'/dataElement/export'(export.dataElements)
     } else dataClassPath DataClass.buildLabelPath(export)
+    if (export.summaryMetadata) summaryMetadata tmpl.'/summaryMetadata/export'(export.summaryMetadata)
 }

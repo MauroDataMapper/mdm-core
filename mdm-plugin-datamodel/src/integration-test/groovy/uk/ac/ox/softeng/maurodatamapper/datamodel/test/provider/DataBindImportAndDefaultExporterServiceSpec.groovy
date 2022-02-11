@@ -143,6 +143,8 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
             'incSinglePrimitiveTypeAndAnnotation',
             'incSingleEnumerationType',
             'incSingleEnumerationTypeAndMetadata',
+            'incSummaryMetadataWithoutReports',
+            'incSummaryMetadataWithReports',
             'incEmptyDataClass',
             'incEmptyDataClassAndMetadata',
             'incEmptyDataClassAndAnnotation',

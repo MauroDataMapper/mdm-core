@@ -4,6 +4,13 @@ DataClass dc = dataClass as DataClass
 
 'mdm:dataClass' {
     layout '/catalogueItem/_export.gml', catalogueItem: dc
+    if (dc.summaryMetadata) {
+        'mdm:summaryMetadata' {
+            dc.summaryMetadata.each {sm ->
+                layout '/summaryMetadata/export.gml', summaryMetadata: sm
+            }
+        }
+    }
 
     if (dc.maxMultiplicity != null) 'mdm:maxMultiplicity'(dc.maxMultiplicity)
     if (dc.minMultiplicity != null) 'mdm:minMultiplicity'(dc.minMultiplicity)
