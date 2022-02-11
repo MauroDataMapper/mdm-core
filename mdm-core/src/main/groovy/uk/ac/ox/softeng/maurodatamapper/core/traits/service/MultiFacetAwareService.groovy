@@ -116,46 +116,6 @@ trait MultiFacetAwareService<K extends MultiFacetAware> {
         mapping.table
     }
 
-    K updateFacetsAfterInsertingMultiFacetAware(K multiFacetAware) {
-        if (multiFacetAware.metadata) {
-            multiFacetAware.metadata.each {
-                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
-                it.multiFacetAwareItemId = multiFacetAware.id
-            }
-            Metadata.saveAll(multiFacetAware.metadata)
-        }
-        if (multiFacetAware.rules) {
-            multiFacetAware.rules.each {
-                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
-                it.multiFacetAwareItemId = multiFacetAware.id
-            }
-            Rule.saveAll(multiFacetAware.rules)
-        }
-        if (multiFacetAware.annotations) {
-            multiFacetAware.annotations.each {
-                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
-                it.multiFacetAwareItemId = multiFacetAware.id
-            }
-            Annotation.saveAll(multiFacetAware.annotations)
-        }
-        if (multiFacetAware.semanticLinks) {
-            multiFacetAware.semanticLinks.each {
-                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
-                it.multiFacetAwareItemId = multiFacetAware.id
-            }
-            SemanticLink.saveAll(multiFacetAware.semanticLinks)
-        }
-        if (multiFacetAware.referenceFiles) {
-            multiFacetAware.referenceFiles.each {
-                if (!it.isDirty()) it.trackChanges()
-                it.beforeValidate()
-                it.multiFacetAwareItemId = multiFacetAware.id
-            }
-            ReferenceFile.saveAll(multiFacetAware.referenceFiles)
-        }
-        multiFacetAware
-    }
-
     K checkFacetsAfterImportingMultiFacetAware(K multiFacetAware) {
         if (multiFacetAware.metadata) {
             multiFacetAware.metadata.each {

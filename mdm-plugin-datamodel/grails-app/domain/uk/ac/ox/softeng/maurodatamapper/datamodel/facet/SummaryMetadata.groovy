@@ -59,6 +59,15 @@ class SummaryMetadata implements MultiFacetItemAware, InformationAware, MdmDomai
         summaryMetadataReports cascade: 'all-delete-orphan'
     }
 
+//    def beforeValidate(){
+//        beforeValidateCheck()
+//    }
+
+    @Override
+    def beforeInsert(){
+        beforeInsertCheck()
+    }
+
     @Override
     String getDomainType() {
         SummaryMetadata.simpleName

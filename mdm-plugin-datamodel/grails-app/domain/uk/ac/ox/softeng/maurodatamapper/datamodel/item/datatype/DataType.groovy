@@ -123,10 +123,9 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
         long st = System.currentTimeMillis()
         beforeValidateModelItem()
         summaryMetadata?.each {
-            if (!it.createdBy) it.createdBy = createdBy
-            it.multiFacetAwareItem = this
+            it.beforeValidateCheck(this)
         }
-        if (domainType != ENUMERATION_DOMAIN_TYPE) log.trace('DT before validate {} took {}', this.label, Utils.timeTaken(st))
+        if (domainType != ENUMERATION_DOMAIN_TYPE) log.trace('DT {} before validate took {}', this.label, Utils.timeTaken(st))
     }
 
     @Override

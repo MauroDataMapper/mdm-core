@@ -83,7 +83,6 @@ class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderS
         // exception.errorCode == 'TODO'
     }
 
-    @PendingFeature
     void 'M02 : test multi-import invalid DataModels'() {
         given:
         setupData()
@@ -96,21 +95,21 @@ class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderS
 
         then:
         ApiBadRequestException exception = thrown(ApiBadRequestException)
-        exception.errorCode == NO_DATAMODEL_TO_IMPORT_CODE
+        exception.errorCode == 'XIS03'
 
         when: 'given a single invalid model'
         importModels(loadTestFile('invalidDataModelInList'))
 
         then:
         exception = thrown(ApiBadRequestException)
-        exception.errorCode == NO_DATAMODEL_TO_IMPORT_CODE
+        exception.errorCode == 'XIS03'
 
         when: 'given multiple invalid models'
         importModels(loadTestFile('invalidDataModels'))
 
         then:
         exception = thrown(ApiBadRequestException)
-        exception.errorCode == NO_DATAMODEL_TO_IMPORT_CODE
+        exception.errorCode == 'XIS03'
 
         // when: 'not given export metadata'
         // importModels(loadTestFile('noExportMetadata'))
@@ -203,7 +202,6 @@ class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderS
         basicParameters.importAsNewBranchModelVersion = false
     }
 
-    @PendingFeature
     void 'M06 : test multi-import DataModels with invalid models'() {
         given:
         setupData()

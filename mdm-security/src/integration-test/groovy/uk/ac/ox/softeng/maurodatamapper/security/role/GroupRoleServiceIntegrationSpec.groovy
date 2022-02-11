@@ -26,11 +26,13 @@ import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import org.grails.plugin.cache.GrailsCacheManager
+import org.junit.jupiter.api.Tag
 import org.springframework.cache.Cache
 
 @Slf4j
 @Integration
 @Rollback
+@Tag('non-parallel')
 class GroupRoleServiceIntegrationSpec extends BaseIntegrationSpec implements SecurityUsers {
 
     GroupRoleService groupRoleService

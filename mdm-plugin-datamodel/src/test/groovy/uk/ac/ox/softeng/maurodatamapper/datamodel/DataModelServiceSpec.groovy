@@ -40,6 +40,7 @@ import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.testing.services.ServiceUnitTest
 import groovy.util.logging.Slf4j
+import org.hibernate.SessionFactory
 
 @Slf4j
 class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUnitTest<DataModelService> {
@@ -68,7 +69,6 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
             }
         }
-
 
         complexDataModel = buildComplexDataModel()
         simpleDataModel = buildSimpleDataModel()
@@ -176,31 +176,6 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         service.findAllDataStandards().size() == 3
     }
 
-    void 'test finalising model'() {
-
-        when:
-        DataModel dataModel = service.get(id)
-
-        then:
-        !dataModel.finalised
-        !dataModel.dateFinalised
-        dataModel.documentationVersion == Version.from('1')
-
-        when:
-        service.finaliseModel(dataModel, admin, null, null, null)
-
-        then:
-        checkAndSave(dataModel)
-
-        when:
-        dataModel = service.get(id)
-
-        then:
-        dataModel.finalised
-        dataModel.dateFinalised
-        dataModel.documentationVersion == Version.from('1')
-    }
-
     void 'DMSV01 : test validation on valid model'() {
         given:
         DataModel check = complexDataModel
@@ -260,11 +235,10 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 2
+        invalid.errors.errorCount == 1
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 2
+        invalid.errors.fieldErrorCount == 1
         invalid.errors.getFieldError('dataClasses[0].label')
-        invalid.errors.getFieldError('dataClasses[0].path')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -327,11 +301,10 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 2
+        invalid.errors.errorCount == 1
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 2
+        invalid.errors.fieldErrorCount == 1
         invalid.errors.fieldErrors.any { it.field == 'dataClasses[0].label' }
-        invalid.errors.fieldErrors.any {it.field == 'dataClasses[0].path'}
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)

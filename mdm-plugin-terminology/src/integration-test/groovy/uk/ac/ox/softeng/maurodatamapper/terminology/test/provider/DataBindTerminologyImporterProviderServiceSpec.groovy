@@ -26,7 +26,6 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.
 
 import grails.gorm.transactions.Rollback
 import groovy.util.logging.Slf4j
-import spock.lang.Ignore
 import spock.lang.Shared
 
 /**
@@ -124,7 +123,6 @@ abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBind
         thrown(ApiBadRequestException)
     }
 
-    @Ignore
     void 'I02 : test simple data import'() {
         given:
         setupData()

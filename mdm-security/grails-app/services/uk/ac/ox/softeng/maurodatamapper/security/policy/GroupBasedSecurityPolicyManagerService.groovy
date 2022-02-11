@@ -153,11 +153,11 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
             updateBuiltInSecurity(securableResource, changedSecurityProperties)
         }
         if (Utils.parentClassIsAssignableFromChild(Model, securableResource.class)) {
-            log.info('Updating security for model due to {} changes', changedSecurityProperties)
+            log.debug('Updating security for model due to {} changes', changedSecurityProperties)
             refreshAllUserSecurityPolicyManagersByModel(currentUser, securableResource as Model, changedSecurityProperties)
         }
         if (Utils.parentClassIsAssignableFromChild(VersionedFolder, securableResource.class)) {
-            log.info('Updating security for VersionedFolder due to {} changes', changedSecurityProperties)
+            log.debug('Updating security for VersionedFolder due to {} changes', changedSecurityProperties)
             refreshAllUserSecurityPolicyManagersByVersionedFolder(currentUser, securableResource as VersionedFolder, changedSecurityProperties)
         }
 
@@ -167,11 +167,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
     @Override
     GroupBasedUserSecurityPolicyManager retrieveUserSecurityPolicyManager(String userEmailAddress) {
         if (!userEmailAddress) return null
-        GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = getSecurityPolicyManagerCache().get(userEmailAddress,
-                                                                                                            GroupBasedUserSecurityPolicyManager)
-        // Make sure the user object is the latest and attached to the session
-        //  userSecurityPolicyManager?.forUser(catalogueUserService.findByEmailAddress(userEmailAddress)) TODO do we need this??
-        userSecurityPolicyManager
+        getSecurityPolicyManagerCache().get(userEmailAddress, GroupBasedUserSecurityPolicyManager)
     }
 
     GroupBasedUserSecurityPolicyManager retrieveUserSecurityPolicyManager(User catalogueUser) {
@@ -181,7 +177,9 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
 
     @Override
     UserSecurityPolicyManager reloadUserSecurityPolicyManager(String userEmailAddress) {
-        removeUserSecurityPolicyManager(userEmailAddress)
+        // Rather than removing the policy which will then result in any calls being no-accessed, we should lock it
+        // This will allow the lock timeout to work while we rebuild the policy
+        retrieveUserSecurityPolicyManager(userEmailAddress).lock()
         UserSecurityPolicyManager reloaded = buildNewUserSecurityPolicyManager(catalogueUserService.findByEmailAddress(userEmailAddress))
         storeUserSecurityPolicyManager(reloaded)
     }

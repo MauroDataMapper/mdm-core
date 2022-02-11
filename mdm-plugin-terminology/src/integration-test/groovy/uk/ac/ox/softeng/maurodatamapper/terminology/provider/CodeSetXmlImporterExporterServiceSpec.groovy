@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSetService
+import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.CodeSetXmlExporterService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.CodeSetXmlImporterService
@@ -105,7 +106,7 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
 
         Path expectedPath = resourcesPath.resolve("${CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, testName)}.xml")
         if (!Files.exists(expectedPath)) {
-            Files.writeString(expectedPath, (prettyPrint(exportedModel)))
+            Files.writeString(expectedPath, (prettyPrintXml(exportedModel)))
             Assert.fail("Expected export file ${expectedPath} does not exist")
         }
         validateAndCompareXml(Files.readString(expectedPath), exportedModel, 'export',
@@ -192,11 +193,16 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
     }
 
     List<CodeSet> clearExpectedDiffsFromModels(List<UUID> modelIds) {
-        modelIds.collect {
-            codeSetService.get(it).tap {
-                dateFinalised = null
-            }
+        // Rules are not imported/exported and will therefore exist as diffs
+        Closure<Boolean> removeRule = {it.rules?.removeIf {rule -> rule.name == 'Bootstrapped Functional Test Rule'}}
+        List<CodeSet> codeSets = modelIds.collect {
+            CodeSet codeSet = codeSetService.get(it)
+            removeRule(codeSet)
+            codeSet.dateFinalised = null
+            codeSet
         }
+        sessionFactory.currentSession.clear()
+        codeSets
     }
 
     void 'test that trying to export when specifying a null codeSetId fails with an exception'() {
@@ -622,7 +628,6 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         // exception.errorCode == 'TODO'
     }
 
-    @PendingFeature(reason = 'No exception was thrown')
     void 'test multi-import invalid CodeSets'() {
         given:
         setupData()
@@ -635,21 +640,21 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
 
         then:
         ApiBadRequestException exception = thrown(ApiBadRequestException)
-        exception.errorCode == NO_CODESET_TO_IMPORT_CODE
+        exception.errorCode == 'XIS03'
 
         when: 'given a single invalid model'
         importModels(loadTestFile('invalidCodeSetInList'))
 
         then:
         exception = thrown(ApiBadRequestException)
-        exception.errorCode == NO_CODESET_TO_IMPORT_CODE
+        exception.errorCode == 'XIS03'
 
         when: 'given multiple invalid models'
         importModels(loadTestFile('invalidCodeSets'))
 
         then:
         exception = thrown(ApiBadRequestException)
-        exception.errorCode == NO_CODESET_TO_IMPORT_CODE
+        exception.errorCode == 'XIS03'
 
         // when: 'not given export metadata'
         // importModels(loadTestFile('noExportMetadata'))
@@ -748,7 +753,6 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         basicParameters.importAsNewBranchModelVersion = false
     }
 
-    @PendingFeature(reason = 'Invalid models are imported')
     void 'test multi-import CodeSets with invalid models'() {
         given:
         setupData()
@@ -775,7 +779,9 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         simpleDiff.objectsAreIdentical()
 
         when:
-        imported = importModels(loadTestFile('simpleComplexAndInvalidCodeSets'))
+        imported = importModels(loadTestFile('simpleComplexAndInvalidCodeSets')).each {
+            clearExpectedDiffsFromImport(it)
+        }
 
         then:
         imported

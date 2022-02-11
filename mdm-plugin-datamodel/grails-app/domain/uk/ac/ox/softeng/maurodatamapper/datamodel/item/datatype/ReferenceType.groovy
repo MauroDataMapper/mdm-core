@@ -27,9 +27,7 @@ import grails.rest.Resource
 @Resource(readOnly = false, formats = ['json', 'xml'])
 class ReferenceType extends DataType<ReferenceType> {
 
-    DataClass referenceClass
-
-    static belongsTo = DataClass
+    static belongsTo = [referenceClass:DataClass]
 
     static constraints = {
         referenceClass validator: {val, obj ->
@@ -45,7 +43,7 @@ class ReferenceType extends DataType<ReferenceType> {
     }
 
     static mapping = {
-        referenceClass index: 'reference_type_reference_class_idx', fetch: 'join', cascade: 'none'
+        referenceClass index: 'reference_type_reference_class_idx', fetch: 'join'
     }
 
     ReferenceType() {

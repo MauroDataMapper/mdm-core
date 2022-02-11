@@ -26,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
@@ -97,7 +98,7 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     Terminology validate(Terminology terminology) {
-        log.debug('Validating Terminology')
+        log.trace('Validating Terminology')
         terminology.validate()
         terminology
     }
@@ -130,6 +131,11 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     Terminology saveModelWithContent(Terminology terminology) {
+        saveModelWithContent(terminology, ModelItemService.BATCH_SIZE)
+    }
+
+    Terminology saveModelWithContent(Terminology terminology, Integer modelItemBatchSize) {
+
 
         if (terminology.terms.any { it.id } || terminology.termRelationshipTypes.any { it.id }) {
             throw new ApiInternalException('TMSXX', 'Cannot use saveModelWithContent method to save Terminology',
@@ -158,14 +164,15 @@ class TerminologyService extends ModelService<Terminology> {
         }
 
         if (terminology.breadcrumbTree.children) {
-            terminology.breadcrumbTree.children.each { it.skipValidation(true) }
+            terminology.breadcrumbTree.disableValidation()
         }
 
-        save(terminology)
+        save(failOnError: true, validate: false, flush: false, ignoreBreadcrumbs: true, terminology)
 
         sessionFactory.currentSession.flush()
 
-        saveContent(terms, termRelationshipTypes)
+        saveContent(modelItemBatchSize, terms, termRelationshipTypes)
+
         log.debug('Complete save of Terminology complete in {}', Utils.timeTaken(start))
         // Return the clean stored version of the datamodel, as we've messed with it so much this is much more stable
         get(terminology.id)
@@ -176,13 +183,14 @@ class TerminologyService extends ModelService<Terminology> {
         save(failOnError: true, validate: false, flush: true, model)
     }
 
-    void saveContent(Collection<Term> terms,
+    void saveContent(Integer modelItemBatchSize,
+                     Collection<Term> terms,
                      Collection<TermRelationshipType> termRelationshipTypes,
                      Set<TermRelationship> termRelationships = [] as HashSet) {
 
         sessionFactory.currentSession.clear()
         long start = System.currentTimeMillis()
-        log.debug('Disabling validation on contents')
+        log.trace('Disabling validation on contents')
         termRelationshipTypes.each { trt ->
             trt.skipValidation(true)
         }
@@ -202,22 +210,22 @@ class TerminologyService extends ModelService<Terminology> {
 
         long subStart = System.currentTimeMillis()
         termRelationshipTypeService.saveAll(termRelationshipTypes)
-        log.debug('Saved {} termRelationshipTypes in {}', termRelationshipTypes.size(), Utils.timeTaken(subStart))
+        log.trace('Saved {} termRelationshipTypes in {}', termRelationshipTypes.size(), Utils.timeTaken(subStart))
 
         subStart = System.currentTimeMillis()
-        termRelationships.addAll termService.saveAllAndGetTermRelationships(terms)
-        log.debug('Saved {} terms in {}', terms.size(), Utils.timeTaken(subStart))
+        termRelationships.addAll termService.saveAllAndGetTermRelationships(terms, modelItemBatchSize)
+        log.trace('Saved {} terms in {}', terms.size(), Utils.timeTaken(subStart))
 
         subStart = System.currentTimeMillis()
         termRelationshipService.saveAll(termRelationships)
-        log.debug('Saved {} termRelationships in {}', termRelationships.size(), Utils.timeTaken(subStart))
+        log.trace('Saved {} termRelationships in {}', termRelationships.size(), Utils.timeTaken(subStart))
 
         if (Environment.current != Environment.TEST) {
             log.debug('Enabling database constraints')
             GormUtils.enableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
         }
 
-        log.debug('Content save of Terminology complete in {}', Utils.timeTaken(start))
+        log.trace('Content save of Terminology complete in {}', Utils.timeTaken(start))
     }
 
     void deleteModelsAndContent(Set<UUID> idsToDelete) {
@@ -600,6 +608,15 @@ class TerminologyService extends ModelService<Terminology> {
     @Override
     TerminologyJsonExporterService getJsonModelExporterProviderService() {
         terminologyJsonExporterService
+    }
+
+    @Override
+    void updateModelItemPathsAfterFinalisationOfModel(Terminology model) {
+        String pathBefore = model.uncheckedPath.toString()
+        String pathAfter = model.path.toString()
+        updateModelItemPathsAfterFinalisationOfModel(pathBefore, pathAfter, 'terminology','term')
+        updateModelItemPathsAfterFinalisationOfModel(pathBefore, pathAfter, 'terminology','term_relationship')
+        updateModelItemPathsAfterFinalisationOfModel(pathBefore, pathAfter, 'terminology','term_relationship_type')
     }
 
     @Override

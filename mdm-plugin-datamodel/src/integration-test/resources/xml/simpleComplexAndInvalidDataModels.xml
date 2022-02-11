@@ -22,7 +22,6 @@
   <mdm:dataModels>
     <mdm:dataModel>
       <mdm:id>Invalid DataModel ID</mdm:id>
-      <mdm:label>Invalid DataModel</mdm:label>
     </mdm:dataModel>
     <mdm:dataModel>
       <mdm:id>68446996-5df6-444b-975e-e7d0dc33d982</mdm:id>
@@ -87,7 +86,6 @@
     </mdm:dataModel>
     <mdm:dataModel>
       <mdm:id>Invalid DataModel ID 2</mdm:id>
-      <mdm:label>Invalid DataModel 2</mdm:label>
     </mdm:dataModel>
     <mdm:dataModel>
       <mdm:id>78922c24-8837-4170-8d30-a01924e65b37</mdm:id>
@@ -220,6 +218,15 @@
           <mdm:id>ab92fdf5-3102-4898-9abe-21097e0a3dee</mdm:id>
           <mdm:label>parent</mdm:label>
           <mdm:lastUpdated>2021-08-30T23:18:46.587Z</mdm:lastUpdated>
+          <mdm:metadata>
+          <mdm:metadata>
+            <mdm:id>f586794a-2132-4392-9154-4d94f3df4ccc</mdm:id>
+            <mdm:namespace>test.com</mdm:namespace>
+            <mdm:key>mdcl1</mdm:key>
+            <mdm:value>mdcl1</mdm:value>
+            <mdm:lastUpdated>2021-12-16T20:03:06.918Z</mdm:lastUpdated>
+          </mdm:metadata>
+        </mdm:metadata>
           <mdm:maxMultiplicity>-1</mdm:maxMultiplicity>
           <mdm:minMultiplicity>1</mdm:minMultiplicity>
           <mdm:dataClasses>
@@ -234,6 +241,15 @@
               <mdm:id>79d140c6-46ed-45fc-9df9-f6bb2da0c76e</mdm:id>
               <mdm:label>child</mdm:label>
               <mdm:lastUpdated>2021-08-30T23:18:46.564Z</mdm:lastUpdated>
+              <mdm:metadata>
+              <mdm:metadata>
+                <mdm:id>b67eda47-5515-455a-8aa0-afcb28ba4a74</mdm:id>
+                <mdm:namespace>test.com</mdm:namespace>
+                <mdm:key>mdel1</mdm:key>
+                <mdm:value>mdel1</mdm:value>
+                <mdm:lastUpdated>2021-12-16T20:03:06.949Z</mdm:lastUpdated>
+              </mdm:metadata>
+            </mdm:metadata>
               <mdm:dataType>
                 <mdm:id>f148058d-0d6f-42bb-b8d0-b9484ec63ff0</mdm:id>
                 <mdm:label>child</mdm:label>

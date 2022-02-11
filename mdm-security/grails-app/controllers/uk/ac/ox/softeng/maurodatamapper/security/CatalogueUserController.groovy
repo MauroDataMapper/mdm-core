@@ -29,6 +29,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.rest.transport.ChangePassword
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
+import groovy.util.logging.Slf4j
 import org.springframework.http.HttpStatus
 
 import static uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum.EMAIL_ADMIN_CONFIRM_REGISTRATION_BODY
@@ -45,6 +46,7 @@ import static uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum.SITE_U
 
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY
 
+@Slf4j
 class CatalogueUserController extends EditLoggingController<CatalogueUser> /* implements RestResponder */ {
     static responseFormats = ['json', 'xml']
 

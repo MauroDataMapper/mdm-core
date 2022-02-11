@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
@@ -86,6 +87,12 @@ class Metadata implements MultiFacetItemAware, Diffable<Metadata> {
 
     def beforeValidate() {
         value = value ?: 'N/A'
+//        beforeValidateCheck()
+    }
+
+    @Override
+    def beforeInsert(){
+       beforeInsertCheck()
     }
 
     @Override

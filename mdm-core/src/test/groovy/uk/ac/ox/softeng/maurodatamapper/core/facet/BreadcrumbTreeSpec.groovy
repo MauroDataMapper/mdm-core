@@ -157,6 +157,7 @@ ${con.id}|${BasicModelItem.simpleName}|content|null
 ${child.id}|${BasicModelItem.simpleName}|child|null"""
 
         when:
+        child = con.childModelItems.first()
         con.removeFromChildModelItems(child)
         basicModel.addToModelItems(child)
         checkAndSave(child)

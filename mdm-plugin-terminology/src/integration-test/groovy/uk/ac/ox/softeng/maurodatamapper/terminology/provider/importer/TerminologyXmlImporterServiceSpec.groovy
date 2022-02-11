@@ -25,7 +25,6 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.test.provider.DataBindTermin
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
-import spock.lang.PendingFeature
 
 /**
  * @since 18/09/2020
@@ -82,7 +81,6 @@ class TerminologyXmlImporterServiceSpec extends DataBindTerminologyImporterProvi
         // exception.errorCode == 'TODO'
     }
 
-    @PendingFeature
     void 'test multi-import invalid Terminologies'() {
         given:
         setupData()
@@ -95,21 +93,21 @@ class TerminologyXmlImporterServiceSpec extends DataBindTerminologyImporterProvi
 
         then:
         ApiBadRequestException exception = thrown(ApiBadRequestException)
-        exception.errorCode == NO_TERMINOLOGY_TO_IMPORT_CODE
+        exception.errorCode == 'XIS03'
 
         when: 'given a single invalid model'
         importModels(loadTestFile('invalidTerminologyInList'))
 
         then:
         exception = thrown(ApiBadRequestException)
-        exception.errorCode == NO_TERMINOLOGY_TO_IMPORT_CODE
+        exception.errorCode == 'XIS03'
 
         when: 'given multiple invalid models'
         importModels(loadTestFile('invalidTerminologies'))
 
         then:
         exception = thrown(ApiBadRequestException)
-        exception.errorCode == NO_TERMINOLOGY_TO_IMPORT_CODE
+        exception.errorCode == 'XIS03'
 
         // when: 'not given export metadata'
         // importModels(loadTestFile('noExportMetadata'))
@@ -202,7 +200,6 @@ class TerminologyXmlImporterServiceSpec extends DataBindTerminologyImporterProvi
         basicParameters.importAsNewBranchModelVersion = false
     }
 
-    @PendingFeature
     void 'test multi-import Terminologies with invalid models'() {
         given:
         setupData()

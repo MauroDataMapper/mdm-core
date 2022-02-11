@@ -102,7 +102,7 @@ class FeedFunctionalSpec extends FunctionalSpec implements XmlComparer {
      * Check that the response - which is expected to be XML as Atom, looks OK.
      */
     private GPathResult verifyBaseAtomResponse(HttpResponse<String> xmlResponse, boolean expectEntries, String host, String contextPath = '') {
-        log.warn('XML \n{}', prettyPrint(xmlResponse.body()))
+        log.warn('XML \n{}', prettyPrintXml(xmlResponse.body()))
 
         //Use the jsonCapableResponse even though it is a string of XML
         xmlResponse.status() == OK

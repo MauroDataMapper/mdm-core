@@ -146,31 +146,6 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
         saved.breadcrumbTree.domainId == saved.id
     }
 
-    void 'test finalising model'() {
-
-        when:
-        Terminology terminology = service.get(id)
-
-        then:
-        !terminology.finalised
-        !terminology.dateFinalised
-        terminology.documentationVersion == Version.from('1')
-
-        when:
-        service.finaliseModel(terminology, admin, null, null, null)
-
-        then:
-        checkAndSave(terminology)
-
-        when:
-        terminology = service.get(id)
-
-        then:
-        terminology.finalised
-        terminology.dateFinalised
-        terminology.documentationVersion == Version.from('1')
-    }
-
     void 'DMSV01 : test validation on valid model'() {
         given:
         Terminology check = complexTerminology

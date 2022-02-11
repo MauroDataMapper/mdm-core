@@ -1688,7 +1688,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData(mergeData.commonAncestor)
     }
 
-    void 'MI08 : test merging new style diff with metadata creation gh-111'() {
+    void 'MI08 : test merging diff with metadata creation gh-111'() {
         given:
         String id = createNewItem(validJson)
         POST("$id/rules", [name: 'Bootstrapped versioning V2Model Rule'])
@@ -2769,10 +2769,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData(id2)
     }
 
-    void 'test delete multiple models'() {
+    void 'DA : test delete multiple models'() {
         given:
         def idstoDelete = []
-        (1..4).each { n ->
+        (1..4).each {n ->
             idstoDelete << createNewItem([
                 folder: folderId,
                 label : UUID.randomUUID().toString()

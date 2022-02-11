@@ -226,7 +226,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         folder.modelVersionTag = versionTag
 
         // Recurse through contents to finalise everything
-        finaliseFolderContents(folder, user, folder.modelVersion, folder.modelVersionTag)
+        finaliseFolderModels(folder, user, folder.modelVersion, folder.modelVersionTag)
 
         folder.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised Versioned Folder',
                                 description: "${folder.label} finalised by ${user.firstName} ${user.lastName} on " +
@@ -241,26 +241,34 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     }
 
 
-    void finaliseFolderContents(Folder folder, User user, Version folderVersion, String folderVersionTag) {
-        log.debug('Recursing into folder and finalising it and its contents')
+    void finaliseFolderModels(VersionedFolder folder, User user, Version folderVersion, String folderVersionTag) {
+        log.debug('Finalising models contained within folder at all levels')
         long start = System.currentTimeMillis()
 
-        log.debug('Finalising models inside folder')
+        Set<UUID> foldersInside = collectAllFoldersIdsInsideFolder(folder.id)
+        foldersInside.add(folder.id)
+        log.debug('Found {} total folders inside (and including) VF', foldersInside.size())
+
+        log.debug('Finalising models inside folders')
         modelServices.each {service ->
-            Collection<Model> modelsInFolder = service.findAllByFolderId(folder.id)
+            long st = System.currentTimeMillis()
+            Collection<Model> modelsInFolder = service.findAllByFolderIdInList(foldersInside)
+            log.debug('Found {} {} inside VF', modelsInFolder.size(), service.getDomainClass().simpleName)
             modelsInFolder.each {model ->
                 service.finaliseModel(model as Model, user, folderVersion, null, folderVersionTag)
             }
-        }
-
-        List<Folder> folders = folderService.findAllByParentId(folder.id)
-        log.debug('Finalising {} sub folders inside folder', folders.size())
-        folders.each {childFolder ->
-            finaliseFolderContents(childFolder, user, folderVersion, folderVersionTag)
+            log.debug('Finalisation of {} models took {}', modelsInFolder.size(), Utils.timeTaken(st))
         }
 
         log.debug('Folder contents finalisation took {}', Utils.timeTaken(start))
-        folder
+    }
+
+    Set<UUID> collectAllFoldersIdsInsideFolder(UUID folderId){
+        Set<UUID> folderIds = new HashSet<>()
+        List<Folder> folders = folderService.findAllByParentId(folderId)
+        folderIds.addAll(folders.collect{it.id})
+        folderIds.addAll(folders.collectMany {collectAllFoldersIdsInsideFolder(it.id)})
+        folderIds
     }
 
     Version getParentModelVersion(VersionedFolder currentFolder) {
@@ -531,7 +539,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
                                                          parentFolder: parentFolder,
                                                          branchName: branchName,
                                                          authority: authorityService.defaultAuthority)
-        folderService.copyFolder(original, folderCopy, label, copier, copyPermissions, branchName, copyDocVersion, throwErrors,
+        folderService.copyFolder(original, folderCopy, label, copier, copyPermissions, branchName, copyDocVersion, throwErrors, true,
                                  userSecurityPolicyManager) as VersionedFolder
     }
 
@@ -893,13 +901,13 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     void processDeletionPatchOfFolder(Folder folder) {
         log.debug('Deleting Folder from VersionedFolder')
-        folderService.delete(folder, true)
+        folderService.delete(folder, true, false)
     }
 
     void processDeletionPatchOfModel(Model model) {
         ModelService modelService = folderService.findModelServiceForModel(model)
         log.debug('Deleting Model from VersionedFolder')
-        modelService.delete(model, true)
+        modelService.delete(model, true, false)
     }
 
     void processDeletionPatchOfModelItem(ModelItem modelItem, VersionedFolder targetVersionedFolder, Path relativePathToRemoveFrom) {
@@ -914,7 +922,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         if (!multiFacetItemAwareService) throw new ApiInternalException('MSXX',
                                                                         "No domain service to handle deletion of [${multiFacetItemAware.domainType}]")
         log.debug('Deleting Facet from path [{}]', path)
-        multiFacetItemAwareService.delete(multiFacetItemAware)
+        multiFacetItemAwareService.delete(multiFacetItemAware, false)
 
         MultiFacetAware multiFacetAwareItem =
             pathService.findResourceByPathFromRootResource(targetVersionedFolder, path.getParent(),

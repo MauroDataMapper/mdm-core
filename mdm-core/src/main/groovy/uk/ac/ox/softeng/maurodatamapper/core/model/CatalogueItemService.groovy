@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFileService
@@ -81,22 +82,17 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomai
 
     @Override
     K save(Map args, K catalogueItem) {
-        // If inserting then we will need to update all the facets with the CIs "id" after insert
-        // If updating then we dont need to do this as the ID has already been done
-        boolean inserting = !(catalogueItem as GormEntity).ident() ?: args.insert
         Map saveArgs = new HashMap(args)
         if (args.flush) {
             saveArgs.remove('flush')
             (catalogueItem as GormEntity).save(saveArgs)
-            if (inserting) updateFacetsAfterInsertingCatalogueItem(catalogueItem)
             // We do need to ensure the BT hasnt changed (e.g. a move of a MI inside an M)
-            checkBreadcrumbTreeAfterSavingCatalogueItem(catalogueItem)
+            if (!args.ignoreBreadcrumbs) checkBreadcrumbTreeAfterSavingCatalogueItem(catalogueItem)
             sessionFactory.currentSession.flush()
         } else {
             (catalogueItem as GormEntity).save(args)
-            if (inserting) updateFacetsAfterInsertingCatalogueItem(catalogueItem)
             // We do need to ensure the BT hasnt changed (e.g. a move of a MI inside an M)
-            checkBreadcrumbTreeAfterSavingCatalogueItem(catalogueItem)
+            if (!args.ignoreBreadcrumbs) checkBreadcrumbTreeAfterSavingCatalogueItem(catalogueItem)
         }
         catalogueItem
     }
@@ -149,7 +145,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomai
             copy.label = original.label
         }
 
-        classifierService.findAllReadableByCatalogueItem(userSecurityPolicyManager, original).each { copy.addToClassifiers(it) }
+        classifierService.findAllReadableByCatalogueItem(userSecurityPolicyManager, original).each {copy.addToClassifiers(it)}
 
         // Allow facets to be preloaded from the db and passed in via the copy information
         // Facets loaded in this way could be more than just those belonging to the item being copied so we need to extract only those relevant
@@ -171,17 +167,17 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomai
             semanticLinks = semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id)
         }
 
-        metadata.each { copy.addToMetadata(it.namespace, it.key, it.value, copier.emailAddress) }
-        rules.each { rule ->
+        metadata.each {copy.addToMetadata(it.namespace, it.key, it.value, copier.emailAddress)}
+        rules.each {rule ->
             Rule copiedRule = new Rule(name: rule.name, description: rule.description, createdBy: copier.emailAddress)
-            rule.ruleRepresentations.each { ruleRepresentation ->
+            rule.ruleRepresentations.each {ruleRepresentation ->
                 copiedRule.addToRuleRepresentations(language: ruleRepresentation.language,
                                                     representation: ruleRepresentation.representation,
                                                     createdBy: copier.emailAddress)
             }
             copy.addToRules(copiedRule)
         }
-        semanticLinks.each { link ->
+        semanticLinks.each {link ->
             copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
                                     targetMultiFacetAwareItemId: link.targetMultiFacetAwareItemId,
                                     targetMultiFacetAwareItemDomainType: link.targetMultiFacetAwareItemDomainType,
@@ -310,12 +306,19 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomai
 
     void checkBreadcrumbTreeAfterSavingCatalogueItem(K catalogueItem) {
         catalogueItem.breadcrumbTree?.trackChanges()
-        catalogueItem.breadcrumbTree?.beforeValidate()
+        catalogueItem.breadcrumbTree?.beforeValidateCheck()
         catalogueItem.breadcrumbTree?.save(validate: false)
     }
 
-    K updateFacetsAfterInsertingCatalogueItem(K catalogueItem) {
-        updateFacetsAfterInsertingMultiFacetAware(catalogueItem)
+    void checkBreadcrumbTreeAfterSavingCatalogueItems(Collection<K> catalogueItems) {
+        List<BreadcrumbTree> bts = catalogueItems.collect {it.breadcrumbTree}.findAll().each {
+            boolean skip = it.shouldSkipValidation()
+            if(skip) it.skipValidation(false)
+            it.trackChanges()
+            it.beforeValidateCheck(false)
+            if(skip) it.skipValidation(true)
+        }
+        BreadcrumbTree.saveAll(bts)
     }
 
     K checkFacetsAfterImportingCatalogueItem(K catalogueItem) {

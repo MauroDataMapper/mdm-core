@@ -174,23 +174,6 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
     }
 
     @Override
-    ReferenceDataType updateFacetsAfterInsertingCatalogueItem(ReferenceDataType referenceDataType) {
-        if (referenceDataType.instanceOf(ReferenceEnumerationType)) {
-            referenceEnumerationTypeService.updateFacetsAfterInsertingCatalogueItem(referenceDataType as ReferenceEnumerationType)
-        } else {
-            super.updateFacetsAfterInsertingCatalogueItem(referenceDataType) as ReferenceDataType
-        }
-        if (referenceDataType.referenceSummaryMetadata) {
-            referenceDataType.referenceSummaryMetadata.each {
-                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
-                it.multiFacetAwareItemId = referenceDataType.getId()
-            }
-            ReferenceSummaryMetadata.saveAll(referenceDataType.referenceSummaryMetadata)
-        }
-        referenceDataType
-    }
-
-    @Override
     ReferenceDataType checkFacetsAfterImportingCatalogueItem(ReferenceDataType dataType) {
         if (dataType.instanceOf(ReferenceEnumerationType)) {
             return referenceEnumerationTypeService.checkFacetsAfterImportingCatalogueItem(dataType as ReferenceEnumerationType)

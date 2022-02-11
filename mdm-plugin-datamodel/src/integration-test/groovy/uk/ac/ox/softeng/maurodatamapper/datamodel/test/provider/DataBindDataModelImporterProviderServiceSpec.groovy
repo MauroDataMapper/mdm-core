@@ -98,6 +98,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
             dataModelService.saveModelWithContent(it)
         }
         sessionFactory.currentSession.flush()
+        sessionFactory.currentSession.clear()
         log.debug('DataModels saved')
         imported.collect { dataModelService.get(it.id) }
     }

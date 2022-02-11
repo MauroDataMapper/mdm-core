@@ -67,6 +67,15 @@ class VersionLink implements MultiFacetItemAware {
     VersionLink() {
     }
 
+//    def beforeValidate(){
+//        beforeValidateCheck()
+//    }
+
+    @Override
+    def beforeInsert(){
+        beforeInsertCheck()
+    }
+
     @Override
     String getDomainType() {
         VersionLink.simpleName

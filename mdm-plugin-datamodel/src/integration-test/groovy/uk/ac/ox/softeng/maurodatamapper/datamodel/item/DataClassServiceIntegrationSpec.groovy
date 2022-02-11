@@ -417,7 +417,6 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         DataClass complex = dataModel.dataClasses.find {it.label == 'Integration grandparent'}
         DataModel copyModel = new DataModel(label: 'copy', createdBy: StandardEmailAddress.INTEGRATION_TEST, folder: testFolder, authority: testAuthority)
         checkAndSave(copyModel)
-        dataModelService.updateFacetsAfterInsertingCatalogueItem(copyModel)
         sessionFactory.currentSession.flush()
         dataClassService.copyDataClass(copyModel, dataModel.childDataClasses.find {it.label == 'dc1'}, editor, userSecurityPolicyManager)
 

@@ -18,16 +18,28 @@
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.versionedfolder.container
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
+import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
+import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
 import uk.ac.ox.softeng.maurodatamapper.test.functional.merge.TestMergeData
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.expectation.Expectations
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.merge.VersionedFolderMergeBuilder
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.VersionChangeType
 
@@ -51,6 +63,8 @@ import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
+import static org.junit.Assert.assertEquals
+import static org.junit.Assert.assertTrue
 
 /**
  * <pre>
@@ -732,6 +746,34 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         cleanup:
         cleanupIds(data.id)
+    }
+
+    void 'F04 : Test finalisation endpoint for Versioned Folder with complex models'() {
+        given:
+        Map data = builder.buildComplexModelsForFinalisation()
+        loginEditor()
+
+        when: 'getting the folder before finalisation'
+        GET(data.commonAncestorId)
+
+        then:
+        response.status == OK
+        responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+
+        when: 'The folder gets finalised'
+        PUT("$data.commonAncestorId/finalise", [versionChangeType: 'Major'])
+
+        then:
+        response.status == OK
+        responseBody().finalised
+        responseBody().domainType == 'VersionedFolder'
+        responseBody().modelVersion == '1.0.0'
+
+        and:
+        verifyBreadcrumbTreesAndPaths()
+
+        cleanup:
+        cleanupIds(data.commonAncestorId)
     }
 
     void 'BMV01 : test creating a new branch model version of a VersionedFolder (as reader)'() {
@@ -3377,5 +3419,38 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
     String getExpectedMergeDiffJson() {
         VersionedFolderMergeBuilder.getExpectedMergeDiffJson()
+    }
+
+    @Transactional
+    void verifyBreadcrumbTreesAndPaths(){
+        sessionFactory.currentSession.clear()
+        BreadcrumbTree.list().each {
+            String uncheckedTreeString = it.treeString
+            it.checkTree()
+            if(it.isDirty('treeString')) log.warn('\nSaved     [{}]\nGenerated [{}]', uncheckedTreeString, it.treeString)
+        }
+        assertTrue 'All BT have correct treestring', BreadcrumbTree.list().every {
+            !it.isDirty('treeString')
+        }
+
+        checkPaths(Folder.list())
+        checkPaths(Terminology.list())
+        checkPaths(CodeSet.list())
+        checkPaths(DataModel.list())
+        checkPaths(Term.list())
+        checkPaths(DataClass.list())
+        checkPaths(DataElement.list())
+        checkPaths(DataType.list())
+        checkPaths(TermRelationshipType.list())
+        checkPaths(TermRelationship.list())
+    }
+
+    void checkPaths(List<MdmDomain> mdmDomains){
+        log.debug('Checking {}', mdmDomains.first().domainType)
+        mdmDomains.each {
+            Path uncheckedPath = it.getUncheckedPath()
+            Path checkedPath = it.getPath()
+            assertEquals('Checked path matches unchecked path', uncheckedPath, checkedPath)
+        }
     }
 }

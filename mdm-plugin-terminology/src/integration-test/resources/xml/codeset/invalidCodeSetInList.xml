@@ -22,7 +22,6 @@
   <mdm:codeSets>
     <mdm:codeSet>
       <mdm:id>Invalid CodeSet ID</mdm:id>
-      <mdm:label>Invalid CodeSet</mdm:label>
     </mdm:codeSet>
   </mdm:codeSets>
   <exp:exportMetadata>

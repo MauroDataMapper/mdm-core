@@ -144,19 +144,6 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
         save(failOnError: true, validate: false, flush: false, referenceDataModel)
     }
 
-    @Override
-    ReferenceDataModel updateFacetsAfterInsertingCatalogueItem(ReferenceDataModel catalogueItem) {
-        super.updateFacetsAfterInsertingCatalogueItem(catalogueItem)
-        if (catalogueItem.referenceSummaryMetadata) {
-            catalogueItem.referenceSummaryMetadata.each {
-                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
-                it.multiFacetAwareItemId = catalogueItem.getId()
-            }
-            ReferenceSummaryMetadata.saveAll(catalogueItem.referenceSummaryMetadata)
-        }
-        catalogueItem
-    }
-
     ReferenceDataModel saveModelWithContent(ReferenceDataModel referenceDataModel) {
 
         if (referenceDataModel.referenceDataTypes.any { it.id } ||
@@ -186,7 +173,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
         }
 
         if (referenceDataModel.breadcrumbTree.children) {
-            referenceDataModel.breadcrumbTree.children.each { it.skipValidation(true) }
+            referenceDataModel.breadcrumbTree.disableValidation()
         }
 
         if (referenceDataModel.referenceDataValues) {
@@ -194,7 +181,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
             referenceDataModel.referenceDataValues.clear()
         }
 
-        save(referenceDataModel)
+        save(failOnError: true, validate: false, flush: false, ignoreBreadcrumbs: true, referenceDataModel)
         sessionFactory.currentSession.flush()
 
         saveContent(referenceDataTypes, referenceDataElements, referenceDataValues)
@@ -683,10 +670,19 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
     }
 
     @Override
-    ReferenceDataJsonExporterService getJsonModelExporterProviderService () {
+    ReferenceDataJsonExporterService getJsonModelExporterProviderService() {
         referenceDataJsonExporterService
     }
 
+    @Override
+    void updateModelItemPathsAfterFinalisationOfModel(ReferenceDataModel model) {
+        String pathBefore = model.uncheckedPath.toString()
+        String pathAfter = model.path.toString()
+        updateModelItemPathsAfterFinalisationOfModel(pathBefore, pathAfter, 'referencedata', 'reference_data_element')
+        updateModelItemPathsAfterFinalisationOfModel(pathBefore, pathAfter, 'referencedata', 'reference_data_type')
+        updateModelItemPathsAfterFinalisationOfModel(pathBefore, pathAfter, 'referencedata', 'reference_data_value')
+        updateModelItemPathsAfterFinalisationOfModel(pathBefore, pathAfter, 'referencedata', 'reference_enumeration_value')
+    }
 
     @Override
     List<ReferenceDataModel> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {

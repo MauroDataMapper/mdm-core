@@ -78,8 +78,14 @@ class CodeSetXmlImporterService extends DataBindCodeSetImporterProviderService<C
         result = result.children()[0].name() == 'codeSets' ? result.children()[0] : result
 
         if (result.name() == 'codeSets') {
-            log.debug('Importing CodeSet list')
-            return convertToList(result as NodeChild).collect { bindMapToCodeSet(currentUser, it) }
+            log.debug('Importing CodeSets list')
+            List<Map> xmlMaps = convertToList(result as NodeChild)
+            List<Map> codeSetMaps = xmlMaps.findAll {it}
+            if (!codeSetMaps) throw new ApiBadRequestException('XIS03', 'Cannot import XML as codeset/s is not present')
+            if (codeSetMaps.size() < xmlMaps.size()) log.warn('Cannot import certain XML as codeset/s is not present')
+
+            log.debug('Importing list of CodeSet maps')
+            return codeSetMaps.collect {bindMapToCodeSet(currentUser, new HashMap(it))}
         }
 
         // Handle single CodeSet map or exportModel passed to this method, for backwards compatibility

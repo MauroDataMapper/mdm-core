@@ -22,11 +22,9 @@
   <mdm:dataModels>
     <mdm:dataModel>
       <mdm:id>Invalid DataModel ID</mdm:id>
-      <mdm:label>Invalid DataModel</mdm:label>
     </mdm:dataModel>
     <mdm:dataModel>
       <mdm:id>Invalid DataModel ID 2</mdm:id>
-      <mdm:label>Invalid DataModel 2</mdm:label>
     </mdm:dataModel>
   </mdm:dataModels>
   <exp:exportMetadata>

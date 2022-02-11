@@ -69,6 +69,15 @@ class Rule implements MultiFacetItemAware, Diffable<Rule> {
     Rule() {
     }
 
+//    def beforeValidate(){
+//        beforeValidateCheck()
+//    }
+
+    @Override
+    def beforeInsert(){
+        beforeInsertCheck()
+    }
+
     @Override
     String getDomainType() {
         Rule.simpleName

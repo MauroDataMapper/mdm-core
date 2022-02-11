@@ -36,8 +36,8 @@ class VersionedFolderLabelValidator extends FolderLabelValidator implements Vers
             List<VersionedFolder> versionedFoldersWithTheSameLabel
             // Existing models can change label but it must not already be in use
             if (folder.ident()) {
-                versionedFoldersWithTheSameLabel = VersionedFolder.findAllByLabelAndParentFolderAndIdNotEqual(value, folder.parentFolder, folder.id)
-            } else versionedFoldersWithTheSameLabel = VersionedFolder.findAllByLabelAndParentFolder(value, folder.parentFolder)
+                versionedFoldersWithTheSameLabel = VersionedFolder.findAllByLabelAndAuthorityAndIdNotEqual(value, folder.authority, folder.id)
+            } else versionedFoldersWithTheSameLabel = VersionedFolder.findAllByLabelAndAuthority(value, folder.authority)
 
             folderValidation = checkLabelValidity(versionedFoldersWithTheSameLabel.toSet() as Set<VersionAware>)
         }

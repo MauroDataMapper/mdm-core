@@ -140,6 +140,8 @@ abstract class ModelService<K extends Model>
 
     abstract List<K> findAllByFolderId(UUID folderId)
 
+
+
     abstract K validate(K model)
 
     abstract K saveModelWithContent(K model)
@@ -171,6 +173,12 @@ abstract class ModelService<K extends Model>
     abstract ModelImporterProviderService<K, ? extends ModelImporterProviderServiceParameters> getJsonModelImporterProviderService()
 
     abstract ExporterProviderService getJsonModelExporterProviderService()
+
+    abstract void updateModelItemPathsAfterFinalisationOfModel(K model)
+
+    List<K> findAllByFolderIdInList(Collection<UUID> folderIds){
+        getDomainClass().byFolderIdInList(folderIds).list() as List<K>
+    }
 
     void deleteModelAndContent(K model) {
         deleteModelsAndContent(Collections.singleton(model.id))
@@ -297,17 +305,24 @@ abstract class ModelService<K extends Model>
 
     K finaliseModel(K model, User user, Version requestedModelVersion, VersionChangeType versionChangeType,
                     String versionTag) {
-        log.debug('Finalising model')
+        log.debug('Finalising model {}', model.path)
         long start = System.currentTimeMillis()
 
         model.finalised = true
         model.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
-        // No requirement to have a breadcrumbtree
-        breadcrumbTreeService.finalise(model.breadcrumbTree)
-
         model.modelVersion = getNextModelVersion(model, requestedModelVersion, versionChangeType)
-
         model.modelVersionTag = versionTag
+
+        // ModelItem paths are like BT treestrings then need to be updated to replace the branch with the model version
+        updateModelItemPathsAfterFinalisationOfModel(model)
+
+        if(model.breadcrumbTree) {
+            // No requirement to have a breadcrumbtree
+            model.breadcrumbTree.update(model)
+            breadcrumbTreeService.finalise(model.breadcrumbTree)
+        }
+
+
 
         model.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised Model',
                                description: "${getDomainClass().simpleName} finalised by ${user.firstName} ${user.lastName} on " +
@@ -316,7 +331,7 @@ abstract class ModelService<K extends Model>
                                       "${getDomainClass().simpleName} finalised by ${user.firstName} ${user.lastName} on " +
                                       "${OffsetDateTimeConverter.toString(model.dateFinalised)}",
                                       user)
-        log.debug('Model finalised took {}', Utils.timeTaken(start))
+        log.trace('Model finalised took {}', Utils.timeTaken(start))
         model
     }
 
@@ -833,19 +848,6 @@ abstract class ModelService<K extends Model>
         model
     }
 
-    @Override
-    K updateFacetsAfterInsertingCatalogueItem(K catalogueItem) {
-        super.updateFacetsAfterInsertingCatalogueItem(catalogueItem)
-        if (catalogueItem.versionLinks) {
-            catalogueItem.versionLinks.each {
-                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
-                it.multiFacetAwareItemId = catalogueItem.getId()
-            }
-            VersionLink.saveAll(catalogueItem.versionLinks)
-        }
-        catalogueItem
-    }
-
     Version getNextModelVersion(K model, Version requestedModelVersion, VersionChangeType requestedVersionChangeType) {
         if (requestedModelVersion) {
             // Prefer requested model version
@@ -1076,5 +1078,16 @@ abstract class ModelService<K extends Model>
     @Override
     boolean isMultiFacetAwareFinalised(K multiFacetAwareItem) {
         multiFacetAwareItem.finalised
+    }
+
+    void updateModelItemPathsAfterFinalisationOfModel(String pathBefore, String pathAfter, String schema, String table){
+        String pathLike = "${pathBefore}%"
+        sessionFactory.currentSession.createSQLQuery("UPDATE ${schema}.${table} " +
+                                                     'SET path = REPLACE(path, :pathBefore, :pathAfter) ' +
+                                                     'WHERE path LIKE :pathLike')
+            .setParameter('pathBefore', pathBefore)
+            .setParameter('pathAfter', pathAfter)
+            .setParameter('pathLike', pathLike)
+            .executeUpdate()
     }
 }

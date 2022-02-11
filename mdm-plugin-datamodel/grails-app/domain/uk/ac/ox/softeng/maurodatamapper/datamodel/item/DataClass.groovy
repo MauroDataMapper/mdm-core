@@ -107,10 +107,10 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         breadcrumbTree fetch: 'join'
         dataElements cascade: 'all-delete-orphan'
         dataClasses cascade: 'all-delete-orphan'
-        referenceTypes cascade: 'none'
+        referenceTypes cascade: 'none', cascadeValidate: 'none'
         summaryMetadata cascade: 'all-delete-orphan'
-        dataModel index: 'data_class_data_model_idx' //, cascade: 'none', cascadeValidate: 'none'
-        parentDataClass index: 'data_class_parent_data_class_idx', cascade: 'save-update'
+        dataModel index: 'data_class_data_model_idx', cascadeValidate: 'none' //, cascade: 'none',
+        parentDataClass index: 'data_class_parent_data_class_idx', cascade: 'save-update', cascadeValidate: 'none'
         extendedDataClasses cascade: 'none', cascadeValidate: 'none', joinTable: [
             name  : 'join_dataclass_to_extended_data_class',
             key   : 'dataclass_id',
@@ -191,17 +191,16 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         long st = System.currentTimeMillis()
         dataModel = dataModel ?: parentDataClass?.getModel()
         beforeValidateModelItem()
-        summaryMetadata?.each {
-            if (!it.createdBy) it.createdBy = createdBy
-            it.multiFacetAwareItem = this
-        }
+            summaryMetadata?.each {
+                it.beforeValidateCheck(this)
+            }
         // New save/validate so all DEs and DCs are also new so sort the indexes now
         // This avoids repeated calls to the individual DE or DC during their beforeValidate
         if (!id) {
             if (dataElements) fullSortOfChildren(dataElements)
             if (dataClasses) fullSortOfChildren(dataClasses)
         }
-        log.trace('DC before validate {} took {}', this.label, Utils.timeTaken(st))
+//                log.debug('DC {} before validate took {}', this.label, Utils.timeTaken(st))
     }
 
     @Override

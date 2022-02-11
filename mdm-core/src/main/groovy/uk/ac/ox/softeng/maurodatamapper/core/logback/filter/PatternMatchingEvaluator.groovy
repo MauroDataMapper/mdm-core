@@ -15,24 +15,29 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.referencedata.rest.transport
+package uk.ac.ox.softeng.maurodatamapper.core.logback.filter
 
-import grails.validation.Validateable
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.boolex.EvaluationException
+import ch.qos.logback.core.boolex.EventEvaluatorBase
+
+import java.util.regex.Pattern
 
 /**
- * @since 04/09/2018
+ * @since 01/02/2022
  */
-class DeleteAllParams implements Validateable {
+class PatternMatchingEvaluator extends EventEvaluatorBase<ILoggingEvent> {
 
-    List<String> ids
-    Boolean permanent
+    private List<Pattern> patterns
 
-    DeleteAllParams() {
-        permanent = true
+    PatternMatchingEvaluator(List<Pattern> patterns) {
+        name = 'Pattern Matching Evaluator'
+        this.patterns = patterns
+        start()
     }
 
-    static constraints = {
-        ids minSize: 1
-        ids nullable: false
+    @Override
+    boolean evaluate(ILoggingEvent event) throws NullPointerException, EvaluationException {
+        patterns.any {event.message.matches(it)}
     }
 }

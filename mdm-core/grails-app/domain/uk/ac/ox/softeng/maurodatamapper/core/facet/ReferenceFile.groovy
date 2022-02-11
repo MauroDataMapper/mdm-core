@@ -64,7 +64,13 @@ class ReferenceFile implements CatalogueFile, MultiFacetItemAware {
     }
 
     def beforeValidate() {
+//        beforeValidateCheck()
         fileSize = fileContents?.size()
+    }
+
+    @Override
+    def beforeInsert(){
+        beforeInsertCheck()
     }
 
     @Override

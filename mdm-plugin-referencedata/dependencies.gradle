@@ -1,6 +1,6 @@
 dependencies {
 
-    implementation 'org.apache.commons:commons-csv:1.8'
+    implementation 'org.apache.commons:commons-csv'
 
     runtimeOnly "io.methvin:directory-watcher", {
         exclude group: 'com.google.guava', module: 'guava'

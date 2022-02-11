@@ -42,7 +42,6 @@ import grails.testing.spock.RunOnce
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
-import spock.lang.PendingFeature
 import spock.lang.Shared
 
 import java.nio.file.Files
@@ -1150,11 +1149,11 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
         cleanUpData(id)
     }
 
-    @PendingFeature(reason = 'not yet implemented')
-    void 'test delete multiple models'() {
+
+    void 'DA : test delete multiple models'() {
         given:
         def idstoDelete = []
-        (1..4).each { n ->
+        (1..4).each {n ->
             idstoDelete << createNewItem([
                 folder: folderId,
                 label : UUID.randomUUID().toString()
@@ -1169,38 +1168,66 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
 
         then:
         verifyJsonResponse OK, '''{
-                  "count": 4,
-                  "items": [
-                    {
-                      "deleted": true,
-                      "domainType": "CodeSet",
-                      "id": "${json-unit.matches:id}",
-                      "label": "${json-unit.matches:id}",
-                      "type": "Data Standard"
-                    },
-                    {
-                      "deleted": true,
-                      "domainType": "CodeSet",
-                      "id": "${json-unit.matches:id}",
-                      "label": "${json-unit.matches:id}",
-                      "type": "Data Standard"
-                    },
-                    {
-                      "deleted": true,
-                      "domainType": "CodeSet",
-                      "id": "${json-unit.matches:id}",
-                      "label": "${json-unit.matches:id}",
-                      "type": "Data Standard"
-                    },
-                    {
-                      "deleted": true,
-                      "domainType": "CodeSet",
-                      "id": "${json-unit.matches:id}",
-                      "label": "${json-unit.matches:id}",
-                      "type": "Data Standard"
-                    }
-                  ]
-                }'''
+  "count": 4,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "CodeSet",
+      "label": "${json-unit.matches:id}",
+      "branchName": "main",
+      "documentationVersion": "1.0.0",
+      "deleted": true,
+      "authority": {
+        "id": "${json-unit.matches:id}",
+        "url": "http://localhost",
+        "label": "Test Authority",
+        "defaultAuthority": true
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "CodeSet",
+      "label": "${json-unit.matches:id}",
+      "branchName": "main",
+      "documentationVersion": "1.0.0",
+      "deleted": true,
+      "authority": {
+        "id": "${json-unit.matches:id}",
+        "url": "http://localhost",
+        "label": "Test Authority",
+        "defaultAuthority": true
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "CodeSet",
+      "label": "${json-unit.matches:id}",
+      "branchName": "main",
+      "documentationVersion": "1.0.0",
+      "deleted": true,
+      "authority": {
+        "id": "${json-unit.matches:id}",
+        "url": "http://localhost",
+        "label": "Test Authority",
+        "defaultAuthority": true
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "CodeSet",
+      "label": "${json-unit.matches:id}",
+      "branchName": "main",
+      "documentationVersion": "1.0.0",
+      "deleted": true,
+      "authority": {
+        "id": "${json-unit.matches:id}",
+        "url": "http://localhost",
+        "label": "Test Authority",
+        "defaultAuthority": true
+      }
+    }
+  ]
+}'''
 
         when:
         DELETE('', [

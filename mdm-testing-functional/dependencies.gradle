@@ -5,7 +5,7 @@ dependencies {
     implementation "org.grails:grails-web-testing-support"
     compileOnly project(':mdm-testing-framework')
 
-    testImplementation group: 'org.apache.commons', name: 'commons-csv', version: commonsCsvVersion
+    testImplementation group: 'org.apache.commons', name: 'commons-csv'
     implementation project(':mdm-testing-framework')
 
     runtimeOnly "io.methvin:directory-watcher", {

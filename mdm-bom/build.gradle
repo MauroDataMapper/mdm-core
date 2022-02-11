@@ -1,0 +1,149 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        maven {url "https://jenkins.cs.ox.ac.uk/artifactory/plugins-snapshot"}
+        maven {url "https://jenkins.cs.ox.ac.uk/artifactory/plugins-release"}
+
+    }
+    dependencies {
+        classpath "ox.softeng.gradle:oxbrcinformatics-gradle-plugins:$oxbrcinformaticsGradlePluginsVersion"
+    }
+}
+
+plugins {
+    id 'java-platform'
+    id "io.spring.dependency-management"
+}
+
+apply plugin: 'ox.softeng.ox-brc-artifactory'
+
+repositories {
+    mavenLocal()
+    maven {url 'https://jenkins.cs.ox.ac.uk/artifactory/libs-snapshot'}
+    maven {url 'https://jenkins.cs.ox.ac.uk/artifactory/libs-release'}
+}
+
+publishing {
+    publications {
+        mdmPlatform(MavenPublication) {
+            from components.javaPlatform
+            pom {
+                name = project.name
+                url = 'https://github.com/MauroDataMapper/mdm-core'
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'olliefreeman'
+                        name = 'Oliver Freeman'
+                        email = 'ollie.freeman@gmail.com'
+                    }
+                    developer {
+                        id = 'jameswelch'
+                        name = 'James Welch'
+                        email = 'james.welch@bdi.ox.ac.uk'
+                    }
+                }
+                scm {
+                    connection = 'git@github.com:MauroDataMapper/mdm-core.git'
+                    developerConnection = 'git@github.com:MauroDataMapper/mdm-core.git'
+                    url = 'https://github.com/MauroDataMapper/mdm-core'
+                }
+            }
+            pom.withXml {
+                Node xml = asNode()
+                Properties deps = new Properties()
+                deps.load(new StringReader(new File("$projectDir/gradle.properties").text))
+                Map imported = dependencyManagement.importedProperties
+
+                deps.each {dep ->
+                    imported["${dep.key}.version".toString()] = dep.value
+                }
+
+                xml.children().last() + {
+                    def mkp = delegate
+
+                    mkp.properties {
+                        for (dep in imported.sort()) {
+                            mkp."$dep.key"(dep.value)
+                        }
+                    }
+
+                }
+            }
+        }
+    }
+}
+
+// Need this to get the complete list of bom properties for the pom file
+// But dont want to actually use spring dependency management
+dependencyManagement {
+    generatedPomCustomization {
+        enabled = false
+    }
+    imports {
+        mavenBom "org.springframework.boot:spring-boot-dependencies:$springBoot"
+        mavenBom "org.grails:grails-bom:$grails"
+    }
+}
+
+javaPlatform {
+    allowDependencies()
+}
+
+
+dependencies {
+
+    api platform("org.springframework.boot:spring-boot-dependencies:$springBoot")
+    api platform("org.grails:grails-bom:$grails")
+
+    constraints {
+        api group: 'com.google.guava', name: 'guava', version: guava
+        api group: 'org.grails', name: 'grails-core', version: grails
+        api group: 'org.grails.plugins', name: 'views-json', version: grailsViews
+        api group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: spotbugsAnnotation
+        api group: 'com.bertramlabs.plugins', name: 'asset-pipeline-core', version: assetPipeline
+        api "org.javassist:javassist:$javaAssist"
+
+        api group: 'org.slf4j', name: 'slf4j-api', version: slf4j
+        api group: 'ch.qos.logback', name: 'logback-classic', version: logback
+
+        //mathpere/grails-hibernate-search-plugin
+        api "org.grails.plugins:hibernate-search:$hibernateSearch"
+        api "org.hibernate:hibernate-core:$hibernate"
+        api "org.hibernate:hibernate-ehcache:$hibernate"
+        api group: 'org.hibernate.search', name: 'hibernate-search-mapper-orm', version: hibernateSearchOrm
+        api group: 'org.hibernate.search', name: 'hibernate-search-backend-lucene', version: hibernateSearchOrm
+        api group: 'org.hibernate.search', name: 'hibernate-search-v5migrationhelper-orm', version: hibernateSearchOrm
+
+        api("org.apache.lucene:lucene-analyzers-common:$lucene") {
+            because 'hibernate-search-orm requires the older version, it has not been updated beyond'
+        }
+
+        api group: 'org.apache.commons', name: 'commons-rng-simple', version: commonsRng
+        api group: 'org.apache.commons', name: 'commons-text', version: commonsText
+        api group: 'org.apache.commons', name: 'commons-csv', version: commonsCsv
+        api group: 'org.simplejavamail', name: 'simple-java-mail', version: javaMail
+        api group: 'commons-beanutils', name: 'commons-beanutils', version: commonsBeanutils
+
+        api group: 'net.javacrumbs.json-unit', name: 'json-unit', version: jsonunit
+        api group: 'org.xmlunit', name: 'xmlunit-core', version: xmlunit
+    }
+
+
+}
+
+// Gradle doesnt rebuild the pom or metadata file if we change the dependencies because it doesnt see there to be a change
+// So we just force it to
+afterEvaluate {
+    tasks.withType(GenerateMavenPom).configureEach {
+        it.outputs.upToDateWhen {false}
+    }
+    tasks.withType(GenerateModuleMetadata).configureEach {
+        it.outputs.upToDateWhen {false}
+    }
+}

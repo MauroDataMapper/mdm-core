@@ -22,7 +22,6 @@
   <mdm:dataModels>
     <mdm:dataModel>
       <mdm:id>Invalid DataModel ID</mdm:id>
-      <mdm:label>Invalid DataModel</mdm:label>
     </mdm:dataModel>
   </mdm:dataModels>
   <exp:exportMetadata>

@@ -28,7 +28,6 @@ import org.springframework.context.annotation.ComponentScan
 @ComponentScan(basePackages = ['uk.ac.ox.softeng.maurodatamapper'])
 class Application extends GrailsAutoConfiguration {
     static void main(String[] args) {
-        Utils.outputRuntimeArgs(Application)
         GrailsApp.run(Application, args)
     }
 

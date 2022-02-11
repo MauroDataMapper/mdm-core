@@ -15,24 +15,27 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport
+package uk.ac.ox.softeng.maurodatamapper.core.logback.filter
 
-import grails.validation.Validateable
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.filter.EvaluatorFilter
+import ch.qos.logback.core.spi.FilterReply
+
+import java.util.regex.Pattern
 
 /**
- * @since 04/09/2018
+ * @since 01/02/2022
  */
-class DeleteAllParams implements Validateable {
+class HibernateLogFilter extends EvaluatorFilter<ILoggingEvent> {
 
-    List<String> ids
-    Boolean permanent
+    static final List<Pattern> matchingPatterns = [
+        ~/.*Specified config option \[importFrom].*/,
+        ~/HHH90000022.*/,
+        ~/HHH000179.*/,
+    ]
 
-    DeleteAllParams() {
-        permanent = true
-    }
-
-    static constraints = {
-        ids minSize: 1
-        ids nullable: false
+    HibernateLogFilter() {
+        onMatch = FilterReply.DENY
+        evaluator = new PatternMatchingEvaluator(matchingPatterns)
     }
 }

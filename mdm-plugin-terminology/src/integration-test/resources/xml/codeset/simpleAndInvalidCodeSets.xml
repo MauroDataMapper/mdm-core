@@ -22,7 +22,6 @@
   <mdm:codeSets>
     <mdm:codeSet>
       <mdm:id>Invalid CodeSet ID</mdm:id>
-      <mdm:label>Invalid CodeSet</mdm:label>
     </mdm:codeSet>
     <mdm:codeSet>
       <mdm:id>9bde38fe-d4b6-4dbd-a5b9-061b606a7e23</mdm:id>

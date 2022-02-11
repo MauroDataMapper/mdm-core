@@ -39,6 +39,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.VirtualGroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.VirtualSecurableResourceGroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.VirtualSecurableResourceGroupRoleService
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.core.GrailsApplication
 import grails.gorm.transactions.Transactional
@@ -89,13 +90,11 @@ class UserSecurityPolicyService {
             userSecurityPolicy.user, groupRoleService.getFromCache(GroupRole.USER_ADMIN_ROLE_NAME)
         )
 
-        Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = buildInternalSecurity(userSecurityPolicy.isAuthenticated())
-
-        // Add the actual user with full permissions for themselves
-        virtualSecurableResourceGroupRoles.addAll(personalUserRoles)
-
-        // If no usergroups then the user has no permissions apart from their own user
+        // If no usergroups then the user has no permissions apart from their own user and what is public/authenticated access
         if (!userSecurityPolicy.hasUserGroups()) {
+
+            Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = buildInternalSecurity(userSecurityPolicy.isAuthenticated())
+
             return userSecurityPolicy
                 .withVirtualRoles(personalUserRoles)
                 .includeVirtualRoles(virtualSecurableResourceGroupRoles)
@@ -103,7 +102,7 @@ class UserSecurityPolicyService {
 
         buildUserSecurityPolicyForContent(userSecurityPolicy,
                                           userSecurityPolicy.getAssignedUserGroupApplicationRoles(),
-                                          virtualSecurableResourceGroupRoles)
+                                          personalUserRoles)
     }
 
     UserSecurityPolicy updatePolicyWithAccessInUserGroup(UserSecurityPolicy userSecurityPolicy, UserGroup userGroup) {
@@ -240,18 +239,21 @@ class UserSecurityPolicyService {
         if (fullSecureableResourceAccessRole) {
             virtualSecurableResourceGroupRoles.addAll(buildFullAccessToAllSecurableResources(fullSecureableResourceAccessRole))
         } else {
+            // Build the public/authenticated access
+            virtualSecurableResourceGroupRoles.addAll(buildInternalSecurity(userSecurityPolicy.isAuthenticated()))
             // Otherwise use the assigned roles to define access
             virtualSecurableResourceGroupRoles.addAll(buildControlledAccessToSecurableResources(securableResourceGroupRoles))
-        }
-
-        // If any container admin privileges then we need to make sure the container group admin role is added to the application level
-        if (virtualSecurableResourceGroupRoles.any {it.groupRole.name == GroupRole.CONTAINER_ADMIN_ROLE_NAME}) {
-            inheritedApplicationGroupRoles.add(groupRoleService.getFromCache(GroupRole.CONTAINER_GROUP_ADMIN_ROLE_NAME).groupRole)
+            // If any container admin privileges then we need to make sure the container group admin role is added to the application level
+            if (virtualSecurableResourceGroupRoles.any {it.groupRole.name == GroupRole.CONTAINER_ADMIN_ROLE_NAME}) {
+                inheritedApplicationGroupRoles.add(groupRoleService.getFromCache(GroupRole.CONTAINER_GROUP_ADMIN_ROLE_NAME).groupRole)
+            }
         }
 
         // Add all users and groups access (only valid for application roles)
-        virtualSecurableResourceGroupRoles.addAll(buildCatalogueUserVirtualRoles(inheritedApplicationGroupRoles))
-        virtualSecurableResourceGroupRoles.addAll(buildUserGroupVirtualRoles(inheritedApplicationGroupRoles))
+        if(inheritedApplicationGroupRoles) {
+            virtualSecurableResourceGroupRoles.addAll(buildCatalogueUserVirtualRoles(inheritedApplicationGroupRoles))
+            virtualSecurableResourceGroupRoles.addAll(buildUserGroupVirtualRoles(inheritedApplicationGroupRoles))
+        }
 
         userSecurityPolicy
             .withApplicationRoles(inheritedApplicationGroupRoles)
@@ -360,6 +362,7 @@ class UserSecurityPolicyService {
     }
 
     private Set<VirtualSecurableResourceGroupRole> buildFullAccessToAllSecurableResources(VirtualGroupRole accessRole) {
+        log.debug('Building full access to system')
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = [] as Set
         Set<GroupRole> inheritedContainerRoles = groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).allowedRoles
         // Don't bother with usergroups or users as these will be implicitly defined by the other roles under application_admin
@@ -383,6 +386,7 @@ class UserSecurityPolicyService {
     private Set<VirtualSecurableResourceGroupRole> buildControlledAccessToSecurableResources(
         List<SecurableResourceGroupRole> securableResourceGroupRoles) {
 
+        log.debug('Building controlled access to system')
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = [] as Set
         securableResourceGroupRoles.each {sgr ->
 
