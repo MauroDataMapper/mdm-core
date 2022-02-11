@@ -531,6 +531,33 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec implements CsvComparer, X
         removeValidIdObject(id2)
     }
 
+    void 'A07 : Test the update action correctly persists the update, in particular setting the lastUpdatedBy property'() {
+        given:
+        loginAdmin()
+
+        when:
+        POST('', validJson)
+
+        then:
+        verifyResponse CREATED, response
+        response.body().id
+        response.body().lastUpdatedBy == userEmailAddresses.admin
+        String id1 = response.body().id
+
+        when: 'Update'
+        loginCreator()
+        PUT("$id1", validUpdateJson)
+
+        then:
+        verifyResponse OK, response
+        response.body().id == id1
+        response.body().value == "Some different random thing"
+        response.body().lastUpdatedBy == userEmailAddresses.creator
+
+        cleanup:
+        removeValidIdObject(id1)
+    }
+
     void 'EXX : Test editor endpoints are all forbidden'() {
         given:
         def id = getValidId()

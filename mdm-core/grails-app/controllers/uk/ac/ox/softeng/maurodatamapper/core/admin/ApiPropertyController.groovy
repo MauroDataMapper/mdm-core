@@ -67,6 +67,16 @@ class ApiPropertyController extends EditLoggingController<ApiProperty> {
         saveResponse instance
     }
 
+    /**
+     * Override the base method so that we can set instance.lastUpdatedBy
+     */
+    @Transactional
+    @Override
+    protected boolean validateResource(ApiProperty instance, String view) {
+        instance.lastUpdatedBy = currentUser.emailAddress
+        super.validateResource(instance, view)
+    }
+
     @Override
     protected ApiProperty saveResource(ApiProperty resource) {
         ApiProperty apiProperty = super.saveResource(resource)
