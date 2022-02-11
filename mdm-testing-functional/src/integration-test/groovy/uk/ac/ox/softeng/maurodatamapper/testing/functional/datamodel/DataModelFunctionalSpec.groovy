@@ -2311,34 +2311,34 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         loginAdmin()
         GET("/${source.dataModelId}/dataClasses")
         verifyResponse OK, response
-        source.emptyClass = response.body().items.find{it.label == 'emptyclass'}
-        source.contentClass = response.body().items.find{it.label == 'content'}
-        source.parentClass = response.body().items.find{it.label == 'parent'}
+        source.emptyClass = response.body().items.find { it.label == 'emptyclass' }
+        source.contentClass = response.body().items.find { it.label == 'content' }
+        source.parentClass = response.body().items.find { it.label == 'parent' }
 
         and:
         GET("/${source.dataModelId}/dataClasses/${source.parentClass.id}/dataClasses")
         verifyResponse OK, response
-        source.parentClass.childClass = response.body().items.find{it.label == 'child'}
+        source.parentClass.childClass = response.body().items.find { it.label == 'child' }
 
         and:
         GET("/${source.dataModelId}/dataClasses/${source.contentClass.id}/dataElements")
         verifyResponse OK, response
-        source.contentClass.ele1 = response.body().items.find{it.label == 'ele1'}
-        source.contentClass.element2 = response.body().items.find{it.label == 'element2'}
+        source.contentClass.ele1 = response.body().items.find { it.label == 'ele1' }
+        source.contentClass.element2 = response.body().items.find { it.label == 'element2' }
 
         and:
         GET("/${source.dataModelId}/dataClasses/${source.parentClass.id}/dataClasses")
         verifyResponse OK, response
-        source.parentClass.childClass = response.body().items.find{it.label == "child"}
+        source.parentClass.childClass = response.body().items.find { it.label == "child" }
 
         and:
         GET("/${source.dataModelId}/dataTypes")
         verifyResponse OK, response
-        def dataTypeId = responseBody().items.find{it.label == "string"}.id
+        def dataTypeId = responseBody().items.find { it.label == "string" }.id
 
         and: 'there is a Data Element called grandchild on the child Data Class'
         POST("/${source.dataModelId}/dataClasses/${source.parentClass.childClass.id}/dataElements", [
-            "label": "grandchild",
+            "label"   : "grandchild",
             "dataType": dataTypeId
         ])
         verifyResponse CREATED, response
@@ -2466,8 +2466,8 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
         when: 'Get Data Classes on targetDataModel'
         GET("/${target.dataModelId}/dataClasses")
-        target.contentClass = response.body().items.find{it.label == 'content'}
-        target.parentClass = response.body().items.find{it.label == 'parent'}
+        target.contentClass = response.body().items.find { it.label == 'content' }
+        target.parentClass = response.body().items.find { it.label == 'parent' }
 
         then: 'There is the content Data Class and parent Data Class and child Data Class'
         verifyResponse OK, response
@@ -2477,7 +2477,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
         when: 'Get the Data Classes of the parent Data Class'
         GET("/${target.dataModelId}/dataClasses/${target.parentClass.id}/dataClasses")
-        target.parentClass.childClass = response.body().items.find{it.label == 'child'}
+        target.parentClass.childClass = response.body().items.find { it.label == 'child' }
 
         then: 'The response is OK and includes the child Data Class'
         verifyResponse OK, response
@@ -2486,9 +2486,9 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
         when: 'Get Data Elements on targetDataModel'
         GET("/${target.dataModelId}/dataElements")
-        target.contentClass.ele1 = response.body().items.find{it.label == 'ele1'}
-        target.contentClass.element2 = response.body().items.find{it.label == 'element2'}
-        target.parentClass.childClass.grandchild = response.body().items.find{it.label == 'grandchild'}
+        target.contentClass.ele1 = response.body().items.find { it.label == 'ele1' }
+        target.contentClass.element2 = response.body().items.find { it.label == 'element2' }
+        target.parentClass.childClass.grandchild = response.body().items.find { it.label == 'grandchild' }
 
         then: 'There are the ele1 and element2 Data Elements in the content Data Class'
         verifyResponse OK, response
@@ -2523,8 +2523,8 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         GET("/${target.dataModelId}/dataClasses")
 
         then: 'The parent Data Classes has been deleted from the targetDataModel'
-        response.body().items.find{it.label == 'content'}
-        !response.body().items.find{it.label == 'parent'}
+        response.body().items.find { it.label == 'content' }
+        !response.body().items.find { it.label == 'parent' }
 
         cleanup:
         loginAdmin()

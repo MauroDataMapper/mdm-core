@@ -4164,15 +4164,15 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         target.dataModelId = createNewItem(validJson)
 
         and:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.0', [
-                finalised                      : false,
-                folderId                       : folderId.toString(),
-                importAsNewDocumentationVersion: false,
-                importFile                     : [
-                        fileName    : 'FT Import',
-                        fileType    : MimeType.JSON_API.name,
-                        fileContents: loadTestFile('complexDataModel').toList()
-                ]
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('complexDataModel').toList()
+            ]
         ])
         verifyResponse CREATED, response
         source.dataModelId = response.body().items[0].id
@@ -4180,30 +4180,30 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         and:
         GET("/${source.dataModelId}/dataClasses")
         verifyResponse OK, response
-        source.emptyClass = response.body().items.find{it.label == 'empty'}
-        source.contentClass = response.body().items.find{it.label == 'content'}
-        source.parentClass = response.body().items.find{it.label == 'parent'}
+        source.emptyClass = response.body().items.find { it.label == 'empty' }
+        source.contentClass = response.body().items.find { it.label == 'content' }
+        source.parentClass = response.body().items.find { it.label == 'parent' }
 
         and:
         GET("/${source.dataModelId}/dataClasses/${source.parentClass.id}/dataClasses")
         verifyResponse OK, response
-        source.parentClass.childClass = response.body().items.find{it.label == 'child'}
+        source.parentClass.childClass = response.body().items.find { it.label == 'child' }
 
         and:
         GET("/${source.dataModelId}/dataClasses/${source.contentClass.id}/dataElements")
         verifyResponse OK, response
-        source.contentClass.ele1 = response.body().items.find{it.label == 'ele1'}
-        source.contentClass.element2 = response.body().items.find{it.label == 'element2'}
+        source.contentClass.ele1 = response.body().items.find { it.label == 'ele1' }
+        source.contentClass.element2 = response.body().items.find { it.label == 'element2' }
 
         and:
         GET("/${source.dataModelId}/dataClasses/${source.parentClass.id}/dataClasses")
         verifyResponse OK, response
-        source.parentClass.childClass = response.body().items.find{it.label == "child"}
+        source.parentClass.childClass = response.body().items.find { it.label == "child" }
 
         and: 'there is a Data Element called grandchild on the child Data Class'
         POST("/${source.dataModelId}/dataClasses/${source.parentClass.childClass.id}/dataElements", [
-                "label": "grandchild",
-                "dataType": ["label": "string", "domainType": "PrimitiveType"]
+            "label"   : "grandchild",
+            "dataType": ["label": "string", "domainType": "PrimitiveType"]
         ])
         verifyResponse CREATED, response
         source.parentClass.childClass.grandchild = response.body()
@@ -4307,8 +4307,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         when: 'Get Data Classes on targetDataModel'
         GET("/${target.dataModelId}/dataClasses")
-        target.contentClass = response.body().items.find{it.label == 'content'}
-        target.parentClass = response.body().items.find{it.label == 'parent'}
+        target.contentClass = response.body().items.find { it.label == 'content' }
+        target.parentClass = response.body().items.find { it.label == 'parent' }
 
         then: 'There is the content Data Class and parent Data Class and child Data Class'
         verifyResponse OK, response
@@ -4318,7 +4318,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         when: 'Get the Data Classes of the parent Data Class'
         GET("/${target.dataModelId}/dataClasses/${target.parentClass.id}/dataClasses")
-        target.parentClass.childClass = response.body().items.find{it.label == 'child'}
+        target.parentClass.childClass = response.body().items.find { it.label == 'child' }
 
         then: 'The response is OK and includes the child Data Class'
         verifyResponse OK, response
@@ -4327,9 +4327,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         when: 'Get Data Elements on targetDataModel'
         GET("/${target.dataModelId}/dataElements")
-        target.contentClass.ele1 = response.body().items.find{it.label == 'ele1'}
-        target.contentClass.element2 = response.body().items.find{it.label == 'element2'}
-        target.parentClass.childClass.grandchild = response.body().items.find{it.label == 'grandchild'}
+        target.contentClass.ele1 = response.body().items.find { it.label == 'ele1' }
+        target.contentClass.element2 = response.body().items.find { it.label == 'element2' }
+        target.parentClass.childClass.grandchild = response.body().items.find { it.label == 'grandchild' }
 
         then: 'There are the ele1 and element2 Data Elements in the content Data Class'
         verifyResponse OK, response
@@ -4364,8 +4364,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         GET("/${target.dataModelId}/dataClasses")
 
         then: 'The parent Data Classes has been deleted from the targetDataModel'
-        response.body().items.find{it.label == 'content'}
-        !response.body().items.find{it.label == 'parent'}
+        response.body().items.find { it.label == 'content' }
+        !response.body().items.find { it.label == 'parent' }
 
         cleanup:
         cleanUpData(source.dataModelId)
