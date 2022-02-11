@@ -934,15 +934,16 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         PathNode dataClassNode = pathInTarget.getPathNodes()[0]
 
         DataClass sourceDataClass = parentDataClassInSource ?
-                findByDataModelIdAndParentDataClassIdAndLabel(sourceDataModel.id, parentDataClassInSource.id, dataClassNode.identifier) :
-                findByDataModelIdAndLabel(sourceDataModel.id, dataClassNode.identifier)
+                                    findByDataModelIdAndParentDataClassIdAndLabel(sourceDataModel.id, parentDataClassInSource.id,
+                                                                                  dataClassNode.identifier) :
+                                    findByDataModelIdAndLabel(sourceDataModel.id, dataClassNode.identifier)
 
         if (!sourceDataClass)
             throw new ApiInternalException("DCS04", "Source Data Class does not exist")
 
         DataClass targetDataClass = parentDataClassInTarget ?
-            parentDataClassInTarget.getDataClasses().find{it.label == dataClassNode.identifier} :
-            targetDataModel.getChildDataClasses().find{it.label == dataClassNode.identifier}
+                                    parentDataClassInTarget.getDataClasses().find { it.label == dataClassNode.identifier } :
+                                    targetDataModel.getChildDataClasses().find { it.label == dataClassNode.identifier }
 
         if (!targetDataClass) {
             //Create it
@@ -953,32 +954,39 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
 
             targetDataClass = copyCatalogueItemInformation(sourceDataClass, targetDataClass, user, userSecurityPolicyManager, false, null)
 
+            targetDataModel.addToDataClasses(targetDataClass)
             if (parentDataClassInTarget) {
                 parentDataClassInTarget.addToDataClasses(targetDataClass)
-            } else {
-                targetDataModel.addToDataClasses(targetDataClass)
             }
-
 
             if (!targetDataClass.validate())
                 throw new ApiInvalidModelException('DCS05', 'Subsetted DataClass is invalid', targetDataClass.errors, messageSource)
 
-            save(targetDataClass)
+            save(flush: false, validate: false, targetDataClass)
         }
 
         // Get the next node, which could be a dc or de
         PathNode nextNode = pathInTarget.getPathNodes()[1]
 
         if (nextNode.prefix == 'dc') {
-            targetDataClass = subset(sourceDataModel, targetDataModel, dataElementInSource, pathInTarget.getChildPath(), user, userSecurityPolicyManager, sourceDataClass, targetDataClass)
+            targetDataClass =
+                subset(sourceDataModel, targetDataModel, dataElementInSource, pathInTarget.getChildPath(), user, userSecurityPolicyManager,
+                       sourceDataClass, targetDataClass)
         } else if (nextNode.prefix == 'de') {
-            DataElement dataElementInTarget = dataElementService.copyDataElement(targetDataModel, dataElementInSource, user, userSecurityPolicyManager)
+            DataElement dataElementInTarget =
+                dataElementService.copyDataElement(targetDataModel, dataElementInSource, user, userSecurityPolicyManager)
             targetDataClass.addToDataElements(dataElementInTarget)
             matchUpAndAddMissingReferenceTypeClasses(targetDataModel, sourceDataModel, user, userSecurityPolicyManager)
-            dataElementService.validate(dataElementInTarget)
-            dataElementService.save(dataElementInTarget)
+            if (!dataElementService.validate(dataElementInTarget)) {
+                throw new ApiInvalidModelException(
+                    "DCS06",
+                    "dataElementInTarget ${dataElementInTarget.id} failed validation",
+                    dataElementInTarget.errors,
+                    messageSource)
+            }
+            dataElementService.save(flush: false, validate: false, dataElementInTarget)
         } else {
-            throw new ApiInternalException('DCS06', "Unexpected node prefix ${nextNode.prefix}")
+            throw new ApiInternalException('DCS07', "Unexpected node prefix ${nextNode.prefix}")
         }
 
         validate(targetDataClass)

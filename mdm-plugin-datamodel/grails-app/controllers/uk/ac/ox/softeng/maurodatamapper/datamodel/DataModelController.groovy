@@ -232,7 +232,9 @@ class DataModelController extends ModelController<DataModel> {
 
         dataModelService.subset(sourceModel, targetModel, subsetData, currentUser, currentUserSecurityPolicyManager)
 
-        render status: OK
+        if (!validateResource(targetModel, 'update')) return
+        updateResource(targetModel)
+        updateResponse(targetModel)
     }
 
     def intersects() {

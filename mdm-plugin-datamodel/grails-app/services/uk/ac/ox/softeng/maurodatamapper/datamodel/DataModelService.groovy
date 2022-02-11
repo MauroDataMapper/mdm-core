@@ -1042,20 +1042,17 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
      */
     def subset(DataModel sourceDataModel, DataModel targetDataModel, Subset subsetData, User user, UserSecurityPolicyManager userSecurityPolicyManager) {
         subsetData.additions.each {dataElementId ->
-            subsetAddition(sourceDataModel, targetDataModel, UUID.fromString(dataElementId), user, userSecurityPolicyManager)
+            subsetAddition(sourceDataModel, targetDataModel, Utils.toUuid(dataElementId), user, userSecurityPolicyManager)
         }
 
         subsetData.deletions.each {dataElementId ->
-            subsetDeletion(sourceDataModel, targetDataModel, UUID.fromString(dataElementId), user, userSecurityPolicyManager)
+            subsetDeletion(sourceDataModel, targetDataModel, Utils.toUuid(dataElementId), user, userSecurityPolicyManager)
         }
 
         if (subsetData.deletions.size() > 0) {
             // Remove any Data Classes which are no longer used
             deleteUnSubsettedDataClasses(targetDataModel)
         }
-
-        validate(targetDataModel)
-        save(flush: true, targetDataModel)
     }
 
     /**
@@ -1092,10 +1089,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
      * @return
      */
     private subsetAddition(DataModel sourceDataModel, DataModel targetDataModel, UUID dataElementId, User user, UserSecurityPolicyManager userSecurityPolicyManager) {
-        DataElement dataElementInSource = sourceDataModel.getAllDataElements().find{it.id == dataElementId}
-
-        if (!dataElementInSource)
-            throw new ApiInternalException("DMSXX", "Data Element ${dataElementId} not found in source model")
+        DataElement dataElementInSource = getDataElementInModel(sourceDataModel, dataElementId)
 
         Path pathInSource = dataElementInSource.getPath()
 
@@ -1129,10 +1123,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
      * @return
      */
     private subsetDeletion(DataModel sourceDataModel, DataModel targetDataModel, UUID dataElementId, User user, UserSecurityPolicyManager userSecurityPolicyManager) {
-        DataElement dataElementInSource = sourceDataModel.getAllDataElements().find{it.id == dataElementId}
-
-        if (!dataElementInSource)
-            throw new ApiInternalException("DMSXX", "Data Element ${dataElementId} not found in source model")
+        DataElement dataElementInSource = getDataElementInModel(sourceDataModel, dataElementId)
 
         Path pathInSource = dataElementInSource.getPath()
 
@@ -1141,6 +1132,23 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         if (dataElementInTarget) {
             dataElementService.delete(dataElementInTarget.id)
         }
+    }
+
+    /**
+     * Get a Data Element by ID and verify it belongs to the expected Data Model.
+     * @param dataModel
+     * @param dataElementId
+     * @return Data Element
+     */
+    private DataElement getDataElementInModel(DataModel dataModel, UUID dataElementId) {
+        DataElement dataElementInModel = dataElementService.get(dataElementId)
+        if (!dataElementInModel)
+            throw new ApiInternalException("DMSXX", "Data Element ${dataElementId} not found")
+
+        if (dataElementInModel.modelId != dataModel.id)
+            throw new ApiInternalException("DMSXX", "Data Element ${dataElementId} does not belong to specified model")
+
+        dataElementInModel
     }
 
     /**
@@ -1153,7 +1161,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     Collection<UUID> intersects(DataModel sourceDataModel, DataModel targetDataModel) {
         Collection<UUID> intersection = []
 
-        sourceDataModel.getAllDataElements().each {
+        dataElementService.findAllByDataModelId(sourceDataModel.id).each {
             Path pathInSource = it.getPath()
 
             DataElement dataElementInTarget = pathService.findResourceByPathFromRootResource(targetDataModel, pathInSource.getChildPath())
