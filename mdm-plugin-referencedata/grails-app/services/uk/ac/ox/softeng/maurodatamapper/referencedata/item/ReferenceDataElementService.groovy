@@ -21,11 +21,16 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
+import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityPair
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate.FilterFactory
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate.IdPathSecureFilterFactory
 import uk.ac.ox.softeng.maurodatamapper.lucene.queries.mlt.BoostedMoreLikeThisQuery
+import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
@@ -36,6 +41,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.similarity.ReferenceDataEl
 import uk.ac.ox.softeng.maurodatamapper.referencedata.traits.service.ReferenceSummaryMetadataAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
@@ -54,6 +60,7 @@ import java.util.function.BiFunction
 @Transactional
 class ReferenceDataElementService extends ModelItemService<ReferenceDataElement> implements ReferenceSummaryMetadataAwareService {
 
+    PathService pathService
     ReferenceDataTypeService referenceDataTypeService
     ReferenceSummaryMetadataService referenceSummaryMetadataService
     ReferenceDataModelService referenceDataModelService
@@ -142,6 +149,11 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
         domainType == ReferenceDataElement.simpleName
     }
 
+    @Override
+    ReferenceDataElement findByParentIdAndLabel(UUID parentId, String label) {
+        findByReferenceDataModelIdAndLabel(parentId, label)
+    }
+
 
     @Override
     List<ReferenceDataElement> findAllReadableTreeTypeCatalogueItemsBySearchTermAndDomain(UserSecurityPolicyManager userSecurityPolicyManager,
@@ -188,6 +200,10 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
 
     ReferenceDataElement findByReferenceDataModelIdAndId(Serializable referenceDataModelId, Serializable id) {
         ReferenceDataElement.byReferenceDataModelIdAndId(referenceDataModelId, id).find()
+    }
+
+    ReferenceDataElement findByReferenceDataModelIdAndLabel(Serializable referenceDataModelId, String label) {
+        ReferenceDataElement.byReferenceDataModelIdAndLabel(referenceDataModelId, label).find()
     }
 
     ReferenceDataElement findByReferenceDataTypeIdAndId(Serializable referenceDataTypeId, Serializable id) {
@@ -252,6 +268,11 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
                                                                 maxMultiplicity)
         }
         dataElement
+    }
+
+    @Override
+    ReferenceDataElement copy(Model copiedReferenceDataModel, ReferenceDataElement original, CatalogueItem nonModelParent, UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyReferenceDataElement(copiedReferenceDataModel as ReferenceDataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
     }
 
     ReferenceDataElement copyReferenceDataElement(ReferenceDataModel copiedReferenceDataModel, ReferenceDataElement original, User copier,
@@ -412,5 +433,30 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
     @Override
     List<ReferenceDataElement> findAllByMetadataNamespace(String namespace, Map pagination) {
         ReferenceDataElement.byMetadataNamespace(namespace).list(pagination)
+    }
+
+    /**
+     * Special handler to apply a modification patch to a ReferenceDataType.
+     * In the diff we set a mergeField called referenceDataTypePath. In this method we use that referenceDataTypePath to find the
+     * relevant ReferenceDataType.
+     * @param modificationPatch
+     * @param targetDomain
+     * @param fieldName
+     * @return
+     */
+    @Override
+    boolean handlesModificationPatchOfField(FieldPatchData modificationPatch, MdmDomain targetBeingPatched, ReferenceDataElement targetDomain, String fieldName) {
+        if (fieldName == 'referenceDataTypePath') {
+            ReferenceDataType rdt = pathService.findResourceByPath(Path.from(modificationPatch.sourceValue))
+
+            if (rdt) {
+                targetDomain.referenceDataType = rdt
+                return true
+            } else {
+                throw new ApiInternalException('RDES01', "Cannot find ReferenceDataType with path ${modificationPatch.sourceValue}")
+            }
+        }
+
+        false
     }
 }

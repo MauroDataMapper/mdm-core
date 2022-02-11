@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
@@ -38,6 +40,7 @@ class ReferencePrimitiveTypeService extends ModelItemService<ReferencePrimitiveT
     public static final String DEFAULT_TEXT_TYPE_LABEL = 'Text'
     public static final String DEFAULT_TEXT_TYPE_DESCRIPTION = 'Text Data Type'
 
+    ReferenceDataTypeService referenceDataTypeService
     ReferenceSummaryMetadataService referenceSummaryMetadataService
     ReferenceDataModelService referenceDataModelService
 
@@ -125,6 +128,14 @@ class ReferencePrimitiveTypeService extends ModelItemService<ReferencePrimitiveT
         }
         log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         results
+    }
+
+    @Override
+    ReferencePrimitiveType copy(Model copiedReferenceDataModel, ReferencePrimitiveType original, CatalogueItem nonModelParent, UserSecurityPolicyManager userSecurityPolicyManager) {
+        ReferencePrimitiveType existing = copiedReferenceDataModel.findReferenceDataTypeByLabel(original.label)
+
+        // If it doesn't already exist then copy the ReferencePrimitiveType
+        existing ?: referenceDataTypeService.copy(copiedReferenceDataModel, original, nonModelParent, userSecurityPolicyManager)
     }
 
     @Override

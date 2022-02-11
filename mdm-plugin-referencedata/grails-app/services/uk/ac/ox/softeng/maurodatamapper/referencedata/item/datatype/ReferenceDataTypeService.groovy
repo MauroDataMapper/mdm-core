@@ -20,6 +20,8 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
@@ -220,6 +222,11 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
         ReferenceDataType.byReferenceDataModelIdAndLabelIlikeOrDescriptionIlike(referenceDataModelId, searchTerm).list(paginate)
     }
 
+    @Override
+    ReferenceDataType copy(Model copiedDataModel, ReferenceDataType original, CatalogueItem nonModelParent, UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyReferenceDataType(copiedDataModel as ReferenceDataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
+    }
+
     ReferenceDataType copyReferenceDataType(ReferenceDataModel copiedReferenceDataModel, ReferenceDataType original, User copier,
                                             UserSecurityPolicyManager userSecurityPolicyManager,
                                             boolean copySummaryMetadata = false) {
@@ -319,6 +326,10 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
     @Override
     List<ReferenceDataType> findAllByMetadataNamespace(String namespace, Map pagination) {
         ReferenceDataType.byMetadataNamespace(namespace).list(pagination)
+    }
+
+    ReferenceDataType findByReferenceDataModelIdAndLabel(Serializable referenceDataModelId, String label) {
+        ReferenceDataType.byReferenceDataModelIdAndLabel(referenceDataModelId, label).find()
     }
 
     @Override
