@@ -184,12 +184,19 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
     }
 
     ObjectDiff<DataElement> diff(DataElement otherDataElement, String context) {
-        catalogueItemDiffBuilder(DataElement, this, otherDataElement)
-            .appendString('dataType.label', this.dataType.label, otherDataElement.dataType.label)
+        ObjectDiff<DataElement> diff = catalogueItemDiffBuilder(DataElement, this, otherDataElement)
             .appendNumber('minMultiplicity', this.minMultiplicity, otherDataElement.minMultiplicity)
             .appendNumber('maxMultiplicity', this.maxMultiplicity, otherDataElement.maxMultiplicity)
 
+        // Aside from branch and version, is this Data Element pointing to a different Data Type?
+        if (!this.dataType.getPath().matches(otherDataElement.dataType.getPath(), this.dataClass.dataModel.getPath().last().modelIdentifier)) {
+            diff.
+                appendString('dataTypePath',
+                             this.dataType.getPath().toString(),
+                             otherDataElement.dataType.getPath().toString())
+        }
 
+        diff
     }
 
     static DetachedCriteria<DataElement> by() {

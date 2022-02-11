@@ -24,6 +24,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
+import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityPair
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -64,6 +66,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     DataTypeService dataTypeService
     SummaryMetadataService summaryMetadataService
     DataModelService dataModelService
+    PathService pathService
 
     @Override
     DataElement get(Serializable id) {
@@ -556,5 +559,30 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
         // Fix HS issue around non-session loaded DT.
         // This may have an adverse effect on saving, which will need to be tested
         dataTypeService.getAll(modelItems.collect { it.dataType.id })
+    }
+
+    /**
+     * Special handler to apply a modification patch to a DataType.
+     * In the diff we set a mergeField called dataTypePath. In this method we use that dataTypePath to find the
+     * relevant DataType.
+     * @param modificationPatch
+     * @param targetDomain
+     * @param fieldName
+     * @return
+     */
+    @Override
+    boolean handlesModificationPatchOfField(FieldPatchData modificationPatch, MdmDomain targetBeingPatched, DataElement targetDomain, String fieldName) {
+        if (fieldName == 'dataTypePath') {
+            DataType dt = pathService.findResourceByPath(Path.from(modificationPatch.sourceValue))
+
+            if (dt) {
+                targetDomain.dataType = dt
+                return true
+            } else {
+                throw new ApiInternalException('DES01', "Cannot find DataType with path ${modificationPatch.sourceValue}")
+            }
+        }
+
+        false
     }
 }
