@@ -130,8 +130,6 @@ abstract class ModelService<K extends Model>
 
     abstract void removeAllFromContainer(Container container)
 
-    abstract List<K> findAllReadableModels(List<UUID> constrainedIds, boolean includeDeleted)
-
     abstract List<K> findAllByUser(UserSecurityPolicyManager userSecurityPolicyManager, Map pagination = [:])
 
     abstract List<UUID> findAllModelIdsWithTreeChildren(List<K> models)
@@ -244,7 +242,23 @@ abstract class ModelService<K extends Model>
         []
     }
 
+    List<K> findAllReadableModels(List<UUID> constrainedIds, boolean includeDeleted) {
+        getDomainClass().withReadable(getDomainClass().by(), constrainedIds, includeDeleted).list() as List<K>
+    }
+
+    List<K> findAllReadableModelsInContainersById(List<UUID> constrainedIds, String containerPropertyName, Collection<UUID> containerIds, boolean includeDeleted) {
+        getDomainClass().withReadable(getDomainClass().byContainerIdInList(containerPropertyName, containerIds), constrainedIds, includeDeleted).list() as List<K>
+    }
+
     List<K> findAllReadableModels(UserSecurityPolicyManager userSecurityPolicyManager, boolean includeDocumentSuperseded,
+                                  boolean includeModelSuperseded, boolean includeDeleted) {
+        findAllReadableModels(userSecurityPolicyManager, null, null, includeDocumentSuperseded, includeModelSuperseded, includeDeleted)
+    }
+
+    List<K> findAllReadableModels(UserSecurityPolicyManager userSecurityPolicyManager,
+                                  String containerPropertyName,
+                                  Collection<UUID> containerIds,
+                                  boolean includeDocumentSuperseded,
                                   boolean includeModelSuperseded, boolean includeDeleted) {
         List<UUID> ids = userSecurityPolicyManager.listReadableSecuredResourceIds(getDomainClass())
         if (!ids) return []
@@ -260,6 +274,9 @@ abstract class ModelService<K extends Model>
             constrainedIds = findAllExcludingDocumentAndModelSupersededIds(ids)
         }
         if (!constrainedIds) return []
+
+        containerIds ?
+        findAllReadableModelsInContainersById(constrainedIds, containerPropertyName, containerIds, includeDeleted) :
         findAllReadableModels(constrainedIds, includeDeleted)
     }
 

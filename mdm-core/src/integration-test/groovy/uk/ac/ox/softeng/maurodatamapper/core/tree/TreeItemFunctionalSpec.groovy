@@ -42,11 +42,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         ''
     }
 
-    String getOldTreeResourcePath() {
-        'tree'
-    }
-
-    String getNewTreeResourcePath() {
+    String getFolderTreeResourcePath() {
         'tree/folders'
     }
 
@@ -61,7 +57,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     void '1 : test call to full tree no containers'() {
 
         when: 'no containers new url'
-        def response = GET(newTreeResourcePath, Argument.of(List))
+        def response = GET(folderTreeResourcePath, Argument.of(List))
 
         then: 'response is correct'
         response.status == HttpStatus.OK
@@ -89,7 +85,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
         when: 'getting folder tree'
         def folderId = response.body().id
-        GET(newTreeResourcePath, STRING_ARG)
+        GET(folderTreeResourcePath, STRING_ARG)
 
         then:
         verifyJsonResponse HttpStatus.OK, exp
@@ -101,16 +97,18 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
     void '3 : test nested folders'() {
         given:
-        String exp = '''[
+        String expParent = '''[
   {
     "id": "${json-unit.matches:id}",
     "domainType": "Folder",
     "label": "Functional Test Folder",
     "hasChildren": true,
     "availableActions": [],
-    "deleted": false,
-    "children": [
-        {
+    "deleted": false
+  }
+]'''
+        String expChild = '''[
+   {
         "id": "${json-unit.matches:id}",
         "domainType": "Folder",
         "label": "Functional Test Folder Child",
@@ -119,8 +117,6 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "deleted": false,
         "parentFolder": "${json-unit.matches:id}"
         }
-    ]
-  }
 ]'''
 
         when: 'creating new folder'
@@ -138,10 +134,17 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
         when: 'getting folder tree'
         def childId = response.body().id
-        GET(newTreeResourcePath, STRING_ARG)
+        GET(folderTreeResourcePath, STRING_ARG)
 
         then:
-        verifyJsonResponse HttpStatus.OK, exp
+        verifyJsonResponse HttpStatus.OK, expParent
+
+        when: 'getting the folder tree'
+        GET("$folderTreeResourcePath/$parentId", STRING_ARG)
+
+        then:
+        verifyJsonResponse HttpStatus.OK, expChild
+
 
         cleanup:
         DELETE("folders/$parentId/folders/$childId?permanent=true")
@@ -174,7 +177,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
         when: 'getting folder tree'
         def folderId = response.body().id
-        GET(newTreeResourcePath, STRING_ARG)
+        GET(folderTreeResourcePath, STRING_ARG)
 
         then:
         verifyJsonResponse HttpStatus.OK, exp
@@ -186,201 +189,17 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
     void '5 : test nested folders with a versioned folder'() {
         given:
-        String exp = '''[
+        String expParent = '''[
   {
     "id": "${json-unit.matches:id}",
     "domainType": "Folder",
     "label": "Functional Test Folder",
     "hasChildren": true,
     "availableActions": [],
-    "deleted": false,
-    "children": [
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "Folder",
-        "label": "Functional Test Folder Child",
-        "hasChildren": false,
-        "availableActions": [],
-        "deleted": false,
-        "parentFolder": "${json-unit.matches:id}"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "VersionedFolder",
-        "label": "Functional Test Versioned Folder Child",
-        "hasChildren": false,
-        "availableActions": [],
-        "deleted": false,
-        "parentFolder": "${json-unit.matches:id}",
-        "finalised": false,
-        "documentationVersion": "1.0.0",
-        "branchName": "main"
-      }
-    ]
+    "deleted": false
   }
 ]'''
-
-        when: 'creating new folder'
-        POST('folders', [label: 'Functional Test Folder'])
-
-        then:
-        verifyResponse HttpStatus.CREATED, response
-
-        when: 'creating new folder'
-        def parentId = response.body().id
-        POST("folders/$parentId/folders", [label: 'Functional Test Folder Child'])
-
-        then:
-        verifyResponse HttpStatus.CREATED, response
-
-        when: 'creating new versioned folder'
-        POST("folders/$parentId/versionedFolders", [label: 'Functional Test Versioned Folder Child'])
-
-        then:
-        verifyResponse HttpStatus.CREATED, response
-
-        when: 'getting folder tree'
-        GET(newTreeResourcePath, STRING_ARG)
-
-        then:
-        verifyJsonResponse HttpStatus.OK, exp
-
-        cleanup:
-        DELETE("folders/$parentId?permanent=true")
-        assert response.status() == HttpStatus.NO_CONTENT
-    }
-
-    void '6 :  test drilling down into a folder'() {
-        given:
-        String exp = '''[
-  {
-    "id": "${json-unit.matches:id}",
-    "domainType": "Folder",
-    "label": "Functional Test Folder",
-    "hasChildren": true,
-    "availableActions": [],
-    "deleted": false,
-    "children": [
-        {
-        "id": "${json-unit.matches:id}",
-        "domainType": "Folder",
-        "label": "Functional Test Folder Child",
-        "hasChildren": false,
-        "availableActions": [],
-        "deleted": false,
-        "parentFolder": "${json-unit.matches:id}"
-        }
-    ]
-  }
-]'''
-
-        when: 'creating new folder'
-        POST('folders', [label: 'Functional Test Folder'])
-
-        then:
-        verifyResponse HttpStatus.CREATED, response
-
-        when: 'creating new folder'
-        def parentId = response.body().id
-        POST("folders/$parentId/folders", [label: 'Functional Test Folder Child'])
-
-        then:
-        verifyResponse HttpStatus.CREATED, response
-
-        when: 'getting folder tree'
-        def childId = response.body().id
-        GET(newTreeResourcePath, STRING_ARG)
-
-        then:
-        verifyJsonResponse HttpStatus.OK, exp
-
-        when: 'getting drill down'
-        GET("$newTreeResourcePath/$parentId", STRING_ARG)
-
-        then:
-        verifyJsonResponse HttpStatus.OK, '''[{
-        "id": "${json-unit.matches:id}",
-        "domainType": "Folder",
-        "label": "Functional Test Folder Child",
-        "hasChildren": false,
-        "availableActions": [],
-        "deleted": false,
-        "parentFolder": "${json-unit.matches:id}"
-        }]'''
-
-        cleanup:
-        DELETE("folders/$parentId/folders/$childId?permanent=true")
-        assert response.status() == HttpStatus.NO_CONTENT
-        DELETE("folders/$parentId?permanent=true")
-        assert response.status() == HttpStatus.NO_CONTENT
-    }
-
-    void '7 : test drilling down for a versioned folder'() {
-        given:
-        String exp = '''[
-  {
-    "id": "${json-unit.matches:id}",
-    "domainType": "Folder",
-    "label": "Functional Test Folder",
-    "hasChildren": true,
-    "availableActions": [],
-    "deleted": false,
-    "children": [
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "Folder",
-        "label": "Functional Test Folder Child",
-        "hasChildren": false,
-        "availableActions": [],
-        "deleted": false,
-        "parentFolder": "${json-unit.matches:id}"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "VersionedFolder",
-        "label": "Functional Test Versioned Folder Child",
-        "hasChildren": false,
-        "availableActions": [],
-        "deleted": false,
-        "parentFolder": "${json-unit.matches:id}",
-        "finalised": false,
-        "documentationVersion": "1.0.0",
-        "branchName": "main"
-      }
-    ]
-  }
-]'''
-
-        when: 'creating new folder'
-        POST('folders', [label: 'Functional Test Folder'])
-
-        then:
-        verifyResponse HttpStatus.CREATED, response
-
-        when: 'creating new folder'
-        def parentId = response.body().id
-        POST("folders/$parentId/folders", [label: 'Functional Test Folder Child'])
-
-        then:
-        verifyResponse HttpStatus.CREATED, response
-
-        when: 'creating new versioned folder'
-        POST("folders/$parentId/versionedFolders", [label: 'Functional Test Versioned Folder Child'])
-
-        then:
-        verifyResponse HttpStatus.CREATED, response
-
-        when: 'getting folder tree'
-        GET(newTreeResourcePath, STRING_ARG)
-
-        then:
-        verifyJsonResponse HttpStatus.OK, exp
-
-        when: 'getting drill down'
-        GET("$newTreeResourcePath/$parentId", STRING_ARG)
-
-        then:
-        verifyJsonResponse HttpStatus.OK, '''[
+        String expChildren = '''[
       {
         "id": "${json-unit.matches:id}",
         "domainType": "Folder",
@@ -403,6 +222,333 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "branchName": "main"
       }
     ]'''
+
+        when: 'creating new folder'
+        POST('folders', [label: 'Functional Test Folder'])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'creating new folder'
+        def parentId = response.body().id
+        POST("folders/$parentId/folders", [label: 'Functional Test Folder Child'])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'creating new versioned folder'
+        POST("folders/$parentId/versionedFolders", [label: 'Functional Test Versioned Folder Child'])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'getting folder tree'
+        GET(folderTreeResourcePath, STRING_ARG)
+
+        then:
+        verifyJsonResponse HttpStatus.OK, expParent
+
+        when: 'getting the folder tree'
+        GET("$folderTreeResourcePath/$parentId", STRING_ARG)
+
+        then:
+        verifyJsonResponse HttpStatus.OK, expChildren
+
+        cleanup:
+        DELETE("folders/$parentId?permanent=true")
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
+
+    void '6 : test drilling down into a folder'() {
+        given:
+        String exp = '''[
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Folder",
+    "label": "Functional Test Folder",
+    "hasChildren": true,
+    "availableActions": [],
+    "deleted": false
+  }
+]'''
+        String expChild = '''[
+{
+        "id": "${json-unit.matches:id}",
+        "domainType": "Folder",
+        "label": "Functional Test Folder Child",
+        "hasChildren": false,
+        "availableActions": [],
+        "deleted": false,
+        "parentFolder": "${json-unit.matches:id}"
+        }
+]'''
+
+        when: 'creating new folder'
+        POST('folders', [label: 'Functional Test Folder'])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'creating new folder'
+        def parentId = response.body().id
+        POST("folders/$parentId/folders", [label: 'Functional Test Folder Child'])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'getting folder tree'
+        def childId = response.body().id
+        GET(folderTreeResourcePath, STRING_ARG)
+
+        then:
+        verifyJsonResponse HttpStatus.OK, exp
+
+        when: 'getting drill down'
+        GET("$folderTreeResourcePath/$parentId", STRING_ARG)
+
+        then:
+        verifyJsonResponse HttpStatus.OK, expChild
+
+        cleanup:
+        DELETE("folders/$parentId/folders/$childId?permanent=true")
+        assert response.status() == HttpStatus.NO_CONTENT
+        DELETE("folders/$parentId?permanent=true")
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
+
+    void '7 : test drilling down for a versioned folder'() {
+        given:
+        String exp = '''[
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Folder",
+    "label": "Functional Test Folder",
+    "hasChildren": true,
+    "availableActions": [],
+    "deleted": false
+  }
+]'''
+        String expChild = '''[
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "Folder",
+        "label": "Functional Test Folder Child",
+        "hasChildren": false,
+        "availableActions": [],
+        "deleted": false,
+        "parentFolder": "${json-unit.matches:id}"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "VersionedFolder",
+        "label": "Functional Test Versioned Folder Child",
+        "hasChildren": false,
+        "availableActions": [],
+        "deleted": false,
+        "parentFolder": "${json-unit.matches:id}",
+        "finalised": false,
+        "documentationVersion": "1.0.0",
+        "branchName": "main"
+      }
+    ]'''
+
+        when: 'creating new folder'
+        POST('folders', [label: 'Functional Test Folder'])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'creating new folder'
+        def parentId = response.body().id
+        POST("folders/$parentId/folders", [label: 'Functional Test Folder Child'])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'creating new versioned folder'
+        POST("folders/$parentId/versionedFolders", [label: 'Functional Test Versioned Folder Child'])
+
+        then:
+        def vfId = responseBody().id
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'getting folder tree'
+        GET(folderTreeResourcePath, STRING_ARG)
+
+        then:
+        verifyJsonResponse HttpStatus.OK, exp
+
+        when: 'getting drill down'
+        GET("$folderTreeResourcePath/$parentId", STRING_ARG)
+
+        then:
+        verifyJsonResponse HttpStatus.OK, expChild
+
+        when: 'getting drill down'
+        GET("$folderTreeResourcePath/$vfId", STRING_ARG)
+
+        then:
+        verifyJsonResponse HttpStatus.OK, '''[]'''
+
+        when: 'getting drill down using vf domain'
+        GET("tree/versionedFolders/$vfId", STRING_ARG)
+
+        then:
+        verifyResponse HttpStatus.BAD_REQUEST, jsonCapableResponse
+
+        cleanup:
+        DELETE("folders/$parentId?permanent=true")
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
+
+    void '8 : test drilling down into a sub-subfolder'() {
+        given:
+        String exp = '''[
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Folder",
+    "label": "Functional Test Folder",
+    "hasChildren": true,
+    "availableActions": [],
+    "deleted": false
+  }
+]'''
+        String expChild = '''[
+{
+        "id": "${json-unit.matches:id}",
+        "domainType": "Folder",
+        "label": "Functional Test Folder Child",
+        "hasChildren": true,
+        "availableActions": [],
+        "deleted": false,
+        "parentFolder": "${json-unit.matches:id}"
+        }
+]'''
+
+        String expGrandChild = '''[
+{
+        "id": "${json-unit.matches:id}",
+        "domainType": "Folder",
+        "label": "Functional Test Folder GrandChild",
+        "hasChildren": false,
+        "availableActions": [],
+        "deleted": false,
+        "parentFolder": "${json-unit.matches:id}"
+        }
+]'''
+
+        when: 'creating new folder'
+        POST('folders', [label: 'Functional Test Folder'])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'creating new folder'
+        def parentId = response.body().id
+        POST("folders/$parentId/folders", [label: 'Functional Test Folder Child'])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'creating new folder'
+        def childId = response.body().id
+        POST("folders/$childId/folders", [label: 'Functional Test Folder GrandChild'])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'getting folder tree'
+        def grandChildId = response.body().id
+        GET(folderTreeResourcePath, STRING_ARG)
+
+        then:
+        verifyJsonResponse HttpStatus.OK, exp
+
+        when: 'getting drill down'
+        GET("$folderTreeResourcePath/$parentId", STRING_ARG)
+
+        then:
+        verifyJsonResponse HttpStatus.OK, expChild
+
+        when: 'getting drill down'
+        GET("$folderTreeResourcePath/$childId", STRING_ARG)
+
+        then:
+        verifyJsonResponse HttpStatus.OK, expGrandChild
+
+        cleanup:
+        DELETE("folders/$parentId?permanent=true")
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
+
+    void '9 : test requesting tree using VersionedFolder domain with no VFs at the root'() {
+
+        when: 'creating new folder'
+        POST('folders', [label: 'Functional Test Folder'])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'creating new folder'
+        def parentId = response.body().id
+        POST("folders/$parentId/folders", [label: 'Functional Test Folder Child'])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'creating new versioned folder'
+        POST("folders/$parentId/versionedFolders", [label: 'Functional Test Versioned Folder Child'])
+
+        then:
+        def vfId = responseBody().id
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'requesting VF tree'
+        GET("tree/versionedFolders", STRING_ARG)
+
+        then: 'theres no tree at the root for VFs'
+        verifyResponse HttpStatus.BAD_REQUEST, jsonCapableResponse
+
+        cleanup:
+        DELETE("folders/$parentId?permanent=true")
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
+
+    void '10 : test requesting tree using VersionedFolder domain with a VF at the root'() {
+
+        String exp = '''[
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "VersionedFolder",
+    "label": "Functional Test Versioned Folder",
+    "hasChildren": false,
+    "availableActions": [],
+    "deleted": false,
+    "finalised": false,
+    "documentationVersion": "1.0.0",
+    "branchName": "main"
+  }
+]'''
+
+        when: 'creating new versioned folder'
+        POST("versionedFolders", [label: 'Functional Test Versioned Folder'])
+
+        then:
+        def parentId = responseBody().id
+        verifyResponse HttpStatus.CREATED, response
+
+
+        when: 'creating new folder'
+        POST("folders/$parentId/folders", [label: 'Functional Test Folder Child'])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'requesting VF tree'
+        GET("tree/versionedFolders", STRING_ARG)
+
+        then:
+        verifyResponse HttpStatus.BAD_REQUEST, jsonCapableResponse
 
         cleanup:
         DELETE("folders/$parentId?permanent=true")

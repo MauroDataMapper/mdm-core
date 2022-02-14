@@ -60,13 +60,12 @@ class TreeItemController extends RestfulController<TreeItem> implements MdmContr
             // Drill down into a container and provide the tree from that perspective only
             Container container = treeItemService.findTreeCapableContainer(params.containerClass, params.containerId)
             if (!container) return notFound(Container, params.containerId)
-            respond treeItemList: treeItemService.buildFocusContainerTree(params.containerClass,
+            respond treeItemList: treeItemService.buildDirectChildrenContainerTree(params.containerClass,
                                                                           container,
                                                                           currentUserSecurityPolicyManager,
                                                                           shouldIncludeDocumentSupersededItems(),
                                                                           shouldIncludeModelSupersededItems(),
-                                                                          shouldIncludeDeletedItems(),
-                                                                          false)
+                                                                          shouldIncludeDeletedItems())
             return
         }
         // If id provided then build the tree for that item, as we build the containers on the default we will assume this a catalogue item
@@ -88,13 +87,11 @@ class TreeItemController extends RestfulController<TreeItem> implements MdmContr
             return respond(treeItemService.buildContainerOnlyTree(params.containerClass, currentUserSecurityPolicyManager, false))
         }
 
-        // Default behaviour is to return the tree of models and containing folders
-        respond treeItemService.buildContainerTree(params.containerClass,
-                                                   currentUserSecurityPolicyManager,
-                                                   shouldIncludeDocumentSupersededItems(),
-                                                   shouldIncludeModelSupersededItems(),
-                                                   shouldIncludeDeletedItems(),
-                                                   false)
+        // Default behaviour is to return the root tree of containers
+        respond treeItemService.buildRootContainerTree(params.containerClass, currentUserSecurityPolicyManager,
+                                                       shouldIncludeDocumentSupersededItems(),
+                                                       shouldIncludeModelSupersededItems(),
+                                                       shouldIncludeDeletedItems())
     }
 
     def search() {

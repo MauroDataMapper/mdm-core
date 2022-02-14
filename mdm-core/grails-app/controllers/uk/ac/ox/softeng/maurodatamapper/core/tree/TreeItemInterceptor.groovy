@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.tree
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
@@ -54,11 +55,11 @@ class TreeItemInterceptor implements MdmInterceptor {
             }
 
             if (!Utils.parentClassIsAssignableFromChild(Container, params.containerClass)) {
-                log.warn('TII01 Tree called for non-Container class {}. ' +
-                         'Invalid action will be banned in the future and an exception will be thrown please update code',
-                         params.containerDomainType)
-                // TODO enable exception
-                // throw new ApiBadRequestException('TII01', "Tree called for non-Container class ${params.containerDomainType}")
+                throw new ApiBadRequestException('TII01', "Tree called for non-Container class ${params.containerDomainType}")
+            }
+
+            if (Utils.parentClassIsAssignableFromChild(VersionedFolder, params.containerClass)) {
+                throw new ApiBadRequestException('TII02', "Tree called for VersionedFolder, this is not allowed")
             }
 
             if (actionName in ['documentationSupersededModels', 'modelSupersededModels', 'deletedModels']) {

@@ -118,6 +118,10 @@ trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableRes
 
     }
 
+    static <T extends Model> DetachedCriteria<T> byContainerIdInList(String containerPropertyName, Collection<UUID> containerIds) {
+        by().inList("${containerPropertyName}.id", containerIds)
+    }
+
     static <T extends Model> DetachedCriteria<T> byFolderId(UUID folderId) {
         by()
         .eq('folder.id', folderId)
