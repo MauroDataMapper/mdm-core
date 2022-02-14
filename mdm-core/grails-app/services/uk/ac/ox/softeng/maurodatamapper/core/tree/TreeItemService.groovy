@@ -94,10 +94,16 @@ class TreeItemService {
      * @param removeEmptyContainers
      * @return
      */
-    def <K extends Container> List<ContainerTreeItem> buildContainerOnlyTree(Class<K> containerClass, UserSecurityPolicyManager userSecurityPolicyManager,
-                                                                             boolean removeEmptyContainers) {
+    def <K extends Container> List<ContainerTreeItem> buildContainerOnlyTree(Class<K> containerClass,
+                                                                             UserSecurityPolicyManager userSecurityPolicyManager) {
         log.info('Creating container only tree')
-        buildContainerTreeFromContainerTreeItems(getAllReadableContainerTreeItems(containerClass, userSecurityPolicyManager), removeEmptyContainers)
+        buildContainerTreeFromContainerTreeItems(getAllReadableContainerTreeItems(containerClass, userSecurityPolicyManager), false)
+    }
+
+    def <K extends Container> List<ContainerTreeItem> buildModelCreatableContainerOnlyTree(Class<K> containerClass,
+                                                                             UserSecurityPolicyManager userSecurityPolicyManager) {
+        log.info('Creating model creatable container only tree')
+        buildContainerTreeFromContainerTreeItems(getAllModelCreatableContainerTreeItems(containerClass, userSecurityPolicyManager), false)
     }
 
     /**
@@ -140,7 +146,7 @@ class TreeItemService {
         // to view the objects in the container a separate call to the container should be made
         // Never remove empty containers
         if (service.isContainerVirtual()) {
-            return buildContainerOnlyTree(containerClass, userSecurityPolicyManager, false) as List<TreeItem>
+            return buildContainerOnlyTree(containerClass, userSecurityPolicyManager) as List<TreeItem>
         }
 
         log.info('Creating direct children container tree of {}', container?.id ?: 'root')
@@ -201,7 +207,7 @@ class TreeItemService {
         // to view the objects in the container a separate call to the container should be made
         // Never remove empty containers
         if (service.isContainerVirtual()) {
-            return buildContainerOnlyTree(containerClass, userSecurityPolicyManager, false)
+            return buildContainerOnlyTree(containerClass, userSecurityPolicyManager)
         }
 
         log.info('Creating container tree')
@@ -415,6 +421,22 @@ class TreeItemService {
         if (!service) throw new ApiBadRequestException('TIS02', 'Tree requested for containers with no supporting service')
         List<K> readableContainers = service.getAll(readableContainerIds).findAll()
         readableContainers.collect {container ->
+            createContainerTreeItem(container, userSecurityPolicyManager)
+        }
+    }
+
+    private <K extends Container> List<ContainerTreeItem> getAllModelCreatableContainerTreeItems(Class<K> containerClass,
+                                                                                           UserSecurityPolicyManager userSecurityPolicyManager) {
+        log.debug("Getting all editable containers of type {}", containerClass.simpleName)
+        List<UUID> readableContainerIds = userSecurityPolicyManager.listReadableSecuredResourceIds(containerClass)
+        List<UUID> modelCreatableContainerIds = readableContainerIds.findAll {
+            userSecurityPolicyManager.userCanCreateResourceId(Model, null, containerClass, it)
+        }
+
+        ContainerService service = containerServices.find {it.handles(containerClass)}
+        if (!service) throw new ApiBadRequestException('TIS02', 'Tree requested for containers with no supporting service')
+        List<K> modelCreatableContainers = service.getAll(modelCreatableContainerIds).findAll()
+        modelCreatableContainers.collect {container ->
             createContainerTreeItem(container, userSecurityPolicyManager)
         }
     }

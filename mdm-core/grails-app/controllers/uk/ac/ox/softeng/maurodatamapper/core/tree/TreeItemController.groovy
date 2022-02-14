@@ -39,6 +39,7 @@ class TreeItemController extends RestfulController<TreeItem> implements MdmContr
     private static final String NO_CACHE_PARAM = 'noCache'
     private static final String CONTAINERS_ONLY_PARAM = 'containersOnly'
     private static final String FOLDERS_ONLY_PARAM = 'foldersOnly'
+    private static final String MODEL_CREATEABLE_ONLY_PARAM = 'modelCreatableOnly'
 
     static responseFormats = ['json', 'xml']
 
@@ -84,7 +85,10 @@ class TreeItemController extends RestfulController<TreeItem> implements MdmContr
 
         // Only return the containers
         if (params.boolean(CONTAINERS_ONLY_PARAM) || params.boolean(FOLDERS_ONLY_PARAM)) {
-            return respond(treeItemService.buildContainerOnlyTree(params.containerClass, currentUserSecurityPolicyManager, false))
+            if(params.boolean(MODEL_CREATEABLE_ONLY_PARAM)){
+                return respond(treeItemService.buildModelCreatableContainerOnlyTree(params.containerClass, currentUserSecurityPolicyManager))
+            }
+            return respond(treeItemService.buildContainerOnlyTree(params.containerClass, currentUserSecurityPolicyManager))
         }
 
         // Default behaviour is to return the root tree of containers

@@ -400,6 +400,187 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         responseBody().children.first().children.first().hasChildren
     }
 
+    void 'CO : test geting model creatable only folders as reader'(){
+
+        when:
+        loginReader()
+        GET('?containersOnly=true&modelCreatableOnly=true', STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '[]'
+    }
+
+    void 'CO : test geting model creatable only folders as editor'(){
+
+        when: 'editor can create models therefoer should have some folders back'
+        loginEditor()
+        GET('?containersOnly=true&modelCreatableOnly=true', STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''[
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "VersionedFolder",
+    "label": "Functional Test VersionedFolder",
+    "hasChildren": false,
+    "availableActions": [
+      "createFolder",
+      "createModel",
+      "moveToFolder",
+      "softDelete"
+    ],
+    "deleted": false,
+    "finalised": false,
+    "documentationVersion": "1.0.0",
+    "branchName": "main"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "VersionedFolder",
+    "label": "Functional Test VersionedFolder 2",
+    "hasChildren": false,
+    "availableActions": [
+      "createFolder",
+      "createModel",
+      "moveToFolder",
+      "softDelete"
+    ],
+    "deleted": false,
+    "finalised": false,
+    "documentationVersion": "1.0.0",
+    "branchName": "main"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Folder",
+    "label": "Parent Functional Test Folder",
+    "hasChildren": true,
+    "availableActions": [
+      "createFolder",
+      "createModel",
+      "createVersionedFolder",
+      "moveToFolder",
+      "moveToVersionedFolder",
+      "softDelete"
+    ],
+    "deleted": false,
+    "children": [
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "Folder",
+        "label": "Functional Test Folder",
+        "hasChildren": false,
+        "availableActions": [
+          "createFolder",
+          "createModel",
+          "createVersionedFolder",
+          "moveToFolder",
+          "softDelete"
+        ],
+        "deleted": false,
+        "parentFolder": "${json-unit.matches:id}"
+      }
+    ]
+  }
+]'''
+    }
+
+    void 'CO : test geting model creatable only folders as container admin'(){
+
+        when:
+        loginContainerAdmin()
+        GET('?containersOnly=true&modelCreatableOnly=true', STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''[
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Folder",
+    "label": "Functional Test Folder 2",
+    "hasChildren": false,
+    "availableActions": [
+      "createFolder",
+      "createModel",
+      "createVersionedFolder",
+      "delete",
+      "moveToFolder",
+      "moveToVersionedFolder",
+      "softDelete"
+    ],
+    "deleted": false
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "VersionedFolder",
+    "label": "Functional Test VersionedFolder",
+    "hasChildren": false,
+    "availableActions": [
+      "createFolder",
+      "createModel",
+      "delete",
+      "moveToFolder",
+      "softDelete"
+    ],
+    "deleted": false,
+    "finalised": false,
+    "documentationVersion": "1.0.0",
+    "branchName": "main"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "VersionedFolder",
+    "label": "Functional Test VersionedFolder 2",
+    "hasChildren": false,
+    "availableActions": [
+      "createFolder",
+      "createModel",
+      "delete",
+      "moveToFolder",
+      "softDelete"
+    ],
+    "deleted": false,
+    "finalised": false,
+    "documentationVersion": "1.0.0",
+    "branchName": "main"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Folder",
+    "label": "Parent Functional Test Folder",
+    "hasChildren": true,
+    "availableActions": [
+      "createFolder",
+      "createModel",
+      "createVersionedFolder",
+      "delete",
+      "moveToFolder",
+      "moveToVersionedFolder",
+      "softDelete"
+    ],
+    "deleted": false,
+    "children": [
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "Folder",
+        "label": "Functional Test Folder",
+        "hasChildren": false,
+        "availableActions": [
+          "createFolder",
+          "createModel",
+          "createVersionedFolder",
+          "delete",
+          "moveToFolder",
+          "softDelete"
+        ],
+        "deleted": false,
+        "parentFolder": "${json-unit.matches:id}"
+      }
+    ]
+  }
+]
+'''
+    }
+
     List<String> getReaderTree() {
         ['''[
    {
