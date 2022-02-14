@@ -1160,7 +1160,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         then: 'the branched model data type points to the branched terminology'
         verifyResponse(OK, response)
-        responseBody().count == 2
+        responseBody().count == 4
         def mdt = responseBody().items.find{it.label == 'Functional Test Model Data Type'}
         def mdt2 = responseBody().items.find{it.label == 'Functional Test Model Data Type Pointing Externally'}
         mdt.id == getIdFromPath(branchId, 'dm:Functional Test DataModel 1$main|dt:Functional Test Model Data Type')
@@ -2499,15 +2499,20 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         responseBody().items.label as Set == [
                 'addLeftOnly',
                 'Functional Test Data Element with Model Data Type',
-                'Functional Test Data Element with Model Data Type Pointing Externally'] as Set
+                'Functional Test Data Element with Model Data Type Pointing Externally',
+                'existingDataElement'] as Set
 
         when:
         GET("dataModels/$targetDataModelMap.dataModelId/dataTypes", MAP_ARG, true)
 
         then:
         verifyResponse(OK, response)
-        responseBody().count == 3
-        responseBody().items.label as Set == ['addLeftOnly', 'Functional Test Model Data Type', 'Functional Test Model Data Type Pointing Externally'] as Set
+        responseBody().count == 5
+        responseBody().items.label as Set == ['addLeftOnly',
+                                              'Functional Test Model Data Type',
+                                              'Functional Test Model Data Type Pointing Externally',
+                                              'existingDataType1',
+                                              'existingDataType2'] as Set
         def mdt1 = responseBody().items.find {it.label == 'Functional Test Model Data Type' }
         def mdt2 = responseBody().items.find {it.label == 'Functional Test Model Data Type Pointing Externally' }
 

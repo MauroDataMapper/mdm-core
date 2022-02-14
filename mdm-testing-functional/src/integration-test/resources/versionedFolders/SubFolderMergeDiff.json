@@ -3,7 +3,7 @@
   "targetId": "${json-unit.matches:id}",
   "path": "vf:Functional Test VersionedFolder With Sub Folders$source",
   "label": "Functional Test VersionedFolder With Sub Folders",
-  "count": 101,
+  "count": 104,
   "diffs": [
     {
       "fieldName": "description",
@@ -85,6 +85,15 @@
       "isMergeConflict": false,
       "isSourceModificationAndTargetDeletion": false,
       "type": "creation"
+    },
+    {
+      "fieldName": "dataTypePath",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder 2 in VersionedFolder|dm:Functional Test DataModel 2$source|dc:existingClass|de:existingDataElement@dataTypePath",
+      "sourceValue": "dm:Functional Test DataModel 2$source|dt:existingDataType2",
+      "targetValue": "dm:Functional Test DataModel 2$1.0.0|dt:existingDataType1",
+      "commonAncestorValue": "dm:Functional Test DataModel 2$1.0.0|dt:existingDataType1",
+      "isMergeConflict": false,
+      "type": "modification"
     },
     {
       "fieldName": "description",
@@ -280,6 +289,15 @@
       "isMergeConflict": false,
       "isSourceModificationAndTargetDeletion": false,
       "type": "creation"
+    },
+    {
+      "fieldName": "dataTypePath",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|fo:Sub Folder in VersionedFolder|fo:Sub-Sub Folder in VersionedFolder|dm:Functional Test DataModel 3$source|dc:existingClass|de:existingDataElement@dataTypePath",
+      "sourceValue": "dm:Functional Test DataModel 3$source|dt:existingDataType2",
+      "targetValue": "dm:Functional Test DataModel 3$1.0.0|dt:existingDataType1",
+      "commonAncestorValue": "dm:Functional Test DataModel 3$1.0.0|dt:existingDataType1",
+      "isMergeConflict": false,
+      "type": "modification"
     },
     {
       "fieldName": "description",
@@ -541,6 +559,15 @@
       "isMergeConflict": false,
       "isSourceModificationAndTargetDeletion": false,
       "type": "creation"
+    },
+    {
+      "fieldName": "dataTypePath",
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|dm:Functional Test DataModel 1$source|dc:existingClass|de:existingDataElement@dataTypePath",
+      "sourceValue": "dm:Functional Test DataModel 1$source|dt:existingDataType2",
+      "targetValue": "dm:Functional Test DataModel 1$1.0.0|dt:existingDataType1",
+      "commonAncestorValue": "dm:Functional Test DataModel 1$1.0.0|dt:existingDataType1",
+      "isMergeConflict": false,
+      "type": "modification"
     },
     {
       "fieldName": "description",
