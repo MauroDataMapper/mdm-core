@@ -203,3 +203,6 @@ local.properties
 
 src/main/resources/*.properties
 build-cache
+undocumented_endpoints.txt
+new_endpoints.txt
+old_endpoints.txt
