@@ -41,7 +41,7 @@ class DataElementSpec extends ModelItemSpec<DataElement> implements DomainUnitTe
     DataType dataType
 
     def setup() {
-        log.debug('Setting up DataClassSpec unit')
+        log.debug('Setting up DataElementSpec unit')
         mockDomains(DataModel, DataClass, DataType, PrimitiveType, ReferenceType, EnumerationType, EnumerationValue, DataElement)
 
         dataSet = new DataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'dataSet', folder: testFolder, authority: testAuthority)
@@ -148,9 +148,9 @@ class DataElementSpec extends ModelItemSpec<DataElement> implements DomainUnitTe
     }
 
     void 'DER01: test diffing DE rules with identical rules'() {
-        DataElement a = new DataElement(label: 'Functional Data Element', dataType: dataType).addToRules(name: 'rule 1')
+        DataElement a = new DataElement(label: 'Functional Data Element', dataType: dataType, dataClass: dataClass).addToRules(name: 'rule 1')
             .addToRules(new Rule(name: 'rule 2').addToRuleRepresentations(language: 'd', representation: 'a+b'))
-        DataElement b = new DataElement(label: 'Functional Data Element', dataType: dataType).addToRules(name: 'rule 1')
+        DataElement b = new DataElement(label: 'Functional Data Element', dataType: dataType, dataClass: dataClass).addToRules(name: 'rule 1')
             .addToRules(new Rule(name: 'rule 2').addToRuleRepresentations(language: 'd', representation: 'a+b'))
 
         when:
@@ -161,9 +161,9 @@ class DataElementSpec extends ModelItemSpec<DataElement> implements DomainUnitTe
     }
 
     void 'DER02: test diffing DE rules with different rule names'() {
-        DataElement a = new DataElement(label: 'Functional Data Element', dataType: dataType).addToRules(name: 'rule 1')
+        DataElement a = new DataElement(label: 'Functional Data Element', dataType: dataType, dataClass: dataClass).addToRules(name: 'rule 1')
             .addToRules(new Rule(name: 'rule 2').addToRuleRepresentations(language: 'd', representation: 'a+b'))
-        DataElement b = new DataElement(label: 'Functional Data Element', dataType: dataType).addToRules(name: 'rule 1')
+        DataElement b = new DataElement(label: 'Functional Data Element', dataType: dataType, dataClass: dataClass).addToRules(name: 'rule 1')
             .addToRules(new Rule(name: 'rule 3').addToRuleRepresentations(language: 'd', representation: 'a+b'))
 
         when:
@@ -174,9 +174,9 @@ class DataElementSpec extends ModelItemSpec<DataElement> implements DomainUnitTe
     }
 
     void 'DER03: test diffing DE rules with different languages rules'() {
-        DataElement a = new DataElement(label: 'Functional Data Element', dataType: dataType).addToRules(name: 'rule 1')
+        DataElement a = new DataElement(label: 'Functional Data Element', dataType: dataType, dataClass: dataClass).addToRules(name: 'rule 1')
             .addToRules(new Rule(name: 'rule 2').addToRuleRepresentations(language: 'd', representation: 'a+b'))
-        DataElement b = new DataElement(label: 'Functional Data Element', dataType: dataType).addToRules(name: 'rule 1')
+        DataElement b = new DataElement(label: 'Functional Data Element', dataType: dataType, dataClass: dataClass).addToRules(name: 'rule 1')
             .addToRules(new Rule(name: 'rule 2').addToRuleRepresentations(language: 'e', representation: 'a+b'))
 
         when:
@@ -187,9 +187,9 @@ class DataElementSpec extends ModelItemSpec<DataElement> implements DomainUnitTe
     }
 
     void 'DER04: test diffing DE rules with different rules representations'() {
-        DataElement a = new DataElement(label: 'Functional Data Element', dataType: dataType).addToRules(name: 'rule 1')
+        DataElement a = new DataElement(label: 'Functional Data Element', dataType: dataType, dataClass: dataClass).addToRules(name: 'rule 1')
             .addToRules(new Rule(name: 'rule 2').addToRuleRepresentations(language: 'd', representation: 'a+b'))
-        DataElement b = new DataElement(label: 'Functional Data Element', dataType: dataType).addToRules(name: 'rule 1')
+        DataElement b = new DataElement(label: 'Functional Data Element', dataType: dataType, dataClass: dataClass).addToRules(name: 'rule 1')
             .addToRules(new Rule(name: 'rule 2').addToRuleRepresentations(language: 'd', representation: 'a+e'))
 
         when:
