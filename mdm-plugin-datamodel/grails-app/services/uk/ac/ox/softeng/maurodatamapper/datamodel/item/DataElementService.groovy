@@ -24,6 +24,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
+import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityPair
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -64,6 +66,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     DataTypeService dataTypeService
     SummaryMetadataService summaryMetadataService
     DataModelService dataModelService
+    PathService pathService
 
     @Override
     DataElement get(Serializable id) {
@@ -556,5 +559,63 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
         // Fix HS issue around non-session loaded DT.
         // This may have an adverse effect on saving, which will need to be tested
         dataTypeService.getAll(modelItems.collect { it.dataType.id })
+    }
+
+    /**
+     * Special handler to apply a modification patch to a DataType.
+     * In the diff we set a mergeField called dataTypePath. In this method we use that dataTypePath to find the
+     * relevant DataType.
+     * 1. Find the data type in source
+     * 2. Use the path of that data type to find the same data type in target
+     * 3. Set the data type of the target data element to be that data type
+     *
+     * Note that this leads to a merge conflict in in the following scenario (as highlighted by test MD05 in DataModelFunctionalSpec):
+     * 1. Common ancestor model has dataType1 and dataType2. dataElement has a dataType of dataType1.
+     * 2. Create source and main branches from the common ancestor
+     * 3. On source branch, change the dataElement to have a dataType of dataType2
+     * 4. Merge the source into main.
+     * 5. Make some more other changes to the source branch
+     * 6. Get the mergeDiff for source into main again.
+     * The mergeDiff looks like
+     * {
+     *   "fieldName": "dataTypePath",
+     *    "path": "dm:Functional Test DataModel 1$source|dc:existingClass|de:existingDataElement@dataTypePath",
+     *    "sourceValue": "dm:Functional Test DataModel 1$source|dt:existingDataType2",
+     *    "targetValue": "dm:Functional Test DataModel 1$main|dt:existingDataType2",
+     *    "commonAncestorValue": "dm:Functional Test DataModel 1$1.0.0|dt:existingDataType1",
+     *    "isMergeConflict": true,
+     *    "type": "modification"
+     * }
+     * because both source and main have a different data type to the one in common ancestor.
+     * @param modificationPatch
+     * @param targetDomain
+     * @param fieldName
+     * @return
+     */
+    @Override
+    boolean handlesModificationPatchOfField(FieldPatchData modificationPatch, MdmDomain targetBeingPatched, DataElement targetDomain, String fieldName) {
+        if (fieldName == 'dataTypePath') {
+            // This is the dataType that has been changed on the source
+            DataType sourceDataType = pathService.findResourceByPath(Path.from(modificationPatch.sourceValue))
+
+            if (!sourceDataType) {
+                throw new ApiInternalException('DES01', "Cannot find DataType with path ${modificationPatch.sourceValue}")
+            }
+
+            // We need the equivalent (i.e. matches by path) dataType on the target
+            DataType targetDataType = pathService.findResourceByPathFromRootResource(targetDomain.dataClass.dataModel, sourceDataType.getPath()
+                .getChildPath())
+
+            if (targetDataType) {
+                targetDomain.dataType = targetDataType
+                return true
+            } else {
+                throw new ApiInternalException(
+                    'DES02',
+                    "Cannot find DataType with path ${sourceDataType.getPath().getChildPath()} on target DataModel ${targetDomain.dataClass.dataModel.id}")
+            }
+        }
+
+        false
     }
 }

@@ -1201,9 +1201,11 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
     void 'MD05 : test finding merge diff on a branch which has already been merged'() {
         given:
         TestMergeData mergeData = builder.buildComplexModelsForMerging(folderId.toString())
+        log.debug('-------------- First Merge Diff ------------------')
         GET("$mergeData.source/mergeDiff/$mergeData.target")
         verifyResponse OK, response
         List<Map> patches = responseBody().diffs
+        log.debug('-------------- First Merge Into ------------------')
         PUT("$mergeData.source/mergeInto/$mergeData.target", [
             patch: [
                 targetId: responseBody().targetId,
@@ -1222,9 +1224,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
             dataType: mergeData.sourceMap.addLeftOnlyDataType
         ])
         verifyResponse CREATED, response
-        log.debug('-------------- Second Merge Request ------------------')
 
         and:
+        log.debug('-------------- Second Merge Diff ------------------')
+        // See comments in DataElementService.handlesModificationPatchOfField for explanation of why we get a merge conflict on dataTypePath
         GET("$mergeData.source/mergeDiff/$mergeData.target", STRING_ARG)
 
         then:
@@ -1624,7 +1627,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         then:
         verifyResponse OK, response
-        responseBody().diffs.size() == 16
+        responseBody().diffs.size() == 17
 
         when:
         List<Map> patches = responseBody().diffs
@@ -1665,13 +1668,13 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         GET("$mergeData.target/dataClasses/$mergeData.targetMap.existingClass/dataElements")
 
         then:
-        responseBody().items.label as Set == ['addLeftOnly'] as Set
+        responseBody().items.label as Set == ['addLeftOnly', 'existingDataElement'] as Set
 
         when:
         GET("$mergeData.target/dataTypes")
 
         then:
-        responseBody().items.label as Set == ['addLeftOnly'] as Set
+        responseBody().items.label as Set == ['addLeftOnly', 'existingDataType1', 'existingDataType2'] as Set
 
         when:
         GET("${mergeData.target}/metadata")
@@ -1854,7 +1857,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         then:
         verifyResponse(OK, response)
-        responseBody().count == 1
+        responseBody().count == 2
 
         when:
         GET("$mergeData.target/dataClasses")
@@ -4610,7 +4613,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
   "targetId": "${json-unit.matches:id}",
   "path": "dm:Functional Test DataModel 1$source",
   "label": "Functional Test DataModel 1",
-  "count": 16,
+  "count": 17,
   "diffs": [
     {
       "fieldName": "description",
@@ -4673,6 +4676,15 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
       "type": "creation"
     },
     {
+      "fieldName": "dataTypePath",
+      "path": "dm:Functional Test DataModel 1$source|dc:existingClass|de:existingDataElement@dataTypePath",
+      "sourceValue": "dm:Functional Test DataModel 1$source|dt:existingDataType2",
+      "targetValue": "dm:Functional Test DataModel 1$1.0.0|dt:existingDataType1",
+      "commonAncestorValue": "dm:Functional Test DataModel 1$1.0.0|dt:existingDataType1",
+      "isMergeConflict": false,
+      "type": "modification"
+    },
+    {
       "fieldName": "description",
       "path": "dm:Functional Test DataModel 1$source|dc:modifyAndModifyReturningDifference@description",
       "sourceValue": "DescriptionLeft",
@@ -4733,7 +4745,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
   "targetId": "${json-unit.matches:id}",
   "path": "dm:Functional Test DataModel 1$source",
   "label": "Functional Test DataModel 1",
-  "count": 2,
+  "count": 3,
   "diffs": [
     {
       "path": "dm:Functional Test DataModel 1$source|dc:addLeftOnly|dc:addAnotherLeftToAddLeftOnly",
@@ -4746,6 +4758,15 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
       "isMergeConflict": false,
       "isSourceModificationAndTargetDeletion": false,
       "type": "creation"
+    },
+    {
+      "fieldName": "dataTypePath",
+      "path": "dm:Functional Test DataModel 1$source|dc:existingClass|de:existingDataElement@dataTypePath",
+      "sourceValue": "dm:Functional Test DataModel 1$source|dt:existingDataType2",
+      "targetValue": "dm:Functional Test DataModel 1$main|dt:existingDataType2",
+      "commonAncestorValue": "dm:Functional Test DataModel 1$1.0.0|dt:existingDataType1",
+      "isMergeConflict": true,
+      "type": "modification"
     }
   ]
 }'''

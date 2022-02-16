@@ -115,6 +115,13 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         verifyResponse CREATED, response
         POST("dataModels/$dataModel1Id/metadata", [namespace: 'functional.test', key: 'modifyAndDelete', value: 'some other original value 2'])
         verifyResponse CREATED, response
+        POST("dataModels/$dataModel1Id/dataTypes", [label: 'existingDataType1', domainType: 'PrimitiveType'])
+        verifyResponse CREATED, response
+        String dataType1Id = responseBody().id
+        POST("dataModels/$dataModel1Id/dataTypes", [label: 'existingDataType2', domainType: 'PrimitiveType'])
+        verifyResponse CREATED, response
+        POST("dataModels/$dataModel1Id/dataClasses/$caExistingClass/dataElements", [label: 'existingDataElement', dataType: dataType1Id])
+        verifyResponse CREATED, response
 
         if (terminologyId) {
             buildCommonAncestorModelDataTypePointingExternally(dataModel1Id, terminologyId)
@@ -190,6 +197,10 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         Map sourceMap = [
             dataModelId                         : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source"),
             existingClass                       : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dc:existingClass"),
+            existingDataElement                 : getIdFromPath(source, "${pathing}dm:Functional Test DataModel " +
+                                                                        "${suffix}\$source|dc:existingClass|de:existingDataElement"),
+            existingDataType2                   : getIdFromPath(source, "${pathing}dm:Functional Test DataModel " +
+                                                                        "${suffix}\$source|dt:existingDataType2"),
             deleteLeftOnlyFromExistingClass     :
                 getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dc:existingClass|dc:deleteLeftOnlyFromExistingClass"),
             deleteLeftOnly                      : getIdFromPath(source, "${pathing}dm:Functional Test DataModel ${suffix}\$source|dc:deleteLeftOnly"),
@@ -261,6 +272,10 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         verifyResponse OK, response
         DELETE("dataModels/$sourceMap.dataModelId/metadata/$sourceMap.metadataDeleteFromSource")
         verifyResponse NO_CONTENT, response
+
+        PUT("dataModels/$sourceMap.dataModelId/dataClasses/$sourceMap.existingClass/dataElements/$sourceMap.existingDataElement",
+            [dataType: sourceMap.existingDataType2])
+        verifyResponse OK, response
 
         // Update the model data type that was pointing to the Simple Test Terminology to point to the Complex Test Terminology'
         if (sourceMap.externallyPointingModelDataTypeId && sourceMap.complexTerminologyId) {

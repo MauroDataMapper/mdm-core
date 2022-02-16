@@ -2,7 +2,7 @@
   "leftId": "${json-unit.matches:id}",
   "rightId": "${json-unit.matches:id}",
   "label": "Functional Test VersionedFolder Complex",
-  "count": 86,
+  "count": 87,
   "diffs": [
     {
       "description": {
@@ -696,7 +696,7 @@
             "leftId": "${json-unit.matches:id}",
             "rightId": "${json-unit.matches:id}",
             "label": "Functional Test DataModel 1",
-            "count": 24,
+            "count": 25,
             "diffs": [
               {
                 "description": {
@@ -1072,7 +1072,7 @@
                           "finalised": false
                         }
                       ],
-                      "count": 5,
+                      "count": 6,
                       "diffs": [
                         {
                           "dataClasses": {
@@ -1179,6 +1179,48 @@
                                     }
                                   ]
                                 }
+                              }
+                            ],
+                            "modified": [
+                              {
+                                "leftId": "${json-unit.matches:id}",
+                                "rightId": "${json-unit.matches:id}",
+                                "label": "existingDataElement",
+                                "leftBreadcrumbs": [
+                                  {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "Functional Test DataModel 1",
+                                    "domainType": "DataModel",
+                                    "finalised": false
+                                  },
+                                  {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "existingClass",
+                                    "domainType": "DataClass"
+                                  }
+                                ],
+                                "rightBreadcrumbs": [
+                                  {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "Functional Test DataModel 1",
+                                    "domainType": "DataModel",
+                                    "finalised": false
+                                  },
+                                  {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "existingClass",
+                                    "domainType": "DataClass"
+                                  }
+                                ],
+                                "count": 1,
+                                "diffs": [
+                                  {
+                                    "dataTypePath": {
+                                      "left": "dm:Functional Test DataModel 1$source|dt:existingDataType2",
+                                      "right": "dm:Functional Test DataModel 1$main|dt:existingDataType1"
+                                    }
+                                  }
+                                ]
                               }
                             ]
                           }
