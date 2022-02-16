@@ -50,10 +50,10 @@ class EmptyJsonProfileFactory {
     }
 
     private String getOrLoadProfileStructure(JsonProfileProviderService jsonProfileProviderService) {
-        if (!loadedProfileJsonStructures[jsonProfileProviderService.metadataNamespace]) {
-            loadedProfileJsonStructures[jsonProfileProviderService.metadataNamespace] = loadNewProfileStructure(jsonProfileProviderService)
+        if (!loadedProfileJsonStructures[jsonProfileProviderService.getUniqueIdentifierKey()]) {
+            loadedProfileJsonStructures[jsonProfileProviderService.getUniqueIdentifierKey()] = loadNewProfileStructure(jsonProfileProviderService)
         }
-        loadedProfileJsonStructures[jsonProfileProviderService.metadataNamespace]
+        loadedProfileJsonStructures[jsonProfileProviderService.getUniqueIdentifierKey()]
     }
 
     private String loadNewProfileStructure(JsonProfileProviderService jsonProfileProviderService) {
