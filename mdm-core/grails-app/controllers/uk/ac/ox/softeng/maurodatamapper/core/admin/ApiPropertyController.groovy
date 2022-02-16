@@ -67,6 +67,16 @@ class ApiPropertyController extends EditLoggingController<ApiProperty> {
         saveResponse instance
     }
 
+    /**
+     * Override the base method so that we can set instance.lastUpdatedBy
+     */
+    @Transactional
+    @Override
+    protected boolean validateResource(ApiProperty instance, String view) {
+        instance.lastUpdatedBy = currentUser.emailAddress
+        super.validateResource(instance, view)
+    }
+
     @Override
     protected ApiProperty saveResource(ApiProperty resource) {
         ApiProperty apiProperty = super.saveResource(resource)
@@ -100,12 +110,28 @@ class ApiPropertyController extends EditLoggingController<ApiProperty> {
 
         Collection instances = createResources()
 
+        // Iterate each instance, validating each one after the previous has been saved.
+        ApiProperty errorInstance
         instances.each {instance ->
-            saveResource instance
+
+            if (!errorInstance) {
+                instance.validate()
+
+                if (instance.hasErrors()) {
+                    errorInstance = instance
+                    transactionStatus.setRollbackOnly()
+                } else {
+                    saveResource instance
+                }
+            }
         }
 
-        // Respond with the index listing
-        index()
+        if (errorInstance) {
+            respond errorInstance.errors
+            return
+        } else {
+            return index()
+        }
     }
 
     /**
