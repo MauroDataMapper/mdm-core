@@ -260,11 +260,6 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    List<Terminology> findAllReadableModels(List<UUID> constrainedIds, boolean includeDeleted) {
-        Terminology.withReadable(Terminology.by(), constrainedIds, includeDeleted).list()
-    }
-
-    @Override
     List<Terminology> findAllReadableByEveryone() {
         Terminology.findAllByReadableByEveryone(true)
     }

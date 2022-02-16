@@ -163,11 +163,6 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    List<CodeSet> findAllReadableModels(List<UUID> constrainedIds, boolean includeDeleted) {
-        CodeSet.withReadable(CodeSet.by(), constrainedIds, includeDeleted).list()
-    }
-
-    @Override
     List<CodeSet> findAllReadableByEveryone() {
         CodeSet.findAllByReadableByEveryone(true)
     }

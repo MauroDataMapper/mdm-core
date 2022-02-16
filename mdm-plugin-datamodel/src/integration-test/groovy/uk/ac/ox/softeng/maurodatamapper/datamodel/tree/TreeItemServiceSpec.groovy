@@ -121,14 +121,13 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
         id = dataModel1.id
     }
 
-    void 'F01 - test full tree building : doc, model, deleted, empty containers'() {
+    void 'F01 - test full tree building : doc, model, deleted'() {
         given:
         setupData()
 
         when:
-        List<TreeItem> treeItems = treeItemService.buildContainerTree(Folder, PublicAccessSecurityPolicyManager.instance,
-                                                                      true, true,
-                                                                      true, false)
+        List<TreeItem> treeItems = treeItemService.buildRootContainerTree(Folder, PublicAccessSecurityPolicyManager.instance,
+                                                                          true, true, true)
         then:
         treeItems.size() == 2
 
@@ -137,10 +136,10 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
         treeItems.any {it.label == 'empty folder'}
 
         when:
-        def tf = treeItems.find {it.label == testFolder.label}
+        def tf = treeItemService.buildDirectChildrenContainerTree(Folder, testFolder, PublicAccessSecurityPolicyManager.instance,
+                                                                  true, true, true)
         then:
         tf
-        tf.hasChildren()
         tf.size() == 5
 
         when:
@@ -161,25 +160,24 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
         !tf.find {it.label == 'dm3'}.hasChildren()
     }
 
-    void 'F02 - test full tree building : doc, model, deleted, no empty containers'() {
+    void 'F02 - test full tree building : doc, model, deleted'() {
         given:
         setupData()
 
         when:
-        List<TreeItem> treeItems = treeItemService.buildContainerTree(Folder, PublicAccessSecurityPolicyManager.instance,
-                                                                      true, true,
-                                                                      true, true)
+        List<TreeItem> treeItems = treeItemService.buildRootContainerTree(Folder, PublicAccessSecurityPolicyManager.instance,
+                                                                          true, true, true)
         then:
-        treeItems.size() == 1
+        treeItems.size() == 2
 
         and:
         treeItems.any {it.label == testFolder.label}
 
         when:
-        def tf = treeItems.find {it.label == testFolder.label}
+        def tf = treeItemService.buildDirectChildrenContainerTree(Folder, testFolder, PublicAccessSecurityPolicyManager.instance,
+                                                                  true, true, true)
         then:
         tf
-        tf.hasChildren()
         tf.size() == 5
 
         when:
@@ -205,25 +203,24 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
         !tf.find {it.label == 'dm3'}.hasChildren()
     }
 
-    void 'F03 - test full tree building : doc, model, no deleted, no empty containers'() {
+    void 'F03 - test full tree building : doc, model, no deleted'() {
         given:
         setupData()
 
         when:
-        List<TreeItem> treeItems = treeItemService.buildContainerTree(Folder, PublicAccessSecurityPolicyManager.instance,
-                                                                      true, true,
-                                                                      false, true)
+        List<TreeItem> treeItems = treeItemService.buildRootContainerTree(Folder, PublicAccessSecurityPolicyManager.instance,
+                                                                          true, true, false)
         then:
-        treeItems.size() == 1
+        treeItems.size() == 2
 
         and:
         treeItems.any {it.label == testFolder.label}
 
         when:
-        def tf = treeItems.find {it.label == testFolder.label}
+        def tf = treeItemService.buildDirectChildrenContainerTree(Folder, testFolder, PublicAccessSecurityPolicyManager.instance,
+                                                                  true, true, false)
         then:
         tf
-        tf.hasChildren()
         tf.size() == 4
 
         when:
@@ -248,25 +245,24 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
         !tf.find {it.label == 'dm2'}.hasChildren()
     }
 
-    void 'F04 - test full tree building : doc, no model, no deleted, no empty containers'() {
+    void 'F04 - test full tree building : doc, no model, no deleted'() {
         given:
         setupData()
 
         when:
-        List<TreeItem> treeItems = treeItemService.buildContainerTree(Folder, PublicAccessSecurityPolicyManager.instance,
-                                                                      true, false,
-                                                                      false, true)
+        List<TreeItem> treeItems = treeItemService.buildRootContainerTree(Folder, PublicAccessSecurityPolicyManager.instance,
+                                                                          true, false, false)
         then:
-        treeItems.size() == 1
+        treeItems.size() == 2
 
         and:
         treeItems.any {it.label == testFolder.label}
 
         when:
-        def tf = treeItems.find {it.label == testFolder.label}
+        def tf =treeItemService.buildDirectChildrenContainerTree(Folder, testFolder, PublicAccessSecurityPolicyManager.instance,
+                                                                 true, false, false)
         then:
         tf
-        tf.hasChildren()
         tf.size() == 3
 
         when:
@@ -290,25 +286,24 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
         !tf.find {it.label == 'dm2'}.hasChildren()
     }
 
-    void 'F05 - test full tree building : no doc, model, no deleted, no empty containers'() {
+    void 'F05 - test full tree building : no doc, model, no deleted'() {
         given:
         setupData()
 
         when:
-        List<TreeItem> treeItems = treeItemService.buildContainerTree(Folder, PublicAccessSecurityPolicyManager.instance,
-                                                                      false, true,
-                                                                      false, true)
+        List<TreeItem> treeItems = treeItemService.buildRootContainerTree(Folder, PublicAccessSecurityPolicyManager.instance,
+                                                                          false, true, false)
         then:
-        treeItems.size() == 1
+        treeItems.size() == 2
 
         and:
         treeItems.any {it.label == testFolder.label}
 
         when:
-        def tf = treeItems.find {it.label == testFolder.label}
+        def tf = treeItemService.buildDirectChildrenContainerTree(Folder, testFolder, PublicAccessSecurityPolicyManager.instance,
+                                                                  false, true, false)
         then:
         tf
-        tf.hasChildren()
         tf.size() == 3
 
         when:
@@ -332,25 +327,24 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
         tf.find {it.label == 'dm1'}.hasChildren()
     }
 
-    void 'F06 - test full tree building : no doc, no model, no deleted, no empty containers'() {
+    void 'F06 - test full tree building : no doc, no model, no deleted'() {
         given:
         setupData()
 
         when:
-        List<TreeItem> treeItems = treeItemService.buildContainerTree(Folder, PublicAccessSecurityPolicyManager.instance,
-                                                                      false, false,
-                                                                      false, true)
+        List<TreeItem> treeItems = treeItemService.buildRootContainerTree(Folder, PublicAccessSecurityPolicyManager.instance,
+                                                                          false, false, false)
         then:
-        treeItems.size() == 1
+        treeItems.size() == 2
 
         and:
         treeItems.any {it.label == testFolder.label}
 
         when:
-        def tf = treeItems.find {it.label == testFolder.label}
+        def tf = treeItemService.buildDirectChildrenContainerTree(Folder, testFolder, PublicAccessSecurityPolicyManager.instance,
+                                                                  false, false, false)
         then:
         tf
-        tf.hasChildren()
         tf.size() == 2
 
         when:
@@ -371,14 +365,13 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
         !tf.any {it.label == 'dm3'}
     }
 
-    void 'C01 - test full tree building : doc, model, deleted, empty containers'() {
+    void 'C01 - test full tree building : doc, model, deleted'() {
         given:
         setupData()
 
         when:
-        List<TreeItem> treeItems = treeItemService.buildContainerTree(Classifier, PublicAccessSecurityPolicyManager.instance,
-                                                                      true, true,
-                                                                      true, false)
+        List<TreeItem> treeItems = treeItemService.buildRootContainerTree(Classifier, PublicAccessSecurityPolicyManager.instance,
+                                                                          true, true, true)
         then:
         treeItems.size() == 4
 
@@ -401,9 +394,8 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
         setupData()
 
         when:
-        List<TreeItem> treeItems = treeItemService.buildContainerTree(Classifier, PublicAccessSecurityPolicyManager.instance,
-                                                                      true, true,
-                                                                      true, true)
+        List<TreeItem> treeItems = treeItemService.buildRootContainerTree(Classifier, PublicAccessSecurityPolicyManager.instance,
+                                                                          true, true, true)
         then:
         treeItems.size() == 4
 
@@ -426,9 +418,8 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
         setupData()
 
         when:
-        List<TreeItem> treeItems = treeItemService.buildContainerTree(Classifier, PublicAccessSecurityPolicyManager.instance,
-                                                                      true, true,
-                                                                      false, true)
+        List<TreeItem> treeItems = treeItemService.buildRootContainerTree(Classifier, PublicAccessSecurityPolicyManager.instance,
+                                                                          true, true, false)
         then:
         treeItems.size() == 4
 
@@ -451,9 +442,8 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
         setupData()
 
         when:
-        List<TreeItem> treeItems = treeItemService.buildContainerTree(Classifier, PublicAccessSecurityPolicyManager.instance,
-                                                                      true, false,
-                                                                      false, true)
+        List<TreeItem> treeItems = treeItemService.buildRootContainerTree(Classifier, PublicAccessSecurityPolicyManager.instance,
+                                                                          true, false, false)
         then:
         treeItems.size() == 4
 
@@ -476,9 +466,8 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
         setupData()
 
         when:
-        List<TreeItem> treeItems = treeItemService.buildContainerTree(Classifier, PublicAccessSecurityPolicyManager.instance,
-                                                                      false, true,
-                                                                      false, true)
+        List<TreeItem> treeItems = treeItemService.buildRootContainerTree(Classifier, PublicAccessSecurityPolicyManager.instance,
+                                                                          false, true, false)
         then:
         treeItems.size() == 4
 
@@ -501,9 +490,8 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
         setupData()
 
         when:
-        List<TreeItem> treeItems = treeItemService.buildContainerTree(Classifier, PublicAccessSecurityPolicyManager.instance,
-                                                                      false, false,
-                                                                      false, true)
+        List<TreeItem> treeItems = treeItemService.buildRootContainerTree(Classifier, PublicAccessSecurityPolicyManager.instance,
+                                                                          false, false, false)
         then:
         treeItems.size() == 4
 
@@ -536,7 +524,6 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
         def tf = treeItems.find {it.label == testFolder.label}
         then:
         tf
-        tf.hasChildren()
         tf.size() == 2
 
         when:

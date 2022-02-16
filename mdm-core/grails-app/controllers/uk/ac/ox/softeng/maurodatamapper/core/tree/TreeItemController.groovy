@@ -39,6 +39,7 @@ class TreeItemController extends RestfulController<TreeItem> implements MdmContr
     private static final String NO_CACHE_PARAM = 'noCache'
     private static final String CONTAINERS_ONLY_PARAM = 'containersOnly'
     private static final String FOLDERS_ONLY_PARAM = 'foldersOnly'
+    private static final String MODEL_CREATEABLE_ONLY_PARAM = 'modelCreatableOnly'
 
     static responseFormats = ['json', 'xml']
 
@@ -60,13 +61,12 @@ class TreeItemController extends RestfulController<TreeItem> implements MdmContr
             // Drill down into a container and provide the tree from that perspective only
             Container container = treeItemService.findTreeCapableContainer(params.containerClass, params.containerId)
             if (!container) return notFound(Container, params.containerId)
-            respond treeItemList: treeItemService.buildFocusContainerTree(params.containerClass,
+            respond treeItemList: treeItemService.buildDirectChildrenContainerTree(params.containerClass,
                                                                           container,
                                                                           currentUserSecurityPolicyManager,
                                                                           shouldIncludeDocumentSupersededItems(),
                                                                           shouldIncludeModelSupersededItems(),
-                                                                          shouldIncludeDeletedItems(),
-                                                                          false)
+                                                                          shouldIncludeDeletedItems())
             return
         }
         // If id provided then build the tree for that item, as we build the containers on the default we will assume this a catalogue item
@@ -85,16 +85,17 @@ class TreeItemController extends RestfulController<TreeItem> implements MdmContr
 
         // Only return the containers
         if (params.boolean(CONTAINERS_ONLY_PARAM) || params.boolean(FOLDERS_ONLY_PARAM)) {
-            return respond(treeItemService.buildContainerOnlyTree(params.containerClass, currentUserSecurityPolicyManager, false))
+            if(params.boolean(MODEL_CREATEABLE_ONLY_PARAM)){
+                return respond(treeItemService.buildModelCreatableContainerOnlyTree(params.containerClass, currentUserSecurityPolicyManager))
+            }
+            return respond(treeItemService.buildContainerOnlyTree(params.containerClass, currentUserSecurityPolicyManager))
         }
 
-        // Default behaviour is to return the tree of models and containing folders
-        respond treeItemService.buildContainerTree(params.containerClass,
-                                                   currentUserSecurityPolicyManager,
-                                                   shouldIncludeDocumentSupersededItems(),
-                                                   shouldIncludeModelSupersededItems(),
-                                                   shouldIncludeDeletedItems(),
-                                                   false)
+        // Default behaviour is to return the root tree of containers
+        respond treeItemService.buildRootContainerTree(params.containerClass, currentUserSecurityPolicyManager,
+                                                       shouldIncludeDocumentSupersededItems(),
+                                                       shouldIncludeModelSupersededItems(),
+                                                       shouldIncludeDeletedItems())
     }
 
     def search() {

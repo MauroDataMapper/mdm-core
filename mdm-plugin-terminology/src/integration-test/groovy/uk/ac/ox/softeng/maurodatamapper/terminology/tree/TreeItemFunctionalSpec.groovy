@@ -130,19 +130,18 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     }
 
     void 'T01 : test folder tree for terminology and codeset'() {
-        when:
-        GET('folders', STRING_ARG)
-
-        then:
-        verifyJsonResponse OK, '''[
+        String exp =
+          '''[
   {
     "id": "${json-unit.matches:id}",
     "domainType": "Folder",
     "label": "Functional Test Folder",
     "hasChildren": true,
     "availableActions": [],
-    "deleted": false,
-    "children": [
+    "deleted": false
+  }
+]'''
+        String expChild = '''[
       {
         "id": "${json-unit.matches:id}",
         "domainType": "Terminology",
@@ -221,9 +220,19 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "folder": "${json-unit.matches:id}",
         "type": "Terminology"
       }
-    ]
-  }
-]'''
+    ]'''
+        when:
+        GET('folders', STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, exp
+
+        when:
+        GET("folders/${folder.id}", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, expChild
+
     }
 
     void 'T02 : test classifiers tree'() {
@@ -353,10 +362,14 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
         then:
         localResponse.body().size() == 1
-        localResponse.body().first().children.size() == 7
+        when:
+        localResponse = GET("folders/${folder.id}", Argument.of(List, Map))
+
+        then:
+        localResponse.body().size() == 7
 
         when:
-        List<Map> children = localResponse.body().first().children
+        List<Map> children = localResponse.body()
 
         then:
         children.any {
@@ -404,10 +417,15 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
         then: 'We should have the finalised version and the new branch'
         localResponse.body().size() == 1
-        localResponse.body().first().children.size() == 8
 
         when:
-        List<Map> children = localResponse.body().first().children
+        localResponse = GET("folders/${folder.id}", Argument.of(List, Map))
+
+        then:
+        localResponse.body().size() == 8
+
+        when:
+        List<Map> children = localResponse.body()
 
         then:
         // New branch is in tree
@@ -436,10 +454,15 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
         then: 'We should have the second finalised version only'
         localResponse.body().size() == 1
-        localResponse.body().first().children.size() == 7
 
         when:
-        children = localResponse.body().first().children
+        localResponse = GET("folders/${folder.id}", Argument.of(List, Map))
+
+        then:
+        localResponse.body().size() == 7
+
+        when:
+        children = localResponse.body()
 
         then:
         // Finalised model version is in the tree
@@ -496,10 +519,14 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
         then:
         localResponse.body().size() == 1
-        localResponse.body().first().children.size() == 7
+        when:
+        localResponse = GET("folders/${folder.id}", Argument.of(List, Map))
+
+        then:
+        localResponse.body().size() == 7
 
         when:
-        List<Map> children = localResponse.body().first().children
+        List<Map> children = localResponse.body()
 
         then:
         children.any {
@@ -547,10 +574,14 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
         then: 'We should have the finalised version and the new branch'
         localResponse.body().size() == 1
-        localResponse.body().first().children.size() == 8
+        when:
+        localResponse = GET("folders/${folder.id}", Argument.of(List, Map))
+
+        then:
+        localResponse.body().size() == 8
 
         when:
-        List<Map> children = localResponse.body().first().children
+        List<Map> children = localResponse.body()
 
         then:
         // New branch is in tree
@@ -579,10 +610,15 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
         then: 'We should have the second finalised version only'
         localResponse.body().size() == 1
-        localResponse.body().first().children.size() == 7
 
         when:
-        children = localResponse.body().first().children
+        localResponse = GET("folders/${folder.id}", Argument.of(List, Map))
+
+        then:
+        localResponse.body().size() == 7
+
+        when:
+        children = localResponse.body()
 
         then:
         // Finalised model version is in the tree

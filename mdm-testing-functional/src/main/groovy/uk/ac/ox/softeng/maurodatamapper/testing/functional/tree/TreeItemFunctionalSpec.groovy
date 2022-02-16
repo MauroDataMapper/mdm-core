@@ -42,11 +42,15 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
 
     abstract String getContainerDomainType()
 
-    abstract String getReaderTree()
+    abstract List<String> getReaderTree()
 
-    abstract String getEditorTree()
+    abstract List<String> getEditorTree()
 
-    abstract String getAdminTree()
+    abstract List<String> getAdminTree()
+
+    abstract String getContainerParentOne()
+
+    abstract String getContainerParentTwo()
 
     @Override
     String getResourcePath() {
@@ -89,7 +93,19 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         GET('', STRING_ARG)
 
         then:
-        verifyJsonResponse OK, getReaderTree()
+        verifyJsonResponse OK, getReaderTree()[0]
+
+        when:
+        GET(containerParentOne, STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, getReaderTree()[1]
+
+        when:
+        GET(containerParentTwo, STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, getReaderTree()[2]
     }
 
     void 'E01 : test call to full tree (as editor)'() {
@@ -98,7 +114,19 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         GET('', STRING_ARG)
 
         then:
-        verifyJsonResponse OK, getEditorTree()
+        verifyJsonResponse OK, getEditorTree()[0]
+
+        when:
+        GET(containerParentOne, STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, getEditorTree()[1]
+
+        when:
+        GET(containerParentTwo, STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, getEditorTree()[2]
     }
 
     void 'A01 : test call to full tree (as admin)'() {
@@ -107,7 +135,19 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         GET('', STRING_ARG)
 
         then:
-        verifyJsonResponse OK, getAdminTree()
+        verifyJsonResponse OK, getAdminTree()[0]
+
+        when:
+        GET(containerParentOne, STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, getAdminTree()[1]
+
+        when:
+        GET(containerParentTwo, STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, getAdminTree()[2]
     }
 
     void 'L02 : test call to tree using DataModel id (as not logged in)'() {

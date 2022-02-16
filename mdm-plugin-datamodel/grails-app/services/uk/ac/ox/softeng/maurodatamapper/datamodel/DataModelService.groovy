@@ -492,12 +492,6 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         GormUtils.enableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
     }
 
-
-    @Override
-    List<DataModel> findAllReadableModels(List<UUID> constrainedIds, boolean includeDeleted) {
-        DataModel.withReadable(DataModel.by(), constrainedIds, includeDeleted).list()
-    }
-
     @Override
     void deleteAllFacetDataByMultiFacetAwareIds(List<UUID> catalogueItemIds) {
         super.deleteAllFacetDataByMultiFacetAwareIds(catalogueItemIds)

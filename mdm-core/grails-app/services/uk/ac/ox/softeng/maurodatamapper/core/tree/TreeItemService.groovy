@@ -94,38 +94,92 @@ class TreeItemService {
      * @param removeEmptyContainers
      * @return
      */
-    def <K extends Container> List<ContainerTreeItem> buildContainerOnlyTree(Class<K> containerClass, UserSecurityPolicyManager userSecurityPolicyManager,
-                                                                             boolean removeEmptyContainers) {
+    def <K extends Container> List<ContainerTreeItem> buildContainerOnlyTree(Class<K> containerClass,
+                                                                             UserSecurityPolicyManager userSecurityPolicyManager) {
         log.info('Creating container only tree')
-        buildContainerTreeFromContainerTreeItems(getAllReadableContainerTreeItems(containerClass, userSecurityPolicyManager), removeEmptyContainers)
+        buildContainerTreeFromContainerTreeItems(getAllReadableContainerTreeItems(containerClass, userSecurityPolicyManager), false)
     }
 
-    def <K extends Container> List<TreeItem> buildFocusContainerTree(Class<K> containerClass, K container, UserSecurityPolicyManager userSecurityPolicyManager,
-                                                                     boolean includeDocumentSuperseded, boolean includeModelSuperseded,
-                                                                     boolean includeDeleted, boolean removeEmptyContainers) {
-        log.info('Creating container drill tree')
+    def <K extends Container> List<ContainerTreeItem> buildModelCreatableContainerOnlyTree(Class<K> containerClass,
+                                                                             UserSecurityPolicyManager userSecurityPolicyManager) {
+        log.info('Creating model creatable container only tree')
+        buildContainerTreeFromContainerTreeItems(getAllModelCreatableContainerTreeItems(containerClass, userSecurityPolicyManager), false)
+    }
+
+    /**
+     * Builds the root container tree.
+     * This is the tree of containers at the direct root. It will contain no models as there cannot be any models at the direct root of the tree
+     *
+     * This completely relies on the security policy being correct as it will not check for inherited containers and wrapping.
+     *
+     * @return
+     */
+    def <K extends Container> List<ContainerTreeItem> buildRootContainerTree(Class<K> containerClass, UserSecurityPolicyManager userSecurityPolicyManager,
+                                                                             boolean includeDocumentSuperseded, boolean includeModelSuperseded,
+                                                                             boolean includeDeleted) {
+        buildDirectChildrenContainerTree(containerClass, null, userSecurityPolicyManager, includeDocumentSuperseded, includeModelSuperseded, includeDeleted)
+            as List<ContainerTreeItem>
+    }
+
+    /**
+     * Builds the tree of direct children of a container only.
+     * This can have models as any container can have models
+     *
+     * This completely relies on the security policy being correct as it will not check for inherited containers and wrapping.
+     * @param containerClass
+     * @param container
+     * @param userSecurityPolicyManager
+     * @param includeDocumentSuperseded
+     * @param includeModelSuperseded
+     * @param includeDeleted
+     * @param removeEmptyContainers
+     * @return
+     */
+    def <K extends Container> List<TreeItem> buildDirectChildrenContainerTree(Class<K> containerClass, K container,
+                                                                              UserSecurityPolicyManager userSecurityPolicyManager,
+                                                                              boolean includeDocumentSuperseded, boolean includeModelSuperseded,
+                                                                              boolean includeDeleted) {
+        ContainerService service = containerServices.find {it.handles(containerClass)}
+        if (!service) throw new ApiBadRequestException('TIS02', "Tree requested for container class ${containerClass} with no supporting service")
+
+        // Virtual containers can be assigned to multiple objects, therefore the tree should only be the containers,
+        // to view the objects in the container a separate call to the container should be made
+        // Never remove empty containers
+        if (service.isContainerVirtual()) {
+            return buildContainerOnlyTree(containerClass, userSecurityPolicyManager) as List<TreeItem>
+        }
+
+        log.info('Creating direct children container tree of {}', container?.id ?: 'root')
         long start = System.currentTimeMillis()
 
-        List<ContainerTreeItem> fullTree = buildContainerTree(containerClass, userSecurityPolicyManager, includeDocumentSuperseded, includeModelSuperseded,
-                                                              includeDeleted, removeEmptyContainers)
-        ContainerTreeItem treeItem = drillDownIntoTree(fullTree, container.id)
-        log.debug('Container drill tree build took: {}', Utils.timeTaken(start))
-        treeItem.children
-    }
 
-    ContainerTreeItem drillDownIntoTree(List<ContainerTreeItem> containerTreeItems, UUID containerId) {
-        if (!containerTreeItems) return null
-        for (ContainerTreeItem child : containerTreeItems) {
-            ContainerTreeItem found = drillDownIntoTree(child, containerId)
-            if (found) return found
+        List<ContainerTreeItem> allContainerTreeItems = getAllReadableContainerTreeItems(containerClass, userSecurityPolicyManager)
+        List<ContainerTreeItem> directTree = container ?
+                                             allContainerTreeItems.findAll {it.parentId == container.id} :
+                                             allContainerTreeItems.findAll {!it.containerId}
+
+        List<ModelTreeItem> readableModelsInContainers = getAllReadableModelTreeItemsInContainers(userSecurityPolicyManager,
+                                                                                                  service.containerPropertyNameInModel,
+                                                                                                  directTree.collect {it.id},
+                                                                                                  includeDocumentSuperseded, includeModelSuperseded, includeDeleted)
+
+        directTree.each {ct ->
+            ct.renderChildren = false
+            ct.childrenExist = allContainerTreeItems.any {it.parentId == ct.id} ||
+                               readableModelsInContainers.any {it.containerId == ct.id}
         }
-        null
-    }
+        List<ModelTreeItem> directReadableModels = container ?
+                                                   getAllReadableModelTreeItemsInContainers(userSecurityPolicyManager,
+                                                                                            service.containerPropertyNameInModel,
+                                                                                            [container.id],
+                                                                                            includeDocumentSuperseded, includeModelSuperseded, includeDeleted)
+                                                             : []
 
-    ContainerTreeItem drillDownIntoTree(ContainerTreeItem treeItem, UUID containerId) {
-        if (treeItem.id == containerId) return treeItem
-        List<ContainerTreeItem> containerTreeItems = treeItem.children.findAll {it instanceof ContainerTreeItem} as List<ContainerTreeItem>
-        drillDownIntoTree(containerTreeItems, containerId)
+        List<TreeItem> treeItems = []
+        treeItems.addAll(directTree)
+        treeItems.addAll(directReadableModels)
+        log.debug('Direct children Container tree build took: {}', Utils.timeTaken(start))
+        treeItems
     }
 
     /**
@@ -142,6 +196,7 @@ class TreeItemService {
      * @param removeEmptyContainers
      * @return
      */
+    @Deprecated
     def <K extends Container> List<ContainerTreeItem> buildContainerTree(Class<K> containerClass, UserSecurityPolicyManager userSecurityPolicyManager,
                                                                          boolean includeDocumentSuperseded, boolean includeModelSuperseded,
                                                                          boolean includeDeleted, boolean removeEmptyContainers) {
@@ -152,7 +207,7 @@ class TreeItemService {
         // to view the objects in the container a separate call to the container should be made
         // Never remove empty containers
         if (service.isContainerVirtual()) {
-            return buildContainerOnlyTree(containerClass, userSecurityPolicyManager, false)
+            return buildContainerOnlyTree(containerClass, userSecurityPolicyManager)
         }
 
         log.info('Creating container tree')
@@ -205,19 +260,6 @@ class TreeItemService {
 
         log.debug('Searched container tree build took: {}', Utils.timeTaken(start))
         tree
-    }
-
-    /**
-     * Obtain the tree content for the provided catalogue item.
-     * We assume security has been checked to ensure this item is readable by the user (done by interceptor).
-     * A catalogue item will either be a Model or ModelItem, however the content of either will always be ModelItems, therefore this method
-     * returns a list if ModelItemTreeItems.
-     *
-     * @param catalogueItem
-     * @return
-     */
-    List<ModelItemTreeItem> buildCatalogueItemTree(CatalogueItem catalogueItem, UserSecurityPolicyManager userSecurityPolicyManager) {
-        buildCatalogueItemTree(catalogueItem, false, userSecurityPolicyManager)
     }
 
     List<ModelItemTreeItem> buildCatalogueItemTree(CatalogueItem catalogueItem, boolean fullTreeRender, UserSecurityPolicyManager userSecurityPolicyManager,
@@ -383,9 +425,32 @@ class TreeItemService {
         }
     }
 
+    private <K extends Container> List<ContainerTreeItem> getAllModelCreatableContainerTreeItems(Class<K> containerClass,
+                                                                                           UserSecurityPolicyManager userSecurityPolicyManager) {
+        log.debug("Getting all editable containers of type {}", containerClass.simpleName)
+        List<UUID> readableContainerIds = userSecurityPolicyManager.listReadableSecuredResourceIds(containerClass)
+        List<UUID> modelCreatableContainerIds = readableContainerIds.findAll {
+            userSecurityPolicyManager.userCanCreateResourceId(Model, null, containerClass, it)
+        }
+
+        ContainerService service = containerServices.find {it.handles(containerClass)}
+        if (!service) throw new ApiBadRequestException('TIS02', 'Tree requested for containers with no supporting service')
+        List<K> modelCreatableContainers = service.getAll(modelCreatableContainerIds).findAll()
+        modelCreatableContainers.collect {container ->
+            createContainerTreeItem(container, userSecurityPolicyManager)
+        }
+    }
+
     private List<ModelTreeItem> getAllReadableModelTreeItems(UserSecurityPolicyManager userSecurityPolicyManager, String containerPropertyName,
                                                              boolean includeDocumentSuperseded, boolean includeModelSuperseded,
                                                              boolean includeDeleted) {
+        getAllReadableModelTreeItemsInContainers(userSecurityPolicyManager, containerPropertyName, null, includeDocumentSuperseded, includeModelSuperseded, includeDeleted)
+    }
+
+    private List<ModelTreeItem> getAllReadableModelTreeItemsInContainers(UserSecurityPolicyManager userSecurityPolicyManager,
+                                                                         String containerPropertyName, List<UUID> containerIds,
+                                                                         boolean includeDocumentSuperseded, boolean includeModelSuperseded,
+                                                                         boolean includeDeleted) {
         if (!modelServices) return []
         List<ModelTreeItem> readableTreeItems = []
 
@@ -393,8 +458,13 @@ class TreeItemService {
 
             log.debug('Getting all readable models of type {} ', service.domainClass.simpleName)
             long start1 = System.currentTimeMillis()
-            List<? extends Model> readableModels = service.findAllReadableModels(userSecurityPolicyManager, includeDocumentSuperseded,
-                                                                                 includeModelSuperseded, includeDeleted).sort()
+            List<? extends Model> readableModels = service
+                .findAllReadableModels(userSecurityPolicyManager,
+                                       containerPropertyName, containerIds,
+                                       includeDocumentSuperseded, includeModelSuperseded, includeDeleted)
+                .sort()
+
+
             log.trace('Readable models took: {}', Utils.timeTaken(start1))
 
             long start2 = System.currentTimeMillis()
@@ -432,6 +502,7 @@ class TreeItemService {
         }
         readableTreeItems
     }
+
 
     private <K extends Container> List<ContainerTreeItem> findAllReadableContainerTreeItemsBySearchTerm(Class<K> containerClass,
                                                                                                         UserSecurityPolicyManager userSecurityPolicyManager,

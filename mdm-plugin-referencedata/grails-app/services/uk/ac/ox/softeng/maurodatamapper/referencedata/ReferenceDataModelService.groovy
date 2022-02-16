@@ -248,11 +248,6 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
     }
 
     @Override
-    List<ReferenceDataModel> findAllReadableModels(List<UUID> constrainedIds, boolean includeDeleted) {
-        ReferenceDataModel.withReadable(ReferenceDataModel.by(), constrainedIds, includeDeleted).list()
-    }
-
-    @Override
     List<ReferenceDataModel> findAllReadableByEveryone() {
         ReferenceDataModel.findAllByReadableByEveryone(true)
     }
