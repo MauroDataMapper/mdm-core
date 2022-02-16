@@ -230,7 +230,7 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
                 throw new ApiInternalException('DTSXX', 'DataType domain type is unknown and therefore cannot be copied')
         }
 
-        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata)
+        copy = copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         copiedReferenceDataModel.addToReferenceDataTypes(copy)
@@ -239,12 +239,12 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
     }
 
     @Override
-    ReferenceDataType copyCatalogueItemInformation(ReferenceDataType original,
+    ReferenceDataType copyModelItemInformation(ReferenceDataType original,
                                                    ReferenceDataType copy,
                                                    User copier,
                                                    UserSecurityPolicyManager userSecurityPolicyManager,
                                                    boolean copySummaryMetadata = false) {
-        copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
+        copy = super.copyModelItemInformation(original, copy, copier, userSecurityPolicyManager)
         if (copySummaryMetadata) {
             referenceSummaryMetadataService.findAllByMultiFacetAwareItemId(original.id).each {
                 copy.addToReferenceSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)

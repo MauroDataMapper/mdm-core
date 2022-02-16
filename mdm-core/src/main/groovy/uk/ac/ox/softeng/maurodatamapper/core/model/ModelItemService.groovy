@@ -20,6 +20,8 @@ package uk.ac.ox.softeng.maurodatamapper.core.model
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
+import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -48,6 +50,13 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
 
     K copy(Model copiedModelInto, K original, CatalogueItem nonModelParent, UserSecurityPolicyManager userSecurityPolicyManager) {
         throw new ApiNotYetImplementedException('MIS03', "copy [for ModelItem ${getDomainClass().simpleName}]")
+    }
+
+    K copyModelItemInformation(K original, K copy, User copier, UserSecurityPolicyManager userSecurityPolicyManager,
+                               CopyInformation copyInformation = null) {
+        copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
+        copy.idx = original.idx
+        copy
     }
 
     boolean isModelItemInSameModelOrInFinalisedModel(K modelItem, K otherModelItem) {

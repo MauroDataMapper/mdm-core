@@ -459,14 +459,14 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
 
         if (original.referenceDataTypes) {
             // Copy all the referencedatatypes
-            original.referenceDataTypes.each { dt ->
+            original.referenceDataTypes.sort().each { dt ->
                 referenceDataTypeService.copyReferenceDataType(copy, dt, copier, userSecurityPolicyManager)
             }
         }
 
         if (original.referenceDataElements) {
             // Copy all the referencedataelements
-            original.referenceDataElements.each { de ->
+            original.referenceDataElements.sort().each { de ->
                 log.debug("copy element ${de}")
                 referenceDataElementService.copyReferenceDataElement(copy, de, copier, userSecurityPolicyManager)
             }

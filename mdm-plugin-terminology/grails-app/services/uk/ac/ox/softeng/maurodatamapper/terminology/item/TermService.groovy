@@ -241,7 +241,7 @@ class TermService extends ModelItemService<Term> {
         Term copy = new Term(createdBy: copier.emailAddress, code: original.code, definition: original.definition, url: original.url,
                              isParent: original.isParent,
                              depth: original.depth)
-        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
+        copy = copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
         copy
     }

@@ -186,7 +186,7 @@ class EnumerationValueService extends ModelItemService<EnumerationValue> impleme
         EnumerationValue copy = new EnumerationValue(key: original.key,
                                                      value: original.value)
 
-        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
+        copy = copyModelItemInformation(original, copy, copier, userSecurityPolicyManager)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         EnumerationType enumerationType = enumerationTypeToCopyInto ?: copiedDataModel.findEnumerationTypeByLabel(original.enumerationType.label)

@@ -702,15 +702,20 @@ WHERE
 
         if (!original) throw new ApiInternalException('DCSXX', 'Cannot copy non-existent DataClass')
 
+        log.debug('Copy DataClass: original: label = {}, idx = {}', original.label, original.idx)
         DataClass copy = new DataClass(
             minMultiplicity: original.minMultiplicity,
-            maxMultiplicity: original.maxMultiplicity
+            maxMultiplicity: original.maxMultiplicity,
         )
 
-        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata, copyInformation)
+        copy = copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata, copyInformation)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         copiedDataModel.addToDataClasses(copy)
+        'Current copied DataClasses: '
+        copiedDataModel.dataClasses.each {
+            log.debug('   label = {}, idx = {}', it.label, it.idx)
+        }
 
         if (parentDataClass) {
             parentDataClass.addToDataClasses(copy)
@@ -721,7 +726,7 @@ WHERE
 
         List<ReferenceType> referenceTypes = ReferenceType.by().eq('referenceClass.id', original.id).list()
 
-        referenceTypes.each { refType ->
+        referenceTypes.sort().each { refType ->
             ReferenceType referenceType = copiedDataModel.referenceTypes.find { it.label == refType.label }
             if (!referenceType) {
                 referenceType = new ReferenceType(createdBy: copier.emailAddress, label: refType.label)
@@ -734,14 +739,14 @@ WHERE
 
         List<DataClass> dataClasses = DataClass.byParentDataClassId(original.id).join('classifiers').list()
         CopyInformation dataClassCache = cacheFacetInformationForCopy(dataClasses.collect { it.id })
-        dataClasses.each { child ->
+        dataClasses.sort().each { child ->
             copyDataClass(copiedDataModel, child, copier, userSecurityPolicyManager, copy, copySummaryMetadata, dataClassCache)
         }
         copy.dataElements = []
 
         List<DataElement> dataElements = DataElement.byDataClassId(original.id).join('classifiers').list()
         CopyInformation dataElementCache = cacheFacetInformationForCopy(dataElements.collect { it.id })
-        dataElements.each { element ->
+        dataElements.sort().each { element ->
             copy.addToDataElements(
                 dataElementService
                     .copyDataElement(copiedDataModel, element, copier, userSecurityPolicyManager, copySummaryMetadata, dataElementCache))
@@ -750,13 +755,13 @@ WHERE
         copy
     }
 
-    DataClass copyCatalogueItemInformation(DataClass original,
+    DataClass copyModelItemInformation(DataClass original,
                                            DataClass copy,
                                            User copier,
                                            UserSecurityPolicyManager userSecurityPolicyManager,
                                            boolean copySummaryMetadata, CopyInformation copyInformation) {
 
-        copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
+        copy = super.copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
         if (copySummaryMetadata) {
             copy = copySummaryMetadataFromOriginal(original, copy, copier, copyInformation)
         }
@@ -764,11 +769,11 @@ WHERE
     }
 
     @Override
-    DataClass copyCatalogueItemInformation(DataClass original,
+    DataClass copyModelItemInformation(DataClass original,
                                            DataClass copy,
                                            User copier,
                                            UserSecurityPolicyManager userSecurityPolicyManager, CopyInformation copyInformation = null) {
-        copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, false, copyInformation)
+        copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, false, copyInformation)
     }
 
     void matchUpAndAddMissingReferenceTypeClasses(DataModel copiedDataModel, DataModel originalDataModel, User copier,

@@ -388,7 +388,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
 
         DataType copy = createNewDataTypeFromOriginal(original)
 
-        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata, copyInformation)
+        copy = copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata, copyInformation)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         copiedDataModel.addToDataTypes(copy)
@@ -424,13 +424,13 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         copy
     }
 
-    DataType copyCatalogueItemInformation(DataType original,
+    DataType copyModelItemInformation(DataType original,
                                           DataType copy,
                                           User copier,
                                           UserSecurityPolicyManager userSecurityPolicyManager,
                                           boolean copySummaryMetadata,
                                           copyInformation) {
-        copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
+        copy = super.copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
         if (copySummaryMetadata) {
             copy = copySummaryMetadataFromOriginal(original, copy, copier, copyInformation)
         }
@@ -438,11 +438,11 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     }
 
     @Override
-    DataType copyCatalogueItemInformation(DataType original,
+    DataType copyModelItemInformation(DataType original,
                                           DataType copy,
                                           User copier,
                                           UserSecurityPolicyManager userSecurityPolicyManager, CopyInformation copyInformation) {
-        copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, false, copyInformation)
+        copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, false, copyInformation)
     }
 
     DataModel addDefaultListOfDataTypesToDataModel(DataModel dataModel, List<DefaultDataType> defaultDataTypes) {

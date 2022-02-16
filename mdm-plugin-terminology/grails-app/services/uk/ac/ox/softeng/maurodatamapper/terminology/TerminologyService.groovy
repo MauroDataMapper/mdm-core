@@ -369,19 +369,19 @@ class TerminologyService extends ModelService<Terminology> {
         }
 
         // Copy all the TermRelationshipType
-        termRelationshipTypes.each { trt ->
+        termRelationshipTypes.sort().each { trt ->
             termRelationshipTypeService.copyTermRelationshipType(copy, trt, copier)
         }
 
         // Copy all the terms
-        originalTerms.each { term ->
+        originalTerms.sort().each { term ->
             termService.copyTerm(copy, term, copier, userSecurityPolicyManager, termsCachedInformation)
         }
 
         // Copy all the term relationships
         // We need all the terms to exist so we can create the links
         // Only copy source relationships as this will propagate the target relationships
-        termRelationships.each { relationship ->
+        termRelationships.sort().each { relationship ->
             termRelationshipService.copyTermRelationship(copy, relationship, new TreeMap(copy.terms.collectEntries {[it.code, it]}), copier)
         }
         log.debug('Copy of terminology took {}', Utils.timeTaken(start))

@@ -266,7 +266,7 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
         ReferenceDataElement copy = new ReferenceDataElement(minMultiplicity: original.minMultiplicity,
                                                              maxMultiplicity: original.maxMultiplicity)
 
-        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
+        copy = copyModelItemInformation(original, copy, copier, userSecurityPolicyManager)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         ReferenceDataType referenceDataType = copiedReferenceDataModel.findReferenceDataTypeByLabel(original.referenceDataType.label)
@@ -285,12 +285,12 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
     }
 
     @Override
-    ReferenceDataElement copyCatalogueItemInformation(ReferenceDataElement original,
+    ReferenceDataElement copyModelItemInformation(ReferenceDataElement original,
                                                       ReferenceDataElement copy,
                                                       User copier,
                                                       UserSecurityPolicyManager userSecurityPolicyManager,
                                                       boolean copySummaryMetadata = false) {
-        copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
+        copy = super.copyModelItemInformation(original, copy, copier, userSecurityPolicyManager)
         if (copySummaryMetadata) {
             referenceSummaryMetadataService.findAllByMultiFacetAwareItemId(original.id).each {
                 copy.addToReferenceSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
