@@ -38,6 +38,8 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
+import uk.ac.ox.softeng.maurodatamapper.path.Path
+import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -423,6 +425,10 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
 
     DataClass findByDataModelIdAndParentDataClassIdAndId(UUID dataModelId, UUID dataClassId, Serializable id) {
         DataClass.byDataModelIdAndParentDataClassId(dataModelId, dataClassId).idEq(id).find()
+    }
+
+    DataClass findByDataModelIdAndParentDataClassIdAndLabel(UUID dataModelId, UUID dataClassId, String label) {
+        DataClass.byDataModelIdAndParentDataClassId(dataModelId, dataClassId).eq('label', label).find()
     }
 
     DataClass findByDataModelIdAndLabel(UUID dataModelId, String label) {
@@ -905,5 +911,86 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     CopyInformation cacheFacetInformationForCopy(List<UUID> originalIds, CopyInformation copyInformation = null) {
         CopyInformation cachedInformation = super.cacheFacetInformationForCopy(originalIds, copyInformation)
         cacheSummaryMetadataInformationForCopy(originalIds, cachedInformation)
+    }
+
+    /**
+     *
+     * @param sourceDataModel
+     * @param targetDataModel
+     * @param dataElementInSource
+     * @param pathInTarget
+     * @param user
+     * @param userSecurityPolicyManager
+     * @return
+     */
+    DataClass subset(DataModel sourceDataModel, DataModel targetDataModel, DataElement dataElementInSource,
+                     Path pathInTarget, User user, UserSecurityPolicyManager userSecurityPolicyManager,
+                     DataClass parentDataClassInSource = null, DataClass parentDataClassInTarget = null) {
+
+        if (pathInTarget.size() < 2)
+            throw new ApiInternalException("DCS03", "Path ${pathInTarget} was shorter than expected")
+
+        // Get the first node, which should be a dc
+        PathNode dataClassNode = pathInTarget.getPathNodes()[0]
+
+        DataClass sourceDataClass = parentDataClassInSource ?
+                                    findByDataModelIdAndParentDataClassIdAndLabel(sourceDataModel.id, parentDataClassInSource.id,
+                                                                                  dataClassNode.identifier) :
+                                    findByDataModelIdAndLabel(sourceDataModel.id, dataClassNode.identifier)
+
+        if (!sourceDataClass)
+            throw new ApiInternalException("DCS04", "Source Data Class does not exist")
+
+        DataClass targetDataClass = parentDataClassInTarget ?
+                                    parentDataClassInTarget.getDataClasses().find { it.label == dataClassNode.identifier } :
+                                    targetDataModel.getChildDataClasses().find { it.label == dataClassNode.identifier }
+
+        if (!targetDataClass) {
+            //Create it
+            targetDataClass = new DataClass(
+                minMultiplicity: sourceDataClass.minMultiplicity,
+                maxMultiplicity: sourceDataClass.maxMultiplicity
+            )
+
+            targetDataClass = copyCatalogueItemInformation(sourceDataClass, targetDataClass, user, userSecurityPolicyManager, false, null)
+
+            targetDataModel.addToDataClasses(targetDataClass)
+            if (parentDataClassInTarget) {
+                parentDataClassInTarget.addToDataClasses(targetDataClass)
+            }
+
+            if (!targetDataClass.validate())
+                throw new ApiInvalidModelException('DCS05', 'Subsetted DataClass is invalid', targetDataClass.errors, messageSource)
+
+            save(flush: false, validate: false, targetDataClass)
+        }
+
+        // Get the next node, which could be a dc or de
+        PathNode nextNode = pathInTarget.getPathNodes()[1]
+
+        if (nextNode.prefix == 'dc') {
+            targetDataClass =
+                subset(sourceDataModel, targetDataModel, dataElementInSource, pathInTarget.getChildPath(), user, userSecurityPolicyManager,
+                       sourceDataClass, targetDataClass)
+        } else if (nextNode.prefix == 'de') {
+            DataElement dataElementInTarget =
+                dataElementService.copyDataElement(targetDataModel, dataElementInSource, user, userSecurityPolicyManager)
+            targetDataClass.addToDataElements(dataElementInTarget)
+            matchUpAndAddMissingReferenceTypeClasses(targetDataModel, sourceDataModel, user, userSecurityPolicyManager)
+            if (!dataElementService.validate(dataElementInTarget)) {
+                throw new ApiInvalidModelException(
+                    "DCS06",
+                    "dataElementInTarget ${dataElementInTarget.id} failed validation",
+                    dataElementInTarget.errors,
+                    messageSource)
+            }
+            dataElementService.save(flush: false, validate: false, dataElementInTarget)
+        } else {
+            throw new ApiInternalException('DCS07', "Unexpected node prefix ${nextNode.prefix}")
+        }
+
+        validate(targetDataClass)
+
+        targetDataClass
     }
 }

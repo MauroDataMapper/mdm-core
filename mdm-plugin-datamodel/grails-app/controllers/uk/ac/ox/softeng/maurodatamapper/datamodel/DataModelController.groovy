@@ -27,12 +27,14 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter.DataModelExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.Subset
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 
+import static org.springframework.http.HttpStatus.OK
 import static org.springframework.http.HttpStatus.NO_CONTENT
 
 @Slf4j
@@ -213,6 +215,37 @@ class DataModelController extends ModelController<DataModel> {
     @Override
     protected DataModel performAdditionalUpdates(DataModel model) {
         dataModelService.checkForAndAddDefaultDataTypes model, params.defaultDataTypeProvider
+    }
+
+    @Transactional
+    def subset(Subset subsetData) {
+        if (!subsetData.validate()) {
+            respond subsetData.errors
+            return
+        }
+
+        DataModel sourceModel = queryForResource params[alternateParamsIdKey]
+        if (!sourceModel) return notFound(params[alternateParamsIdKey])
+
+        DataModel targetModel = queryForResource params.otherDataModelId
+        if (!targetModel) return notFound(params.otherDataModelId)
+
+        dataModelService.subset(sourceModel, targetModel, subsetData, currentUser, currentUserSecurityPolicyManager)
+
+        if (!validateResource(targetModel, 'update')) return
+        updateResource(targetModel)
+        updateResponse(targetModel)
+    }
+
+    def intersects() {
+
+        DataModel sourceModel = queryForResource params[alternateParamsIdKey]
+        if (!sourceModel) return notFound(params[alternateParamsIdKey])
+
+        DataModel targetModel = queryForResource params.otherDataModelId
+        if (!targetModel) return notFound(params.otherDataModelId)
+
+        respond(intersection: dataModelService.intersects(sourceModel, targetModel))
     }
 
     protected boolean validateImportAddition(DataModel instance, ModelItem importingItem) {

@@ -34,6 +34,7 @@ import groovy.util.logging.Slf4j
 import spock.lang.Shared
 
 import static io.micronaut.http.HttpStatus.CREATED
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
@@ -74,6 +75,9 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
  *
  *  |   GET    | /api/dataModels/${dataModelId}/search  | Action: search
  *  |   POST   | /api/dataModels/${dataModelId}/search  | Action: search
+ *
+ *  |   POST   | /api/dataModels/${dataModelId}/subset/${otherDataModelId}      | Action: subset
+ *  |   GET    | /api/dataModels/${dataModelId}/intersects/${otherDataModelId}  | Action: search
  * </pre>
  * @see uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelController
  */
@@ -2288,5 +2292,245 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
         cleanup:
         builder.cleanupTestMergeData(mergeData)
+    }
+
+    void 'SUBSET01 : test subsetting of Complex Data Model'() {
+        def source = [:]
+        def target = [:]
+
+        given:
+        source.dataModelId = getComplexDataModelId()
+
+        and:
+        loginAdmin()
+        POST(getSavePath(), ["label": "Target of Subset"], MAP_ARG, true)
+        verifyResponse CREATED, response
+        target.dataModelId = response.body().id
+
+        and:
+        loginAdmin()
+        GET("/${source.dataModelId}/dataClasses")
+        verifyResponse OK, response
+        source.emptyClass = response.body().items.find { it.label == 'emptyclass' }
+        source.contentClass = response.body().items.find { it.label == 'content' }
+        source.parentClass = response.body().items.find { it.label == 'parent' }
+
+        and:
+        GET("/${source.dataModelId}/dataClasses/${source.parentClass.id}/dataClasses")
+        verifyResponse OK, response
+        source.parentClass.childClass = response.body().items.find { it.label == 'child' }
+
+        and:
+        GET("/${source.dataModelId}/dataClasses/${source.contentClass.id}/dataElements")
+        verifyResponse OK, response
+        source.contentClass.ele1 = response.body().items.find { it.label == 'ele1' }
+        source.contentClass.element2 = response.body().items.find { it.label == 'element2' }
+
+        and:
+        GET("/${source.dataModelId}/dataClasses/${source.parentClass.id}/dataClasses")
+        verifyResponse OK, response
+        source.parentClass.childClass = response.body().items.find { it.label == "child" }
+
+        and:
+        GET("/${source.dataModelId}/dataTypes")
+        verifyResponse OK, response
+        def dataTypeId = responseBody().items.find { it.label == "string" }.id
+
+        and: 'there is a Data Element called grandchild on the child Data Class'
+        POST("/${source.dataModelId}/dataClasses/${source.parentClass.childClass.id}/dataElements", [
+            "label"   : "grandchild",
+            "dataType": dataTypeId
+        ])
+        verifyResponse CREATED, response
+        source.parentClass.childClass.grandchild = response.body()
+        logout()
+
+        when: 'Get the intersection between complex and target (not logged in)'
+        GET("/${source.dataModelId}/intersects/${target.dataModelId}")
+
+        then: 'The response is OK with no results'
+        verifyResponse NOT_FOUND, response
+
+        when: 'Get the intersection between complex and target (logged in as reader)'
+        loginReader()
+        GET("/${source.dataModelId}/intersects/${target.dataModelId}")
+
+        then: 'The response is OK with no results'
+        verifyResponse OK, response
+        response.body().intersects.size() == 0
+
+        /**
+         * Subset DataElement 'ele1' which belongs to the 'content' Data Class. This should:
+         * 1. Create the content Data Class and ele1 Data Element on targetDataModel
+         * 2. Appear in the /intersects response
+         */
+        when: 'subset ele1 (not logged in)'
+        logout()
+        PUT("/${source.dataModelId}/subset/${target.dataModelId}", ["additions": [source.contentClass.ele1.id], "deletions": []])
+
+        then: 'The response is NOT_FOUND'
+        verifyResponse NOT_FOUND, response
+
+        when: 'subset ele1 (logged in as reader)'
+        loginReader()
+        PUT("/${source.dataModelId}/subset/${target.dataModelId}", ["additions": [source.contentClass.ele1.id], "deletions": []])
+
+        then: 'The response is FORBIDDEN'
+        verifyForbidden response
+
+        when: 'subset ele1 (logged in as editor)'
+        loginEditor()
+        PUT("/${source.dataModelId}/subset/${target.dataModelId}", ["additions": [source.contentClass.ele1.id], "deletions": []])
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        when: 'Get Data Classes on targetDataModel'
+        GET("/${target.dataModelId}/dataClasses")
+        target.contentClass = response.body().items[0]
+
+        then: 'There is the content Data Class'
+        verifyResponse OK, response
+        response.body().items.size() == 1
+        response.body().items[0].label == 'content'
+        target.contentClass.id
+
+        when: 'Get Data Elements on targetDataModel'
+        GET("/${target.dataModelId}/dataElements")
+
+        then: 'There is the ele1 Data Element in the content Data Class'
+        verifyResponse OK, response
+        response.body().items.size() == 1
+        response.body().items[0].label == 'ele1'
+        response.body().items[0].dataClass == target.contentClass.id
+
+        when: 'Get the intersection between complex and target'
+        GET("/${source.dataModelId}/intersects/${target.dataModelId}")
+
+        then: 'The response is OK with one results'
+        verifyResponse OK, response
+        response.body().intersects.size() == 1
+        response.body().intersects.contains(source.contentClass.ele1.id)
+
+        /**
+         * Subset delete DataElement 'ele1' which belongs to the 'content' Data Class. This should:
+         * 1. Remove ele1 Data Element from targetDataModel
+         * 2. Remove ele1 from the /intersects response
+         */
+        when: 'subset ele1'
+        PUT("/${source.dataModelId}/subset/${target.dataModelId}", ["additions": [], "deletions": [source.contentClass.ele1.id]])
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        when: 'Get Data Classes on targetDataModel'
+        GET("/${target.dataModelId}/dataClasses")
+
+        then: 'There are no Data Classes'
+        verifyResponse OK, response
+        response.body().items.size() == 0
+
+        when: 'Get Data Elements on targetDataModel'
+        GET("/${target.dataModelId}/dataElements")
+
+        then: 'There are no Data Elements'
+        verifyResponse OK, response
+        response.body().items.size() == 0
+
+        when: 'Get the intersection between complex and target'
+        GET("/${source.dataModelId}/intersects/${target.dataModelId}")
+
+        then: 'The response is OK with no results'
+        verifyResponse OK, response
+        response.body().intersects.size() == 0
+
+        /**
+         * Subset delete DataElement 'ele1' (again) and also 'element2', and 'childde' which belongs to the parent | child Data Class.
+         * This should leave us with:
+         * 1. The content Data Class with both ele1 and element2
+         * 2. A parent Data Class containing a child Data Class containing a child Data Element
+         * 3. All three Data Elements listed in the /intersection response
+         */
+        when: 'subset ele1, element2 and child'
+        PUT("/${source.dataModelId}/subset/${target.dataModelId}", [
+            "additions": [
+                source.contentClass.ele1.id,
+                source.contentClass.element2.id,
+                source.parentClass.childClass.grandchild.id
+            ],
+            "deletions": []
+        ])
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        when: 'Get Data Classes on targetDataModel'
+        GET("/${target.dataModelId}/dataClasses")
+        target.contentClass = response.body().items.find { it.label == 'content' }
+        target.parentClass = response.body().items.find { it.label == 'parent' }
+
+        then: 'There is the content Data Class and parent Data Class and child Data Class'
+        verifyResponse OK, response
+        response.body().items.size() == 2
+        target.contentClass.id
+        target.parentClass.id
+
+        when: 'Get the Data Classes of the parent Data Class'
+        GET("/${target.dataModelId}/dataClasses/${target.parentClass.id}/dataClasses")
+        target.parentClass.childClass = response.body().items.find { it.label == 'child' }
+
+        then: 'The response is OK and includes the child Data Class'
+        verifyResponse OK, response
+        response.body().items.size() == 1
+        target.parentClass.childClass.id
+
+        when: 'Get Data Elements on targetDataModel'
+        GET("/${target.dataModelId}/dataElements")
+        target.contentClass.ele1 = response.body().items.find { it.label == 'ele1' }
+        target.contentClass.element2 = response.body().items.find { it.label == 'element2' }
+        target.parentClass.childClass.grandchild = response.body().items.find { it.label == 'grandchild' }
+
+        then: 'There are the ele1 and element2 Data Elements in the content Data Class'
+        verifyResponse OK, response
+        response.body().items.size() == 3
+        target.contentClass.ele1.id
+        target.contentClass.element2.id
+        target.parentClass.childClass.grandchild.id
+
+        and: 'The grandchild belongs to child'
+        target.parentClass.childClass.grandchild.dataClass == target.parentClass.childClass.id
+
+        when: 'Get the intersection between complex and target'
+        GET("/${source.dataModelId}/intersects/${target.dataModelId}")
+
+        then: 'The response is OK with three results'
+        verifyResponse OK, response
+        response.body().intersects.size() == 3
+        response.body().intersects.contains(source.contentClass.ele1.id)
+        response.body().intersects.contains(source.contentClass.element2.id)
+        response.body().intersects.contains(source.parentClass.childClass.grandchild.id)
+
+        when: 'Delete the grandchild from the subset'
+        PUT("/${source.dataModelId}/subset/${target.dataModelId}", [
+            "additions": [],
+            "deletions": [source.parentClass.childClass.grandchild.id]
+        ])
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        when: 'Get Data Classes on targetDataModel'
+        GET("/${target.dataModelId}/dataClasses")
+
+        then: 'The parent Data Classes has been deleted from the targetDataModel'
+        response.body().items.find { it.label == 'content' }
+        !response.body().items.find { it.label == 'parent' }
+
+        cleanup:
+        loginAdmin()
+        DELETE("/${target.dataModelId}?permanent=true")
+        verifyResponse NO_CONTENT, response
+        DELETE("/${source.dataModelId}/dataClasses/${source.parentClass.childClass.id}/dataElements/${source.parentClass.childClass.grandchild.id}")
+        verifyResponse NO_CONTENT, response
     }
 }
