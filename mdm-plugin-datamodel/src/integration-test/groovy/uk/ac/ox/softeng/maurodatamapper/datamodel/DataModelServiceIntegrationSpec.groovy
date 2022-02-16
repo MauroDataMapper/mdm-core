@@ -159,6 +159,24 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         checkAndSave(dataModel)
     }
 
+    void setupDataModelWithMultipleDataClassesAndDataElements() {
+        DataModel dataModel = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Data Model with Multiple Data Classes and Data Elements', type: DataModelType.DATA_ASSET, folder: testFolder,
+                                            authority: testAuthority)
+
+        DataClass dataClass
+        for (int i in 1..5) {
+            dataClass = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Root Class Number ' + i, dataModel: dataModel, idx: i)
+            dataModel.addToDataClasses(dataClass)
+        }
+
+        for (int i in 1..5) {
+            DataClass childDataClass = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Child Class Number ' + i, dataModel: dataModel, idx: i)
+            dataClass.addToDataClasses(childDataClass)
+        }
+
+        checkAndSave(dataModel)
+    }
+
     protected DataModel checkAndSaveNewVersion(DataModel dataModel) {
         check(dataModel)
         dataModelService.saveModelWithContent(dataModel)
@@ -848,6 +866,50 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         then:
         result.errors.allErrors.size() == 1
         result.errors.allErrors.find {it.code == 'version.aware.label.branch.name.already.exists'}
+    }
+
+    void 'DMSC14 : test creating a new model by copying a model with data classes and data elements'() {
+        given:
+        setupData()
+        setupDataModelWithMultipleDataClassesAndDataElements()
+
+        when:
+        DataModel dataModel = dataModelService.findByLabel('Data Model with Multiple Data Classes and Data Elements')
+
+        then:
+        dataModel.childDataClasses.size() == 5
+        List<DataClass> rootDataClasses = dataModel.childDataClasses.sort()
+        rootDataClasses.eachWithIndex {DataClass dc, int i ->
+            dc.label.startsWith('Root Data Class') && dc.label.endsWith(i + 1)
+        }
+
+        when:
+        DataClass parentClass = rootDataClasses.last()
+
+        then:
+        parentClass.dataClasses.size() == 5
+        parentClass.dataClasses.eachWithIndex {DataClass dc, int i ->
+            dc.label.startsWith('Child Data Class') && dc.label.endsWith(i + 1)
+        }
+
+        when:
+        DataModel copiedDataModel = dataModelService.copyModel(dataModel, testFolder, editor, false, dataModel.label + ' copy', Version.from('1'), dataModel.branchName,true, editorSecurityPolicyManager)
+
+        then:
+        copiedDataModel.childDataClasses.size() == 5
+        List<DataClass> copiedRootDataClasses = copiedDataModel.childDataClasses.sort()
+        copiedRootDataClasses.eachWithIndex {DataClass dc, int i ->
+            dc.label.startsWith('Root Data Class') && dc.label.endsWith(i + 1)
+        }
+
+        when:
+        DataClass copiedParentClass = copiedRootDataClasses.last()
+
+        then:
+        copiedParentClass.dataClasses.size() == 5
+        copiedParentClass.dataClasses.eachWithIndex {DataClass dc, int i ->
+            dc.label.startsWith('Child Data Class') && dc.label.endsWith(i + 1)
+        }
     }
 
     void 'DMSF01 : test finding common ancestor of two datamodels'() {
