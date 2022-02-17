@@ -23,10 +23,15 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.BaseDataModelIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
 
 import grails.gorm.PagedResultList
 import grails.gorm.transactions.Rollback
@@ -95,6 +100,31 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         checkAndSave(link)
 
         id = parent.id
+
+        userSecurityPolicyManager = PublicAccessSecurityPolicyManager.instance
+    }
+
+    void setupDataModelWithMultipleDataClassesAndDataElementsAndEnumerationValues() {
+        DataClass dataClass = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Root Data Class', dataModel: dataModel)
+        dataModel.addToDataClasses(dataClass)
+
+        for (int i in 1..5) {
+            DataClass childDataClass = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Child Data Class ' + i, dataModel: dataModel, idx: i - 1)
+            dataClass.addToDataClasses(childDataClass)
+        }
+
+        DataType enumerationType = new EnumerationType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Enumeration Type')
+        for (int i in 1..5) {
+            enumerationType.addToEnumerationValues(new EnumerationValue(createdBy: StandardEmailAddress.INTEGRATION_TEST, key: 'Key ' + i, value: 'Value ' + i, idx: i - 1))
+        }
+        dataModel.addToDataTypes(enumerationType)
+
+        for (int i in 1..5) {
+            DataElement dataElement = new DataElement(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Data Element ' + i, dataType: enumerationType, idx: i - 1)
+            dataClass.addToDataElements(dataElement)
+        }
+
+        checkAndSave(dataModel)
     }
 
     void "test get"() {
@@ -484,6 +514,71 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         then:
         copiedElement
         copiedElement.dataType == referenceType
+    }
+
+    void 'test copying dataclass with ordered dataclasses, dataelements and enumerationvalues'() {
+        given:
+        setupData()
+        setupDataModelWithMultipleDataClassesAndDataElementsAndEnumerationValues()
+        DataModel copyModel = new DataModel(label: 'copy', createdBy: StandardEmailAddress.INTEGRATION_TEST, folder: testFolder, authority: testAuthority)
+        checkAndSave(copyModel)
+
+        when:
+        DataClass parentClass = dataModel.childDataClasses.find {it.label == 'Root Data Class'}
+
+        then:
+        parentClass.dataClasses.size() == 5
+        parentClass.dataClasses.every {dc ->
+            dc.label.startsWith('Child Data Class') && dc.label.endsWith((dc.idx + 1).toString())
+        }
+
+        and:
+        parentClass.dataElements.size() == 5
+        parentClass.dataElements.every {dc ->
+            dc.label.startsWith('Data Element') && dc.label.endsWith((dc.idx + 1).toString())
+        }
+
+        when:
+        DataElement dataElement = parentClass.dataElements.sort().first()
+        EnumerationType enumerationType = dataElement.dataType
+
+        then:
+        enumerationType.enumerationValues.every {ev ->
+            ev.key.startsWith('Key') && ev.key.endsWith((ev.idx + 1).toString()) &&
+            ev.value.startsWith('Value') && ev.value.endsWith((ev.idx + 1).toString())
+        }
+
+        when:
+        DataClass original = dataClassService.get(parentClass.id)
+        dataClassService.copyDataClass(copyModel, original, editor, userSecurityPolicyManager)
+
+        then:
+        checkAndSave(copyModel)
+
+        when:
+        DataClass copiedParentClass = copyModel.childDataClasses.find {it.label == 'Root Data Class'}
+
+        then:
+        copiedParentClass.dataClasses.size() == 5
+        copiedParentClass.dataClasses.every {dc ->
+            dc.label.startsWith('Child Data Class') && dc.label.endsWith((dc.idx + 1).toString())
+        }
+
+        and:
+        copiedParentClass.dataElements.size() == 5
+        copiedParentClass.dataElements.every {dc ->
+            dc.label.startsWith('Data Element') && dc.label.endsWith((dc.idx + 1).toString())
+        }
+
+        when:
+        DataElement copiedDataElement = copiedParentClass.dataElements.sort().first()
+        EnumerationType copiedEnumerationType = copiedDataElement.dataType
+
+        then:
+        copiedEnumerationType.enumerationValues.every {ev ->
+            ev.key.startsWith('Key') && ev.key.endsWith((ev.idx + 1).toString()) &&
+            ev.value.startsWith('Value') && ev.value.endsWith((ev.idx + 1).toString())
+        }
     }
 
     void 'LIST01 : test getting all DataClasses inside a DataClass with importing involved'() {

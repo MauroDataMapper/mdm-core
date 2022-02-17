@@ -247,7 +247,7 @@ class CodeSetService extends ModelService<CodeSet> {
         copy.trackChanges()
 
         List<Term> terms = termService.findAllByCodeSetId(original.id)
-        terms.each {term ->
+        terms.sort().each {term ->
             copy.addToTerms(term)
         }
         log.debug('Copy of codeset took {}', Utils.timeTaken(start))

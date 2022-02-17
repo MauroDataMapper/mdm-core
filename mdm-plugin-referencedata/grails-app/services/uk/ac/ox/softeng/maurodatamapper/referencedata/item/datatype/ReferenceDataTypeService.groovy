@@ -222,7 +222,7 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
                 break
             case ReferenceDataType.ENUMERATION_DOMAIN_TYPE:
                 copy = new ReferenceEnumerationType()
-                original.referenceEnumerationValues.each { ev ->
+                original.referenceEnumerationValues.sort().each { ev ->
                     copy.addToReferenceEnumerationValues(key: ev.key, value: ev.value, category: ev.category)
                 }
                 break

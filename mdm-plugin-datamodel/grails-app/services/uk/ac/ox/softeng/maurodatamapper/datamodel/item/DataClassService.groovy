@@ -702,7 +702,6 @@ WHERE
 
         if (!original) throw new ApiInternalException('DCSXX', 'Cannot copy non-existent DataClass')
 
-        log.debug('Copy DataClass: original: label = {}, idx = {}', original.label, original.idx)
         DataClass copy = new DataClass(
             minMultiplicity: original.minMultiplicity,
             maxMultiplicity: original.maxMultiplicity,
@@ -712,10 +711,6 @@ WHERE
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         copiedDataModel.addToDataClasses(copy)
-        'Current copied DataClasses: '
-        copiedDataModel.dataClasses.each {
-            log.debug('   label = {}, idx = {}', it.label, it.idx)
-        }
 
         if (parentDataClass) {
             parentDataClass.addToDataClasses(copy)

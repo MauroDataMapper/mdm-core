@@ -40,6 +40,7 @@ import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddre
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 
@@ -491,6 +492,118 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         verifyResponse(OK, response)
         responseBody().items.any { it.label == 'wobble' }
         responseBody().items.any { it.label == 'string' }
+    }
+
+    void 'CC06: test copying a dataclass with ordered dataclasses, dataelements and enumerationvalues'() {
+        given:
+        POST('', validJson)
+        verifyResponse CREATED, response
+        String id = responseBody().id
+
+        for (int i in 1..5) {
+            POST("$id/dataClasses", [label: 'Child Data Class ' + i, idx: i])
+            verifyResponse CREATED, response
+        }
+
+        Map enumerationTypeData = [
+            label            : 'Functional Test Enumeration Type',
+            domainType       : 'EnumerationType',
+            enumerationValues: (1..5).collect {i ->
+                [
+                    key  : 'Key ' + i,
+                    value: 'Value ' + i,
+                    index: i - 1
+                ]
+            }
+        ]
+        POST("dataModels/$dataModelId/dataTypes", enumerationTypeData, MAP_ARG, true)
+        verifyResponse CREATED, response
+        String enumerationTypeId = responseBody().id
+
+        for (int i in 1..5) {
+            POST("$id/dataElements",
+                 [label: 'Data Element ' + i, dataType: enumerationTypeId, idx: i - 1])
+            verifyResponse CREATED, response
+        }
+
+        when:
+        GET("$id/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 5
+        responseBody().items.eachWithIndex {dc, i ->
+            assert dc.domainType == 'DataClass'
+            assert dc.label.startsWith('Child Data Class') && dc.label.endsWith((i + 1).toString())
+        }
+
+        when:
+        GET("$id/dataElements")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.eachWithIndex {de, i ->
+            assert de.domainType == 'DataElement'
+            assert de.label.startsWith('Data Element') && de.label.endsWith((i + 1).toString())
+        }
+
+        when:
+        GET("dataModels/$dataModelId/dataTypes/$enumerationTypeId", MAP_ARG, true)
+
+        then:
+        verifyResponse OK, response
+        responseBody().domainType == 'EnumerationType'
+        responseBody().enumerationValues.every {ev ->
+            ev.key.startsWith('Key') && ev.key.endsWith((ev.index + 1).toString()) &&
+            ev.value.startsWith('Value') && ev.value.endsWith((ev.index + 1).toString())
+        }
+
+        when:
+        POST("${getResourcePath(otherDataModelId)}/$dataModelId/$id", [:], MAP_ARG, true)
+
+        then:
+        verifyResponse CREATED, response
+        String copyId = responseBody().id
+
+        when:
+        GET("${getResourcePath(otherDataModelId)}/$copyId/dataClasses", MAP_ARG, true)
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 5
+        responseBody().items.eachWithIndex {dc, i ->
+            assert dc.domainType == 'DataClass'
+            assert dc.label.startsWith('Child Data Class') && dc.label.endsWith((i + 1).toString())
+        }
+
+        when:
+        GET("${getResourcePath(otherDataModelId)}/$copyId/dataElements", MAP_ARG, true)
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.eachWithIndex {de, i ->
+            assert de.domainType == 'DataElement'
+            assert de.label.startsWith('Data Element') && de.label.endsWith((i + 1).toString())
+        }
+        String copyEnumerationTypeId = responseBody().items[0].dataType.id
+
+        when:
+        GET("dataModels/$otherDataModelId/dataTypes/$copyEnumerationTypeId", MAP_ARG, true)
+
+        then:
+        verifyResponse OK, response
+        responseBody().domainType == 'EnumerationType'
+        responseBody().enumerationValues.every {ev ->
+            ev.key.startsWith('Key') && ev.key.endsWith((ev.index + 1).toString()) &&
+            ev.value.startsWith('Value') && ev.value.endsWith((ev.index + 1).toString())
+        }
+
+        cleanup:
+        cleanUpData()
+        DELETE("dataModels/$dataModelId/dataTypes/$enumerationTypeId", MAP_ARG, true)
+        verifyResponse NO_CONTENT, response
+        DELETE("dataModels/$otherDataModelId/dataTypes/$copyEnumerationTypeId", MAP_ARG, true)
+        verifyResponse NO_CONTENT, response
     }
 
     @Rollback

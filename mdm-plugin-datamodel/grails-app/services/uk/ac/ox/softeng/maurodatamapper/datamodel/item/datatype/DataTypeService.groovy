@@ -386,7 +386,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     DataType copyDataType(DataModel copiedDataModel, DataType original, User copier, UserSecurityPolicyManager userSecurityPolicyManager,
                           boolean copySummaryMetadata = false, CopyInformation copyInformation = new CopyInformation()) {
 
-        DataType copy = createNewDataTypeFromOriginal(original)
+        DataType copy = createNewDataTypeFromOriginal(copiedDataModel, original, userSecurityPolicyManager)
 
         copy = copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata, copyInformation)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
@@ -396,7 +396,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         copy
     }
 
-    DataType createNewDataTypeFromOriginal(DataType original) {
+    DataType createNewDataTypeFromOriginal(DataModel copiedDataModel, DataType original, UserSecurityPolicyManager userSecurityPolicyManager) {
         DataType copy
 
         String domainType = original.domainType
@@ -406,8 +406,8 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
                 break
             case DataType.ENUMERATION_DOMAIN_TYPE:
                 copy = new EnumerationType()
-                original.enumerationValues.each { ev ->
-                    copy.addToEnumerationValues(key: ev.key, value: ev.value, category: ev.category)
+                original.enumerationValues.sort().each { ev ->
+                    copy.addToEnumerationValues(enumerationValueService.copy(copiedDataModel, ev, copy, userSecurityPolicyManager))
                 }
                 break
             case DataType.REFERENCE_DOMAIN_TYPE:

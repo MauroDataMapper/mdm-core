@@ -40,9 +40,8 @@ trait IndexedSiblingAware {
         if (children.size() == 1) {
             children.first().idx = 0
         } else {
-            log.debug('Full sort of {} children', children.size()) //trace
+            log.trace('Full sort of {} children', children.size())
             children.sort().eachWithIndex {ModelItem mi, int i ->
-                log.debug('child.label = {}, idx = {}, i = {}', mi.label, mi.idx, i)
                 if (mi.idx != i) mi.idx = i
             }
         }
@@ -55,7 +54,7 @@ trait IndexedSiblingAware {
      * @param Set <ModelItem>  siblings   The siblings of the updated item
      */
     void updateSiblingIndexes(ModelItem updated, Collection<ModelItem> siblings) {
-        log.debug('Updating sibling indexes {}:{}:{}, siblings size {}, currentIndex {}, original value {}',
+        log.trace('Updating sibling indexes {}:{}:{}, siblings size {}, currentIndex {}, original value {}',
                   updated.domainType,
                   updated.label,
                   updated.id,
@@ -85,7 +84,7 @@ trait IndexedSiblingAware {
         }
 
         // If never saved before or has been saved and the idx has changed then we need to make sure all the siblings are ordered
-        log.debug('>> Sorting and reordering idxes')
+        log.trace('>> Sorting and reordering idxes')
         sortAndReorderAllIndexes(updated, siblings)
     }
 
