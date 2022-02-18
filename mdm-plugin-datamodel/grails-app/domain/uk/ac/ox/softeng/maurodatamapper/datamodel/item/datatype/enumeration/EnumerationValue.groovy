@@ -198,4 +198,8 @@ class EnumerationValue implements ModelItem<EnumerationValue, DataModel> {
             }
         }
     }
+
+    static DetachedCriteria<EnumerationValue> byDataModelId(Serializable dataModelId) {
+        new DetachedCriteria<EnumerationValue>(EnumerationValue).in('enumerationType', EnumerationType.byDataModelId(dataModelId).id())
+    }
 }

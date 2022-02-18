@@ -89,9 +89,6 @@ abstract class ModelService<K extends Model>
     @Autowired(required = false)
     Set<MdmDomainService> domainServices
 
-    @Autowired(required = false)
-    Set<MultiFacetItemAwareService> multiFacetItemAwareServices
-
     @Autowired
     VersionedFolderService versionedFolderService
 
@@ -137,8 +134,6 @@ abstract class ModelService<K extends Model>
     abstract List<K> findAllDeletedModels(Map pagination)
 
     abstract List<K> findAllByFolderId(UUID folderId)
-
-
 
     abstract K validate(K model)
 

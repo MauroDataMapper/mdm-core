@@ -41,6 +41,8 @@ import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 import org.grails.datastore.mapping.validation.CascadeValidateType
 
+import javax.persistence.criteria.JoinType
+
 @Resource(readOnly = false, formats = ['json', 'xml'])
 class Term implements ModelItem<Term, Terminology> {
 
@@ -252,6 +254,11 @@ class Term implements ModelItem<Term, Terminology> {
 
     static DetachedCriteria<Term> byTerminologyId(UUID terminologyId) {
         by().eq('terminology.id', terminologyId)
+    }
+
+    static DetachedCriteria<Term> byTerminologyIdWithEverything(UUID terminologyId) {
+        withEverything(by().eq('terminology.id', terminologyId)
+                           .join('sourceTermRelationships', JoinType.INNER))
     }
 
     static DetachedCriteria<Term> byTerminologyIdInList(Collection<UUID> terminologyIds) {

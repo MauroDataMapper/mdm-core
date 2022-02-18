@@ -50,7 +50,7 @@ class SemanticLink implements MultiFacetItemAware {
     }
 
     static mapping = {
-        batchSize 20
+        batchSize 10
         multiFacetAwareItemId index: 'semantic_link_catalogue_item_idx'
         targetMultiFacetAwareItemId index: 'semantic_link_target_catalogue_item_idx'
     }

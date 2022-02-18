@@ -49,6 +49,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ModelDataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValueService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.DefaultDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter.DataModelJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelJsonImporterService
@@ -66,6 +67,7 @@ import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
+import grails.util.Environment
 import groovy.util.logging.Slf4j
 import org.grails.datastore.mapping.validation.ValidationErrors
 import org.hibernate.engine.spi.SessionFactoryImplementor
@@ -83,6 +85,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     SummaryMetadataService summaryMetadataService
     DataModelJsonImporterService dataModelJsonImporterService
     DataModelJsonExporterService dataModelJsonExporterService
+    EnumerationValueService enumerationValueService
 
     @Autowired
     Set<DefaultDataTypeProvider> defaultDataTypeProviders
@@ -427,12 +430,19 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         }
         referenceTypes.each {it.skipValidation(true)}
 
+        // During testing its very important that we dont disable constraints otherwise we may miss an invalid model,
+        // The disabling is done to provide a speed up during saving which is not necessary during test
+        if (Environment.current != Environment.TEST) {
+            log.debug('Disabling database constraints')
+            GormUtils.disableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
+        }
+
         long subStart = System.currentTimeMillis()
         dataTypeService.saveAll(enumerationTypes, modelItemBatchSize)
         dataTypeService.saveAll(primitiveTypes, modelItemBatchSize)
         dataTypeService.saveAll(modelDataTypes, modelItemBatchSize)
         int totalDts = enumerationTypes.size() + primitiveTypes.size() + modelDataTypes.size()
-        if(totalDts)   log.debug('Saved {} dataTypes in {}', totalDts, Utils.timeTaken(subStart))
+        if (totalDts) log.debug('Saved {} dataTypes in {}', totalDts, Utils.timeTaken(subStart))
 
         subStart = System.currentTimeMillis()
         dataElements.addAll dataClassService.saveAllAndGetDataElements(dataClasses)
@@ -440,12 +450,17 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
         subStart = System.currentTimeMillis()
         dataTypeService.saveAll(referenceTypes as Collection<DataType>, modelItemBatchSize)
-        if(referenceTypes) log.debug('Saved {} reference datatypes in {}', referenceTypes.size(), Utils.timeTaken(subStart))
+        if (referenceTypes) log.debug('Saved {} reference datatypes in {}', referenceTypes.size(), Utils.timeTaken(subStart))
 
         subStart = System.currentTimeMillis()
         dataElementService.saveAll(dataElements, modelItemBatchSize)
-       if(dataElements) log.debug('Saved {} dataElements in {}', dataElements.size(), Utils.timeTaken(subStart))
+        if (dataElements) log.debug('Saved {} dataElements in {}', dataElements.size(), Utils.timeTaken(subStart))
 
+
+        if (Environment.current != Environment.TEST) {
+            log.debug('Enabling database constraints')
+            GormUtils.enableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
+        }
 
         log.trace('Content save of DataModel complete in {}', Utils.timeTaken(start))
     }

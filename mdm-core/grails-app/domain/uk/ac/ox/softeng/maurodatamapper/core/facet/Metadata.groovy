@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
+
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
@@ -32,7 +32,7 @@ import grails.rest.Resource
 @Resource(readOnly = false, formats = ['json', 'xml'])
 class Metadata implements MultiFacetItemAware, Diffable<Metadata> {
 
-    public final static Integer BATCH_SIZE = 5000
+    public final static Integer BATCH_SIZE = 1000
 
     UUID id
 
@@ -53,6 +53,7 @@ class Metadata implements MultiFacetItemAware, Diffable<Metadata> {
     }
 
     static mapping = {
+        batchSize(10)
         namespace type: 'text'
         key type: 'text'
         value type: 'text'

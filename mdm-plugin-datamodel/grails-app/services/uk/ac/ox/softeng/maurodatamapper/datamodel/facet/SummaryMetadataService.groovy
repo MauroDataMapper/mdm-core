@@ -101,6 +101,11 @@ class SummaryMetadataService implements MultiFacetItemAwareService<SummaryMetada
     }
 
     @Override
+    List<SummaryMetadata> findAllByMultiFacetAwareItemIdInList(List<UUID> multiFacetAwareItemIds) {
+        SummaryMetadata.byMultiFacetAwareItemIdInList(multiFacetAwareItemIds).list()
+    }
+
+    @Override
     DetachedCriteria<SummaryMetadata> getBaseDeleteCriteria() {
         SummaryMetadata.by()
     }

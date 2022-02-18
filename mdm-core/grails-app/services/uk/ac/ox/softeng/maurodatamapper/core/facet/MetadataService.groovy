@@ -174,6 +174,11 @@ class MetadataService implements MultiFacetItemAwareService<Metadata> {
         Metadata.withFilter(Metadata.byMultiFacetAwareItemId(multiFacetAwareItemId), pagination).list(pagination)
     }
 
+    @Override
+    List<Metadata> findAllByMultiFacetAwareItemIdInList(List<UUID> multiFacetAwareItemIds) {
+        Metadata.byMultiFacetAwareItemIdInList(multiFacetAwareItemIds).list()
+    }
+
     List<Metadata> findAllByMultiFacetAwareItemIdAndNamespace(UUID multiFacetAwareItemId, String namespace, Map pagination = [:]) {
         Metadata.byMultiFacetAwareItemIdAndNamespace(multiFacetAwareItemId, namespace).list(pagination)
     }

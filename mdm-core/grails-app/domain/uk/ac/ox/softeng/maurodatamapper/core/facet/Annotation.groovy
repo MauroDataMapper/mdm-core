@@ -67,6 +67,7 @@ class Annotation implements MultiFacetItemAware, InformationAware, Diffable<Anno
     }
 
     static mapping = {
+        batchSize(10)
         parentAnnotation index: 'annotation_parent_annotation_idx'
         childAnnotations sort: 'dateCreated', order: 'asc', cascade: 'all-delete-orphan'
     }
@@ -140,7 +141,7 @@ class Annotation implements MultiFacetItemAware, InformationAware, Diffable<Anno
         new DetachedCriteria<Annotation>(Annotation).eq('multiFacetAwareItemId', Utils.toUuid(multiFacetAwareItemId))
     }
 
-    static DetachedCriteria<Annotation> byyMultiFacetAwareItemIdInList(List<UUID> multiFacetAwareItemIds) {
+    static DetachedCriteria<Annotation> byMultiFacetAwareItemIdInList(List<UUID> multiFacetAwareItemIds) {
         new DetachedCriteria<Annotation>(Annotation).inList('multiFacetAwareItemId', multiFacetAwareItemIds)
     }
 

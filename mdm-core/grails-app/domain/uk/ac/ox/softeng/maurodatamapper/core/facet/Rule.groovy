@@ -53,6 +53,7 @@ class Rule implements MultiFacetItemAware, Diffable<Rule> {
     }
 
     static mapping = {
+        batchSize(10)
         name type: 'text'
         description type: 'text'
         multiFacetAwareItemId index: 'rule_catalogue_item_idx'

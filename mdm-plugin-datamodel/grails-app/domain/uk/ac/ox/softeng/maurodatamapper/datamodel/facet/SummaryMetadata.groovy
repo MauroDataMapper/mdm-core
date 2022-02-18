@@ -33,7 +33,7 @@ import grails.rest.Resource
 @Resource(readOnly = false, formats = ['json', 'xml'])
 class SummaryMetadata implements MultiFacetItemAware, InformationAware, MdmDomain {
 
-    public final static Integer BATCH_SIZE = 5000
+    public final static Integer BATCH_SIZE = 1000
 
     UUID id
     SummaryMetadataType summaryMetadataType

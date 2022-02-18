@@ -33,12 +33,14 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
 import org.hibernate.SessionFactory
+import org.springframework.beans.factory.annotation.Autowired
 
 @Slf4j
 abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomainService<K>, MultiFacetAwareService<K> {
@@ -50,6 +52,9 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomai
     SemanticLinkService semanticLinkService
     AnnotationService annotationService
     ReferenceFileService referenceFileService
+
+    @Autowired(required = false)
+    Set<MultiFacetItemAwareService> multiFacetItemAwareServices
 
     Class<K> getMultiFacetAwareClass() {
         getDomainClass()
@@ -343,5 +348,13 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomai
     @Override
     K findByParentIdAndPathIdentifier(UUID parentId, String pathIdentifier) {
         findByParentIdAndLabel(parentId, pathIdentifier)
+    }
+
+    void loadAllFacetsIntoMemoryByIds(List<UUID> multiFacetAwareItemIds) {
+        if (!multiFacetAwareItemIds) return
+        multiFacetItemAwareServices.each {
+            log.debug('Loading facet type {} for {} ids', it.getDomainClass().simpleName, multiFacetAwareItemIds.size())
+            it.findAllByMultiFacetAwareItemIdInList(multiFacetAwareItemIds)
+        }
     }
 }

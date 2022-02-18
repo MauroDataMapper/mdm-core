@@ -185,6 +185,12 @@ class SemanticLinkService implements MultiFacetItemAwareService<SemanticLink> {
     }
 
     @Override
+    List<SemanticLink> findAllByMultiFacetAwareItemIdInList(List<UUID> multiFacetAwareItemIds) {
+        SemanticLink.byMultiFacetAwareItemIdInList(multiFacetAwareItemIds).list()
+    }
+
+
+    @Override
     DetachedCriteria<SemanticLink> getBaseDeleteCriteria() {
         SemanticLink.by()
     }

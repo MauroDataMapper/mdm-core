@@ -50,7 +50,9 @@ import grails.plugins.Plugin
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import org.grails.web.databinding.bindingsource.DataBindingSourceRegistry
+import org.hibernate.dialect.PostgreSQL94Dialect
 import org.springframework.boot.web.servlet.ServletListenerRegistrationBean
+import org.springframework.util.ClassUtils
 
 /**
  * @since 01/11/2017
@@ -112,7 +114,41 @@ This is basically the backend API.
             // Dynamically update the Flyway Schemas
             mdmFlywayMigationStrategy MdmFlywayMigationStrategy
 
-            boolean rebuildIndexes = grailsApplication.config.getProperty('grails.plugins.hibernatesearch.rebuildIndexOnStart', Boolean, false)
+            /*
+            Ensure that if using PG9.4+ then the reWriteBatchedInserts property is in the datasource properties
+            This is needed to get PG to actually do batch processing of inserts.
+            Whilst the hibernate settings get hibernate to perform batching of inserts and updates the batches are sent to PG which doesnt actually then
+            perform batch inserts but individual sql inserts. This property gets the PG JDBC driver to rewrite the batches as 1 insert statement with multiple
+            sets of values, which is what we want.
+             */
+            Map<String, Map> dataSources = config.getProperty('dataSources', Map<String, Map>, [:])
+            boolean dataSourcesConfig = true
+            if (!dataSources) {
+                dataSourcesConfig = false
+                def defaultDataSource = config.getProperty('dataSource', Map)
+                if (defaultDataSource) {
+                    dataSources['dataSource'] = defaultDataSource
+                }
+            }
+            if (dataSources) {
+                dataSources.each {String k, Map ds ->
+                    String dialect = ds.dialect
+                    Class dialectClass = ClassUtils.forName(dialect, this.class.classLoader)
+                    if (Utils.parentClassIsAssignableFromChild(PostgreSQL94Dialect, dialectClass)) {
+                        Map dsProperties = ds.properties?:[:]
+                        String connectionProperties = dsProperties.connectionProperties ?: ''
+                        if (!connectionProperties.contains('reWriteBatchedInserts')) {
+                            String key = dataSourcesConfig ? "dataSources.${k}.properties.connectionProperties" : 'dataSource.properties.connectionProperties'
+                            connectionProperties = connectionProperties ? "${connectionProperties};reWriteBatchedInserts=true" : 'reWriteBatchedInserts=true'
+                            config.setAt(key, connectionProperties)
+                            dsProperties.connectionProperties = connectionProperties
+                            ds['properties'] = dsProperties
+                        }
+                    }
+                }
+            }
+
+            boolean rebuildIndexes = config.getProperty('grails.plugins.hibernatesearch.rebuildIndexOnStart', Boolean, false)
             if (rebuildIndexes) log.warn('Rebuilding search indexes')
             /*
              * Load in the HS analysers used by the hibernate search functionality
@@ -120,7 +156,7 @@ This is basically the backend API.
             hibernateSearchMappingConfigurer(MdmHibernateSearchMappingConfigurer)
 
             // Ensure the uuid2 generator is used for mapping ids
-            grailsApplication.config.setAt('grails.gorm.default.mapping', {
+            config.setAt('grails.gorm.default.mapping', {
                 id generator: 'uuid2'
             })
 
@@ -131,7 +167,7 @@ This is basically the backend API.
              * The default is either no access, or complete access (and that means complete unfettered access to everything
              * maurodatamapper.security.public property defines what the default is
              */
-            boolean publicAccess = grailsApplication.config.getProperty('maurodatamapper.security.public', Boolean)
+            boolean publicAccess = config.getProperty('maurodatamapper.security.public', Boolean)
             if (publicAccess) {
                 log.warn('Running in public access mode. All actions will be available to any user')
             }

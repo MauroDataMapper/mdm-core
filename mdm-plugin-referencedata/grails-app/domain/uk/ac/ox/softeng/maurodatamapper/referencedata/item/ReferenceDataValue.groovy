@@ -31,7 +31,7 @@ import grails.rest.Resource
 @Resource(readOnly = false, formats = ['json', 'xml'])
 class ReferenceDataValue implements MdmDomain, Diffable<ReferenceDataValue> {
 
-    public final static Integer BATCH_SIZE = 10000
+    public final static Integer BATCH_SIZE = 1000
 
     UUID id
 

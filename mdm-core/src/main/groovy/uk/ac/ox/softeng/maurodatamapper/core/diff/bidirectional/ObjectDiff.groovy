@@ -228,7 +228,7 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
         diffs.find closure
     }
 
-    private static void validateFieldNameNotNull(final String fieldName) throws ApiDiffException {
+    static void validateFieldNameNotNull(final String fieldName) throws ApiDiffException {
         if (!fieldName) {
             throw new ApiDiffException('OD01', 'Field name cannot be null or blank')
         }

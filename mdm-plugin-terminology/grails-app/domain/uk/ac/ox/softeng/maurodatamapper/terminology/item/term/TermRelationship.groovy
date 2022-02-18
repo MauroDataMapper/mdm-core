@@ -39,7 +39,7 @@ import grails.rest.Resource
 @Resource(readOnly = false, formats = ['json', 'xml'])
 class TermRelationship implements ModelItem<TermRelationship, Terminology> {
 
-    public final static Integer BATCH_SIZE = 5000
+    public final static Integer BATCH_SIZE = 1000
 
     UUID id
 

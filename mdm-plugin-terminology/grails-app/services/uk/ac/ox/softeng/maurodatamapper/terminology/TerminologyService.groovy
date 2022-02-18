@@ -667,5 +667,4 @@ class TerminologyService extends ModelService<Terminology> {
         }
         0
     }
-
 }

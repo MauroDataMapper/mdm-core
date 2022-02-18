@@ -59,18 +59,21 @@ import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
+import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 import uk.ac.ox.softeng.maurodatamapper.version.VersionChangeType
 
 import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
+import grails.util.Environment
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormValidateable
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.orm.hibernate.cfg.JoinTable
 import org.grails.orm.hibernate.cfg.PropertyConfig
 import org.grails.orm.hibernate.proxy.HibernateProxyHandler
+import org.hibernate.engine.spi.SessionFactoryImplementor
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 
@@ -218,6 +221,13 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         log.debug('Finalising folder')
         long start = System.currentTimeMillis()
 
+        // During testing its very important that we dont disable constraints otherwise we may miss an invalid model,
+        // The disabling is done to provide a speed up during saving which is not necessary during test
+        if (Environment.current != Environment.TEST) {
+            log.debug('Disabling database constraints')
+            GormUtils.disableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
+        }
+
         folder.finalised = true
         folder.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
 
@@ -236,6 +246,12 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
                                       "${folder.label} finalised by ${user.firstName} ${user.lastName} on " +
                                       "${OffsetDateTimeConverter.toString(folder.dateFinalised)}",
                                       user)
+
+        if (Environment.current != Environment.TEST) {
+            log.debug('Enabling database constraints')
+            GormUtils.enableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
+        }
+
         log.debug('Folder finalised took {}', Utils.timeTaken(start))
         folder
     }
@@ -689,11 +705,17 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     ObjectDiff<VersionedFolder> getDiffForVersionedFolders(VersionedFolder thisVersionedFolder, VersionedFolder otherVersionedFolder, String contentContext = 'none') {
         log.debug('Obtaining diff for {} <> {}', thisVersionedFolder.diffIdentifier, otherVersionedFolder.diffIdentifier)
-        ObjectDiff<VersionedFolder> coreDiff = thisVersionedFolder.diff(otherVersionedFolder, 'none')
-        folderService.loadModelsIntoFolderObjectDiff(coreDiff, thisVersionedFolder, otherVersionedFolder, contentContext)
+
+        // Protect against session clearing
+        VersionedFolder thisToDiff = get(thisVersionedFolder.id)
+        VersionedFolder otherToDiff = get(otherVersionedFolder.id)
+
+        ObjectDiff<VersionedFolder> coreDiff = thisToDiff.diff(otherToDiff, 'none')
+        folderService.loadModelsIntoFolderObjectDiff(coreDiff, thisToDiff, otherToDiff, contentContext)
         coreDiff
     }
 
+    @Transactional(readOnly = true)
     MergeDiff<VersionedFolder> getMergeDiffForVersionedFolders(VersionedFolder sourceVersionedFolder, VersionedFolder targetVersionedFolder) {
         VersionedFolder commonAncestor = findCommonAncestorBetweenModels(sourceVersionedFolder, targetVersionedFolder)
 

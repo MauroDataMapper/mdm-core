@@ -89,6 +89,11 @@ class AnnotationService implements MultiFacetItemAwareService<Annotation> {
     }
 
     @Override
+    List<Annotation> findAllByMultiFacetAwareItemIdInList(List<UUID> multiFacetAwareItemIds) {
+        Annotation.byMultiFacetAwareItemIdInList(multiFacetAwareItemIds).list()
+    }
+
+    @Override
     DetachedCriteria<Annotation> getBaseDeleteCriteria() {
         Annotation.by()
     }

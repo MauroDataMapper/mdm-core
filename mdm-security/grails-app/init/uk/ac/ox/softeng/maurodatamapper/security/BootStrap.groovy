@@ -108,11 +108,24 @@ class BootStrap implements SecurityDefinition {
                 //dev env relies almost entirely upon adminusers being bootstrapped
                 CatalogueUser.withNewTransaction {
 
-                    getOrCreateModernSecurityUsers('development', false)
-                    checkAndSave(messageSource, editor, reader, authenticated, pending, containerAdmin, author, reviewer, creator)
+                    createModernSecurityUsers('development', false)
+                    checkAndSave(messageSource, editor,
+                                 pending,
+                                 containerAdmin,
+                                 author,
+                                 reviewer,
+                                 reader,
+                                 authenticated,
+                                 creator)
 
-                    getOrCreateBasicGroups('development', false)
-                    checkAndSave(messageSource, editors, readers)
+                    createBasicGroups('development', false)
+                    checkAndSave(messageSource,
+                                 editors,
+                                 readers,
+                                 reviewers,
+                                 authors,
+                                 containerAdmins,
+                                 admins)
 
                     Folder folder = Folder.findByLabel('Development Folder')
 

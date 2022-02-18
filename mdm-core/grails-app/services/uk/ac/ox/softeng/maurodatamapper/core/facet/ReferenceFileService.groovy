@@ -102,6 +102,11 @@ class ReferenceFileService implements CatalogueFileService<ReferenceFile>, Multi
     }
 
     @Override
+    List<ReferenceFile> findAllByMultiFacetAwareItemIdInList(List<UUID> multiFacetAwareItemIds) {
+        ReferenceFile.byMultiFacetAwareItemIdInList(multiFacetAwareItemIds).list()
+    }
+
+    @Override
     DetachedCriteria<ReferenceFile> getBaseDeleteCriteria() {
         ReferenceFile.by()
     }
