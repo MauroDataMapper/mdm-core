@@ -18,12 +18,11 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
-import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.path.Path
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.core.GrailsApplication
@@ -50,7 +49,11 @@ class ModelDataType extends DataType<ModelDataType> {
     }
 
     ObjectDiff<ModelDataType> diff(ModelDataType otherDataType, String context) {
-        ObjectDiff<ModelDataType> diff = catalogueItemDiffBuilder(ModelDataType, this, otherDataType)
+        diff(otherDataType, context, null, null)
+    }
+
+    ObjectDiff<ModelDataType> diff(ModelDataType otherDataType, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
+        ObjectDiff<ModelDataType> diff = DiffBuilder.catalogueItemDiffBuilder(ModelDataType, this, otherDataType, lhsDiffCache, rhsDiffCache)
 
         // Aside from branch and version, is the model pointed to by the modelDataType really different by path?
         // Could be a different model entirely

@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
@@ -145,7 +147,11 @@ class EnumerationValue implements ModelItem<EnumerationValue, DataModel> {
     }
 
     ObjectDiff<EnumerationValue> diff(EnumerationValue otherEnumerationValue, String context) {
-        catalogueItemDiffBuilder(EnumerationValue, this, otherEnumerationValue)
+        diff(otherEnumerationValue, context, null, null)
+    }
+
+    ObjectDiff<EnumerationValue> diff(EnumerationValue otherEnumerationValue, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
+        DiffBuilder.catalogueItemDiffBuilder(EnumerationValue, this, otherEnumerationValue, lhsDiffCache, rhsDiffCache)
             .appendString('key', this.key, otherEnumerationValue.key)
             .appendString('value', this.value, otherEnumerationValue.value)
             .appendString('category', this.category, otherEnumerationValue.category)

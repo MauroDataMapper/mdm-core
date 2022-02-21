@@ -18,26 +18,21 @@
 package uk.ac.ox.softeng.maurodatamapper.core.diff
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
-import groovy.transform.CompileStatic
-import groovy.transform.SelfType
+/**
+ * @since 21/02/2022
+ */
+class CachedDiffable<C extends Diffable> {
 
-@SelfType(MdmDomain)
-@CompileStatic
-trait Diffable<T extends Diffable> {
+    C diffable
+    DiffCache diffCache
 
-    abstract ObjectDiff<T> diff(T that, String context)
-
-    abstract ObjectDiff<T> diff(T that, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache)
-
-    String getDiffIdentifier() {
-        getDiffIdentifier(null)
+    CachedDiffable(C diffable, DiffCache diffCache) {
+        this.diffable = diffable
+        this.diffCache = diffCache
     }
 
-    String getDiffIdentifier(String context) {
-        getPathIdentifier()
+    ObjectDiff<C> diff(CachedDiffable<C> cachedDiffable, String context) {
+        this.diffable.diff(cachedDiffable.diffable, context, this.diffCache, cachedDiffable.diffCache)
     }
-
-    abstract String getPathPrefix()
 }

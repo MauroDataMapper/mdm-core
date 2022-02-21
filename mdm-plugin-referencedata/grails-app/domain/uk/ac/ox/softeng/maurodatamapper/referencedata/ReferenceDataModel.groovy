@@ -19,6 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
@@ -121,19 +123,31 @@ class ReferenceDataModel implements Model<ReferenceDataModel>, ReferenceSummaryM
     }
 
     ObjectDiff<ReferenceDataModel> diff(ReferenceDataModel otherDataModel, String context) {
-        modelDiffBuilder(ReferenceDataModel, this, otherDataModel)
-            .appendList(ReferenceDataType, 'referenceDataTypes', this.referenceDataTypes, otherDataModel.referenceDataTypes)
-            .appendList(ReferenceDataElement, 'referenceDataElements', this.referenceDataElements, otherDataModel.referenceDataElements)
+        diff(otherDataModel, context, null, null)
+    }
+
+    ObjectDiff<ReferenceDataModel> diff(ReferenceDataModel otherDataModel, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
+        ObjectDiff<ReferenceDataModel> base = DiffBuilder.modelDiffBuilder(ReferenceDataModel, this, otherDataModel, lhsDiffCache, rhsDiffCache)
+
+        if (!lhsDiffCache || !rhsDiffCache) {
+            base.appendCollection(ReferenceDataType, 'referenceDataTypes', this.referenceDataTypes, otherDataModel.referenceDataTypes)
+                .appendCollection(ReferenceDataElement, 'referenceDataElements', this.referenceDataElements, otherDataModel.referenceDataElements)
+        } else {
+            base.appendCollection(ReferenceDataType, 'referenceDataTypes')
+                .appendCollection(ReferenceDataElement, 'referenceDataElements')
+        }
+        base
+
     }
 
     def beforeValidate() {
         beforeValidateCatalogueItem()
         this.referenceDataTypes?.each {it.beforeValidate()}
-        this.referenceDataElements?.each { it.beforeValidate() }
+        this.referenceDataElements?.each {it.beforeValidate()}
     }
 
     ReferenceDataType findReferenceDataTypeByLabel(String label) {
-        this.referenceDataTypes?.find { it.label == label }
+        this.referenceDataTypes?.find {it.label == label}
     }
 
     ReferenceDataType findReferenceDataTypeByLabelAndType(String label, String type) {

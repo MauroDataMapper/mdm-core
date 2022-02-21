@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.terminology.item.term
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
@@ -126,8 +128,12 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
         "$sourceTerm.code.$label.$targetTerm.code"
     }
 
-    ObjectDiff<TermRelationship> diff(TermRelationship obj, String context) {
-        catalogueItemDiffBuilder(TermRelationship, this, obj)
+    ObjectDiff<TermRelationship> diff(TermRelationship that, String context) {
+        diff(that, context, null, null)
+    }
+
+    ObjectDiff<TermRelationship> diff(TermRelationship that, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
+        DiffBuilder.catalogueItemDiffBuilder(TermRelationship, this, that, lhsDiffCache, rhsDiffCache)
     }
 
     static DetachedCriteria<TermRelationship> by() {

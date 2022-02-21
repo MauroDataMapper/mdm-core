@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional
 
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.path.Path
@@ -201,5 +202,17 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Com
 
     ObjectDiff<M> getSourceDiffTarget() {
         return sourceDiffTarget
+    }
+
+    DiffCache getCommonAncestorDiffCache(){
+        commonAncestorDiffSource.lhsDiffCache
+    }
+
+    DiffCache getSourceDiffCache(){
+        commonAncestorDiffSource.rhsDiffCache
+    }
+
+    DiffCache getTargetDiffCache(){
+        commonAncestorDiffTarget.rhsDiffCache
     }
 }

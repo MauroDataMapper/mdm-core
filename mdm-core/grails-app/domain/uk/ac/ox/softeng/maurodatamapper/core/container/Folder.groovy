@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
@@ -106,23 +107,12 @@ class Folder implements Container, Diffable<Folder> {
 
     @Override
     ObjectDiff<Folder> diff(Folder that, String context) {
-        folderDiffBuilder(Folder, this, that)
+        diff(that, context, null, null)
     }
 
-    static <T extends Folder> ObjectDiff<T> folderDiffBuilder(Class<T> diffClass, T lhs, T rhs) {
-        String lhsId = lhs.id ?: "Left:Unsaved_${lhs.domainType}"
-        String rhsId = rhs.id ?: "Right:Unsaved_${rhs.domainType}"
-        DiffBuilder.objectDiff(diffClass)
-            .leftHandSide(lhsId, lhs)
-            .rightHandSide(rhsId, rhs)
-            .appendString('label', lhs.label, rhs.label)
-            .appendString('description', lhs.description, rhs.description)
-            .appendList(Metadata, 'metadata', lhs.metadata, rhs.metadata)
-            .appendList(Annotation, 'annotations', lhs.annotations, rhs.annotations)
-            .appendList(Rule, 'rule', lhs.rules, rhs.rules)
-            .appendBoolean('deleted', lhs.deleted, rhs.deleted)
-        // Add no matter what so we can iterate through to add models
-            .appendList(Folder, 'folders', lhs.childFolders, rhs.childFolders, null, true)
+    @Override
+    ObjectDiff<Folder> diff(Folder that, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
+        DiffBuilder.folderDiffBuilder(Folder, this, that, lhsDiffCache, rhsDiffCache)
     }
 
     @Override

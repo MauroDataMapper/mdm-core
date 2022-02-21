@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
@@ -92,8 +93,8 @@ class Metadata implements MultiFacetItemAware, Diffable<Metadata> {
     }
 
     @Override
-    def beforeInsert(){
-       beforeInsertCheck()
+    def beforeInsert() {
+        beforeInsertCheck()
     }
 
     @Override
@@ -102,13 +103,20 @@ class Metadata implements MultiFacetItemAware, Diffable<Metadata> {
     }
 
     @Override
-    ObjectDiff<Metadata> diff(Metadata obj, String context) {
+    ObjectDiff<Metadata> diff(Metadata that, String context) {
+        diff(that, context, null, null)
+    }
+
+    @Override
+    ObjectDiff<Metadata> diff(Metadata that, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
         DiffBuilder.objectDiff(Metadata)
             .leftHandSide(id.toString(), this)
-            .rightHandSide(obj.id.toString(), obj)
-            .appendString('namespace', this.namespace, obj.namespace)
-            .appendString('key', this.key, obj.key)
-            .appendString('value', this.value, obj.value)
+            .rightHandSide(that.id.toString(), that)
+            .withLeftHandSideCache(lhsDiffCache)
+            .withRightHandSideCache(rhsDiffCache)
+            .appendString('namespace', this.namespace, that.namespace)
+            .appendString('key', this.key, that.key)
+            .appendString('value', this.value, that.value)
     }
 
     @Override

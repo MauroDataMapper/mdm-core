@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.path.Path
@@ -83,11 +84,18 @@ class ReferenceDataValue implements MdmDomain, Diffable<ReferenceDataValue> {
     }
 
     ObjectDiff<ReferenceDataValue> diff(ReferenceDataValue otherValue, String context) {
+        diff(otherValue, context, null, null)
+    }
+
+    @Override
+    ObjectDiff<ReferenceDataValue> diff(ReferenceDataValue otherValue, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
         String lhsId = this.id ?: "Left:Unsaved_${this.domainType}"
         String rhsId = otherValue.id ?: "Right:Unsaved_${otherValue.domainType}"
         DiffBuilder.objectDiff(ReferenceDataValue)
             .leftHandSide(lhsId, this)
             .rightHandSide(rhsId, otherValue)
+            .withLeftHandSideCache(lhsDiffCache)
+            .withRightHandSideCache(rhsDiffCache)
             .appendNumber('rowNumber', this.rowNumber, otherValue.rowNumber)
             .appendString('value', this.value, otherValue.value)
     }

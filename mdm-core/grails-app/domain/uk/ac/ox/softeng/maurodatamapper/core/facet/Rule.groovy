@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.rule.RuleRepresentation
@@ -105,13 +106,26 @@ class Rule implements MultiFacetItemAware, Diffable<Rule> {
     }
 
     @Override
-    ObjectDiff<Rule> diff(Rule obj, String context) {
-        DiffBuilder.objectDiff(Rule)
+    ObjectDiff<Rule> diff(Rule that, String context) {
+        diff(that, context, null, null)
+    }
+
+    @Override
+    ObjectDiff<Rule> diff(Rule that, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
+        ObjectDiff<Rule> base = DiffBuilder.objectDiff(Rule)
             .leftHandSide(id.toString(), this)
-            .rightHandSide(obj.id.toString(), obj)
-            .appendString('name', this.name, obj.name)
-            .appendString('description', this.description, obj.description)
-            .appendList(RuleRepresentation, 'ruleRepresentations', this.ruleRepresentations, obj.ruleRepresentations)
+            .rightHandSide(that.id.toString(), that)
+            .withLeftHandSideCache(lhsDiffCache)
+            .withRightHandSideCache(rhsDiffCache)
+            .appendString('name', this.name, that.name)
+            .appendString('description', this.description, that.description)
+
+        if (!lhsDiffCache || !rhsDiffCache) {
+            base.appendCollection(RuleRepresentation, 'ruleRepresentations', this.ruleRepresentations, that.ruleRepresentations)
+        } else {
+            base.appendCollection(RuleRepresentation, 'ruleRepresentations')
+        }
+        base
     }
 
     static DetachedCriteria<Rule> by() {

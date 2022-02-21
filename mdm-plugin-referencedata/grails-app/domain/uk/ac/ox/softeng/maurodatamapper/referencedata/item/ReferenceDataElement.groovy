@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
@@ -151,7 +153,11 @@ class ReferenceDataElement implements ModelItem<ReferenceDataElement, ReferenceD
     }
 
     ObjectDiff<ReferenceDataElement> diff(ReferenceDataElement otherReferenceDataElement, String context) {
-        ObjectDiff<ReferenceDataElement> diff = catalogueItemDiffBuilder(ReferenceDataElement, this, otherReferenceDataElement)
+       diff(otherReferenceDataElement, context, null, null)
+    }
+
+    ObjectDiff<ReferenceDataElement> diff(ReferenceDataElement otherReferenceDataElement, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
+        ObjectDiff<ReferenceDataElement> diff = DiffBuilder.catalogueItemDiffBuilder(ReferenceDataElement, this, otherReferenceDataElement, lhsDiffCache, rhsDiffCache)
             .appendNumber('minMultiplicity', this.minMultiplicity, otherReferenceDataElement.minMultiplicity)
             .appendNumber('maxMultiplicity', this.maxMultiplicity, otherReferenceDataElement.maxMultiplicity)
 
@@ -159,8 +165,8 @@ class ReferenceDataElement implements ModelItem<ReferenceDataElement, ReferenceD
         if (!this.referenceDataType.getPath().matches(otherReferenceDataElement.referenceDataType.getPath(), this.referenceDataModel.getPath().last().modelIdentifier)) {
             diff.
                 appendString('referenceDataTypePath',
-                    this.referenceDataType.getPath().toString(),
-                    otherReferenceDataElement.referenceDataType.getPath().toString())
+                             this.referenceDataType.getPath().toString(),
+                             otherReferenceDataElement.referenceDataType.getPath().toString())
         }
 
         diff

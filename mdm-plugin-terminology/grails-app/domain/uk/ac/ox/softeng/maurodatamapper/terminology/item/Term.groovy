@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.terminology.item
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
@@ -183,7 +185,11 @@ class Term implements ModelItem<Term, Terminology> {
     }
 
     ObjectDiff<Term> diff(Term otherTerm, String context) {
-        ObjectDiff<Term> diff = catalogueItemDiffBuilder(Term, this, otherTerm)
+        diff(otherTerm, context, null, null)
+    }
+
+    ObjectDiff<Term> diff(Term otherTerm, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
+        ObjectDiff<Term> diff = DiffBuilder.catalogueItemDiffBuilder(Term, this, otherTerm, lhsDiffCache, rhsDiffCache)
             .appendString('code', this.code, otherTerm.code)
             .appendString('definition', this.definition, otherTerm.definition)
             .appendString('url', this.url, otherTerm.url)
@@ -191,8 +197,14 @@ class Term implements ModelItem<Term, Terminology> {
         // If inside term context then we want to diff the relationships but if from CS or T then we either dont care about modifications or we want the relationships diffd
         // at the T level
         if (!context || !(context in [Terminology.simpleName, CodeSet.simpleName, 'merge'])) {
-            diff.appendList(TermRelationship, 'sourceTermRelationships', this.sourceTermRelationships, otherTerm.sourceTermRelationships)
-                .appendList(TermRelationship, 'targetTermRelationships', this.targetTermRelationships, otherTerm.targetTermRelationships)
+
+            if (!lhsDiffCache || !rhsDiffCache) {
+                diff.appendCollection(TermRelationship, 'sourceTermRelationships', this.sourceTermRelationships, otherTerm.sourceTermRelationships)
+                    .appendCollection(TermRelationship, 'targetTermRelationships', this.targetTermRelationships, otherTerm.targetTermRelationships)
+            } else {
+                diff.appendCollection(TermRelationship, 'sourceTermRelationships')
+                    .appendCollection(TermRelationship, 'targetTermRelationships')
+            }
         }
         diff
     }

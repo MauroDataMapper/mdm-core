@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 
 import grails.gorm.DetachedCriteria
@@ -37,9 +39,12 @@ class PrimitiveType extends DataType<PrimitiveType> {
     }
 
     ObjectDiff<PrimitiveType> diff(PrimitiveType otherDataType, String context) {
-        catalogueItemDiffBuilder(PrimitiveType, this, otherDataType)
-            .appendString('units', this.units, otherDataType.units)
+        diff(otherDataType, context, null, null)
+    }
 
+    ObjectDiff<PrimitiveType> diff(PrimitiveType otherDataType, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
+        DiffBuilder.catalogueItemDiffBuilder(PrimitiveType, this, otherDataType, lhsDiffCache, rhsDiffCache)
+            .appendString('units', this.units, otherDataType.units)
     }
 
     static DetachedCriteria<PrimitiveType> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
