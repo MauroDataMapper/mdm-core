@@ -1,3 +1,20 @@
+/*
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package uk.ac.ox.softeng.maurodatamapper.test.integration
 
 import uk.ac.ox.softeng.maurodatamapper.test.MdmSpecification
@@ -123,7 +140,7 @@ abstract class BaseUrlMappingsReportSpec extends MdmSpecification {
         boolean allDocumented = verifyAllUrlMappings(CheckingType.DOCUMENTED, urlMappingsHolder.getUrlMappings().toList())
 
         then:
-        Assert.assertTrue('All URLs are correctly documented. See logs and/or src/integration-test/resources/url-mappings for undocumented endpoints', allDocumented)
+        Assert.assertTrue('All URLs are correctly documented at https://documenter.getpostman.com/view/9840589/UVC8BkkA. See logs and/or src/integration-test/resources/url-mappings for undocumented endpoints', allDocumented)
     }
 
     private boolean verifyAllUrlMappings(CheckingType checkingType, List<UrlMapping> urlMappings) {
@@ -194,6 +211,7 @@ abstract class BaseUrlMappingsReportSpec extends MdmSpecification {
                     urlsMatch(it.url, urlPattern)
                 }
                 if (documentedUrl) {
+                    log.debug('[{}] documented as [{}]', urlPattern, documentedUrl.url)
                     foundDocumentedUrls << documentedUrl
                 } else {
                     notTrackedLines << line
@@ -316,9 +334,10 @@ abstract class BaseUrlMappingsReportSpec extends MdmSpecification {
         // Make the url /api/ for ease of reading when debugging
         // Replace all {{xxx}} with {{property_placeholder}} allowing for {{$randomXxx}} and {{xxx}}?
         // Remove all query params
-        url.replaceFirst(/\{\{base_url}}/, '/api')
-            .replaceAll(/\{\{\$?\w+}}\??/, '{{property_placeholder}}')
-            .replaceFirst(/\??(\w+=\w+&?)+/, '')
+        url.replaceFirst(/(\{\{base_url}}|http:\/\/localhost\/api)/, '/api')
+            .replaceFirst(/\?(\w+=\{{0,2}\w+}{0,2}&?)+/, '')
+            .replaceAll(/\{{2}\$?\w+}{2}\??/, '{{property_placeholder}}')
+
     }
 
     private List<DocumentedUrl> getApiDocumentedUrls() {

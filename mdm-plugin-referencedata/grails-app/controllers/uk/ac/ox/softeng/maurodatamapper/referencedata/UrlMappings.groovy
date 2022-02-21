@@ -82,11 +82,11 @@ class UrlMappings {
                  */
 
                 '/referenceDataElements'(resources: 'referenceDataElement', excludes: DEFAULT_EXCLUDES) {
-                    get "/suggestLinks/$otherDataModelId"(controller: 'dataElement', action: 'suggestLinks')
+                    get "/suggestLinks/$otherDataModelId"(controller: 'referenceDataElement', action: 'suggestLinks')
                 }
                 post "/referenceDataElements/$otherReferenceDataModelId/$referenceDataElementId"(controller: 'referenceDataElement', action: 'copyReferenceDataElement')
-                post '/search'(controller: 'dataElement', action: 'search')
-                get '/search'(controller: 'dataElement', action: 'search')
+                post '/search'(controller: 'referenceDataElement', action: 'search')
+                get '/search'(controller: 'referenceDataElement', action: 'search')
 
                 /**
                  * ReferenceDataTypes

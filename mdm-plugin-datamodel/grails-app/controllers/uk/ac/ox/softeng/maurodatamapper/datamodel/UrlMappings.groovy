@@ -153,11 +153,6 @@ class UrlMappings {
                 '/summaryMetadata'(resources: 'summaryMetadata', excludes: DEFAULT_EXCLUDES) {
                     '/summaryMetadataReports'(resources: 'summaryMetadataReport', excludes: DEFAULT_EXCLUDES)
                 }
-
-                /*
-            Model Imports
-             */
-                '/modelImports'(resources: 'modelImport', excludes: DEFAULT_EXCLUDES_AND_NO_UPDATE)
             }
         }
     }

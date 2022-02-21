@@ -15,8 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.security
-
+package uk.ac.ox.softeng.maurodatamapper.terminology
 
 import uk.ac.ox.softeng.maurodatamapper.test.integration.BaseUrlMappingsReportSpec
 
@@ -32,6 +31,6 @@ class UrlMappingsSpec extends BaseUrlMappingsReportSpec {
 
     @Override
     String getKnownControllerInPlugin() {
-        'catalogueUser'
+        'terminology'
     }
 }

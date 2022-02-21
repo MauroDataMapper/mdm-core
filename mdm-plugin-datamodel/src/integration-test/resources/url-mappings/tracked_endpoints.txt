@@ -90,10 +90,6 @@
 | DELETE | /api/dataModels/${dataModelId}/dataTypes/${dataTypeId}/enumerationValues/${id} | delete |
 | PUT    | /api/dataModels/${dataModelId}/dataTypes/${dataTypeId}/enumerationValues/${id} | update |
 | GET    | /api/dataModels/${dataModelId}/dataTypes/${dataTypeId}/enumerationValues/${id} | show |
-| POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/modelImports | save |
-| GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/modelImports | index |
-| DELETE | /api/${catalogueItemDomainType}/${catalogueItemId}/modelImports/${id} | delete |
-| GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/modelImports/${id} | show |
 | POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/summaryMetadata | save |
 | GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/summaryMetadata | index |
 | DELETE | /api/${catalogueItemDomainType}/${catalogueItemId}/summaryMetadata/${id} | delete |
@@ -104,3 +100,5 @@
 | DELETE | /api/${catalogueItemDomainType}/${catalogueItemId}/summaryMetadata/${summaryMetadataId}/summaryMetadataReports/${id} | delete |
 | PUT    | /api/${catalogueItemDomainType}/${catalogueItemId}/summaryMetadata/${summaryMetadataId}/summaryMetadataReports/${id} | update |
 | GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/summaryMetadata/${summaryMetadataId}/summaryMetadataReports/${id} | show |
+| GET    | /api/dataModels/${dataModelId}/intersects/${otherDataModelId} | intersects |
+| PUT    | /api/dataModels/${dataModelId}/subset/${otherDataModelId} | subset |
