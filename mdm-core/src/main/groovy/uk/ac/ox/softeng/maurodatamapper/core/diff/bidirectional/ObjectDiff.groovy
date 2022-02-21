@@ -26,6 +26,7 @@ import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.SimpleType
 import org.grails.datastore.gorm.GormEntity
 import org.grails.orm.hibernate.proxy.HibernateProxyHandler
+import org.springframework.cache.Cache
 
 import java.time.OffsetDateTime
 

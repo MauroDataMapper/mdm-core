@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.MergeDiffService
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ArrayDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.FieldDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
@@ -93,6 +94,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     MessageSource messageSource
     AuthorityService authorityService
     PathService pathService
+    MergeDiffService mergeDiffService
 
     @Autowired(required = false)
     Set<MdmDomainService> domainServices
@@ -740,14 +742,14 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         removeBranchNameDiff(caDiffSource)
         removeBranchNameDiff(caDiffTarget)
 
-        DiffBuilder
-            .mergeDiff(VersionedFolder)
-            .forMergingDiffable(sourceVersionedFolder)
-            .intoDiffable(targetVersionedFolder)
-            .havingCommonAncestor(commonAncestor)
-            .withCommonAncestorDiffedAgainstSource(caDiffSource)
-            .withCommonAncestorDiffedAgainstTarget(caDiffTarget)
-            .generate()
+        mergeDiffService.generateMergeDiff(DiffBuilder
+                                               .mergeDiff(VersionedFolder)
+                                               .forMergingDiffable(sourceVersionedFolder)
+                                               .intoDiffable(targetVersionedFolder)
+                                               .havingCommonAncestor(commonAncestor)
+                                               .withCommonAncestorDiffedAgainstSource(caDiffSource)
+                                               .withCommonAncestorDiffedAgainstTarget(caDiffTarget)
+        )
             .flatten()
             .clean {
                 Path diffPath = it.fullyQualifiedPath

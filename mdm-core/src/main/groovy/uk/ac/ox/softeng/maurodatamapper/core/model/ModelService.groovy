@@ -26,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.MergeDiffService
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.FieldDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.MergeDiff
@@ -103,6 +104,9 @@ abstract class ModelService<K extends Model>
 
     @Autowired
     PathService pathService
+
+    @Autowired
+    MergeDiffService mergeDiffService
 
     @Autowired
     MessageSource messageSource
@@ -813,14 +817,14 @@ abstract class ModelService<K extends Model>
         caDiffSource.diffs.removeIf(branchNamePredicate)
         caDiffTarget.diffs.removeIf(branchNamePredicate)
 
-        DiffBuilder
-            .mergeDiff(sourceModel.class as Class<K>)
-            .forMergingDiffable(sourceModel)
-            .intoDiffable(targetModel)
-            .havingCommonAncestor(commonAncestor)
-            .withCommonAncestorDiffedAgainstSource(caDiffSource)
-            .withCommonAncestorDiffedAgainstTarget(caDiffTarget)
-            .generate()
+        mergeDiffService.generateMergeDiff(DiffBuilder
+                                               .mergeDiff(sourceModel.class as Class<K>)
+                                               .forMergingDiffable(sourceModel)
+                                               .intoDiffable(targetModel)
+                                               .havingCommonAncestor(commonAncestor)
+                                               .withCommonAncestorDiffedAgainstSource(caDiffSource)
+                                               .withCommonAncestorDiffedAgainstTarget(caDiffTarget)
+        )
     }
 
     @Override
