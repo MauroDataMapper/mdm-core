@@ -25,7 +25,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
+import uk.ac.ox.softeng.maurodatamapper.core.diff.CachedDiffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.MergeDiffService
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.FieldDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
@@ -173,7 +175,9 @@ abstract class ModelService<K extends Model>
 
     abstract void updateModelItemPathsAfterFinalisationOfModel(K model)
 
-    List<K> findAllByFolderIdInList(Collection<UUID> folderIds){
+    abstract CachedDiffable<K> loadEntireModelIntoDiffCache(UUID modelId)
+
+    List<K> findAllByFolderIdInList(Collection<UUID> folderIds) {
         getDomainClass().byFolderIdInList(folderIds).list() as List<K>
     }
 
@@ -721,7 +725,9 @@ abstract class ModelService<K extends Model>
     }
 
     ObjectDiff<K> getDiffForModels(K thisModel, K otherModel) {
-        thisModel.diff(otherModel, 'none')
+        CachedDiffable<K> thisCachedDiffable = loadEntireModelIntoDiffCache(thisModel.id)
+        CachedDiffable<K> otherCachedDiffable = loadEntireModelIntoDiffCache(otherModel.id)
+        thisCachedDiffable.diff(otherCachedDiffable, 'none')
     }
 
     K findCommonAncestorBetweenModels(K leftModel, K rightModel) {
@@ -806,8 +812,12 @@ abstract class ModelService<K extends Model>
     MergeDiff<K> getMergeDiffForModels(K sourceModel, K targetModel) {
         K commonAncestor = findCommonAncestorBetweenModels(sourceModel, targetModel)
 
-        ObjectDiff<K> caDiffSource = getDiffForModels(commonAncestor, sourceModel)
-        ObjectDiff<K> caDiffTarget = getDiffForModels(commonAncestor, targetModel)
+        CachedDiffable<K> sourceCachedDiffable = loadEntireModelIntoDiffCache(sourceModel.id)
+        CachedDiffable<K> targetCachedDiffable = loadEntireModelIntoDiffCache(targetModel.id)
+        CachedDiffable<K> caCachedDiffable = loadEntireModelIntoDiffCache(commonAncestor.id)
+
+        ObjectDiff<K> caDiffSource = caCachedDiffable.diff(sourceCachedDiffable, 'none')
+        ObjectDiff<K> caDiffTarget = caCachedDiffable.diff(targetCachedDiffable, 'none')
 
         // Remove the branchname as  diff as we know its a diff and for merging we dont want it
         Predicate branchNamePredicate = [test: {FieldDiff fieldDiff ->

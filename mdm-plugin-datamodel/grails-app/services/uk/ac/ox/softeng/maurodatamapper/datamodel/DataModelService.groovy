@@ -23,6 +23,9 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedExcept
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.CachedDiffable
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
+import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
@@ -1181,5 +1184,74 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         }
 
         intersection
+    }
+
+    @Override
+    CachedDiffable<DataModel> loadEntireModelIntoDiffCache(UUID modelId) {
+        long start = System.currentTimeMillis()
+        DataModel loadedModel = get(modelId)
+        log.debug('Loading entire model [{}] into memory', loadedModel.path)
+
+        // Load direct content
+
+        log.trace('Loading DataType')
+        List<DataType> dataTypes = dataTypeService.findAllByDataModelId(loadedModel.id)
+
+        log.trace('Loading EnumerationValue')
+        List<EnumerationValue> enumerationValues = enumerationValueService.findAllByDataModelId(modelId)
+        Map<UUID, List<EnumerationValue>> enumerationValuesMap = enumerationValues.groupBy {it.enumerationType.id}
+
+        log.trace('Loading DataClass')
+        List<DataClass> dataClasses = dataClassService.findAllByDataModelId(loadedModel.id)
+        Map<UUID, List<DataClass>> dataClassesMap = dataClasses.groupBy {it.parentDataClass?.id}
+
+
+        log.trace('Loading DataElement')
+        List<DataElement> dataElements = dataElementService.findAllByDataModelId(loadedModel.id)
+        Map<UUID, List<DataElement>> dataElementsMap = dataElements.groupBy {it.dataClass.id}
+
+        log.trace('Loading Facets')
+        List<UUID> allIds = Utils.gatherIds(Collections.singleton(modelId),
+                                            dataClasses.collect {it.id},
+                                            dataElements.collect {it.id},
+                                            dataTypes.collect {it.id},
+                                            enumerationValues.collect {it.id})
+        Map<String, Map<UUID, List<Diffable>>> facetData = loadAllDiffableFacetsIntoMemoryByIds(allIds)
+
+        DiffCache diffCache = createCatalogueItemDiffCache(null, loadedModel, facetData)
+        createDataTypeDiffCaches(diffCache, dataTypes, enumerationValuesMap, facetData)
+        createDataClassDiffCaches(diffCache, dataClassesMap, dataElementsMap, facetData, null)
+
+        log.debug('Model loaded into memory, took {}', Utils.timeTaken(start))
+        new CachedDiffable(loadedModel, diffCache)
+    }
+
+    private void createDataClassDiffCaches(DiffCache diffCache, Map<UUID, List<DataClass>> dataClassesMap, Map<UUID, List<DataElement>> dataElementsMap,
+                                           Map<String, Map<UUID, List<Diffable>>> facetData, UUID dataClassId) {
+
+        List<DataClass> dataClasses = dataClassesMap[dataClassId]
+        diffCache.addField('dataClasses', dataClasses)
+
+        // Allow for the root addition where the dataClassId is null so we're adding to the DM diffCache
+        if (dataClassId) {
+            addFacetDataToDiffCache(diffCache, facetData, dataClassId)
+            createCatalogueItemDiffCaches(diffCache, 'dataElements', dataElementsMap[dataClassId], facetData)
+        }
+
+        dataClasses.each {dc ->
+            DiffCache dcDiffCache = createCatalogueItemDiffCache(diffCache, dc, facetData)
+            createDataClassDiffCaches(dcDiffCache, dataClassesMap, dataElementsMap, facetData, dc.id)
+        }
+    }
+
+    private void createDataTypeDiffCaches(DiffCache diffCache, List<DataType> dataTypes, Map<UUID, List<EnumerationValue>> enumerationValuesMap,
+                                          Map<String, Map<UUID, List<Diffable>>> facetData) {
+        diffCache.addField('dataTypes', dataTypes)
+        dataTypes.each {dt ->
+            DiffCache dtDiffCache = createCatalogueItemDiffCache(diffCache, dt, facetData)
+            if (dt.instanceOf(EnumerationType)) {
+                createCatalogueItemDiffCaches(dtDiffCache, 'enumerationValues', enumerationValuesMap[dt.id], facetData)
+            }
+        }
     }
 }

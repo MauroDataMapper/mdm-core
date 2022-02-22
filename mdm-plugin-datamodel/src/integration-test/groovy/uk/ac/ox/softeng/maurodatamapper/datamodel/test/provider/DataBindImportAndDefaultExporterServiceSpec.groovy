@@ -249,7 +249,7 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
 
         when:
         imported.folder = testFolder
-        ObjectDiff diff = dataModelService.getDiffForModels(dataModelService.get(complexDataModelId), imported)
+        ObjectDiff diff = dataModelService.get(complexDataModelId).diff(imported, 'none')
 
         then:
         if (!diff.objectsAreIdentical()) {

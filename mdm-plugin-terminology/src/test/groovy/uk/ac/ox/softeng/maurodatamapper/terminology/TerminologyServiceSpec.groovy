@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
+import uk.ac.ox.softeng.maurodatamapper.core.diff.MergeDiffService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
@@ -46,6 +47,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
     def setup() {
         log.debug('Setting up TerminologyServiceSpec unit')
+        mockArtefact(MergeDiffService)
         mockArtefact(TermService)
         mockArtefact(BreadcrumbTreeService)
         mockArtefact(TermRelationshipService)

@@ -191,4 +191,8 @@ class ReferenceEnumerationValue implements ModelItem<ReferenceEnumerationValue, 
             }
         }
     }
+
+    static DetachedCriteria<ReferenceEnumerationValue> byReferenceDataModelId(Serializable dataModelId) {
+        new DetachedCriteria<ReferenceEnumerationValue>(ReferenceEnumerationValue).in('referenceEnumerationType', ReferenceEnumerationType.byReferenceDataModelId(dataModelId).id())
+    }
 }

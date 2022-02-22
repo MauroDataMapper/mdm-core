@@ -24,6 +24,9 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedExcept
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.CachedDiffable
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
+import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -503,5 +506,29 @@ class CodeSetService extends ModelService<CodeSet> {
             }
         }
         save(copiedModel, flush: false, validate: false)
+    }
+
+    @Override
+    CachedDiffable<CodeSet> loadEntireModelIntoDiffCache(UUID modelId) {
+        long start = System.currentTimeMillis()
+        CodeSet loadedModel = get(modelId)
+        log.debug('Loading entire model [{}] into memory', loadedModel.path)
+
+        // Load direct content
+
+        log.trace('Loading Term')
+        List<Term> terms = termService.findAllByCodeSetId(modelId)
+
+        log.trace('Loading Facets')
+        List<UUID> allIds = Utils.gatherIds(Collections.singleton(modelId),
+                                            terms.collect {it.id})
+
+        Map<String, Map<UUID, List<Diffable>>> facetData = loadAllDiffableFacetsIntoMemoryByIds(allIds)
+
+        DiffCache diffCache = createCatalogueItemDiffCache(null, loadedModel, facetData)
+        createCatalogueItemDiffCaches(diffCache, 'terms', terms, facetData)
+
+        log.debug('Model loaded into memory, took {}', Utils.timeTaken(start))
+        new CachedDiffable(loadedModel, diffCache)
     }
 }

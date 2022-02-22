@@ -1,3 +1,20 @@
+/*
+ * Copyright 2020-2022 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package uk.ac.ox.softeng.maurodatamapper.core.diff
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
@@ -14,7 +31,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.unidirectional.DeletionDiff
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 
-import grails.compiler.GrailsCompileStatic
 import grails.gorm.transactions.Transactional
 import groovy.transform.CompileDynamic
 import groovy.util.logging.Slf4j
@@ -73,7 +89,9 @@ class MergeDiffService {
                     case ArrayDiff.simpleName:
                         mergeDiffToGenerate.append createArrayMergeDiffPresentOnBothSides(mergeDiffToGenerate.fullyQualifiedPath,
                                                                                           caSourceFieldDiff as ArrayDiff,
-                                                                                          caTargetFieldDiff as ArrayDiff)
+                                                                                          caTargetFieldDiff as ArrayDiff,
+                                                                                          mergeDiffToGenerate.getSourceDiffCache(),
+                                                                                          mergeDiffToGenerate.getTargetDiffCache())
                         break
                     case FieldDiff.simpleName:
                         mergeDiffToGenerate.append createFieldMergeDiffPresentOnBothSides(mergeDiffToGenerate.fullyQualifiedPath, caSourceFieldDiff, caTargetFieldDiff)
@@ -185,13 +203,16 @@ class MergeDiffService {
 
     def <A extends Diffable> ArrayMergeDiff<A> createArrayMergeDiffPresentOnBothSides(Path fullyQualifiedObjectPath,
                                                                                       ArrayDiff<A> caSourceArrayDiff,
-                                                                                      ArrayDiff<A> caTargetArrayDiff) {
+                                                                                      ArrayDiff<A> caTargetArrayDiff,
+                                                                                      DiffCache sourceDiffCache,
+                                                                                      DiffCache targetDiffCache) {
         log.debug('[{}] Processing array differences against common ancestor on both sides inside [{}]', caSourceArrayDiff.fieldName, fullyQualifiedObjectPath)
         createBaseArrayMergeDiffPresentOnOneSide(fullyQualifiedObjectPath, caSourceArrayDiff)
             .withTarget(caTargetArrayDiff.right)
             .withCreatedMergeDiffs(createCreationMergeDiffsPresentOnBothSides(fullyQualifiedObjectPath, caSourceArrayDiff, caTargetArrayDiff))
             .withDeletedMergeDiffs(createDeletionMergeDiffsPresentOnBothSides(fullyQualifiedObjectPath, caSourceArrayDiff.deleted, caTargetArrayDiff))
-            .withModifiedMergeDiffs(createModifiedMergeDiffsPresentOnBothSides(fullyQualifiedObjectPath, caSourceArrayDiff, caTargetArrayDiff))
+            .withModifiedMergeDiffs(
+                createModifiedMergeDiffsPresentOnBothSides(fullyQualifiedObjectPath, caSourceArrayDiff, caTargetArrayDiff, sourceDiffCache, targetDiffCache))
             .getValidOnly()
     }
 
@@ -369,7 +390,9 @@ class MergeDiffService {
 
     def <M extends Diffable> Collection<MergeDiff<M>> createModifiedMergeDiffsPresentOnBothSides(Path fullyQualifiedObjectPath,
                                                                                                  ArrayDiff<M> caSourceDiff,
-                                                                                                 ArrayDiff<M> caTargetDiff) {
+                                                                                                 ArrayDiff<M> caTargetDiff,
+                                                                                                 DiffCache sourceDiffCache,
+                                                                                                 DiffCache targetDiffCache) {
 
         Collection<MergeDiff<M>> modifiedDiffs = caSourceDiff.modified.collect {caSourceModifiedDiff ->
             ObjectDiff<M> caTargetModifiedDiff = caTargetDiff.modified.find {it.leftIdentifier == caSourceModifiedDiff.leftIdentifier}
@@ -412,7 +435,11 @@ class MergeDiffService {
                 log.debug('[{}] ca/source created exists in ca/target created. This is a potential merge modification', caSourceCreationDiff.createdIdentifier)
 
                 // Get the diff of the 2 objects, we need to determine if theres actually a merge conflict
-                ObjectDiff<M> sourceTargetDiff = getMergeContextDiffForCreatedItems(caSourceCreationDiff.created, caTargetCreationDiff.created)
+                M sourceCreated = caSourceCreationDiff.created
+                M targetCreated = caTargetCreationDiff.created
+                DiffCache sourceCache = sourceDiffCache.getDiffCache(sourceCreated.getPath())
+                DiffCache targetCache = targetDiffCache.getDiffCache(targetCreated.getPath())
+                ObjectDiff<M> sourceTargetDiff = getMergeContextDiffForCreatedItems(sourceCreated, targetCreated, sourceCache, targetCache)
                 // If objects are identical then theres no merge difference so it can be ignored
                 if (sourceTargetDiff.objectsAreIdentical()) {
                     log.debug('Both sides created but the creations are identical')
@@ -434,12 +461,12 @@ class MergeDiffService {
     }
 
     @CompileDynamic
-    def <M extends Diffable> ObjectDiff<M> getMergeContextDiffForCreatedItems(M caSourceCreated, M caTargetCreated) {
+    def <M extends Diffable> ObjectDiff<M> getMergeContextDiffForCreatedItems(M sourceCreated, M targetCreated, DiffCache sourceDiffCache, DiffCache targetDiffCache) {
         try {
-            return caSourceCreated.diff(caTargetCreated, 'merge')
+            return sourceCreated.diff(targetCreated, 'merge', sourceDiffCache, targetDiffCache)
         } catch (LazyInitializationException ignored) {
-            MdmDomainService service = findMdmDomainServiceService(caSourceCreated.domainType)
-            return getMergeContextDiffForCreatedItems(service.get(caSourceCreated.id), service.get(caTargetCreated.id)) as ObjectDiff<M>
+            MdmDomainService service = findMdmDomainServiceService(sourceCreated.domainType)
+            return getMergeContextDiffForCreatedItems(service.get(sourceCreated.id), service.get(targetCreated.id), sourceDiffCache, targetDiffCache) as ObjectDiff<M>
         }
 
     }

@@ -19,6 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.core.model
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
+import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
@@ -31,11 +33,13 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
@@ -52,9 +56,6 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomai
     SemanticLinkService semanticLinkService
     AnnotationService annotationService
     ReferenceFileService referenceFileService
-
-    @Autowired(required = false)
-    Set<MultiFacetItemAwareService> multiFacetItemAwareServices
 
     Class<K> getMultiFacetAwareClass() {
         getDomainClass()
@@ -350,11 +351,19 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomai
         findByParentIdAndLabel(parentId, pathIdentifier)
     }
 
-    void loadAllFacetsIntoMemoryByIds(List<UUID> multiFacetAwareItemIds) {
-        if (!multiFacetAwareItemIds) return
-        multiFacetItemAwareServices.each {
-            log.debug('Loading facet type {} for {} ids', it.getDomainClass().simpleName, multiFacetAwareItemIds.size())
-            it.findAllByMultiFacetAwareItemIdInList(multiFacetAwareItemIds)
+    void createCatalogueItemDiffCaches(DiffCache diffCache, String field, List<CatalogueItem> catalogueItems,
+                                       Map<String, Map<UUID, List<Diffable>>> facetData) {
+        catalogueItems.each {ci ->
+            createCatalogueItemDiffCache(diffCache, ci, facetData)
         }
+        diffCache.addField(field, catalogueItems)
+    }
+
+    DiffCache createCatalogueItemDiffCache(DiffCache parentCache, CatalogueItem catalogueItem,
+                                           Map<String, Map<UUID, List<Diffable>>> facetData) {
+        DiffCache ciDiffCache = new DiffCache()
+        addFacetDataToDiffCache(ciDiffCache, facetData, catalogueItem.id)
+        if(parentCache) parentCache.addDiffCache(catalogueItem.path, ciDiffCache)
+        ciDiffCache
     }
 }

@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
+import uk.ac.ox.softeng.maurodatamapper.core.diff.MergeDiffService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
@@ -49,6 +50,7 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
 
     def setup() {
         log.debug('Setting up ReferenceDataModelServiceSpec unit')
+        mockArtefact(MergeDiffService)
         mockArtefact(BreadcrumbTreeService)
         mockArtefact(ReferenceDataElementService)
         mockArtefact(ReferenceDataTypeService)

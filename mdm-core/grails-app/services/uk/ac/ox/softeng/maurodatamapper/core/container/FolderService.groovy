@@ -21,7 +21,10 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.api.exception.ApiDiffException
+import uk.ac.ox.softeng.maurodatamapper.core.diff.CachedDiffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
+import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ArrayDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
@@ -595,11 +598,11 @@ class FolderService extends ContainerService<Folder> {
                 created.remove(rObj)
 
                 ModelService modelService = modelServices.find {it.handles(lObj.getClass())}
-                Model lObjToDiff = modelService.get(lObj.id)
-                Model rObjToDiff = modelService.get(rObj.id)
+                CachedDiffable<Model> lObjCachedDiffable = modelService.loadEntireModelIntoDiffCache(lObj.id)
+                CachedDiffable<Model> rObjCachedDiffable = modelService.loadEntireModelIntoDiffCache(rObj.id)
 
                 long start = System.currentTimeMillis()
-                ObjectDiff od = lObjToDiff.diff(rObjToDiff, context)
+                ObjectDiff od = lObjCachedDiffable.diff(rObjCachedDiffable, context)
 
                 sessionFactory.currentSession.clear()
 
@@ -621,6 +624,26 @@ class FolderService extends ContainerService<Folder> {
                                   .deletedObjects(deleted)
                                   .withModifiedDiffs(modified))
         }
+    }
 
+    void createFolderDiffCaches(DiffCache diffCache, Map<UUID, List<Folder>> foldersMap,
+                                Map<String, Map<UUID, List<Diffable>>> facetData, UUID folderId) {
+
+        List<Folder> folders = foldersMap[folderId]
+        diffCache.addField('folders', folders)
+
+        folders.each {f ->
+            DiffCache fDiffCache = createFolderDiffCache(diffCache, f, facetData)
+            createFolderDiffCaches(fDiffCache, foldersMap, facetData, f.id)
+            diffCache.addDiffCache(f.path, fDiffCache)
+        }
+    }
+
+    DiffCache createFolderDiffCache(DiffCache parentCache, Folder folder,
+                                    Map<String, Map<UUID, List<Diffable>>> facetData) {
+        DiffCache fDiffCache = new DiffCache()
+        addFacetDataToDiffCache(fDiffCache, facetData, folder.id)
+        if (parentCache) parentCache.addDiffCache(folder.path, fDiffCache)
+        fDiffCache
     }
 }

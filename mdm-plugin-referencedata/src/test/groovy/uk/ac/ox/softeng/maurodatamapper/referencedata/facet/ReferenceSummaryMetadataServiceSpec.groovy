@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
+import uk.ac.ox.softeng.maurodatamapper.core.diff.MergeDiffService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
@@ -51,6 +52,7 @@ class ReferenceSummaryMetadataServiceSpec extends MultiFacetItemAwareServiceSpec
     ReferenceDataModel referenceDataModel
 
     def setup() {
+        mockArtefact(MergeDiffService)
         mockArtefact(BreadcrumbTreeService)
         mockArtefact(ClassifierService)
         mockArtefact(VersionLinkService)

@@ -21,7 +21,10 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
+import uk.ac.ox.softeng.maurodatamapper.core.diff.CachedDiffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
+import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.MergeDiffService
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ArrayDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.FieldDiff
@@ -708,22 +711,31 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     ObjectDiff<VersionedFolder> getDiffForVersionedFolders(VersionedFolder thisVersionedFolder, VersionedFolder otherVersionedFolder, String contentContext = 'none') {
         log.debug('Obtaining diff for {} <> {}', thisVersionedFolder.diffIdentifier, otherVersionedFolder.diffIdentifier)
 
-        // Protect against session clearing
-        VersionedFolder thisToDiff = get(thisVersionedFolder.id)
-        VersionedFolder otherToDiff = get(otherVersionedFolder.id)
+        CachedDiffable<VersionedFolder> thisCachedDiffable = loadEntireVersionedFolderIntoDiffCache(thisVersionedFolder.id)
+        CachedDiffable<VersionedFolder> otherCachedDiffable = loadEntireVersionedFolderIntoDiffCache(otherVersionedFolder.id)
+        getDiffForVersionedFolders(thisCachedDiffable, otherCachedDiffable, contentContext)
+    }
 
-        ObjectDiff<VersionedFolder> coreDiff = thisToDiff.diff(otherToDiff, 'none')
-        folderService.loadModelsIntoFolderObjectDiff(coreDiff, thisToDiff, otherToDiff, contentContext)
+    ObjectDiff<VersionedFolder> getDiffForVersionedFolders( CachedDiffable<VersionedFolder> thisCachedDiffable, CachedDiffable<VersionedFolder> otherCachedDiffable,
+                                                            String contentContext = 'none') {
+        ObjectDiff<VersionedFolder> coreDiff =  thisCachedDiffable.diff(otherCachedDiffable, 'none')
+        folderService.loadModelsIntoFolderObjectDiff(coreDiff, thisCachedDiffable.diffable, otherCachedDiffable.diffable, contentContext)
         coreDiff
     }
 
     @Transactional(readOnly = true)
     MergeDiff<VersionedFolder> getMergeDiffForVersionedFolders(VersionedFolder sourceVersionedFolder, VersionedFolder targetVersionedFolder) {
+        log.debug('Generate mergediff source {} to target {}', sourceVersionedFolder.path, targetVersionedFolder.path)
+        long start = System.currentTimeMillis()
         VersionedFolder commonAncestor = findCommonAncestorBetweenModels(sourceVersionedFolder, targetVersionedFolder)
 
         String caModelIdentifier = commonAncestor.modelVersion ?: commonAncestor.branchName
         String sourceModelIdentifier = sourceVersionedFolder.modelVersion ?: sourceVersionedFolder.branchName
         String targetModelIdentifier = targetVersionedFolder.modelVersion ?: targetVersionedFolder.branchName
+
+        CachedDiffable<VersionedFolder> sourceCachedDiffable = loadEntireVersionedFolderIntoDiffCache(sourceVersionedFolder.id)
+        CachedDiffable<VersionedFolder> targetCachedDiffable = loadEntireVersionedFolderIntoDiffCache(targetVersionedFolder.id)
+        CachedDiffable<VersionedFolder> caCachedDiffable = loadEntireVersionedFolderIntoDiffCache(commonAncestor.id)
 
         /*
         Context is needed to allow CodeSet term comparisons
@@ -736,13 +748,13 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         This context solution will handle that issue as only finalised Terminologies can be used for CS outside of a VF which means a comparsion of 1.0.0|source of a VF
         which uses a 1.0.0|2.0.0 external T the terms will still be correctly identified.
          */
-        ObjectDiff<VersionedFolder> caDiffSource = getDiffForVersionedFolders(commonAncestor, sourceVersionedFolder, "${caModelIdentifier}|${sourceModelIdentifier}")
-        ObjectDiff<VersionedFolder> caDiffTarget = getDiffForVersionedFolders(commonAncestor, targetVersionedFolder, "${caModelIdentifier}|${targetModelIdentifier}")
+        ObjectDiff<VersionedFolder> caDiffSource = getDiffForVersionedFolders(caCachedDiffable, sourceCachedDiffable, "${caModelIdentifier}|${sourceModelIdentifier}")
+        ObjectDiff<VersionedFolder> caDiffTarget = getDiffForVersionedFolders(caCachedDiffable, targetCachedDiffable, "${caModelIdentifier}|${targetModelIdentifier}")
 
         removeBranchNameDiff(caDiffSource)
         removeBranchNameDiff(caDiffTarget)
 
-        mergeDiffService.generateMergeDiff(DiffBuilder
+      MergeDiff<VersionedFolder> mergeDiff =  mergeDiffService.generateMergeDiff(DiffBuilder
                                                .mergeDiff(VersionedFolder)
                                                .forMergingDiffable(sourceVersionedFolder)
                                                .intoDiffable(targetVersionedFolder)
@@ -758,6 +770,8 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
                 // TODO come up with an agnostic way of doing this
                 lastNode.isPropertyNode() && lastNode.prefix == 'tm' && diffPath.any {it.prefix == 'cs'}
             }
+        log.debug('MergeDiff completed, took {}', Utils.timeTaken(start))
+        mergeDiff
     }
 
     void removeBranchNameDiff(ObjectDiff diff) {
@@ -1094,5 +1108,36 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     @Override
     boolean isMultiFacetAwareFinalised(VersionedFolder multiFacetAwareItem) {
         multiFacetAwareItem.finalised
+    }
+
+    CachedDiffable<VersionedFolder> loadEntireVersionedFolderIntoDiffCache(UUID folderId) {
+        long start = System.currentTimeMillis()
+        VersionedFolder loadedFolder = get(folderId)
+        log.debug('Loading entire folder [{}] into memory', loadedFolder.path)
+
+        // Load direct content
+
+        log.trace('Loading Folder')
+        List<Folder> folders = getAllFoldersInside(loadedFolder)
+        Map<UUID,List<Folder>> foldersMap = folders.groupBy{it.parentFolder.id}
+
+        log.trace('Loading Facets')
+        List<UUID> allIds = Utils.gatherIds(Collections.singleton(folderId),
+                                            folders.collect {it.id})
+
+        Map<String, Map<UUID, List<Diffable>>> facetData = loadAllDiffableFacetsIntoMemoryByIds(allIds)
+
+        DiffCache diffCache = folderService.createFolderDiffCache(null, loadedFolder, facetData)
+        folderService.createFolderDiffCaches(diffCache,  foldersMap, facetData, folderId)
+
+        log.debug('Folder loaded into memory, took {}', Utils.timeTaken(start))
+        new CachedDiffable(loadedFolder, diffCache)
+    }
+
+    private List<Folder> getAllFoldersInside(Folder folder){
+        List<Folder> folders = []
+        folders.addAll(folder.childFolders)
+        folders.addAll(folder.childFolders.collectMany {getAllFoldersInside(it)})
+        folders
     }
 }
