@@ -178,8 +178,9 @@ class TreeItemService {
         List<TreeItem> treeItems = []
         treeItems.addAll(directTree)
         treeItems.addAll(directReadableModels)
+        List<TreeItem> sortedTree = treeItems.sort()
         log.debug('Direct children Container tree build took: {}', Utils.timeTaken(start))
-        treeItems
+        sortedTree
     }
 
     /**

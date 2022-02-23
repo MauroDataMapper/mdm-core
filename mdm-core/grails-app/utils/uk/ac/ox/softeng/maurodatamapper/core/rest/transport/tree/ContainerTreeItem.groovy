@@ -73,4 +73,15 @@ class ContainerTreeItem extends TreeItem {
     Set<ContainerTreeItem> findAllChildContainerTrees() {
         findAll {it instanceof ContainerTreeItem} as Set<ContainerTreeItem>
     }
+
+    @Override
+    int compareTo(TreeItem that) {
+        def res = super.compareTo(that)
+        if (that instanceof ContainerTreeItem && this.domainType == VersionedFolder.simpleName && that.domainType == VersionedFolder.simpleName) {
+            if (res == 0) res = this.documentationVersion <=> that.documentationVersion
+            if (res == 0) res = this.modelVersion <=> that.modelVersion
+            if (res == 0) res = this.branchName <=> that.branchName
+        }
+        res
+    }
 }
