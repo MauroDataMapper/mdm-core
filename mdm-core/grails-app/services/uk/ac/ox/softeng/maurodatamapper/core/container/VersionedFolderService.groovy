@@ -826,23 +826,12 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     List<FieldPatchData> getSortedFieldPatchDataForMerging(ObjectPatchData objectPatchData) {
         /*
-          We can process modifications in any order
+          We have to process modifications in after everything else incase the modifications require something to have been created
           Process creations before deletions, that way any deletions will automatically take care of any links to potentially created objects
            */
         objectPatchData.patches.sort {l, r ->
-            switch (l.type) {
-                case 'modification':
-                    if (r.type == 'modification') return 0
-                    else return -1
-                case 'creation':
-                    if (r.type == 'modification') return 1
-                    if (r.type == 'deletion') return -1
-                    return getSortResultForFieldPatchPath(l.path, r.path)
-                case 'deletion':
-                    if (r.type == 'modification') return 1
-                    if (r.type == 'creation') return 1
-                    return getSortResultForFieldPatchPath(l.path, r.path)
-            }
+            if (l.type == r.type) return getSortResultForFieldPatchPath(l.path, r.path)
+            l <=> r
         }
     }
 
