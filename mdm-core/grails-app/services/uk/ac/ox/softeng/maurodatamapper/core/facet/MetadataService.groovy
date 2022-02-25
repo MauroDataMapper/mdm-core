@@ -25,7 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProv
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.facet.NamespaceKeys
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
-import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
+import uk.ac.ox.softeng.maurodatamapper.gorm.InMemoryPagedResultList
 import uk.ac.ox.softeng.maurodatamapper.provider.MauroDataMapperService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -195,7 +195,7 @@ class MetadataService implements MultiFacetItemAwareService<Metadata> {
                 returnResult.addAll(containerService.findAllByMetadataNamespace(namespace))
             }
         }
-        return new PaginatedResultList<MetadataAware>(returnResult, pagination)
+        return new InMemoryPagedResultList<MetadataAware>(returnResult, pagination)
     }
 
 

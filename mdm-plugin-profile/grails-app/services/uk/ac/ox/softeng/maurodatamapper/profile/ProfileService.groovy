@@ -27,7 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
-import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
+import uk.ac.ox.softeng.maurodatamapper.gorm.InMemoryPagedResultList
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.DynamicJsonProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
@@ -119,10 +119,10 @@ class ProfileService implements DataBinder {
         return validModels
     }
 
-    PaginatedResultList<Profile> getModelsWithProfile(ProfileProviderService profileProviderService,
-                                                      UserSecurityPolicyManager userSecurityPolicyManager,
-                                                      String domainType,
-                                                      Map pagination = [:]) {
+    InMemoryPagedResultList<Profile> getModelsWithProfile(ProfileProviderService profileProviderService,
+                                                          UserSecurityPolicyManager userSecurityPolicyManager,
+                                                          String domainType,
+                                                          Map pagination = [:]) {
 
         List<Model> models = getAllModelsWithProfile(profileProviderService, userSecurityPolicyManager, domainType)
 
@@ -130,7 +130,7 @@ class ProfileService implements DataBinder {
         profiles.addAll(models.collect {model ->
             profileProviderService.createProfileFromEntity(model)
         })
-        new PaginatedResultList<>(profiles, pagination)
+        new InMemoryPagedResultList<>(profiles, pagination)
     }
 
     MultiFacetAwareService findServiceForMultiFacetAwareDomainType(String domainType) {
