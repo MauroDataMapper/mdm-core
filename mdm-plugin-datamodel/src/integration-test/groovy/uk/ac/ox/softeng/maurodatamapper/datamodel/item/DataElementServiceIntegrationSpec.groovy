@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.BaseDataModelIntegrationSpec
+import uk.ac.ox.softeng.maurodatamapper.gorm.HQLPagedResultList
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 import grails.gorm.transactions.Rollback
@@ -138,7 +139,7 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         expect:
         dataElementService.count() == 5
-        BreadcrumbTree.findByDomainType('DataElement').any { it.domainId == id }
+        BreadcrumbTree.findByDomainType('DataElement').any {it.domainId == id}
 
         when:
         dataElementService.delete(id)
@@ -146,7 +147,7 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         dataElementService.count() == 4
-        BreadcrumbTree.findByDomainType('DataElement').every { it.domainId != id }
+        BreadcrumbTree.findByDomainType('DataElement').every {it.domainId != id}
     }
 
     void 'test findByDataClassIdAndId'() {
@@ -313,8 +314,8 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         copy.maxMultiplicity == original.maxMultiplicity
 
         and:
-        copy.metadata.every { md ->
-            original.metadata.any { md.namespace == it.namespace && md.key == it.key && md.value == it.value }
+        copy.metadata.every {md ->
+            original.metadata.any {md.namespace == it.namespace && md.key == it.key && md.value == it.value}
         }
 
         and:
@@ -383,5 +384,222 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         result.first().item.label == 'ele1'
         result.first().item.id != elementId
         result.first().score > 0
+    }
+
+    void 'LIST01 : test getting all DataElements with importing involved'() {
+        // This addresses the issue gh-226 where we were getting the correct data for DC with no imported DEs and a DC with only imported DEs but incorrect
+        // when a DCs DEs were imported into other DEs. The join was causing non-distinct results.
+        given:
+        setupData()
+        Map<String, UUID> dataClassIds = buildImportingStructure()
+        Map<String, Object> pagination = [max: 2, offset: 1]
+
+        when:
+        HQLPagedResultList<DataElement> result = dataElementService.findAllByDataClassIdIncludingImported(dataClassIds.standalone, [:], pagination)
+
+        then:
+        result.size() == 2
+        result.getTotalCount() == 10
+        result[0].label == 'Standalone DE 1'
+        result[1].label == 'Standalone DE 2'
+
+        when:
+        result = dataElementService.findAllByDataClassIdIncludingImported(dataClassIds.providing, [:], pagination)
+
+        then:
+        result.size() == 2
+        result.getTotalCount() == 10
+        result[0].label == 'Providing DE 1'
+        result[1].label == 'Providing DE 2'
+
+        when:
+        result = dataElementService.findAllByDataClassIdIncludingImported(dataClassIds.providingAndImporting, [:], pagination)
+
+        then:
+        result.size() == 2
+        result.getTotalCount() == 15
+        result[0].label == 'Providing DE 3'
+        result[1].label == 'Providing DE 4'
+
+        when:
+        result = dataElementService.findAllByDataClassIdIncludingImported(dataClassIds.importingOneLocation, [:], pagination)
+
+        then:
+        result.size() == 2
+        result.getTotalCount() == 5
+        result[0].label == 'Providing DE 3'
+        result[1].label == 'Providing DE 4'
+
+        when:
+        result = dataElementService.findAllByDataClassIdIncludingImported(dataClassIds.importingTwoLocations, [:], pagination)
+
+        then:
+        result.size() == 2
+        result.getTotalCount() == 10
+        result[0].label == 'Providing DE 3'
+        result[1].label == 'Providing DE 4'
+    }
+
+    void 'LIST02 : test getting all DataElements with importing involved with label filtering'() {
+        // This addresses the issue gh-226 where we were getting the correct data for DC with no imported DEs and a DC with only imported DEs but incorrect
+        // when a DCs DEs were imported into other DEs. The join was causing non-distinct results.
+        given:
+        setupData()
+        Map<String, UUID> dataClassIds = buildImportingStructure()
+        Map<String, Object> pagination = [max: 2, offset: 0]
+        Map<String, Object> filter = [label: '6']
+
+        when:
+        HQLPagedResultList<DataElement> result = dataElementService.findAllByDataClassIdIncludingImported(dataClassIds.standalone, filter, pagination)
+
+        then:
+        result.size() == 1
+        result.getTotalCount() == 1
+        result[0].label == 'Standalone DE 6'
+
+        when:
+        result = dataElementService.findAllByDataClassIdIncludingImported(dataClassIds.providing, filter, pagination)
+
+        then:
+        result.size() == 1
+        result.getTotalCount() == 1
+        result[0].label == 'Providing DE 6'
+
+        when:
+        result = dataElementService.findAllByDataClassIdIncludingImported(dataClassIds.providingAndImporting, filter, pagination)
+
+        then:
+        result.size() == 2
+        result.getTotalCount() == 2
+        result[0].label == 'Providing DE 6'
+        result[1].label == 'ProvidingImporting DE 6'
+
+        when:
+        result = dataElementService.findAllByDataClassIdIncludingImported(dataClassIds.importingOneLocation, filter, pagination)
+
+        then:
+        result.size() == 1
+        result.getTotalCount() == 1
+        result[0].label == 'Providing DE 6'
+
+        when:
+        result = dataElementService.findAllByDataClassIdIncludingImported(dataClassIds.importingTwoLocations, filter, pagination)
+
+        then:
+        result.size() == 2
+        result.getTotalCount() == 2
+        result[0].label == 'Providing DE 6'
+        result[1].label == 'ProvidingImporting DE 6'
+    }
+
+    void 'LIST03 : test getting all DataElements with importing involved with datatype filtering'() {
+        // This addresses the issue gh-226 where we were getting the correct data for DC with no imported DEs and a DC with only imported DEs but incorrect
+        // when a DCs DEs were imported into other DEs. The join was causing non-distinct results.
+        given:
+        setupData()
+        Map<String, UUID> dataClassIds = buildImportingStructure()
+        Map<String, Object> pagination = [max: 2, offset: 0]
+        Map<String, Object> filter = [dataType: 'string']
+
+        when:
+        HQLPagedResultList<DataElement> result = dataElementService.findAllByDataClassIdIncludingImported(dataClassIds.standalone, filter, pagination)
+
+        then:
+        result.size() == 2
+        result.getTotalCount() == 5
+        result[0].label == 'Standalone DE 1'
+        result[1].label == 'Standalone DE 3'
+
+        when:
+        result = dataElementService.findAllByDataClassIdIncludingImported(dataClassIds.providing, filter, pagination)
+
+        then:
+        result.size() == 2
+        result.getTotalCount() == 5
+        result[0].label == 'Providing DE 1'
+        result[1].label == 'Providing DE 3'
+
+        when:
+        result = dataElementService.findAllByDataClassIdIncludingImported(dataClassIds.providingAndImporting, filter, pagination)
+
+        then:
+        result.size() == 2
+        result.getTotalCount() == 7
+        result[0].label == 'Providing DE 3'
+        result[1].label == 'Providing DE 5'
+
+        when:
+        result = dataElementService.findAllByDataClassIdIncludingImported(dataClassIds.importingOneLocation, filter, pagination)
+
+        then:
+        result.size() == 2
+        result.getTotalCount() == 2
+        result[0].label == 'Providing DE 3'
+        result[1].label == 'Providing DE 5'
+
+        when:
+        result = dataElementService.findAllByDataClassIdIncludingImported(dataClassIds.importingTwoLocations, filter, pagination)
+
+        then:
+        result.size() == 2
+        result.getTotalCount() == 5
+        result[0].label == 'Providing DE 3'
+        result[1].label == 'Providing DE 5'
+    }
+
+
+    Map<String, UUID> buildImportingStructure() {
+
+        DataType string = dataModel.findDataTypeByLabel('string')
+        DataType integer = dataModel.findDataTypeByLabel('integer')
+
+        DataClass standalone = new DataClass(label: 'standalone', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        (0..9).each {i ->
+            standalone.addToDataElements(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: "Standalone DE $i", dataType: i % 2 ? string : integer)
+        }
+        dataModel.addToDataClasses(standalone)
+        checkAndSave(standalone)
+
+        DataClass providing = new DataClass(label: 'providing', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        (0..9).each {i ->
+            providing.addToDataElements(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: "Providing DE $i", dataType: i % 2 ? string : integer)
+        }
+        dataModel.addToDataClasses(providing)
+        checkAndSave(providing)
+
+        DataClass providingAndImporting = new DataClass(label: 'providingAndImporting', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        (0..9).each {i ->
+            providingAndImporting.addToDataElements(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: "ProvidingImporting DE $i", dataType: i % 2 ? string : integer)
+        }
+        (2..6).each {i ->
+            providingAndImporting.addToImportedDataElements(providing.dataElements.find {de -> de.label.endsWith("${i}")})
+        }
+        dataModel.addToDataClasses(providingAndImporting)
+        checkAndSave(providingAndImporting)
+
+        DataClass importingOneLocation = new DataClass(label: 'importingOneLocation', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        (2..6).each {i ->
+            importingOneLocation.addToImportedDataElements(providing.dataElements.find {de -> de.label.endsWith("${i}")})
+        }
+        dataModel.addToDataClasses(importingOneLocation)
+        checkAndSave(importingOneLocation)
+
+        DataClass importingTwoLocations = new DataClass(label: 'importingTwoLocations', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        (2..6).each {i ->
+            importingTwoLocations.addToImportedDataElements(providing.dataElements.find {de -> de.label.endsWith("${i}")})
+        }
+        (5..9).each {i ->
+            importingTwoLocations.addToImportedDataElements(providingAndImporting.dataElements.find {de -> de.label.endsWith("${i}")})
+        }
+        dataModel.addToDataClasses(importingTwoLocations)
+        checkAndSave(importingTwoLocations)
+
+        [
+            standalone           : standalone.id,
+            providing            : providing.id,
+            providingAndImporting: providingAndImporting.id,
+            importingOneLocation : importingOneLocation.id,
+            importingTwoLocations: importingTwoLocations.id
+        ]
     }
 }

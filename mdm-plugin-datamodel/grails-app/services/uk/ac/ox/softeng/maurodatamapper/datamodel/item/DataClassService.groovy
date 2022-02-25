@@ -21,7 +21,6 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
@@ -38,6 +37,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
+import uk.ac.ox.softeng.maurodatamapper.gorm.HQLPagedResultList
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -48,6 +48,8 @@ import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 import org.springframework.context.MessageSource
+
+import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ARGUMENT_SORT
 
 @Slf4j
 @Transactional
@@ -60,7 +62,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     SummaryMetadataService summaryMetadataService
     ReferenceTypeService referenceTypeService
 
-    private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
+    private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler()
 
     DataClass get(Serializable id) {
         DataClass.get(id)
@@ -452,16 +454,8 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
             list(paginate)
     }
 
-    def findAllByDataModelIdAndParentDataClassIdIncludingImported(UUID dataModelId, UUID dataClassId, Map paginate = [:]) {
-        DataClass.withFilter(DataClass.byDataModelIdAndParentDataClassIdIncludingImported(dataModelId, dataClassId), paginate).list(paginate)
-    }
-
     def findAllWhereRootDataClassOfDataModelId(UUID dataModelId, Map paginate = [:]) {
         DataClass.withFilter(DataClass.byRootDataClassOfDataModelId(dataModelId), paginate).list(paginate)
-    }
-
-    def findAllWhereRootDataClassOfDataModelIdIncludingImported(UUID dataModelId, Map paginate = [:]) {
-        DataClass.withFilter(DataClass.byRootDataClassOfDataModelIdIncludingImported(dataModelId), paginate).list(paginate)
     }
 
     List<ModelItem> findAllContentOfDataClassIdInDataModelId(UUID dataModelId, UUID dataClassId, Map paginate = [:]) {
@@ -483,12 +477,95 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         DataClass.byDataModelIdAndLabelIlikeOrDescriptionIlike(dataModelId, searchTerm).list(paginate)
     }
 
-    def findAllByDataModelIdIncludingImported(UUID dataModelId, Map paginate = [:]) {
-        DataClass.withFilter(DataClass.byDataModelIdIncludingImported(dataModelId), paginate).list(paginate)
+    def findAllWhereRootDataClassOfDataModelIdIncludingImported(UUID dataModelId, Map paginate = [:]) {
+        findAllWhereRootDataClassOfDataModelIdIncludingImported(dataModelId, paginate, paginate)
     }
 
-    def findAllByDataModelIdAndLabelIlikeOrDescriptionIlikeIncludingImported(UUID dataModelId, String searchTerm, Map paginate = [:]) {
-        DataClass.byDataModelIdAndLabelIlikeOrDescriptionIlikeIncludingImported(dataModelId, searchTerm).list(paginate)
+    def findAllWhereRootDataClassOfDataModelIdIncludingImported(UUID dataModelId, Map filters, Map pagination) {
+        Map<String, Object> queryParams = [dataModelId: dataModelId]
+        findAllDataClassesByHQLQuery('''
+FROM DataClass dc
+LEFT JOIN dc.importingDataModels idm
+WHERE  
+(
+    (dc.dataModel.id = :dataModelId AND dc.parentDataClass.id is null)   
+    OR
+    idm.id = :dataModelId
+)''', queryParams, filters, pagination)
+    }
+
+    HQLPagedResultList findAllByDataModelIdIncludingImported(UUID dataModelId, Map paginate = [:]) {
+        findAllByDataModelIdIncludingImported dataModelId, paginate, paginate
+    }
+
+    HQLPagedResultList findAllByDataModelIdIncludingImported(UUID dataModelId, Map filters, Map pagination) {
+        Map<String, Object> queryParams = [dataModelId: dataModelId]
+        findAllDataClassesByHQLQuery('''
+FROM DataClass dc
+LEFT JOIN dc.importingDataModels idm
+WHERE  
+(
+    dc.dataModel.id = :dataModelId 
+    OR 
+    idm.id = :dataModelId
+)''', queryParams, filters, pagination)
+    }
+
+    HQLPagedResultList findAllByDataModelIdAndLabelIlikeOrDescriptionIlikeIncludingImported(UUID dataModelId, String searchTerm, Map paginate = [:]) {
+        findAllByDataModelIdAndLabelIlikeOrDescriptionIlikeIncludingImported(dataModelId, searchTerm, paginate, paginate)
+    }
+
+    HQLPagedResultList findAllByDataModelIdAndLabelIlikeOrDescriptionIlikeIncludingImported(UUID dataModelId, String searchTerm, Map filters, Map pagination) {
+
+        Map<String, Object> queryParams = [dataModelId: dataModelId,
+                                           searchTerm : "%${searchTerm}%"]
+
+        findAllDataClassesByHQLQuery('''
+FROM DataClass dc
+LEFT JOIN dc.importingDataModels idm
+WHERE  
+(
+    dc.dataModel.id = :dataModelId 
+    OR 
+    idm.id = :dataModelId
+)
+AND (
+    lower(dc.label) like lower(:searchTerm) 
+    OR
+    lower(dc.description) like lower(:searchTerm)
+)''', queryParams, filters, pagination)
+    }
+
+    HQLPagedResultList findAllByDataModelIdAndParentDataClassIdIncludingImported(UUID dataModelId, UUID dataClassId, Map paginate = [:]) {
+        findAllByDataModelIdAndParentDataClassIdIncludingImported(dataModelId, dataClassId, paginate, paginate)
+    }
+
+    HQLPagedResultList findAllByDataModelIdAndParentDataClassIdIncludingImported(UUID dataModelId, UUID dataClassId, Map filters, Map pagination) {
+
+        Map<String, Object> queryParams = [dataClassId: dataClassId, dataModelId: dataModelId]
+        findAllDataClassesByHQLQuery('''
+FROM DataClass dc
+LEFT JOIN dc.importingDataClasses idc
+WHERE  
+(
+    (dc.dataModel.id = :dataModelId AND dc.parentDataClass.id = :dataClassId)
+    OR
+    idc.id = :dataClassId
+)''', queryParams, filters, pagination)
+    }
+
+    private HQLPagedResultList<DataClass> findAllDataClassesByHQLQuery(String baseQuery, Map<String, Object> queryParams, Map filters, Map pagination) {
+        queryParams.putAll(extractFiltersAsHQLParameters(filters))
+
+        String filteredQuery = applyHQLFilters(baseQuery, 'dc', filters)
+        // Cannot sort DCs including imported using idx combined with any other field
+        String sortedQuery = applyHQLSort(filteredQuery, 'dc', pagination[ARGUMENT_SORT] ?: ['label': 'asc'], pagination, true)
+
+        new HQLPagedResultList<DataClass>(DataClass)
+            .list("SELECT DISTINCT dc ${sortedQuery}".toString())
+            .count("SELECT COUNT(DISTINCT dc.id) ${filteredQuery}".toString())
+            .queryParams(queryParams)
+            .paginate(pagination)
     }
 
     private CatalogueItem findCommonParent(DataClass leftDataClass, DataClass rightDataClass) {
@@ -515,9 +592,9 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
                       maxMultiplicity: maxMultiplicity)
     }
 
-    public DataClass findOrCreateDataClass(DataModel dataModel, String label, String description, User createdBy,
-                                           Integer minMultiplicity = 1,
-                                           Integer maxMultiplicity = 1) {
+    DataClass findOrCreateDataClass(DataModel dataModel, String label, String description, User createdBy,
+                                    Integer minMultiplicity = 1,
+                                    Integer maxMultiplicity = 1) {
         DataClass dataClass = findDataClass(dataModel, label)
         if (!dataClass) {
             dataClass = createDataClass(label.trim(), description, createdBy, minMultiplicity, maxMultiplicity)
@@ -526,8 +603,8 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         dataClass
     }
 
-    public DataClass findOrCreateDataClass(DataClass parentDataClass, String label, String description, User createdBy,
-                                           Integer minMultiplicity = 1, Integer maxMultiplicity = 1) {
+    DataClass findOrCreateDataClass(DataClass parentDataClass, String label, String description, User createdBy,
+                                    Integer minMultiplicity = 1, Integer maxMultiplicity = 1) {
         DataClass dataClass = findDataClass(parentDataClass, label)
         if (!dataClass) {
             dataClass = createDataClass(label.trim(), description, createdBy, minMultiplicity, maxMultiplicity)

@@ -244,7 +244,9 @@ class DataClassController extends CatalogueItemController<DataClass> {
 
     @Override
     protected List<DataClass> listAllReadableResources(Map params) {
-        params.sort = params.sort ?: ['idx': 'asc', 'label': 'asc']
+        params.sort = params.sort ?: ['label': 'asc']
+        // Cannot sort DCs including imported using idx combined with any other field
+        if (params.sort instanceof Map && (params.sort as Map).size() > 1) (params.sort as Map).remove('idx')
         if (params.dataClassId) {
             if (!dataClassService.findByDataModelIdAndId(params.dataModelId, params.dataClassId)) {
                 notFound(params.dataClassId)

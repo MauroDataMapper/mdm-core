@@ -33,18 +33,21 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
-import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MdmDomainService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
+import org.grails.datastore.mapping.model.PersistentEntity
+import org.grails.datastore.mapping.model.PersistentProperty
 import org.hibernate.SessionFactory
-import org.springframework.beans.factory.annotation.Autowired
+
+import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ARGUMENT_IGNORE_CASE
+import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ARGUMENT_ORDER
+import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ORDER_ASC
+import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ORDER_DESC
 
 @Slf4j
 abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomainService<K>, MultiFacetAwareService<K> {
@@ -365,5 +368,82 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomai
         addFacetDataToDiffCache(ciDiffCache, facetData, catalogueItem.id)
         if(parentCache) parentCache.addDiffCache(catalogueItem.path, ciDiffCache)
         ciDiffCache
+    }
+
+
+    String applyHQLSort(String originalQuery, String ciQueryPrefix, def sortObj, Map otherArgs, boolean isDistinct) {
+        if (sortObj == null) return originalQuery
+
+        boolean ignoreCase = true
+        Object caseArg = otherArgs[ARGUMENT_IGNORE_CASE]
+        if (caseArg instanceof Boolean) {
+            ignoreCase = (Boolean) caseArg
+        }
+        String orderParam = (String) otherArgs[ARGUMENT_ORDER]
+        PersistentEntity persistentEntity = getDomainClass().getGormPersistentEntity()
+        StringBuilder sortedQuery = new StringBuilder(originalQuery)
+        if (sortObj instanceof Map) {
+            sortedQuery.append '\nORDER BY '
+            Map sortMap = (Map) sortObj
+            Set keys = sortMap.keySet()
+            for (i in 0..<keys.size()) {
+                String sort = keys[i]
+                String order = ORDER_DESC.equalsIgnoreCase(sortMap[sort] as String) ? ORDER_DESC : ORDER_ASC
+
+                PersistentProperty persistentProperty = persistentEntity.getPropertyByName(sort)
+                // Dont try and 'lower' non character fields
+                if (ignoreCase && CharSequence.isAssignableFrom(persistentProperty.type)) {
+                    sortedQuery = addLowercaseSort(sortedQuery, ciQueryPrefix, sort, order, isDistinct, false)
+                } else sortedQuery.append(ciQueryPrefix).append('.').append(sort).append(' ').append(order)
+                if (i < keys.size() - 1) sortedQuery.append(', ')
+            }
+            sortMap.each {sort, providedOrder ->
+
+            }
+        } else {
+            String sort = (String) sortObj
+            String order = ORDER_DESC.equalsIgnoreCase(orderParam) ? ORDER_DESC : ORDER_ASC
+            PersistentProperty persistentProperty = persistentEntity.getPropertyByName(sort)
+            // Dont try and 'lower' non character fields
+            if (ignoreCase && CharSequence.isAssignableFrom(persistentProperty.type)) {
+                sortedQuery = addLowercaseSort(sortedQuery, ciQueryPrefix, sort, order, isDistinct, true)
+            } else sortedQuery.append('\nORDER BY ').append(ciQueryPrefix).append('.').append(sort).append(' ').append(order)
+        }
+        sortedQuery.toString()
+    }
+
+    private static StringBuilder addLowercaseSort(StringBuilder stringBuilder, String ciQueryPrefix, String sort, String order, boolean isDistinct, boolean isSingle) {
+        StringBuilder sortedQuery = new StringBuilder()
+        // Need to add the lower variant to the select query if isDistinct
+        if (isDistinct) sortedQuery.append('\n, lower(').append(ciQueryPrefix).append('.').append(sort).append(') ')
+        sortedQuery.append(stringBuilder.toString())
+        if (isSingle) sortedQuery.append('\nORDER BY ')
+        sortedQuery.append('lower(').append(ciQueryPrefix).append('.').append(sort).append(') ').append(order)
+    }
+
+    String applyHQLFilters(String originalQuery, String ciQueryPrefix, Map filters) {
+        StringBuilder filteredQuery = new StringBuilder(originalQuery)
+        if (filters.label) filteredQuery.append('\nAND lower(').append(ciQueryPrefix).append('.label) LIKE lower(:label)')
+        if (filters.description) filteredQuery.append('\nAND lower(').append(ciQueryPrefix).append('.description) LIKE lower(:description)')
+        if (filters.domainType) filteredQuery.append('\nAND lower(').append(ciQueryPrefix).append('.domainType) LIKE lower(:domainType)')
+        filteredQuery.toString()
+    }
+
+    Map<String, Object> extractFiltersAsHQLParameters(Map filters, String... addtlFilters) {
+        Map<String, Object> extractedFilters = [:]
+        ['label', 'description', 'domainType'].each {f ->
+            if (filters.containsKey(f)) {
+                extractedFilters[f] = "%${filters[f]}%".toString()
+            }
+        }
+
+        if (addtlFilters) {
+            addtlFilters.each {f ->
+                if (filters.containsKey(f)) {
+                    extractedFilters[f] = "%${filters[f]}%".toString()
+                }
+            }
+        }
+        extractedFilters
     }
 }
