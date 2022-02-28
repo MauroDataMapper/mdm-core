@@ -55,7 +55,9 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
     K copyModelItemInformation(K original, K copy, User copier, UserSecurityPolicyManager userSecurityPolicyManager,
                                CopyInformation copyInformation = null) {
         copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
-        copy.idx = original.idx
+        if (copyInformation?.copyIndex) {
+            copy.idx = original.idx
+        }
         copy
     }
 

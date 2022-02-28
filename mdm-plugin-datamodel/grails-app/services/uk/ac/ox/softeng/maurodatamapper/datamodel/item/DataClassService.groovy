@@ -733,14 +733,14 @@ WHERE
         copy.dataClasses = []
 
         List<DataClass> dataClasses = DataClass.byParentDataClassId(original.id).join('classifiers').list()
-        CopyInformation dataClassCache = cacheFacetInformationForCopy(dataClasses.collect { it.id })
+        CopyInformation dataClassCache = cacheFacetInformationForCopy(dataClasses.collect { it.id }, new CopyInformation(copyIndex: true))
         dataClasses.sort().each { child ->
             copyDataClass(copiedDataModel, child, copier, userSecurityPolicyManager, copy, copySummaryMetadata, dataClassCache)
         }
         copy.dataElements = []
 
         List<DataElement> dataElements = DataElement.byDataClassId(original.id).join('classifiers').list()
-        CopyInformation dataElementCache = cacheFacetInformationForCopy(dataElements.collect { it.id })
+        CopyInformation dataElementCache = cacheFacetInformationForCopy(dataElements.collect { it.id }, new CopyInformation(copyIndex: true))
         dataElements.sort().each { element ->
             copy.addToDataElements(
                 dataElementService

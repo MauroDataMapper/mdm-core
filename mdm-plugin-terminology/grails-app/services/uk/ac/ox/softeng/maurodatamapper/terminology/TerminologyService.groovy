@@ -360,7 +360,7 @@ class TerminologyService extends ModelService<Terminology> {
         List<TermRelationshipType> termRelationshipTypes = TermRelationshipType.byTerminologyId(original.id).join('classifiers').list()
         List<Term> originalTerms = Term.byTerminologyId(original.id).join('classifiers').list()
         List<TermRelationship> termRelationships = []
-        CopyInformation termsCachedInformation = new CopyInformation()
+        CopyInformation termsCachedInformation = new CopyInformation(copyIndex: true)
 
         if (originalTerms) {
             List<UUID> originalTermIds = originalTerms.collect { it.id }

@@ -735,8 +735,8 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
         List<DataType> dataTypes = DataType.byDataModelId(original.id).join('classifiers').list()
         List<DataClass> rootDataClasses = DataClass.byRootDataClassOfDataModelId(original.id).join('classifiers').list()
-        CopyInformation dataClassCache = cacheFacetInformationForCopy(rootDataClasses.collect {it.id})
-        CopyInformation dataTypeCache = cacheFacetInformationForCopy(dataTypes.collect {it.id})
+        CopyInformation dataClassCache = cacheFacetInformationForCopy(rootDataClasses.collect {it.id}, new CopyInformation(copyIndex: true))
+        CopyInformation dataTypeCache = cacheFacetInformationForCopy(dataTypes.collect {it.id}, new CopyInformation(copyIndex: true))
 
         // Copy all the datatypes
         dataTypes.sort().each {dt ->

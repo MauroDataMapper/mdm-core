@@ -35,6 +35,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -246,9 +247,10 @@ class CodeSetService extends ModelService<CodeSet> {
 
         copy.trackChanges()
 
+        CopyInformation copyTermsInformation = new CopyInformation(copyIndex: true)
         List<Term> terms = termService.findAllByCodeSetId(original.id)
         terms.sort().each {term ->
-            copy.addToTerms(term)
+            termService.copyTerm(copy, term, copier, userSecurityPolicyManager, copyTermsInformation)
         }
         log.debug('Copy of codeset took {}', Utils.timeTaken(start))
         copy

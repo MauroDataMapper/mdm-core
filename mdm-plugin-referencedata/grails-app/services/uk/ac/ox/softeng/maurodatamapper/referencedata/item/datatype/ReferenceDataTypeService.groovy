@@ -23,11 +23,13 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElementService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValueService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.DefaultReferenceDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.referencedata.rest.transport.DefaultReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.traits.service.ReferenceSummaryMetadataAwareService
@@ -49,6 +51,7 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
     ReferenceEnumerationTypeService referenceEnumerationTypeService
     ReferenceSummaryMetadataService referenceSummaryMetadataService
     ReferenceDataModelService referenceDataModelService
+    ReferenceEnumerationValueService referenceEnumerationValueService
 
     @Override
     ReferenceDataType get(Serializable id) {
@@ -66,7 +69,7 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
     }
 
     @Override
-    List<ReferenceDataType> list(Map args=[:]) {
+    List<ReferenceDataType> list(Map args = [:]) {
         ReferenceDataType.list(args)
     }
 
@@ -86,7 +89,7 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
         referenceDataType.breadcrumbTree.removeFromParent()
 
         List<ReferenceDataElement> referenceDataElements = referenceDataElementService.findAllByReferenceDataType(referenceDataType)
-        referenceDataElements.each { referenceDataElementService.delete(it) }
+        referenceDataElements.each {referenceDataElementService.delete(it)}
 
         switch (referenceDataType.domainType) {
             case ReferenceDataType.PRIMITIVE_DOMAIN_TYPE:
@@ -154,7 +157,7 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
             new ReferencePrimitiveType(label: 'Timestamp', description: 'A timestamp'),
             new ReferencePrimitiveType(label: 'Boolean', description: 'A true or false value'),
             new ReferencePrimitiveType(label: 'Duration', description: 'A time period in arbitrary units')
-        ].collect { new DefaultReferenceDataType(it) }
+        ].collect {new DefaultReferenceDataType(it)}
     }
 
     @Override
@@ -210,9 +213,7 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
     }
 
     ReferenceDataType copyReferenceDataType(ReferenceDataModel copiedReferenceDataModel, ReferenceDataType original, User copier,
-                                            UserSecurityPolicyManager userSecurityPolicyManager,
-                                            boolean copySummaryMetadata = false) {
-
+                                            UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata = false, CopyInformation copyInformation = null) {
         ReferenceDataType copy
 
         String domainType = original.domainType
@@ -222,15 +223,19 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
                 break
             case ReferenceDataType.ENUMERATION_DOMAIN_TYPE:
                 copy = new ReferenceEnumerationType()
-                original.referenceEnumerationValues.sort().each { ev ->
-                    copy.addToReferenceEnumerationValues(key: ev.key, value: ev.value, category: ev.category)
+                CopyInformation referenceEnumerationTypeCopyInformation = new CopyInformation(copyIndex: true)
+                original.referenceEnumerationValues.sort().each {ev ->
+                    copy.addToReferenceEnumerationValues(
+                        referenceEnumerationValueService
+                            .copyReferenceEnumerationValue(copiedReferenceDataModel, ev, copy, userSecurityPolicyManager.user, userSecurityPolicyManager,
+                                                           referenceEnumerationTypeCopyInformation))
                 }
                 break
             default:
                 throw new ApiInternalException('DTSXX', 'DataType domain type is unknown and therefore cannot be copied')
         }
 
-        copy = copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata)
+        copy = copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata, copyInformation)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         copiedReferenceDataModel.addToReferenceDataTypes(copy)
@@ -240,11 +245,11 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
 
     @Override
     ReferenceDataType copyModelItemInformation(ReferenceDataType original,
-                                                   ReferenceDataType copy,
-                                                   User copier,
-                                                   UserSecurityPolicyManager userSecurityPolicyManager,
-                                                   boolean copySummaryMetadata = false) {
-        copy = super.copyModelItemInformation(original, copy, copier, userSecurityPolicyManager)
+                                               ReferenceDataType copy,
+                                               User copier,
+                                               UserSecurityPolicyManager userSecurityPolicyManager,
+                                               boolean copySummaryMetadata = false, CopyInformation copyInformation) {
+        copy = super.copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
         if (copySummaryMetadata) {
             referenceSummaryMetadataService.findAllByMultiFacetAwareItemId(original.id).each {
                 copy.addToReferenceSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
@@ -288,12 +293,12 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
     }
 
     private void mergeDataTypes(ReferenceDataType keep, ReferenceDataType replace) {
-        replace.referenceDataElements?.each { de ->
+        replace.referenceDataElements?.each {de ->
             keep.addToReferenceDataElements(de)
         }
         List<Metadata> mds = []
         mds += replace.metadata ?: []
-        mds.findAll { !keep.findMetadataByNamespaceAndKey(it.namespace, it.key) }.each { md ->
+        mds.findAll {!keep.findMetadataByNamespaceAndKey(it.namespace, it.key)}.each {md ->
             replace.removeFromMetadata(md)
             keep.addToMetadata(md.namespace, md.key, md.value, md.createdBy)
         }
