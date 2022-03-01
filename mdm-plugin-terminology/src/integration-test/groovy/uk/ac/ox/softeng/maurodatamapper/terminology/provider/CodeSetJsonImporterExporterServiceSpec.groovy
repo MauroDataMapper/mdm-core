@@ -47,7 +47,6 @@ import grails.util.BuildSettings
 import groovy.util.logging.Slf4j
 import org.junit.Assert
 import org.springframework.beans.factory.annotation.Autowired
-import spock.lang.PendingFeature
 import spock.lang.Shared
 
 import java.nio.charset.Charset
@@ -275,7 +274,7 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
 
         when:
         imported.folder = testFolder
-        ObjectDiff diff = codeSetService.getDiffForModels(codeSetService.get(simpleCodeSetId), imported)
+        ObjectDiff diff = codeSetService.get(simpleCodeSetId).diff(imported, 'none', null, null)
 
         then:
         diff.objectsAreIdentical()
@@ -772,7 +771,7 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         imported.size() == 1
 
         when:
-        ObjectDiff simpleDiff = codeSetService.getDiffForModels(codeSets.pop(), imported.pop())
+        ObjectDiff simpleDiff = codeSets.pop().diff(imported.pop(), 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -801,7 +800,7 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         imported.size() == 1
 
         when:
-        ObjectDiff simpleDiff = codeSetService.getDiffForModels(codeSets.pop(), imported.pop())
+        ObjectDiff simpleDiff = codeSets.pop().diff(imported.pop(), 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -830,8 +829,8 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         imported.size() == 2
 
         when:
-        ObjectDiff simpleDiff = codeSetService.getDiffForModels(codeSets[0], imported[0])
-        ObjectDiff complexDiff = codeSetService.getDiffForModels(codeSets[1], imported[1])
+        ObjectDiff simpleDiff = codeSets[0].diff(imported[0], 'none', null, null)
+        ObjectDiff complexDiff = codeSets[1].diff(imported[1], 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -861,7 +860,7 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         imported.size() == 1
 
         when:
-        ObjectDiff simpleDiff = codeSetService.getDiffForModels(codeSets[0], imported.pop())
+        ObjectDiff simpleDiff = codeSets[0].diff(imported.pop(), 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -876,8 +875,8 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         imported.size() == 2
 
         when:
-        simpleDiff = codeSetService.getDiffForModels(codeSets[0], imported[0])
-        ObjectDiff complexDiff = codeSetService.getDiffForModels(codeSets[1], imported[1])
+        simpleDiff = codeSets[0].diff(imported[0], 'none', null, null)
+        ObjectDiff complexDiff = codeSets[1].diff(imported[1], 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -907,7 +906,7 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         imported.size() == 1
 
         when:
-        ObjectDiff simpleDiff = codeSetService.getDiffForModels(codeSets[0], imported.pop())
+        ObjectDiff simpleDiff = codeSets[0].diff(imported.pop(), 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -922,8 +921,8 @@ class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         imported.size() == 2
 
         when:
-        simpleDiff = codeSetService.getDiffForModels(codeSets[0], imported[0])
-        ObjectDiff complexDiff = codeSetService.getDiffForModels(codeSets[1], imported[1])
+        simpleDiff = codeSets[0].diff(imported[0], 'none', null, null)
+        ObjectDiff complexDiff = codeSets[1].diff(imported[1], 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()

@@ -622,7 +622,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         responseBody().items[2].parentDataClass == bId
 
         when: 'All items are listed'
-        GET('')
+        GET('?sort=idx')
 
         then: 'They are in the order emptyclass, parent, content'
         responseBody().items[0].label == 'emptyclass'
@@ -645,7 +645,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         verifyResponse OK, response
 
         when: 'All items are listed'
-        GET('')
+        GET('?sort=idx')
 
         then: 'They are in the order parent, content, emptyclass'
         log.debug(responseBody().toString())

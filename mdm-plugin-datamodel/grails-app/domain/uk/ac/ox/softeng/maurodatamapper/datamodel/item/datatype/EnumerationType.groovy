@@ -59,7 +59,6 @@ class EnumerationType extends DataType<EnumerationType> implements IndexedSiblin
 
     @Override
     def beforeValidate() {
-        long st = System.currentTimeMillis()
         super.beforeValidate()
         if (enumerationValues) {
             // If model exists and this is a new ET then sort children
@@ -69,7 +68,6 @@ class EnumerationType extends DataType<EnumerationType> implements IndexedSiblin
                 ev.beforeValidate()
             }
         }
-        //        log.debug('DT {} before validate took {}', this.label, Utils.timeTaken(st))
     }
 
     ObjectDiff<EnumerationType> diff(EnumerationType otherDataType, String context) {

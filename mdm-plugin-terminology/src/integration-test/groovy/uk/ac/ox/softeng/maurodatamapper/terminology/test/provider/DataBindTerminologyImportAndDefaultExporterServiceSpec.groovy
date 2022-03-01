@@ -159,7 +159,7 @@ abstract class DataBindTerminologyImportAndDefaultExporterServiceSpec<I extends 
 
         when:
         imported.folder = testFolder
-        ObjectDiff diff = terminologyService.getDiffForModels(terminologyService.get(complexTerminologyId), imported)
+        ObjectDiff diff = terminologyService.get(complexTerminologyId).diff(imported, 'none', null, null)
 
         then:
         if (!diff.objectsAreIdentical() && diff.numberOfDiffs != 4) {
@@ -195,7 +195,7 @@ abstract class DataBindTerminologyImportAndDefaultExporterServiceSpec<I extends 
 
         when:
         imported.folder = testFolder
-        ObjectDiff diff = terminologyService.getDiffForModels(terminologyService.get(simpleTerminologyId), imported)
+        ObjectDiff diff = terminologyService.get(simpleTerminologyId).diff(imported, 'none', null, null)
 
         then:
         diff.objectsAreIdentical()

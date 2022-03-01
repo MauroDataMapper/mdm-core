@@ -1052,13 +1052,13 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
      * @param userSecurityPolicyManager
      * @return
      */
-    def subset(DataModel sourceDataModel, DataModel targetDataModel, Subset subsetData, User user, UserSecurityPolicyManager userSecurityPolicyManager) {
+    def subset(DataModel sourceDataModel, DataModel targetDataModel, Subset subsetData, UserSecurityPolicyManager userSecurityPolicyManager) {
         subsetData.additions.each {dataElementId ->
-            subsetAddition(sourceDataModel, targetDataModel, Utils.toUuid(dataElementId), user, userSecurityPolicyManager)
+            subsetAddition(sourceDataModel, targetDataModel, Utils.toUuid(dataElementId), userSecurityPolicyManager)
         }
 
         subsetData.deletions.each {dataElementId ->
-            subsetDeletion(sourceDataModel, targetDataModel, Utils.toUuid(dataElementId), user, userSecurityPolicyManager)
+            subsetDeletion(sourceDataModel, targetDataModel, Utils.toUuid(dataElementId), userSecurityPolicyManager)
         }
 
         if (subsetData.deletions.size() > 0) {
@@ -1100,7 +1100,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
      * @param userSecurityPolicyManager
      * @return
      */
-    private subsetAddition(DataModel sourceDataModel, DataModel targetDataModel, UUID dataElementId, User user, UserSecurityPolicyManager userSecurityPolicyManager) {
+    private subsetAddition(DataModel sourceDataModel, DataModel targetDataModel, UUID dataElementId, UserSecurityPolicyManager userSecurityPolicyManager) {
         DataElement dataElementInSource = getDataElementInModel(sourceDataModel, dataElementId)
 
         Path pathInSource = dataElementInSource.getPath()
@@ -1117,7 +1117,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
             // Now iterate forwards through the path, making sure that a domain exists for each node of the path
             // Assumption is that the first node of pathInTarget is a dc.
-            dataClassService.subset(sourceDataModel, targetDataModel, dataElementInSource, pathInTarget, user, userSecurityPolicyManager)
+            dataClassService.subset(sourceDataModel, targetDataModel, dataElementInSource, pathInTarget, userSecurityPolicyManager)
         }
     }
 
@@ -1130,11 +1130,10 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
      * @param sourceDataModel
      * @param targetDataModel
      * @param dataElementId
-     * @param user
      * @param userSecurityPolicyManager
      * @return
      */
-    private subsetDeletion(DataModel sourceDataModel, DataModel targetDataModel, UUID dataElementId, User user, UserSecurityPolicyManager userSecurityPolicyManager) {
+    private subsetDeletion(DataModel sourceDataModel, DataModel targetDataModel, UUID dataElementId, UserSecurityPolicyManager userSecurityPolicyManager) {
         DataElement dataElementInSource = getDataElementInModel(sourceDataModel, dataElementId)
 
         Path pathInSource = dataElementInSource.getPath()

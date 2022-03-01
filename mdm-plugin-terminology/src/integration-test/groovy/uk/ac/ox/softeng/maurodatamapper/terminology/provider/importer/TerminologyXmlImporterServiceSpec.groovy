@@ -135,7 +135,7 @@ class TerminologyXmlImporterServiceSpec extends DataBindTerminologyImporterProvi
         imported.size() == 1
 
         when:
-        ObjectDiff simpleDiff = terminologyService.getDiffForModels(terminologies.pop(), imported.pop())
+        ObjectDiff simpleDiff = terminologies.pop().diff(imported.pop(), 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -162,7 +162,7 @@ class TerminologyXmlImporterServiceSpec extends DataBindTerminologyImporterProvi
         imported.size() == 1
 
         when:
-        ObjectDiff simpleDiff = terminologyService.getDiffForModels(terminologies.pop(), imported.pop())
+        ObjectDiff simpleDiff = terminologies.pop().diff(imported.pop(), 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -189,8 +189,8 @@ class TerminologyXmlImporterServiceSpec extends DataBindTerminologyImporterProvi
         imported.size() == 2
 
         when:
-        ObjectDiff simpleDiff = terminologyService.getDiffForModels(terminologies[0], imported[0])
-        ObjectDiff complexDiff = terminologyService.getDiffForModels(terminologies[1], imported[1])
+        ObjectDiff simpleDiff = terminologies[0].diff(imported[0], 'none', null, null)
+        ObjectDiff complexDiff = terminologies[1].diff(imported[1], 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -218,7 +218,7 @@ class TerminologyXmlImporterServiceSpec extends DataBindTerminologyImporterProvi
         imported.size() == 1
 
         when:
-        ObjectDiff simpleDiff = terminologyService.getDiffForModels(terminologies[0], imported.pop())
+        ObjectDiff simpleDiff = terminologies[0].diff(imported.pop(), 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -231,8 +231,8 @@ class TerminologyXmlImporterServiceSpec extends DataBindTerminologyImporterProvi
         imported.size() == 2
 
         when:
-        simpleDiff = terminologyService.getDiffForModels(terminologies[0], imported[0])
-        ObjectDiff complexDiff = terminologyService.getDiffForModels(terminologies[1], imported[1])
+        simpleDiff = terminologies[0].diff(imported[0], 'none', null, null)
+        ObjectDiff complexDiff = terminologies[1].diff(imported[1], 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()

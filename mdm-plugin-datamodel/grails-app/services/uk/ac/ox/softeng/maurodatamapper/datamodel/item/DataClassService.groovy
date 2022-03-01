@@ -90,7 +90,6 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     @Override
     DataClass save(Map args, DataClass domain) {
         // If not previously saved then allow a deep save and/or datatype save
-        Collection<DataType> newDataTypes
         if (!domain.ident()) {
             if (args.deepSave) {
                 saveDataClassHierarchy(domain)
@@ -98,7 +97,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
 
             // If ignore datatypes then skip this bit or DC already been saved as this is designed to handle full builds or copies
             if (args.saveDataTypes) {
-                newDataTypes = saveDataTypesUsedInDataClass(domain)
+                saveDataTypesUsedInDataClass(domain)
             }
         }
         if(args.deepSave){
@@ -1001,7 +1000,7 @@ WHERE
      * @return
      */
     DataClass subset(DataModel sourceDataModel, DataModel targetDataModel, DataElement dataElementInSource,
-                     Path pathInTarget, User user, UserSecurityPolicyManager userSecurityPolicyManager,
+                     Path pathInTarget, UserSecurityPolicyManager userSecurityPolicyManager,
                      DataClass parentDataClassInSource = null, DataClass parentDataClassInTarget = null) {
 
         if (pathInTarget.size() < 2)
@@ -1029,7 +1028,8 @@ WHERE
                 maxMultiplicity: sourceDataClass.maxMultiplicity
             )
 
-            targetDataClass = copyCatalogueItemInformation(sourceDataClass, targetDataClass, user, userSecurityPolicyManager, false, null)
+            targetDataClass = copyCatalogueItemInformation(sourceDataClass, targetDataClass, userSecurityPolicyManager.user,
+                                                           userSecurityPolicyManager, false, null)
 
             targetDataModel.addToDataClasses(targetDataClass)
             if (parentDataClassInTarget) {
@@ -1047,13 +1047,13 @@ WHERE
 
         if (nextNode.prefix == 'dc') {
             targetDataClass =
-                subset(sourceDataModel, targetDataModel, dataElementInSource, pathInTarget.getChildPath(), user, userSecurityPolicyManager,
+                subset(sourceDataModel, targetDataModel, dataElementInSource, pathInTarget.getChildPath(), userSecurityPolicyManager,
                        sourceDataClass, targetDataClass)
         } else if (nextNode.prefix == 'de') {
             DataElement dataElementInTarget =
-                dataElementService.copyDataElement(targetDataModel, dataElementInSource, user, userSecurityPolicyManager)
+                dataElementService.copyDataElement(targetDataModel, dataElementInSource, userSecurityPolicyManager.user, userSecurityPolicyManager)
             targetDataClass.addToDataElements(dataElementInTarget)
-            matchUpAndAddMissingReferenceTypeClasses(targetDataModel, sourceDataModel, user, userSecurityPolicyManager)
+            matchUpAndAddMissingReferenceTypeClasses(targetDataModel, sourceDataModel, userSecurityPolicyManager.user, userSecurityPolicyManager)
             if (!dataElementService.validate(dataElementInTarget)) {
                 throw new ApiInvalidModelException(
                     "DCS06",

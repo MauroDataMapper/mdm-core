@@ -192,11 +192,11 @@ class JsonReferenceDataImporterExporterServiceSpec extends BaseReferenceDataMode
 
         when:
         imported.folder = testFolder
-        ObjectDiff diff = referenceDataModelService.getDiffForModels(referenceDataModelService.get(exampleReferenceDataModelId), imported)
+        ObjectDiff diff = referenceDataModelService.get(exampleReferenceDataModelId).diff(imported, 'none', null, null)
 
         then:
         diff.numberOfDiffs == 1
-        diff.diffs.find {it.fieldName == 'rule'}.deleted.size() == 1
+        diff.diffs.find {it.fieldName == 'rules'}.deleted.size() == 1
     }
 
     void 'RDM03: test empty data import'() {

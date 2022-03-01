@@ -34,7 +34,6 @@ import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 
-import static org.springframework.http.HttpStatus.OK
 import static org.springframework.http.HttpStatus.NO_CONTENT
 
 @Slf4j
@@ -230,7 +229,7 @@ class DataModelController extends ModelController<DataModel> {
         DataModel targetModel = queryForResource params.otherDataModelId
         if (!targetModel) return notFound(params.otherDataModelId)
 
-        dataModelService.subset(sourceModel, targetModel, subsetData, currentUser, currentUserSecurityPolicyManager)
+        dataModelService.subset(sourceModel, targetModel, subsetData, currentUserSecurityPolicyManager)
 
         if (!validateResource(targetModel, 'update')) return
         updateResource(targetModel)

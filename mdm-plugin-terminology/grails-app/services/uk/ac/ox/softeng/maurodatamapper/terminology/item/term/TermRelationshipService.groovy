@@ -120,6 +120,7 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
     }
 
     List<TermRelationship> findAllBySourceTermIdInList(Collection<UUID> termIds) {
+        if (!termIds) return []
         TermRelationship.by().inList('sourceTerm.id', termIds).list()
     }
 

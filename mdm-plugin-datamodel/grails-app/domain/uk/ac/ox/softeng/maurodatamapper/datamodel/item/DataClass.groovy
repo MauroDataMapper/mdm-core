@@ -190,7 +190,7 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     }
 
     def beforeValidate() {
-        long st = System.currentTimeMillis()
+//        long st = System.currentTimeMillis()
         dataModel = dataModel ?: parentDataClass?.getModel()
         beforeValidateModelItem()
             summaryMetadata?.each {

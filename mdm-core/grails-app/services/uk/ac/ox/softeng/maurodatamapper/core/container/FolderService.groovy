@@ -177,9 +177,6 @@ class FolderService extends ContainerService<Folder> {
 
     @Override
     Folder save(Map args, Folder folder) {
-        // If inserting then we will need to update all the facets with the CIs "id" after insert
-        // If updating then we dont need to do this as the ID has already been done
-        boolean inserting = !(folder as GormEntity).ident() ?: args.insert
         Map saveArgs = new HashMap(args)
         if (args.flush) {
             saveArgs.remove('flush')

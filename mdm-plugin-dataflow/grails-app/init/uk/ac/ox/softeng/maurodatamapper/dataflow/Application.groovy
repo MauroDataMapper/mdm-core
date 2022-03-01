@@ -17,8 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.dataflow
 
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
-
 import grails.boot.GrailsApp
 import grails.boot.config.GrailsAutoConfiguration
 import grails.plugins.metadata.PluginSource

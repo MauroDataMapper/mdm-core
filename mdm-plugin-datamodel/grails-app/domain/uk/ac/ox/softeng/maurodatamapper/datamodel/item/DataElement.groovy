@@ -141,7 +141,7 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
     }
 
     def beforeValidate() {
-        long st = System.currentTimeMillis()
+//        long st = System.currentTimeMillis()
         beforeValidateModelItem()
             summaryMetadata?.each {
                 it.beforeValidateCheck(this)
