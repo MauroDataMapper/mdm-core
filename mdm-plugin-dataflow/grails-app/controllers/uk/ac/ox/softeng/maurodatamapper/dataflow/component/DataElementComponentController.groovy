@@ -108,7 +108,7 @@ class DataElementComponentController extends EditLoggingController<DataElementCo
     @Override
     protected DataElementComponent createResource() {
         DataElementComponent resource = super.createResource() as DataElementComponent
-        resource.dataClassComponent = dataClassComponentService.get(params.dataClassComponentId)
+        resource.dataClassComponent = dataClassComponentService.findByDataFlowIdAndId(params.dataFlowId, params.dataClassComponentId)
 
         if (!resource.dataClassComponent) {
             resource.dataClassComponent = dataClassComponentService.findOrCreateDataClassComponentForDataElementComponent(resource, currentUser)

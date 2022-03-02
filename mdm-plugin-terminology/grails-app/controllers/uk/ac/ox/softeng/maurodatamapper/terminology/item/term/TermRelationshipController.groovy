@@ -19,6 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.terminology.item.term
 
 import uk.ac.ox.softeng.maurodatamapper.core.controller.CatalogueItemController
 
+import grails.gorm.transactions.Transactional
+
 class TermRelationshipController extends CatalogueItemController<TermRelationship> {
 
     static responseFormats = ['json', 'xml']
@@ -62,5 +64,25 @@ class TermRelationshipController extends CatalogueItemController<TermRelationshi
     @Override
     protected void serviceInsertResource(TermRelationship resource) {
         termRelationshipService.save(DEFAULT_SAVE_ARGS, resource)
+    }
+
+    @Override
+    @Transactional
+    protected boolean validateResource(TermRelationship instance, String view) {
+        TermRelationship validated = termRelationshipService.validate(instance)
+
+        // Check that the termId parameter is one of the terms used in the json body
+        if (params.termId !in [validated.sourceTerm?.id, validated.targetTerm?.id]) {
+            validated.errors.rejectValue('sourceTerm',
+                                         'invalid.relationship.different.terms',
+                                         'Term Relationship must define one of its Terms as the termId requested')
+        }
+
+        if (validated.hasErrors()) {
+            transactionStatus.setRollbackOnly()
+            respond validated.errors, view: view // STATUS CODE 422
+            return false
+        }
+        true
     }
 }

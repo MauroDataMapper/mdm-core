@@ -17,10 +17,14 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.controller.DataModelSecuredInterceptor
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 class EnumerationValueInterceptor extends DataModelSecuredInterceptor {
+
+    EnumerationTypeService enumerationTypeService
 
     @Override
     void checkIds() {
@@ -37,5 +41,13 @@ class EnumerationValueInterceptor extends DataModelSecuredInterceptor {
     @Override
     Class getModelItemClass() {
         EnumerationValue
+    }
+
+    @Override
+    void checkParentModelItemId() throws ApiBadRequestException {
+        UUID dtId = params.enumerationTypeId ?: params.dataTypeId
+        if (!enumerationTypeService.existsByDataModelIdAndId(params.dataModelId, dtId)) {
+            throw new ApiBadRequestException('EVI01', 'Provided enumerationTypeId/dataTypeId is not inside provided dataModelId')
+        }
     }
 }

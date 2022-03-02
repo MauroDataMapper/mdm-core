@@ -184,6 +184,11 @@ class TermService extends ModelItemService<Term> {
         Term.byTerminologyId(terminologyId).id().list() as List<UUID>
     }
 
+    boolean existsByTerminologyIdAndId(UUID terminologyId, Serializable id) {
+        Term.byTerminologyIdAndId(terminologyId, Utils.toUuid(id)).count() == 1
+    }
+
+
     Term findByTerminologyIdAndId(UUID terminologyId, Serializable id) {
         Term.byTerminologyIdAndId(terminologyId, Utils.toUuid(id)).find()
     }

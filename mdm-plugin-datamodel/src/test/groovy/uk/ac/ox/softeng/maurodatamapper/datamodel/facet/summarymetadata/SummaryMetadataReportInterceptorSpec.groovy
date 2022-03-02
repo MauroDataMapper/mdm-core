@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.facet.summarymetadata
 
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.test.unit.interceptor.VariableContainedResourceInterceptorSpec
 
 import grails.testing.web.interceptor.InterceptorUnitTest
@@ -28,6 +29,9 @@ class SummaryMetadataReportInterceptorSpec extends VariableContainedResourceInte
 
     def setup() {
         mockDomains(DataModel, SummaryMetadata)
+        interceptor.summaryMetadataService = Stub(SummaryMetadataService) {
+            existsByMultiFacetAwareItemIdAndId(_, _) >> true
+        }
     }
 
     @Override

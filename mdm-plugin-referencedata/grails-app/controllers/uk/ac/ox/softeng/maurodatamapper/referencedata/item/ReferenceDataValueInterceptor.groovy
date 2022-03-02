@@ -30,7 +30,7 @@ class ReferenceDataValueInterceptor extends ReferenceDataModelSecuredInterceptor
         performChecks()
 
         if (actionName in ['search']) {
-            return canReadReferenceDataModel()
+            return canReadModel()
         }
 
         checkStandardActions()

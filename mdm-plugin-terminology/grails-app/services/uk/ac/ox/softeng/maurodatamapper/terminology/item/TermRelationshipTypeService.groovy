@@ -93,6 +93,10 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
         TermRelationshipType.byTerminologyIdAndId(terminologyId, Utils.toUuid(id)).find()
     }
 
+    boolean existsByTerminologyIdAndId(UUID terminologyId, Serializable id) {
+        TermRelationshipType.byTerminologyIdAndId(terminologyId, Utils.toUuid(id)).count() == 1
+    }
+
     @Override
     TermRelationshipType copy(Model copiedTerminology, TermRelationshipType original, CatalogueItem nonModelParent,
                               UserSecurityPolicyManager userSecurityPolicyManager) {

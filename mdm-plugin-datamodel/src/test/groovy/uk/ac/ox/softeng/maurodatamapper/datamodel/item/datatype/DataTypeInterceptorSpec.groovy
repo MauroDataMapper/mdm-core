@@ -51,6 +51,6 @@ class DataTypeInterceptorSpec extends ContainedResourceInterceptorUnitSpec imple
 
     @Override
     String getExpectedExceptionCodeForNoContainingItem() {
-        'DMSI01'
+        'MII01'
     }
 }

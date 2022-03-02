@@ -90,6 +90,10 @@ class SummaryMetadataService implements MultiFacetItemAwareService<SummaryMetada
         copy
     }
 
+    boolean existsByMultiFacetAwareItemIdAndId(UUID multiFacetAwareItemId, Serializable id) {
+        SummaryMetadata.byMultiFacetAwareItemIdAndId(multiFacetAwareItemId, id).count() == 1
+    }
+
     @Override
     SummaryMetadata findByMultiFacetAwareItemIdAndId(UUID multiFacetAwareItemId, Serializable id) {
         SummaryMetadata.byMultiFacetAwareItemIdAndId(multiFacetAwareItemId, id).get()

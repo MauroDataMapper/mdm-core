@@ -49,10 +49,6 @@ class ReferenceDataTypeReferenceSummaryMetadataReportFunctionalSpec extends Cata
     @Shared
     ReferenceDataType referenceDataType
 
-    String getCatalogueItemCopyPath() {
-        """referenceDataModels/${destinationDataModelId}/${catalogueItemDomainResourcePath}/${sourceDataModelId}/${catalogueItemId}"""
-    }
-
     @Transactional
     String getSourceDataModelId() {
         ReferenceDataModel.findByLabel('Functional Test DataModel').id.toString()
@@ -61,11 +57,6 @@ class ReferenceDataTypeReferenceSummaryMetadataReportFunctionalSpec extends Cata
     @Transactional
     String getDestinationDataModelId() {
         ReferenceDataModel.findByLabel('Destination Test DataModel').id.toString()
-    }
-
-    @Override
-    String getFacetResourcePath() {
-        "referenceSummaryMetadata/${summaryMetadata.id}/summaryMetadataReports"
     }
 
     @RunOnce
@@ -82,7 +73,7 @@ class ReferenceDataTypeReferenceSummaryMetadataReportFunctionalSpec extends Cata
         referenceDataElement = new ReferenceDataElement(label: 'Functional Test DataElement', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
                                       referenceDataModel: referenceDataModel, referenceDataType: referenceDataType).save(flush: true)
         summaryMetadata = new ReferenceSummaryMetadata(label: 'Functional Test Summary Metadata', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
-                                                       multiFacetAwareItem: referenceDataElement,
+                                                       multiFacetAwareItem: referenceDataType,
                                                        summaryMetadataType: ReferenceSummaryMetadataType.NUMBER).save(flush: true)
         sessionFactory.currentSession.flush()
     }

@@ -17,49 +17,26 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.traits.controller
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
-import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmInterceptor
+import uk.ac.ox.softeng.maurodatamapper.core.interceptor.ModelItemInterceptor
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 /**
  * @since 20/03/2020
  */
-abstract class TerminologySecuredInterceptor implements MdmInterceptor {
+abstract class TerminologySecuredInterceptor extends ModelItemInterceptor {
 
-    abstract Class getModelItemClass()
-
-    void checkIds() {
-        Utils.toUuid(params, 'terminologyId')
-        Utils.toUuid(params, 'id')
+    @Override
+    Class getModelClass() {
+        Terminology
     }
 
-    void checkTerminologyId() {
-        if (!params.terminologyId) throw new ApiBadRequestException('TSI01', 'No Terminology Id provided against secured resource')
+    @Override
+    String getModelIdParameterField() {
+        'terminologyId'
     }
 
-    void performChecks() {
-        checkIds()
-        checkTerminologyId()
-    }
-
-    boolean checkStandardActions() {
-        checkActionAuthorisationOnUnsecuredResource(getModelItemClass(), params.id, Terminology, params.terminologyId)
-    }
-
-    boolean canReadTerminology() {
-        currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, params.terminologyId) ?:
-        notFound(Terminology, params.terminologyId.toString())
-    }
-
-    boolean canCopyFromTerminologyToOtherTerminology() {
-        boolean canRead = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, params.terminologyId)
-        if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(Terminology, params.terminologyId)) {
-            return forbiddenOrNotFound(canRead, Terminology, params.terminologyId)
-        }
-        if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, params.otherTerminologyId)) {
-            return notFound(Terminology, params.otherTerminologyId)
-        }
-        true
+    @Override
+    String getOtherModelIdParameterField() {
+        'otherTerminologyId'
     }
 }

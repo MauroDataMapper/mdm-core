@@ -158,7 +158,7 @@ class Annotation implements MultiFacetItemAware, InformationAware, Diffable<Anno
         new DetachedCriteria<Annotation>(Annotation).inList('multiFacetAwareItemId', multiFacetAwareItemIds)
     }
 
-    static DetachedCriteria<Annotation> byyMultiFacetAwareItemIdAndId(Serializable multiFacetAwareItemId, Serializable resourceId) {
+    static DetachedCriteria<Annotation> byMultiFacetAwareItemIdAndId(Serializable multiFacetAwareItemId, Serializable resourceId) {
         byMultiFacetAwareItemId(multiFacetAwareItemId).idEq(Utils.toUuid(resourceId))
     }
 

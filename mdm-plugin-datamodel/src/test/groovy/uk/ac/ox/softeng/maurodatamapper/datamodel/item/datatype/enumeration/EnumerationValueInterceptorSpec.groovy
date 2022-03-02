@@ -17,12 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration
 
-
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.test.unit.interceptor.ContainedResourceInterceptorUnitSpec
@@ -37,6 +37,9 @@ class EnumerationValueInterceptorSpec extends ContainedResourceInterceptorUnitSp
         log.debug('Setting up EnumerationValueInterceptorSpec')
         mockDomains(DataModel, DataClass, DataElement, DataType, PrimitiveType,
                     ReferenceType, EnumerationType, EnumerationValue)
+        interceptor.enumerationTypeService = Stub(EnumerationTypeService) {
+            existsByDataModelIdAndId(_, _) >> true
+        }
     }
 
     @Override
@@ -56,6 +59,6 @@ class EnumerationValueInterceptorSpec extends ContainedResourceInterceptorUnitSp
 
     @Override
     String getExpectedExceptionCodeForNoContainingItem() {
-        'DMSI01'
+        'MII01'
     }
 }

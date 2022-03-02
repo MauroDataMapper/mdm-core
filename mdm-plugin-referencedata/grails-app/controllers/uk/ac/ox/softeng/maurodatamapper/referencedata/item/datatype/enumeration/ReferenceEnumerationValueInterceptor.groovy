@@ -17,10 +17,14 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationTypeService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.traits.controller.ReferenceDataModelSecuredInterceptor
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 class ReferenceEnumerationValueInterceptor extends ReferenceDataModelSecuredInterceptor {
+
+    ReferenceEnumerationTypeService referenceEnumerationTypeService
 
     @Override
     void checkIds() {
@@ -37,5 +41,13 @@ class ReferenceEnumerationValueInterceptor extends ReferenceDataModelSecuredInte
     @Override
     Class getModelItemClass() {
         ReferenceEnumerationValue
+    }
+
+    @Override
+    void checkParentModelItemId() throws ApiBadRequestException {
+        UUID dtId = params.referenceEnumerationTypeId ?: params.referenceDataTypeId
+        if (!referenceEnumerationTypeService.existsByReferenceDataModelIdAndId(params.referenceDataModelId, dtId)) {
+            throw new ApiBadRequestException('REVI01', 'Provided referenceEnumerationTypeId/referenceDataTypeId is not inside provided referenceDataModelId')
+        }
     }
 }

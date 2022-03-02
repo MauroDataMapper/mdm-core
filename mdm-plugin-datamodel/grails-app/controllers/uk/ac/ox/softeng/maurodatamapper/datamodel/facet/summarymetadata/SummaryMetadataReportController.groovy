@@ -51,7 +51,7 @@ class SummaryMetadataReportController extends EditLoggingController<SummaryMetad
     protected SummaryMetadataReport createResource() {
         SummaryMetadataReport resource = super.createResource() as SummaryMetadataReport
         resource.clearErrors()
-        resource.summaryMetadata = summaryMetadataService.get(params.summaryMetadataId)
+        resource.summaryMetadata = summaryMetadataService.findByMultiFacetAwareItemIdAndId(params.multiFacetAwareItemId, params.summaryMetadataId)
         resource
     }
 

@@ -17,10 +17,14 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet.rule
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.core.facet.RuleService
 import uk.ac.ox.softeng.maurodatamapper.core.interceptor.FacetInterceptor
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 class RuleRepresentationInterceptor extends FacetInterceptor {
+
+    RuleService ruleService
 
     @Override
     Class getFacetClass() {
@@ -35,5 +39,12 @@ class RuleRepresentationInterceptor extends FacetInterceptor {
     @Override
     void checkAdditionalIds() {
         Utils.toUuid(params, 'ruleId')
+    }
+
+    @Override
+    void checkParentId() throws ApiBadRequestException {
+        if (!ruleService.existsByMultiFacetAwareItemIdAndId(params.multiFacetAwareItemId, params.ruleId)) {
+            throw new ApiBadRequestException('AI01', 'Provided ruleId is not inside provided multiFacetAwareItemId')
+        }
     }
 }

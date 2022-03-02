@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.test.unit.interceptor
 
-
 import uk.ac.ox.softeng.maurodatamapper.security.basic.NoAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec

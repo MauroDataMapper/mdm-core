@@ -81,6 +81,10 @@ class ReferenceSummaryMetadataService implements MultiFacetItemAwareService<Refe
         domain.addToReferenceSummaryMetadata(facet)
     }
 
+    boolean existsByMultiFacetAwareItemIdAndId(UUID multiFacetAwareItemId, Serializable id) {
+        ReferenceSummaryMetadata.byMultiFacetAwareItemIdAndId(multiFacetAwareItemId, id).count() == 1
+    }
+
     @Override
     ReferenceSummaryMetadata findByMultiFacetAwareItemIdAndId(UUID multiFacetAwareItemId, Serializable id) {
         ReferenceSummaryMetadata.byMultiFacetAwareItemIdAndId(multiFacetAwareItemId, id).get()
