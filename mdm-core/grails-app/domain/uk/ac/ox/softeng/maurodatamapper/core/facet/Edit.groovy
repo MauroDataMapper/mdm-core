@@ -40,6 +40,7 @@ class Edit implements MdmDomain {
     }
 
     static mapping = {
+        batchSize(10)
         description type: 'text'
     }
 

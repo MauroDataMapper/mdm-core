@@ -20,14 +20,16 @@ package uk.ac.ox.softeng.maurodatamapper.core.diff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
-import grails.compiler.GrailsCompileStatic
+import groovy.transform.CompileStatic
 import groovy.transform.SelfType
 
 @SelfType(MdmDomain)
-@GrailsCompileStatic
+@CompileStatic
 trait Diffable<T extends Diffable> {
 
-    abstract ObjectDiff<T> diff(T obj, String context)
+    abstract ObjectDiff<T> diff(T that, String context)
+
+    abstract ObjectDiff<T> diff(T that, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache)
 
     String getDiffIdentifier() {
         getDiffIdentifier(null)

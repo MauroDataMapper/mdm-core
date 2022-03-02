@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
@@ -139,7 +141,7 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
     }
 
     def beforeValidate() {
-        long st = System.currentTimeMillis()
+//        long st = System.currentTimeMillis()
         beforeValidateModelItem()
             summaryMetadata?.each {
                 it.beforeValidateCheck(this)
@@ -184,14 +186,17 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
     }
 
     ObjectDiff<DataElement> diff(DataElement otherDataElement, String context) {
-        ObjectDiff<DataElement> diff = catalogueItemDiffBuilder(DataElement, this, otherDataElement)
+        diff(otherDataElement, context, null, null)
+    }
+
+    ObjectDiff<DataElement> diff(DataElement otherDataElement, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
+        ObjectDiff<DataElement> diff = DiffBuilder.catalogueItemDiffBuilder(DataElement, this, otherDataElement, lhsDiffCache, rhsDiffCache)
             .appendNumber('minMultiplicity', this.minMultiplicity, otherDataElement.minMultiplicity)
             .appendNumber('maxMultiplicity', this.maxMultiplicity, otherDataElement.maxMultiplicity)
 
         // Aside from branch and version, is this Data Element pointing to a different Data Type?
         if (!this.dataType.getPath().matches(otherDataElement.dataType.getPath(), this.dataClass.dataModel.getPath().last().modelIdentifier)) {
-            diff.
-                appendString('dataTypePath',
+            diff.appendString('dataTypePath',
                              this.dataType.getPath().toString(),
                              otherDataElement.dataType.getPath().toString())
         }

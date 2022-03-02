@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.model
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -28,7 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired
 @Slf4j
 abstract class ModelItemService<K extends ModelItem> extends CatalogueItemService<K> {
 
-    public final static Integer BATCH_SIZE = 5000
+    public final static Integer BATCH_SIZE = 1000
 
     @Autowired(required = false)
     List<ModelItemService> modelItemServices
@@ -112,6 +113,9 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
         long start = System.currentTimeMillis()
         log.trace('Performing batch save of {} {}', modelItems.size(), getDomainClass().simpleName)
         preBatchSaveHandling(modelItems)
+
+        Metadata.saveAll(modelItems.collectMany {it.metadata ?: []}.findAll())
+
         getDomainClass().saveAll(modelItems)
         checkBreadcrumbTreeAfterSavingCatalogueItems(modelItems)
         sessionFactory.currentSession.flush()

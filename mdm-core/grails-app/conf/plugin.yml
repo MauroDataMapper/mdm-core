@@ -98,6 +98,7 @@ hibernate:
             missing_cache_strategy: create
     jdbc:
         batch_size: 30
+        batch_versioned_data: true
     order_inserts: true
     order_updates: true
 environments:

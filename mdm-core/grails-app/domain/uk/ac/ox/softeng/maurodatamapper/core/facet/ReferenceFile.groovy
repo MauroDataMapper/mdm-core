@@ -41,6 +41,7 @@ class ReferenceFile implements CatalogueFile, MultiFacetItemAware {
     }
 
     static mapping = {
+        batchSize(10)
     }
 
     static transients = ['multiFacetAwareItem']

@@ -23,6 +23,9 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedExcept
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.CachedDiffable
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
+import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
@@ -44,6 +47,8 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataValueSer
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataTypeService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValue
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValueService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.DefaultReferenceDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.ReferenceDataJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.ReferenceDataJsonImporterService
@@ -71,6 +76,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
     ReferenceSummaryMetadataService referenceSummaryMetadataService
     ReferenceDataJsonImporterService referenceDataJsonImporterService
     ReferenceDataJsonExporterService referenceDataJsonExporterService
+    ReferenceEnumerationValueService referenceEnumerationValueService
 
     @Autowired
     Set<DefaultReferenceDataTypeProvider> defaultReferenceDataTypeProviders
@@ -698,5 +704,63 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
         }
 
         catalogueItem
+    }
+
+    @Override
+    CachedDiffable<ReferenceDataModel> loadEntireModelIntoDiffCache(UUID modelId) {
+        long start = System.currentTimeMillis()
+        ReferenceDataModel loadedModel = get(modelId)
+        log.debug('Loading entire model [{}] into memory', loadedModel.path)
+
+        // Load direct content
+
+        log.trace('Loading ReferenceDataType')
+        List<ReferenceDataType> dataTypes = referenceDataTypeService.findAllByReferenceDataModelId(loadedModel.id)
+
+        log.trace('Loading ReferenceEnumerationValue')
+        List<ReferenceEnumerationValue> enumerationValues = referenceEnumerationValueService.findAllByReferenceDataModelId(modelId)
+        Map<UUID, List<ReferenceEnumerationValue>> enumerationValuesMap = enumerationValues.groupBy {it.referenceEnumerationType.id}
+
+        log.trace('Loading ReferenceDataElement')
+        List<ReferenceDataElement> dataElements = referenceDataElementService.findAllByReferenceDataModelId(loadedModel.id)
+
+        log.trace('Loading ReferenceDataValues')
+        Map<UUID, List<ReferenceDataValue>> dataValuesMap = referenceDataValueService.findAllByReferenceDataModelId(loadedModel.id).groupBy {it.referenceDataElement.id}
+
+        log.trace('Loading Facets')
+        List<UUID> allIds = Utils.gatherIds(Collections.singleton(modelId),
+                                            dataElements.collect {it.id},
+                                            dataTypes.collect {it.id},
+                                            enumerationValues.collect {it.id})
+        Map<String, Map<UUID, List<Diffable>>> facetData = loadAllDiffableFacetsIntoMemoryByIds(allIds)
+
+        DiffCache diffCache = createCatalogueItemDiffCache(null, loadedModel, facetData)
+        createReferenceDataTypeDiffCaches(diffCache, dataTypes, enumerationValuesMap, facetData)
+        createReferenceDataElementDiffCaches(diffCache, dataElements, dataValuesMap, facetData)
+
+        log.debug('Model loaded into memory, took {}', Utils.timeTaken(start))
+        new CachedDiffable(loadedModel, diffCache)
+    }
+
+    private void createReferenceDataTypeDiffCaches(DiffCache diffCache, List<ReferenceDataType> dataTypes, Map<UUID, List<ReferenceEnumerationValue>> enumerationValuesMap,
+                                          Map<String, Map<UUID, List<Diffable>>> facetData) {
+        diffCache.addField('referenceDataTypes', dataTypes)
+        dataTypes.each {dt ->
+            DiffCache dtDiffCache = createCatalogueItemDiffCache(diffCache, dt, facetData)
+            if (dt.instanceOf(ReferenceEnumerationType)) {
+                createCatalogueItemDiffCaches(dtDiffCache, 'referenceEnumerationValues', enumerationValuesMap[dt.id], facetData)
+            }
+        }
+    }
+
+
+    private void createReferenceDataElementDiffCaches(DiffCache diffCache, List<ReferenceDataElement> dataElements, Map<UUID, List<ReferenceDataValue>> referenceDataValues,
+                                                   Map<String, Map<UUID, List<Diffable>>> facetData) {
+        diffCache.addField('referenceDataElements', dataElements)
+        dataElements.each {de ->
+            DiffCache deDiffCache = createCatalogueItemDiffCache(diffCache, de, facetData)
+            deDiffCache.addField('referenceDataValues', referenceDataValues[de.id])
+
+        }
     }
 }

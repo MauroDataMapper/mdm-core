@@ -21,7 +21,11 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
+import uk.ac.ox.softeng.maurodatamapper.core.diff.CachedDiffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
+import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
+import uk.ac.ox.softeng.maurodatamapper.core.diff.MergeDiffService
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ArrayDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.FieldDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
@@ -59,18 +63,21 @@ import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
+import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 import uk.ac.ox.softeng.maurodatamapper.version.VersionChangeType
 
 import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
+import grails.util.Environment
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormValidateable
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.orm.hibernate.cfg.JoinTable
 import org.grails.orm.hibernate.cfg.PropertyConfig
 import org.grails.orm.hibernate.proxy.HibernateProxyHandler
+import org.hibernate.engine.spi.SessionFactoryImplementor
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 
@@ -90,6 +97,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     MessageSource messageSource
     AuthorityService authorityService
     PathService pathService
+    MergeDiffService mergeDiffService
 
     @Autowired(required = false)
     Set<MdmDomainService> domainServices
@@ -218,6 +226,13 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         log.debug('Finalising folder')
         long start = System.currentTimeMillis()
 
+        // During testing its very important that we dont disable constraints otherwise we may miss an invalid model,
+        // The disabling is done to provide a speed up during saving which is not necessary during test
+        if (Environment.current != Environment.TEST) {
+            log.debug('Disabling database constraints')
+            GormUtils.disableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
+        }
+
         folder.finalised = true
         folder.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
 
@@ -236,6 +251,12 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
                                       "${folder.label} finalised by ${user.firstName} ${user.lastName} on " +
                                       "${OffsetDateTimeConverter.toString(folder.dateFinalised)}",
                                       user)
+
+        if (Environment.current != Environment.TEST) {
+            log.debug('Enabling database constraints')
+            GormUtils.enableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
+        }
+
         log.debug('Folder finalised took {}', Utils.timeTaken(start))
         folder
     }
@@ -689,17 +710,32 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     ObjectDiff<VersionedFolder> getDiffForVersionedFolders(VersionedFolder thisVersionedFolder, VersionedFolder otherVersionedFolder, String contentContext = 'none') {
         log.debug('Obtaining diff for {} <> {}', thisVersionedFolder.diffIdentifier, otherVersionedFolder.diffIdentifier)
-        ObjectDiff<VersionedFolder> coreDiff = thisVersionedFolder.diff(otherVersionedFolder, 'none')
-        folderService.loadModelsIntoFolderObjectDiff(coreDiff, thisVersionedFolder, otherVersionedFolder, contentContext)
+
+        CachedDiffable<VersionedFolder> thisCachedDiffable = loadEntireVersionedFolderIntoDiffCache(thisVersionedFolder.id)
+        CachedDiffable<VersionedFolder> otherCachedDiffable = loadEntireVersionedFolderIntoDiffCache(otherVersionedFolder.id)
+        getDiffForVersionedFolders(thisCachedDiffable, otherCachedDiffable, contentContext)
+    }
+
+    ObjectDiff<VersionedFolder> getDiffForVersionedFolders( CachedDiffable<VersionedFolder> thisCachedDiffable, CachedDiffable<VersionedFolder> otherCachedDiffable,
+                                                            String contentContext = 'none') {
+        ObjectDiff<VersionedFolder> coreDiff =  thisCachedDiffable.diff(otherCachedDiffable, 'none')
+        folderService.loadModelsIntoFolderObjectDiff(coreDiff, thisCachedDiffable.diffable, otherCachedDiffable.diffable, contentContext)
         coreDiff
     }
 
+    @Transactional(readOnly = true)
     MergeDiff<VersionedFolder> getMergeDiffForVersionedFolders(VersionedFolder sourceVersionedFolder, VersionedFolder targetVersionedFolder) {
+        log.debug('Generate mergediff source {} to target {}', sourceVersionedFolder.path, targetVersionedFolder.path)
+        long start = System.currentTimeMillis()
         VersionedFolder commonAncestor = findCommonAncestorBetweenModels(sourceVersionedFolder, targetVersionedFolder)
 
         String caModelIdentifier = commonAncestor.modelVersion ?: commonAncestor.branchName
         String sourceModelIdentifier = sourceVersionedFolder.modelVersion ?: sourceVersionedFolder.branchName
         String targetModelIdentifier = targetVersionedFolder.modelVersion ?: targetVersionedFolder.branchName
+
+        CachedDiffable<VersionedFolder> sourceCachedDiffable = loadEntireVersionedFolderIntoDiffCache(sourceVersionedFolder.id)
+        CachedDiffable<VersionedFolder> targetCachedDiffable = loadEntireVersionedFolderIntoDiffCache(targetVersionedFolder.id)
+        CachedDiffable<VersionedFolder> caCachedDiffable = loadEntireVersionedFolderIntoDiffCache(commonAncestor.id)
 
         /*
         Context is needed to allow CodeSet term comparisons
@@ -712,20 +748,20 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         This context solution will handle that issue as only finalised Terminologies can be used for CS outside of a VF which means a comparsion of 1.0.0|source of a VF
         which uses a 1.0.0|2.0.0 external T the terms will still be correctly identified.
          */
-        ObjectDiff<VersionedFolder> caDiffSource = getDiffForVersionedFolders(commonAncestor, sourceVersionedFolder, "${caModelIdentifier}|${sourceModelIdentifier}")
-        ObjectDiff<VersionedFolder> caDiffTarget = getDiffForVersionedFolders(commonAncestor, targetVersionedFolder, "${caModelIdentifier}|${targetModelIdentifier}")
+        ObjectDiff<VersionedFolder> caDiffSource = getDiffForVersionedFolders(caCachedDiffable, sourceCachedDiffable, "${caModelIdentifier}|${sourceModelIdentifier}")
+        ObjectDiff<VersionedFolder> caDiffTarget = getDiffForVersionedFolders(caCachedDiffable, targetCachedDiffable, "${caModelIdentifier}|${targetModelIdentifier}")
 
         removeBranchNameDiff(caDiffSource)
         removeBranchNameDiff(caDiffTarget)
 
-        DiffBuilder
-            .mergeDiff(VersionedFolder)
-            .forMergingDiffable(sourceVersionedFolder)
-            .intoDiffable(targetVersionedFolder)
-            .havingCommonAncestor(commonAncestor)
-            .withCommonAncestorDiffedAgainstSource(caDiffSource)
-            .withCommonAncestorDiffedAgainstTarget(caDiffTarget)
-            .generate()
+      MergeDiff<VersionedFolder> mergeDiff =  mergeDiffService.generateMergeDiff(DiffBuilder
+                                               .mergeDiff(VersionedFolder)
+                                               .forMergingDiffable(sourceVersionedFolder)
+                                               .intoDiffable(targetVersionedFolder)
+                                               .havingCommonAncestor(commonAncestor)
+                                               .withCommonAncestorDiffedAgainstSource(caDiffSource)
+                                               .withCommonAncestorDiffedAgainstTarget(caDiffTarget)
+        )
             .flatten()
             .clean {
                 Path diffPath = it.fullyQualifiedPath
@@ -734,6 +770,8 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
                 // TODO come up with an agnostic way of doing this
                 lastNode.isPropertyNode() && lastNode.prefix == 'tm' && diffPath.any {it.prefix == 'cs'}
             }
+        log.debug('MergeDiff completed, took {}', Utils.timeTaken(start))
+        mergeDiff
     }
 
     void removeBranchNameDiff(ObjectDiff diff) {
@@ -788,23 +826,12 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     List<FieldPatchData> getSortedFieldPatchDataForMerging(ObjectPatchData objectPatchData) {
         /*
-          We can process modifications in any order
+          We have to process modifications in after everything else incase the modifications require something to have been created
           Process creations before deletions, that way any deletions will automatically take care of any links to potentially created objects
            */
         objectPatchData.patches.sort {l, r ->
-            switch (l.type) {
-                case 'modification':
-                    if (r.type == 'modification') return 0
-                    else return -1
-                case 'creation':
-                    if (r.type == 'modification') return 1
-                    if (r.type == 'deletion') return -1
-                    return getSortResultForFieldPatchPath(l.path, r.path)
-                case 'deletion':
-                    if (r.type == 'modification') return 1
-                    if (r.type == 'creation') return 1
-                    return getSortResultForFieldPatchPath(l.path, r.path)
-            }
+            if (l.type == r.type) return getSortResultForFieldPatchPath(l.path, r.path)
+            l <=> r
         }
     }
 
@@ -1070,5 +1097,36 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     @Override
     boolean isMultiFacetAwareFinalised(VersionedFolder multiFacetAwareItem) {
         multiFacetAwareItem.finalised
+    }
+
+    CachedDiffable<VersionedFolder> loadEntireVersionedFolderIntoDiffCache(UUID folderId) {
+        long start = System.currentTimeMillis()
+        VersionedFolder loadedFolder = get(folderId)
+        log.debug('Loading entire folder [{}] into memory', loadedFolder.path)
+
+        // Load direct content
+
+        log.trace('Loading Folder')
+        List<Folder> folders = getAllFoldersInside(loadedFolder)
+        Map<UUID,List<Folder>> foldersMap = folders.groupBy{it.parentFolder.id}
+
+        log.trace('Loading Facets')
+        List<UUID> allIds = Utils.gatherIds(Collections.singleton(folderId),
+                                            folders.collect {it.id})
+
+        Map<String, Map<UUID, List<Diffable>>> facetData = loadAllDiffableFacetsIntoMemoryByIds(allIds)
+
+        DiffCache diffCache = folderService.createFolderDiffCache(null, loadedFolder, facetData)
+        folderService.createFolderDiffCaches(diffCache,  foldersMap, facetData, folderId)
+
+        log.debug('Folder loaded into memory, took {}', Utils.timeTaken(start))
+        new CachedDiffable(loadedFolder, diffCache)
+    }
+
+    private List<Folder> getAllFoldersInside(Folder folder){
+        List<Folder> folders = []
+        folders.addAll(folder.childFolders)
+        folders.addAll(folder.childFolders.collectMany {getAllFoldersInside(it)})
+        folders
     }
 }

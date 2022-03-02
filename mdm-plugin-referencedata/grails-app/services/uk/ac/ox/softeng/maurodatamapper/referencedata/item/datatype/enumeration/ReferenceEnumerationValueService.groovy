@@ -128,4 +128,9 @@ class ReferenceEnumerationValueService extends ModelItemService<ReferenceEnumera
     List<ReferenceEnumerationValue> findAllByMetadataNamespace(String namespace, Map pagination) {
         ReferenceEnumerationValue.byMetadataNamespace(namespace).list(pagination)
     }
+
+
+    List<ReferenceEnumerationValue> findAllByReferenceDataModelId(Serializable dataModelId) {
+        ReferenceEnumerationValue.byReferenceDataModelId(dataModelId).list()
+    }
 }

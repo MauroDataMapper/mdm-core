@@ -25,7 +25,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
+import uk.ac.ox.softeng.maurodatamapper.core.diff.CachedDiffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.MergeDiffService
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.FieldDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.MergeDiff
@@ -89,9 +91,6 @@ abstract class ModelService<K extends Model>
     @Autowired(required = false)
     Set<MdmDomainService> domainServices
 
-    @Autowired(required = false)
-    Set<MultiFacetItemAwareService> multiFacetItemAwareServices
-
     @Autowired
     VersionedFolderService versionedFolderService
 
@@ -106,6 +105,9 @@ abstract class ModelService<K extends Model>
 
     @Autowired
     PathService pathService
+
+    @Autowired
+    MergeDiffService mergeDiffService
 
     @Autowired
     MessageSource messageSource
@@ -137,8 +139,6 @@ abstract class ModelService<K extends Model>
     abstract List<K> findAllDeletedModels(Map pagination)
 
     abstract List<K> findAllByFolderId(UUID folderId)
-
-
 
     abstract K validate(K model)
 
@@ -174,7 +174,9 @@ abstract class ModelService<K extends Model>
 
     abstract void updateModelItemPathsAfterFinalisationOfModel(K model)
 
-    List<K> findAllByFolderIdInList(Collection<UUID> folderIds){
+    abstract CachedDiffable<K> loadEntireModelIntoDiffCache(UUID modelId)
+
+    List<K> findAllByFolderIdInList(Collection<UUID> folderIds) {
         getDomainClass().byFolderIdInList(folderIds).list() as List<K>
     }
 
@@ -544,23 +546,12 @@ abstract class ModelService<K extends Model>
 
     List<FieldPatchData> getSortedFieldPatchDataForMerging(ObjectPatchData objectPatchData) {
         /*
-          We can process modifications in any order
+          We have to process modifications in after everything else incase the modifications require something to have been created
           Process creations before deletions, that way any deletions will automatically take care of any links to potentially created objects
            */
         objectPatchData.patches.sort {l, r ->
-            switch (l.type) {
-                case 'modification':
-                    if (r.type == 'modification') return 0
-                    else return -1
-                case 'creation':
-                    if (r.type == 'modification') return 1
-                    if (r.type == 'deletion') return -1
-                    return getSortResultForFieldPatchPath(l.path, r.path)
-                case 'deletion':
-                    if (r.type == 'modification') return 1
-                    if (r.type == 'creation') return 1
-                    return getSortResultForFieldPatchPath(l.path, r.path)
-            }
+            if (l.type == r.type) return getSortResultForFieldPatchPath(l.path, r.path)
+            l <=> r
         }
     }
 
@@ -722,7 +713,9 @@ abstract class ModelService<K extends Model>
     }
 
     ObjectDiff<K> getDiffForModels(K thisModel, K otherModel) {
-        thisModel.diff(otherModel, 'none')
+        CachedDiffable<K> thisCachedDiffable = loadEntireModelIntoDiffCache(thisModel.id)
+        CachedDiffable<K> otherCachedDiffable = loadEntireModelIntoDiffCache(otherModel.id)
+        thisCachedDiffable.diff(otherCachedDiffable, 'none')
     }
 
     K findCommonAncestorBetweenModels(K leftModel, K rightModel) {
@@ -807,8 +800,12 @@ abstract class ModelService<K extends Model>
     MergeDiff<K> getMergeDiffForModels(K sourceModel, K targetModel) {
         K commonAncestor = findCommonAncestorBetweenModels(sourceModel, targetModel)
 
-        ObjectDiff<K> caDiffSource = commonAncestor.diff(sourceModel, 'none')
-        ObjectDiff<K> caDiffTarget = commonAncestor.diff(targetModel, 'none')
+        CachedDiffable<K> sourceCachedDiffable = loadEntireModelIntoDiffCache(sourceModel.id)
+        CachedDiffable<K> targetCachedDiffable = loadEntireModelIntoDiffCache(targetModel.id)
+        CachedDiffable<K> caCachedDiffable = loadEntireModelIntoDiffCache(commonAncestor.id)
+
+        ObjectDiff<K> caDiffSource = caCachedDiffable.diff(sourceCachedDiffable, 'none')
+        ObjectDiff<K> caDiffTarget = caCachedDiffable.diff(targetCachedDiffable, 'none')
 
         // Remove the branchname as  diff as we know its a diff and for merging we dont want it
         Predicate branchNamePredicate = [test: {FieldDiff fieldDiff ->
@@ -818,14 +815,14 @@ abstract class ModelService<K extends Model>
         caDiffSource.diffs.removeIf(branchNamePredicate)
         caDiffTarget.diffs.removeIf(branchNamePredicate)
 
-        DiffBuilder
-            .mergeDiff(sourceModel.class as Class<K>)
-            .forMergingDiffable(sourceModel)
-            .intoDiffable(targetModel)
-            .havingCommonAncestor(commonAncestor)
-            .withCommonAncestorDiffedAgainstSource(caDiffSource)
-            .withCommonAncestorDiffedAgainstTarget(caDiffTarget)
-            .generate()
+        mergeDiffService.generateMergeDiff(DiffBuilder
+                                               .mergeDiff(sourceModel.class as Class<K>)
+                                               .forMergingDiffable(sourceModel)
+                                               .intoDiffable(targetModel)
+                                               .havingCommonAncestor(commonAncestor)
+                                               .withCommonAncestorDiffedAgainstSource(caDiffSource)
+                                               .withCommonAncestorDiffedAgainstTarget(caDiffTarget)
+        )
     }
 
     @Override

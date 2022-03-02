@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -194,5 +193,9 @@ class EnumerationValueService extends ModelItemService<EnumerationValue> impleme
         enumerationType.addToEnumerationValues(copy)
         copy
 
+    }
+
+    List<EnumerationValue> findAllByDataModelId(Serializable dataModelId) {
+        EnumerationValue.byDataModelId(dataModelId).list()
     }
 }

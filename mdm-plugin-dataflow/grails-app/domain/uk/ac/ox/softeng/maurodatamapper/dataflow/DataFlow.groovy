@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.dataflow
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
@@ -120,7 +122,11 @@ class DataFlow implements ModelItem<DataFlow, DataModel> {
     }
 
     ObjectDiff<DataFlow> diff(DataFlow otherDataFlow, String context) {
-        catalogueItemDiffBuilder(DataFlow, this, otherDataFlow)
+        diff(otherDataFlow, context, null, null)
+    }
+
+    ObjectDiff<DataFlow> diff(DataFlow otherDataFlow, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
+        DiffBuilder.catalogueItemDiffBuilder(DataFlow, this, otherDataFlow, lhsDiffCache, rhsDiffCache)
     }
 
     boolean refersToDataModelId(UUID dataModelId) {

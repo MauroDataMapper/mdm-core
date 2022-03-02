@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile
 
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.boot.GrailsApp
 import grails.boot.config.GrailsAutoConfiguration

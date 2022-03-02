@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
@@ -188,7 +190,7 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     }
 
     def beforeValidate() {
-        long st = System.currentTimeMillis()
+//        long st = System.currentTimeMillis()
         dataModel = dataModel ?: parentDataClass?.getModel()
         beforeValidateModelItem()
             summaryMetadata?.each {
@@ -214,12 +216,22 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     }
 
     ObjectDiff<DataClass> diff(DataClass otherDataClass, String context) {
-        catalogueItemDiffBuilder(DataClass, this, otherDataClass)
+        diff(otherDataClass, context, null, null)
+    }
+
+    ObjectDiff<DataClass> diff(DataClass otherDataClass, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
+        ObjectDiff<DataClass> base = DiffBuilder.catalogueItemDiffBuilder(DataClass, this, otherDataClass, lhsDiffCache, rhsDiffCache)
             .appendNumber('minMultiplicity', this.minMultiplicity, otherDataClass.minMultiplicity)
             .appendNumber('maxMultiplicity', this.maxMultiplicity, otherDataClass.maxMultiplicity)
-            .appendList(DataClass, 'dataClasses', this.dataClasses, otherDataClass.dataClasses)
-            .appendList(DataElement, 'dataElements', this.dataElements, otherDataClass.dataElements)
 
+        if (!lhsDiffCache || !rhsDiffCache) {
+            base.appendCollection(DataClass, 'dataClasses', this.dataClasses, otherDataClass.dataClasses)
+                .appendCollection(DataElement, 'dataElements', this.dataElements, otherDataClass.dataElements)
+        } else {
+            base.appendCollection(DataClass, 'dataClasses')
+                .appendCollection(DataElement, 'dataElements')
+        }
+        base
     }
 
     @Override

@@ -48,6 +48,8 @@ trait MultiFacetItemAwareService<M extends MultiFacetItemAware> extends MdmDomai
 
     abstract List<M> findAllByMultiFacetAwareItemId(UUID multiFacetAwareItemId, Map pagination)
 
+    abstract List<M> findAllByMultiFacetAwareItemIdInList(List<UUID> multiFacetAwareItemIds)
+
     abstract DetachedCriteria<M> getBaseDeleteCriteria()
 
     abstract void saveMultiFacetAwareItem(M facet)

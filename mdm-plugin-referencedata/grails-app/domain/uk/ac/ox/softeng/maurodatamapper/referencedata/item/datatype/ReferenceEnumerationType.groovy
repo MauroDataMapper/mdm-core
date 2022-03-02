@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype
 
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.IndexedSiblingAware
@@ -63,7 +65,7 @@ class ReferenceEnumerationType extends ReferenceDataType<ReferenceEnumerationTyp
         if (referenceEnumerationValues) {
             // If model exists and this is a new ET then sort children
             if (model?.id && !id) fullSortOfChildren(referenceEnumerationValues)
-            referenceEnumerationValues.each { ev ->
+            referenceEnumerationValues.each {ev ->
                 ev.createdBy = ev.createdBy ?: createdBy
                 ev.beforeValidate()
             }
@@ -72,8 +74,19 @@ class ReferenceEnumerationType extends ReferenceDataType<ReferenceEnumerationTyp
     }
 
     ObjectDiff<ReferenceEnumerationType> diff(ReferenceEnumerationType otherDataType, String context) {
-        catalogueItemDiffBuilder(ReferenceEnumerationType, this, otherDataType)
-            .appendList(ReferenceEnumerationValue, 'referenceEnumerationValues', this.referenceEnumerationValues, otherDataType.referenceEnumerationValues)
+        diff(otherDataType, context, null, null)
+    }
+
+    ObjectDiff<ReferenceEnumerationType> diff(ReferenceEnumerationType otherDataType, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
+        ObjectDiff<ReferenceEnumerationType> base = DiffBuilder.catalogueItemDiffBuilder(ReferenceEnumerationType, this, otherDataType, lhsDiffCache, rhsDiffCache)
+
+
+        if (!lhsDiffCache || !rhsDiffCache) {
+            base.appendCollection(ReferenceEnumerationValue, 'referenceEnumerationValues', this.referenceEnumerationValues, otherDataType.referenceEnumerationValues)
+        } else {
+            base.appendCollection(ReferenceEnumerationValue, 'referenceEnumerationValues')
+        }
+        base
     }
 
     int countReferenceEnumerationValuesByKey(String key) {

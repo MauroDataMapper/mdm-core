@@ -23,6 +23,9 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedExcept
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.CachedDiffable
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
+import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
@@ -49,6 +52,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ModelDataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValueService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.DefaultDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter.DataModelJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelJsonImporterService
@@ -66,6 +70,7 @@ import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
+import grails.util.Environment
 import groovy.util.logging.Slf4j
 import org.grails.datastore.mapping.validation.ValidationErrors
 import org.hibernate.engine.spi.SessionFactoryImplementor
@@ -83,6 +88,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     SummaryMetadataService summaryMetadataService
     DataModelJsonImporterService dataModelJsonImporterService
     DataModelJsonExporterService dataModelJsonExporterService
+    EnumerationValueService enumerationValueService
 
     @Autowired
     Set<DefaultDataTypeProvider> defaultDataTypeProviders
@@ -427,12 +433,19 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         }
         referenceTypes.each {it.skipValidation(true)}
 
+        // During testing its very important that we dont disable constraints otherwise we may miss an invalid model,
+        // The disabling is done to provide a speed up during saving which is not necessary during test
+        if (Environment.current != Environment.TEST) {
+            log.debug('Disabling database constraints')
+            GormUtils.disableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
+        }
+
         long subStart = System.currentTimeMillis()
         dataTypeService.saveAll(enumerationTypes, modelItemBatchSize)
         dataTypeService.saveAll(primitiveTypes, modelItemBatchSize)
         dataTypeService.saveAll(modelDataTypes, modelItemBatchSize)
         int totalDts = enumerationTypes.size() + primitiveTypes.size() + modelDataTypes.size()
-        if(totalDts)   log.debug('Saved {} dataTypes in {}', totalDts, Utils.timeTaken(subStart))
+        if (totalDts) log.debug('Saved {} dataTypes in {}', totalDts, Utils.timeTaken(subStart))
 
         subStart = System.currentTimeMillis()
         dataElements.addAll dataClassService.saveAllAndGetDataElements(dataClasses)
@@ -440,12 +453,17 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
         subStart = System.currentTimeMillis()
         dataTypeService.saveAll(referenceTypes as Collection<DataType>, modelItemBatchSize)
-        if(referenceTypes) log.debug('Saved {} reference datatypes in {}', referenceTypes.size(), Utils.timeTaken(subStart))
+        if (referenceTypes) log.debug('Saved {} reference datatypes in {}', referenceTypes.size(), Utils.timeTaken(subStart))
 
         subStart = System.currentTimeMillis()
         dataElementService.saveAll(dataElements, modelItemBatchSize)
-       if(dataElements) log.debug('Saved {} dataElements in {}', dataElements.size(), Utils.timeTaken(subStart))
+        if (dataElements) log.debug('Saved {} dataElements in {}', dataElements.size(), Utils.timeTaken(subStart))
 
+
+        if (Environment.current != Environment.TEST) {
+            log.debug('Enabling database constraints')
+            GormUtils.enableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
+        }
 
         log.trace('Content save of DataModel complete in {}', Utils.timeTaken(start))
     }
@@ -1034,13 +1052,13 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
      * @param userSecurityPolicyManager
      * @return
      */
-    def subset(DataModel sourceDataModel, DataModel targetDataModel, Subset subsetData, User user, UserSecurityPolicyManager userSecurityPolicyManager) {
+    def subset(DataModel sourceDataModel, DataModel targetDataModel, Subset subsetData, UserSecurityPolicyManager userSecurityPolicyManager) {
         subsetData.additions.each {dataElementId ->
-            subsetAddition(sourceDataModel, targetDataModel, Utils.toUuid(dataElementId), user, userSecurityPolicyManager)
+            subsetAddition(sourceDataModel, targetDataModel, Utils.toUuid(dataElementId), userSecurityPolicyManager)
         }
 
         subsetData.deletions.each {dataElementId ->
-            subsetDeletion(sourceDataModel, targetDataModel, Utils.toUuid(dataElementId), user, userSecurityPolicyManager)
+            subsetDeletion(sourceDataModel, targetDataModel, Utils.toUuid(dataElementId), userSecurityPolicyManager)
         }
 
         if (subsetData.deletions.size() > 0) {
@@ -1082,7 +1100,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
      * @param userSecurityPolicyManager
      * @return
      */
-    private subsetAddition(DataModel sourceDataModel, DataModel targetDataModel, UUID dataElementId, User user, UserSecurityPolicyManager userSecurityPolicyManager) {
+    private subsetAddition(DataModel sourceDataModel, DataModel targetDataModel, UUID dataElementId, UserSecurityPolicyManager userSecurityPolicyManager) {
         DataElement dataElementInSource = getDataElementInModel(sourceDataModel, dataElementId)
 
         Path pathInSource = dataElementInSource.getPath()
@@ -1099,7 +1117,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
             // Now iterate forwards through the path, making sure that a domain exists for each node of the path
             // Assumption is that the first node of pathInTarget is a dc.
-            dataClassService.subset(sourceDataModel, targetDataModel, dataElementInSource, pathInTarget, user, userSecurityPolicyManager)
+            dataClassService.subset(sourceDataModel, targetDataModel, dataElementInSource, pathInTarget, userSecurityPolicyManager)
         }
     }
 
@@ -1112,11 +1130,10 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
      * @param sourceDataModel
      * @param targetDataModel
      * @param dataElementId
-     * @param user
      * @param userSecurityPolicyManager
      * @return
      */
-    private subsetDeletion(DataModel sourceDataModel, DataModel targetDataModel, UUID dataElementId, User user, UserSecurityPolicyManager userSecurityPolicyManager) {
+    private subsetDeletion(DataModel sourceDataModel, DataModel targetDataModel, UUID dataElementId, UserSecurityPolicyManager userSecurityPolicyManager) {
         DataElement dataElementInSource = getDataElementInModel(sourceDataModel, dataElementId)
 
         Path pathInSource = dataElementInSource.getPath()
@@ -1166,5 +1183,74 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         }
 
         intersection
+    }
+
+    @Override
+    CachedDiffable<DataModel> loadEntireModelIntoDiffCache(UUID modelId) {
+        long start = System.currentTimeMillis()
+        DataModel loadedModel = get(modelId)
+        log.debug('Loading entire model [{}] into memory', loadedModel.path)
+
+        // Load direct content
+
+        log.trace('Loading DataType')
+        List<DataType> dataTypes = dataTypeService.findAllByDataModelId(loadedModel.id)
+
+        log.trace('Loading EnumerationValue')
+        List<EnumerationValue> enumerationValues = enumerationValueService.findAllByDataModelId(modelId)
+        Map<UUID, List<EnumerationValue>> enumerationValuesMap = enumerationValues.groupBy {it.enumerationType.id}
+
+        log.trace('Loading DataClass')
+        List<DataClass> dataClasses = dataClassService.findAllByDataModelId(loadedModel.id)
+        Map<UUID, List<DataClass>> dataClassesMap = dataClasses.groupBy {it.parentDataClass?.id}
+
+
+        log.trace('Loading DataElement')
+        List<DataElement> dataElements = dataElementService.findAllByDataModelId(loadedModel.id)
+        Map<UUID, List<DataElement>> dataElementsMap = dataElements.groupBy {it.dataClass.id}
+
+        log.trace('Loading Facets')
+        List<UUID> allIds = Utils.gatherIds(Collections.singleton(modelId),
+                                            dataClasses.collect {it.id},
+                                            dataElements.collect {it.id},
+                                            dataTypes.collect {it.id},
+                                            enumerationValues.collect {it.id})
+        Map<String, Map<UUID, List<Diffable>>> facetData = loadAllDiffableFacetsIntoMemoryByIds(allIds)
+
+        DiffCache diffCache = createCatalogueItemDiffCache(null, loadedModel, facetData)
+        createDataTypeDiffCaches(diffCache, dataTypes, enumerationValuesMap, facetData)
+        createDataClassDiffCaches(diffCache, dataClassesMap, dataElementsMap, facetData, null)
+
+        log.debug('Model loaded into memory, took {}', Utils.timeTaken(start))
+        new CachedDiffable(loadedModel, diffCache)
+    }
+
+    private void createDataClassDiffCaches(DiffCache diffCache, Map<UUID, List<DataClass>> dataClassesMap, Map<UUID, List<DataElement>> dataElementsMap,
+                                           Map<String, Map<UUID, List<Diffable>>> facetData, UUID dataClassId) {
+
+        List<DataClass> dataClasses = dataClassesMap[dataClassId]
+        diffCache.addField('dataClasses', dataClasses)
+
+        // Allow for the root addition where the dataClassId is null so we're adding to the DM diffCache
+        if (dataClassId) {
+            addFacetDataToDiffCache(diffCache, facetData, dataClassId)
+            createCatalogueItemDiffCaches(diffCache, 'dataElements', dataElementsMap[dataClassId], facetData)
+        }
+
+        dataClasses.each {dc ->
+            DiffCache dcDiffCache = createCatalogueItemDiffCache(diffCache, dc, facetData)
+            createDataClassDiffCaches(dcDiffCache, dataClassesMap, dataElementsMap, facetData, dc.id)
+        }
+    }
+
+    private void createDataTypeDiffCaches(DiffCache diffCache, List<DataType> dataTypes, Map<UUID, List<EnumerationValue>> enumerationValuesMap,
+                                          Map<String, Map<UUID, List<Diffable>>> facetData) {
+        diffCache.addField('dataTypes', dataTypes)
+        dataTypes.each {dt ->
+            DiffCache dtDiffCache = createCatalogueItemDiffCache(diffCache, dt, facetData)
+            if (dt.instanceOf(EnumerationType)) {
+                createCatalogueItemDiffCaches(dtDiffCache, 'enumerationValues', enumerationValuesMap[dt.id], facetData)
+            }
+        }
     }
 }

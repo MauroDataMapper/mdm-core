@@ -73,7 +73,7 @@ class BootStrap implements SecurityDefinition {
             groupBasedSecurityPolicyManagerService.storeUserSecurityPolicyManager(defaultUserSecurityPolicyManager)
         }
         // Only allow bootstrapping to be disabled if environment is prod
-        if (Environment.current != Environment.PRODUCTION || grailsApplication.config.maurodatamapper.bootstrap.adminuser) {
+        if (Environment.current != Environment.PRODUCTION || grailsApplication.config.getProperty('maurodatamapper.bootstrap.adminuser', Boolean, true)) {
             log.info('Bootstrapping admin user and administrators group')
             CatalogueUser.withNewTransaction {
                 admin = CatalogueUser.findByEmailAddress(StandardEmailAddress.ADMIN)
@@ -90,7 +90,7 @@ class BootStrap implements SecurityDefinition {
             }
         }
 
-        if (Environment.current == Environment.PRODUCTION && !grailsApplication.config.maurodatamapper.bootstrap.adminuser) {
+        if (Environment.current == Environment.PRODUCTION && !grailsApplication.config.getProperty('maurodatamapper.bootstrap.adminuser', Boolean, true)) {
             CatalogueUser.withNewTransaction {
                 if (UserGroup.countByApplicationGroupRole(GroupRole.findByName(GroupRole.SITE_ADMIN_ROLE_NAME)) == 0) {
                     log.warn('Bootstrapping of admin user has been disabled and there are no site admin level groups, the create user endpoint will be opened to allow an ' +
@@ -99,8 +99,6 @@ class BootStrap implements SecurityDefinition {
             }
         }
 
-        performPostMigrationChecks()
-
         log.debug('Main bootstrap complete')
 
         environments {
@@ -108,11 +106,24 @@ class BootStrap implements SecurityDefinition {
                 //dev env relies almost entirely upon adminusers being bootstrapped
                 CatalogueUser.withNewTransaction {
 
-                    getOrCreateModernSecurityUsers('development', false)
-                    checkAndSave(messageSource, editor, reader, authenticated, pending, containerAdmin, author, reviewer, creator)
+                    createModernSecurityUsers('development', false)
+                    checkAndSave(messageSource, editor,
+                                 pending,
+                                 containerAdmin,
+                                 author,
+                                 reviewer,
+                                 reader,
+                                 authenticated,
+                                 creator)
 
-                    getOrCreateBasicGroups('development', false)
-                    checkAndSave(messageSource, editors, readers)
+                    createBasicGroups('development', false)
+                    checkAndSave(messageSource,
+                                 editors,
+                                 readers,
+                                 reviewers,
+                                 authors,
+                                 containerAdmins,
+                                 admins)
 
                     Folder folder = Folder.findByLabel('Development Folder')
 
@@ -162,29 +173,8 @@ class BootStrap implements SecurityDefinition {
                 log.debug('Development environment bootstrap complete')
             }
             production {
-                if (grailsApplication.config.maurodatamapper.bootstrap.folder) {
-                    CatalogueUser.withNewTransaction {
-                        if (!Folder.count()) {
-                            Folder folder = new Folder(
-                                label: 'Example Folder',
-                                createdBy: StandardEmailAddress.ADMIN,
-                                readableByAuthenticatedUsers: true,
-                                description: 'This folder is readable by all authenticated users, and currently only editable by users in the ' +
-                                             'administrators group. Future suggestions: rename this folder to be more descriptive, and alter group ' +
-                                             'access.')
-                            checkAndSave(messageSource, folder)
-
-                            // Make sure the folder is secured
-                            if (SecurableResourceGroupRole.bySecurableResourceAndGroupRoleIdAndUserGroupId(
-                                folder, groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole.id, admins.id).count() == 0) {
-                                checkAndSave(messageSource, new SecurableResourceGroupRole(
-                                    createdBy: StandardEmailAddress.ADMIN,
-                                    securableResource: folder,
-                                    userGroup: admins,
-                                    groupRole: groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole))
-                            }
-                        }
-                    }
+                if (grailsApplication.config.getProperty('maurodatamapper.bootstrap.folder', Boolean, true)) {
+                    bootstrapExampleFolder()
                 }
                 log.debug('Production environment bootstrap complete')
             }
@@ -193,6 +183,28 @@ class BootStrap implements SecurityDefinition {
     def destroy = {
     }
 
-    void performPostMigrationChecks() {
+    void bootstrapExampleFolder() {
+        CatalogueUser.withNewTransaction {
+            if (!Folder.count()) {
+                Folder folder = new Folder(
+                    label: 'Example Folder',
+                    createdBy: StandardEmailAddress.ADMIN,
+                    readableByAuthenticatedUsers: true,
+                    description: 'This folder is readable by all authenticated users, and currently only editable by users in the ' +
+                                 'administrators group. Future suggestions: rename this folder to be more descriptive, and alter group ' +
+                                 'access.')
+                checkAndSave(messageSource, folder)
+
+                // Make sure the folder is secured
+                if (SecurableResourceGroupRole.bySecurableResourceAndGroupRoleIdAndUserGroupId(
+                    folder, groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole.id, admins.id).count() == 0) {
+                    checkAndSave(messageSource, new SecurableResourceGroupRole(
+                        createdBy: StandardEmailAddress.ADMIN,
+                        securableResource: folder,
+                        userGroup: admins,
+                        groupRole: groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole))
+                }
+            }
+        }
     }
 }

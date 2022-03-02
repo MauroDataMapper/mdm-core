@@ -23,6 +23,9 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedExcept
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.CachedDiffable
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
+import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
@@ -50,6 +53,7 @@ import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Transactional
 import grails.util.Environment
+import grails.util.Pair
 import groovy.util.logging.Slf4j
 import org.hibernate.engine.spi.SessionFactoryImplementor
 
@@ -668,4 +672,37 @@ class TerminologyService extends ModelService<Terminology> {
         0
     }
 
+    @Override
+    CachedDiffable<Terminology> loadEntireModelIntoDiffCache(UUID modelId) {
+        long start = System.currentTimeMillis()
+        Terminology loadedModel = get(modelId)
+        log.debug('Loading entire model [{}] into memory', loadedModel.path)
+
+        // Load direct content
+
+        log.trace('Loading Term')
+        List<Term> terms = termService.findAllByTerminologyId(modelId)
+
+        log.trace('Loading TermRelationshipType')
+        List<TermRelationshipType> trts = termRelationshipTypeService.findAllByTerminologyId(modelId)
+
+        log.trace('Loading TermRelationship')
+        List<TermRelationship> trs = termRelationshipService.findAllBySourceTermIdInList(terms.collect {it.id})
+
+        log.trace('Loading Facets')
+        List<UUID> allIds = Utils.gatherIds(Collections.singleton(modelId),
+                                            terms.collect {it.id},
+                                            trts.collect {it.id},
+                                            trs.collect {it.id})
+
+        Map<String, Map<UUID, List<Diffable>>> facetData = loadAllDiffableFacetsIntoMemoryByIds(allIds)
+
+        DiffCache diffCache = createCatalogueItemDiffCache(null, loadedModel, facetData)
+        createCatalogueItemDiffCaches(diffCache,'termRelationshipTypes', trts, facetData)
+        createCatalogueItemDiffCaches(diffCache, 'termRelationships',trs, facetData)
+        createCatalogueItemDiffCaches(diffCache, 'terms',terms, facetData)
+
+        log.debug('Model loaded into memory, took {}', Utils.timeTaken(start))
+        new CachedDiffable(loadedModel, diffCache)
+    }
 }

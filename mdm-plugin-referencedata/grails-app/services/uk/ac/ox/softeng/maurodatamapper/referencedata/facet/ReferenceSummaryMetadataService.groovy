@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.facet
 
+
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
@@ -88,6 +89,11 @@ class ReferenceSummaryMetadataService implements MultiFacetItemAwareService<Refe
     @Override
     List<ReferenceSummaryMetadata> findAllByMultiFacetAwareItemId(UUID multiFacetAwareItemId, Map pagination = [:]) {
         ReferenceSummaryMetadata.withFilter(ReferenceSummaryMetadata.byMultiFacetAwareItemId(multiFacetAwareItemId), pagination).list(pagination)
+    }
+
+    @Override
+    List<ReferenceSummaryMetadata> findAllByMultiFacetAwareItemIdInList(List<UUID> multiFacetAwareItemIds) {
+        ReferenceSummaryMetadata.byMultiFacetAwareItemIdInList(multiFacetAwareItemIds).list()
     }
 
     @Override

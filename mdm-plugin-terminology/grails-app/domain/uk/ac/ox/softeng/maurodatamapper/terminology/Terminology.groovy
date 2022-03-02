@@ -19,6 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.terminology
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
@@ -119,17 +121,30 @@ class Terminology implements Model<Terminology> {
     }
 
     ObjectDiff<Terminology> diff(Terminology otherTerminology, String context) {
+        diff(otherTerminology, context, null, null)
+    }
 
-        Set<TermRelationship> thisTermRelationships = (this.terms.collect {it.sourceTermRelationships ?: []}.flatten() +
-                                                       this.terms.collect {it.targetTermRelationships ?: []}.flatten()).toSet() as Set<TermRelationship>
-        Set<TermRelationship> otherTermRelationships = (otherTerminology.terms.collect {it.sourceTermRelationships ?: []}.flatten() +
-                                                        otherTerminology.terms.collect {it.targetTermRelationships ?: []}.flatten()).toSet() as Set<TermRelationship>
+    ObjectDiff<Terminology> diff(Terminology otherTerminology, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
+        ObjectDiff<Terminology> base = DiffBuilder.modelDiffBuilder(Terminology, this, otherTerminology, lhsDiffCache, rhsDiffCache)
 
-        ObjectDiff<Terminology> diff = modelDiffBuilder(Terminology, this, otherTerminology)
-            .appendList(Term, 'terms', this.terms, otherTerminology.terms, Terminology.simpleName)
-            .appendList(TermRelationshipType, 'termRelationshipTypes', this.termRelationshipTypes, otherTerminology.termRelationshipTypes)
-            .appendList(TermRelationship, 'termRelationships', thisTermRelationships, otherTermRelationships)
-        diff
+        if (!lhsDiffCache || !rhsDiffCache) {
+            Set<TermRelationship> thisTermRelationships = (this.terms.collect {it.sourceTermRelationships ?: []}.flatten() +
+                                                           this.terms.collect {it.targetTermRelationships ?: []}.flatten()).toSet() as Set<TermRelationship>
+            Set<TermRelationship> otherTermRelationships = (otherTerminology.terms.collect {it.sourceTermRelationships ?: []}.flatten() +
+                                                            otherTerminology.terms.collect {it.targetTermRelationships ?: []}.flatten()).toSet() as Set<TermRelationship>
+
+            base
+                .appendCollection(Term, 'terms', this.terms, otherTerminology.terms, Terminology.simpleName)
+                .appendCollection(TermRelationshipType, 'termRelationshipTypes', this.termRelationshipTypes, otherTerminology.termRelationshipTypes)
+                .appendCollection(TermRelationship, 'termRelationships', thisTermRelationships, otherTermRelationships)
+        } else {
+            base
+                .appendCollection(Term, 'terms', Terminology.simpleName)
+                .appendCollection(TermRelationshipType, 'termRelationshipTypes')
+                .appendCollection(TermRelationship, 'termRelationships')
+        }
+
+        base
     }
 
     def beforeValidate() {
@@ -192,5 +207,4 @@ class Terminology implements Model<Terminology> {
         }
         criteria
     }
-
 }

@@ -184,4 +184,8 @@ class Utils {
             value
         }
     }
+
+    static List<UUID> gatherIds(Collection<UUID>... ids) {
+        ids.collectMany {it}.findAll()
+    }
 }

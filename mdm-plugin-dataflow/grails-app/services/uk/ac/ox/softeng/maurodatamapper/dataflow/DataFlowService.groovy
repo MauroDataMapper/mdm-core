@@ -291,7 +291,7 @@ class DataFlowService extends ModelItemService<DataFlow> {
     }
 
     ObjectDiff<DataFlow> diff(DataFlow thisDataFlow, DataFlow otherDataFlow) {
-        thisDataFlow.diff(otherDataFlow, 'none')
+        thisDataFlow.diff(otherDataFlow, 'none', null,null)
     }
 
     /**

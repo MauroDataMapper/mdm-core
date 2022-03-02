@@ -739,7 +739,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
       }
     },
     {
-      "rule": {
+      "rules": {
         "created": [
           {
             "value": {
@@ -775,7 +775,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
             "count": 1,
             "diffs": [
               {
-                "rule": {
+                "rules": {
                   "created": [
                     {
                       "value": {

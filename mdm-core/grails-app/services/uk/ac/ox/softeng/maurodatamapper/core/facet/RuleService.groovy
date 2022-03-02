@@ -119,6 +119,11 @@ class RuleService implements MultiFacetItemAwareService<Rule> {
     }
 
     @Override
+    List<Rule> findAllByMultiFacetAwareItemIdInList(List<UUID> multiFacetAwareItemIds) {
+        Rule.byMultiFacetAwareItemIdInList(multiFacetAwareItemIds).list()
+    }
+
+    @Override
     void performDeletion(List<UUID> batch) {
         long start = System.currentTimeMillis()
         List<Rule> rules = Rule.byMultiFacetAwareItemIdInList(batch).list()

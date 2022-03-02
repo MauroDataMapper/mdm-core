@@ -232,10 +232,10 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
     GroupBasedUserSecurityPolicyManager refreshUserSecurityPolicyManager(CatalogueUser catalogueUser) {
         GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = getSecurityPolicyManagerCache().get(catalogueUser.emailAddress,
                                                                                                             GroupBasedUserSecurityPolicyManager)
-        if (!userSecurityPolicyManager) {
-            userSecurityPolicyManager = buildNewUserSecurityPolicyManager(catalogueUser)
-        } else {
+        if (userSecurityPolicyManager) {
             refreshUserSecurityPolicyManager(userSecurityPolicyManager.ensureCatalogueUser(catalogueUser))
+        } else {
+            userSecurityPolicyManager = buildNewUserSecurityPolicyManager(catalogueUser)
         }
         storeUserSecurityPolicyManager(userSecurityPolicyManager)
     }

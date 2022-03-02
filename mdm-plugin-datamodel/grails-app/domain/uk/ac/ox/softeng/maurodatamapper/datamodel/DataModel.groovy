@@ -19,6 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
@@ -191,9 +193,20 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
      * @return ObjectDiff<DataModel>                  containing field differences and arrays of child differences
      */
     ObjectDiff<DataModel> diff(DataModel otherDataModel, String context) {
-        modelDiffBuilder(DataModel, this, otherDataModel)
-            .appendList(DataType, 'dataTypes', this.getDataTypes(), otherDataModel.getDataTypes())
-            .appendList(DataClass, 'dataClasses', this.childDataClasses, otherDataModel.childDataClasses)
+        diff(otherDataModel, context, null, null)
+    }
+
+    ObjectDiff<DataModel> diff(DataModel otherDataModel, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
+        ObjectDiff<DataModel> base = DiffBuilder.modelDiffBuilder(DataModel, this, otherDataModel, lhsDiffCache, rhsDiffCache)
+
+        if (!lhsDiffCache || !rhsDiffCache) {
+            base.appendCollection(DataType, 'dataTypes', this.getDataTypes(), otherDataModel.getDataTypes())
+                .appendCollection(DataClass, 'dataClasses', this.childDataClasses, otherDataModel.childDataClasses)
+        } else {
+            base.appendCollection(DataType, 'dataTypes')
+                .appendCollection(DataClass, 'dataClasses')
+        }
+        base
     }
 
     def beforeValidate() {

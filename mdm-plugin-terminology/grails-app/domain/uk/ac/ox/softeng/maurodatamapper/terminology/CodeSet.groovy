@@ -19,6 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.terminology
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ArrayDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
@@ -112,9 +114,18 @@ class CodeSet implements Model<CodeSet> {
     }
 
     ObjectDiff<CodeSet> diff(CodeSet otherCodeSet, String context) {
+        diff(otherCodeSet, context, null, null)
+    }
+
+    ObjectDiff<CodeSet> diff(CodeSet otherCodeSet, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
         String termContext = context ? "${CodeSet.simpleName}|${context}" : CodeSet.simpleName
-        ObjectDiff<CodeSet> diff = modelDiffBuilder(CodeSet, this, otherCodeSet)
-            .appendList(Term, 'terms', this.terms, otherCodeSet.terms, termContext)
+        ObjectDiff<CodeSet> diff = DiffBuilder.modelDiffBuilder(CodeSet, this, otherCodeSet, lhsDiffCache, rhsDiffCache)
+
+        if (!lhsDiffCache || !rhsDiffCache) {
+            diff.appendCollection(Term, 'terms', this.terms, otherCodeSet.terms, termContext)
+        } else {
+            diff.appendCollection(Term, 'terms', termContext)
+        }
         // Remove any modifications to terms as these are only applicable from the terminology
         (diff.find {it.fieldName == 'terms'} as ArrayDiff)?.modified?.clear()
         diff

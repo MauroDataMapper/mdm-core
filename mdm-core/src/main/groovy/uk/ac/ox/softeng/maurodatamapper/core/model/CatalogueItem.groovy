@@ -98,20 +98,6 @@ trait CatalogueItem<D extends Diffable> implements MdmDomain, InformationAware, 
         // no-op
     }
 
-    static <T extends CatalogueItem> ObjectDiff catalogueItemDiffBuilder(Class<T> diffClass, T lhs, T rhs) {
-        String lhsId = lhs.id ?: "Left:Unsaved_${lhs.domainType}"
-        String rhsId = rhs.id ?: "Right:Unsaved_${rhs.domainType}"
-        DiffBuilder.objectDiff(diffClass)
-            .leftHandSide(lhsId, lhs)
-            .rightHandSide(rhsId, rhs)
-            .appendString('label', lhs.label, rhs.label)
-            .appendString('description', lhs.description, rhs.description)
-            .appendString('aliasesString', lhs.aliasesString, rhs.aliasesString)
-            .appendList(Metadata, 'metadata', lhs.metadata, rhs.metadata)
-            .appendList(Annotation, 'annotations', lhs.annotations, rhs.annotations)
-            .appendList(Rule, 'rule', lhs.rules, rhs.rules)
-    }
-
     static <T extends CatalogueItem> DetachedCriteria<T> withCatalogueItemFilter(DetachedCriteria<T> criteria, Map filters) {
         if (filters.label) criteria = criteria.ilike('label', "%${filters.label}%")
         if (filters.description) criteria = criteria.ilike('description', "%${filters.description}%")

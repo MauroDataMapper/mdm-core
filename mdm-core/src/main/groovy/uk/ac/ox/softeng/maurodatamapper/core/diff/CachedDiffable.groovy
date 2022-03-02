@@ -15,18 +15,24 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.datamodel
+package uk.ac.ox.softeng.maurodatamapper.core.diff
 
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 
-import grails.boot.GrailsApp
-import grails.boot.config.GrailsAutoConfiguration
-import grails.plugins.metadata.PluginSource
-import org.springframework.context.annotation.ComponentScan
+/**
+ * @since 21/02/2022
+ */
+class CachedDiffable<C extends Diffable> {
 
-@PluginSource
-@ComponentScan(basePackages = ['uk.ac.ox.softeng.maurodatamapper'])
-class Application extends GrailsAutoConfiguration {
-    static void main(String[] args) {
-        GrailsApp.run(Application, args)
+    C diffable
+    DiffCache diffCache
+
+    CachedDiffable(C diffable, DiffCache diffCache) {
+        this.diffable = diffable
+        this.diffCache = diffCache
+    }
+
+    ObjectDiff<C> diff(CachedDiffable<C> cachedDiffable, String context) {
+        this.diffable.diff(cachedDiffable.diffable, context, this.diffCache, cachedDiffable.diffCache)
     }
 }

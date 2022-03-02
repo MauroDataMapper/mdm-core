@@ -183,6 +183,11 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
     }
 
     @Override
+    List<VersionLink> findAllByMultiFacetAwareItemIdInList(List<UUID> multiFacetAwareItemIds) {
+        VersionLink.byModelIdInList(multiFacetAwareItemIds).list()
+    }
+
+    @Override
     DetachedCriteria<VersionLink> getBaseDeleteCriteria() {
         VersionLink.by()
     }

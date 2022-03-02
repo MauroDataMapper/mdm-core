@@ -28,7 +28,7 @@ import grails.validation.Validateable
 /**
  * @since 07/02/2018
  */
-class FieldPatchData<T> implements Validateable {
+class FieldPatchData<T> implements Validateable, Comparable<FieldPatchData> {
 
     String fieldName
     Path path
@@ -115,5 +115,45 @@ class FieldPatchData<T> implements Validateable {
             isMergeConflict = deletionMergeDiff.isMergeConflict()
             type = 'deletion'
         }
+    }
+
+    @Override
+    int compareTo(FieldPatchData that) {
+        switch (this.type) {
+            case 'modification':
+                if (that.type == 'modification') return 0
+                else return 1
+            case 'creation':
+                if (that.type == 'modification') return -1
+                if (that.type == 'deletion') return -1
+                return 0
+            case 'deletion':
+                if (that.type == 'modification') return -1
+                if (that.type == 'creation') return 1
+                return 0
+        }
+    }
+
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+
+        FieldPatchData that = (FieldPatchData) o
+
+        if (isMergeConflict != that.isMergeConflict) return false
+        if (fieldName != that.fieldName) return false
+        if (path != that.path) return false
+        if (type != that.type) return false
+
+        return true
+    }
+
+    int hashCode() {
+        int result
+        result = fieldName.hashCode()
+        result = 31 * result + path.hashCode()
+        result = 31 * result + (isMergeConflict ? 1 : 0)
+        result = 31 * result + type.hashCode()
+        return result
     }
 }

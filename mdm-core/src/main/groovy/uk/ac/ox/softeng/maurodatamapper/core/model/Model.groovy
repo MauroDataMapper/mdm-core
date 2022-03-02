@@ -88,19 +88,6 @@ trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableRes
         Path.from(folder.path, path)
     }
 
-    static <T extends Model> ObjectDiff modelDiffBuilder(Class<T> diffClass, T lhs, T rhs) {
-        catalogueItemDiffBuilder(diffClass, lhs, rhs)
-            .appendBoolean('deleted', lhs.deleted, rhs.deleted)
-            .appendBoolean('finalised', lhs.finalised, rhs.finalised)
-            .appendString('modelType', lhs.modelType, rhs.modelType)
-            .appendString('author', lhs.author, rhs.author)
-            .appendString('organisation', lhs.organisation, rhs.organisation)
-            .appendString('documentationVersion', lhs.documentationVersion.toString(), rhs.documentationVersion.toString())
-            .appendString('modelVersion', lhs.modelVersion.toString(), rhs.modelVersion.toString())
-            .appendString('branchName', lhs.branchName, rhs.branchName)
-            .appendOffsetDateTime('dateFinalised', lhs.dateFinalised, rhs.dateFinalised)
-    }
-
     static <T extends Model> DetachedCriteria<T> withReadable(DetachedCriteria<T> criteria, List<UUID> readableIds, Boolean includeDeleted) {
         if (!includeDeleted) criteria = withNotDeleted(criteria)
         criteria.inList('id', readableIds.toList())

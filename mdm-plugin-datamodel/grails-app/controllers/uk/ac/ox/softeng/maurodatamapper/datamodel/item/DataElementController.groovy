@@ -142,6 +142,8 @@ class DataElementController extends CatalogueItemController<DataElement> {
             notFound(params.dataClassId)
             return null
         }
+        // Cannot sort DEs including imported using idx combined with any other field
+        if (params.sort instanceof Map && (params.sort as Map).size() > 1) (params.sort as Map).remove('idx')
         return dataElementService.findAllByDataClassIdIncludingImported(params.dataClassId, params, params)
     }
 

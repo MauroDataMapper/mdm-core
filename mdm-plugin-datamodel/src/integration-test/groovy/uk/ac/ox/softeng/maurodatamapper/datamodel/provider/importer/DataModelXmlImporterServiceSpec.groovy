@@ -25,7 +25,6 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.test.provider.DataBindDataMode
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
-import spock.lang.PendingFeature
 
 /**
  * @since 04/08/2017
@@ -137,7 +136,7 @@ class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderS
         imported.size() == 1
 
         when:
-        ObjectDiff simpleDiff = dataModelService.getDiffForModels(dataModels.pop(), imported.pop())
+        ObjectDiff simpleDiff = dataModels.pop().diff(imported.pop(), 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -164,7 +163,7 @@ class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderS
         imported.size() == 1
 
         when:
-        ObjectDiff simpleDiff = dataModelService.getDiffForModels(dataModels.pop(), imported.pop())
+        ObjectDiff simpleDiff = dataModels.pop().diff(imported.pop(), 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -191,8 +190,8 @@ class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderS
         imported.size() == 2
 
         when:
-        ObjectDiff simpleDiff = dataModelService.getDiffForModels(dataModels[0], imported[0])
-        ObjectDiff complexDiff = dataModelService.getDiffForModels(dataModels[1], imported[1])
+        ObjectDiff simpleDiff = dataModels[0].diff(imported[0], 'none', null, null)
+        ObjectDiff complexDiff = dataModels[1].diff(imported[1], 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -220,7 +219,7 @@ class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderS
         imported.size() == 1
 
         when:
-        ObjectDiff simpleDiff = dataModelService.getDiffForModels(dataModels[0], imported.pop())
+        ObjectDiff simpleDiff = dataModels[0].diff(imported.pop(), 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()
@@ -233,8 +232,8 @@ class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderS
         imported.size() == 2
 
         when:
-        simpleDiff = dataModelService.getDiffForModels(dataModels[0], imported[0])
-        ObjectDiff complexDiff = dataModelService.getDiffForModels(dataModels[1], imported[1])
+        simpleDiff = dataModels[0].diff(imported[0], 'none', null, null)
+        ObjectDiff complexDiff = dataModels[1].diff(imported[1], 'none', null, null)
 
         then:
         simpleDiff.objectsAreIdentical()

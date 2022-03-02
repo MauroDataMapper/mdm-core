@@ -149,11 +149,16 @@ class FolderController extends EditLoggingController<Folder> {
 
         if (instance.deleted) return forbidden('Cannot change the folder of a deleted Folder')
 
-        Folder folder = folderService.get(params.destinationFolderId)
-        if (!folder) return notFound(Folder, params.destinationFolderId)
+        Folder folder
+        if (params.destinationFolderId == 'root') {
+            folder = null
+        } else {
+            folder = folderService.get(params.destinationFolderId)
+            if (!folder) return notFound(Folder, params.destinationFolderId)
 
-        if (versionedFolderService.doesMovePlaceVersionedFolderInsideVersionedFolder(instance, folder)) {
-            return forbidden('Cannot put a VersionedFolder inside a VersionedFolder')
+            if (versionedFolderService.doesMovePlaceVersionedFolderInsideVersionedFolder(instance, folder)) {
+                return forbidden('Cannot put a VersionedFolder inside a VersionedFolder')
+            }
         }
 
         instance.parentFolder = folder

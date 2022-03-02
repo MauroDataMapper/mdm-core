@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
@@ -75,10 +77,15 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware, 
 
     @Override
     ObjectDiff<VersionedFolder> diff(VersionedFolder that, String context) {
-        folderDiffBuilder(VersionedFolder, this, that)
+        diff(that, context, null, null)
+    }
+
+    @Override
+    ObjectDiff<VersionedFolder> diff(VersionedFolder that, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
+        DiffBuilder.folderDiffBuilder(VersionedFolder, this, that, lhsDiffCache, rhsDiffCache)
             .appendBoolean('finalised', this.finalised, that.finalised)
             .appendString('documentationVersion', this.documentationVersion.toString(), that.documentationVersion.toString())
-            .appendString('modelVersion', this.modelVersion.toString(), that.modelVersion.toString())
+            .appendString('modelVersion', this.modelVersion?.toString(), that.modelVersion?.toString())
             .appendString('branchName', this.branchName, that.branchName)
             .appendOffsetDateTime('dateFinalised', this.dateFinalised, that.dateFinalised)
     }

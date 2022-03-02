@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.InformationAwareConstraints
@@ -67,6 +68,7 @@ class Annotation implements MultiFacetItemAware, InformationAware, Diffable<Anno
     }
 
     static mapping = {
+        batchSize(10)
         parentAnnotation index: 'annotation_parent_annotation_idx'
         childAnnotations sort: 'dateCreated', order: 'asc', cascade: 'all-delete-orphan'
     }
@@ -124,12 +126,24 @@ class Annotation implements MultiFacetItemAware, InformationAware, Diffable<Anno
 
     @Override
     ObjectDiff<Annotation> diff(Annotation otherAnnotation, String context) {
-        DiffBuilder.objectDiff(Annotation)
+        diff(otherAnnotation, context, null, null)
+    }
+
+    @Override
+    ObjectDiff<Annotation> diff(Annotation otherAnnotation, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
+        ObjectDiff<Annotation> base = DiffBuilder.objectDiff(Annotation)
             .leftHandSide(this.id.toString(), this)
             .rightHandSide(otherAnnotation.id.toString(), otherAnnotation)
+            .withLeftHandSideCache(lhsDiffCache)
+            .withRightHandSideCache(rhsDiffCache)
             .appendString('description', this.description, otherAnnotation.description)
-            .appendList(Annotation, 'childAnnotations', this.childAnnotations, otherAnnotation.childAnnotations)
 
+        if (!lhsDiffCache || !rhsDiffCache) {
+            base.appendCollection(Annotation, 'childAnnotations', this.childAnnotations, otherAnnotation.childAnnotations)
+        } else {
+            base.appendCollection(Annotation, 'childAnnotations')
+        }
+        base
     }
 
     static DetachedCriteria<Annotation> by() {
@@ -140,7 +154,7 @@ class Annotation implements MultiFacetItemAware, InformationAware, Diffable<Anno
         new DetachedCriteria<Annotation>(Annotation).eq('multiFacetAwareItemId', Utils.toUuid(multiFacetAwareItemId))
     }
 
-    static DetachedCriteria<Annotation> byyMultiFacetAwareItemIdInList(List<UUID> multiFacetAwareItemIds) {
+    static DetachedCriteria<Annotation> byMultiFacetAwareItemIdInList(List<UUID> multiFacetAwareItemIds) {
         new DetachedCriteria<Annotation>(Annotation).inList('multiFacetAwareItemId', multiFacetAwareItemIds)
     }
 

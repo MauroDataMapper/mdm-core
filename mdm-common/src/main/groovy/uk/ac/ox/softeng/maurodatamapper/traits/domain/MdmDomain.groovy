@@ -68,17 +68,17 @@ trait MdmDomain {
     }
 
     void checkPath() {
-        if (!this.@path) {
+        if (this.@path) {
+            Path builtPath = buildPath()
+            if (!this.@path.matches(builtPath)) {
+                setBuiltPath(builtPath)
+            }
+        } else {
             if (!pathPrefix || !pathIdentifier) {
                 LoggerFactory.getLogger(this.class).trace('Cannot build path for {} as no prefix and/or identifier', domainType)
                 return
             }
             setBuiltPath(buildPath())
-        } else {
-            Path builtPath = buildPath()
-            if (!this.@path.matches(builtPath)) {
-                setBuiltPath(builtPath)
-            }
         }
     }
 

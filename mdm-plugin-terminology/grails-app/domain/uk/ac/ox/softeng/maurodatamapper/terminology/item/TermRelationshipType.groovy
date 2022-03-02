@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.terminology.item
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
@@ -118,11 +120,15 @@ class TermRelationshipType implements ModelItem<TermRelationshipType, Terminolog
         false
     }
 
-    ObjectDiff<TermRelationshipType> diff(TermRelationshipType otherType, String context) {
-        catalogueItemDiffBuilder(TermRelationshipType, this, otherType)
-            .appendString('displayLabel', this.displayLabel, otherType.displayLabel)
-            .appendBoolean('parentalRelationship', this.parentalRelationship, otherType.parentalRelationship)
-            .appendBoolean('childRelationship', this.childRelationship, otherType.childRelationship)
+    ObjectDiff<TermRelationshipType> diff(TermRelationshipType that, String context) {
+        diff(that, context, null, null)
+    }
+
+    ObjectDiff<TermRelationshipType> diff(TermRelationshipType that, String context, DiffCache lhsDiffCache, DiffCache rhsDiffCache) {
+        DiffBuilder.catalogueItemDiffBuilder(TermRelationshipType, this, that, lhsDiffCache, rhsDiffCache)
+            .appendString('displayLabel', this.displayLabel, that.displayLabel)
+            .appendBoolean('parentalRelationship', this.parentalRelationship, that.parentalRelationship)
+            .appendBoolean('childRelationship', this.childRelationship, that.childRelationship)
     }
 
     @Override

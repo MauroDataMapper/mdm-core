@@ -1,4 +1,4 @@
-import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
+import uk.ac.ox.softeng.maurodatamapper.gorm.InMemoryPagedResultList
 import uk.ac.ox.softeng.maurodatamapper.profile.rest.transport.ProfileProvided
 
 model {
@@ -6,7 +6,7 @@ model {
 }
 
 json {
-    count profileProvidedList instanceof PaginatedResultList ? ((PaginatedResultList) profileProvidedList).getTotalCount() : profileProvidedList?.size() ?: 0
+    count profileProvidedList instanceof InMemoryPagedResultList ? ((InMemoryPagedResultList) profileProvidedList).getTotalCount() : profileProvidedList?.size() ?: 0
     profilesProvided tmpl.'/profileProvided/profileProvided'(profileProvidedList ?: [])
 }
 
