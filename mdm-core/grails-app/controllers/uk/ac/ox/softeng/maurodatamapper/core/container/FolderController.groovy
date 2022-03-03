@@ -25,9 +25,12 @@ import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearc
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 
 import grails.gorm.transactions.Transactional
+import grails.web.http.HttpHeaders
 import org.springframework.beans.factory.annotation.Autowired
 
+import static org.springframework.http.HttpStatus.CREATED
 import static org.springframework.http.HttpStatus.NO_CONTENT
+import static org.springframework.http.HttpStatus.OK
 
 class FolderController extends EditLoggingController<Folder> {
     static responseFormats = ['json', 'xml']
@@ -206,6 +209,31 @@ class FolderController extends EditLoggingController<Folder> {
                                                                                                                currentUser)
         }
         folder
+    }
+
+    @Override
+    protected void updateResponse(Folder instance) {
+        request.withFormat {
+            '*' {
+                response.addHeader(HttpHeaders.LOCATION,
+                                   grailsLinkGenerator.link(resource: this.controllerName, action: 'show', id: instance.id, absolute: true,
+                                                            namespace: hasProperty('namespace') ? this.namespace : null))
+                respond instance, [status: OK, view: 'update', model: [userSecurityPolicyManager: currentUserSecurityPolicyManager, folder: instance]]
+            }
+
+        }
+    }
+
+    @Override
+    protected void saveResponse(Folder instance) {
+        request.withFormat {
+            '*' {
+                response.addHeader(HttpHeaders.LOCATION,
+                                   grailsLinkGenerator.link(resource: this.controllerName, action: 'show', id: instance.id, absolute: true,
+                                                            namespace: hasProperty('namespace') ? this.namespace : null))
+                respond instance, [status: CREATED, view: 'show', model: [userSecurityPolicyManager: currentUserSecurityPolicyManager, folder: instance]]
+            }
+        }
     }
 
     @Override

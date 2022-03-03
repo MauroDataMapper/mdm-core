@@ -309,7 +309,7 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
         cleanUpData(id)
     }
 
-    void 'Test saving a folder inside a folder and then moving it to another folder'() {
+    void 'MV01 : Test saving a folder inside a folder and then moving it to another folder'() {
         when: 'Create Parent Folder 1'
         POST('', ["label": "Fuctional Test Parent Folder 1"])
 
@@ -379,5 +379,57 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
         then: 'The response is OK with one child folders'
         response.status == HttpStatus.OK
         response.body().count == 1
+    }
+
+
+    void 'MV02 : Test saving a folder inside a folder and then moving it to the root'() {
+        when: 'Create Parent Folder 1'
+        POST('', ["label": "Fuctional Test Parent Folder 1"])
+
+        then: 'The response is correct'
+        response.status == HttpStatus.CREATED
+        def parentFolder1Id = response.body().id
+
+        when: 'List folders inside Parent Folder 1'
+        GET("$parentFolder1Id/folders")
+
+        then: 'The response is OK with no child folders'
+        response.status == HttpStatus.OK
+        response.body().count == 0
+
+        when: 'A child folder is added to Parent Folder 1'
+        POST("$parentFolder1Id/folders", ["label": "Functional Test Moved Folder"])
+
+        then: 'The response is correct'
+        response.status == HttpStatus.CREATED
+        def movedFolderId = response.body().id
+
+        when: 'List folders inside Parent Folder 1'
+        GET("$parentFolder1Id/folders")
+
+        then: 'The response is OK with one child folders'
+        response.status == HttpStatus.OK
+        response.body().count == 1
+
+        when: 'The folder is moved from Parent Folder 1 to root'
+        PUT("$movedFolderId/folder/root", [:])
+
+        then:
+        response.status == HttpStatus.OK
+        response.body().id == movedFolderId
+
+        when: 'List folders inside Parent Folder 1'
+        GET("$parentFolder1Id/folders")
+
+        then: 'The response is OK with no child folders'
+        response.status == HttpStatus.OK
+        response.body().count == 0
+
+        when: 'List folders at root'
+        GET('')
+
+        then: 'The response is OK with two folders'
+        response.status == HttpStatus.OK
+        response.body().count == 2
     }
 }
