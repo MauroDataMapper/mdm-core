@@ -34,6 +34,9 @@ import org.springframework.context.MessageSource
 @Slf4j
 class GormUtils {
 
+    private GormUtils() {
+    }
+
     static final int POSTGRES_MAX_BIND_VARIABLES = 16000
 
     static void disableDatabaseConstraints(SessionFactoryImplementor sessionFactory) {

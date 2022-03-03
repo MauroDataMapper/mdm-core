@@ -53,7 +53,6 @@ import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Transactional
 import grails.util.Environment
-import grails.util.Pair
 import groovy.util.logging.Slf4j
 import org.hibernate.engine.spi.SessionFactoryImplementor
 

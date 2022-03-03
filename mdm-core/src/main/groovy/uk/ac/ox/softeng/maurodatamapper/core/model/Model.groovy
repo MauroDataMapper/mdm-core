@@ -20,7 +20,6 @@ package uk.ac.ox.softeng.maurodatamapper.core.model
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
-import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.VersionLinkAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
 import uk.ac.ox.softeng.maurodatamapper.path.Path

@@ -1058,7 +1058,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         }
 
         subsetData.deletions.each {dataElementId ->
-            subsetDeletion(sourceDataModel, targetDataModel, Utils.toUuid(dataElementId), userSecurityPolicyManager)
+            subsetDeletion(sourceDataModel, targetDataModel, Utils.toUuid(dataElementId))
         }
 
         if (subsetData.deletions.size() > 0) {
@@ -1130,10 +1130,9 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
      * @param sourceDataModel
      * @param targetDataModel
      * @param dataElementId
-     * @param userSecurityPolicyManager
      * @return
      */
-    private subsetDeletion(DataModel sourceDataModel, DataModel targetDataModel, UUID dataElementId, UserSecurityPolicyManager userSecurityPolicyManager) {
+    private subsetDeletion(DataModel sourceDataModel, DataModel targetDataModel, UUID dataElementId) {
         DataElement dataElementInSource = getDataElementInModel(sourceDataModel, dataElementId)
 
         Path pathInSource = dataElementInSource.getPath()

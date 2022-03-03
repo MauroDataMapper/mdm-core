@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.authentication.basic
 
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.boot.GrailsApp
 import grails.boot.config.GrailsAutoConfiguration
