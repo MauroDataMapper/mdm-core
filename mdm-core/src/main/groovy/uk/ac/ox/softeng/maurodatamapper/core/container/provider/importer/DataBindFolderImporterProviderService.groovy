@@ -44,15 +44,13 @@ abstract class DataBindFolderImporterProviderService<P extends FolderFileImporte
     @Override
     Folder importDomain(User currentUser, FolderFileImporterProviderServiceParameters params) {
         checkImportParams(currentUser, params)
-        Folder folder = importFolder(currentUser, params.importFile.fileContents)
-        checkImport(folder)
+        importFolder(currentUser, params.importFile.fileContents)
     }
 
     @Override
     List<Folder> importDomains(User currentUser, FolderFileImporterProviderServiceParameters params) {
         checkImportParams(currentUser, params)
-        List<Folder> folders = importFolders(currentUser, params.importFile.fileContents)
-        folders.collect { checkImport(it) }
+        importFolders(currentUser, params.importFile.fileContents)
     }
 
     Folder bindMapToFolder(User currentUser, Map folderMap) {
@@ -61,6 +59,9 @@ abstract class DataBindFolderImporterProviderService<P extends FolderFileImporte
         Folder folder = new Folder()
         log.debug('Binding map to new Folder instance')
         DataBindingUtils.bindObjectToInstance(folder, folderMap, null, importBlacklistedProperties, null)
+
+        log.debug('Fixing bound Folder')
+        folderService.checkImportedFolderAssociations(currentUser, folder)
 
         log.debug('Binding complete')
         folder
