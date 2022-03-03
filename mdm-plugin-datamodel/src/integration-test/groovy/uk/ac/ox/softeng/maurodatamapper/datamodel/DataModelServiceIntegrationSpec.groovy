@@ -956,6 +956,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         EnumerationType copiedEnumerationType = copiedDataElement.dataType
 
         then:
+        copiedEnumerationType.domainType == 'EnumerationType'
         copiedEnumerationType.enumerationValues.every {ev ->
             ev.key.startsWith('Key') && ev.key.endsWith((ev.idx + 1).toString()) &&
             ev.value.startsWith('Value') && ev.value.endsWith((ev.idx + 1).toString())

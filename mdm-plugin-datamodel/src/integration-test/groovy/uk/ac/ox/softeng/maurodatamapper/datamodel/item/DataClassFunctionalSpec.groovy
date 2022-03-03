@@ -494,7 +494,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         responseBody().items.any { it.label == 'string' }
     }
 
-    void 'CC06: test copying a dataclass with ordered dataclasses, dataelements and enumerationvalues'() {
+    void 'CC06 : test copying a dataclass with ordered dataclasses, dataelements and enumerationvalues'() {
         given:
         POST('', validJson)
         verifyResponse CREATED, response
@@ -527,7 +527,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         }
 
         when:
-        GET("$id/dataClasses")
+        GET("$id/dataClasses?sort=idx")
 
         then:
         verifyResponse OK, response
@@ -566,7 +566,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         String copyId = responseBody().id
 
         when:
-        GET("${getResourcePath(otherDataModelId)}/$copyId/dataClasses", MAP_ARG, true)
+        GET("${getResourcePath(otherDataModelId)}/$copyId/dataClasses?sort=idx", MAP_ARG, true)
 
         then:
         verifyResponse OK, response
@@ -604,6 +604,55 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         verifyResponse NO_CONTENT, response
         DELETE("dataModels/$otherDataModelId/dataTypes/$copyEnumerationTypeId", MAP_ARG, true)
         verifyResponse NO_CONTENT, response
+    }
+
+    void 'CC07 : test copying a dataclass without index order'() {
+        given:
+        POST('', validJson)
+        verifyResponse CREATED, response
+        String id = responseBody().id
+
+        for (int i in 1..5) {
+            POST("$id/dataClasses", [label: 'Child Data Class ' + i, idx: i])
+            verifyResponse CREATED, response
+        }
+
+        when:
+        GET("$id/dataClasses?sort=idx")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 5
+        responseBody().items.eachWithIndex {dc, i ->
+            assert dc.domainType == 'DataClass'
+            assert dc.label.startsWith('Child Data Class') && dc.label.endsWith((i + 1).toString())
+        }
+
+        when:
+        String originalId = responseBody().items[0].id
+        POST("$id/dataClasses/$dataModelId/$originalId", [copyLabel: 'Child Copied Class'])
+
+        then:
+        verifyResponse CREATED, response
+        responseBody().label == 'Child Copied Class'
+
+        when:
+        GET("$id/dataClasses?sort=idx")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 6
+        responseBody().items.take(5).eachWithIndex {dc, i ->
+            assert dc.domainType == 'DataClass'
+            assert dc.label.startsWith('Child Data Class') && dc.label.endsWith((i + 1).toString())
+        }
+
+        and:
+        responseBody().items[5].domainType == 'DataClass'
+        responseBody().items[5].label == 'Child Copied Class'
+
+        cleanup:
+        cleanUpData()
     }
 
     @Rollback

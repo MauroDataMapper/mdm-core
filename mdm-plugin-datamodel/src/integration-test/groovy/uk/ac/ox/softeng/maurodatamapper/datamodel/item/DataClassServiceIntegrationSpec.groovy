@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelType
@@ -575,10 +576,48 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         EnumerationType copiedEnumerationType = copiedDataElement.dataType
 
         then:
+        copiedEnumerationType.domainType == 'EnumerationType'
         copiedEnumerationType.enumerationValues.every {ev ->
             ev.key.startsWith('Key') && ev.key.endsWith((ev.idx + 1).toString()) &&
             ev.value.startsWith('Value') && ev.value.endsWith((ev.idx + 1).toString())
         }
+    }
+
+    void 'test copying dataclass without index order'() {
+        given:
+        setupData()
+        setupDataModelWithMultipleDataClassesAndDataElementsAndEnumerationValues()
+
+        when:
+        DataClass parentClass = dataModel.childDataClasses.find {it.label == 'Root Data Class'}
+
+        then:
+        parentClass.dataClasses.size() == 5
+        parentClass.dataClasses.every {dc ->
+            dc.label.startsWith('Child Data Class') && dc.label.endsWith((dc.idx + 1).toString())
+        }
+
+        when:
+        DataClass original = parentClass.dataClasses.sort().first()
+        dataClassService.copyDataClass(dataModel, original, editor, userSecurityPolicyManager, parentClass, false, new CopyInformation(copyLabel: 'Child Copied Class'))
+
+        then:
+        original.idx == 0
+        checkAndSave(dataModel)
+
+        when:
+        DataClass copied = parentClass.dataClasses.find {it.label == 'Child Copied Class'}
+        List<DataClass> dataClasses = parentClass.dataClasses.sort()
+
+        then:
+        copied.label == 'Child Copied Class'
+        copied.idx != original.idx
+        copied.idx == 5
+        dataClasses.size() == 6
+        dataClasses.take(5).every {dc ->
+            dc.label.startsWith('Child Data Class') && dc.label.endsWith((dc.idx + 1).toString())
+        }
+        dataClasses.last() == copied
     }
 
     void 'LIST01 : test getting all DataClasses inside a DataClass with importing involved'() {
