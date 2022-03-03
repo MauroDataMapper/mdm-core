@@ -67,8 +67,7 @@ class AuthenticatingService {
     }
 
     UserSecurityPolicyManager buildUserSecurityPolicyManager(CatalogueUser catalogueUser) {
-        UserSecurityPolicyManager userSecurityPolicyManager = groupBasedSecurityPolicyManagerService.buildNewUserSecurityPolicyManager(catalogueUser)
-        groupBasedSecurityPolicyManagerService.storeUserSecurityPolicyManager(userSecurityPolicyManager)
+        groupBasedSecurityPolicyManagerService.asyncBuildNewUserSecurityPolicyManager(catalogueUser)
     }
 
     @Transactional

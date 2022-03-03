@@ -51,6 +51,8 @@ import groovy.util.logging.Slf4j
 import org.grails.plugin.cache.GrailsCacheManager
 import org.springframework.beans.factory.annotation.Autowired
 
+import static grails.async.Promises.task
+
 @Transactional
 @Slf4j
 @CompileStatic
@@ -210,12 +212,12 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
         retrieveUserSecurityPolicyManager(currentUser)
     }
 
-    GroupBasedUserSecurityPolicyManager storeUserSecurityPolicyManager(GroupBasedUserSecurityPolicyManager userSecurityPolicyManager) {
+    GroupBasedUserSecurityPolicyManager storeUserSecurityPolicyManager(GroupBasedUserSecurityPolicyManager userSecurityPolicyManager, boolean maintainLock = false) {
         if (!userSecurityPolicyManager.isLocked()) throw new ApiInternalException('GBSPMS',
                                                                                   'Cannot store on an unlocked GroupBasedUserSecurityPolicyManager')
         GrailsCache cache = getSecurityPolicyManagerCache()
         cache.put(userSecurityPolicyManager.user.emailAddress, userSecurityPolicyManager)
-        userSecurityPolicyManager.unlock()
+        maintainLock ? userSecurityPolicyManager : userSecurityPolicyManager.unlock()
     }
 
     void ensureUserSecurityPolicyManagerHasCatalogueUser(UserSecurityPolicyManager userSecurityPolicyManager) {
@@ -280,10 +282,30 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
         retrieveUserSecurityPolicyManager(currentUser)
     }
 
+    GroupBasedUserSecurityPolicyManager asyncBuildNewUserSecurityPolicyManager(CatalogueUser catalogueUser) {
+
+        UserSecurityPolicy userSecurityPolicy = userSecurityPolicyService.buildInitialSecurityPolicy(catalogueUser, catalogueUser.groups)
+
+        // Allow a minute to build the policy, this will hopefully prevent failures on incoming calls where the usual lock default is 5s
+        // The async task will set the max lock time back to the desired value
+        userSecurityPolicy.withMaxLockTime(60)
+
+        GroupBasedUserSecurityPolicyManager policyManager = new GroupBasedUserSecurityPolicyManager()
+            .inApplication(grailsApplication)
+            .withUserPolicy(userSecurityPolicy)
+        // Need to store the policy manager before we task the build as the async build has to be able to update the stored policy manager
+        // If the async build is too fast there wont be anything to update
+        storeUserSecurityPolicyManager(policyManager, true)
+
+        createAsyncTaskToBuildAndStoreUserSecurityPolicy(userSecurityPolicy)
+        policyManager
+    }
+
     GroupBasedUserSecurityPolicyManager buildNewUserSecurityPolicyManager(CatalogueUser catalogueUser) {
+        UserSecurityPolicy userSecurityPolicy = userSecurityPolicyService.buildInitialSecurityPolicy(catalogueUser, catalogueUser.groups)
         new GroupBasedUserSecurityPolicyManager()
             .inApplication(grailsApplication)
-            .withUserPolicy(userSecurityPolicyService.buildUserSecurityPolicy(catalogueUser, catalogueUser.groups))
+            .withUserPolicy(userSecurityPolicyService.buildUserSecurityPolicy(userSecurityPolicy))
     }
 
     UserSecurityPolicyManager refreshAllUserSecurityPolicyManagersByUserGroup(User currentUser, UserGroup userGroup) {
@@ -482,8 +504,21 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
                 storeUserSecurityPolicyManager(userSecurityPolicyManager.withUpdatedUserPolicy(updatedPolicy))
             }
         }
+    }
 
-
+    private void createAsyncTaskToBuildAndStoreUserSecurityPolicy(UserSecurityPolicy userSecurityPolicy) {
+        task {
+            log.info('Building UserSecurityPolicy asynchronously for {}', userSecurityPolicy.user.emailAddress)
+            long st = System.currentTimeMillis()
+            UserSecurityPolicy builtPolicy = userSecurityPolicyService.buildUserSecurityPolicy(userSecurityPolicy)
+            log.debug('Storing built UserSecurityPolicy')
+            GroupBasedUserSecurityPolicyManager groupPolicyManager = retrieveUserSecurityPolicyManager(builtPolicy.user.emailAddress)
+            groupPolicyManager.withUpdatedUserPolicy(builtPolicy.withMaxLockTime(userSecurityPolicyService.getMaxLockTime()))
+            storeUserSecurityPolicyManager(groupPolicyManager)
+            log.debug('Async UserSecurityPolicy build and store took {}', Utils.timeTaken(st))
+        }.onError {Throwable err ->
+            log.error('Could not build UserSecurityPolicy', err)
+        }
     }
 
     private void destroyUserSecurityPolicyManagerCache() {

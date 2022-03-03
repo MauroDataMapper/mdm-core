@@ -141,12 +141,13 @@ class GroupRole implements MdmDomain, EditHistoryAware, SecurableResource, Compa
     Set<GroupRole> extractAllowedRoles() {
         Set<GroupRole> allowed = [this] as Set
         children.findAll {
-            this.applicationLevelRole ? it.applicationLevelRole == this.applicationLevelRole : true
+            it.applicationLevelRole == this.applicationLevelRole
         }.each {
             allowed.addAll(it.extractAllowedRoles())
         }
         // Make sure the container group admin role is included inside container admin
-        if (name == CONTAINER_ADMIN_ROLE_NAME) allowed.add(findByName(CONTAINER_GROUP_ADMIN_ROLE_NAME))
+        // This is breaking sort/comparisons of the allowedRoles as the CGA is an application role
+        //        if (name == CONTAINER_ADMIN_ROLE_NAME) allowed.add(findByName(CONTAINER_GROUP_ADMIN_ROLE_NAME))
         allowed
     }
 
