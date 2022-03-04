@@ -58,12 +58,17 @@ abstract class FacetInterceptor implements MdmInterceptor {
         // No-op
     }
 
+    void checkParentId() throws ApiBadRequestException {
+        // no op
+    }
+
     void facetResourceChecks() {
         Utils.toUuid(params, 'id')
-        params.multiFacetAwareItemDomainType = params.multiFacetAwareItemDomainType?: params.catalogueItemDomainType ?: params.containerDomainType
+        params.multiFacetAwareItemDomainType = params.multiFacetAwareItemDomainType ?: params.catalogueItemDomainType ?: params.containerDomainType
         params.multiFacetAwareItemId = params.multiFacetAwareItemId ?: params.catalogueItemId ?: params.containerId
         checkAdditionalIds()
         mapDomainTypeToClass(getOwningType(), true)
+        checkParentId()
     }
 
     boolean checkActionAllowedOnFacet() {

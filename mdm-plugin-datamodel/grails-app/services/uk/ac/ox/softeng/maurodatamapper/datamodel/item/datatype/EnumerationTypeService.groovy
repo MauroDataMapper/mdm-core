@@ -209,4 +209,12 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> implement
             }
         }
     }
+
+    EnumerationType findByDataModelIdAndId(Serializable dataModelId, Serializable id) {
+        EnumerationType.byDataModelIdAndId(dataModelId, id).find() as EnumerationType
+    }
+
+    boolean existsByDataModelIdAndId(Serializable dataModelId, Serializable id) {
+        EnumerationType.byDataModelIdAndId(dataModelId, id).count() == 1
+    }
 }

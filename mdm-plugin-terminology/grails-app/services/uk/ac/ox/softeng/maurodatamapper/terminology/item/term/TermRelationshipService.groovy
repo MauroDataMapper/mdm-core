@@ -51,6 +51,12 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
         TermRelationship.count()
     }
 
+    @Override
+    TermRelationship validate(TermRelationship modelItem) {
+        modelItem.validate()
+        modelItem
+    }
+
     void delete(Serializable id) {
         TermRelationship termRelationship = get(id)
         if (termRelationship) delete(termRelationship)

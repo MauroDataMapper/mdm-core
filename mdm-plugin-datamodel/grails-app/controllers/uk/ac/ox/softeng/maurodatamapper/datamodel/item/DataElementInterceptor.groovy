@@ -17,11 +17,14 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.controller.DataModelSecuredInterceptor
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 class DataElementInterceptor extends DataModelSecuredInterceptor {
+
+    DataClassService dataClassService
 
     @Override
     Class getModelItemClass() {
@@ -34,6 +37,13 @@ class DataElementInterceptor extends DataModelSecuredInterceptor {
         Utils.toUuid(params, 'dataClassId')
         Utils.toUuid(params, 'otherDataClassId')
         Utils.toUuid(params, 'otherDataElementId')
+    }
+
+    @Override
+    void checkParentModelItemId() throws ApiBadRequestException {
+        if (params.containsKey('dataClassId') && !dataClassService.existsByDataModelIdAndId(params.dataModelId, params.dataClassId)) {
+            throw new ApiBadRequestException('DEI01', 'Provided dataClassId is not inside provided dataModelId')
+        }
     }
 
     boolean before() {
@@ -50,7 +60,7 @@ class DataElementInterceptor extends DataModelSecuredInterceptor {
         }
 
         if (actionName == 'copyDataElement') {
-            return canEditDataModelAndReadOtherDataModel()
+            return canEditModelAndReadOtherModel()
         }
 
         checkStandardActions()

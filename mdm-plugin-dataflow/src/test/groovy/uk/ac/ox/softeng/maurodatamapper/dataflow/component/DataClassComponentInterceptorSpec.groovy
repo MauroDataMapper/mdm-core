@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.dataflow.component
 
 import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlow
+import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlowService
 import uk.ac.ox.softeng.maurodatamapper.dataflow.component.DataClassComponent
 import uk.ac.ox.softeng.maurodatamapper.dataflow.component.DataElementComponent
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -33,6 +34,9 @@ class DataClassComponentInterceptorSpec extends ContainedResourceInterceptorUnit
     def setup() {
         log.debug('Setting up DataClassComponentInterceptorSpec')
         mockDomains(DataModel, DataClass, DataClassComponent, DataElementComponent, DataFlow)
+        interceptor.dataFlowService = Stub(DataFlowService) {
+            existsByTargetDataModelIdAndId(_, _) >> true
+        }
     }
 
     @Override
@@ -48,7 +52,7 @@ class DataClassComponentInterceptorSpec extends ContainedResourceInterceptorUnit
 
     @Override
     String getExpectedExceptionCodeForNoContainingItem() {
-        'DMSI01'
+        'MII01'
     }
 
     @Override

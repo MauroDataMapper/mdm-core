@@ -144,6 +144,10 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
         DataClassComponent.byDataFlowIdAndId(dataFlowId, Utils.toUuid(id)).get()
     }
 
+    boolean existsByDataFlowIdAndId(UUID dataFlowId, Serializable id) {
+        DataClassComponent.byDataFlowIdAndId(dataFlowId, Utils.toUuid(id)).count() == 1
+    }
+
     List<DataClassComponent> findAllByDataFlowId(UUID dataFlowId, Map pagination = [:]) {
         DataClassComponent.byDataFlowId(dataFlowId).list(pagination)
     }

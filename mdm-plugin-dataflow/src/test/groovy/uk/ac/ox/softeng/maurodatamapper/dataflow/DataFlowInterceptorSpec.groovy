@@ -46,7 +46,7 @@ class DataFlowInterceptorSpec extends ContainedResourceInterceptorUnitSpec imple
 
     @Override
     String getExpectedExceptionCodeForNoContainingItem() {
-        'DMSI01'
+        'MII01'
     }
 
     @Override

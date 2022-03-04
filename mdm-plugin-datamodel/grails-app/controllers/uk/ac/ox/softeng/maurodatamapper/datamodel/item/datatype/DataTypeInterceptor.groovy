@@ -26,7 +26,7 @@ class DataTypeInterceptor extends DataModelSecuredInterceptor {
         performChecks()
 
         if (actionName == 'copyDataType') {
-            return canEditDataModelAndReadOtherDataModel()
+            return canEditModelAndReadOtherModel()
         }
         checkStandardActions()
     }

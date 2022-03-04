@@ -90,7 +90,7 @@ class NestedAnnotationControllerSpec extends ResourceControllerSpec<Annotation> 
             {String domain, UUID bid -> basicModel.id == bid ? basicModel : null}
             findByMultiFacetAwareItemIdAndId(_, _) >> {UUID iid, Serializable mid ->
                 if (iid != basicModel.id) return null
-                mid == domain.id ? domain : null
+                mid == domain.id ? domain : Annotation.get(mid)
             }
             findAllWhereRootAnnotationOfMultiFacetAwareItemId(_, _) >> {
                 Annotation.whereRootAnnotationOfMultiFacetAwareItemId(basicModel.id).list()

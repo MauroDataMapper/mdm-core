@@ -17,12 +17,15 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.dataflow.component
 
-
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlowService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.controller.DataModelSecuredInterceptor
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 class DataClassComponentInterceptor extends DataModelSecuredInterceptor {
+
+    DataFlowService dataFlowService
 
     @Override
     Class getModelItemClass() {
@@ -35,6 +38,13 @@ class DataClassComponentInterceptor extends DataModelSecuredInterceptor {
         Utils.toUuid(params, 'dataFlowId')
         Utils.toUuid(params, 'dataClassComponentId')
         Utils.toUuid(params, 'dataClassId')
+    }
+
+    @Override
+    void checkParentModelItemId() throws ApiBadRequestException {
+        if (!dataFlowService.existsByTargetDataModelIdAndId(params.dataModelId, params.dataFlowId)) {
+            throw new ApiBadRequestException('DEI01', 'Provided dataFlowId is not inside provided dataModelId')
+        }
     }
 
     boolean before() {

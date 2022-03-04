@@ -31,6 +31,8 @@ import spock.lang.Shared
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
 
+import static io.micronaut.http.HttpStatus.BAD_REQUEST
+
 /**
  * @see DataClassController* Controller: dataClass
  *  | POST   | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/dataClasses       | Action: save   |
@@ -59,6 +61,9 @@ class NestedDataClassFunctionalSpec extends ResourceFunctionalSpec<DataClass> {
     @Shared
     UUID dataClassId
 
+    @Shared
+    UUID otherDataClassId
+
     @RunOnce
     @Transactional
     def setup() {
@@ -70,11 +75,18 @@ class NestedDataClassFunctionalSpec extends ResourceFunctionalSpec<DataClass> {
         DataModel dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: FUNCTIONAL_TEST,
                                             folder: folder, authority: testAuthority).save(flush: true)
         dataModelId = dataModel.id
-        otherDataModelId = new DataModel(label: 'Functional Test DataModel 2', createdBy: FUNCTIONAL_TEST,
-                                         folder: folder, authority: testAuthority).save(flush: true).id
         DataClass dataClass = new DataClass(label: 'Functional Test DataClass', createdBy: FUNCTIONAL_TEST,
                                             dataModel: dataModel).save(flush: true)
         dataClassId = dataClass.id
+
+        DataModel otherDataModel = new DataModel(label: 'Functional Test DataModel 2', createdBy: FUNCTIONAL_TEST,
+                                                 folder: folder, authority: testAuthority).save(flush: true)
+        otherDataModelId = otherDataModel.id
+
+
+        DataClass otherDataClass = new DataClass(label: 'Functional Test DataClass 2', createdBy: FUNCTIONAL_TEST,
+                                                 dataModel: otherDataModel).save(flush: true)
+        otherDataClassId = otherDataClass.id
 
         dataTypeId = new PrimitiveType(label: 'string', createdBy: FUNCTIONAL_TEST,
                                        dataModel: dataModel).save(flush: true).id
@@ -148,5 +160,15 @@ class NestedDataClassFunctionalSpec extends ResourceFunctionalSpec<DataClass> {
     }
   ]
 }'''
+    }
+
+
+    void 'Test adding DC to a DC in a different DM to the one in the url'() {
+        when:
+        POST(getResourcePath(dataModelId, otherDataClassId), validJson, MAP_ARG, true)
+
+        then:
+        verifyResponse(BAD_REQUEST, response)
+        responseBody().message == 'Provided dataClassId is not inside provided dataModelId'
     }
 }

@@ -17,51 +17,27 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.traits.controller
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
-import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmInterceptor
+
+import uk.ac.ox.softeng.maurodatamapper.core.interceptor.ModelItemInterceptor
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 /**
  * @since 20/03/2020
  */
-abstract class DataModelSecuredInterceptor implements MdmInterceptor {
+abstract class DataModelSecuredInterceptor extends ModelItemInterceptor {
 
-    abstract Class getModelItemClass()
-
-    void checkIds() {
-        Utils.toUuid(params, 'dataModelId')
-        Utils.toUuid(params, 'id')
-        Utils.toUuid(params, 'otherDataModelId')
+    @Override
+    Class getModelClass() {
+        DataModel
     }
 
-    void checkDataModelId() {
-        if (!params.dataModelId) throw new ApiBadRequestException('DMSI01', 'No DataModel Id provided against secured resource')
+    @Override
+    String getModelIdParameterField() {
+        'dataModelId'
     }
 
-    void performChecks() {
-        checkIds()
-        checkDataModelId()
-    }
-
-    boolean checkStandardActions() {
-        checkActionAuthorisationOnUnsecuredResource(getModelItemClass(), params.id, DataModel, params.dataModelId)
-    }
-
-    boolean canReadDataModel() {
-        currentUserSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, params.dataModelId) ?: notFound(DataModel,
-                                                                                                                 params.dataModelId.toString()
-        )
-    }
-
-    boolean canEditDataModelAndReadOtherDataModel() {
-        boolean canRead = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, params.dataModelId)
-        if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(DataModel, params.dataModelId)) {
-            return forbiddenOrNotFound(canRead, DataModel, params.dataModelId)
-        }
-        if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, params.otherDataModelId)) {
-            return notFound(DataModel, params.otherDataModelId)
-        }
-        true
+    @Override
+    String getOtherModelIdParameterField() {
+        'otherDataModelId'
     }
 }

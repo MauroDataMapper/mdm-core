@@ -180,4 +180,12 @@ class ReferenceEnumerationTypeService extends ModelItemService<ReferenceEnumerat
     List<ReferenceEnumerationType> findAllByMetadataNamespace(String namespace, Map pagination) {
         ReferenceEnumerationType.byMetadataNamespace(namespace).list(pagination)
     }
+
+    boolean existsByReferenceDataModelIdAndId(Serializable referenceDataModelId, Serializable id) {
+        ReferenceEnumerationType.byReferenceDataModelIdAndId(referenceDataModelId, id).count() == 1
+    }
+
+    ReferenceEnumerationType findByReferenceDataModelIdAndId(Serializable referenceDataModelId, Serializable id) {
+        ReferenceEnumerationType.byReferenceDataModelIdAndId(referenceDataModelId, id).find() as ReferenceEnumerationType
+    }
 }

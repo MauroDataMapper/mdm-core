@@ -60,7 +60,10 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
 
     static constraints = {
         CallableConstraints.call(ModelItemConstraints, delegate)
-        sourceTerm validator: {val, obj -> val == obj.targetTerm ? ['invalid.same.property.message', 'targetTerm'] : true}
+        sourceTerm validator: {val, obj ->
+            if (val == obj.targetTerm) return ['invalid.same.property.message', 'targetTerm']
+            if (val.terminology != obj.targetTerm.terminology) return ['invalid.relationship.different.terminologies']
+        }
     }
 
     static mapping = {

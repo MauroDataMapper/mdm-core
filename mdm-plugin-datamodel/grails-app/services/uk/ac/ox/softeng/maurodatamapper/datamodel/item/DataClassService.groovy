@@ -420,6 +420,10 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         false
     }
 
+    boolean existsByDataModelIdAndId(UUID dataModelId, Serializable id) {
+        DataClass.byDataModelId(dataModelId).idEq(id).count() == 1
+    }
+
     DataClass findByDataModelIdAndId(UUID dataModelId, Serializable id) {
         DataClass.byDataModelId(dataModelId).idEq(id).find()
     }

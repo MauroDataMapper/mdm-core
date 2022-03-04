@@ -282,7 +282,7 @@ class DataClassController extends CatalogueItemController<DataClass> {
     protected DataClass createResource() {
         DataClass resource = super.createResource() as DataClass
         if (params.dataClassId) {
-            dataClassService.get(params.dataClassId)?.addToDataClasses(resource)
+            dataClassService.findByDataModelIdAndId(params.dataModelId, params.dataClassId)?.addToDataClasses(resource)
         }
         dataModelService.get(params.dataModelId)?.addToDataClasses(resource)
 

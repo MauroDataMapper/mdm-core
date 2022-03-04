@@ -56,16 +56,11 @@ abstract class CatalogueItemReferenceSummaryMetadataReportFunctionalSpec extends
 
     @Override
     String getFacetResourcePath() {
-        "summaryMetadata/${summaryMetadata.id}/summaryMetadataReports"
-    }
-
-    @Override
-    String getCopyResourcePath(String copyId) {
-        "${catalogueItemDomainResourcePath}/${copyId}/${facetResourcePath}"
+        "referenceSummaryMetadata/${summaryMetadata.id}/summaryMetadataReports"
     }
 
     String getCatalogueItemCopyPath() {
-        "dataModels/${destinationDataModelId}/${catalogueItemDomainResourcePath}/${sourceDataModelId}/${catalogueItemId}"
+        "referenceDataModels/${destinationDataModelId}/${catalogueItemDomainResourcePath}/${sourceDataModelId}/${catalogueItemId}"
     }
 
     @Override
@@ -106,13 +101,14 @@ abstract class CatalogueItemReferenceSummaryMetadataReportFunctionalSpec extends
 
     HttpResponse requestCIF01CopiedCatalogueItemFacet(HttpResponse response) {
         String copyId = response.body().id
-        GET(getCopyResourcePath(copyId), MAP_ARG, true)
+        GET("${catalogueItemDomainResourcePath}/${copyId}/referenceSummaryMetadata", MAP_ARG, true)
     }
 
     void verifyCIF01CopiedFacetSuccessfully(HttpResponse response) {
         verifyResponse(HttpStatus.OK, response)
-        assert response.body().count == 1
-        assert response.body().items.size() == 1
+        // summary metadata should not be copied for DC/DT/DE
+        assert response.body().count == 0
+        assert response.body().items.size() == 0
     }
 
     void 'CIF01 : Test facet copied with catalogue item'() {

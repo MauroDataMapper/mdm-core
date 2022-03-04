@@ -108,6 +108,11 @@ class RuleService implements MultiFacetItemAwareService<Rule> {
         true
     }
 
+
+    boolean existsByMultiFacetAwareItemIdAndId(UUID multiFacetAwareItemId, Serializable id) {
+        Rule.byMultiFacetAwareItemIdAndId(multiFacetAwareItemId, id).count() == 1
+    }
+
     @Override
     Rule findByMultiFacetAwareItemIdAndId(UUID multiFacetAwareItemId, Serializable id) {
         Rule.byMultiFacetAwareItemIdAndId(multiFacetAwareItemId, id).get()

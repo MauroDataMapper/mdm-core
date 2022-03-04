@@ -890,7 +890,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
         responseBody().parentalRelationship
 
         when: 'checking relationships'
-        GET("$id/terms/$terms.DAM/termRelationships")
+        GET("$branchId/terms/$terms.DAM/termRelationships")
 
         then:
         verifyResponse(OK, response)
@@ -900,7 +900,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
         responseBody().items.first().relationshipType.id == relationshipTypes.inverseOf
 
         when: 'checking relationships'
-        GET("$id/terms/$terms.MLO/termRelationships")
+        GET("$branchId/terms/$terms.MLO/termRelationships")
 
         then:
         verifyResponse(OK, response)
@@ -917,7 +917,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
         }
 
         when: 'checking relationships'
-        GET("$id/terms/$terms.SMLO/termRelationships")
+        GET("$branchId/terms/$terms.SMLO/termRelationships")
 
         then:
         verifyResponse(OK, response)

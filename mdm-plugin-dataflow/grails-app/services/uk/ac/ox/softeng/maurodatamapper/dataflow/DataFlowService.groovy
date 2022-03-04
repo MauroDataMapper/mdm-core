@@ -121,6 +121,10 @@ class DataFlowService extends ModelItemService<DataFlow> {
         DataFlow.byTargetDataModelIdAndId(dataModelId, Utils.toUuid(id)).get()
     }
 
+    boolean existsByTargetDataModelIdAndId(UUID dataModelId, Serializable id) {
+        DataFlow.byTargetDataModelIdAndId(dataModelId, Utils.toUuid(id)).count() == 1
+    }
+
     List<DataFlow> findAllReadableByUser(UserSecurityPolicyManager userSecurityPolicyManager, Map pagination = [:]) {
         if (!userSecurityPolicyManager.listReadableSecuredResourceIds(DataModel)) return []
         DataFlow.byDataModelIdInList(

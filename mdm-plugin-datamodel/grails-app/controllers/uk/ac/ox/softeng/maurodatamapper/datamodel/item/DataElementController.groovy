@@ -160,7 +160,8 @@ class DataElementController extends CatalogueItemController<DataElement> {
     @Override
     protected DataElement createResource() {
         DataElement resource = super.createResource() as DataElement
-        dataClassService.get(params.dataClassId)?.addToDataElements(resource)
+        // Protect against mismatch DM and DC (DC not inside DM
+        dataClassService.findByDataModelIdAndId(params.dataModelId, params.dataClassId)?.addToDataElements(resource)
         resource
     }
 
