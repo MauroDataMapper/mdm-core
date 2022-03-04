@@ -46,7 +46,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 import org.springframework.context.MessageSource
 
 import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.ARGUMENT_SORT
@@ -61,8 +60,6 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     MessageSource messageSource
     SummaryMetadataService summaryMetadataService
     ReferenceTypeService referenceTypeService
-
-    private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler()
 
     DataClass get(Serializable id) {
         DataClass.get(id)

@@ -38,6 +38,9 @@ import java.time.Duration
 @CompileStatic
 class Utils {
 
+    private Utils() {
+    }
+
     static String timeTaken(long start) {
         getTimeString(System.currentTimeMillis() - start)
     }

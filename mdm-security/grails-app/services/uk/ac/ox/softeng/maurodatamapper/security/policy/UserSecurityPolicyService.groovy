@@ -71,13 +71,21 @@ class UserSecurityPolicyService {
     @Autowired
     GrailsApplication grailsApplication
 
+    int getMaxLockTime() {
+        grailsApplication.config.getProperty('maurodatamapper.security.max.lock.time', Integer, 5)
+    }
+
+    UserSecurityPolicy buildInitialSecurityPolicy(CatalogueUser catalogueUser, Set<UserGroup> userGroups) {
+        UserSecurityPolicy
+            .builder()
+            .forUser(catalogueUser)
+            .inGroups(userGroups)
+            .withMaxLockTime(getMaxLockTime())
+            .lock()
+    }
+
     UserSecurityPolicy buildUserSecurityPolicy(CatalogueUser catalogueUser, Set<UserGroup> userGroups) {
-        int maxLockTime = grailsApplication.config.getProperty('maurodatamapper.security.max.lock.time', Integer, 5)
-        buildUserSecurityPolicy UserSecurityPolicy
-                                    .builder()
-                                    .forUser(catalogueUser)
-                                    .inGroups(userGroups)
-                                    .withMaxLockTime(maxLockTime)
+        buildUserSecurityPolicy(buildInitialSecurityPolicy(catalogueUser, userGroups))
     }
 
     UserSecurityPolicy buildUserSecurityPolicy(UserSecurityPolicy userSecurityPolicy) {
@@ -92,7 +100,7 @@ class UserSecurityPolicyService {
         // If no usergroups then the user has no permissions apart from their own user and what is public/authenticated access
         if (!userSecurityPolicy.hasUserGroups()) {
 
-            Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = buildInternalSecurity(userSecurityPolicy.isAuthenticated())
+            Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = buildInternalSecurity(userSecurityPolicy.isAuthenticatedForBuilding())
 
             return userSecurityPolicy
                 .withVirtualRoles(personalUserRoles)
@@ -239,7 +247,7 @@ class UserSecurityPolicyService {
             virtualSecurableResourceGroupRoles.addAll(buildFullAccessToAllSecurableResources(fullSecureableResourceAccessRole))
         } else {
             // Build the public/authenticated access
-            virtualSecurableResourceGroupRoles.addAll(buildInternalSecurity(userSecurityPolicy.isAuthenticated()))
+            virtualSecurableResourceGroupRoles.addAll(buildInternalSecurity(userSecurityPolicy.isAuthenticatedForBuilding()))
             // Otherwise use the assigned roles to define access
             virtualSecurableResourceGroupRoles.addAll(buildControlledAccessToSecurableResources(securableResourceGroupRoles))
             // If any container admin privileges then we need to make sure the container group admin role is added to the application level

@@ -157,7 +157,7 @@ class UserSecurityPolicyServiceIntegrationSpec extends BaseIntegrationSpec imple
         policy.userGroups.size() == 4
         policy.applicationPermittedRoles.size() == 5
         policy.securableResourceGroupRoles.size() == 1
-        policy.virtualSecurableResourceGroupRoles.values().flatten().size() == 98
+        policy.virtualSecurableResourceGroupRoles.values().flatten().size() == 95
 
         when:
         Set<VirtualSecurableResourceGroupRole> folderRoles = policy.virtualSecurableResourceGroupRoles.values().flatten().findAll {it.domainId == folder.id}
@@ -170,16 +170,15 @@ class UserSecurityPolicyServiceIntegrationSpec extends BaseIntegrationSpec imple
         }
 
         then:
-        folderRoles.size() == 6
+        folderRoles.size() == 5
         folderRoles.any {it.groupRole.name == GroupRole.CONTAINER_ADMIN_ROLE_NAME}
-        folderRoles.any {it.groupRole.name == 'container_group_admin'}
         folderRoles.any {it.groupRole.name == 'editor'}
         folderRoles.any {it.groupRole.name == 'author'}
         folderRoles.any {it.groupRole.name == 'reviewer'}
         folderRoles.any {it.groupRole.name == 'reader'}
 
         and:
-        folder2Roles.size() == 6
+        folder2Roles.size() == 5
         folder2Roles.any {it.groupRole.name == 'author'}
         folder2Roles.any {it.groupRole.name == 'reviewer'}
         folder2Roles.any {it.groupRole.name == 'reader'}
@@ -217,7 +216,7 @@ class UserSecurityPolicyServiceIntegrationSpec extends BaseIntegrationSpec imple
         policy.userGroups.size() == 4
         policy.applicationPermittedRoles.size() == 5
         policy.securableResourceGroupRoles.size() == 1
-        policy.virtualSecurableResourceGroupRoles.values().flatten().size() == 98
+        policy.virtualSecurableResourceGroupRoles.values().flatten().size() == 95
 
         when:
         Set<VirtualSecurableResourceGroupRole> folderRoles = policy.virtualSecurableResourceGroupRoles.values().flatten().findAll {it.domainId == folder.id}
@@ -231,18 +230,16 @@ class UserSecurityPolicyServiceIntegrationSpec extends BaseIntegrationSpec imple
         }
 
         then:
-        folderRoles.size() == 6
+        folderRoles.size() == 5
         folderRoles.any {it.groupRole.name == GroupRole.CONTAINER_ADMIN_ROLE_NAME}
-        folderRoles.any {it.groupRole.name == 'container_group_admin'}
         folderRoles.any {it.groupRole.name == 'editor'}
         folderRoles.any {it.groupRole.name == 'author'}
         folderRoles.any {it.groupRole.name == 'reviewer'}
         folderRoles.any {it.groupRole.name == 'reader'}
 
         and:
-        folder2Roles.size() == 6
+        folder2Roles.size() == 5
         folder2Roles.any {it.groupRole.name == GroupRole.CONTAINER_ADMIN_ROLE_NAME}
-        folder2Roles.any {it.groupRole.name == 'container_group_admin'}
         folder2Roles.any {it.groupRole.name == 'editor'}
         folder2Roles.any {it.groupRole.name == 'author'}
         folder2Roles.any {it.groupRole.name == 'reviewer'}

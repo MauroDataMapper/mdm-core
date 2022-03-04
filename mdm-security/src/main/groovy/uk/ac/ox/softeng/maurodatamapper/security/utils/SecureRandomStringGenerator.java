@@ -29,6 +29,9 @@ import java.nio.charset.Charset;
  */
 public class SecureRandomStringGenerator {
 
+    private SecureRandomStringGenerator() {
+    }
+
     /**
      * Codepoint for 0.
      */

@@ -27,6 +27,9 @@ import java.text.SimpleDateFormat
 @Slf4j
 class Utils {
 
+    private Utils() {
+    }
+
     static List<String> formatStrings = Arrays.asList('yyyy-MM-dd', 'dd/MM/yyyy', 'dd-MM-yyyy', 'd-M-y', 'd/M/y', 'M/y')
     static List<SimpleDateFormat> formats = formatStrings.collect {
         format -> new SimpleDateFormat(format)

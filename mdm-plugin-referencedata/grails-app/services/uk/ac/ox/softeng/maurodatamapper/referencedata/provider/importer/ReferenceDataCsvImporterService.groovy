@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
@@ -74,7 +75,7 @@ class ReferenceDataCsvImporterService
         long start = System.currentTimeMillis()
         CSVParser parser = csvFormat.parse(
             new InputStreamReader(new ByteArrayInputStream(content), "UTF8"))
-        log.debug('Input parsed in {}', Utils.timeTaken(start))            
+        log.debug('Input parsed in {}', Utils.timeTaken(start))
 
         List headers = parser.getHeaderNames()
         headers.eachWithIndex {it, index ->
@@ -95,13 +96,13 @@ class ReferenceDataCsvImporterService
                     referenceDataModel.addToReferenceDataValues(referenceDataValue)
                 }
 
-                rowNumber++ 
+                rowNumber++
                 if (rowNumber % 1000 == 0) {
                     log.debug("rowNumber {}", rowNumber)
                 }
             }
         } catch (Exception e) {
-            throw new RuntimeException("Error at line " + parser.getCurrentLineNumber(), e)
+            throw new ApiInternalException('RDCIS01', "Error at line " + parser.getCurrentLineNumber(), e)
         }
 
         parser.close()

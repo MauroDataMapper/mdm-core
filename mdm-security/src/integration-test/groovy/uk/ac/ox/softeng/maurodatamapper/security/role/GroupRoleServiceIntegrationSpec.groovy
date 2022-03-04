@@ -126,7 +126,7 @@ class GroupRoleServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
         Set<GroupRole> roles = groupRoleService.findAllContainerLevelRoles()
 
         then:
-        roles.size() == 6
+        roles.size() == 5
 
         and:
         roles.any {it.name == GroupRole.CONTAINER_ADMIN_ROLE_NAME}
@@ -134,7 +134,6 @@ class GroupRoleServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
         roles.any {it.name == 'author'}
         roles.any {it.name == 'reviewer'}
         roles.any {it.name == 'reader'}
-        roles.any {it.name == 'container_group_admin'}
 
     }
 
@@ -146,7 +145,7 @@ class GroupRoleServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
         Set<GroupRole> roles = groupRoleService.findAllSecurableResourceLevelRoles(Folder)
 
         then:
-        roles.size() == 6
+        roles.size() == 5
 
         and:
         roles.any {it.name == GroupRole.CONTAINER_ADMIN_ROLE_NAME}
@@ -154,7 +153,6 @@ class GroupRoleServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
         roles.any {it.name == 'author'}
         roles.any {it.name == 'reviewer'}
         roles.any {it.name == 'reader'}
-        roles.any {it.name == 'container_group_admin'}
 
     }
 
@@ -224,7 +222,7 @@ class GroupRoleServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
         cache.get('reviewer', VirtualGroupRole).allowedRoles.size() == 2
         cache.get('author', VirtualGroupRole).allowedRoles.size() == 3
         cache.get('editor', VirtualGroupRole).allowedRoles.size() == 4
-        cache.get(GroupRole.CONTAINER_ADMIN_ROLE_NAME, VirtualGroupRole).allowedRoles.size() == 6
+        cache.get(GroupRole.CONTAINER_ADMIN_ROLE_NAME, VirtualGroupRole).allowedRoles.size() == 5
 
         and:
         cache.get('container_group_admin', VirtualGroupRole).allowedRoles.size() == 1
