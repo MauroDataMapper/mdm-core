@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.controller.CatalogueItemController
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 
 import grails.gorm.transactions.Transactional
@@ -160,6 +161,9 @@ class DataElementController extends CatalogueItemController<DataElement> {
     @Override
     protected DataElement createResource() {
         DataElement resource = super.createResource() as DataElement
+        DataType boundDataType = dataTypeService.checkBoundDataType(params.dataModelId, resource.dataType)
+        if (boundDataType) boundDataType.addToDataElements(resource)
+        else resource.dataType = null
         // Protect against mismatch DM and DC (DC not inside DM
         dataClassService.findByDataModelIdAndId(params.dataModelId, params.dataClassId)?.addToDataElements(resource)
         resource
@@ -167,7 +171,12 @@ class DataElementController extends CatalogueItemController<DataElement> {
 
     @Override
     protected DataElement updateResource(DataElement resource) {
-        if (!resource.dataType.ident()) resource.dataType.save()
+        if (!resource.dataType.ident()) {
+            DataType boundDataType = dataTypeService.checkBoundDataType(params.dataModelId, resource.dataType)
+            if (boundDataType) boundDataType.addToDataElements(resource)
+            else resource.dataType = null
+            if (resource.dataType && !resource.dataType.ident()) resource.dataType.save()
+        }
         super.updateResource(resource) as DataElement
     }
 
