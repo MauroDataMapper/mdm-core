@@ -23,7 +23,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.controller.CatalogueItemController
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
-import uk.ac.ox.softeng.maurodatamapper.datamodel.databinding.converters.DataTypeValueConverter
 
 import grails.databinding.DataBindingSource
 import grails.gorm.transactions.Transactional
@@ -148,14 +147,7 @@ class DataTypeController extends CatalogueItemController<DataType> {
     @Transactional
     protected DataType createResource() {
         try {
-            DataTypeValueConverter converter = new DataTypeValueConverter()
-            def body = getObjectToBind()
-            if (converter.canConvert(body)) {
-                DataType resource = converter.convert(body)
-                resource.createdBy = currentUser.emailAddress
-                dataModelService.get(params.dataModelId)?.addToDataTypes(resource)
-                return resource
-            }
+          return dataTypeService.bindDataType(objectToBind, params.dataModelId, currentUser)
         } catch (ApiInvalidModelException ex) {
             transactionStatus.setRollbackOnly()
             respond ex.errors, view: 'create' // STATUS CODE 422

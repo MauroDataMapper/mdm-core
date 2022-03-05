@@ -22,7 +22,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffCache
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.core.GrailsApplication
@@ -39,9 +38,6 @@ class ModelDataType extends DataType<ModelDataType> {
     String modelResourceDomainType
 
     static constraints = {
-        modelResourceDomainType validator: {source, obj ->
-            if (source == DataModel.simpleName) ['invalid.model.type.datatype']
-        }
     }
 
     ModelDataType() {

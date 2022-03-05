@@ -415,6 +415,46 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
 
     }
 
+    void 'test finding existing DataType alongside saving DataElement'() {
+
+        when: 'The save action is executed with valid data'
+        POST('',
+             [
+                 label          : 'Functional Test DataElement',
+                 maxMultiplicity: 2,
+                 minMultiplicity: 1,
+                 dataType       : [
+                     label     : 'Functional Test DataType',
+                     domainType: DataType.PRIMITIVE_DOMAIN_TYPE
+                 ]
+             ])
+
+        then:
+        verifyResponse(CREATED, response)
+        responseBody().dataType.id
+
+        when: 'posting again with the same DT type'
+        String dtId = responseBody().dataType.id
+        POST('',
+             [
+                 label          : 'Functional Test DataElement 2',
+                 maxMultiplicity: 2,
+                 minMultiplicity: 1,
+                 dataType       : [
+                     label     : 'Functional Test DataType',
+                     domainType: DataType.PRIMITIVE_DOMAIN_TYPE
+                 ]
+             ])
+
+        then:
+        verifyResponse(CREATED, response)
+        responseBody().dataType.id == dtId
+
+        cleanup:
+        cleanupCreatedDataTypes('Functional Test DataType')
+
+    }
+
     void 'test creation of DataType alongside updating DataElement'() {
         given:
         POST('', validJson)
@@ -474,7 +514,7 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
 
     }
 
-    void 'test creation of Reference DataType alongside saving DataElement'() {
+    void 'RT01 : test creation of Reference DataType alongside saving DataElement'() {
 
         when: 'The save action is executed with valid data'
         POST('',
@@ -545,6 +585,71 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
 
         cleanup:
         cleanupCreatedDataTypes('Functional Test DataType 3')
+
+    }
+
+    void 'RT02 : test creation of Reference DataType alongside saving DataElement with no label'() {
+
+        when: 'The save action is executed with valid data'
+        POST('',
+             [
+                 label          : 'Functional Test DataElement',
+                 maxMultiplicity: 2,
+                 minMultiplicity: 1,
+                 dataType       : [
+                     domainType    : DataType.REFERENCE_DOMAIN_TYPE,
+                     referenceClass: dataClassId
+                 ]
+             ])
+
+        then: 'The response is correct'
+        verifyResponse CREATED, response
+        responseBody().dataType.label == 'Reference to Functional Test DataClass'
+
+        cleanup:
+        cleanupCreatedDataTypes('Reference to Functional Test DataClass')
+
+    }
+
+    void 'RT03 : test creation of Reference DataType alongside saving DataElement with no label and prexisting'() {
+
+        when: 'The save action is executed with valid data'
+        POST('',
+             [
+                 label          : 'Functional Test DataElement',
+                 maxMultiplicity: 2,
+                 minMultiplicity: 1,
+                 dataType       : [
+                     domainType    : DataType.REFERENCE_DOMAIN_TYPE,
+                     referenceClass: dataClassId
+                 ]
+             ])
+
+        then: 'The response is correct'
+        verifyResponse CREATED, response
+        responseBody().dataType.label == 'Reference to Functional Test DataClass'
+
+
+        when: 'The save action is executed with valid data again'
+        String rdtId = responseBody().dataType.id
+        POST('',
+             [
+                 label          : 'Functional Test DataElement 2',
+                 maxMultiplicity: 2,
+                 minMultiplicity: 1,
+                 dataType       : [
+                     domainType    : DataType.REFERENCE_DOMAIN_TYPE,
+                     referenceClass: dataClassId
+                 ]
+             ])
+
+        then: 'The response is correct'
+        verifyResponse CREATED, response
+        responseBody().dataType.label == 'Reference to Functional Test DataClass'
+        responseBody().dataType.id == rdtId
+
+        cleanup:
+        cleanupCreatedDataTypes('Reference to Functional Test DataClass')
 
     }
 

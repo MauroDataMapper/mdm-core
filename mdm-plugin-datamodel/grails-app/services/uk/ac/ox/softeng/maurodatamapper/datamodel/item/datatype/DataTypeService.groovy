@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
@@ -27,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.databinding.converters.DataTypeValueConverter
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -482,14 +484,10 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         }
         List<Metadata> mds = []
         mds += replace.metadata ?: []
-        mds.findAll { !keep.findMetadataByNamespaceAndKey(it.namespace, it.key) }.each { md ->
+        mds.findAll {!keep.findMetadataByNamespaceAndKey(it.namespace, it.key)}.each {md ->
             replace.removeFromMetadata(md)
             keep.addToMetadata(md.namespace, md.key, md.value, md.createdBy)
         }
-    }
-
-    DataType findDataType(DataModel dataModel, String label) {
-        dataModel.dataTypes.find { it.label == label.trim() }
     }
 
     /*
@@ -522,5 +520,84 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     CopyInformation cacheFacetInformationForCopy(List<UUID> originalIds, CopyInformation copyInformation = null) {
         CopyInformation cachedInformation = super.cacheFacetInformationForCopy(originalIds, copyInformation)
         cacheSummaryMetadataInformationForCopy(originalIds, cachedInformation)
+    }
+
+    DataType findByDataModelIdAndDomainTypeAndLabel(UUID dataModelId, String domainType, String label) {
+        DataType.byDataModelId(dataModelId)
+            .eq('domainType', domainType)
+            .eq('label', label)
+            .get()
+    }
+
+    DataType checkBoundDataType(UUID dataModelId, DataType dataType) {
+        // If no DT or DT has an id then this has bound by id and doesnt need any further checking
+        if (!dataType || dataType.id) return dataType
+        DataType updated = checkBoundDataTypeLabel(dataModelId, dataType, false)
+        DataType alreadyExisting = findByDataModelIdAndDomainTypeAndLabel(dataModelId, updated.domainType, updated.label)
+        if (alreadyExisting) return alreadyExisting
+        updated
+    }
+
+    DataType bindDataType(def objectToBind, UUID dataModelId, User user) throws ApiInvalidModelException {
+        DataTypeValueConverter converter = new DataTypeValueConverter()
+        def body = objectToBind
+        if (!converter.canConvert(body)) return null
+
+        DataType resource = converter.convert(body)
+        resource.createdBy = user.emailAddress
+        dataModelService.get(dataModelId)?.addToDataTypes(resource)
+
+        checkBoundDataTypeLabel(dataModelId, resource)
+
+        resource
+    }
+
+    DataType checkBoundDataTypeLabel(UUID dataModelId, DataType resource, boolean generateLabel = true) {
+        // Allow label to not be set and use the label of the referencing object
+        if (resource.instanceOf(ReferenceType) && !resource.label) {
+            String label = "Reference to ${(resource as ReferenceType).referenceClass.label}"
+            resource.label = generateLabel ? generateDefaultLabel(dataModelId, label) : label
+        } else if (resource.instanceOf(ModelDataType) && !resource.label) {
+            ModelDataType modelDataType = resource as ModelDataType
+            Model model = modelDataTypeService.findModelByDomainTypeAndDomainId(modelDataType.modelResourceDomainType, modelDataType.modelResourceId)
+            if (!model) {
+                // If no model then unset everything to make sure the validation fails
+                modelDataType.modelResourceDomainType = null
+                modelDataType.modelResourceId = null
+            } else {
+                String label = "Reference to ${model.label}"
+                resource.label = generateLabel ? generateDefaultLabel(dataModelId, label) : label
+            }
+        }
+        resource
+    }
+
+    /**
+     * Query the datamodel for all datatypes with the provided label and increment if required.
+     * Looks for any DTs with (like) the same label, if none exist then use the provided label.
+     * If any exist then find the last use number .. e.g. "reference to x 1" has last number "1",
+     * and generate the next label in the order .. e.g. "reference to x 2"
+     * @param dataModelId
+     * @param defaultLabel
+     * @return
+     */
+    String generateDefaultLabel(UUID dataModelId, String defaultLabel) {
+        List<String> siblingLabels = DataType.byDataModelId(dataModelId)
+            .property('label')
+            .like('label', "${defaultLabel}%")
+            .sort('label')
+            .list()
+
+        if (!siblingLabels) {
+            return defaultLabel
+        }
+
+        String lastLabel = siblingLabels.last()
+        int lastNum
+        lastLabel.find(/${defaultLabel}( \((\d+)\))?/) {
+            lastNum = it[1] ? it[2].toInteger() : 0
+        }
+
+        "${defaultLabel} (${++lastNum})"
     }
 }
