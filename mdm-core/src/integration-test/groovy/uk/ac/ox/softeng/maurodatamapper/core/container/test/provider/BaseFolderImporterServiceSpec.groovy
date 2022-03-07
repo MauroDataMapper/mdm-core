@@ -54,13 +54,13 @@ abstract class BaseFolderImporterServiceSpec extends BaseIntegrationSpec {
     abstract String getImportType()
 
     @Override
-    Object setupSpec() {
+    def setupSpec() {
         basicParameters = new FolderFileImporterProviderServiceParameters()
     }
 
     @RunOnce
     @Override
-    Object setup() {
+    def setup() {
         resourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', importType)
         basicParameters.importFile = null
     }
