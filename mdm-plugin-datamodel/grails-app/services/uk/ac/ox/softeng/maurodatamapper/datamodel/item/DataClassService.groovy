@@ -600,11 +600,10 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         if (!targetDataClass) {
             targetDataClass = new DataClass(
                 minMultiplicity: sourceDataClass.minMultiplicity,
-                maxMultiplicity: sourceDataClass.maxMultiplicity,
-                createdBy: user.emailAddress,
-                description: sourceDataClass.description,
-                label: sourceDataClass.label
+                maxMultiplicity: sourceDataClass.maxMultiplicity
             )
+
+            targetDataClass = copyCatalogueItemInformation(sourceDataClass, targetDataClass, user, userSecurityPolicyManager, false, null)
 
             targetDataModel.addToDataClasses(targetDataClass)
             if (parentDataClassInTarget) {
