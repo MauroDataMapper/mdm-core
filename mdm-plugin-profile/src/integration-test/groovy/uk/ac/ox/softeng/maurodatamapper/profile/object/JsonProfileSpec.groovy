@@ -39,9 +39,7 @@ class JsonProfileSpec extends BaseIntegrationSpec {
         Profile profile = new JsonProfile(id: UUID.randomUUID(), domainType: 'BasicModel', label: 'Test')
 
         then:
-        !profile.validate()
-        GormUtils.outputDomainErrors(messageSource, profile)
-        profile.errors.hasFieldErrors('sections')
+        profile.validate() // validates as profile validation restricted to current values (issue gh-277)
     }
 
     void '2 test validation when section with no fields'() {
@@ -52,9 +50,7 @@ class JsonProfileSpec extends BaseIntegrationSpec {
         ])
 
         then:
-        !profile.validate()
-        GormUtils.outputDomainErrors(messageSource, profile)
-        profile.errors.hasFieldErrors('sections[0].fields')
+        profile.validate() // validates as profile validation restricted to current values (issue gh-277)
     }
 
     void '3 test validation when section with mandatory fields'() {

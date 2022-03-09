@@ -35,7 +35,6 @@ abstract class Profile implements Comparable<Profile>, Validateable {
 
     @Override
     boolean validate() {
-        validate null, null, null
         sections.eachWithIndex {sec, i ->
             sec.validate()
             if (sec.hasErrors()) {

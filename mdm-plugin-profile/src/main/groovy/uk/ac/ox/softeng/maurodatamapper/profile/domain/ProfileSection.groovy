@@ -36,9 +36,8 @@ class ProfileSection implements Cloneable, Validateable {
 
     @Override
     boolean validate() {
-        validate null, null, null
         fields.eachWithIndex {field, i ->
-            field.validate()
+            field.validate(['currentValue'])
             if (field.hasErrors()) {
                 field.errors.fieldErrors.each {err ->
                     this.errors.rejectValue("fields[$i].${err.field}", err.code, err.arguments, err.defaultMessage)

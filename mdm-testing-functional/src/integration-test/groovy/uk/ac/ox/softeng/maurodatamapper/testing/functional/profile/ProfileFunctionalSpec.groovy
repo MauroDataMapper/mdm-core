@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.profile.DerivedFieldProfileService
 import uk.ac.ox.softeng.maurodatamapper.profile.PostFinalisedEditableProfileService
 import uk.ac.ox.softeng.maurodatamapper.profile.ProfileSpecificationFieldProfileService
 import uk.ac.ox.softeng.maurodatamapper.profile.ProfileSpecificationProfileService
+import uk.ac.ox.softeng.maurodatamapper.profile.InvalidProfileService
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 
 import grails.gorm.transactions.Transactional
@@ -53,6 +54,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
     PostFinalisedEditableProfileService postFinalisedEditableProfileService
     DerivedFieldProfileService derivedFieldProfileService
     ProfileSpecificationFieldProfileService profileSpecificationFieldProfileService
+    InvalidProfileService invalidProfileService
 
     @Transactional
     String getTestFolderId() {
@@ -393,6 +395,23 @@ class ProfileFunctionalSpec extends FunctionalSpec {
     ],
     "providerType": "Profile",
     "metadataNamespace": "uk.ac.ox.softeng.maurodatamapper.profile.derived",
+    "domains": [
+      "DataModel"
+    ],
+    "editableAfterFinalisation": false
+  },
+  {
+    "name": "InvalidProfileService",
+    "version": "${json-unit.matches:version}",
+    "displayName": "Partially Invalid Profile",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.profile",
+    "allowsExtraMetadataKeys": false,
+    "knownMetadataKeys": [
+      "validField",
+      "blankDescriptionField"
+    ],
+    "providerType": "Profile",
+    "metadataNamespace": "uk.ac.ox.softeng.maurodatamapper.profile.invalid",
     "domains": [
       "DataModel"
     ],
@@ -2480,6 +2499,131 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         cleanupDataModelId(profileModelId)
     }
 
+    void 'N16 : test validating and saving a valid profile with a partially invalid definition (as reader and author)'() {
+        given:
+        String id = getDataModelId()
+        Map validFieldMap = [
+            metadataPropertyName: 'validField',
+            currentValue: 'text value'
+        ]
+        Map blankDescriptionFieldMap = [
+            metadataPropertyName: 'blankDescriptionField',
+            currentValue: 100
+        ]
+        Map profileMap = [
+            sections : [
+                [
+                    name  : 'Partially Invalid Section',
+                    fields: [
+                        validFieldMap,
+                        blankDescriptionFieldMap
+                    ]
+                ]
+            ]
+        ]
+
+        when: 'validate valid data using a profile definition containing an invalid blank field description'
+        loginReader()
+        POST("profiles/${invalidProfileService.namespace}/${invalidProfileService.name}/dataModels/$id/validate", profileMap)
+
+        then:
+        verifyResponse(OK, response)
+
+        when: 'save valid data using a profile definition containing an invalid blank field description'
+        loginAuthor()
+        POST("profiles/${invalidProfileService.namespace}/${invalidProfileService.name}/dataModels/$id", profileMap)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().sections.size() == 1
+        responseBody().domainType == 'DataModel'
+        responseBody().id == id
+        responseBody().sections.first().name == profileMap.sections.first().name
+        responseBody().sections.first().fields.find {it.metadataPropertyName == validFieldMap.metadataPropertyName}.currentValue == validFieldMap.currentValue
+        responseBody().sections.first().fields.find {it.metadataPropertyName == blankDescriptionFieldMap.metadataPropertyName}.currentValue.toInteger() == blankDescriptionFieldMap.currentValue
+
+        when: 'get saved data'
+        loginReader()
+        GET("profiles/${invalidProfileService.namespace}/${invalidProfileService.name}/dataModels/$id")
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().sections.size() == 1
+        responseBody().domainType == 'DataModel'
+        responseBody().id == id
+        responseBody().sections.first().name == profileMap.sections.first().name
+        responseBody().sections.first().fields.find {it.metadataPropertyName == validFieldMap.metadataPropertyName}.currentValue == validFieldMap.currentValue
+        responseBody().sections.first().fields.find {it.metadataPropertyName == blankDescriptionFieldMap.metadataPropertyName}.currentValue.toInteger() == blankDescriptionFieldMap.currentValue
+
+        cleanup:
+        cleanupDataModelId(id)
+    }
+
+    void 'N17 : test validating and saving an invalid profile with a partially invalid definition (as reader)'() {
+        given:
+        String id = getDataModelId()
+        Map validFieldMap = [
+            metadataPropertyName: 'validField'
+        ]
+        Map blankDescriptionFieldMap = [
+            metadataPropertyName: 'blankDescriptionField',
+            currentValue: 'text value'
+        ]
+        Map profileMap = [
+            sections : [
+                [
+                    name  : 'Partially Invalid Section',
+                    fields: [
+                        validFieldMap,
+                        blankDescriptionFieldMap
+                    ]
+                ]
+            ]
+        ]
+
+        when: 'validate invalid data using a profile definition containing an invalid blank field description'
+        loginReader()
+        POST("profiles/${invalidProfileService.namespace}/${invalidProfileService.name}/dataModels/$id/validate", profileMap)
+
+        then:
+        verifyResponse(UNPROCESSABLE_ENTITY, response)
+        responseBody().errors
+        responseBody().total == 2
+        responseBody().fieldTotal == 2
+        responseBody().errors.find {it.metadataPropertyName == validFieldMap.metadataPropertyName}.message == 'This field cannot be empty'
+        responseBody().errors.find {it.metadataPropertyName == blankDescriptionFieldMap.metadataPropertyName}.message == 'This field must be a valid Integer'
+
+        when: 'save invalid data using a profile definition containing an invalid blank field description'
+        loginAuthor()
+        POST("profiles/${invalidProfileService.namespace}/${invalidProfileService.name}/dataModels/$id", profileMap)
+
+        then:
+        verifyResponse(OK, response)
+        log.debug('responseBody()={}', responseBody())
+        responseBody().sections.size() == 1
+        responseBody().domainType == 'DataModel'
+        responseBody().id == id
+        responseBody().sections.first().name == profileMap.sections.first().name
+        !responseBody().sections.first().fields.find {it.metadataPropertyName == validFieldMap.metadataPropertyName}.currentValue
+        responseBody().sections.first().fields.find {it.metadataPropertyName == blankDescriptionFieldMap.metadataPropertyName}.currentValue == blankDescriptionFieldMap.currentValue
+
+        when: 'get saved data'
+        loginReader()
+        GET("profiles/${invalidProfileService.namespace}/${invalidProfileService.name}/dataModels/$id")
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().sections.size() == 1
+        responseBody().domainType == 'DataModel'
+        responseBody().id == id
+        responseBody().sections.first().name == profileMap.sections.first().name
+        !responseBody().sections.first().fields.find {it.metadataPropertyName == validFieldMap.metadataPropertyName}.currentValue
+        responseBody().sections.first().fields.find {it.metadataPropertyName == blankDescriptionFieldMap.metadataPropertyName}.currentValue == blankDescriptionFieldMap.currentValue
+
+        cleanup:
+        cleanupDataModelId(id)
+    }
+
     String getExpectedSavedProfile() {
         '''{
   "sections": [
@@ -2624,5 +2768,4 @@ class ProfileFunctionalSpec extends FunctionalSpec {
   "domainType": "DataModel"
 }'''
     }
-
 }
