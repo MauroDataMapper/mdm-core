@@ -134,6 +134,28 @@ class EmailService implements AnonymisableService {
     }
 
     /**
+     * Alternative to when the properties map needs top be specified externally
+     * @param subjectProperty
+     * @param bodyProperty
+     * @param user
+     * @param Map<string, string> propertieMap
+     */
+    void sendEmailToUser(String subjectProperty,
+                         String bodyProperty,
+                         User user,
+                         Map<String, String> propertiesMap) {
+
+        SendEmailTask task = new SendEmailTask(this)
+            .using(getEmailProviderService())
+            .from(getApiPropertyAndSubstitute(ApiPropertyEnum.EMAIL_FROM_NAME, propertiesMap), getApiPropertyAndSubstitute(ApiPropertyEnum.EMAIL_FROM_ADDRESS, propertiesMap))
+            .to("${user.getFirstName()} ${user.getLastName()}", user.getEmailAddress())
+            .subject(getApiPropertyAndSubstitute(subjectProperty, propertiesMap))
+            .body(getApiPropertyAndSubstitute(bodyProperty, propertiesMap))
+
+        executorService.submit(task)
+    }
+
+    /**
      * Delete all emails sent to the specified address
      * @param sentTo
      */
