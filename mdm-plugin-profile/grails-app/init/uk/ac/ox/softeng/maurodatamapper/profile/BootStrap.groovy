@@ -37,11 +37,14 @@ class BootStrap {
 
         try {
             loadAndSetConfigurableFieldType(ConfigurableProfileFieldTypes.DATE_FORMAT_KEY,
-                                            ConfigurableProfileFieldTypes.DATE_FORMAT_DEFAULT)
+                                            ConfigurableProfileFieldTypes.DATE_FORMAT_DEFAULT,
+                                            ConfigurableProfileFieldTypes.instance.dateFormats)
             loadAndSetConfigurableFieldType(ConfigurableProfileFieldTypes.DATETIME_FORMAT_KEY,
-                                            ConfigurableProfileFieldTypes.DATETIME_FORMAT_DEFAULT)
+                                            ConfigurableProfileFieldTypes.DATETIME_FORMAT_DEFAULT,
+                                            ConfigurableProfileFieldTypes.instance.dateTimeFormats)
             loadAndSetConfigurableFieldType(ConfigurableProfileFieldTypes.TIME_FORMAT_KEY,
-                                            ConfigurableProfileFieldTypes.TIME_FORMAT_DEFAULT)
+                                            ConfigurableProfileFieldTypes.TIME_FORMAT_DEFAULT,
+                                            ConfigurableProfileFieldTypes.instance.timeFormats)
         } catch (Exception ignored) {
             log.warn('Couldn\'t load configurable profile field types from ApiProperties, will use defaults')
         }
@@ -49,7 +52,7 @@ class BootStrap {
     def destroy = {
     }
 
-    void loadAndSetConfigurableFieldType(String key, String[] defaultValues) {
+    void loadAndSetConfigurableFieldType(String key, String[] defaultValues, String[] target) {
         ApiProperty.withNewTransaction {
             ApiProperty apiProperty = apiPropertyService.findByKey(key)
             if (!apiProperty) {
@@ -61,7 +64,7 @@ class BootStrap {
                                               createdBy: BootStrapUser.instance.emailAddress)
                 GormUtils.checkAndSave(messageSource, apiProperty)
             }
-            ConfigurableProfileFieldTypes.instance.dateFormats = apiProperty.value.split(',')
+            target = apiProperty.value.split(',')
         }
     }
 }
