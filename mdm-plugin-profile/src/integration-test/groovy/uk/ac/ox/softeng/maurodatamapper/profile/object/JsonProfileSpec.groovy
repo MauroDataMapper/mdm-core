@@ -134,8 +134,13 @@ class JsonProfileSpec extends BaseIntegrationSpec {
                 new ProfileField(fieldName: 'field3', metadataPropertyName: 'field3', minMultiplicity: 1, maxMultiplicity: 1, dataType: ProfileFieldDataType.BOOLEAN,
                                  currentValue: 'blob'),
                 new ProfileField(fieldName: 'field4', metadataPropertyName: 'field4', minMultiplicity: 1, maxMultiplicity: 1, dataType: ProfileFieldDataType.INT,
-                                 currentValue: '11'
-                ),
+                                 currentValue: '11'),
+                new ProfileField(fieldName: 'field5', metadataPropertyName: 'field5', minMultiplicity: 1, maxMultiplicity: 1, dataType: ProfileFieldDataType.DATE,
+                                 currentValue: '31/12/1999'),
+                new ProfileField(fieldName: 'field5', metadataPropertyName: 'field5', minMultiplicity: 1, maxMultiplicity: 1, dataType: ProfileFieldDataType.DATE,
+                                 currentValue: '2000-01-01'),
+                new ProfileField(fieldName: 'field7', metadataPropertyName: 'field7', minMultiplicity: 1, maxMultiplicity: 1, dataType: 'Custom Type',
+                                 currentValue: 'custom123')
             ])
         ])
 
@@ -147,6 +152,8 @@ class JsonProfileSpec extends BaseIntegrationSpec {
 
         profile.errors.hasFieldErrors('sections[0].fields[2].currentValue')
         profile.errors.getFieldError('sections[0].fields[2].currentValue').code == 'typeMismatch'
+
+        profile.errors.errorCount == 2
     }
 
 

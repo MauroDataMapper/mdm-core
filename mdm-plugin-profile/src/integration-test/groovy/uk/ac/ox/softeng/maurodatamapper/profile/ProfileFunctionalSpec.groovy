@@ -678,7 +678,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         localResponse.body().isEmpty()
     }
 
-    void 'N05 : test saving a dynamic profile'() {
+    void 'N05 : test validating and saving a dynamic profile'() {
         given:
         String simpleModelId = getSimpleDataModelId()
 
@@ -793,6 +793,15 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
             name    : 'Dynamic%20Profile%20Model'
         ]
 
+        POST("profiles/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic%20Profile%20Model/dataModels/$simpleModelId/validate", dynamicProfileMap)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().sections.first().fields.find {it.fieldName == optionalFieldMap.fieldName}.currentValue == optionalFieldMap.currentValue
+        responseBody().sections.first().fields.find {it.fieldName == mandatoryFieldMap.fieldName}.currentValue == mandatoryFieldMap.currentValue
+        responseBody().sections.first().fields.find {it.fieldName == defaultOptionalFieldMap.fieldName}.currentValue == defaultOptionalFieldMap.currentValue
+
+        when:
         POST("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic%20Profile%20Model", dynamicProfileMap)
 
         then:
@@ -1205,6 +1214,176 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         verifyResponse(NO_CONTENT, response)
         DELETE("dataModels/$dynamicProfileModelId?permanent=true")
         verifyResponse(NO_CONTENT, response)
+    }
+
+    void 'N08 : test validating and saving a dynamic profile with date, enumeration and custom datatypes'() {
+        given:
+        String simpleModelId = getSimpleDataModelId()
+        String label = "Dynamic Profile Model (Standard)"
+
+        POST("folders/${folder.id}/dataModels?defaultDataTypeProvider=ProfileSpecificationDataTypeProvider", [label: label])
+        verifyResponse(CREATED, response)
+        String dynamicProfileModelId = responseBody().id
+
+        POST("dataModels/$dynamicProfileModelId/dataClasses", [label: 'Profile Section Class'])
+        verifyResponse(CREATED, response)
+        String dataClassId = responseBody().id
+
+        GET("dataModels/$dynamicProfileModelId/dataTypes")
+        verifyResponse(OK, response)
+        Map<String, String> dataTypes = (responseBody().items as List<Map>).collectEntries {
+            [it.label, it.id]
+        }
+
+        POST("dataModels/$dynamicProfileModelId/dataTypes", [
+            domainType       : 'EnumerationType',
+            label            : 'Functional Test Enumeration',
+            enumerationValues: [
+                [key: 'a', value: 'wibble'],
+                [key: 'b', value: 'wobble']
+            ]
+        ])
+        verifyResponse(CREATED, response)
+        String enumerationTypeId = responseBody().id
+
+        POST("dataModels/$dynamicProfileModelId/dataTypes", [
+            domainType       : 'PrimitiveType',
+            label            : 'Functional Test Custom Type'
+        ])
+        verifyResponse(CREATED, response)
+        String customTypeId = responseBody().id
+
+        POST("dataModels/$dynamicProfileModelId/dataClasses/$dataClassId/dataElements", [
+            label   : 'Dynamic Profile Elem (String)',
+            dataType: dataTypes.string
+        ])
+        verifyResponse(CREATED, response)
+
+        POST("dataModels/$dynamicProfileModelId/dataClasses/$dataClassId/dataElements", [
+            label   : 'Dynamic Profile Elem (Date)',
+            dataType: dataTypes.date
+        ])
+        verifyResponse(CREATED, response)
+
+        POST("dataModels/$dynamicProfileModelId/dataClasses/$dataClassId/dataElements", [
+            label   : 'Dynamic Profile Elem (Enumeration)',
+            dataType: enumerationTypeId
+        ])
+        verifyResponse(CREATED, response)
+
+        POST("dataModels/$dynamicProfileModelId/dataClasses/$dataClassId/dataElements", [
+            label   : 'Dynamic Profile Elem (Custom)',
+            dataType: customTypeId
+        ])
+        verifyResponse(CREATED, response)
+
+        Map namespaceFieldMap = [
+            currentValue        : 'functional.test.profile',
+            metadataPropertyName: 'metadataNamespace',
+        ]
+        Map domainsFieldMap = [
+            currentValue        : '',
+            metadataPropertyName: 'domainsApplicable',
+        ]
+        Map profileMap = [
+            sections  : [
+                [
+                    description: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
+                    fields     : [
+                        namespaceFieldMap,
+                        domainsFieldMap
+                    ],
+                    name       : 'Profile Specification'
+                ]
+            ],
+            id        : dynamicProfileModelId.toString(),
+            label     : label,
+            domainType: 'DataModel',
+            namespace : profileSpecificationProfileService.namespace,
+            name      : profileSpecificationProfileService.name
+        ]
+
+        when:
+        POST("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${dynamicProfileModelId}", profileMap)
+
+        then:
+        verifyResponse(OK, response)
+
+        when:
+        PUT("dataModels/$dynamicProfileModelId/finalise", [versionChangeType: 'Major'])
+
+        then:
+        verifyResponse OK, response
+
+        when:
+        HttpResponse<List<Map>> localResponse = GET('profiles/providers', Argument.listOf(Map))
+
+        then:
+        verifyResponse(OK, localResponse)
+        localResponse.body().any {it.name == Utils.safeUrlEncode(label)}
+
+        when:
+        Map stringFieldMap = [
+            fieldName   : 'Dynamic Profile Elem (String)',
+            currentValue: 'functional test string'
+        ]
+        Map dateFieldMap = [
+            fieldName   : 'Dynamic Profile Elem (Date)',
+            currentValue: '31/12/1999'
+        ]
+        Map enumerationFieldMap = [
+            fieldName   : 'Dynamic Profile Elem (Enumeration)',
+            currentValue: 'a'
+        ]
+        Map customTypeFieldMap = [
+            fieldName   : 'Dynamic Profile Elem (Custom)',
+            currentValue: 'functional test custom'
+        ]
+        Map dynamicProfileMap = [
+            sections  : [
+                [
+                    fields: [
+                        stringFieldMap,
+                        dateFieldMap,
+                        enumerationFieldMap,
+                        customTypeFieldMap
+                    ],
+                    name  : 'Profile Section Class'
+                ]
+            ],
+            id        : simpleModelId,
+            domainType: 'DataModel',
+            namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
+            name      : Utils.safeUrlEncode(label)
+        ]
+
+        POST("profiles/uk.ac.ox.softeng.maurodatamapper.profile.provider/${Utils.safeUrlEncode(label)}/dataModels/$simpleModelId/validate", dynamicProfileMap)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().sections.first().fields.find {it.fieldName == stringFieldMap.fieldName}.currentValue == stringFieldMap.currentValue
+        responseBody().sections.first().fields.find {it.fieldName == dateFieldMap.fieldName}.currentValue == dateFieldMap.currentValue
+        responseBody().sections.first().fields.find {it.fieldName == enumerationFieldMap.fieldName}.currentValue == enumerationFieldMap.currentValue
+        responseBody().sections.first().fields.find {it.fieldName == customTypeFieldMap.fieldName}.currentValue == customTypeFieldMap.currentValue
+
+        when:
+        POST("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/${Utils.safeUrlEncode(label)}", dynamicProfileMap)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().sections.first().fields.find {it.fieldName == stringFieldMap.fieldName}.currentValue == stringFieldMap.currentValue
+        responseBody().sections.first().fields.find {it.fieldName == dateFieldMap.fieldName}.currentValue == dateFieldMap.currentValue
+        responseBody().sections.first().fields.find {it.fieldName == enumerationFieldMap.fieldName}.currentValue == enumerationFieldMap.currentValue
+        responseBody().sections.first().fields.find {it.fieldName == customTypeFieldMap.fieldName}.currentValue == customTypeFieldMap.currentValue
+
+        when:
+        localResponse = GET("dataModels/$simpleModelId/profiles/used", Argument.listOf(Map))
+
+        then:
+        verifyResponse(OK, localResponse)
+        localResponse.body().size() == 1
+        localResponse.body().first().name == Utils.safeUrlEncode(label)
+        localResponse.body().first().namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
     }
 
     String getExpectedSavedProfile() {
