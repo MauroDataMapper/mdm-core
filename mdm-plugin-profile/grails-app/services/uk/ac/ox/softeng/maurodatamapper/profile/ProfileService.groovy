@@ -69,13 +69,13 @@ class ProfileService implements DataBinder {
     ProfileProviderService findProfileProviderService(String profileNamespace, String profileName, String profileVersion = null) {
 
         if (profileVersion) {
-            return getAllProfileProviderServices().find {
+            return getAllProfileProviderServices(true).find {
                 it.namespace == profileNamespace &&
                 it.getName() in [profileName, Utils.safeUrlEncode(profileName)] &&
                 it.version == profileVersion
             }
         }
-        getAllProfileProviderServices().findAll {
+        getAllProfileProviderServices(true).findAll {
             it.namespace == profileNamespace &&
             it.getName() in [profileName, Utils.safeUrlEncode(profileName)]
         }.max()
@@ -227,7 +227,7 @@ class ProfileService implements DataBinder {
     }
 
     Set<ProfileProviderService> getAllDynamicProfileProviderServices() {
-        getAllProfileProviderServices().findAll {
+        getAllProfileProviderServices(true).findAll {
             it.definingDataModel != null
         }
     }
