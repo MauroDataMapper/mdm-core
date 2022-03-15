@@ -1308,6 +1308,9 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         POST("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${dynamicProfileModelId}", profileMap)
         verifyResponse(OK, response)
 
+        PUT("dataModels/$dynamicProfileModelId/finalise", [versionChangeType: 'Major'])
+        verifyResponse(OK, response)
+
         Map optionalFieldMap = [
             fieldName   : 'Dynamic Profile Elem (Optional)',
             currentValue: 'abc'
@@ -2473,6 +2476,12 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         then: 'still 1 of these is for the Dynamic Profile Model'
         verifyResponse(OK, localResponse)
         localResponse.body().findAll{it.displayName == 'Dynamic Profile Model'}.size() == 1
+
+        when: 'get the finalised profile against the simple data model now there is a finalised and an unfinalised version of the profile'
+        GET("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Dynamic%20Profile%20Model", MAP_ARG)
+
+        then: 'the response is OK'
+        verifyResponse(OK, response)
 
         when: 'finalise the new branch model version'
         PUT("dataModels/$profileModelVersion2Id/finalise", [versionChangeType: 'Major', versionTag: 'Functional Test Second Version Tag'])

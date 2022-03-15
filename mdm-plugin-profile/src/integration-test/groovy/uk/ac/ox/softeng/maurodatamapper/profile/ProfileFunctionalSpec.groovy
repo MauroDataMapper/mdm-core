@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
+import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -961,6 +962,9 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         POST("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${dynamicProfileModelId}", profileMap)
         verifyResponse(OK, response)
 
+        PUT("dataModels/$dynamicProfileModelId/finalise", [versionChangeType: 'Major'])
+        verifyResponse(OK, response)
+
         Map optionalFieldMap = [
             fieldName   : 'Dynamic Profile Elem (Optional)',
             currentValue: 'abc'
@@ -1384,6 +1388,132 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         localResponse.body().size() == 1
         localResponse.body().first().name == Utils.safeUrlEncode(label)
         localResponse.body().first().namespace == 'uk.ac.ox.softeng.maurodatamapper.profile.provider'
+
+        cleanup:
+        DELETE("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/${Utils.safeUrlEncode(label)}")
+        verifyResponse(NO_CONTENT, response)
+        DELETE("dataModels/$dynamicProfileModelId?permanent=true")
+        verifyResponse(NO_CONTENT, response)
+    }
+
+    void 'N09 : test that multiple profile versions are ordered correctly'() {
+        given:
+        String simpleModelId = getSimpleDataModelId()
+        String label = 'Dynamic Profile Model'
+
+        POST("folders/${folder.id}/dataModels?defaultDataTypeProvider=ProfileSpecificationDataTypeProvider", [label: label])
+        verifyResponse(CREATED, response)
+        String dynamicProfileModelId = responseBody().id
+
+        POST("dataModels/$dynamicProfileModelId/dataClasses", [label: 'Profile Section Class'])
+        verifyResponse(CREATED, response)
+        String dataClassId = responseBody().id
+
+        GET("dataModels/$dynamicProfileModelId/dataTypes")
+        verifyResponse(OK, response)
+        Map<String, String> dataTypes = (responseBody().items as List<Map>).collectEntries {
+            [it.label, it.id]
+        }
+
+        POST("dataModels/$dynamicProfileModelId/dataClasses/$dataClassId/dataElements", [
+            label          : 'Dynamic Profile Elem',
+            dataType       : dataTypes.string
+        ])
+        verifyResponse(CREATED, response)
+
+        Map namespaceFieldMap = [
+            currentValue        : 'functional.test.profile',
+            metadataPropertyName: 'metadataNamespace',
+        ]
+        Map domainsFieldMap = [
+            currentValue        : '',
+            metadataPropertyName: 'domainsApplicable',
+        ]
+        Map profileMap = [
+            sections  : [
+                [
+                    description: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
+                    fields     : [
+                        namespaceFieldMap,
+                        domainsFieldMap
+                    ],
+                    name       : 'Profile Specification'
+                ]
+            ],
+            id        : dynamicProfileModelId.toString(),
+            label     : label,
+            domainType: 'DataModel',
+            namespace : profileSpecificationProfileService.namespace,
+            name      : profileSpecificationProfileService.name
+        ]
+
+        POST("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${dynamicProfileModelId}", profileMap)
+        verifyResponse(OK, response)
+
+        List<String> dynamicProfileModelIds = [dynamicProfileModelId]
+        (1..5).each {
+            PUT("dataModels/${dynamicProfileModelIds.last()}/finalise", [versionChangeType: 'Major'])
+            verifyResponse OK, response
+            PUT("dataModels/${dynamicProfileModelIds.last()}/newBranchModelVersion", [:], MAP_ARG)
+            verifyResponse CREATED, response
+            dynamicProfileModelIds << responseBody().id
+        }
+
+        when:
+        HttpResponse<List<Map>> localResponse = GET('profiles/providers', Argument.listOf(Map))
+
+        then:
+        verifyResponse OK, localResponse
+        localResponse.body().findAll {it.name == Utils.safeUrlEncode(label)}.eachWithIndex {profileProviderMap, i ->
+            assert Version.from(profileProviderMap.version).major == i + 1
+        }
+
+        when:
+        localResponse = GET("dataModels/${simpleModelId}/profiles/unused", Argument.listOf(Map))
+
+        then:
+        verifyResponse OK, localResponse
+        localResponse.body().findAll {it.name == Utils.safeUrlEncode(label)}.eachWithIndex {profileProviderMap, i ->
+            assert Version.from(profileProviderMap.version).major == i + 1
+        }
+
+        when:
+        Map dynamicProfileMap = [
+            sections  : [
+                [
+                    fields: [
+                        [
+                            fieldName   : 'Dynamic Profile Elem',
+                            currentValue: 'functional test value'
+                        ]
+                    ],
+                    name  : 'Profile Section Class'
+                ]
+            ],
+            id        : simpleModelId,
+            domainType: 'DataModel',
+            namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
+            name      : Utils.safeUrlEncode(label)
+        ]
+
+        POST("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/${Utils.safeUrlEncode(label)}", dynamicProfileMap)
+
+        then:
+        verifyResponse OK, response
+
+        when:
+        localResponse = GET("dataModels/${simpleModelId}/profiles/used", Argument.listOf(Map))
+
+        then:
+        localResponse.body().eachWithIndex {profileProviderMap, i ->
+            assert Version.from(profileProviderMap.version).major == i + 1
+        }
+
+        cleanup:
+        DELETE("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/${Utils.safeUrlEncode(label)}")
+        verifyResponse(NO_CONTENT, response)
+        DELETE("dataModels/$dynamicProfileModelId?permanent=true")
+        verifyResponse(NO_CONTENT, response)
     }
 
     String getExpectedSavedProfile() {
