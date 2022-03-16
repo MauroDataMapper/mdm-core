@@ -333,8 +333,8 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         availableBranches.size() == 2
-        availableBranches.each {it.id in [draftModel.id, testModel.id]}
-        availableBranches.each {it.label == terminology.label}
+        availableBranches.every {it.id in [draftModel.id, testModel.id]}
+        availableBranches.every {it.label == terminology.label}
     }
 
     void 'TSM01 : test finding merge difference between two terminologies'() {

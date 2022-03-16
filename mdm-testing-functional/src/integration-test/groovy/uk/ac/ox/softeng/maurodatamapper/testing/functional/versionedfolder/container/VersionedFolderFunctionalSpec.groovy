@@ -1887,8 +1887,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         then:
         verifyResponse OK, response
         responseBody().count == 5
-        responseBody().items.each {it.id in expectedBrancheIds}
-        responseBody().items.each {it.label == validJson.label}
+        responseBody().items.every {it.id in expectedBrancheIds}
+        responseBody().items.every {it.label == validJson.label}
 
         when:
         GET("$data.v2/availableBranches")
@@ -1896,8 +1896,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         then:
         verifyResponse OK, response
         responseBody().count == 5
-        responseBody().items.each {it.id in expectedBrancheIds}
-        responseBody().items.each {it.label == validJson.label}
+        responseBody().items.every {it.id in expectedBrancheIds}
+        responseBody().items.every {it.label == validJson.label}
 
         when:
         GET("$data.v1/availableBranches")
@@ -1905,8 +1905,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         then:
         verifyResponse OK, response
         responseBody().count == 5
-        responseBody().items.each {it.id in expectedBrancheIds}
-        responseBody().items.each {it.label == validJson.label}
+        responseBody().items.every {it.id in expectedBrancheIds}
+        responseBody().items.every {it.label == validJson.label}
 
         when:
         GET("$data.main/availableBranches")
@@ -1914,8 +1914,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         then:
         verifyResponse OK, response
         responseBody().count == 5
-        responseBody().items.each {it.id in expectedBrancheIds}
-        responseBody().items.each {it.label == validJson.label}
+        responseBody().items.every {it.id in expectedBrancheIds}
+        responseBody().items.every {it.label == validJson.label}
 
         cleanup:
         cleanupModelVersionTree(data)
