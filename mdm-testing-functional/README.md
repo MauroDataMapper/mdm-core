@@ -562,7 +562,6 @@ Controller: semanticLink
 |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/semanticLinks/${id}                                                                                                           | Action: show
 
 Controller: session
-|   GET    | /api/session/keepAlive                                                                                                                                                           | Action: keepAlive
 |   GET    | /api/session/isApplicationAdministration                                                                                                                                         | Action: isApplicationAdministrationSession
 |   GET    | /api/admin/activeSessions                                                                                                                                                        | Action: activeSessions
 |   GET    | /api/session/isAuthenticated/${sessionId}?                                                                                                                                       | Action: isAuthenticatedSession

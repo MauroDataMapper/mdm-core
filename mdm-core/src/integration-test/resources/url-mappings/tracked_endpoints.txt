@@ -137,7 +137,6 @@
 | DELETE | /api/${catalogueItemDomainType}/${catalogueItemId}/semanticLinks/${id} | delete |
 | PUT    | /api/${catalogueItemDomainType}/${catalogueItemId}/semanticLinks/${id} | update |
 | GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/semanticLinks/${id} | show |
-| GET    | /api/session/keepAlive | keepAlive |
 | GET    | /api/session/isApplicationAdministration | isApplicationAdministrationSession |
 | GET    | /api/admin/activeSessions | activeSessions |
 | GET    | /api/session/isAuthenticated/${sessionId}? | isAuthenticatedSession |
