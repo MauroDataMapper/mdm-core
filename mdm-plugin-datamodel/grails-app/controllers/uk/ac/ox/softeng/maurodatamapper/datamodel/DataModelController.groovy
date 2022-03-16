@@ -84,36 +84,6 @@ class DataModelController extends ModelController<DataModel> {
         dataModelService
     }
 
-    @Transactional
-    def deleteAllUnusedDataClasses() {
-        if (handleReadOnly()) {
-            return
-        }
-
-        DataModel dataModel = queryForResource params.dataModelId
-
-        if (!dataModel) return notFound(params.dataModelId)
-
-        dataModelService.deleteAllUnusedDataClasses(dataModel)
-
-        render status: NO_CONTENT // NO CONTENT STATUS CODE
-    }
-
-    @Transactional
-    def deleteAllUnusedDataTypes() {
-        if (handleReadOnly()) {
-            return
-        }
-
-        DataModel dataModel = queryForResource params.dataModelId
-
-        if (!dataModel) return notFound(params.dataModelId)
-
-        dataModelService.deleteAllUnusedDataTypes(dataModel)
-
-        render status: NO_CONTENT // NO CONTENT STATUS CODE
-    }
-
     def search(SearchParams searchParams) {
 
         if (searchParams.hasErrors()) {

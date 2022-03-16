@@ -228,8 +228,6 @@ Controller: dataModel
 |   GET    | /api/dataModels/types                                                                                                                                                            | Action: types
 |   POST   | /api/dataModels/import/${importerNamespace}/${importerName}/${importerVersion}                                                                                                   | Action: importModels
 |   POST   | /api/dataModels/export/${exporterNamespace}/${exporterName}/${exporterVersion}                                                                                                   | Action: exportModels
-|  DELETE  | /api/dataModels/${dataModelId}/dataClasses/clean                                                                                                                                 | Action: deleteAllUnusedDataClasses
-|  DELETE  | /api/dataModels/${dataModelId}/dataTypes/clean                                                                                                                                   | Action: deleteAllUnusedDataTypes
 |   GET    | /api/folders/${folderId}/dataModels                                                                                                                                              | Action: index
 |  DELETE  | /api/dataModels/${dataModelId}/readByAuthenticated                                                                                                                               | Action: readByAuthenticated
 |   PUT    | /api/dataModels/${dataModelId}/readByAuthenticated                                                                                                                               | Action: readByAuthenticated
@@ -410,7 +408,6 @@ Controller: referenceDataModel
 |   PUT    | /api/admin/referenceDataModels/${id}/undoSoftDelete                                                                                                                              | Action: undoSoftDelete
 |   POST   | /api/referenceDataModels/import/${importerNamespace}/${importerName}/${importerVersion}                                                                                          | Action: importModels
 |   POST   | /api/referenceDataModels/export/${exporterNamespace}/${exporterName}/${exporterVersion}                                                                                          | Action: exportModels
-|  DELETE  | /api/referenceDataModels/${referenceDataModelId}/referenceDataTypes/clean                                                                                                        | Action: deleteAllUnusedReferenceDataTypes
 |   GET    | /api/folders/${folderId}/referenceDataModels                                                                                                                                     | Action: index
 |  DELETE  | /api/referenceDataModels/${referenceDataModelId}/readByAuthenticated                                                                                                             | Action: readByAuthenticated
 |   PUT    | /api/referenceDataModels/${referenceDataModelId}/readByAuthenticated                                                                                                             | Action: readByAuthenticated

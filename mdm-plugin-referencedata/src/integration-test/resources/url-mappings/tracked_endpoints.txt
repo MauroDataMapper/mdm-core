@@ -14,7 +14,6 @@
 | PUT    | /api/admin/referenceDataModels/${id}/undoSoftDelete | undoSoftDelete |
 | POST   | /api/referenceDataModels/import/${importerNamespace}/${importerName}/${importerVersion} | importModels |
 | POST   | /api/referenceDataModels/export/${exporterNamespace}/${exporterName}/${exporterVersion} | exportModels |
-| DELETE | /api/referenceDataModels/${referenceDataModelId}/referenceDataTypes/clean | deleteAllUnusedReferenceDataTypes |
 | GET    | /api/folders/${folderId}/referenceDataModels | index |
 | DELETE | /api/referenceDataModels/${referenceDataModelId}/readByAuthenticated | readByAuthenticated |
 | PUT    | /api/referenceDataModels/${referenceDataModelId}/readByAuthenticated | readByAuthenticated |
