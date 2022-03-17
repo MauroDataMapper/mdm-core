@@ -72,36 +72,6 @@ class ReferenceDataModelController extends ModelController<ReferenceDataModel> {
         resource ? respond(resource, [model: [userSecurityPolicyManager: currentUserSecurityPolicyManager], view: 'hierarchy']) : notFound(params.id)
     }
 
-    @Transactional
-    def deleteAllUnusedDataClasses() {
-        if (handleReadOnly()) {
-            return
-        }
-
-        ReferenceDataModel referenceDataModel = queryForResource params.referenceDataModelId
-
-        if (!referenceDataModel) return notFound(params.referenceDataModelId)
-
-        referenceDataModelService.deleteAllUnusedDataClasses(referenceDataModel)
-
-        render status: NO_CONTENT // NO CONTENT STATUS CODE
-    }
-
-    @Transactional
-    def deleteAllUnusedDataTypes() {
-        if (handleReadOnly()) {
-            return
-        }
-
-        ReferenceDataModel referenceDataModel = queryForResource params.referenceDataModelId
-
-        if (!referenceDataModel) return notFound(params.referenceDataModelId)
-
-        referenceDataModelService.deleteAllUnusedDataTypes(referenceDataModel)
-
-        render status: NO_CONTENT // NO CONTENT STATUS CODE
-    }
-
     def search(SearchParams searchParams) {
 
         if (searchParams.hasErrors()) {

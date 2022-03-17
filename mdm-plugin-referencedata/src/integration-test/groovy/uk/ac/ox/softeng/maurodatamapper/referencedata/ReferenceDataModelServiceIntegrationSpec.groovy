@@ -682,8 +682,8 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
 
         then:
         availableBranches.size() == 2
-        availableBranches.each { it.id in [draftModel.id, testModel.id] }
-        availableBranches.each { it.label == dataModel.label }
+        availableBranches.every {it.id in [draftModel.id, testModel.id]}
+        availableBranches.every {it.label == dataModel.label}
     }
 
     void 'DMSV01 : test validation on valid model'() {

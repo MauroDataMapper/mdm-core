@@ -57,8 +57,6 @@ class UrlMappings {
                 put "/folder/$folderId"(controller: 'referenceDataModel', action: 'changeFolder')
                 get "/export/$exporterNamespace/$exporterName/$exporterVersion"(controller: 'referenceDataModel', action: 'exportModel')
 
-                delete '/referenceDataTypes/clean'(controller: 'referenceDataModel', action: 'deleteAllUnusedReferenceDataTypes')
-
                 get '/hierarchy'(controller: 'referenceDataModel', action: 'hierarchy')
 
                 post '/search'(controller: 'referenceDataModel', action: 'search')
