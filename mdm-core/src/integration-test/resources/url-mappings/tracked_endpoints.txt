@@ -22,8 +22,11 @@
 | DELETE | /api/admin/properties/${id} | delete |
 | PUT    | /api/admin/properties/${id} | update |
 | GET    | /api/admin/properties/${id} | show |
+| GET    | /api/asyncJobs | index |
+| DELETE | /api/asyncJobs/${id} | delete |
+| GET    | /api/asyncJobs/${id} | show |
 | GET    | /api/properties | index |
-| POST   | /api/authorities | save |
+| POST   | /api/authorities | save |A
 | GET    | /api/authorities | index |
 | DELETE | /api/authorities/${id} | delete |
 | PUT    | /api/authorities/${id} | update |

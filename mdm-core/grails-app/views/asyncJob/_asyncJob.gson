@@ -1,0 +1,15 @@
+import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJob
+
+model {
+    AsyncJob asyncJob
+}
+
+json {
+    id asyncJob.id
+    jobName asyncJob.jobName
+    startedByUser asyncJob.startedByUser
+    dateTimeStarted asyncJob.dateTimeStarted
+    status asyncJob.status
+    if (asyncJob.message) message asyncJob.message
+    location "/api/asyncJobs/${asyncJob.id}"
+}

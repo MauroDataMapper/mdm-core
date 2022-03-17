@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core
 
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyService
+import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJobService
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
@@ -51,12 +52,14 @@ class BootStrap {
     SessionService sessionService
     AuthorityService authorityService
 
+    AsyncJobService asyncJobService
+
     AssetResourceLocator assetResourceLocator
 
     @Autowired
     MessageSource messageSource
 
-    def init = { servletContext ->
+    def init = {servletContext ->
 
         String grailsEnv = Environment.current.name
         String mdmEnv = System.getProperty('mdm.env')
@@ -111,7 +114,9 @@ class BootStrap {
             }
         }
     }
+
     def destroy = {
+        asyncJobService.cancelAllRunningJobs()
     }
 
     void loadApiProperties(String path) {

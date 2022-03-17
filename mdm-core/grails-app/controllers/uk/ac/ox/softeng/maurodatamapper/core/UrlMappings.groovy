@@ -21,6 +21,10 @@ import static uk.ac.ox.softeng.maurodatamapper.core.web.mapping.UrlMappingAction
 import static uk.ac.ox.softeng.maurodatamapper.core.web.mapping.UrlMappingActions.DEFAULT_EXCLUDES_AND_NO_UPDATE
 import static uk.ac.ox.softeng.maurodatamapper.core.web.mapping.UrlMappingActions.INCLUDES_INDEX_ONLY
 
+import static org.grails.web.mapping.DefaultUrlMappingEvaluator.ACTION_DELETE
+import static org.grails.web.mapping.DefaultUrlMappingEvaluator.ACTION_INDEX
+import static org.grails.web.mapping.DefaultUrlMappingEvaluator.ACTION_SHOW
+
 class UrlMappings {
 
     static mappings = {
@@ -56,6 +60,8 @@ class UrlMappings {
                     get '/emailers'(controller: 'mauroDataMapperServiceProvider', action: 'emailProviders')
                     get '/exporters'(controller: 'mauroDataMapperServiceProvider', action: 'exporterProviders')
                 }
+
+
             }
 
             // Open access url
@@ -65,6 +71,8 @@ class UrlMappings {
                 openAccess = true
             }
             get '/path/prefixMappings'(controller: 'path', action: 'listAllPrefixMappings')
+
+            '/asyncJobs'(resources: 'asyncJob', includes: [ACTION_INDEX, ACTION_SHOW, ACTION_DELETE])
 
             group '/importer', {
                 get "/parameters/$ns?/$name?/$version?"(controller: 'importer', action: 'parameters')
