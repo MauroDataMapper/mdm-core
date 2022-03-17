@@ -58,13 +58,18 @@ class AuthorityFunctionalSpec extends UserAccessFunctionalSpec {
             .whereEditorsCannotChangePermissions()
             .whereEditors {
                 cannotCreate()
+                cannotDelete()
+                cannotEditDescription()
+                cannotUpdate()
                 canAction('show')
             }
             .whereAuthors {
                 cannotEditDescription()
+                cannotUpdate()
             }
             .whereAuthenticatedUsers {
                 canSee()
+                canIndex()
                 canAction('show')
             }
             .whereAnonymousUsers {

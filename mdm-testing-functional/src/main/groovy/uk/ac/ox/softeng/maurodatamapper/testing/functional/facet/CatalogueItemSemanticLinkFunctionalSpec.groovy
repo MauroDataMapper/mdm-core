@@ -82,6 +82,7 @@ abstract class CatalogueItemSemanticLinkFunctionalSpec extends UserAccessFunctio
             .withoutAvailableActions()
             .whereAuthors {
                 cannotEditDescription()
+                cannotUpdate()
             }
     }
 

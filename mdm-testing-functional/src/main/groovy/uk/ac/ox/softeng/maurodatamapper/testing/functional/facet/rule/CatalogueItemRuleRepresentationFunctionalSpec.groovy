@@ -90,6 +90,7 @@ abstract class CatalogueItemRuleRepresentationFunctionalSpec extends UserAccessF
             .withoutAvailableActions()
             .whereAuthors {
                 cannotEditDescription()
+                cannotUpdate()
             }
     }
 

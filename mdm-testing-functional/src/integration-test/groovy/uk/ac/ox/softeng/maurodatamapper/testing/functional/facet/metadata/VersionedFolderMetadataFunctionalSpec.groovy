@@ -60,6 +60,10 @@ class VersionedFolderMetadataFunctionalSpec extends ContainerMetadataFunctionalS
             .withoutAvailableActions()
             .whereAuthors {
                 canUpdate()
+                canDelete()
+                canCreate()
+                canSee()
+                canIndex()
             }
     }
 }

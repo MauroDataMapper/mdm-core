@@ -108,13 +108,20 @@ class UserGroupFunctionalSpec extends UserAccessFunctionalSpec {
             .withInheritedAccessPermissions()
             .whereAuthors {
                 canCreate()
+                canSee()
+                canIndex()
                 cannotEditDescription()
+                cannotUpdate()
             }
             .whereReviewers {
                 canCreate()
+                canSee()
+                canIndex()
             }
             .whereReaders {
                 canCreate()
+                canSee()
+                canIndex()
             }
             .whereContainerAdminsCanAction('delete', 'show', 'update')
             .whereEditorsCanAction('delete', 'show', 'update')

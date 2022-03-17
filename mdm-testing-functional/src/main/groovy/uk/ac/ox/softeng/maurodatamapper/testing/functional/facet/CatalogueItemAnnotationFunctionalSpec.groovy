@@ -59,9 +59,13 @@ abstract class CatalogueItemAnnotationFunctionalSpec extends UserAccessWithoutUp
             .whereTestingUnsecuredResource()
             .whereAuthors {
                 canCreate()
+                canSee()
+                canIndex()
             }
             .whereReviewers {
                 canCreate()
+                canSee()
+                canIndex()
             }
     }
 

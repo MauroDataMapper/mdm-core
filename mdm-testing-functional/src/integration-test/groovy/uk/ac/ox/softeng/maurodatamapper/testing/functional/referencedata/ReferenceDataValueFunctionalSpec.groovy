@@ -84,6 +84,7 @@ class ReferenceDataValueFunctionalSpec extends UserAccessFunctionalSpec {
             .withoutAvailableActions()
             .whereAuthors {
                 cannotEditDescription()
+                cannotUpdate()
             }
     }
 

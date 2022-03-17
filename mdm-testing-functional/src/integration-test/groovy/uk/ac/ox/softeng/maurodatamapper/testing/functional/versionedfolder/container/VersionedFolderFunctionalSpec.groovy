@@ -177,16 +177,23 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
             }
             .whereAuthenticatedUsers {
                 canCreate()
+                canIndex()
                 cannotSee()
             }
             .whereReaders {
                 canCreate()
+                canSee()
+                canIndex()
             }
             .whereReviewers {
                 canCreate()
+                canSee()
+                canIndex()
             }
             .whereAuthors {
                 canCreate()
+                canSee()
+                canIndex()
             }
             .whereContainerAdminsCanAction('comment', 'delete', 'editDescription', 'finalise', 'save', 'show', 'softDelete', 'update')
             .whereEditorsCanAction('comment', 'editDescription', 'finalise', 'save', 'show', 'softDelete', 'update')
