@@ -28,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
+import uk.ac.ox.softeng.maurodatamapper.security.basic.UnloggedUser
 import uk.ac.ox.softeng.maurodatamapper.test.unit.service.CatalogueItemServiceSpec
 
 import grails.testing.services.ServiceUnitTest
@@ -37,6 +38,8 @@ import groovy.util.logging.Slf4j
 class DataClassServiceSpec extends CatalogueItemServiceSpec implements ServiceUnitTest<DataClassService> {
 
     DataModel dataModel
+    DataModel targetDataModel
+    DataElement el4
     UUID id
 
     def setup() {
@@ -48,6 +51,10 @@ class DataClassServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         dataModel = new DataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'Unit test model', folder: testFolder, authority: testAuthority)
         checkAndSave(dataModel)
+
+        targetDataModel = new DataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'Unit test target model', folder: testFolder, authority:
+            testAuthority)
+        checkAndSave(targetDataModel)
 
         dataModel.addToDataTypes(new PrimitiveType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'string'))
         dataModel.addToDataTypes(new PrimitiveType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'integer'))
@@ -82,6 +89,15 @@ class DataClassServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         DataElement el3 = new DataElement(createdBy: StandardEmailAddress.UNIT_TEST, label: 'anotherParentEl', minMultiplicity: 1, maxMultiplicity: 1)
         refType.addToDataElements(el3)
         added.addToDataElements(el3)
+
+        ReferenceType refType3 = new ReferenceType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'reference to child')
+        child.addToReferenceTypes(refType3)
+        dataModel.addToDataTypes(refType3)
+
+        el4 = new DataElement(createdBy: StandardEmailAddress.UNIT_TEST, label: 'element with ref type', minMultiplicity: 1,
+                                          maxMultiplicity: 1)
+        refType3.addToDataElements(el4)
+        child.addToDataElements(el4)
 
         checkAndSave(dataModel)
 
@@ -146,5 +162,54 @@ class DataClassServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         then:
         saved.breadcrumbTree
         saved.breadcrumbTree.domainId == saved.id
+    }
+
+    void "test copy a data element which has a reference type"() {
+        given:
+        UnloggedUser user = UnloggedUser.instance
+
+        when: 'Create a data class in the target model'
+        DataClass targetDataClass = new DataClass(createdBy: StandardEmailAddress.UNIT_TEST, label: 'target class', dataModel: targetDataModel)
+        service.save(targetDataClass)
+
+        and: 'Copy the data element which has a reference type to the target data class, and add the target data class to target data model'
+        DataElement copiedDataElement = service.dataElementService.copyDataElement(targetDataModel, el4, user, userSecurityPolicyManager)
+        targetDataClass.addToDataElements(copiedDataElement)
+        targetDataModel.addToDataClasses(targetDataClass)
+        service.save(targetDataClass)
+
+        then: 'The target model contains exactly one class (the target class)'
+        targetDataModel.dataClasses.size() == 1
+        targetDataModel.dataClasses.find{it.label == 'target class'}
+
+        and: 'exactly one reference type (ref to child)'
+        targetDataModel.referenceTypes.size() == 1
+        targetDataModel.referenceTypes.find{it.label == 'reference to child'}
+
+        and: 'exactly one data element'
+        targetDataModel.getAllDataElements().size() == 1
+        targetDataModel.getAllDataElements().find{it.label == 'element with ref type'}
+
+        when:
+        service.matchUpAndAddMissingReferenceTypeClasses(targetDataModel, dataModel, user, userSecurityPolicyManager)
+
+        then:
+        targetDataModel.getChildDataClasses().size() == 2
+        targetDataModel.getChildDataClasses().find{it.label == 'target class'}
+        targetDataModel.getChildDataClasses().find{it.label == 'Unit grandparent'}
+
+        when:
+        DataClass grandparent = targetDataModel.getChildDataClasses().find{it.label == 'Unit grandparent'}
+
+        then:
+        grandparent.dataClasses.size() == 1
+        grandparent.dataClasses.find{it.label == 'Unit parent'}
+
+        when:
+        DataClass parent = grandparent.dataClasses.find{it.label == 'Unit parent'}
+
+        then:
+        parent.dataClasses.size() == 1
+        parent.dataClasses.find{it.label == 'Unit child'}
     }
 }
