@@ -362,7 +362,6 @@ class FolderService extends ContainerService<Folder> {
                     throw new ApiNotYetImplementedException('MSXX', 'Folder permission copying')
                 }
                 log.warn('Permission copying is not yet implemented')
-
             }
             log.debug('Validating and saving copy')
             setFolderRefinesFolder(copiedFolder, original, copier)
@@ -645,21 +644,19 @@ class FolderService extends ContainerService<Folder> {
         if (parentCache) parentCache.addDiffCache(folder.path, fDiffCache)
         fDiffCache
     }
-    
-    Folder checkImportedFolderAssociations(User importingUser, Folder folder) {
-        folder.createdBy = importingUser.emailAddress
-        if (!folder.id) save(folder, insert: true, validate: false) // Skip validation to avoid error on null folderId/multiFacetAwareItemId
-        checkFacetsAfterImportingMultiFacetAware(folder)
 
-        // Check imported child Folder assocations breadth-first to avoid recursion
-        List<Folder> childFolders = folder.childFolders?.toList() ?: []
-        for (int i = 0; i < childFolders.size(); i++) {
-            childFolders[i].childFolders?.each {
-                if (!childFolders.contains(it)) childFolders << it
+    void checkImportedFolderAssociations(User importingUser, Folder folder) {
+        // Traverse breadth-first to avoid recursion
+        List<Folder> folders = [folder]
+        for (int i = 0; i < folders.size(); i++) {
+            folders[i].checkPath()
+            folders[i].createdBy = importingUser.emailAddress
+            if (!folders[i].id) save(folders[i], validate: false) // Skip validation to avoid error on null folderId/multiFacetAwareItemId
+            checkFacetsAfterImportingMultiFacetAware(folders[i])
+            folders[i].childFolders?.each {
+                if (!folders.contains(it)) folders << it
             }
         }
-        childFolders.each { checkImportedFolderAssociations(importingUser, it) }
-
         log.debug('Folder associations checked')
     }
 }

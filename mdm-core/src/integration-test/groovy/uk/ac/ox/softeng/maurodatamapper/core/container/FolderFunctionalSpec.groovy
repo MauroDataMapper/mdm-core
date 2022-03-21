@@ -23,9 +23,13 @@ import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.RunOnce
+import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import io.micronaut.core.type.Argument
 import io.micronaut.http.HttpStatus
+import spock.lang.Shared
+
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getFUNCTIONAL_TEST
 
 /**
  * <pre>
@@ -42,6 +46,7 @@ import io.micronaut.http.HttpStatus
  *  |   POST   | /api/folders/${folderId}/search   | Action: search
  *
  *  |   GET    | /api/folders/${folderId}/export    | Action: export
+ *  |   POST   | /api/folders/${folderId}/import    | Action: import
  * </pre>
  * @see uk.ac.ox.softeng.maurodatamapper.core.container.FolderController
  */
@@ -49,10 +54,17 @@ import io.micronaut.http.HttpStatus
 @Slf4j
 class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
 
+    @Shared
+    UUID parentFolderId
+
     @RunOnce
     @Rollback
     def setup() {
-        assert Folder.count() == 0
+        log.debug('Check and setup test data')
+        sessionFactory.currentSession.flush()
+        parentFolderId = new Folder(label: 'Parent Functional Test Folder', createdBy: FUNCTIONAL_TEST).save(flush: true).id
+        assert parentFolderId
+        assert Folder.count() == 1
     }
 
     @Override
@@ -92,6 +104,14 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
   "readableByAuthenticatedUsers": false,
   "availableActions": ["update","delete","show"]
 }'''
+    }
+
+    @Override
+    void verifyR1EmptyIndexResponse() {
+        verifyResponse(HttpStatus.OK, response)
+        assert response.body().count == 1
+        assert response.body().items.size() == 1
+        assert response.body().items[0].label == 'Parent Functional Test Folder'
     }
 
     void 'Test the save action fails when using the same label persists an instance'() {
@@ -543,5 +563,121 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
 
         cleanup:
         ids.reverseEach { cleanUpData(it) }
+    }
+
+    void 'FE06 : test import Folder JSON'() {
+        when: 'The save action is executed with valid data'
+        POST('', validJson)
+
+        then: 'The response is correct'
+        response.status == HttpStatus.CREATED
+        response.body().id
+
+        when: 'The export action is executed with a valid instance'
+        String id = response.body().id
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.core.container.provider.exporter/FolderJsonExporterService/1.0", STRING_ARG)
+
+        then: 'The response is correct'
+        verifyResponse(HttpStatus.OK, jsonCapableResponse)
+
+        when: 'The delete action is executed with a valid instance'
+        String exportedJson = jsonCapableResponse.body()
+        DELETE(getDeleteEndpoint(id))
+
+        then: 'The response is correct'
+        response.status == HttpStatus.NO_CONTENT
+
+        when: 'The import action is executed with valid data'
+        POST('import/uk.ac.ox.softeng.maurodatamapper.core.container.provider.importer/FolderJsonImporterService/1.0', [
+            parentFolderId: parentFolderId.toString(),
+            importFile    : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: exportedJson.bytes.toList()
+            ]
+        ], STRING_ARG)
+
+        then: 'The response is correct'
+        verifyJsonResponse(HttpStatus.CREATED, '''{
+  "id": "${json-unit.matches:id}",
+  "label": "Functional Test Folder",
+  "lastUpdated": "${json-unit.matches:offsetDateTime}",
+  "domainType": "Folder",
+  "hasChildFolders": false,
+  "readableByEveryone": false,
+  "readableByAuthenticatedUsers": false,
+  "availableActions": [
+    "delete",
+    "show",
+    "update"
+  ]
+}''')
+    }
+
+    void 'FE07 : test import Folder with child Folders JSON'() {
+        given:
+        List<HttpStatus> responseStatuses = []
+        List<String> ids = []
+        Closure<Void> saveResponse = { ->
+            responseStatuses << response.status
+            ids << response.body()?.id
+        }
+
+        when: 'The save actions are executed with valid data'
+        POST('', validJson)
+        saveResponse()
+        POST("${ids[0]}/folders", [label: 'Functional Test Folder 2'])
+        saveResponse()
+        POST("${ids[0]}/folders", [label: 'Functional Test Folder 3'])
+        saveResponse()
+        POST("${ids[2]}/folders", [label: 'Functional Test Folder 4'])
+        saveResponse()
+
+        then: 'The responses are correct'
+        responseStatuses.every { it == HttpStatus.CREATED }
+        ids.every()
+
+        when: 'The export action is executed with a valid instance'
+        GET("${ids[0]}/export/uk.ac.ox.softeng.maurodatamapper.core.container.provider.exporter/FolderJsonExporterService/1.0", STRING_ARG)
+
+        then: 'The response is correct'
+        verifyResponse(HttpStatus.OK, jsonCapableResponse)
+
+        when: 'The delete action is executed with a valid instance'
+        String exportedJson = jsonCapableResponse.body()
+        responseStatuses.clear()
+        ids.reverseEach {
+            DELETE(getDeleteEndpoint(it))
+            responseStatuses << response.status
+        }
+
+        then: 'The response is correct'
+        responseStatuses.every { it == HttpStatus.NO_CONTENT }
+
+        when: 'The import action is executed with valid data'
+        POST('import/uk.ac.ox.softeng.maurodatamapper.core.container.provider.importer/FolderJsonImporterService/1.0', [
+            parentFolderId: parentFolderId.toString(),
+            importFile    : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: exportedJson.bytes.toList()
+            ]
+        ], STRING_ARG)
+
+        then: 'The response is correct'
+        verifyJsonResponse(HttpStatus.CREATED, '''{
+  "id": "${json-unit.matches:id}",
+  "label": "Functional Test Folder",
+  "lastUpdated": "${json-unit.matches:offsetDateTime}",
+  "domainType": "Folder",
+  "hasChildFolders": true,
+  "readableByEveryone": false,
+  "readableByAuthenticatedUsers": false,
+  "availableActions": [
+    "delete",
+    "show",
+    "update"
+  ]
+}''')
     }
 }

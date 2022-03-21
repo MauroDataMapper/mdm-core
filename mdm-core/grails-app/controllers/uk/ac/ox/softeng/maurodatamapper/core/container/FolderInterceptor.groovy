@@ -72,6 +72,13 @@ class FolderInterceptor extends SecurableResourceInterceptor {
             return true
         }
 
+        if (actionName == 'importFolder') {
+            if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(Folder, id)) {
+                return forbiddenOrNotFound(false, Folder, id)
+            }
+            return true
+        }
+
         checkActionAuthorisationOnSecuredResource(Folder, getId(), true)
     }
 }

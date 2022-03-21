@@ -17,10 +17,15 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
+import uk.ac.ox.softeng.maurodatamapper.core.container.provider.importer.FolderImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.core.container.provider.importer.parameter.FolderImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
+import uk.ac.ox.softeng.maurodatamapper.core.importer.ImporterService
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.search.SearchService
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
@@ -28,8 +33,11 @@ import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 
 import grails.gorm.transactions.Transactional
 import grails.web.http.HttpHeaders
+import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.validation.Errors
+import org.springframework.web.multipart.support.AbstractMultipartHttpServletRequest
 
 import static org.springframework.http.HttpStatus.CREATED
 import static org.springframework.http.HttpStatus.NO_CONTENT
@@ -41,6 +49,7 @@ class FolderController extends EditLoggingController<Folder> {
     static responseFormats = ['json', 'xml']
 
     MauroDataMapperServiceProviderService mauroDataMapperServiceProviderService
+    ImporterService importerService
     FolderService folderService
     SearchService mdmCoreSearchService
     VersionedFolderService versionedFolderService
@@ -185,9 +194,52 @@ class FolderController extends EditLoggingController<Folder> {
         log.info("Exporting Folder using ${exporter.displayName}")
         ByteArrayOutputStream outputStream = exporter.exportDomain(currentUser, params.folderId)
         if (!outputStream) return errorResponse(UNPROCESSABLE_ENTITY, 'Folder could not be exported')
-        log.info('Export complete')
+        log.info('Single Folder Export complete')
 
         render(file: outputStream.toByteArray(), fileName: "${instance.label}.${exporter.fileExtension}", contentType: exporter.fileType)
+    }
+
+    @Transactional
+    def importFolder() throws ApiException {
+        FolderImporterProviderService importer =
+            mauroDataMapperServiceProviderService.findImporterProvider(params.importerNamespace, params.importerName, params.importerVersion) as FolderImporterProviderService
+        if (!importer) return notFound(ImporterProviderService, "${params.importerNamespace}:${params.importerName}:${params.importerVersion}")
+
+        FolderImporterProviderServiceParameters importerProviderServiceParameters = request.contentType.startsWith(MimeType.MULTIPART_FORM.name)
+            ? importerService.extractImporterProviderServiceParameters(importer, request as AbstractMultipartHttpServletRequest)
+            : importerService.extractImporterProviderServiceParameters(importer, request)
+
+        Errors errors = importerService.validateParameters(importerProviderServiceParameters, importer.importerProviderServiceParametersClass)
+        if (errors.hasErrors()) {
+            transactionStatus.setRollbackOnly()
+            return respond(errors)
+        }
+
+        if (!currentUserSecurityPolicyManager.userCanCreateResourceId(resource, null, Folder, importerProviderServiceParameters.parentFolderId)) {
+            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Folder, importerProviderServiceParameters.parentFolderId)) {
+                return notFound(Folder, importerProviderServiceParameters.parentFolderId)
+            }
+            return forbiddenDueToPermissions()
+        }
+
+        Folder folder = importer.importDomain(currentUser, importerProviderServiceParameters) as Folder
+        if (!folder) {
+            transactionStatus.setRollbackOnly()
+            return errorResponse(UNPROCESSABLE_ENTITY, 'No folder imported')
+        }
+
+        folder.parentFolder = folderService.get(importerProviderServiceParameters.parentFolderId)
+        folderService.validate(folder)
+        if (folder.hasErrors()) {
+            transactionStatus.setRollbackOnly()
+            return respond(folder.errors)
+        }
+
+        log.debug('No errors in imported folder')
+        log.info('Single Folder Import complete')
+
+        saveResource(folder)
+        saveResponse(folder)
     }
 
     @Override
@@ -239,7 +291,6 @@ class FolderController extends EditLoggingController<Folder> {
                                                             namespace: hasProperty('namespace') ? this.namespace : null))
                 respond instance, [status: OK, view: 'update', model: [userSecurityPolicyManager: currentUserSecurityPolicyManager, folder: instance]]
             }
-
         }
     }
 
