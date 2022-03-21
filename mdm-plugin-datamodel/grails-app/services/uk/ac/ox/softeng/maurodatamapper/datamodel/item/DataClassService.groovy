@@ -1107,7 +1107,7 @@ WHERE
             if (!targetDataClass.validate())
                 throw new ApiInvalidModelException('DCS05', 'Subsetted DataClass is invalid', targetDataClass.errors, messageSource)
 
-            save(flush: false, validate: false, targetDataClass)
+            save(flush: true, validate: false, targetDataClass)
         }
 
         // Get the next node, which could be a dc or de
@@ -1129,7 +1129,7 @@ WHERE
                     dataElementInTarget.errors,
                     messageSource)
             }
-            dataElementService.save(flush: false, validate: false, dataElementInTarget)
+            dataElementService.save(flush: true, validate: false, dataElementInTarget)
         } else {
             throw new ApiInternalException('DCS07', "Unexpected node prefix ${nextNode.prefix}")
         }
