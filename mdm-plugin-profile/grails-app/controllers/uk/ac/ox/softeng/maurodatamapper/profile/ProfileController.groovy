@@ -50,11 +50,11 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
 
 
     def profileProviders() {
-        respond profileProviderServices: profileService.getAllProfileProviderServices(true).sort()
+        respond profileProviderServices: profileService.getAllProfileProviderServices()
     }
 
     def dynamicProfileProviders() {
-        respond profileProviderServices: profileService.getAllDynamicProfileProviderServices().sort()
+        respond profileProviderServices: profileService.getAllDynamicProfileProviderServices()
     }
 
     def usedProfiles() {
@@ -63,7 +63,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
         if (!multiFacetAware) {
             return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
-        respond profileProviderServices: profileService.getUsedProfileServices(multiFacetAware, true).sort()
+        respond profileProviderServices: profileService.getUsedProfileServices(multiFacetAware, true, params.boolean('latestVersionByMetadataNamespace', false))
     }
 
     def unusedProfiles() {
@@ -72,7 +72,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
         if (!multiFacetAware) {
             return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
-        respond profileProviderServices: profileService.getUnusedProfileServices(multiFacetAware, true).sort()
+        respond profileProviderServices: profileService.getUnusedProfileServices(multiFacetAware, true, params.boolean('latestVersionByMetadataNamespace', false))
     }
 
     def nonProfileMetadata() {
@@ -81,7 +81,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
         if (!multiFacetAware) {
             return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
-        Set<ProfileProviderService> usedProfiles = profileService.getUsedProfileServices(multiFacetAware, true)
+        Set<ProfileProviderService> usedProfiles = profileService.getUsedProfileServices(multiFacetAware)
         Set<String> profileNamespaces = usedProfiles.collect {it.metadataNamespace}
         respond metadataService.findAllByMultiFacetAwareItemIdAndNotNamespaces(multiFacetAware.id, profileNamespaces.asList(), params),
                 view: "/metadata/index"

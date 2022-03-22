@@ -32,7 +32,7 @@ class Version implements Comparable<Version> {
     int patch
     boolean snapshot
 
-    static final Pattern VERSION_PATTERN = ~/(\d+)(\.(\d+)(\.(\d+))?)?(-SNAPSHOT)?/
+    static final Pattern VERSION_PATTERN = ~/((\d+)(\.(\d+)(\.(\d+))?)?(-SNAPSHOT)?)|SNAPSHOT/
 
     @Override
     int compareTo(Version that) {
@@ -71,6 +71,9 @@ class Version implements Comparable<Version> {
 
     @Override
     String toString() {
+        if (major == 0 && minor == 0 && patch == 0 && snapshot) {
+            return 'SNAPSHOT'
+        }
         snapshot ? "${major}.${minor}.${patch}-SNAPSHOT" : "${major}.${minor}.${patch}"
     }
 
@@ -91,15 +94,17 @@ class Version implements Comparable<Version> {
 
         if (!versionStr) throw new IllegalStateException("Must have a version")
 
+        if (versionStr == 'SNAPSHOT') return new Version(0, 0, 0, true)
+
         Matcher m = VERSION_PATTERN.matcher(versionStr)
         if (!m.matches()) {
             throw new IllegalStateException("Version '${versionStr}' does not match the expected pattern")
         }
 
-        new Version(major: m.group(1).toInteger(),
-                    minor: m.group(3)?.toInteger() ?: 0,
-                    patch: m.group(5)?.toInteger() ?: 0,
-                    snapshot: m.group(6) ? true : false
+        new Version(major: m.group(2).toInteger(),
+                    minor: m.group(4)?.toInteger() ?: 0,
+                    patch: m.group(6)?.toInteger() ?: 0,
+                    snapshot: m.group(7) ? true : false
         )
     }
 
