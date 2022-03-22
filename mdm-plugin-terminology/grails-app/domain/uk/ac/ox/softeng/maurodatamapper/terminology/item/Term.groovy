@@ -93,9 +93,9 @@ class Term implements ModelItem<Term, Terminology> {
             key   : 'term_id',
             column: 'codeSet_id'
         ]
-        terminology index: 'term_terminology_idx'
+        terminology index: 'term_terminology_idx', cascadeValidate: 'none'
         sourceTermRelationships cascade: 'all-delete-orphan'
-        targetTermRelationships cascade: 'all-delete-orphan'
+        targetTermRelationships cascade: 'all-delete-orphan', cascadeValidate: 'none'
     }
 
     static mappedBy = [

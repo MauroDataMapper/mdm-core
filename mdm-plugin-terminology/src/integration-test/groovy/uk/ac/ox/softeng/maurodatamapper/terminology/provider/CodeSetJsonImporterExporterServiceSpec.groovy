@@ -46,6 +46,7 @@ import grails.testing.spock.RunOnce
 import grails.util.BuildSettings
 import groovy.util.logging.Slf4j
 import org.junit.Assert
+import org.junit.jupiter.api.Tag
 import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Shared
 
@@ -60,6 +61,7 @@ import java.nio.file.Paths
 @Integration
 @Rollback
 @Slf4j
+@Tag('non-parallel')
 class CodeSetJsonImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec implements JsonComparer {
 
     private static final String CANNOT_IMPORT_EMPTY_CONTENT_CODE = 'JIS02'

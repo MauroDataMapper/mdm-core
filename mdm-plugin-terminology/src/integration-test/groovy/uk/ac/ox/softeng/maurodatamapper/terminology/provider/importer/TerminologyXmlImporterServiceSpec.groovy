@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.test.provider.DataBindTermin
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import org.junit.jupiter.api.Tag
 
 /**
  * @since 18/09/2020
@@ -32,6 +33,7 @@ import groovy.util.logging.Slf4j
 @Integration
 @Rollback
 @Slf4j
+@Tag('non-parallel')
 class TerminologyXmlImporterServiceSpec extends DataBindTerminologyImporterProviderServiceSpec<TerminologyXmlImporterService> {
 
     private static final String CANNOT_IMPORT_EMPTY_CONTENT_CODE = 'XTIS02'

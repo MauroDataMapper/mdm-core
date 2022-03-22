@@ -31,7 +31,6 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationshipService
 import uk.ac.ox.softeng.maurodatamapper.test.unit.service.CatalogueItemServiceSpec
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
-import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.testing.services.ServiceUnitTest
 import groovy.util.logging.Slf4j
@@ -185,12 +184,13 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 3
+        invalid.errors.errorCount == 4
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 3
+        invalid.errors.fieldErrorCount == 4
         invalid.errors.getFieldError('terms[0].code')
         invalid.errors.getFieldError('terms[0].definition')
         invalid.errors.getFieldError('terms[0].label')
+        invalid.errors.getFieldError('terms[0].path')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)

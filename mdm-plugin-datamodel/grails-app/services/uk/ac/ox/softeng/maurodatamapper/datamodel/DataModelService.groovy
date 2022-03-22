@@ -74,6 +74,9 @@ import grails.util.Environment
 import groovy.util.logging.Slf4j
 import org.grails.datastore.mapping.validation.ValidationErrors
 import org.hibernate.engine.spi.SessionFactoryImplementor
+import org.hibernate.search.mapper.orm.Search
+import org.hibernate.search.mapper.orm.automaticindexing.session.AutomaticIndexingSynchronizationStrategy
+import org.hibernate.search.mapper.orm.session.SearchSession
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.validation.Errors
 
@@ -304,6 +307,10 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             dataModel.breadcrumbTree.disableValidation()
         }
 
+        // Set this HS session to be async mode, this is faster and as we dont need to read the indexes its perfectly safe
+        SearchSession searchSession = Search.session(sessionFactory.currentSession)
+        searchSession.automaticIndexingSynchronizationStrategy(AutomaticIndexingSynchronizationStrategy.async())
+
         save(failOnError: true, validate: false, flush: false, ignoreBreadcrumbs: true, dataModel)
 
         sessionFactory.currentSession.flush()
@@ -448,7 +455,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         if (totalDts) log.debug('Saved {} dataTypes in {}', totalDts, Utils.timeTaken(subStart))
 
         subStart = System.currentTimeMillis()
-        dataElements.addAll dataClassService.saveAllAndGetDataElements(dataClasses)
+        dataElements.addAll dataClassService.saveAll(dataClasses)
        if(dataClasses) log.debug('Saved {} dataClasses in {}', dataClasses.size(), Utils.timeTaken(subStart))
 
         subStart = System.currentTimeMillis()

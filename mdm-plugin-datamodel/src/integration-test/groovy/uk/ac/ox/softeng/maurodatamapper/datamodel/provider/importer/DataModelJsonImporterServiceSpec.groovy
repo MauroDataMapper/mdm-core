@@ -47,6 +47,7 @@ import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.json.JsonBuilder
 import groovy.util.logging.Slf4j
+import org.junit.jupiter.api.Tag
 
 import java.time.OffsetDateTime
 
@@ -56,6 +57,7 @@ import java.time.OffsetDateTime
 @Integration
 @Rollback
 @Slf4j
+@Tag('non-parallel')
 class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProviderServiceSpec<DataModelJsonImporterService> {
 
     private static final String CANNOT_IMPORT_EMPTY_FILE_CODE = 'FBIP02'

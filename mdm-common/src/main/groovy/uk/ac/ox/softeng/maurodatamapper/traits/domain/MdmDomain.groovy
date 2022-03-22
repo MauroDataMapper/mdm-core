@@ -70,7 +70,7 @@ trait MdmDomain {
     void checkPath() {
         if (this.@path) {
             Path builtPath = buildPath()
-            if (!this.@path.matches(builtPath)) {
+            if (this.@path != builtPath) {
                 setBuiltPath(builtPath)
             }
         } else {
@@ -83,9 +83,10 @@ trait MdmDomain {
     }
 
     private void setBuiltPath(Path builtPath) {
-        Path newPath = builtPath
-        Path oldPath = this.@path
-        markDirty('path', newPath, oldPath)
-        this.@path = newPath
+        if (builtPath) {
+            Path oldPath = this.@path
+            markDirty('path', builtPath, oldPath)
+        }
+        this.@path = builtPath
     }
 }

@@ -35,6 +35,7 @@ import uk.ac.ox.softeng.maurodatamapper.test.json.JsonComparer
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import org.junit.jupiter.api.Tag
 
 /**
  * @since 17/09/2020
@@ -42,6 +43,7 @@ import groovy.util.logging.Slf4j
 @Integration
 @Rollback
 @Slf4j
+@Tag('non-parallel')
 class TerminologyJsonImporterServiceSpec extends DataBindTerminologyImporterProviderServiceSpec<TerminologyJsonImporterService> implements JsonComparer {
 
     private static final String CANNOT_IMPORT_EMPTY_CONTENT_CODE = 'JIS02'

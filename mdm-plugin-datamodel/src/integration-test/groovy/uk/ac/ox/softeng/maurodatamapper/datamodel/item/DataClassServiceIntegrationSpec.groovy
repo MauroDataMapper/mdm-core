@@ -38,6 +38,7 @@ import grails.gorm.PagedResultList
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import org.junit.jupiter.api.Tag
 import spock.lang.Retry
 
 @Slf4j
@@ -362,6 +363,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
     }
 
+    @Tag('non-parallel')
     void 'test copying simple DataClass with simple data elements'() {
         given:
         setupData()
@@ -415,8 +417,8 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
     }
 
-    void 'test metadata saved at parent'()
-    {
+    @Tag('non-parallel')
+    void 'test metadata saved at parent'() {
         given:
         setupData()
 
