@@ -189,7 +189,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
         Profile submittedInstance = profileProviderService.getNewProfile()
         bindData(submittedInstance, request)
 
-        Profile validatedInstance = profileService.validateProfile(profileProviderService, submittedInstance)
+        Profile validatedInstance = profileService.validateProfileValues(profileProviderService, submittedInstance)
 
         if (validatedInstance.hasErrors()) {
             respond validatedInstance.errors

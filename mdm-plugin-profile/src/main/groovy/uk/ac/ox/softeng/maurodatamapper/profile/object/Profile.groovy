@@ -34,9 +34,12 @@ abstract class Profile implements Comparable<Profile>, Validateable {
     abstract Set<String> getKnownFields()
 
     @Override
-    boolean validate() {
+    boolean validate(List fieldsToValidate, Map<String, Object> params, Closure<?>... adHocConstraintsClosures) {
+        if (!params?.currentValuesOnly) {
+            Validateable.super.validate null, null, null
+        }
         sections.eachWithIndex {sec, i ->
-            sec.validate()
+            sec.validate(params)
             if (sec.hasErrors()) {
                 sec.errors.fieldErrors.each {err ->
                     this.errors.rejectValue("sections[$i].${err.field}", err.code, err.arguments, err.defaultMessage)
@@ -44,6 +47,11 @@ abstract class Profile implements Comparable<Profile>, Validateable {
             }
         }
         !hasErrors()
+    }
+
+    boolean validateCurrentValues() {
+        Map<String, Object> params = [currentValuesOnly: (Object) true]
+        validate(params)
     }
 
     List<ProfileField> getAllFields() {

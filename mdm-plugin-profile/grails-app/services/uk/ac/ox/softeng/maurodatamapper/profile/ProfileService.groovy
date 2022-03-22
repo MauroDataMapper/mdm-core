@@ -93,6 +93,12 @@ class ProfileService implements DataBinder {
         cleanProfile
     }
 
+    Profile validateProfileValues(ProfileProviderService profileProviderService, Profile submittedProfile) {
+        Profile cleanProfile = profileProviderService.createCleanProfileFromProfile(submittedProfile)
+        cleanProfile.validateCurrentValues()
+        cleanProfile
+    }
+
     void deleteProfile(ProfileProviderService profileProviderService, MultiFacetAware multiFacetAwareItem, User currentUser) {
 
         Set<Metadata> mds = profileProviderService.getAllProfileMetadataByMultiFacetAwareItemId(multiFacetAwareItem.id)
@@ -308,7 +314,7 @@ class ProfileService implements DataBinder {
 
                     if (validateOnly) {
                         ProfileProvided validated = new ProfileProvided()
-                        validated.profile = validateProfile(profileProviderService, submittedInstance)
+                        validated.profile = validateProfileValues(profileProviderService, submittedInstance)
                         validated.profileProviderService = profileProviderService
                         handledInstances.add(validated)
                     } else {
