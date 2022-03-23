@@ -19,6 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.core.controller
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJob
+import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJobService
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
@@ -67,6 +69,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
     ExporterService exporterService
     ImporterService importerService
     VersionedFolderService versionedFolderService
+    AsyncJobService asyncJobService
 
     final String alternateParamsIdKey
 
@@ -382,6 +385,15 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         if (!instance.finalised) return forbidden('Cannot create a new version of a non-finalised model')
         if (versionedFolderService.isVersionedFolderFamily(instance.folder)) return forbidden('Cannot create a new branch model version of a model inside a VersionedFolder')
 
+        // Run as async job returns ACCEPTED and the async job which was created
+        if (createNewVersionData.performAsyncCreation) {
+
+            AsyncJob asyncJob = getModelService().asyncCreateNewBranchModelVersion(createNewVersionData.branchName, instance, currentUser,
+                                                                                   createNewVersionData.copyPermissions,
+                                                                                   currentUserSecurityPolicyManager)
+            return respond(asyncJob, view: '/asyncJob/show', status: HttpStatus.ACCEPTED)
+        }
+
         T copy = getModelService().
             createNewBranchModelVersion(createNewVersionData.branchName, instance, currentUser, createNewVersionData.copyPermissions,
                                         currentUserSecurityPolicyManager) as T
@@ -415,6 +427,15 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         if (!instance.finalised) return forbidden('Cannot create a new version of a non-finalised model')
         if (versionedFolderService.isVersionedFolderFamily(instance.folder)) return forbidden('Cannot create a new documentation version of a model inside a VersionedFolder')
 
+        // Run as async job returns ACCEPTED and the async job which was created
+        if (createNewVersionData.performAsyncCreation) {
+            AsyncJob asyncJob = getModelService().asyncCreateNewDocumentationVersion(instance,
+                                                                                     currentUser,
+                                                                                     createNewVersionData.copyPermissions,
+                                                                                     currentUserSecurityPolicyManager)
+            return respond(asyncJob, view: '/asyncJob/show', status: HttpStatus.ACCEPTED)
+        }
+
         T copy = getModelService().
             createNewDocumentationVersion(instance, currentUser, createNewVersionData.copyPermissions, currentUserSecurityPolicyManager) as T
 
@@ -446,6 +467,16 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (!currentUserSecurityPolicyManager.userCanCreateSecuredResourceId(resource, params[alternateParamsIdKey])) {
             createNewVersionData.copyPermissions = false
+        }
+
+        // Run as async job returns ACCEPTED and the async job which was created
+        if (createNewVersionData.performAsyncCreation) {
+            AsyncJob asyncJob = getModelService().asyncCreateNewForkModel(createNewVersionData.label,
+                                                                          instance,
+                                                                          currentUser,
+                                                                          createNewVersionData.copyPermissions,
+                                                                          currentUserSecurityPolicyManager)
+            return respond(asyncJob, view: '/asyncJob/show', status: HttpStatus.ACCEPTED)
         }
 
         T copy = getModelService().createNewForkModel(createNewVersionData.label, instance, currentUser, createNewVersionData.copyPermissions,
@@ -557,6 +588,13 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         }
         Folder folder = folderService.get(importerProviderServiceParameters.folderId)
 
+        // Run as async job returns ACCEPTED and the async job which was created
+        if (importerProviderServiceParameters.performAsynchronously) {
+            AsyncJob asyncJob = importerService.asyncImportDomain(currentUser, importer, importerProviderServiceParameters, getModelService(),
+                                                                  folder)
+            return respond(asyncJob, view: '/asyncJob/show', status: HttpStatus.ACCEPTED)
+        }
+
         T model = importerService.importDomain(currentUser, importer, importerProviderServiceParameters)
 
         if (!model) {
@@ -634,6 +672,13 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             return forbiddenDueToPermissions()
         }
         Folder folder = folderService.get(importerProviderServiceParameters.folderId)
+
+        // Run as async job returns ACCEPTED and the async job which was created
+        if (importerProviderServiceParameters.performAsynchronously) {
+            AsyncJob asyncJob = importerService.asyncImportDomains(currentUser, importer, importerProviderServiceParameters, getModelService(),
+                                                                   folder)
+            return respond(asyncJob, view: '/asyncJob/show', status: HttpStatus.ACCEPTED)
+        }
 
         List<T> result = importerService.importDomains(currentUser, importer, importerProviderServiceParameters)
 

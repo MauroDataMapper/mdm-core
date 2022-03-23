@@ -21,6 +21,8 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJob
+import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJobService
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
@@ -118,6 +120,8 @@ abstract class ModelService<K extends Model>
 
     @Autowired(required = false)
     SecurityPolicyManagerService securityPolicyManagerService
+
+    AsyncJobService asyncJobService
 
     Class<K> getVersionLinkAwareClass() {
         getDomainClass()
@@ -384,6 +388,16 @@ abstract class ModelService<K extends Model>
         copyModel(original, folder, copier, copyPermissions, label, copyDocVersion, branchName, throwErrors, userSecurityPolicyManager)
     }
 
+    AsyncJob asyncCreateNewDocumentationVersion(K model, User user, boolean copyPermissions,
+                                                UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
+        asyncJobService.createAndSaveAsyncJob("Create new documentation model ${model.label}",
+                                              userSecurityPolicyManager.user.emailAddress) {
+            K doc = createNewDocumentationVersion(model, user, copyPermissions,
+                                                  userSecurityPolicyManager, additionalArguments) as K
+            fullValidateAndSaveOfModel(doc, user)
+        }
+    }
+
     K createNewDocumentationVersion(K model, User user, boolean copyPermissions,
                                     UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
         if (!newVersionCreationIsAllowed(model)) return model
@@ -404,6 +418,16 @@ abstract class ModelService<K extends Model>
         newDocVersion
     }
 
+    AsyncJob asyncCreateNewForkModel(String label, K model, User user, boolean copyPermissions,
+                                     UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
+        asyncJobService.createAndSaveAsyncJob("Create new documentation model ${model.label}",
+                                              userSecurityPolicyManager.user.emailAddress) {
+            K fork = createNewForkModel(label, model, user, copyPermissions,
+                                        userSecurityPolicyManager, additionalArguments) as K
+            fullValidateAndSaveOfModel(fork, user)
+        }
+    }
+
     K createNewForkModel(String label, K model, User user, boolean copyPermissions,
                          UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
         if (!newVersionCreationIsAllowed(model)) return model
@@ -417,6 +441,16 @@ abstract class ModelService<K extends Model>
             //copyTargetDataFlows(dataModel, newForkModel, user)
         }
         newForkModel
+    }
+
+    AsyncJob asyncCreateNewBranchModelVersion(String branchName, K model, User user, boolean copyPermissions,
+                                              UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
+        asyncJobService.createAndSaveAsyncJob("Branch model ${model.label} as ${branchName}",
+                                              userSecurityPolicyManager.user.emailAddress) {
+            K copy = createNewBranchModelVersion(branchName, model, user, copyPermissions,
+                                                 userSecurityPolicyManager, additionalArguments) as K
+            fullValidateAndSaveOfModel(copy, user)
+        }
     }
 
     K createNewBranchModelVersion(String branchName, K model, User user, boolean copyPermissions,
@@ -1044,16 +1078,7 @@ abstract class ModelService<K extends Model>
                                       UserSecurityPolicyManager userSecurityPolicyManager) {
         Model copiedModel = copyModel(original, folderToCopyInto, copier, copyPermissions, label, copyDocVersion,
                                       branchName, throwErrors, userSecurityPolicyManager)
-
-        if ((copiedModel as GormValidateable).validate()) {
-            saveModelWithContent(copiedModel)
-            if (securityPolicyManagerService) {
-                userSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(copiedModel, userSecurityPolicyManager.user,
-                                                                                                         copiedModel.label)
-            }
-        } else throw new ApiInvalidModelException('DMSXX', 'Copied Model is invalid',
-                                                  (copiedModel as GormValidateable).errors, messageSource)
-        copiedModel
+        fullValidateAndSaveOfModel(copiedModel, copier)
     }
 
     /**
@@ -1134,5 +1159,25 @@ abstract class ModelService<K extends Model>
         Path otherModelPath = getFullPathForModel(otherModel)
         modelPath.getParent() == otherModelPath.getParent()
 
+    }
+
+    K fullValidateAndSaveOfModel(K model, User user) {
+        if (model.hasErrors()) {
+            throw new ApiInvalidModelException('MSXX', 'Invalid model', model.errors, messageSource)
+        }
+        validate(model)
+        if (model.hasErrors()) {
+            throw new ApiInvalidModelException('MSXX', 'Invalid model', model.errors, messageSource)
+        }
+        saveAndAddSecurity(model, user)
+    }
+
+    K saveAndAddSecurity(K model, User user) {
+        K savedCopy = saveModelWithContent(model) as K
+        savedCopy.addCreatedEdit(user)
+        if (securityPolicyManagerService) {
+            securityPolicyManagerService.addSecurityForSecurableResource(savedCopy, user, savedCopy.label)
+        }
+        savedCopy
     }
 }

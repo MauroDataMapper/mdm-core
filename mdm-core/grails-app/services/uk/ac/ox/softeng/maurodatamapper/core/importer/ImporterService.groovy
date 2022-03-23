@@ -18,7 +18,13 @@
 package uk.ac.ox.softeng.maurodatamapper.core.importer
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
+import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJob
+import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJobService
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FileParameter
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ImporterProviderServiceParameters
@@ -31,6 +37,9 @@ import grails.web.databinding.DataBinder
 import groovy.util.logging.Slf4j
 import org.apache.commons.beanutils.PropertyUtils
 import org.apache.commons.lang3.reflect.FieldUtils
+import org.grails.datastore.gorm.GormValidateable
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.MessageSource
 import org.springframework.validation.Errors
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.multipart.support.AbstractMultipartHttpServletRequest
@@ -42,7 +51,11 @@ import javax.servlet.http.HttpServletRequest
 @SuppressWarnings('GrUnnecessaryPublicModifier')
 class ImporterService implements DataBinder {
 
-    // ClassifierService classifierService
+    AsyncJobService asyncJobService
+    VersionedFolderService versionedFolderService
+
+    @Autowired
+    MessageSource messageSource
 
     public <M extends Model, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> List<M> importDomains(
         User currentUser, T importer, P importParams) {
@@ -55,6 +68,50 @@ class ImporterService implements DataBinder {
 
         if (!model) throw new ApiBadRequestException('IS01', "Failed to import domain using ${importer.name} importer")
         model
+    }
+
+    public <M extends Model, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> AsyncJob asyncImportDomains(
+        User currentUser, T importer, P importParams, ModelService modelService, Folder folder) {
+        asyncJobService.createAndSaveAsyncJob("Import domains using ${importer}", currentUser.emailAddress) {
+            List<M> models = importer.importDomains(currentUser, importParams).findAll()
+            if (!models) {
+                throw new ApiBadRequestException('IS01', "Failed to import domain using ${importer.name} importer")
+            }
+
+            if (versionedFolderService.isVersionedFolderFamily(folder) && models.any {it.finalised}) {
+                throw new ApiBadRequestException('IS02', 'Cannot import finalised models into a VersionedFolder')
+            }
+
+            models.each {m ->
+                m.folder = folder
+                modelService.validate(m)
+            }
+
+            if (models.any {it.hasErrors()}) {
+                Errors errors = new ValidationErrors(models, models.first().class.getName())
+                models.findAll(it.hasErrors()).each {errors.addAllErrors((it as GormValidateable).errors)}
+                throw new ApiInvalidModelException('IS03', 'Invalid models', errors, messageSource)
+            }
+
+            log.debug('No errors in imported models')
+            models.collect {modelService.saveAndAddSecurity(it, currentUser)}
+        }
+    }
+
+    public <M extends Model, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> AsyncJob asyncImportDomain(
+        User currentUser, T importer, P importParams, ModelService modelService, Folder folder) {
+        asyncJobService.createAndSaveAsyncJob("Import domain using ${importer}", currentUser.emailAddress) {
+            M model = importer.importDomain(currentUser, importParams)
+            if (!model) {
+                throw new ApiBadRequestException('IS01', "Failed to import domain using ${importer.name} importer")
+            }
+            if (versionedFolderService.isVersionedFolderFamily(folder) && model.finalised) {
+                throw new ApiBadRequestException('IS02', 'Cannot import a finalised model into a VersionedFolder')
+            }
+            model.folder = folder
+            modelService.fullValidateAndSaveOfModel(model, currentUser)
+            log.info('Single Model Import complete')
+        }
     }
 
     List<ImportParameterGroup> describeImporterParams(ImporterProviderService importer) {

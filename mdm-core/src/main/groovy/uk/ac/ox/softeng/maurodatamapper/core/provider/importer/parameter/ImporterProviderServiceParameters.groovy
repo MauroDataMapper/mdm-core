@@ -17,6 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter
 
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.config.ImportGroupConfig
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.config.ImportParameterConfig
+
 import groovy.transform.CompileStatic
 
 /**
@@ -24,4 +27,18 @@ import groovy.transform.CompileStatic
  */
 @CompileStatic
 interface ImporterProviderServiceParameters {
+
+    @ImportParameterConfig(
+        displayName = 'Import Asynchronously',
+        description = ['Choose to start the import process asynchronously.',
+            'The import process will need to checked via the returned AsyncJob to see when its completed.',
+            'Any errors which occur whilst importing can also be seen here.',
+            'Default is false.'],
+        descriptionJoinDelimiter = ' ',
+        order = 0,
+        group = @ImportGroupConfig(
+            name = 'Import Process',
+            order = Integer.MAX_VALUE
+        ))
+    Boolean performAsynchronously = false
 }

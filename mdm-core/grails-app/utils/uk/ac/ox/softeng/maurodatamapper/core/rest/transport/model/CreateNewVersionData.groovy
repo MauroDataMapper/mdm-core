@@ -29,6 +29,7 @@ class CreateNewVersionData implements Validateable {
     boolean copyPermissions = true
     boolean moveDataFlows = false
     boolean copyDataFlows = false
+    boolean performAsyncCreation = false
     String label
     String branchName = VersionAwareConstraints.DEFAULT_BRANCH_NAME
 }

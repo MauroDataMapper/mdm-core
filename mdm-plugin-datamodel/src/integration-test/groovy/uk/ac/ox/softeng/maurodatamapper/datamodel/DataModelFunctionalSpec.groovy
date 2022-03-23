@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
+import uk.ac.ox.softeng.maurodatamapper.core.async.AsyncJobService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
@@ -32,12 +33,14 @@ import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlComparer
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
+import grails.async.Promise
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.RunOnce
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
+import io.micronaut.http.HttpStatus
 import spock.lang.Requires
 import spock.lang.Shared
 import spock.lang.Unroll
@@ -82,6 +85,8 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 @Integration
 @Slf4j
 class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implements XmlComparer {
+
+    AsyncJobService asyncJobService
 
     @Shared
     UUID folderId
@@ -1224,6 +1229,126 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData(expectedId)
         cleanUpData(latestDraftId)
         cleanUpData(id)
+    }
+
+
+    void waitForAysncToComplete(String id) {
+        log.debug('Waiting to complete {}', id)
+        Promise p = asyncJobService.getAsyncJobPromise(id)
+        p.get()
+        log.debug('Completed')
+    }
+
+
+    void 'VB08 : test async creating a new main branch model version of a DataModel'() {
+        given: 'finalised model is created'
+        String id = createNewItem(validJson)
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        when:
+        PUT("$id/newBranchModelVersion", [performAsyncCreation: true])
+
+        then:
+        verifyResponse(HttpStatus.ACCEPTED, response)
+        responseBody().id
+
+        when:
+        String jobId = responseBody().id
+        waitForAysncToComplete(jobId)
+        log.debug('Getting completed job')
+        GET("asyncJobs/$jobId", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().status == 'COMPLETED'
+        !responseBody().message
+
+        when:
+        GET("$id/semanticLinks", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 1,
+  "items": [
+    {
+      "domainType": "SemanticLink",
+      "linkType": "Refines",
+      "id": "${json-unit.matches:id}",
+      "unconfirmed":false,
+      "sourceMultiFacetAwareItem": {
+        "domainType": "DataModel",
+        "id": "${json-unit.matches:id}",
+        "label": "Functional Test Model"
+      },
+      "targetMultiFacetAwareItem": {
+        "domainType": "DataModel",
+        "id": "${json-unit.matches:id}",
+        "label": "Functional Test Model"
+      }
+    }
+  ]
+}'''
+
+        when:
+        GET("$id/versionLinks", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 1,
+  "items": [
+    {
+      "domainType": "VersionLink",
+      "linkType": "New Model Version Of",
+      "id": "${json-unit.matches:id}",
+      "sourceModel": {
+        "domainType": "DataModel",
+        "id": "${json-unit.matches:id}",
+        "label": "Functional Test Model"
+      },
+      "targetModel": {
+        "domainType": "DataModel",
+        "id": "${json-unit.matches:id}",
+        "label": "Functional Test Model"
+      }
+    }
+  ]
+}'''
+        cleanup:
+        cleanUpData()
+    }
+
+    void 'VB09 : test async creating a main branch model version when one already exists'() {
+        given: 'finalised model is created'
+        String id = createNewItem(validJson)
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        when: 'create default main'
+        PUT("$id/newBranchModelVersion", [:])
+
+        then:
+        verifyResponse CREATED, response
+
+        when: 'another main branch created'
+        PUT("$id/newBranchModelVersion", [performAsyncCreation: true])
+
+        then:
+        verifyResponse(HttpStatus.ACCEPTED, response)
+
+        when:
+        def jobId = responseBody().id
+        waitForAysncToComplete(jobId)
+        GET("asyncJobs/$jobId", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().status == 'FAILED'
+        responseBody().message == '''Invalid branching model
+  Property [branchName] of class [class uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel] with value [main] already exists for label [Functional Test Model]'''
+
+        cleanup:
+        cleanUpData()
     }
 
     void 'MD01 : test finding merge difference of two datamodels'() {
