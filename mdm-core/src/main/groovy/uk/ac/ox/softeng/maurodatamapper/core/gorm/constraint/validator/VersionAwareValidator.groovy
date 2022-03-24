@@ -28,7 +28,7 @@ trait VersionAwareValidator implements Validator<String> {
     def checkLabelValidity(Set<VersionAware> versionAwaresWithTheSameLabel) {
         // No versionAwares with the same label then we know the label is truely unique
         if (!versionAwaresWithTheSameLabel) return true
-        versionAwaresWithTheSameLabel.add(versionAware)
+        if (versionAware) versionAwaresWithTheSameLabel.add(versionAware)
 
         boolean allHaveDifferentDocVersions = allVersionAwaresHaveDifferentDocumentationVersions(versionAwaresWithTheSameLabel)
 
@@ -55,21 +55,21 @@ trait VersionAwareValidator implements Validator<String> {
 
     boolean allVersionAwaresHaveDifferentDocumentationVersions(Set<VersionAware> versionAwaresWithTheSameLabel) {
         versionAwaresWithTheSameLabel
-            .groupBy { it.documentationVersion }
-            .every { it.value.size() == 1 }
+            .groupBy {it.documentationVersion}
+            .every {it.value.size() == 1}
     }
 
     boolean allVersionAwaresHaveDifferentVersionAwareVersions(Set<VersionAware> versionAwaresWithTheSameLabel) {
         versionAwaresWithTheSameLabel
-            .findAll { it.modelVersion }
-            .groupBy { it.modelVersion }
-            .every { it.value.size() == 1 }
+            .findAll {it.modelVersion}
+            .groupBy {it.modelVersion}
+            .every {it.value.size() == 1}
     }
 
     boolean allVersionAwaresWithoutVersionAwareVersionHaveDifferentBranchNames(Set<VersionAware> versionAwaresWithTheSameLabel) {
         versionAwaresWithTheSameLabel
-            .findAll { !it.modelVersion }
-            .groupBy { it.branchName }
-            .every { it.value.size() == 1 }
+            .findAll {!it.modelVersion}
+            .groupBy {it.branchName}
+            .every {it.value.size() == 1}
     }
 }

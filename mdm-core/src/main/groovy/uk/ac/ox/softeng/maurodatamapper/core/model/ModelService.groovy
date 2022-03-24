@@ -44,6 +44,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.validator.MultipleUnsavedModelsLabelValidator
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
@@ -1094,7 +1095,7 @@ abstract class ModelService<K extends Model>
         multiFacetAwareItem.finalised
     }
 
-    void updateModelItemPathsAfterFinalisationOfModel(String pathBefore, String pathAfter, String schema, String table){
+    void updateModelItemPathsAfterFinalisationOfModel(String pathBefore, String pathAfter, String schema, String table) {
         String pathLike = "${pathBefore}%"
         sessionFactory.currentSession.createSQLQuery("UPDATE ${schema}.${table} " +
                                                      'SET path = REPLACE(path, :pathBefore, :pathAfter) ' +
@@ -1103,5 +1104,13 @@ abstract class ModelService<K extends Model>
             .setParameter('pathAfter', pathAfter)
             .setParameter('pathLike', pathLike)
             .executeUpdate()
+    }
+
+    Collection<K> validateMultipleModels(Collection<K> models) {
+        // Validate each of the models as normal
+        models.each {validate(it)}
+        // Check all the models meet label requirements
+        new MultipleUnsavedModelsLabelValidator().isValid(models)
+        models
     }
 }
