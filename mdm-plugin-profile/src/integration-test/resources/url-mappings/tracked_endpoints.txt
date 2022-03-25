@@ -17,3 +17,5 @@
 | POST   | /api/${multiFacetAwareItemDomainType}/${multiFacetAwareItemId}/profile/${profileNamespace}/${profileName}/${profileVersion}? | save |
 | DELETE | /api/${multiFacetAwareItemDomainType}/${multiFacetAwareItemId}/profile/${profileNamespace}/${profileName}/${profileVersion}? | delete |
 | GET    | /api/${multiFacetAwareItemDomainType}/${multiFacetAwareItemId}/profile/${profileNamespace}/${profileName}/${profileVersion}? | show |
+| POST   | /api/${multiFacetAwareItemDomainType}/${multiFacetAwareItemId}/profile/${profileNamespace}/${profileName}/validate | validate |
+| POST   | /api/${multiFacetAwareItemDomainType}/${multiFacetAwareItemId}/profile/${profileNamespace}/${profileName}/${profileVersion}/validate | validate |
