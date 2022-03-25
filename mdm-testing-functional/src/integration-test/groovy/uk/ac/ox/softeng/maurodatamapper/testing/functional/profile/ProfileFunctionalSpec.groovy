@@ -2490,7 +2490,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         verifyResponse OK, response
 
         when: 'get the unused profiles on the simple data model'
-        localResponse = GET("dataModels/${simpleModelId}/profiles/unused", Argument.listOf(Map))
+        localResponse = GET("dataModels/${simpleModelId}/profiles/unused?latestVersionByMetadataNamespace=false", Argument.listOf(Map))
 
         then: 'now 2 of these are for the Dynamic Profile Model, because we get the finalised profile branch'
         verifyResponse(OK, localResponse)
@@ -2608,7 +2608,6 @@ class ProfileFunctionalSpec extends FunctionalSpec {
 
         then:
         verifyResponse(OK, response)
-        log.debug('responseBody()={}', responseBody())
         responseBody().sections.size() == 1
         responseBody().domainType == 'DataModel'
         responseBody().id == id

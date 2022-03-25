@@ -36,13 +36,13 @@ class ProfileSection implements Cloneable, Validateable {
     @Override
     boolean validate(List fieldsToValidate, Map<String, Object> params, Closure<?>... adHocConstraintsClosures) {
         if (!params?.currentValuesOnly) {
-            Validateable.super.validate null, null, null
+            Validateable.super.validate null, params, null
         }
         fields.eachWithIndex {field, i ->
             if (params?.currentValuesOnly) {
-                field.validate(['currentValue'], params)
+                field.validate(['currentValue'], (Map<String, Object>) params)
             } else {
-                field.validate(params)
+                field.validate((Map<String, Object>) params)
             }
             if (field.hasErrors()) {
                 field.errors.fieldErrors.each {err ->

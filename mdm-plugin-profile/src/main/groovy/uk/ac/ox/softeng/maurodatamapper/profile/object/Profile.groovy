@@ -36,10 +36,10 @@ abstract class Profile implements Comparable<Profile>, Validateable {
     @Override
     boolean validate(List fieldsToValidate, Map<String, Object> params, Closure<?>... adHocConstraintsClosures) {
         if (!params?.currentValuesOnly) {
-            Validateable.super.validate null, null, null
+            Validateable.super.validate null, params, null
         }
         sections.eachWithIndex {sec, i ->
-            sec.validate(params)
+            sec.validate((Map<String, Object>) params)
             if (sec.hasErrors()) {
                 sec.errors.fieldErrors.each {err ->
                     this.errors.rejectValue("sections[$i].${err.field}", err.code, err.arguments, err.defaultMessage)

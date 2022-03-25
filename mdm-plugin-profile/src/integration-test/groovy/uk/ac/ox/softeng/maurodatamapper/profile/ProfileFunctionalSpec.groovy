@@ -1464,15 +1464,17 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
 
         then:
         verifyResponse OK, localResponse
+        localResponse.body().findAll {it.name == Utils.safeUrlEncode(label)}.size() == 5
         localResponse.body().findAll {it.name == Utils.safeUrlEncode(label)}.eachWithIndex {profileProviderMap, i ->
             assert Version.from(profileProviderMap.version).major == i + 1
         }
 
         when:
-        localResponse = GET("dataModels/${simpleModelId}/profiles/unused", Argument.listOf(Map))
+        localResponse = GET("dataModels/${simpleModelId}/profiles/unused?latestVersionByMetadataNamespace=false", Argument.listOf(Map))
 
         then:
         verifyResponse OK, localResponse
+        localResponse.body().findAll {it.name == Utils.safeUrlEncode(label)}.size() == 5
         localResponse.body().findAll {it.name == Utils.safeUrlEncode(label)}.eachWithIndex {profileProviderMap, i ->
             assert Version.from(profileProviderMap.version).major == i + 1
         }
@@ -1512,8 +1514,389 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         cleanup:
         DELETE("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/${Utils.safeUrlEncode(label)}")
         verifyResponse(NO_CONTENT, response)
-        DELETE("dataModels/$dynamicProfileModelId?permanent=true")
+        dynamicProfileModelIds.each {id ->
+            DELETE("dataModels/$id?permanent=true")
+            verifyResponse(NO_CONTENT, response)
+        }
+    }
+
+    void 'N10 : test getting used and unused profiles with 2 profile versions'() {
+        given: 'create version 1 and 2 of a dynamic profile'
+        String simpleModelId = getSimpleDataModelId()
+        String label = 'Dynamic Profile Model'
+
+        POST("folders/${folder.id}/dataModels?defaultDataTypeProvider=ProfileSpecificationDataTypeProvider", [label: label])
+        verifyResponse(CREATED, response)
+        String dynamicProfileModelId = responseBody().id
+
+        POST("dataModels/$dynamicProfileModelId/dataClasses", [label: 'Profile Section Class'])
+        verifyResponse(CREATED, response)
+        String dataClassId = responseBody().id
+
+        GET("dataModels/$dynamicProfileModelId/dataTypes")
+        verifyResponse(OK, response)
+        Map<String, String> dataTypes = (responseBody().items as List<Map>).collectEntries {
+            [it.label, it.id]
+        }
+
+        POST("dataModels/$dynamicProfileModelId/dataClasses/$dataClassId/dataElements", [
+            label   : 'Dynamic Profile Elem',
+            dataType: dataTypes.string
+        ])
+        verifyResponse(CREATED, response)
+
+        Map namespaceFieldMap = [
+            currentValue        : 'functional.test.profile',
+            metadataPropertyName: 'metadataNamespace',
+        ]
+        Map domainsFieldMap = [
+            currentValue        : '',
+            metadataPropertyName: 'domainsApplicable',
+        ]
+        Map profileMap = [
+            sections  : [
+                [
+                    description: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
+                    fields     : [
+                        namespaceFieldMap,
+                        domainsFieldMap
+                    ],
+                    name       : 'Profile Specification'
+                ]
+            ],
+            id        : dynamicProfileModelId.toString(),
+            label     : label,
+            domainType: 'DataModel',
+            namespace : profileSpecificationProfileService.namespace,
+            name      : profileSpecificationProfileService.name
+        ]
+
+        POST("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${dynamicProfileModelId}", profileMap)
+        verifyResponse(OK, response)
+
+        PUT("dataModels/${dynamicProfileModelId}/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("dataModels/${dynamicProfileModelId}/newBranchModelVersion", [:], MAP_ARG)
+        verifyResponse CREATED, response
+
+        String newDynamicProfileModelId = responseBody().id
+        PUT("dataModels/${newDynamicProfileModelId}/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        when:
+        HttpResponse<List<Map>> localResponse = GET("dataModels/${simpleModelId}/profiles/unused", Argument.listOf(Map))
+
+        then:
+        verifyResponse OK, localResponse
+        localResponse.body().findAll {it.name == Utils.safeUrlEncode(label)}.size == 1
+        localResponse.body().findAll {it.name == Utils.safeUrlEncode(label)}.every {profileProviderMap ->
+            Version.from(profileProviderMap.version) == Version.from('2')
+        }
+
+        when:
+        localResponse = GET("dataModels/${simpleModelId}/profiles/unused?latestVersionByMetadataNamespace=false", Argument.listOf(Map))
+
+        then:
+        verifyResponse OK, localResponse
+        localResponse.body().findAll {it.name == Utils.safeUrlEncode(label)}.size == 2
+        localResponse.body().findAll {it.name == Utils.safeUrlEncode(label)}.any {profileProviderMap ->
+            Version.from(profileProviderMap.version) == Version.from('1')
+        }
+        localResponse.body().findAll {it.name == Utils.safeUrlEncode(label)}.any {profileProviderMap ->
+            Version.from(profileProviderMap.version) == Version.from('2')
+        }
+
+        when:
+        localResponse = GET("dataModels/${simpleModelId}/profiles/used", Argument.listOf(Map))
+
+        then:
+        verifyResponse OK, localResponse
+        localResponse.body().size() == 0
+
+        when: 'save the dynamic profile'
+        Map dynamicProfileMap = [
+            sections  : [
+                [
+                    fields: [
+                        [
+                            fieldName   : 'Dynamic Profile Elem',
+                            currentValue: 'functional test value'
+                        ]
+                    ],
+                    name  : 'Profile Section Class'
+                ]
+            ],
+            id        : simpleModelId,
+            domainType: 'DataModel',
+            namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
+            name      : Utils.safeUrlEncode(label)
+        ]
+
+        POST("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/${Utils.safeUrlEncode(label)}", dynamicProfileMap)
+
+        then:
+        verifyResponse OK, response
+
+        when:
+        localResponse = GET("dataModels/${simpleModelId}/profiles/used", Argument.listOf(Map))
+
+        then:
+        verifyResponse OK, localResponse
+        localResponse.body().size == 2
+        localResponse.body().any {profileProviderMap ->
+            Version.from(profileProviderMap.version) == Version.from('1')
+        }
+        localResponse.body().any {profileProviderMap ->
+            Version.from(profileProviderMap.version) == Version.from('2')
+        }
+
+        when:
+        localResponse = GET("dataModels/${simpleModelId}/profiles/used?latestVersionByMetadataNamespace=true", Argument.listOf(Map))
+
+        then:
+        verifyResponse OK, localResponse
+        localResponse.body().size == 1
+        localResponse.body().every {profileProviderMap ->
+            Version.from(profileProviderMap.version) == Version.from('2')
+        }
+
+        when:
+        localResponse = GET("dataModels/${simpleModelId}/profiles/unused", Argument.listOf(Map))
+
+        then:
+        verifyResponse OK, localResponse
+        localResponse.body().findAll {it.name == Utils.safeUrlEncode(label)}.size == 0
+
+        cleanup:
+        DELETE("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/${Utils.safeUrlEncode(label)}")
         verifyResponse(NO_CONTENT, response)
+        [dynamicProfileModelId, newDynamicProfileModelId].each {id ->
+            DELETE("dataModels/$id?permanent=true")
+            verifyResponse(NO_CONTENT, response)
+        }
+    }
+
+    void 'N11 : test getting used and unused profiles with multiple profile versions with different metadata namespaces'() {
+        given: 'create version 1 and 2 of a dynamic profile with a metadata namespace, and version 3 with a different metadata namespace'
+        String simpleModelId = getSimpleDataModelId()
+        String label = 'Dynamic Profile Model'
+
+        POST("folders/${folder.id}/dataModels?defaultDataTypeProvider=ProfileSpecificationDataTypeProvider", [label: label])
+        verifyResponse(CREATED, response)
+        String dynamicProfileModelId = responseBody().id
+
+        POST("dataModels/$dynamicProfileModelId/dataClasses", [label: 'Profile Section Class'])
+        verifyResponse(CREATED, response)
+        String dataClassId = responseBody().id
+
+        GET("dataModels/$dynamicProfileModelId/dataTypes")
+        verifyResponse(OK, response)
+        Map<String, String> dataTypes = (responseBody().items as List<Map>).collectEntries {
+            [it.label, it.id]
+        }
+
+        POST("dataModels/$dynamicProfileModelId/dataClasses/$dataClassId/dataElements", [
+            label   : 'Dynamic Profile Elem',
+            dataType: dataTypes.string
+        ])
+        verifyResponse(CREATED, response)
+
+        Map namespaceFieldMap = [
+            currentValue        : 'functional.test.profile',
+            metadataPropertyName: 'metadataNamespace',
+        ]
+        Map domainsFieldMap = [
+            currentValue        : '',
+            metadataPropertyName: 'domainsApplicable',
+        ]
+        Map profileMap = [
+            sections  : [
+                [
+                    description: 'The details necessary for this Data Model to be used as the specification for a dynamic profile.',
+                    fields     : [
+                        namespaceFieldMap,
+                        domainsFieldMap
+                    ],
+                    name       : 'Profile Specification'
+                ]
+            ],
+            id        : dynamicProfileModelId.toString(),
+            label     : label,
+            domainType: 'DataModel',
+            namespace : profileSpecificationProfileService.namespace,
+            name      : profileSpecificationProfileService.name
+        ]
+
+        POST("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${dynamicProfileModelId}", profileMap)
+        verifyResponse(OK, response)
+
+        PUT("dataModels/${dynamicProfileModelId}/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("dataModels/${dynamicProfileModelId}/newBranchModelVersion", [:], MAP_ARG)
+        verifyResponse CREATED, response
+
+        String newDynamicProfileModelId = responseBody().id
+        PUT("dataModels/${newDynamicProfileModelId}/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("dataModels/${dynamicProfileModelId}/newBranchModelVersion", [:], MAP_ARG)
+        verifyResponse CREATED, response
+
+        String newMetadataNamespaceDynamicProfileModelId = responseBody().id
+        namespaceFieldMap.currentValue = 'functional.test.profile.new'
+        POST("profiles/${profileSpecificationProfileService.namespace}/${profileSpecificationProfileService.name}/dataModels/${newMetadataNamespaceDynamicProfileModelId}", profileMap)
+        verifyResponse(OK, response)
+        PUT("dataModels/${newMetadataNamespaceDynamicProfileModelId}/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        when:
+        HttpResponse<List<Map>> localResponse = GET("dataModels/${simpleModelId}/profiles/unused", Argument.listOf(Map))
+
+        then:
+        verifyResponse OK, localResponse
+        localResponse.body().findAll {it.name == Utils.safeUrlEncode(label)}.size == 2
+        localResponse.body().findAll {it.name == Utils.safeUrlEncode(label)}.any {profileProviderMap ->
+            Version.from(profileProviderMap.version) == Version.from('2') &&
+            profileProviderMap.metadataNamespace == 'functional.test.profile'
+        }
+        localResponse.body().findAll {it.name == Utils.safeUrlEncode(label)}.any {profileProviderMap ->
+            Version.from(profileProviderMap.version) == Version.from('3') &&
+            profileProviderMap.metadataNamespace == 'functional.test.profile.new'
+        }
+
+        when:
+        localResponse = GET("dataModels/${simpleModelId}/profiles/unused?latestVersionByMetadataNamespace=false", Argument.listOf(Map))
+
+        then:
+        verifyResponse OK, localResponse
+        localResponse.body().findAll {it.name == Utils.safeUrlEncode(label)}.size == 3
+        localResponse.body().findAll {it.name == Utils.safeUrlEncode(label)}.any {profileProviderMap ->
+            Version.from(profileProviderMap.version) == Version.from('1') &&
+            profileProviderMap.metadataNamespace == 'functional.test.profile'
+        }
+        localResponse.body().findAll {it.name == Utils.safeUrlEncode(label)}.any {profileProviderMap ->
+            Version.from(profileProviderMap.version) == Version.from('2') &&
+            profileProviderMap.metadataNamespace == 'functional.test.profile'
+        }
+        localResponse.body().findAll {it.name == Utils.safeUrlEncode(label)}.any {profileProviderMap ->
+            Version.from(profileProviderMap.version) == Version.from('3') &&
+            profileProviderMap.metadataNamespace == 'functional.test.profile.new'
+        }
+
+        when: 'save version 2 of the dynamic profile'
+        Map dynamicProfileMap = [
+            sections  : [
+                [
+                    fields: [
+                        [
+                            fieldName   : 'Dynamic Profile Elem',
+                            currentValue: 'functional test value'
+                        ]
+                    ],
+                    name  : 'Profile Section Class'
+                ]
+            ],
+            id        : simpleModelId,
+            domainType: 'DataModel',
+            namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
+            name      : Utils.safeUrlEncode(label)
+        ]
+
+        POST("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/${Utils.safeUrlEncode(label)}/2.0.0", dynamicProfileMap)
+
+        then:
+        verifyResponse OK, response
+
+        when:
+        localResponse = GET("dataModels/${simpleModelId}/profiles/used", Argument.listOf(Map))
+
+        then:
+        verifyResponse OK, localResponse
+        localResponse.body().size == 2
+        localResponse.body().any {profileProviderMap ->
+            Version.from(profileProviderMap.version) == Version.from('1') &&
+            profileProviderMap.metadataNamespace == 'functional.test.profile'
+        }
+        localResponse.body().any {profileProviderMap ->
+            Version.from(profileProviderMap.version) == Version.from('2') &&
+            profileProviderMap.metadataNamespace == 'functional.test.profile'
+        }
+
+        when:
+        localResponse = GET("dataModels/${simpleModelId}/profiles/used?latestVersionByMetadataNamespace=true", Argument.listOf(Map))
+
+        then:
+        verifyResponse OK, localResponse
+        localResponse.body().size == 1
+        localResponse.body().every {profileProviderMap ->
+            Version.from(profileProviderMap.version) == Version.from('2') &&
+            profileProviderMap.metadataNamespace == 'functional.test.profile'
+        }
+
+        when:
+        localResponse = GET("dataModels/${simpleModelId}/profiles/unused", Argument.listOf(Map))
+
+        then:
+        verifyResponse OK, localResponse
+        localResponse.body().findAll {it.name == Utils.safeUrlEncode(label)}.size == 1
+        localResponse.body().findAll {it.name == Utils.safeUrlEncode(label)}.any {profileProviderMap ->
+            Version.from(profileProviderMap.version) == Version.from('3') &&
+            profileProviderMap.metadataNamespace == 'functional.test.profile.new'
+        }
+
+        when: 'save version 3 of the dynamic profile'
+        POST("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/${Utils.safeUrlEncode(label)}/3.0.0", dynamicProfileMap)
+
+        then:
+        verifyResponse OK, response
+
+        when:
+        localResponse = GET("dataModels/${simpleModelId}/profiles/used", Argument.listOf(Map))
+
+        then:
+        verifyResponse OK, localResponse
+        localResponse.body().size == 3
+        localResponse.body().any {profileProviderMap ->
+            Version.from(profileProviderMap.version) == Version.from('1') &&
+            profileProviderMap.metadataNamespace == 'functional.test.profile'
+        }
+        localResponse.body().any {profileProviderMap ->
+            Version.from(profileProviderMap.version) == Version.from('2') &&
+            profileProviderMap.metadataNamespace == 'functional.test.profile'
+        }
+        localResponse.body().any {profileProviderMap ->
+            Version.from(profileProviderMap.version) == Version.from('3') &&
+            profileProviderMap.metadataNamespace == 'functional.test.profile.new'
+        }
+
+        when:
+        localResponse = GET("dataModels/${simpleModelId}/profiles/used?latestVersionByMetadataNamespace=true", Argument.listOf(Map))
+
+        then:
+        verifyResponse OK, localResponse
+        localResponse.body().size == 2
+        localResponse.body().any {profileProviderMap ->
+            Version.from(profileProviderMap.version) == Version.from('2') &&
+            profileProviderMap.metadataNamespace == 'functional.test.profile'
+        }
+        localResponse.body().any {profileProviderMap ->
+            Version.from(profileProviderMap.version) == Version.from('3') &&
+            profileProviderMap.metadataNamespace == 'functional.test.profile.new'
+        }
+
+        when:
+        localResponse = GET("dataModels/${simpleModelId}/profiles/unused", Argument.listOf(Map))
+
+        then:
+        verifyResponse OK, localResponse
+        localResponse.body().findAll {it.name == Utils.safeUrlEncode(label)}.size == 0
+
+        cleanup:
+        DELETE("dataModels/$simpleModelId/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/${Utils.safeUrlEncode(label)}")
+        verifyResponse(NO_CONTENT, response)
+        [dynamicProfileModelId, newDynamicProfileModelId, newMetadataNamespaceDynamicProfileModelId].each {id ->
+            DELETE("dataModels/$id?permanent=true")
+            verifyResponse(NO_CONTENT, response)
+        }
     }
 
     String getExpectedSavedProfile() {

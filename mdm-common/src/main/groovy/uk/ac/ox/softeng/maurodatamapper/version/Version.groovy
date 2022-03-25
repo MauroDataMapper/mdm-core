@@ -94,7 +94,7 @@ class Version implements Comparable<Version> {
 
         if (!versionStr) throw new IllegalStateException("Must have a version")
 
-        if (versionStr == 'SNAPSHOT') return new Version(0, 0, 0, true)
+        if (versionStr == 'SNAPSHOT') return new Version(major: 0, minor: 0, patch: 0, snapshot: true)
 
         Matcher m = VERSION_PATTERN.matcher(versionStr)
         if (!m.matches()) {

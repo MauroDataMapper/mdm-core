@@ -39,7 +39,13 @@ class JsonProfileSpec extends BaseIntegrationSpec {
         Profile profile = new JsonProfile(id: UUID.randomUUID(), domainType: 'BasicModel', label: 'Test')
 
         then:
-        profile.validate() // validates as profile validation restricted to current values (issue gh-277)
+        !profile.validate()
+        GormUtils.outputDomainErrors(messageSource, profile)
+        profile.errors.hasFieldErrors('sections')
+
+        and:
+        profile.clearErrors()
+        profile.validateCurrentValues()
     }
 
     void '2 test validation when section with no fields'() {
@@ -50,7 +56,16 @@ class JsonProfileSpec extends BaseIntegrationSpec {
         ])
 
         then:
-        profile.validate() // validates as profile validation restricted to current values (issue gh-277)
+        !profile.validate()
+        GormUtils.outputDomainErrors(messageSource, profile)
+        profile.errors.hasFieldErrors('sections[0].fields')
+
+        and:
+        profile.clearErrors()
+        profile.sections.each {
+            it.clearErrors()
+        }
+        profile.validateCurrentValues()
     }
 
     void '3 test validation when section with mandatory fields'() {
@@ -65,6 +80,17 @@ class JsonProfileSpec extends BaseIntegrationSpec {
 
         then:
         !profile.validate()
+        GormUtils.outputDomainErrors(messageSource, profile)
+        profile.errors.hasFieldErrors('sections[0].fields[1].currentValue')
+        profile.errors.getFieldError('sections[0].fields[1].currentValue').code == 'null.message'
+
+        then:
+        profile.clearErrors()
+        profile.sections.each {
+            it.clearErrors()
+            it.fields.each { it.clearErrors() }
+        }
+        !profile.validateCurrentValues()
         GormUtils.outputDomainErrors(messageSource, profile)
         profile.errors.hasFieldErrors('sections[0].fields[1].currentValue')
         profile.errors.getFieldError('sections[0].fields[1].currentValue').code == 'null.message'
@@ -88,6 +114,20 @@ class JsonProfileSpec extends BaseIntegrationSpec {
 
         then:
         !profile.validate()
+        GormUtils.outputDomainErrors(messageSource, profile)
+        profile.errors.hasFieldErrors('sections[0].fields[1].currentValue')
+        profile.errors.getFieldError('sections[0].fields[1].currentValue').code == 'null.message'
+
+        profile.errors.hasFieldErrors('sections[0].fields[2].currentValue')
+        profile.errors.getFieldError('sections[0].fields[2].currentValue').code == 'not.inlist.message'
+
+        and:
+        profile.clearErrors()
+        profile.sections.each {
+            it.clearErrors()
+            it.fields.each { it.clearErrors() }
+        }
+        !profile.validateCurrentValues()
         GormUtils.outputDomainErrors(messageSource, profile)
         profile.errors.hasFieldErrors('sections[0].fields[1].currentValue')
         profile.errors.getFieldError('sections[0].fields[1].currentValue').code == 'null.message'
@@ -120,6 +160,20 @@ class JsonProfileSpec extends BaseIntegrationSpec {
 
         profile.errors.hasFieldErrors('sections[0].fields[2].currentValue')
         profile.errors.getFieldError('sections[0].fields[2].currentValue').code == 'doesnt.match.message'
+
+        and:
+        profile.clearErrors()
+        profile.sections.each {
+            it.clearErrors()
+            it.fields.each { it.clearErrors() }
+        }
+        !profile.validateCurrentValues()
+        GormUtils.outputDomainErrors(messageSource, profile)
+        profile.errors.hasFieldErrors('sections[0].fields[1].currentValue')
+        profile.errors.getFieldError('sections[0].fields[1].currentValue').code == 'null.message'
+
+        profile.errors.hasFieldErrors('sections[0].fields[2].currentValue')
+        profile.errors.getFieldError('sections[0].fields[2].currentValue').code == 'doesnt.match.message'
     }
 
     void '5 test validation when section with field typing'() {
@@ -146,6 +200,22 @@ class JsonProfileSpec extends BaseIntegrationSpec {
 
         then:
         !profile.validate()
+        GormUtils.outputDomainErrors(messageSource, profile)
+        profile.errors.hasFieldErrors('sections[0].fields[0].currentValue')
+        profile.errors.getFieldError('sections[0].fields[0].currentValue').code == 'typeMismatch'
+
+        profile.errors.hasFieldErrors('sections[0].fields[2].currentValue')
+        profile.errors.getFieldError('sections[0].fields[2].currentValue').code == 'typeMismatch'
+
+        profile.errors.errorCount == 2
+
+        and:
+        profile.clearErrors()
+        profile.sections.each {
+            it.clearErrors()
+            it.fields.each { it.clearErrors() }
+        }
+        !profile.validateCurrentValues()
         GormUtils.outputDomainErrors(messageSource, profile)
         profile.errors.hasFieldErrors('sections[0].fields[0].currentValue')
         profile.errors.getFieldError('sections[0].fields[0].currentValue').code == 'typeMismatch'
