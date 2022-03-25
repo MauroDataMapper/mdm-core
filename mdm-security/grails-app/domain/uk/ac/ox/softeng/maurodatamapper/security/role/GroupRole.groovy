@@ -110,7 +110,13 @@ class GroupRole implements MdmDomain, EditHistoryAware, SecurableResource, Compa
 
     @Override
     Path buildPath() {
-        parent ? Path.from(parent.path, pathPrefix, pathIdentifier) : Path.from(pathPrefix, pathIdentifier)
+        if (parent) {
+            // We only want to call the getpath method once
+            Path parentPath = parent?.getPath()
+            parentPath ? Path.from(parentPath, pathPrefix, pathIdentifier) : null
+        } else {
+            Path.from(pathPrefix, pathIdentifier)
+        }
     }
 
     @Override

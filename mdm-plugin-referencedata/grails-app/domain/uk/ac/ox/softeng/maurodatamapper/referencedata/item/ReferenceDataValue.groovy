@@ -80,7 +80,9 @@ class ReferenceDataValue implements MdmDomain, Diffable<ReferenceDataValue> {
 
     @Override
     Path buildPath() {
-        referenceDataElement?.path ? Path.from(referenceDataElement.path, pathPrefix, pathIdentifier) : null
+        // We only want to call the getpath method once
+        Path parentPath = referenceDataElement?.getPath()
+        parentPath ? Path.from(parentPath, pathPrefix, pathIdentifier) : null
     }
 
     ObjectDiff<ReferenceDataValue> diff(ReferenceDataValue otherValue, String context) {

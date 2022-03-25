@@ -106,7 +106,7 @@ class BreadcrumbTree {
         this.topBreadcrumbTree = false
         if (catalogueItem.label) {
             this.label = catalogueItem.label
-            this.path = catalogueItem.path
+            this.path = catalogueItem.getUncheckedPath()
         } else {
             this.label = 'NOT_VALID'
         }
@@ -127,8 +127,8 @@ class BreadcrumbTree {
             label = domainEntity.label
             markDirty('label', domainEntity.label, originalLabel)
             Path originalPath = path
-            path = domainEntity.path
-            markDirty('path', domainEntity.path, originalPath)
+            path = domainEntity.getUncheckedPath()
+            markDirty('path', path, originalPath)
         }
         checkTree()
         if (cascade) {

@@ -79,7 +79,9 @@ trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> im
 
     @Override
     Path buildPath() {
-        parent?.path ? Path.from(parent.path, pathPrefix, pathIdentifier) : null
+        // We only want to call the getpath method once
+        Path parentPath = parent?.getPath()
+        parentPath ? Path.from(parentPath, pathPrefix, pathIdentifier) : null
     }
 
     def beforeValidateModelItem() {

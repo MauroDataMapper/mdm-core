@@ -51,7 +51,7 @@ trait MdmDomain {
     abstract String getPathIdentifier()
 
     Path getPath() {
-        checkPath()
+        checkPath(false)
         this.@path
     }
 
@@ -67,12 +67,20 @@ trait MdmDomain {
         this.@path
     }
 
-    void checkPath() {
+    void checkPath(boolean forceCheck = true) {
         if (this.@path) {
-            Path builtPath = buildPath()
-            if (this.@path != builtPath) {
-                setBuiltPath(builtPath)
+            if (forceCheck || !this.@path.checked) {
+                //                LoggerFactory.getLogger(this.class).debug('Checking built but unchecked path {}', this.@path)
+                Path builtPath = buildPath()
+                if (this.@path != builtPath) {
+                    setBuiltPath(builtPath)
+                }
+                if (this.@path) this.@path.checked = true
             }
+            //            else {
+            //                LoggerFactory.getLogger(this.class).debug('Path exists and already checked {}', this.@path)
+            //            }
+
         } else {
             if (!pathPrefix || !pathIdentifier) {
                 LoggerFactory.getLogger(this.class).trace('Cannot build path for {} as no prefix and/or identifier', domainType)

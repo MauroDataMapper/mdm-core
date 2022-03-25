@@ -37,9 +37,11 @@ class Path implements Serializable {
     static int MAX_NODES = 10
 
     List<PathNode> pathNodes
+    boolean checked
 
     private Path() {
         pathNodes = []
+        checked = false
     }
 
     /*

@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.model.container.CatalogueItemClassifierAware
@@ -32,13 +31,11 @@ import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import grails.gorm.DetachedCriteria
 import grails.plugins.hibernate.search.HibernateSearchApi
 import groovy.transform.SelfType
-import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
 
 /**
  * @since 06/12/2019
  */
-@Slf4j
 @SelfType(GormEntity)
 trait CatalogueItem<D extends Diffable> implements MdmDomain, InformationAware, EditHistoryAware, Diffable<D>, CatalogueItemClassifierAware, MultiFacetAware {
 
@@ -65,7 +62,8 @@ trait CatalogueItem<D extends Diffable> implements MdmDomain, InformationAware, 
     void beforeValidateCatalogueItem() {
         checkPath() // get path to ensure its built
         if (breadcrumbTree) {
-            if (!breadcrumbTree.matchesPath(path)) {
+            // Dont need to "recheck" the path as we've just done that
+            if (!breadcrumbTree.matchesPath(getUncheckedPath())) {
                 breadcrumbTree.update(this)
             }
         } else {
