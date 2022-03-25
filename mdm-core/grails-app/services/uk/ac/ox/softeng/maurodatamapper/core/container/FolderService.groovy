@@ -184,7 +184,7 @@ class FolderService extends ContainerService<Folder> {
             (folder as GormEntity).save(saveArgs)
             sessionFactory.currentSession.flush()
         } else {
-            (folder as GormEntity).save(saveArgs)
+            (folder as GormEntity).save(args)
         }
         folder
     }

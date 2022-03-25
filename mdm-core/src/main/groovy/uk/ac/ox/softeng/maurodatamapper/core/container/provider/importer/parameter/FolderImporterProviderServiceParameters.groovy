@@ -27,10 +27,10 @@ import groovy.transform.CompileStatic
 class FolderImporterProviderServiceParameters implements ImporterProviderServiceParameters {
     @ImportParameterConfig(
         displayName = 'Parent Folder',
-        description = 'The parent folder into which the Model/s should be imported.',
+        description = 'The parent Folder into which the Folder should be imported.',
         order = 0,
         group = @ImportGroupConfig(
-            name = 'Model',
+            name = 'Folder',
             order = 0
         ))
     UUID parentFolderId
