@@ -47,11 +47,6 @@ abstract class FolderExporterProviderService extends ContainerExporterProviderSe
     }
 
     @Override
-    String getNoIdFoundErrorCode() {
-        'FEP01'
-    }
-
-    @Override
     String getProviderType() {
         "${domainType}${ProviderType.EXPORTER.name}"
     }

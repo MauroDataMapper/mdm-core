@@ -33,8 +33,6 @@ abstract class ContainerExporterProviderService<C extends Container> extends Exp
 
     abstract String getDomainType()
 
-    abstract String getNoIdFoundErrorCode()
-
     List<C> retrieveExportableContainers(List<UUID> containerIds) throws ApiBadRequestException {
         List<C> containers = []
         List<UUID> cannotExport = []

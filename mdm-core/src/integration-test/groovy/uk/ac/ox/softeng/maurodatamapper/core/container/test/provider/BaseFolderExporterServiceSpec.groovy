@@ -33,7 +33,7 @@ import java.nio.file.Paths
 
 abstract class BaseFolderExporterServiceSpec<E extends FolderExporterProviderService> extends BaseIntegrationSpec {
 
-    static final String NO_FOLDER_IDS_TO_EXPORT_CODE = 'FEP01'
+    static final String NO_FOLDER_IDS_TO_EXPORT_CODE = 'CIPS01'
 
     @Autowired
     FolderService folderService
