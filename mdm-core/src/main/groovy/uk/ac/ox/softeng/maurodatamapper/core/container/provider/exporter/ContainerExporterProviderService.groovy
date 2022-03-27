@@ -34,13 +34,9 @@ abstract class ContainerExporterProviderService<C extends Container> extends Exp
     abstract String getDomainType()
 
     List<C> retrieveExportableContainers(List<UUID> containerIds) throws ApiBadRequestException {
-        List<C> containers = []
-        List<UUID> cannotExport = []
-        containerIds?.unique()?.each {
-            C container = containerService.get(it)
-            if (container) containers << container else cannotExport << it
-        }
-        if (!containers) throw new ApiBadRequestException(noIdFoundErrorCode, "Cannot find ${domainType} IDs [${cannotExport}] to export")
+        List<C> containers = containerService.getAll(containerIds)
+        List<UUID> cannotExport = containerIds.collect().tap { removeAll { containers*.id } }
+        if (!containers) throw new ApiBadRequestException('CIPS01', "Cannot find ${domainType} IDs [${cannotExport}] to export")
         if (cannotExport) log.warn("Cannot find ${domainType} IDs [${cannotExport}] to export")
         containers
     }
