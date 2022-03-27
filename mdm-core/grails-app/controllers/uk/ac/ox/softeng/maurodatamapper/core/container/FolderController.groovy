@@ -19,6 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.core.container
 
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
+import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.search.SearchService
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
@@ -26,15 +28,19 @@ import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 
 import grails.gorm.transactions.Transactional
 import grails.web.http.HttpHeaders
+import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 
 import static org.springframework.http.HttpStatus.CREATED
 import static org.springframework.http.HttpStatus.NO_CONTENT
 import static org.springframework.http.HttpStatus.OK
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY
 
+@Slf4j
 class FolderController extends EditLoggingController<Folder> {
     static responseFormats = ['json', 'xml']
 
+    MauroDataMapperServiceProviderService mauroDataMapperServiceProviderService
     FolderService folderService
     SearchService mdmCoreSearchService
     VersionedFolderService versionedFolderService
@@ -56,9 +62,7 @@ class FolderController extends EditLoggingController<Folder> {
     def show() {
         def resource = queryForResource(params.id)
         resource ? respond(folder: resource, userSecurityPolicyManager: currentUserSecurityPolicyManager) : notFound(params.id)
-
     }
-
 
     def search(SearchParams searchParams) {
 
@@ -102,7 +106,7 @@ class FolderController extends EditLoggingController<Folder> {
             }
 
             request.withFormat {
-                '*' {render status: NO_CONTENT} // NO CONTENT STATUS CODE
+                '*' { render status: NO_CONTENT } // NO CONTENT STATUS CODE
             }
             return
         }
@@ -169,6 +173,21 @@ class FolderController extends EditLoggingController<Folder> {
         updateResource(instance)
 
         updateResponse(instance)
+    }
+
+    def exportFolder() {
+        ExporterProviderService exporter = mauroDataMapperServiceProviderService.findExporterProvider(params.exporterNamespace, params.exporterName, params.exporterVersion)
+        if (!exporter) return notFound(ExporterProviderService, "${params.exporterNamespace}:${params.exporterName}:${params.exporterVersion}")
+
+        Folder instance = queryForResource(params.folderId)
+        if (!instance) return notFound(params.folderId)
+
+        log.info("Exporting Folder using ${exporter.displayName}")
+        ByteArrayOutputStream outputStream = exporter.exportDomain(currentUser, params.folderId)
+        if (!outputStream) return errorResponse(UNPROCESSABLE_ENTITY, 'Folder could not be exported')
+        log.info('Export complete')
+
+        render(file: outputStream.toByteArray(), fileName: "${instance.label}.${exporter.fileExtension}", contentType: exporter.fileType)
     }
 
     @Override

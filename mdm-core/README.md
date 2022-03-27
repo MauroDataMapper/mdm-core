@@ -1,6 +1,7 @@
 # Mdm-Core
 
 ## Url Mappings Report
+
 ```
 Dynamic Mappings
  |    *     | ERROR: 400                                                                                            | View:   /badRequest
@@ -70,6 +71,7 @@ Controller: folder
  |  DELETE  | /api/folders/${id}                                                                                    | Action: delete
  |   PUT    | /api/folders/${id}                                                                                    | Action: update
  |   GET    | /api/folders/${id}                                                                                    | Action: show
+ |   GET    | /api/folders/${id}/export                                                                             | Action: export
 
 Controller: importer
  |   GET    | /api/importer/parameters/${ns}?/${name}?/${version}?                                                  | Action: parameters

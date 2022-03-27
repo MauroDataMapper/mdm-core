@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.interceptor.SecurableResourceInterceptor
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -62,6 +61,13 @@ class FolderInterceptor extends SecurableResourceInterceptor {
 
             if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(Folder, destinationFolderId)) {
                 return forbiddenOrNotFound(canReadDestinationFolder, Folder, params.destinationFolderId)
+            }
+            return true
+        }
+
+        if (actionName == 'exportFolder') {
+            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Folder, id)) {
+                return forbiddenOrNotFound(false, Folder, id)
             }
             return true
         }
