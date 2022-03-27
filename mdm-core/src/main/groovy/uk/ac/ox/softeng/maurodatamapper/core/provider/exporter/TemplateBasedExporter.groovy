@@ -37,14 +37,6 @@ trait TemplateBasedExporter {
     }
 
     ByteArrayOutputStream exportModel(ExportModel exportModel, String format) {
-        exportResource([exportModel: exportModel], format, exportViewPath)
-    }
-
-    ByteArrayOutputStream exportFolder(ExportFolder exportFolder, String format) {
-        exportResource([exportFolder: exportFolder], format, '/exportFolder/export')
-    }
-
-    private ByteArrayOutputStream exportResource(Map<String, ExportResource> exportMap, String format, String exportViewPath) {
         log.debug('Exporting model using template')
 
         Template template = templateEngine.resolveTemplate(exportViewPath)
@@ -54,10 +46,10 @@ trait TemplateBasedExporter {
         }
 
         long start = System.currentTimeMillis()
-        Object writable = template.make(*: exportMap)
+        Writable writable = template.make(exportModel: exportModel)
         log.debug('Making template took {}', Utils.timeTaken(start))
         start = System.currentTimeMillis()
-        Object sw = new StringWriter()
+        StringWriter sw = new StringWriter()
         writable.writeTo(sw)
         log.debug('Writing template took {}', Utils.timeTaken(start))
         start = System.currentTimeMillis()

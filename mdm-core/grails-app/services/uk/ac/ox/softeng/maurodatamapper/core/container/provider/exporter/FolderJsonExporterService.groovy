@@ -20,8 +20,8 @@ package uk.ac.ox.softeng.maurodatamapper.core.container.provider.exporter
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportFolder
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportMetadata
+import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportModel
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.TemplateBasedExporter
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
@@ -63,7 +63,7 @@ class FolderJsonExporterService extends FolderExporterProviderService implements
     @Override
     ByteArrayOutputStream exportFolder(User currentUser, Folder folder) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportFolder(new ExportFolder(folder, exportMetadata), fileType)
+        exportModel(new ExportModel(folder, 'folder', version, exportMetadata), fileType)
     }
 
     @Override
