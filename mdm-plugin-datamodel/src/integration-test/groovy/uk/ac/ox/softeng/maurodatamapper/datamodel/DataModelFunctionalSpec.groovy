@@ -1234,8 +1234,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
     void waitForAysncToComplete(String id) {
         log.debug('Waiting to complete {}', id)
-        Promise p = asyncJobService.getAsyncJobPromise(id)
-        p.get()
+        Promise p = asyncJobService.getAsyncJobFuture(id)
+        p?.get()
         log.debug('Completed')
     }
 

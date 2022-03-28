@@ -53,9 +53,14 @@ class AsyncJobFunctionalSpec extends BaseFunctionalSpec {
     }
 
     @Transactional
-    String createNewItem(long time = 30000) {
+    String createNewItem(long time = 20000) {
         asyncJobService.createAndSaveAsyncJob('Functional Test', StandardEmailAddress.FUNCTIONAL_TEST) {
-            sleep(time)
+            sleep(time) {e ->
+                assert e in InterruptedException
+                log.info('Sleep interrupted')
+                true
+            }
+
         }.id.toString()
     }
 
@@ -91,6 +96,7 @@ class AsyncJobFunctionalSpec extends BaseFunctionalSpec {
         String id = createNewItem()
 
         when: 'When the show action is called to retrieve a resource'
+        sleep(1000)
         GET(id, STRING_ARG)
 
         then: 'The response is correct'
@@ -110,7 +116,7 @@ class AsyncJobFunctionalSpec extends BaseFunctionalSpec {
 
     void 'R5b : Test the show action correctly renders an instance after completion'() {
         given: 'The save action is executed with valid data'
-        String id = createNewItem(1000)
+        String id = createNewItem(500)
 
         when: 'When the show action is called to retrieve a resource'
         GET(id)
@@ -120,7 +126,7 @@ class AsyncJobFunctionalSpec extends BaseFunctionalSpec {
         responseBody().status == 'RUNNING'
 
         when: 'When the show action is called to retrieve a resource'
-        sleep(2000)
+        sleep(1000)
         GET(id)
 
         then: 'The response is correct'

@@ -113,11 +113,20 @@ class AsyncJobFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec {
         return null
     }
 
-    @Transactional
+
     @Override
     String getValidId() {
+        getValidId(20000)
+    }
+
+    @Transactional
+    String getValidId(long time) {
         asyncJobService.createAndSaveAsyncJob('Functional Test', userEmailAddresses.creator) {
-            sleep(30000)
+            sleep(time) {e ->
+                assert e in InterruptedException
+                log.info('Sleep interrupted')
+                true
+            }
         }.id.toString()
     }
 

@@ -50,7 +50,7 @@ class AsyncJobServiceSpec extends BaseUnitSpec implements ServiceUnitTest<AsyncJ
 
         when:
         log.warn('Waiting for job to complete')
-        service.getAsyncJobPromise(asyncJob).get()
+        service.getAsyncJobFuture(asyncJob).get()
 
         then:
         log.warn('Checking clean up has happened to async job record')

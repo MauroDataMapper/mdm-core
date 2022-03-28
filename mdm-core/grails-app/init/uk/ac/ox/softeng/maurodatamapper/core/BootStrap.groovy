@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.email.EmailService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.email.EmailProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.session.SessionService
@@ -51,6 +52,7 @@ class BootStrap {
     ApiPropertyService apiPropertyService
     SessionService sessionService
     AuthorityService authorityService
+    EmailService emailService
 
     AsyncJobService asyncJobService
 
@@ -117,6 +119,8 @@ class BootStrap {
 
     def destroy = {
         asyncJobService.cancelAllRunningJobs()
+        asyncJobService.shutdownAndAwaitTermination()
+        emailService.shutdownAndAwaitTermination()
     }
 
     void loadApiProperties(String path) {
