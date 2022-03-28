@@ -116,6 +116,14 @@ class MetadataFunctionalSpec extends FunctionalSpec {
     "defaultNamespace": true,
     "editable": true,
     "keys": [
+    
+    ],
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.core.container.provider.exporter"
+  },
+  {
+    "defaultNamespace": true,
+    "editable": true,
+    "keys": [
       
     ],
     "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter"

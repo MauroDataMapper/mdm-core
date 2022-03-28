@@ -1,0 +1,18 @@
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
+
+model {
+    Folder export
+}
+
+json {
+    if (export.id) id export.id
+    label export.label
+    if (export.lastUpdated) lastUpdated OffsetDateTimeConverter.toString(export.lastUpdated)
+    domainType export.domainType
+    if (export.description) description export.description
+    if (export.metadata) metadata g.render(export.metadata)
+    if (export.annotations) annotations tmpl.'/annotation/export'(export.annotations)
+    if (export.rules) rules tmpl.'/rule/export'(export.rules)
+    if (export.childFolders) childFolders tmpl.export(export.childFolders)
+}

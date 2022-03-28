@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.provider
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 
 import grails.testing.mixin.integration.Integration
+import groovy.util.logging.Slf4j
 import io.micronaut.core.order.Ordered
 import io.micronaut.core.type.Argument
 
@@ -33,6 +34,7 @@ import static io.micronaut.http.HttpStatus.OK
  *  | GET | /api/admin/providers/importers   | Action: importerProviders   |
  */
 @Integration
+@Slf4j
 class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
 
     @Override
@@ -45,7 +47,22 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
         GET('exporters', Argument.of(String))
 
         then:
-        verifyJsonResponse(OK, '[]')
+        verifyJsonResponse(OK, '''[
+  {
+    "name": "FolderJsonExporterService",
+    "version": "1.0",
+    "displayName": "JSON Folder Exporter",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.core.container.provider.exporter",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+    
+    ],
+    "providerType": "FolderExporter",
+    "fileExtension": "json",
+    "fileType": "text/json",
+    "canExportMultipleDomains": false
+  }
+]''')
     }
 
     void 'test get emailers'() {

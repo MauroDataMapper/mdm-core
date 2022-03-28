@@ -76,6 +76,20 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
     "fileExtension": "xml",
     "fileType": "text/xml",
     "canExportMultipleDomains": false
+  },
+  {
+    "name": "FolderJsonExporterService",
+    "version": "1.0",
+    "displayName": "JSON Folder Exporter",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.core.container.provider.exporter",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+    
+    ],
+    "providerType": "FolderExporter",
+    "fileExtension": "json",
+    "fileType": "text/json",
+    "canExportMultipleDomains": false
   }
 ]''')
     }
