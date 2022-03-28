@@ -91,10 +91,8 @@ trait MdmDomain {
     }
 
     private void setBuiltPath(Path builtPath) {
-        if (builtPath) {
-            Path oldPath = this.@path
-            markDirty('path', builtPath, oldPath)
-        }
+        Path oldPath = this.@path
+        markDirty('path', builtPath, oldPath)
         this.@path = builtPath
     }
 }

@@ -1095,7 +1095,18 @@ abstract class ModelService<K extends Model>
         multiFacetAwareItem.finalised
     }
 
+
+    void updateModelItemPathsAfterFinalisationOfModel(K model, String schema, String... tables) {
+        String pathBefore = model.uncheckedPath.toString()
+        model.checkPath()
+        String pathAfter = model.path.toString()
+        tables.each {table ->
+            updateModelItemPathsAfterFinalisationOfModel(pathBefore, pathAfter, schema, table)
+        }
+    }
+
     void updateModelItemPathsAfterFinalisationOfModel(String pathBefore, String pathAfter, String schema, String table) {
+        log.debug('Updating {} from [{}] to [{}]', table, pathBefore, pathAfter)
         String pathLike = "${pathBefore}%"
         sessionFactory.currentSession.createSQLQuery("UPDATE ${schema}.${table} " +
                                                      'SET path = REPLACE(path, :pathBefore, :pathAfter) ' +
@@ -1113,4 +1124,5 @@ abstract class ModelService<K extends Model>
         new MultipleUnsavedModelsLabelValidator().isValid(models)
         models
     }
+
 }

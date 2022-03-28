@@ -269,7 +269,10 @@ class BootstrapModels {
             simpleDataModel = new DataModel(createdBy: DEVELOPMENT,
                                             label: FINALISED_EXAMPLE_DATAMODEL_NAME,
                                             folder: folder,
-                                            authority: authority)
+                                            authority: authority,
+                                            finalised: true,
+                                            dateFinalised: OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC),
+                                            modelVersion: Version.from('1.0.0'))
 
 
             checkAndSave(messageSource, simpleDataModel)
@@ -295,14 +298,6 @@ class BootstrapModels {
                 .addToDataClasses(dataClass)
                 .addToDataClasses(createdBy: DEVELOPMENT, label: 'Another Data Class')
                 .addToDataTypes(primitiveType1)
-
-            checkAndSave(messageSource, simpleDataModel)
-
-            simpleDataModel.finalised = true
-            simpleDataModel.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
-            simpleDataModel.breadcrumbTree.finalised = true
-            simpleDataModel.breadcrumbTree.updateTree()
-            simpleDataModel.modelVersion = Version.from('1.0.0')
 
             checkAndSave(messageSource, simpleDataModel)
         }

@@ -967,12 +967,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
     @Override
     void updateModelItemPathsAfterFinalisationOfModel(DataModel model) {
-        String pathBefore = model.uncheckedPath.toString()
-        String pathAfter = model.path.toString()
-        updateModelItemPathsAfterFinalisationOfModel(pathBefore, pathAfter, 'datamodel','data_class')
-        updateModelItemPathsAfterFinalisationOfModel(pathBefore, pathAfter, 'datamodel','data_element')
-        updateModelItemPathsAfterFinalisationOfModel(pathBefore, pathAfter, 'datamodel','data_type')
-        updateModelItemPathsAfterFinalisationOfModel(pathBefore, pathAfter, 'datamodel','enumeration_value')
+        updateModelItemPathsAfterFinalisationOfModel model, 'datamodel', 'data_class', 'data_element', 'data_type', 'enumeration_value'
     }
 
     @Override

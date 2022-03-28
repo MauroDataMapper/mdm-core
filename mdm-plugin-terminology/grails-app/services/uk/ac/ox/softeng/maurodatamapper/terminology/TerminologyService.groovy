@@ -206,7 +206,7 @@ class TerminologyService extends ModelService<Terminology> {
 
         long st = System.currentTimeMillis()
 
-        log.debug('Turning hibernate search into async mode')
+        // Set this HS session to be async mode, this is faster and as we dont need to read the indexes its perfectly safe
         SearchSession searchSession = Search.session(sessionFactory.currentSession)
         searchSession.automaticIndexingSynchronizationStrategy(AutomaticIndexingSynchronizationStrategy.async())
 
@@ -652,11 +652,7 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     void updateModelItemPathsAfterFinalisationOfModel(Terminology model) {
-        String pathBefore = model.uncheckedPath.toString()
-        String pathAfter = model.path.toString()
-        updateModelItemPathsAfterFinalisationOfModel(pathBefore, pathAfter, 'terminology','term')
-        updateModelItemPathsAfterFinalisationOfModel(pathBefore, pathAfter, 'terminology','term_relationship')
-        updateModelItemPathsAfterFinalisationOfModel(pathBefore, pathAfter, 'terminology','term_relationship_type')
+        updateModelItemPathsAfterFinalisationOfModel model, 'terminology', 'term', 'term_relationship', 'term_relationship_type'
     }
 
     @Override

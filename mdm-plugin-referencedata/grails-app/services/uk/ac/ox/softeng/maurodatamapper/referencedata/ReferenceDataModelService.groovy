@@ -680,12 +680,11 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
 
     @Override
     void updateModelItemPathsAfterFinalisationOfModel(ReferenceDataModel model) {
-        String pathBefore = model.uncheckedPath.toString()
-        String pathAfter = model.path.toString()
-        updateModelItemPathsAfterFinalisationOfModel(pathBefore, pathAfter, 'referencedata', 'reference_data_element')
-        updateModelItemPathsAfterFinalisationOfModel(pathBefore, pathAfter, 'referencedata', 'reference_data_type')
-        updateModelItemPathsAfterFinalisationOfModel(pathBefore, pathAfter, 'referencedata', 'reference_data_value')
-        updateModelItemPathsAfterFinalisationOfModel(pathBefore, pathAfter, 'referencedata', 'reference_enumeration_value')
+        updateModelItemPathsAfterFinalisationOfModel model, 'referencedata',
+                                                     'reference_data_element',
+                                                     'reference_data_type',
+                                                     'reference_data_value',
+                                                     'reference_enumeration_value'
     }
 
     @Override
