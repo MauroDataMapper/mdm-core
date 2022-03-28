@@ -67,8 +67,9 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
     }
 
     static mapping = {
-        sourceTerm index: 'term_relationship_source_term_idx', cascade: 'none'
-        targetTerm index: 'term_relationship_target_term_idx', cascade: 'none'
+        sourceTerm index: 'term_relationship_source_term_idx', cascade: 'none', cascadeValidate: 'none'
+        targetTerm index: 'term_relationship_target_term_idx', cascade: 'none', cascadeValidate: 'none'
+        relationshipType cascadeValidate: 'none'
     }
 
     static transients = ['aliases', 'model']

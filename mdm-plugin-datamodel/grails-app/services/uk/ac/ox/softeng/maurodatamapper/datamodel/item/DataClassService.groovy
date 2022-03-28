@@ -248,7 +248,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         true
     }
 
-    Collection<DataElement> saveAllAndGetDataElements(Collection<DataClass> dataClasses) {
+    Collection<DataElement> saveAll(Collection<DataClass> dataClasses, Integer maxBatchSize, boolean batching) {
         if (!dataClasses) return []
 
         List<Classifier> classifiers = dataClasses.collectMany {it.classifiers ?: []} as List<Classifier>
@@ -260,7 +260,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         Collection<DataClass> alreadySaved = dataClasses.findAll {it.ident() && it.isDirty()}
         Collection<DataClass> notSaved = dataClasses.findAll {!it.ident()}
 
-        Collection<DataElement> dataElements = []
+        Map<String, Object> gatheredContentsMap = [:]
 
         if (alreadySaved) {
             log.trace('Straight saving {} already saved DataClasses', alreadySaved.size())
@@ -268,7 +268,10 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         }
 
         if (notSaved) {
-            log.trace('Batch saving {} new DataClasses in batches of {}', notSaved.size(), DataClass.BATCH_SIZE)
+            // Determine the ideal batch size and then use the smaller of the 2 values of the requested batch size and the ideal one
+            int idealBatchSize = determineIdealBatchSize(notSaved)
+            int batchSizeToUse = Math.min(maxBatchSize, idealBatchSize)
+            log.debug('Batch saving {} new {} in batches of {}', notSaved.size(), getDomainClass().simpleName, batchSizeToUse)
             List batch = []
             int count = 0
 
@@ -277,17 +280,12 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
             log.trace('Ready to save on first run {}', parentIsSaved.size())
             while (parentIsSaved) {
                 parentIsSaved.each {dc ->
-                    dataElements.addAll dc.dataElements ?: []
 
-                    dc.dataClasses?.clear()
-                    dc.dataElements?.clear()
-                    dc.referenceTypes?.clear()
+                    gatherContents(gatheredContentsMap, dc)
 
-                    dc.parentDataClass?.attach()
-
-                    batch.add dc
+                    batch << dc
                     count++
-                    if (count % DataClass.BATCH_SIZE == 0) {
+                    if (count % batchSizeToUse == 0) {
                         batchSave(batch)
                         batch.clear()
                     }
@@ -300,7 +298,29 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
                 log.trace('Ready to save on subsequent run {}', parentIsSaved.size())
             }
         }
-        dataElements
+        returnGatheredContents(gatheredContentsMap)
+    }
+
+    @Override
+    void preBatchSaveHandling(List<DataClass> modelItems) {
+        modelItems.each {dc ->
+            dc.dataClasses?.clear()
+            dc.dataElements?.clear()
+            dc.referenceTypes?.clear()
+            dc.parentDataClass?.attach()
+        }
+    }
+
+    @Override
+    void gatherContents(Map<String, Object> gatheredContents, DataClass modelItem) {
+        List<DataElement> dataElements = gatheredContents.getOrDefault('dataElements', [])
+        dataElements.addAll(modelItem.dataElements ?: [])
+        gatheredContents.dataElements = dataElements
+    }
+
+    @Override
+    List<DataElement> returnGatheredContents(Map<String, Object> gatheredContents) {
+        gatheredContents.getOrDefault('dataElements', []) as List<DataElement>
     }
 
     private void removeAssociations(DataClass dataClass) {

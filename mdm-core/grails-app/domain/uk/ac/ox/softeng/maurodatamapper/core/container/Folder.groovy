@@ -130,6 +130,7 @@ class Folder implements Container, Diffable<Folder> {
     }
 
     def beforeValidate() {
+        checkPath()
         childFolders.each {it.beforeValidate()}
     }
 

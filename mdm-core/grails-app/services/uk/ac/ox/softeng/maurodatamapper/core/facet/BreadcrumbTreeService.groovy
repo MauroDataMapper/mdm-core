@@ -36,7 +36,8 @@ class BreadcrumbTreeService {
         breadcrumbTree.finalised = true
         String treeStringBefore = breadcrumbTree.treeString
         breadcrumbTree.buildTree()
-        breadcrumbTree.path = breadcrumbTree.domainEntity.path
+        breadcrumbTree.domainEntity.checkPath()
+        breadcrumbTree.path = breadcrumbTree.domainEntity.getUncheckedPath()
 
         // Update all the modelitem tree strings
         String treeStringAfter = breadcrumbTree.treeString

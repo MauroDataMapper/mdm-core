@@ -68,7 +68,7 @@ class TermRelationshipType implements ModelItem<TermRelationshipType, Terminolog
     }
 
     static mapping = {
-        terminology index: 'term_relationship_type_terminology_idx', cascade: 'none'
+        terminology index: 'term_relationship_type_terminology_idx', cascade: 'none', cascadeValidate: 'none'
     }
 
     static mappedBy = [

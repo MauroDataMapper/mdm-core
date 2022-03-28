@@ -128,48 +128,25 @@ class TermService extends ModelItemService<Term> {
         }
     }
 
-    Collection<TermRelationship> saveAllAndGetTermRelationships(Collection<Term> terms, Integer batchSize = BATCH_SIZE) {
-        if (!terms) return []
-        List<Classifier> classifiers = terms.collectMany {it.classifiers ?: []} as List<Classifier>
-        if (classifiers) {
-            log.trace('Saving {} classifiers')
-            classifierService.saveAll(classifiers)
+    @Override
+    void preBatchSaveHandling(List<Term> modelItems) {
+        modelItems.each {t ->
+            t.sourceTermRelationships?.clear()
+            t.targetTermRelationships?.clear()
         }
+    }
 
-        Collection<Term> alreadySaved = terms.findAll {it.ident() && it.isDirty()}
-        Collection<Term> notSaved = terms.findAll {!it.ident()}
+    @Override
+    void gatherContents(Map<String, Object> gatheredContents, Term modelItem) {
+        List<TermRelationship> termRelationships = gatheredContents.getOrDefault('termRelationships', [])
+        termRelationships.addAll(modelItem.sourceTermRelationships ?: [])
+        termRelationships.addAll(modelItem.targetTermRelationships ?: [])
+        gatheredContents.termRelationships = termRelationships
+    }
 
-        Collection<TermRelationship> termRelationships = []
-
-        if (alreadySaved) {
-            log.trace('Straight saving {} already saved Terms', alreadySaved.size())
-            Term.saveAll(alreadySaved)
-        }
-
-        if (notSaved) {
-            log.trace('Batch saving {} new {} in batches of {}', notSaved.size(), getDomainClass().simpleName, batchSize)
-            List batch = []
-            int count = 0
-
-            notSaved.each { t ->
-
-                termRelationships.addAll(t.sourceTermRelationships ?: [])
-                termRelationships.addAll(t.targetTermRelationships ?: [])
-
-                t.sourceTermRelationships?.clear()
-                t.targetTermRelationships?.clear()
-
-                batch << t
-                count++
-                if (count % batchSize == 0) {
-                    batchSave(batch)
-                    batch.clear()
-                }
-            }
-            batchSave(batch)
-            batch.clear()
-        }
-        termRelationships
+    @Override
+    List<TermRelationship> returnGatheredContents(Map<String, Object> gatheredContents) {
+        gatheredContents.getOrDefault('termRelationships', []) as List<TermRelationship>
     }
 
     Long countByTerminologyId(UUID terminologyId) {
@@ -418,21 +395,6 @@ class TermService extends ModelItemService<Term> {
             (it.targetTerm == parent && it.relationshipType.childRelationship) ||
             (it.sourceTerm == parent && it.relationshipType.parentalRelationship)
         }
-    }
-
-    private void singleBatchSave(Collection<Term> terms) {
-        if (!terms) {
-            return
-        }
-        long start = System.currentTimeMillis()
-        log.trace('Batch saving {} terms', terms.size())
-
-        Term.saveAll(terms)
-
-        sessionFactory.currentSession.flush()
-        sessionFactory.currentSession.clear()
-
-        log.trace('Batch save took {}', Utils.getTimeString(System.currentTimeMillis() - start))
     }
 
     /*

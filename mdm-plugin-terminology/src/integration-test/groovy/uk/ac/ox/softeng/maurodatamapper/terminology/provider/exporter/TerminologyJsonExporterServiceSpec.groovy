@@ -28,6 +28,7 @@ import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import org.junit.Assert
+import org.junit.jupiter.api.Tag
 
 import java.nio.file.Files
 import java.nio.file.Path
@@ -38,6 +39,7 @@ import java.nio.file.Path
 @Integration
 @Rollback
 @Slf4j
+@Tag('non-parallel')
 class TerminologyJsonExporterServiceSpec extends DataBindTerminologyImportAndDefaultExporterServiceSpec<TerminologyJsonImporterService, TerminologyJsonExporterService>
     implements JsonComparer {
 

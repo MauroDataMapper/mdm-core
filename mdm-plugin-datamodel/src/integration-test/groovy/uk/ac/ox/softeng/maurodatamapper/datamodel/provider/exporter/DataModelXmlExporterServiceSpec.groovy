@@ -28,6 +28,7 @@ import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import org.junit.Assert
+import org.junit.jupiter.api.Tag
 import spock.lang.Unroll
 
 import java.nio.file.Files
@@ -41,6 +42,7 @@ import static org.junit.Assert.assertTrue
 @Integration
 @Rollback
 @Slf4j
+@Tag('non-parallel')
 class DataModelXmlExporterServiceSpec extends DataBindImportAndDefaultExporterServiceSpec<DataModelXmlImporterService, DataModelXmlExporterService>
     implements XmlValidator {
 

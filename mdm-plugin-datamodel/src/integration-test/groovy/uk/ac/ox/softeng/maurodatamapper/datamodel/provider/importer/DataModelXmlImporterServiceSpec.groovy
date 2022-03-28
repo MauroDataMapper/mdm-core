@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.test.provider.DataBindDataMode
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import org.junit.jupiter.api.Tag
 
 /**
  * @since 04/08/2017
@@ -32,6 +33,7 @@ import groovy.util.logging.Slf4j
 @Integration
 @Rollback
 @Slf4j
+@Tag('non-parallel')
 class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderServiceSpec<DataModelXmlImporterService> {
 
     private static final String CANNOT_IMPORT_EMPTY_FILE_CODE = 'FBIP02'

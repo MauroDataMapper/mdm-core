@@ -149,7 +149,6 @@ class Terminology implements Model<Terminology> {
 
     def beforeValidate() {
         beforeValidateCatalogueItem()
-        terms?.each {it.beforeValidate()}
     }
 
     int countTermsByCode(String code) {

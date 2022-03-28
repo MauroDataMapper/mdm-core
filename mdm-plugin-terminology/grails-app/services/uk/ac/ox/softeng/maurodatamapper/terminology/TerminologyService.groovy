@@ -39,6 +39,7 @@ import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.path.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.terminology.gorm.constraint.validator.TermCollectionValidator
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipTypeService
@@ -55,6 +56,9 @@ import grails.gorm.transactions.Transactional
 import grails.util.Environment
 import groovy.util.logging.Slf4j
 import org.hibernate.engine.spi.SessionFactoryImplementor
+import org.hibernate.search.mapper.orm.Search
+import org.hibernate.search.mapper.orm.automaticindexing.session.AutomaticIndexingSynchronizationStrategy
+import org.hibernate.search.mapper.orm.session.SearchSession
 
 @Slf4j
 @Transactional
@@ -101,8 +105,38 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     Terminology validate(Terminology terminology) {
-        log.trace('Validating Terminology')
+        log.debug('Validating Terminology with {} TRTs, {} Ts, {} TRs', terminology.termRelationshipTypes.size(),
+                  terminology.terms.size(),
+                  terminology.allTermRelationships.size())
+        Collection<Term> terms = []
+        if (terminology.terms) {
+            terms.addAll(terminology.terms)
+            terminology.terms.clear()
+        }
+
+        long st = System.currentTimeMillis()
         terminology.validate()
+        log.debug('Validated Terminology in {}', Utils.timeTaken(st))
+
+        st = System.currentTimeMillis()
+        terms.each {it.validate()}
+        terminology.terms.addAll(terms)
+        // To be able to register the errors in the Terminology we need to add the Termss back to the Terminology
+        terms.eachWithIndex {t, i ->
+            if (t.hasErrors()) {
+                t.errors.fieldErrors.each {err ->
+                    terminology.errors.rejectValue("terms[${i}].${err.field}", err.code, err.arguments, err.defaultMessage)
+                }
+            }
+        }
+        def termsValidity = new TermCollectionValidator(terminology).isValid(terms)
+        if (termsValidity instanceof List) {
+            terminology.errors.rejectValue('terms', termsValidity[0] as String, ['terms', Terminology, terms, termsValidity[1], termsValidity[2]] as Object[],
+                                           'Property [{0}] of class [{1}] has non-unique values [{3}] on property [{4}]')
+        }
+
+        log.debug('Validated {} terms in {}', terms.size(), Utils.timeTaken(st))
+
         terminology
     }
 
@@ -145,7 +179,7 @@ class TerminologyService extends ModelService<Terminology> {
                                            new IllegalStateException('Terminology has previously saved content'))
         }
 
-        log.debug('Saving {} complete terminology', terminology.label)
+        log.debug('Saving {} terminology with content', terminology.label)
 
         long start = System.currentTimeMillis()
         Collection<Term> terms = []
@@ -170,9 +204,15 @@ class TerminologyService extends ModelService<Terminology> {
             terminology.breadcrumbTree.disableValidation()
         }
 
-        save(failOnError: true, validate: false, flush: false, ignoreBreadcrumbs: true, terminology)
+        long st = System.currentTimeMillis()
 
+        // Set this HS session to be async mode, this is faster and as we dont need to read the indexes its perfectly safe
+        SearchSession searchSession = Search.session(sessionFactory.currentSession)
+        searchSession.automaticIndexingSynchronizationStrategy(AutomaticIndexingSynchronizationStrategy.async())
+
+        save(failOnError: true, validate: false, flush: false, ignoreBreadcrumbs: true, terminology)
         sessionFactory.currentSession.flush()
+        log.debug('Save of Terminology and BreadcrumbTree took {}', Utils.timeTaken(st))
 
         saveContent(modelItemBatchSize, terms, termRelationshipTypes)
 
@@ -186,6 +226,8 @@ class TerminologyService extends ModelService<Terminology> {
         save(failOnError: true, validate: false, flush: true, model)
     }
 
+
+    // Need to find a way to disable lucene and then rerun on all new entities AFTER
     void saveContent(Integer modelItemBatchSize,
                      Collection<Term> terms,
                      Collection<TermRelationshipType> termRelationshipTypes,
@@ -193,8 +235,8 @@ class TerminologyService extends ModelService<Terminology> {
 
         sessionFactory.currentSession.clear()
         long start = System.currentTimeMillis()
-        log.trace('Disabling validation on contents')
-        termRelationshipTypes.each { trt ->
+        log.debug('Disabling validation on contents')
+        termRelationshipTypes.each {trt ->
             trt.skipValidation(true)
         }
 
@@ -212,23 +254,23 @@ class TerminologyService extends ModelService<Terminology> {
         }
 
         long subStart = System.currentTimeMillis()
-        termRelationshipTypeService.saveAll(termRelationshipTypes)
-        log.trace('Saved {} termRelationshipTypes in {}', termRelationshipTypes.size(), Utils.timeTaken(subStart))
+        termRelationshipTypeService.saveAll(termRelationshipTypes, modelItemBatchSize)
+        log.debug('Saved {} termRelationshipTypes in {}', termRelationshipTypes.size(), Utils.timeTaken(subStart))
 
         subStart = System.currentTimeMillis()
-        termRelationships.addAll termService.saveAllAndGetTermRelationships(terms, modelItemBatchSize)
-        log.trace('Saved {} terms in {}', terms.size(), Utils.timeTaken(subStart))
+        termRelationships.addAll termService.saveAll(terms, modelItemBatchSize)
+        log.debug('Saved {} terms in {}', terms.size(), Utils.timeTaken(subStart))
 
         subStart = System.currentTimeMillis()
-        termRelationshipService.saveAll(termRelationships)
-        log.trace('Saved {} termRelationships in {}', termRelationships.size(), Utils.timeTaken(subStart))
+        termRelationshipService.saveAll(termRelationships, modelItemBatchSize)
+        log.debug('Saved {} termRelationships in {}', termRelationships.size(), Utils.timeTaken(subStart))
 
         if (Environment.current != Environment.TEST) {
             log.debug('Enabling database constraints')
             GormUtils.enableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
         }
 
-        log.trace('Content save of Terminology complete in {}', Utils.timeTaken(start))
+        log.debug('Content save of Terminology complete in {}', Utils.timeTaken(start))
     }
 
     void deleteModelsAndContent(Set<UUID> idsToDelete) {
@@ -610,11 +652,7 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     void updateModelItemPathsAfterFinalisationOfModel(Terminology model) {
-        String pathBefore = model.uncheckedPath.toString()
-        String pathAfter = model.path.toString()
-        updateModelItemPathsAfterFinalisationOfModel(pathBefore, pathAfter, 'terminology','term')
-        updateModelItemPathsAfterFinalisationOfModel(pathBefore, pathAfter, 'terminology','term_relationship')
-        updateModelItemPathsAfterFinalisationOfModel(pathBefore, pathAfter, 'terminology','term_relationship_type')
+        updateModelItemPathsAfterFinalisationOfModel model, 'terminology', 'term', 'term_relationship', 'term_relationship_type'
     }
 
     @Override

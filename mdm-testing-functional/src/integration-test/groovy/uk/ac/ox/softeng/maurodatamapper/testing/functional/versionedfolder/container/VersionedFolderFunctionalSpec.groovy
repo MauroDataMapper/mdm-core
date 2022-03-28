@@ -761,7 +761,10 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
 
         when: 'The folder gets finalised'
+        log.debug('------------------------')
         PUT("$data.commonAncestorId/finalise", [versionChangeType: 'Major'])
+        log.debug('------------------------')
+
 
         then:
         response.status == OK
@@ -3455,7 +3458,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         mdmDomains.each {
             Path uncheckedPath = it.getUncheckedPath()
             Path checkedPath = it.getPath()
-            assertEquals('Checked path matches unchecked path', uncheckedPath, checkedPath)
+            assertEquals('Stored path is correct', checkedPath, uncheckedPath)
         }
     }
 }

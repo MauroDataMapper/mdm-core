@@ -26,12 +26,16 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import groovy.util.logging.Slf4j
+import org.hibernate.Session
+import org.hibernate.search.mapper.orm.Search
+import org.hibernate.search.mapper.orm.session.SearchSession
+import org.hibernate.search.mapper.orm.work.SearchIndexingPlan
 import org.springframework.beans.factory.annotation.Autowired
 
 @Slf4j
 abstract class ModelItemService<K extends ModelItem> extends CatalogueItemService<K> {
 
-    public final static Integer BATCH_SIZE = 1000
+    public final static Integer BATCH_SIZE = 5000
 
     @Autowired(required = false)
     List<ModelItemService> modelItemServices
@@ -70,14 +74,14 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
     }
 
     def saveAll(Collection<K> modelItems, Integer batchSize) {
-        saveAll(modelItems, true, batchSize)
+        saveAll(modelItems, batchSize, true)
     }
 
     def saveAll(Collection<K> modelItems, boolean batching) {
-        saveAll(modelItems, batching, BATCH_SIZE)
+        saveAll(modelItems, BATCH_SIZE, batching)
     }
 
-    def saveAll(Collection<K> modelItems, boolean batching, Integer batchSize) {
+    def saveAll(Collection<K> modelItems, Integer maxBatchSize, boolean batching) {
         if (!modelItems) return []
         List<Classifier> classifiers = modelItems.collectMany {it.classifiers ?: []} as List<Classifier>
         if (classifiers) {
@@ -88,6 +92,8 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
         Collection<K> alreadySaved = modelItems.findAll {it.ident() && it.isDirty()}
         Collection<K> notSaved = modelItems.findAll {!it.ident()}
 
+        Map<String, Object> gatheredContentsMap = [:]
+
         if (alreadySaved) {
             log.debug('Straight saving {} already saved {}', alreadySaved.size(), getDomainClass().simpleName)
             getDomainClass().saveAll(alreadySaved)
@@ -95,15 +101,20 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
 
         if (notSaved) {
             if (batching) {
-                log.debug('Batch saving {} new {} in batches of {}', notSaved.size(), getDomainClass().simpleName, batchSize)
+                // Determine the ideal batch size and then use the smaller of the 2 values of the requested batch size and the ideal one
+                int idealBatchSize = determineIdealBatchSize(notSaved)
+                int batchSizeToUse = Math.min(maxBatchSize, idealBatchSize)
+                log.debug('Batch saving {} new {} in batches of {}', notSaved.size(), getDomainClass().simpleName, batchSizeToUse)
                 List batch = []
                 int count = 0
 
                 notSaved.each {mi ->
 
+                    gatherContents(gatheredContentsMap, mi)
+
                     batch << mi
                     count++
-                    if (count % batchSize == 0) {
+                    if (count % batchSizeToUse == 0) {
                         batchSave(batch)
                         batch.clear()
                     }
@@ -118,24 +129,55 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
                 }
             }
         }
+        returnGatheredContents(gatheredContentsMap)
     }
 
     void batchSave(List<K> modelItems) {
+
         long start = System.currentTimeMillis()
         log.trace('Performing batch save of {} {}', modelItems.size(), getDomainClass().simpleName)
         preBatchSaveHandling(modelItems)
 
         Metadata.saveAll(modelItems.collectMany {it.metadata ?: []}.findAll())
-
         getDomainClass().saveAll(modelItems)
         checkBreadcrumbTreeAfterSavingCatalogueItems(modelItems)
-        sessionFactory.currentSession.flush()
-        sessionFactory.currentSession.clear()
-        log.trace('Batch save took {}', Utils.timeTaken(start))
+
+        // Flush, clear session and write indexes to keep indexing document small
+        Session currentSession = sessionFactory.currentSession
+        currentSession.flush()
+        currentSession.clear()
+        SearchSession searchSession = Search.session(currentSession)
+        SearchIndexingPlan indexingPlan = searchSession.indexingPlan()
+        indexingPlan.execute()
+
+        log.trace('Batch save of {} {} took {}', modelItems.size(), getDomainClass().simpleName, Utils.timeTaken(start))
+    }
+
+    def returnGatheredContents(Map<String, Object> gatheredContents) {
+        null
+    }
+
+    void gatherContents(Map<String, Object> gatheredContents, K modelItem) {
+        //no-op
     }
 
     void preBatchSaveHandling(List<K> modelItems) {
         //noop
+    }
+
+    int determineIdealBatchSize(Collection<K> modelItems) {
+        // Batch size of ~5K seems to be perfect for our system but when you have lots of MD we need to reduce the batch size
+        // to something which will result in ~5K objects being saved in each batch
+        List<Integer> mdSizes = modelItems.collect {it.metadata?.size() ?: 0}
+        Integer avgMetadataSize = (mdSizes.average() as BigDecimal).toInteger()
+        Map<Integer, Integer> sizeCounts = mdSizes.groupBy {it}.collectEntries {k, v -> [k, v.size()]}
+        int max = sizeCounts.max {it.value}.value
+        Integer modeMetadataSize = sizeCounts.findAll {it.value == max}.max {it.key}.key
+        int avgObjsPerBatch = 1 + Math.max(avgMetadataSize, modeMetadataSize)
+        // Give some allowance back for varying obj per batch plus technically each MI will include a BT therefore we're usually saving 10K objects
+        BigDecimal[] result = (BATCH_SIZE * 2).toBigDecimal().divideAndRemainder(avgObjsPerBatch.toBigDecimal())
+        int numberOfModelItemsPerBatch = (result[1] ? result[0] + 1 : result[0]).toInteger()
+        Math.min(BATCH_SIZE, numberOfModelItemsPerBatch)
     }
 
     @Override

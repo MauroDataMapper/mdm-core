@@ -107,6 +107,7 @@ class Classifier implements Container {
     }
 
     def beforeValidate() {
+        checkPath()
         childClassifiers.each {it.beforeValidate()}
     }
 
