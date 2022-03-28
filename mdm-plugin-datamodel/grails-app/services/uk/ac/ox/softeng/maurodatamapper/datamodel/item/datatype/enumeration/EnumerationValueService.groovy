@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
@@ -181,18 +182,15 @@ class EnumerationValueService extends ModelItemService<EnumerationValue> impleme
     }
 
     EnumerationValue copyEnumerationValue(DataModel copiedDataModel, EnumerationValue original, EnumerationType enumerationTypeToCopyInto,
-                                          User copier,
-                                          UserSecurityPolicyManager userSecurityPolicyManager) {
-        EnumerationValue copy = new EnumerationValue(key: original.key,
-                                                     value: original.value)
+                                          User copier, UserSecurityPolicyManager userSecurityPolicyManager, CopyInformation copyInformation = null) {
+        EnumerationValue copy = new EnumerationValue(key: original.key, value: original.value, category: original.category)
 
-        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
+        copy = copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         EnumerationType enumerationType = enumerationTypeToCopyInto ?: copiedDataModel.findEnumerationTypeByLabel(original.enumerationType.label)
         enumerationType.addToEnumerationValues(copy)
         copy
-
     }
 
     List<EnumerationValue> findAllByDataModelId(Serializable dataModelId) {

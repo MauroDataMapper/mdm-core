@@ -35,6 +35,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
@@ -457,18 +458,20 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
 
         copy.trackChanges()
 
+        CopyInformation referenceDataTypeCopyInformation = new CopyInformation(copyIndex: true)
         if (original.referenceDataTypes) {
             // Copy all the referencedatatypes
-            original.referenceDataTypes.each { dt ->
-                referenceDataTypeService.copyReferenceDataType(copy, dt, copier, userSecurityPolicyManager)
+            original.referenceDataTypes.sort().each { dt ->
+                referenceDataTypeService.copyReferenceDataType(copy, dt, copier, userSecurityPolicyManager, copySummaryMetadata, referenceDataTypeCopyInformation)
             }
         }
 
+        CopyInformation referenceDataElementCopyInformation = new CopyInformation(copyIndex: true)
         if (original.referenceDataElements) {
             // Copy all the referencedataelements
-            original.referenceDataElements.each { de ->
+            original.referenceDataElements.sort().each { de ->
                 log.debug("copy element ${de}")
-                referenceDataElementService.copyReferenceDataElement(copy, de, copier, userSecurityPolicyManager)
+                referenceDataElementService.copyReferenceDataElement(copy, de, copier, userSecurityPolicyManager, copySummaryMetadata, referenceDataElementCopyInformation)
             }
         }
 

@@ -26,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElementService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValueService
 import uk.ac.ox.softeng.maurodatamapper.test.unit.service.CatalogueItemServiceSpec
 
 import grails.testing.services.ServiceUnitTest
@@ -44,6 +45,7 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
         mockArtefact(ReferenceTypeService)
         mockArtefact(PrimitiveTypeService)
         mockArtefact(EnumerationTypeService)
+        mockArtefact(EnumerationValueService)
         mockArtefact(SummaryMetadataService)
         mockDomains(DataModel, DataClass, DataType, PrimitiveType, ReferenceType, EnumerationType, EnumerationValue, DataElement)
 

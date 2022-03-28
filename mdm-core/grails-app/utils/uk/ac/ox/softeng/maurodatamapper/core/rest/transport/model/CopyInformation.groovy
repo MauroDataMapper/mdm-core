@@ -26,6 +26,7 @@ import groovy.util.logging.Slf4j
 class CopyInformation implements Validateable {
 
     String copyLabel
+    boolean copyIndex = false
 
     Map<String, TreeMap<UUID, List<MultiFacetItemAware>>> preloadedFacets = [:]
 

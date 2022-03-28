@@ -380,7 +380,7 @@ WHERE (de.dataClass.id = :dataClassId OR idc.id = :dataClassId)''', 'de', filter
         DataElement copy = new DataElement(minMultiplicity: original.minMultiplicity,
                                            maxMultiplicity: original.maxMultiplicity)
 
-        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata, copyInformation)
+        copy = copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata, copyInformation)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         DataType dataType = copiedDataModel.findDataTypeByLabel(original.dataType.label)
@@ -396,13 +396,13 @@ WHERE (de.dataClass.id = :dataClassId OR idc.id = :dataClassId)''', 'de', filter
         copy
     }
 
-    DataElement copyCatalogueItemInformation(DataElement original,
+    DataElement copyModelItemInformation(DataElement original,
                                              DataElement copy,
                                              User copier,
                                              UserSecurityPolicyManager userSecurityPolicyManager,
                                              boolean copySummaryMetadata,
                                              CopyInformation copyInformation) {
-        copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
+        copy = super.copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
         if (copySummaryMetadata) {
             copySummaryMetadataFromOriginal(original, copy, copier, copyInformation)
         }
@@ -410,12 +410,12 @@ WHERE (de.dataClass.id = :dataClassId OR idc.id = :dataClassId)''', 'de', filter
     }
 
     @Override
-    DataElement copyCatalogueItemInformation(DataElement original,
+    DataElement copyModelItemInformation(DataElement original,
                                              DataElement copy,
                                              User copier,
                                              UserSecurityPolicyManager userSecurityPolicyManager,
                                              CopyInformation copyInformation) {
-        copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, false, copyInformation)
+        copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, false, copyInformation)
     }
 
     DataElementSimilarityResult findAllSimilarDataElementsInDataModel(DataModel dataModelToSearch, DataElement dataElementToCompare, maxResults = 5) {

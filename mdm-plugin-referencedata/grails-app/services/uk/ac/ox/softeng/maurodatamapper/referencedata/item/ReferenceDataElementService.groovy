@@ -26,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityPair
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate.FilterFactory
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate.IdPathSecureFilterFactory
@@ -257,16 +258,18 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
     }
 
     @Override
-    ReferenceDataElement copy(Model copiedReferenceDataModel, ReferenceDataElement original, CatalogueItem nonModelParent, UserSecurityPolicyManager userSecurityPolicyManager) {
+    ReferenceDataElement copy(Model copiedReferenceDataModel, ReferenceDataElement original, CatalogueItem nonModelParent,
+                              UserSecurityPolicyManager userSecurityPolicyManager) {
         copyReferenceDataElement(copiedReferenceDataModel as ReferenceDataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
     }
 
     ReferenceDataElement copyReferenceDataElement(ReferenceDataModel copiedReferenceDataModel, ReferenceDataElement original, User copier,
-                                                  UserSecurityPolicyManager userSecurityPolicyManager) {
+                                                  UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata = false,
+                                                  CopyInformation copyInformation = null) {
         ReferenceDataElement copy = new ReferenceDataElement(minMultiplicity: original.minMultiplicity,
                                                              maxMultiplicity: original.maxMultiplicity)
 
-        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
+        copy = copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata, copyInformation)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         ReferenceDataType referenceDataType = copiedReferenceDataModel.findReferenceDataTypeByLabel(original.referenceDataType.label)
@@ -285,12 +288,12 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
     }
 
     @Override
-    ReferenceDataElement copyCatalogueItemInformation(ReferenceDataElement original,
-                                                      ReferenceDataElement copy,
-                                                      User copier,
-                                                      UserSecurityPolicyManager userSecurityPolicyManager,
-                                                      boolean copySummaryMetadata = false) {
-        copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
+    ReferenceDataElement copyModelItemInformation(ReferenceDataElement original,
+                                                  ReferenceDataElement copy,
+                                                  User copier,
+                                                  UserSecurityPolicyManager userSecurityPolicyManager,
+                                                  boolean copySummaryMetadata = false, CopyInformation copyInformation = null) {
+        copy = super.copyModelItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
         if (copySummaryMetadata) {
             referenceSummaryMetadataService.findAllByMultiFacetAwareItemId(original.id).each {
                 copy.addToReferenceSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
@@ -341,7 +344,7 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
             .where {lsf ->
                 BooleanPredicateClausesStep boolStep = lsf
                     .bool()
-                    .filter(IdPathSecureFilterFactory.createFilter(lsf, [referenceDataModelToSearch.id],  [referenceDataModelToSearch.path.last()]))
+                    .filter(IdPathSecureFilterFactory.createFilter(lsf, [referenceDataModelToSearch.id], [referenceDataModelToSearch.path.last()]))
                     .filter(FilterFactory.mustNot(lsf, lsf.id().matching(referenceDataElementToCompare.id)))
 
                 moreLikeThisQueries.each {mlt ->

@@ -908,7 +908,147 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData()
     }
 
-    void 'VB05 : test finding common ancestor of two datamodels'() {
+    void 'VB05 : test creating a main branch model version of a DataModel with ordered DataClasses, DataElements and EnumerationValues'() {
+        given:
+        String originalModelId = createNewItem(validJson)
+
+        for (int i in 1..5) {
+            POST("$originalModelId/dataClasses", [label: 'Root Data Class ' + i, idx: i - 1])
+            verifyResponse CREATED, response
+        }
+        String originalParentClassId = responseBody().id
+
+        for (int i in 1..5) {
+            POST("$originalModelId/dataClasses/$originalParentClassId/dataClasses", [label: 'Child Data Class ' + i, idx: i])
+            verifyResponse CREATED, response
+        }
+
+        Map enumerationTypeData = [
+            label            : 'Functional Test Enumeration Type',
+            domainType       : 'EnumerationType',
+            enumerationValues: (1..5).collect {i ->
+                [
+                    key  : 'Key ' + i,
+                    value: 'Value ' + i,
+                    index: i - 1
+                ]
+            }
+        ]
+        POST("$originalModelId/dataTypes", enumerationTypeData)
+        verifyResponse CREATED, response
+        String originalEnumerationTypeId = responseBody().id
+
+        for (int i in 1..5) {
+            POST("$originalModelId/dataClasses/$originalParentClassId/dataElements",
+                 [label: 'Data Element ' + i, dataType: originalEnumerationTypeId, idx: i - 1])
+            verifyResponse CREATED, response
+        }
+
+        when:
+        GET("$originalModelId/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 5
+        responseBody().items.eachWithIndex{dc, i ->
+            assert dc.domainType == 'DataClass'
+            assert dc.label.startsWith('Root Data Class') && dc.label.endsWith((i + 1).toString())
+        }
+
+        when:
+        GET("$originalModelId/dataClasses/$originalParentClassId/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 5
+        responseBody().items.eachWithIndex {dc, i ->
+            assert dc.domainType == 'DataClass'
+            assert dc.label.startsWith('Child Data Class') && dc.label.endsWith((i + 1).toString())
+        }
+
+        when:
+        GET("$originalModelId/dataClasses/$originalParentClassId/dataElements")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.eachWithIndex {de, i ->
+            assert de.domainType == 'DataElement'
+            assert de.label.startsWith('Data Element') && de.label.endsWith((i + 1).toString())
+        }
+
+        when:
+        GET("$originalModelId/dataTypes/$originalEnumerationTypeId")
+
+        then:
+        verifyResponse OK, response
+        responseBody().domainType == 'EnumerationType'
+        responseBody().enumerationValues.every {ev ->
+            ev.key.startsWith('Key') && ev.key.endsWith((ev.index + 1).toString()) &&
+            ev.value.startsWith('Value') && ev.value.endsWith((ev.index + 1).toString())
+        }
+
+        when:
+        PUT("$originalModelId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$originalModelId/newBranchModelVersion", [:])
+
+        then:
+        verifyResponse CREATED, response
+        String newModelId = responseBody().id
+
+        when:
+        GET("$newModelId/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 5
+        responseBody().items.eachWithIndex{dc, i ->
+            assert dc.domainType == 'DataClass'
+            assert dc.label.startsWith('Root Data Class') && dc.label.endsWith((i + 1).toString())
+        }
+        String newParentClassId = responseBody().items.last().id
+
+        when:
+        GET("$newModelId/dataClasses/$newParentClassId/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 5
+        responseBody().items.eachWithIndex {dc, i ->
+            assert dc.domainType == 'DataClass'
+            assert dc.label.startsWith('Child Data Class') && dc.label.endsWith((i + 1).toString())
+        }
+
+        when:
+        GET("$newModelId/dataClasses/$newParentClassId/dataElements")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.eachWithIndex {de, i ->
+            assert de.domainType == 'DataElement'
+            assert de.label.startsWith('Data Element') && de.label.endsWith((i + 1).toString())
+        }
+
+        when:
+        GET("$newModelId/dataTypes")
+        verifyResponse OK, response
+        String newEnumerationTypeId = responseBody().items[0].id
+        GET("$newModelId/dataTypes/$newEnumerationTypeId")
+
+        then:
+        verifyResponse OK, response
+        responseBody().domainType == 'EnumerationType'
+        responseBody().enumerationValues.every {ev ->
+            ev.key.startsWith('Key') && ev.key.endsWith((ev.index + 1).toString()) &&
+            ev.value.startsWith('Value') && ev.value.endsWith((ev.index + 1).toString())
+        }
+
+        cleanup:
+        cleanUpData(originalModelId)
+        cleanUpData(newModelId)
+    }
+
+    void 'VB06 : test finding common ancestor of two datamodels'() {
         given:
         String id = createNewItem(validJson)
         PUT("$id/finalise", [versionChangeType: 'Major'])
@@ -986,7 +1126,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData(id)
     }
 
-    void 'VB06 : test finding latest finalised model of a datamodel'() {
+    void 'VB07 : test finding latest finalised model of a datamodel'() {
         /*
         id (finalised) -- expectedId (finalised) -- latestDraftId (draft)
           \_ newBranchId (draft)
@@ -1032,7 +1172,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         cleanUpData(id)
     }
 
-    void 'VB07 : test finding latest model version of a datamodel'() {
+    void 'VB08 : test finding latest model version of a datamodel'() {
         /*
         id (finalised) -- expectedId (finalised) -- latestDraftId (draft)
           \_ newBranchId (draft)

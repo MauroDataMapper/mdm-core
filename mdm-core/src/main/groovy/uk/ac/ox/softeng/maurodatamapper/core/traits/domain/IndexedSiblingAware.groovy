@@ -123,7 +123,7 @@ trait IndexedSiblingAware {
             if (mi.hasChanged('idx') && mi.id) {
                 mi.save(flush: false, validate: false)
             }
-            log.trace('After >> EV {} has idx {} (Dirty: {})', mi.label, mi.idx, mi.isDirty())
+            log.trace('After >> MI {} has idx {} (Dirty: {})', mi.label, mi.idx, mi.isDirty())
         }
     }
 

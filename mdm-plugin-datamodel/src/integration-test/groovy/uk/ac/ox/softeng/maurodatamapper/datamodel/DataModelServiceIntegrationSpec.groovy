@@ -37,8 +37,10 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClassService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.BaseDataModelIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.path.Path
@@ -95,14 +97,15 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     }
 
     void setupDataModelWithSummaryMetadata() {
-        DataModel dataModel = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Data Model having Summary Metadata', type: DataModelType.DATA_ASSET, folder: testFolder,
-            authority: testAuthority)
+        DataModel dataModel = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Data Model having Summary Metadata', type: DataModelType.DATA_ASSET,
+                                            folder: testFolder,
+                                            authority: testAuthority)
 
         checkAndSave(dataModel)
 
         // Add summary metadata with report to data model
         SummaryMetadata dataModelSummaryMetadata = new SummaryMetadata(label: 'Data Model Summary Metadata', createdBy: editor.emailAddress,
-            summaryMetadataType: SummaryMetadataType.MAP)
+                                                                       summaryMetadataType: SummaryMetadataType.MAP)
         SummaryMetadataReport dataModelSummaryMetadataReport = new SummaryMetadataReport(
             reportDate: OffsetDateTime.now(),
             reportValue: new JsonBuilder([A: 1, B: 2]).toString(),
@@ -116,7 +119,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dataModel.addToDataTypes(dataType)
         checkAndSave(dataModel)
         SummaryMetadata dataTypeSummaryMetadata = new SummaryMetadata(label: 'Data Type Summary Metadata', createdBy: editor.emailAddress,
-            summaryMetadataType: SummaryMetadataType.MAP)
+                                                                      summaryMetadataType: SummaryMetadataType.MAP)
         SummaryMetadataReport dataTypeSummaryMetadataReport = new SummaryMetadataReport(
             reportDate: OffsetDateTime.now(),
             reportValue: new JsonBuilder([A: 1, B: 2]).toString(),
@@ -129,7 +132,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         DataClass dataClass = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Data Class having Summary Metadata', dataModel: dataModel)
         checkAndSave(dataClass)
         SummaryMetadata dataClassSummaryMetadata = new SummaryMetadata(label: 'Data Class Summary Metadata', createdBy: editor.emailAddress,
-            summaryMetadataType: SummaryMetadataType.MAP)
+                                                                       summaryMetadataType: SummaryMetadataType.MAP)
         SummaryMetadataReport dataClassSummaryMetadataReport = new SummaryMetadataReport(
             reportDate: OffsetDateTime.now(),
             reportValue: new JsonBuilder([A: 1, B: 2]).toString(),
@@ -147,7 +150,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         checkAndSave(dataElement)
 
         SummaryMetadata dataElementSummaryMetadata = new SummaryMetadata(label: 'Data Element Summary Metadata', createdBy: editor.emailAddress,
-            summaryMetadataType: SummaryMetadataType.MAP)
+                                                                         summaryMetadataType: SummaryMetadataType.MAP)
         SummaryMetadataReport dataElementSummaryMetadataReport = new SummaryMetadataReport(
             reportDate: OffsetDateTime.now(),
             reportValue: new JsonBuilder([A: 1, B: 2]).toString(),
@@ -155,6 +158,36 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         )
         dataElementSummaryMetadata.addToSummaryMetadataReports(dataElementSummaryMetadataReport)
         dataElement.addToSummaryMetadata(dataElementSummaryMetadata)
+
+        checkAndSave(dataModel)
+    }
+
+    void setupDataModelWithMultipleDataClassesAndDataElementsAndEnumerationValues() {
+        DataModel dataModel = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Data Model with Multiple Data Classes and Data Elements',
+                                            type: DataModelType.DATA_ASSET, folder: testFolder,
+                                            authority: testAuthority)
+
+        DataClass dataClass
+        for (int i in 1..5) {
+            dataClass = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Root Data Class ' + i, dataModel: dataModel, idx: i - 1)
+            dataModel.addToDataClasses(dataClass)
+        }
+
+        for (int i in 1..5) {
+            DataClass childDataClass = new DataClass(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Child Data Class ' + i, dataModel: dataModel, idx: i - 1)
+            dataClass.addToDataClasses(childDataClass)
+        }
+
+        DataType enumerationType = new EnumerationType(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Enumeration Type')
+        for (int i in 1..5) {
+            enumerationType.addToEnumerationValues(new EnumerationValue(createdBy: StandardEmailAddress.INTEGRATION_TEST, key: 'Key ' + i, value: 'Value ' + i, idx: i - 1))
+        }
+        dataModel.addToDataTypes(enumerationType)
+
+        for (int i in 1..5) {
+            DataElement dataElement = new DataElement(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'Data Element ' + i, dataType: enumerationType, idx: i - 1)
+            dataClass.addToDataElements(dataElement)
+        }
 
         checkAndSave(dataModel)
     }
@@ -848,6 +881,86 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         then:
         result.errors.allErrors.size() == 1
         result.errors.allErrors.find {it.code == 'version.aware.label.branch.name.already.exists'}
+    }
+
+    void 'DMSC14 : test copying a model with ordered dataclasses, dataelements and enumerationvalues'() {
+        given:
+        setupData()
+        setupDataModelWithMultipleDataClassesAndDataElementsAndEnumerationValues()
+
+        when:
+        DataModel dataModel = dataModelService.findByLabel('Data Model with Multiple Data Classes and Data Elements')
+
+        then:
+        dataModel.childDataClasses.size() == 5
+        List<DataClass> rootDataClasses = dataModel.childDataClasses
+        rootDataClasses.every {dc ->
+            dc.label.startsWith('Root Data Class') && dc.label.endsWith((dc.idx + 1).toString())
+        }
+
+        when:
+        DataClass parentClass = rootDataClasses.sort().last()
+
+        then:
+        parentClass.dataClasses.size() == 5
+        parentClass.dataClasses.every {dc ->
+            dc.label.startsWith('Child Data Class') && dc.label.endsWith((dc.idx + 1).toString())
+        }
+
+        and:
+        parentClass.dataElements.size() == 5
+        parentClass.dataElements.every {dc ->
+            dc.label.startsWith('Data Element') && dc.label.endsWith((dc.idx + 1).toString())
+        }
+
+        when:
+        DataElement dataElement = parentClass.dataElements.sort().first()
+        EnumerationType enumerationType = dataElement.dataType
+
+        then:
+        enumerationType.enumerationValues.every {ev ->
+            ev.key.startsWith('Key') && ev.key.endsWith((ev.idx + 1).toString()) &&
+            ev.value.startsWith('Value') && ev.value.endsWith((ev.idx + 1).toString())
+        }
+
+        when:
+        DataModel copiedDataModel =
+            dataModelService
+                .copyModel(dataModel, testFolder, editor, false, dataModel.label + ' copy', Version.from('1'), dataModel.branchName, true,
+                           editorSecurityPolicyManager)
+
+        then:
+        copiedDataModel.childDataClasses.size() == 5
+        List<DataClass> copiedRootDataClasses = copiedDataModel.childDataClasses
+        copiedRootDataClasses.every {dc ->
+            dc.label.startsWith('Root Data Class') && dc.label.endsWith((dc.idx + 1).toString())
+        }
+
+        when:
+        DataClass copiedParentClass = copiedRootDataClasses.sort().last()
+
+        then:
+        copiedParentClass.dataClasses.size() == 5
+        copiedParentClass.dataClasses.every {dc ->
+            dc.label.startsWith('Child Data Class') && dc.label.endsWith((dc.idx + 1).toString())
+        }
+
+        and:
+        copiedParentClass.dataElements.size() == 5
+        copiedParentClass.dataElements.every {dc ->
+            dc.label.startsWith('Data Element') && dc.label.endsWith((dc.idx + 1).toString())
+        }
+
+        when:
+        DataElement copiedDataElement = copiedParentClass.dataElements.sort().first()
+        EnumerationType copiedEnumerationType = copiedDataElement.dataType
+
+        then:
+        copiedEnumerationType.domainType == 'EnumerationType'
+        copiedEnumerationType.enumerationValues.every {ev ->
+            ev.key.startsWith('Key') && ev.key.endsWith((ev.idx + 1).toString()) &&
+            ev.value.startsWith('Value') && ev.value.endsWith((ev.idx + 1).toString())
+        }
     }
 
     void 'DMSF01 : test finding common ancestor of two datamodels'() {
@@ -1940,17 +2053,17 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         foundDataModelSummaryMetadata.summaryMetadataReports.size() == 1
 
         and: 'there is summary metadata on the Data Class'
-        DataClass dc = newBranch.childDataClasses.find{it.label =='Data Class having Summary Metadata'}
+        DataClass dc = newBranch.childDataClasses.find {it.label == 'Data Class having Summary Metadata'}
         SummaryMetadata foundDataClassSummaryMetadata = dc.summaryMetadata.find {it.label == 'Data Class Summary Metadata'}
         foundDataClassSummaryMetadata.summaryMetadataReports.size() == 1
 
         and: 'there is summary metadata on the Data Type'
-        PrimitiveType dt = newBranch.dataTypes.find{it.label =='Data Type having Summary Metadata'}
+        PrimitiveType dt = newBranch.dataTypes.find {it.label == 'Data Type having Summary Metadata'}
         SummaryMetadata foundDataTypeSummaryMetadata = dt.summaryMetadata.find {it.label == 'Data Type Summary Metadata'}
         foundDataTypeSummaryMetadata.summaryMetadataReports.size() == 1
 
         and: 'there is summary metadata on the Data Element'
-        DataElement de = dc.dataElements.find{it.label =='Data Element having Summary Metadata'}
+        DataElement de = dc.dataElements.find {it.label == 'Data Element having Summary Metadata'}
         SummaryMetadata foundDataElementSummaryMetadata = de.summaryMetadata.find {it.label == 'Data Element Summary Metadata'}
         foundDataElementSummaryMetadata.summaryMetadataReports.size() == 1
     }
