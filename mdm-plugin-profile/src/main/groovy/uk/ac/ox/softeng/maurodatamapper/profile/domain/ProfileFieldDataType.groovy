@@ -48,7 +48,7 @@ enum ProfileFieldDataType {
     }
 
     static ProfileFieldDataType findForLabel(String label) {
-        values().find {it.label.equalsIgnoreCase(label)}
+        values().find {it.label.equalsIgnoreCase(label)} ?: STRING
     }
 
     static ProfileFieldDataType findFor(String value) {

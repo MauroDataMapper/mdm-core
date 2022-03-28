@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile.domain
 
-
 import grails.validation.Validateable
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.SimpleType
@@ -35,10 +34,16 @@ class ProfileSection implements Cloneable, Validateable {
     }
 
     @Override
-    boolean validate() {
-        validate null, null, null
+    boolean validate(List fieldsToValidate, Map<String, Object> params, Closure<?>... adHocConstraintsClosures) {
+        if (!params?.currentValuesOnly) {
+            Validateable.super.validate null, params, null
+        }
         fields.eachWithIndex {field, i ->
-            field.validate()
+            if (params?.currentValuesOnly) {
+                field.validate(['currentValue'], (Map<String, Object>) params)
+            } else {
+                field.validate((Map<String, Object>) params)
+            }
             if (field.hasErrors()) {
                 field.errors.fieldErrors.each {err ->
                     this.errors.rejectValue("fields[$i].${err.field}", err.code, err.arguments, err.defaultMessage)
@@ -46,6 +51,11 @@ class ProfileSection implements Cloneable, Validateable {
             }
         }
         !hasErrors()
+    }
+
+    boolean validateCurrentValues() {
+        Map<String, Object> params = [currentValuesOnly: (Object) true]
+        validate(params)
     }
 
     void setSectionName(String name) {

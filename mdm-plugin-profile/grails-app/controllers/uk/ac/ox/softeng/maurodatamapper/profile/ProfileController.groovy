@@ -63,7 +63,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
         if (!multiFacetAware) {
             return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
-        respond profileProviderServices: profileService.getUsedProfileServices(multiFacetAware, true)
+        respond profileProviderServices: profileService.getUsedProfileServices(multiFacetAware, true, params.boolean('latestVersionByMetadataNamespace', false))
     }
 
     def unusedProfiles() {
@@ -72,7 +72,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
         if (!multiFacetAware) {
             return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
-        respond profileProviderServices: profileService.getUnusedProfileServices(multiFacetAware, true)
+        respond profileProviderServices: profileService.getUnusedProfileServices(multiFacetAware, true, params.boolean('latestVersionByMetadataNamespace', true))
     }
 
     def nonProfileMetadata() {
@@ -189,7 +189,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
         Profile submittedInstance = profileProviderService.getNewProfile()
         bindData(submittedInstance, request)
 
-        Profile validatedInstance = profileService.validateProfile(profileProviderService, submittedInstance)
+        Profile validatedInstance = profileService.validateProfileValues(profileProviderService, submittedInstance)
 
         if (validatedInstance.hasErrors()) {
             respond validatedInstance.errors

@@ -28,9 +28,9 @@ class ConfigurableProfileFieldTypes {
     public static final String[] DATETIME_FORMAT_DEFAULT = ['dd/MM/yyyy\'T\'HH:mm:ss', 'dd-MM-yyyy\'T\'HH:mm:ss']
     public static final String[] TIME_FORMAT_DEFAULT = ['HH:mm:ss', 'HH:mm']
 
-    String[] dateFormats = new String[10]
-    String[] dateTimeFormats = new String[10]
-    String[] timeFormats = new String[10]
+    String[] dateFormats
+    String[] dateTimeFormats
+    String[] timeFormats
 
     String[] getDateFormats() {
         dateFormats ?: DATE_FORMAT_DEFAULT
