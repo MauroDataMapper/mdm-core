@@ -645,6 +645,70 @@ WHERE
         parentDataClass.dataClasses.find {it.label == label.trim()}
     }
 
+    /**
+     * pathLabels represents a hierarchy of Data Classes in sourceDataModel. Ensure that the same hierarchy exists in
+     * targetDataModel, by copying classes from sourceDataModel where necessary.
+     * @param sourceDataModel
+     * @param targetDataModel
+     * @param pathLabels
+     * @return
+     */
+    DataClass findOrCopyDataClassHierarchyForReferenceTypeByPath(User user,
+                                                                 UserSecurityPolicyManager userSecurityPolicyManager,
+                                                                 DataModel sourceDataModel,
+                                                                 DataModel targetDataModel,
+                                                                 List<String> pathLabels,
+                                                                 DataClass parentDataClassInSource,
+                                                                 DataClass parentDataClassInTarget) {
+        DataClass sourceDataClass
+        DataClass targetDataClass
+
+        if (!pathLabels) return null
+
+        // If no parent class then assume we are looking in the data model
+        if (!parentDataClassInSource) {
+            sourceDataClass = findDataClass(sourceDataModel, pathLabels[0])
+            targetDataClass = findDataClass(targetDataModel, pathLabels[0])
+        } else {
+            sourceDataClass = findDataClass(parentDataClassInSource, pathLabels[0])
+            targetDataClass = findDataClass(parentDataClassInTarget, pathLabels[0])
+        }
+
+        if (!targetDataClass) {
+            targetDataClass = new DataClass(
+                minMultiplicity: sourceDataClass.minMultiplicity,
+                maxMultiplicity: sourceDataClass.maxMultiplicity
+            )
+
+            targetDataClass = copyModelItemInformation(sourceDataClass, targetDataClass, user, userSecurityPolicyManager, false, null)
+
+            targetDataModel.addToDataClasses(targetDataClass)
+            if (parentDataClassInTarget) {
+                parentDataClassInTarget.addToDataClasses(targetDataClass)
+            }
+
+            if (!targetDataClass.validate())
+                throw new ApiInvalidModelException('DCS06', 'Copied DataClass is invalid', targetDataClass.errors, messageSource)
+
+            save(flush: false, validate: false, targetDataClass)
+        }
+
+
+        pathLabels.removeAt(0)
+
+        if (pathLabels.size() == 0) {
+            return targetDataClass
+        } else {
+            return findOrCopyDataClassHierarchyForReferenceTypeByPath(user,
+                                                                      userSecurityPolicyManager,
+                                                                      sourceDataModel,
+                                                                      targetDataModel,
+                                                                      pathLabels,
+                                                                      sourceDataClass,
+                                                                      targetDataClass)
+        }
+    }
+
     DataClass findDataClassByPath(DataModel dataModel, List<String> pathLabels) {
         if (!pathLabels) return null
         if (pathLabels.size() == 1) {
@@ -780,11 +844,14 @@ WHERE
         emptyReferenceTypes.each {rt ->
             ReferenceType ort = originalDataModel.findDataTypeByLabel(rt.label) as ReferenceType
             String originalDataClassPath = buildPath(ort.referenceClass)
-            DataClass copiedDataClass = findDataClassByPath(copiedDataModel, originalDataClassPath.split(/\|/).toList())
-            if (!copiedDataClass) {
-                log.debug('Creating DataClass {} for referenceType {}', ort.referenceClass.label, rt.label)
-                copiedDataClass = copyDataClass(copiedDataModel, ort.referenceClass, copier, userSecurityPolicyManager)
-            }
+
+            DataClass copiedDataClass = findOrCopyDataClassHierarchyForReferenceTypeByPath(copier,
+                                                                                           userSecurityPolicyManager,
+                                                                                           originalDataModel,
+                                                                                           copiedDataModel,
+                                                                                           originalDataClassPath.split(/\|/).toList(),
+                                                                                           null,
+                                                                                           null)
             copiedDataClass.addToReferenceTypes(rt)
         }
         // Recursively loop until no empty reference classes
@@ -1039,7 +1106,7 @@ WHERE
             if (!targetDataClass.validate())
                 throw new ApiInvalidModelException('DCS05', 'Subsetted DataClass is invalid', targetDataClass.errors, messageSource)
 
-            save(flush: false, validate: false, targetDataClass)
+            save(flush: true, validate: false, targetDataClass)
         }
 
         // Get the next node, which could be a dc or de
@@ -1061,7 +1128,7 @@ WHERE
                     dataElementInTarget.errors,
                     messageSource)
             }
-            dataElementService.save(flush: false, validate: false, dataElementInTarget)
+            dataElementService.save(flush: true, validate: false, dataElementInTarget)
         } else {
             throw new ApiInternalException('DCS07', "Unexpected node prefix ${nextNode.prefix}")
         }

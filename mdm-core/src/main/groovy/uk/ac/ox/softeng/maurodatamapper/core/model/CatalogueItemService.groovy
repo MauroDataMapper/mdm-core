@@ -187,10 +187,17 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements MdmDomai
             copy.addToRules(copiedRule)
         }
         semanticLinks.each {link ->
-            copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
-                                    targetMultiFacetAwareItemId: link.targetMultiFacetAwareItemId,
-                                    targetMultiFacetAwareItemDomainType: link.targetMultiFacetAwareItemDomainType,
-                                    unconfirmed: true)
+            if (link.targetMultiFacetAwareItem) {
+                copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
+                                        targetMultiFacetAwareItem: link.targetMultiFacetAwareItem,
+                                        unconfirmed: true)
+            } else {
+                copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
+                                        targetMultiFacetAwareItemId: link.targetMultiFacetAwareItemId,
+                                        targetMultiFacetAwareItemDomainType: link.targetMultiFacetAwareItemDomainType,
+                                        unconfirmed: true)
+            }
+
         }
         copy
     }

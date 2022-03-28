@@ -60,9 +60,6 @@ class UrlMappings {
                 put "/subset/$otherDataModelId"(controller: 'dataModel', action: 'subset')
                 get "/intersects/$otherDataModelId"(controller: 'dataModel', action: 'intersects')
 
-                delete '/dataTypes/clean'(controller: 'dataModel', action: 'deleteAllUnusedDataTypes')
-                delete '/dataClasses/clean'(controller: 'dataModel', action: 'deleteAllUnusedDataClasses')
-
                 get '/hierarchy'(controller: 'dataModel', action: 'hierarchy')
 
                 post '/search'(controller: 'dataModel', action: 'search')

@@ -36,8 +36,6 @@
 | GET    | /api/dataModels/types | types |
 | POST   | /api/dataModels/import/${importerNamespace}/${importerName}/${importerVersion} | importModels |
 | POST   | /api/dataModels/export/${exporterNamespace}/${exporterName}/${exporterVersion} | exportModels |
-| DELETE | /api/dataModels/${dataModelId}/dataClasses/clean | deleteAllUnusedDataClasses |
-| DELETE | /api/dataModels/${dataModelId}/dataTypes/clean | deleteAllUnusedDataTypes |
 | GET    | /api/folders/${folderId}/dataModels | index |
 | DELETE | /api/dataModels/${dataModelId}/readByAuthenticated | readByAuthenticated |
 | PUT    | /api/dataModels/${dataModelId}/readByAuthenticated | readByAuthenticated |
