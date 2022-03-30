@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.federation.atom
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.ResourcelessMdmController
+import uk.ac.ox.softeng.maurodatamapper.federation.PublishedModel
 
 import grails.rest.RestfulController
 
@@ -34,19 +35,19 @@ import grails.rest.RestfulController
  *}*}*
  * @since 04/01/2021
  */
-class FeedController extends RestfulController<Model> implements ResourcelessMdmController {
+class FeedController extends RestfulController<PublishedModel> implements ResourcelessMdmController {
 
     static responseFormats = ['atom']
 
     FeedService feedService
 
     FeedController() {
-        super(Model)
+        super(PublishedModel)
     }
 
     def index() {
         params.format = 'atom'
-        respond(feedService.findModels(currentUserSecurityPolicyManager))
+        respond(feedService.findPublishedModels(currentUserSecurityPolicyManager))
     }
 
 }

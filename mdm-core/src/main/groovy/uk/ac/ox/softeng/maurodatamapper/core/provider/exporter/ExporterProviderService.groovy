@@ -43,6 +43,14 @@ abstract class ExporterProviderService extends MauroDataMapperService {
 
     abstract String getFileType()
 
+    String getProducesContentType() {
+        'application/mauro'
+    }
+
+    Boolean getIsPreferred() {
+        false
+    }
+
     @Override
     String getProviderType() {
         ProviderType.EXPORTER.name

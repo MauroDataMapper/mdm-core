@@ -46,6 +46,7 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipTypeSer
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationshipService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.TerminologyExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.TerminologyJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.TerminologyJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
@@ -59,6 +60,7 @@ import org.hibernate.engine.spi.SessionFactoryImplementor
 import org.hibernate.search.mapper.orm.Search
 import org.hibernate.search.mapper.orm.automaticindexing.session.AutomaticIndexingSynchronizationStrategy
 import org.hibernate.search.mapper.orm.session.SearchSession
+import org.springframework.beans.factory.annotation.Autowired
 
 @Slf4j
 @Transactional
@@ -70,6 +72,9 @@ class TerminologyService extends ModelService<Terminology> {
     TerminologyJsonImporterService terminologyJsonImporterService
     TerminologyJsonExporterService terminologyJsonExporterService
     CodeSetService codeSetService
+
+    @Autowired(required = false)
+    Set<TerminologyExporterProviderService> exporterProviderServices
 
     @Override
     Terminology get(Serializable id) {

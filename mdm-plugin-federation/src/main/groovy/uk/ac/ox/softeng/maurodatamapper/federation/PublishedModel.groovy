@@ -35,6 +35,7 @@ class PublishedModel implements Comparable<PublishedModel> {
     OffsetDateTime datePublished
     String author
     UUID previousModelId
+    List<ExportLink> exportLinks
 
     PublishedModel() {
     }
