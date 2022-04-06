@@ -110,7 +110,8 @@ class SemanticLinkService implements MultiFacetItemAwareService<SemanticLink> {
             semanticLink.multiFacetAwareItem =
                 findMultiFacetAwareItemByDomainTypeAndId(semanticLink.multiFacetAwareItemDomainType, semanticLink.multiFacetAwareItemId)
         }
-        if (!semanticLink.targetMultiFacetAwareItem) {
+        // If theres no target or the target has changed and the id's dont match then load using the stored id and domain type
+        if (!semanticLink.targetMultiFacetAwareItem || semanticLink.targetMultiFacetAwareItem.id != semanticLink.targetMultiFacetAwareItemId) {
             semanticLink.targetMultiFacetAwareItem = findMultiFacetAwareItemByDomainTypeAndId(semanticLink.targetMultiFacetAwareItemDomainType,
                                                                                               semanticLink.targetMultiFacetAwareItemId)
         }
