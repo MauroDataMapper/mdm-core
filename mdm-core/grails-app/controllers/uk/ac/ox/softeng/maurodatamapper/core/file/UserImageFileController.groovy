@@ -54,6 +54,14 @@ class UserImageFileController extends EditLoggingController<UserImageFile> {
         super.save()
     }
 
+    @Transactional
+    @Override
+    def save() {
+        // Ensure that if the user already has an image then we update rather than add another
+        if (params.userId && userImageFileService.userHasImage(Utils.toUuid(params.userId))) return super.update()
+        super.save()
+    }
+
     @Override
     protected UserImageFile queryForResource(Serializable id) {
         UserImageFile userImageFile
