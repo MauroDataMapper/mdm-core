@@ -1540,7 +1540,8 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
         then:
         verifyResponse UNPROCESSABLE_ENTITY, response
-        responseBody().errors.first().message == "PrimitiveType [${data.nonImportableId}] to be imported does not belong to a finalised DataModel"
+        responseBody().errors.first().message ==
+        "PrimitiveType [${data.nonImportableId}] to be imported does not belong to a finalised DataModel or reside inside the same VersionedFolder"
 
         when: 'importing internal id'
         PUT("$data.id/dataTypes/$data.id/$data.internalId", [:])
@@ -1741,7 +1742,8 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
         then:
         verifyResponse UNPROCESSABLE_ENTITY, response
-        responseBody().errors.first().message == "DataClass [${data.nonImportableId}] to be imported does not belong to a finalised DataModel"
+        responseBody().errors.first().message ==
+        "DataClass [${data.nonImportableId}] to be imported does not belong to a finalised DataModel or reside inside the same VersionedFolder"
 
         when: 'importing internal id'
         PUT("$data.id/dataClasses/$data.id/$data.internalId", [:])

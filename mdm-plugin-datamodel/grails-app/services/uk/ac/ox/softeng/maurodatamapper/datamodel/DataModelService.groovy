@@ -1254,4 +1254,27 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             }
         }
     }
+
+    boolean validateImportAddition(DataModel instance, ModelItem importingItem) {
+        if (importingItem.model.id == instance.id) {
+            instance.errors.reject('invalid.imported.modelitem.same.datamodel',
+                                   [importingItem.class.simpleName, importingItem.id].toArray(),
+                                   '{0} [{1}] to be imported belongs to the DataModel already')
+        }
+        if (!importingItem.model.finalised && !areModelsInsideSameVersionedFolder(instance, importingItem.model)) {
+            instance.errors.reject('invalid.imported.modelitem.model.not.finalised',
+                                   [importingItem.class.simpleName, importingItem.id].toArray(),
+                                   '{0} [{1}] to be imported does not belong to a finalised DataModel or reside inside the same VersionedFolder')
+        }
+        !instance.hasErrors()
+    }
+
+    boolean validateImportRemoval(DataModel instance, ModelItem importingItem) {
+        if (importingItem.model.id == instance.id) {
+            instance.errors.reject('invalid.imported.deletion.modelitem.same.datamodel',
+                                   [importingItem.class.simpleName, importingItem.id].toArray(),
+                                   '{0} [{1}] belongs to the DataModel and cannot be removed as an import')
+        }
+        !instance.hasErrors()
+    }
 }

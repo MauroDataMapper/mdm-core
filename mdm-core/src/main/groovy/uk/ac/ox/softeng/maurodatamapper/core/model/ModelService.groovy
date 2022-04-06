@@ -1125,4 +1125,12 @@ abstract class ModelService<K extends Model>
         models
     }
 
+    boolean areModelsInsideSameVersionedFolder(K model, Model otherModel) {
+        // Assert they're both inside a VF otherwise we could just confirm they're inside the same folder
+        if (!versionedFolderService.isVersionedFolderFamily(model.folder) || !versionedFolderService.isVersionedFolderFamily(otherModel.folder)) return false
+        Path modelPath = getFullPathForModel(model)
+        Path otherModelPath = getFullPathForModel(otherModel)
+        modelPath.getParent() == otherModelPath.getParent()
+
+    }
 }

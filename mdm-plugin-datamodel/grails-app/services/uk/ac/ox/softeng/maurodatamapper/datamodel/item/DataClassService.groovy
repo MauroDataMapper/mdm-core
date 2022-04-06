@@ -123,7 +123,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         log.debug('{} new or dirty used datatypes inside dataclass', dataTypes.size())
         // Validation should have already been done
         dataTypes.each {it.skipValidation(true)}
-        dataTypeService.saveAll(dataTypes, false)
+        dataTypeService.saveAll(dataTypes, false) as Collection<DataType>
     }
 
     Set<DataType> extractAllUsedNewOrDirtyDataTypes(DataClass dataClass) {
@@ -1156,5 +1156,37 @@ WHERE
         validate(targetDataClass)
 
         targetDataClass
+    }
+
+    boolean validateImportAddition(DataClass instance, ModelItem importingItem) {
+        if (instance.id == importingItem.id) {
+            instance.errors.reject('invalid.imported.dataclass.into.self',
+                                   [importingItem.id].toArray(),
+                                   'DataClass [{0}] cannot be imported into itself')
+        }
+        UUID owningDataClassId = importingItem.instanceOf(DataClass) ? importingItem.parentDataClass?.id : importingItem.dataClass.id
+        if (owningDataClassId == instance.id) {
+            instance.errors.reject('invalid.imported.modelitem.same.dataclass',
+                                   [importingItem.class.simpleName, importingItem.id].toArray(),
+                                   '{0} [{1}] to be imported belongs to the DataClass already')
+        }
+        if (importingItem.model.id != instance.model.id &&
+            !importingItem.model.finalised &&
+            !dataModelService.areModelsInsideSameVersionedFolder(instance.model, importingItem.model)) {
+            instance.errors.reject('invalid.imported.modelitem.model.not.finalised',
+                                   [importingItem.class.simpleName, importingItem.id].toArray(),
+                                   '{0} [{1}] to be imported does not belong to a finalised DataModel or reside inside the same VersionedFolder')
+        }
+        !instance.hasErrors()
+    }
+
+    boolean validateImportRemoval(DataClass instance, ModelItem importingItem) {
+        UUID owningDataClassId = importingItem.instanceOf(DataClass) ? importingItem.parentDataClass?.id : importingItem.dataClass.id
+        if (owningDataClassId == instance.id) {
+            instance.errors.reject('invalid.imported.deletion.modelitem.same.dataclass',
+                                   [importingItem.class.simpleName, importingItem.id].toArray(),
+                                   '{0} [{1}] belongs to the DataClass and cannot be removed as an import')
+        }
+        !instance.hasErrors()
     }
 }

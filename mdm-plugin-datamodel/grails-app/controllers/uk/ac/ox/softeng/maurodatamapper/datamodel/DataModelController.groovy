@@ -34,8 +34,6 @@ import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 
-import static org.springframework.http.HttpStatus.NO_CONTENT
-
 @Slf4j
 class DataModelController extends ModelController<DataModel> {
 
@@ -129,13 +127,15 @@ class DataModelController extends ModelController<DataModel> {
         if (!dataTypeToBeImported) return notFound(DataType, params.otherDataTypeId)
 
         if (request.method == 'PUT') {
-            if (!validateImportAddition(instance, dataTypeToBeImported)) return
-            log.debug('Importing DataType {} from {}', params.otherDataTypeId, params.otherDataModelId)
-            instance.addToImportedDataTypes(dataTypeToBeImported)
+            if (dataModelService.validateImportAddition(instance, dataTypeToBeImported)) {
+                log.debug('Importing DataType {} from {}', params.otherDataTypeId, params.otherDataModelId)
+                instance.addToImportedDataTypes(dataTypeToBeImported)
+            }
         } else {
-            if (!validateImportRemoval(instance, dataTypeToBeImported)) return
-            log.debug('Removing import of DataType {} from {}', params.otherDataTypeId, params.otherDataModelId)
-            instance.removeFromImportedDataTypes(dataTypeToBeImported)
+            if (dataModelService.validateImportRemoval(instance, dataTypeToBeImported)) {
+                log.debug('Removing import of DataType {} from {}', params.otherDataTypeId, params.otherDataModelId)
+                instance.removeFromImportedDataTypes(dataTypeToBeImported)
+            }
         }
 
         if (!validateResource(instance, 'update')) return
@@ -158,13 +158,15 @@ class DataModelController extends ModelController<DataModel> {
         if (!dataClassToBeImported) return notFound(DataClass, params.otherDataClassId)
 
         if (request.method == 'PUT') {
-            if (!validateImportAddition(instance, dataClassToBeImported)) return
-            log.debug('Importing DataClass {} from {}', params.otherDataClassId, params.otherDataModelId)
-            instance.addToImportedDataClasses(dataClassToBeImported)
+            if (dataModelService.validateImportAddition(instance, dataClassToBeImported)) {
+                log.debug('Importing DataClass {} from {}', params.otherDataClassId, params.otherDataModelId)
+                instance.addToImportedDataClasses(dataClassToBeImported)
+            }
         } else {
-            if (!validateImportRemoval(instance, dataClassToBeImported)) return
-            log.debug('Removing import of DataClass {} from {}', params.otherDataClassId, params.otherDataModelId)
-            instance.removeFromImportedDataClasses(dataClassToBeImported)
+            if (dataModelService.validateImportRemoval(instance, dataClassToBeImported)) {
+                log.debug('Removing import of DataClass {} from {}', params.otherDataClassId, params.otherDataModelId)
+                instance.removeFromImportedDataClasses(dataClassToBeImported)
+            }
         }
 
         if (!validateResource(instance, 'update')) return
@@ -217,32 +219,5 @@ class DataModelController extends ModelController<DataModel> {
         respond(intersection: dataModelService.intersects(sourceModel, targetModel))
     }
 
-    protected boolean validateImportAddition(DataModel instance, ModelItem importingItem) {
-        if (importingItem.model.id == instance.id) {
-            instance.errors.reject('invalid.imported.modelitem.same.datamodel',
-                                   [importingItem.class.simpleName, importingItem.id].toArray(),
-                                   '{0} [{1}] to be imported belongs to the DataModel already')
-            respond instance.errors, view: 'update' // STATUS CODE 422
-            return false
-        }
-        if (!importingItem.model.finalised) {
-            instance.errors.reject('invalid.imported.modelitem.model.not.finalised',
-                                   [importingItem.class.simpleName, importingItem.id].toArray(),
-                                   '{0} [{1}] to be imported does not belong to a finalised DataModel')
-            respond instance.errors, view: 'update' // STATUS CODE 422
-            return false
-        }
-        return true
-    }
 
-    protected boolean validateImportRemoval(DataModel instance, ModelItem importingItem) {
-        if (importingItem.model.id == instance.id) {
-            instance.errors.reject('invalid.imported.deletion.modelitem.same.datamodel',
-                                   [importingItem.class.simpleName, importingItem.id].toArray(),
-                                   '{0} [{1}] belongs to the DataModel and cannot be removed as an import')
-            respond instance.errors, view: 'update' // STATUS CODE 422
-            return false
-        }
-        return true
-    }
 }
