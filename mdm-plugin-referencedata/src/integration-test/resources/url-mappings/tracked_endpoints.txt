@@ -21,7 +21,6 @@
 | PUT    | /api/referenceDataModels/${referenceDataModelId}/readByEveryone | readByEveryone |
 | GET    | /api/referenceDataModels/${referenceDataModelId}/search | search |
 | POST   | /api/referenceDataModels/${referenceDataModelId}/search | search |
-| GET    | /api/referenceDataModels/${referenceDataModelId}/hierarchy | hierarchy |
 | GET    | /api/referenceDataModels/${referenceDataModelId}/availableBranches | availableBranches |
 | GET    | /api/referenceDataModels/${referenceDataModelId}/currentMainBranch | currentMainBranch |
 | GET    | /api/referenceDataModels/${referenceDataModelId}/simpleModelVersionTree | simpleModelVersionTree |
