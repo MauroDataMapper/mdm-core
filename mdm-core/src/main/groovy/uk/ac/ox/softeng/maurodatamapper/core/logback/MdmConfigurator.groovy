@@ -183,14 +183,16 @@ class MdmConfigurator extends ContextAwareBase implements Configurator {
 
         String logFileName = System.getProperty('mdm.logFileName') ?: prodEnv ? DEFAULT_LOG_FILENAME : prodEnv ? baseDir.name : baseDir.parentFile.name
         FileAppender<ILoggingEvent> appender
+        TimeBasedRollingPolicy timeBasedRollingPolicy
 
         if (prodEnv) {
             addInfo('Using RollingFileAppender rather than FileAppender')
-            appender = new RollingFileAppender<ILoggingEvent>().tap {
-                setRollingPolicy(new TimeBasedRollingPolicy().tap {
-                    setMaxHistory(90)
-                    setFileNamePattern("${logDir}/${logFileName}.%d{yyyy-MM-dd}.log.gz")
-                })
+            appender = new RollingFileAppender<ILoggingEvent>()
+            timeBasedRollingPolicy = new TimeBasedRollingPolicy().tap {
+                setContext(lc)
+                setMaxHistory(90)
+                setFileNamePattern("${logDir}/${logFileName}.%d{yyyy-MM-dd}.log.gz")
+                setParent(appender)
             }
         } else {
             appender = new FileAppender<ILoggingEvent>()
@@ -207,8 +209,17 @@ class MdmConfigurator extends ContextAwareBase implements Configurator {
             })
             addFilter(new HibernateLogFilter())
             copyOfAttachedFiltersList.each {it.start()}
-            start()
         }
+
+        if (appender instanceof RollingFileAppender) {
+            appender.tap {
+                setRollingPolicy(timeBasedRollingPolicy)
+                setTriggeringPolicy(timeBasedRollingPolicy)
+                setAppend(true)
+            }
+            timeBasedRollingPolicy.start()
+        }
+        appender.tap {start()}
     }
 
     void addConversionRule(String conversionWord, Class converterClass) {
