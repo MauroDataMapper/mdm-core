@@ -80,6 +80,7 @@ class TreeItemController extends RestfulController<TreeItem> implements MdmContr
     def index() {
         log.debug('Call to tree index for {}', params.containerDomainType)
         if (params.boolean(NO_CACHE_PARAM) && securityPolicyManagerService) {
+            log.debug('Reloading user security policy manager as "No Cache" requested')
             currentUserSecurityPolicyManager = securityPolicyManagerService.reloadUserSecurityPolicyManager(getCurrentUser().emailAddress)
         }
 

@@ -45,6 +45,7 @@ import grails.gorm.transactions.Transactional
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 
 @Transactional
 @Slf4j
@@ -71,9 +72,8 @@ class UserSecurityPolicyService {
     @Autowired
     GrailsApplication grailsApplication
 
-    int getMaxLockTime() {
-        grailsApplication.config.getProperty('maurodatamapper.security.max.lock.time', Integer, 5)
-    }
+    @Value('${maurodatamapper.security.max.lock.time:30}')
+    int maxLockTime
 
     UserSecurityPolicy buildInitialSecurityPolicy(CatalogueUser catalogueUser, Set<UserGroup> userGroups) {
         UserSecurityPolicy
