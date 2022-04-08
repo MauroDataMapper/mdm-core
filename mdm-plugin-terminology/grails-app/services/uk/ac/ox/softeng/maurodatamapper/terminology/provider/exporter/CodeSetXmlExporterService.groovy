@@ -56,6 +56,21 @@ class CodeSetXmlExporterService extends CodeSetExporterProviderService implement
     }
 
     @Override
+    String getProducesContentType() {
+        'application/mdm+xml'
+    }
+
+    @Override
+    Boolean getIsPreferred() {
+        true
+    }
+
+    @Override
+    int getOrder() {
+        HIGHEST_PRECEDENCE + 100
+    }
+
+    @Override
     Boolean canExportMultipleDomains() {
         true
     }

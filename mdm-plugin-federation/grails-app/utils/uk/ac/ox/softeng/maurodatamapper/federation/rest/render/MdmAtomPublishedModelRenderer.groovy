@@ -299,11 +299,7 @@ class MdmAtomPublishedModelRenderer<T> extends AtomRenderer<T> {
             .attribute(CATEGORY_TERM_ATTRIBUTE, publishedModel.modelType)
             .end()
 
-        publishedModel.exportLinks.each {exportLink ->
-            Link link = new Link(RELATIONSHIP_ALTERNATE, exportLink.url.toString())
-            link.contentType = exportLink.contentType
-            writeLink(link, null, xml)
-        }
+        publishedModel.links.each {writeLink(it, null, xml)}
 
         writer.end()
     }

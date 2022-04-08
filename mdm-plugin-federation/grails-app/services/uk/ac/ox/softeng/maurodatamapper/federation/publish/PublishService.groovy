@@ -22,11 +22,12 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
-import uk.ac.ox.softeng.maurodatamapper.federation.ExportLink
 import uk.ac.ox.softeng.maurodatamapper.federation.PublishedModel
+import uk.ac.ox.softeng.maurodatamapper.federation.rest.render.MdmAtomPublishedModelRenderer
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 import grails.gorm.transactions.Transactional
+import grails.rest.Link
 import grails.web.mapping.LinkGenerator
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
@@ -47,12 +48,11 @@ class PublishService {
     PublishedModel getPublishedModel(Model model, ModelService modelService) {
         String modelUrl = linkGenerator.link(resource: model, method: HttpMethod.GET, absolute: true)
         new PublishedModel(model).tap {
-            exportLinks = modelService.getExporterProviderServices().collect {exporterProviderService ->
-                new ExportLink(
-                    url: new URL(modelUrl + '/export/' + exporterProviderService.namespace + '/' + exporterProviderService.name + '/' + exporterProviderService.version),
-                    contentType: exporterProviderService.producesContentType,
-                    isPreferred: exporterProviderService.isPreferred,
-                    exporterProviderService: exporterProviderService)
+            links = modelService.getExporterProviderServices().sort().collect {exporterProviderService ->
+                new Link(MdmAtomPublishedModelRenderer.RELATIONSHIP_ALTERNATE,
+                         modelUrl + '/export/' + exporterProviderService.namespace + '/' + exporterProviderService.name + '/' + exporterProviderService.version).tap {
+                    contentType = exporterProviderService.producesContentType
+                }
             }
         }
     }

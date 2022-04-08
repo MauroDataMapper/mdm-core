@@ -1,0 +1,10 @@
+import grails.rest.Link
+
+model {
+    Link link
+}
+
+json {
+    if (link.contentType) contentType link.contentType
+    url link.href
+}

@@ -53,6 +53,21 @@ class TerminologyJsonExporterService extends TerminologyExporterProviderService 
     }
 
     @Override
+    String getProducesContentType() {
+        'application/mdm+json'
+    }
+
+    @Override
+    Boolean getIsPreferred() {
+        true
+    }
+
+    @Override
+    int getOrder() {
+        HIGHEST_PRECEDENCE
+    }
+
+    @Override
     Boolean canExportMultipleDomains() {
         true
     }

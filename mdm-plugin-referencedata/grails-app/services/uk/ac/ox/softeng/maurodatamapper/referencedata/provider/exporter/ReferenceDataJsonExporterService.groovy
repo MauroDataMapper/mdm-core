@@ -44,6 +44,21 @@ class ReferenceDataJsonExporterService extends ReferenceDataModelExporterProvide
     }
 
     @Override
+    String getProducesContentType() {
+        'application/mdm+json'
+    }
+
+    @Override
+    Boolean getIsPreferred() {
+        true
+    }
+
+    @Override
+    int getOrder() {
+        HIGHEST_PRECEDENCE
+    }
+
+    @Override
     String getDisplayName() {
         'JSON Reference Data Exporter'
     }
