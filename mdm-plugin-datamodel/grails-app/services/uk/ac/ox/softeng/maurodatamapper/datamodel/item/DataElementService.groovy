@@ -272,6 +272,7 @@ WHERE (de.dataClass.id = :dataClassId OR idc.id = :dataClassId)''', 'de', filter
             .paginate(pagination)
             .postProcess {
                 it.dataType = proxyHandler.unwrapIfProxy(it.dataType)
+                it.trackChanges() // unwrapping the proxy changes the object and therefore is detected as a "change" this call undos this change as its not actually one
             }
     }
 
