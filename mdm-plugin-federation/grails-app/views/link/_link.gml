@@ -4,9 +4,9 @@ model {
     Link link
 }
 
-Link link = link as Link
+Link l = link as Link
 
 link {
-    if (link.contentType) contentType link.contentType
-    url link.href
+    if (l.contentType) contentType l.contentType
+    url l.href
 }

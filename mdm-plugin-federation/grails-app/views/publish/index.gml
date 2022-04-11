@@ -1,13 +1,28 @@
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.federation.PublishedModel
+import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
+
+import java.time.OffsetDateTime
 
 model {
-    List<PublishedModel> publishedModels
+    Authority authority
+    Iterable<PublishedModel> publishedModels
 }
 
-List<PublishedModel> pml = publishedModels as List<PublishedModel>
+Authority auth = authority as Authority
+Iterable<PublishedModel> pml = publishedModels as Iterable<PublishedModel>
 
-publishedModels {
-    pml.each {publishedModel ->
-        layout '/publishedModel/_publishedModel.gml', publishedModel: publishedModel
+xmlDeclaration()
+
+index {
+    authority {
+        label auth.label
+        url auth.url
+    }
+    'lastUpdated'(OffsetDateTimeConverter.toString(pml?.max {it.lastUpdated}?.lastUpdated ?: OffsetDateTime.now()))
+    publishedModels {
+        pml.each {publishedModel ->
+            layout '/publishedModel/_publishedModel.gml', publishedModel: publishedModel
+        }
     }
 }

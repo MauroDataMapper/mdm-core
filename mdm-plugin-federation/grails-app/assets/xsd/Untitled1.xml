@@ -1,0 +1,442 @@
+<?xml version='1.0'?>
+<index>
+    <authority>
+        <label>Mauro Data Mapper</label>
+        <url>http://localhost</url>
+    </authority>
+    <lastUpdated>2022-04-04T15:33:39.112Z</lastUpdated>
+    <publishedModels>
+        <publishedModel>
+            <modelId>c03ffcf4-942d-450c-9c60-d535d8b4fd92</modelId>
+            <title>Complex Test CodeSet 1.0.0</title>
+            <label>Complex Test CodeSet</label>
+            <version>1.0.0</version>
+            <modelType>CodeSet</modelType>
+            <lastUpdated>2022-03-11T14:21:03.890690Z</lastUpdated>
+            <dateCreated>2022-03-11T14:21:03.794601Z</dateCreated>
+            <datePublished>2022-03-11T14:21:03.800Z</datePublished>
+            <author>Test Bootstrap</author>
+            <links>
+                <link>
+                    <contentType>application/mdm+json</contentType>
+                    <url>http://localhost:8080/api/codeSets/c03ffcf4-942d-450c-9c60-d535d8b4fd92/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0</url>
+                </link>
+                <link>
+                    <contentType>application/mdm+xml</contentType>
+                    <url>http://localhost:8080/api/codeSets/c03ffcf4-942d-450c-9c60-d535d8b4fd92/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetXmlExporterService/5.0</url>
+                </link>
+            </links>
+        </publishedModel>
+        <publishedModel>
+            <modelId>7d3624ec-5384-45dc-b94d-feef07d9ae23</modelId>
+            <title>Simple Test CodeSet 1.0.0</title>
+            <label>Simple Test CodeSet</label>
+            <version>1.0.0</version>
+            <modelType>CodeSet</modelType>
+            <lastUpdated>2022-03-11T14:21:03.615868Z</lastUpdated>
+            <dateCreated>2022-03-11T14:21:03.523391Z</dateCreated>
+            <datePublished>2022-03-11T14:21:03.527Z</datePublished>
+            <author>Test Bootstrap</author>
+            <links>
+                <link>
+                    <contentType>application/mdm+json</contentType>
+                    <url>http://localhost:8080/api/codeSets/7d3624ec-5384-45dc-b94d-feef07d9ae23/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/4.0</url>
+                </link>
+                <link>
+                    <contentType>application/mdm+xml</contentType>
+                    <url>http://localhost:8080/api/codeSets/7d3624ec-5384-45dc-b94d-feef07d9ae23/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetXmlExporterService/5.0</url>
+                </link>
+            </links>
+        </publishedModel>
+        <publishedModel>
+            <modelId>1e4e9acd-d3e8-4f56-8f2f-9c6f2ead2557</modelId>
+            <title>FooBarBaz 3.0.0</title>
+            <label>FooBarBaz</label>
+            <version>3.0.0</version>
+            <modelType>DataModel</modelType>
+            <lastUpdated>2022-03-17T11:11:48.724771Z</lastUpdated>
+            <dateCreated>2022-03-17T11:11:09.468600Z</dateCreated>
+            <datePublished>2022-03-17T11:11:48.670664Z</datePublished>
+            <links>
+                <link>
+                    <contentType>application/mdm+json</contentType>
+                    <url>http://localhost:8080/api/dataModels/1e4e9acd-d3e8-4f56-8f2f-9c6f2ead2557/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1</url>
+                </link>
+                <link>
+                    <contentType>application/mdm+xml</contentType>
+                    <url>http://localhost:8080/api/dataModels/1e4e9acd-d3e8-4f56-8f2f-9c6f2ead2557/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1</url>
+                </link>
+            </links>
+        </publishedModel>
+        <publishedModel>
+            <modelId>786a7859-2d4f-4aff-aa87-524619afe157</modelId>
+            <title>Finalised Example Test DataModel 1.0.0</title>
+            <label>Finalised Example Test DataModel</label>
+            <version>1.0.0</version>
+            <modelType>DataModel</modelType>
+            <lastUpdated>2022-03-11T14:20:53.429745Z</lastUpdated>
+            <dateCreated>2022-03-11T14:20:53.361805Z</dateCreated>
+            <datePublished>2022-03-11T14:20:53.399750Z</datePublished>
+            <links>
+                <link>
+                    <contentType>application/mdm+json</contentType>
+                    <url>http://localhost:8080/api/dataModels/786a7859-2d4f-4aff-aa87-524619afe157/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1</url>
+                </link>
+                <link>
+                    <contentType>application/mdm+xml</contentType>
+                    <url>http://localhost:8080/api/dataModels/786a7859-2d4f-4aff-aa87-524619afe157/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1</url>
+                </link>
+            </links>
+        </publishedModel>
+        <publishedModel>
+            <modelId>61226323-1a48-451d-b982-eaaa68a94065</modelId>
+            <title>Dynamic Profile 1 1.0.0</title>
+            <label>Dynamic Profile 1</label>
+            <version>1.0.0</version>
+            <modelType>DataModel</modelType>
+            <lastUpdated>2022-03-11T14:46:17.760340Z</lastUpdated>
+            <dateCreated>2022-03-11T14:24:07.200500Z</dateCreated>
+            <datePublished>2022-03-11T14:46:17.702533Z</datePublished>
+            <links>
+                <link>
+                    <contentType>application/mdm+json</contentType>
+                    <url>http://localhost:8080/api/dataModels/61226323-1a48-451d-b982-eaaa68a94065/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1</url>
+                </link>
+                <link>
+                    <contentType>application/mdm+xml</contentType>
+                    <url>http://localhost:8080/api/dataModels/61226323-1a48-451d-b982-eaaa68a94065/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1</url>
+                </link>
+            </links>
+        </publishedModel>
+        <publishedModel>
+            <modelId>b6bb4073-fa13-4fce-afc9-3104c3cb60bf</modelId>
+            <title>Model Version Tree DataModel 1.0.0</title>
+            <label>Model Version Tree DataModel</label>
+            <version>1.0.0</version>
+            <modelType>DataModel</modelType>
+            <lastUpdated>2022-03-11T14:20:53.985920Z</lastUpdated>
+            <dateCreated>2022-03-11T14:20:53.786353Z</dateCreated>
+            <datePublished>2022-03-11T14:20:53.873191Z</datePublished>
+            <author>bill</author>
+            <links>
+                <link>
+                    <contentType>application/mdm+json</contentType>
+                    <url>http://localhost:8080/api/dataModels/b6bb4073-fa13-4fce-afc9-3104c3cb60bf/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1</url>
+                </link>
+                <link>
+                    <contentType>application/mdm+xml</contentType>
+                    <url>http://localhost:8080/api/dataModels/b6bb4073-fa13-4fce-afc9-3104c3cb60bf/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1</url>
+                </link>
+            </links>
+        </publishedModel>
+        <publishedModel>
+            <modelId>79126fc1-80f9-4af9-90de-2cf0337e7d78</modelId>
+            <title>Model Version Tree DataModel fork 1.0.0</title>
+            <label>Model Version Tree DataModel fork</label>
+            <version>1.0.0</version>
+            <modelType>DataModel</modelType>
+            <lastUpdated>2022-03-11T14:20:54.279600Z</lastUpdated>
+            <dateCreated>2022-03-11T14:20:54.198439Z</dateCreated>
+            <datePublished>2022-03-11T14:20:54.230420Z</datePublished>
+            <author>bill</author>
+            <links>
+                <link>
+                    <contentType>application/mdm+json</contentType>
+                    <url>http://localhost:8080/api/dataModels/79126fc1-80f9-4af9-90de-2cf0337e7d78/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1</url>
+                </link>
+                <link>
+                    <contentType>application/mdm+xml</contentType>
+                    <url>http://localhost:8080/api/dataModels/79126fc1-80f9-4af9-90de-2cf0337e7d78/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1</url>
+                </link>
+            </links>
+        </publishedModel>
+        <publishedModel>
+            <modelId>fb4f5d96-4c1e-4f89-8f02-782a3fa7dced</modelId>
+            <title>Model Version Tree DataModel 2.0.0</title>
+            <label>Model Version Tree DataModel</label>
+            <version>2.0.0</version>
+            <modelType>DataModel</modelType>
+            <lastUpdated>2022-03-11T14:20:55.224193Z</lastUpdated>
+            <dateCreated>2022-03-11T14:20:54.547431Z</dateCreated>
+            <datePublished>2022-03-11T14:20:55.163768Z</datePublished>
+            <author>Dante</author>
+            <description>Baal is the nominal homeworld of the Blood Angels Chapter of the Adeptus Astartes located in the Baal System of the Segmentum Ultima. Baal itself is a dry, dusty Desert World, scarcely inhabited by anyone other than mutants and feral animals.
+However its two moons, Baal Prime and Baal Secundus, support notable Human settlements and were once "paradises for mortal men" though now they are classified as savage Feral Worlds by the Imperium.
+
+Little is known about the past circumstances of these two moons, but at some time in the distant past, probably during the Age of Technology or the Age of Strife, a cataclysmic conflict arose and led to the widespread use of both viral and nuclear weapons of mass destruction, destroying the ecosystems of both satellites and contaminating their biospheres with intense radioactive fallout, chemical pollution and deadly biological agents.
+
+The mighty fortress-monastery of the Blood Angels, the Arx Angelicum, was built on the desert surface of the world of Baal proper, and since the time of Sanguinius, the Blood Angels have continued to recruit from among the tribes of the people known as "the Blood" on Baal Secundus and the tribes of Baal Prime, where a Human colony was reestablished shortly after the time of the Horus Heresy.</description>
+            <links>
+                <link>
+                    <contentType>application/mdm+json</contentType>
+                    <url>http://localhost:8080/api/dataModels/fb4f5d96-4c1e-4f89-8f02-782a3fa7dced/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1</url>
+                </link>
+                <link>
+                    <contentType>application/mdm+xml</contentType>
+                    <url>http://localhost:8080/api/dataModels/fb4f5d96-4c1e-4f89-8f02-782a3fa7dced/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1</url>
+                </link>
+            </links>
+        </publishedModel>
+        <publishedModel>
+            <modelId>3da85935-87a4-476c-b102-3efc6f62f9cb</modelId>
+            <title>Model Version Tree DataModel 3.0.0</title>
+            <label>Model Version Tree DataModel</label>
+            <version>3.0.0</version>
+            <modelType>DataModel</modelType>
+            <lastUpdated>2022-03-11T14:20:55.467106Z</lastUpdated>
+            <dateCreated>2022-03-11T14:20:55.370267Z</dateCreated>
+            <datePublished>2022-03-11T14:20:55.407021Z</datePublished>
+            <author>Dante</author>
+            <description>Baal is the nominal homeworld of the Blood Angels Chapter of the Adeptus Astartes located in the Baal System of the Segmentum Ultima. Baal itself is a dry, dusty Desert World, scarcely inhabited by anyone other than mutants and feral animals.
+However its two moons, Baal Prime and Baal Secundus, support notable Human settlements and were once "paradises for mortal men" though now they are classified as savage Feral Worlds by the Imperium.
+
+Little is known about the past circumstances of these two moons, but at some time in the distant past, probably during the Age of Technology or the Age of Strife, a cataclysmic conflict arose and led to the widespread use of both viral and nuclear weapons of mass destruction, destroying the ecosystems of both satellites and contaminating their biospheres with intense radioactive fallout, chemical pollution and deadly biological agents.
+
+The mighty fortress-monastery of the Blood Angels, the Arx Angelicum, was built on the desert surface of the world of Baal proper, and since the time of Sanguinius, the Blood Angels have continued to recruit from among the tribes of the people known as "the Blood" on Baal Secundus and the tribes of Baal Prime, where a Human colony was reestablished shortly after the time of the Horus Heresy.</description>
+            <links>
+                <link>
+                    <contentType>application/mdm+json</contentType>
+                    <url>http://localhost:8080/api/dataModels/3da85935-87a4-476c-b102-3efc6f62f9cb/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1</url>
+                </link>
+                <link>
+                    <contentType>application/mdm+xml</contentType>
+                    <url>http://localhost:8080/api/dataModels/3da85935-87a4-476c-b102-3efc6f62f9cb/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1</url>
+                </link>
+            </links>
+        </publishedModel>
+        <publishedModel>
+            <modelId>a4cb68f9-a5d4-42b1-8775-08e56c5d56a2</modelId>
+            <title>Dynamic Profile 1 2.0.0</title>
+            <label>Dynamic Profile 1</label>
+            <version>2.0.0</version>
+            <modelType>DataModel</modelType>
+            <lastUpdated>2022-03-14T10:43:19.624768Z</lastUpdated>
+            <dateCreated>2022-03-14T10:38:31.999313Z</dateCreated>
+            <datePublished>2022-03-14T10:43:19.537441Z</datePublished>
+            <links>
+                <link>
+                    <contentType>application/mdm+json</contentType>
+                    <url>http://localhost:8080/api/dataModels/a4cb68f9-a5d4-42b1-8775-08e56c5d56a2/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1</url>
+                </link>
+                <link>
+                    <contentType>application/mdm+xml</contentType>
+                    <url>http://localhost:8080/api/dataModels/a4cb68f9-a5d4-42b1-8775-08e56c5d56a2/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1</url>
+                </link>
+            </links>
+        </publishedModel>
+        <publishedModel>
+            <modelId>c6090b36-6606-4ce4-83f0-7c5a5b031ab5</modelId>
+            <title>Different Dynamic Profile 1.0.0</title>
+            <label>Different Dynamic Profile</label>
+            <version>1.0.0</version>
+            <modelType>DataModel</modelType>
+            <lastUpdated>2022-03-16T16:57:55.221338Z</lastUpdated>
+            <dateCreated>2022-03-16T16:57:32.485886Z</dateCreated>
+            <datePublished>2022-03-16T16:57:55.157908Z</datePublished>
+            <links>
+                <link>
+                    <contentType>application/mdm+json</contentType>
+                    <url>http://localhost:8080/api/dataModels/c6090b36-6606-4ce4-83f0-7c5a5b031ab5/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1</url>
+                </link>
+                <link>
+                    <contentType>application/mdm+xml</contentType>
+                    <url>http://localhost:8080/api/dataModels/c6090b36-6606-4ce4-83f0-7c5a5b031ab5/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1</url>
+                </link>
+            </links>
+        </publishedModel>
+        <publishedModel>
+            <modelId>7a53cf09-ea59-4128-bb9e-bb23d9719528</modelId>
+            <title>FooBarBaz 4.0.0</title>
+            <label>FooBarBaz</label>
+            <version>4.0.0</version>
+            <modelType>DataModel</modelType>
+            <lastUpdated>2022-03-17T11:17:09.588059Z</lastUpdated>
+            <dateCreated>2022-03-17T11:16:44.425020Z</dateCreated>
+            <datePublished>2022-03-17T11:17:09.547855Z</datePublished>
+            <links>
+                <link>
+                    <contentType>application/mdm+json</contentType>
+                    <url>http://localhost:8080/api/dataModels/7a53cf09-ea59-4128-bb9e-bb23d9719528/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1</url>
+                </link>
+                <link>
+                    <contentType>application/mdm+xml</contentType>
+                    <url>http://localhost:8080/api/dataModels/7a53cf09-ea59-4128-bb9e-bb23d9719528/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1</url>
+                </link>
+            </links>
+        </publishedModel>
+        <publishedModel>
+            <modelId>c5aa8cc0-4517-4606-981d-e55a39f4c10c</modelId>
+            <title>Model Version Tree DataModel 4.0.0</title>
+            <label>Model Version Tree DataModel</label>
+            <version>4.0.0</version>
+            <modelType>DataModel</modelType>
+            <lastUpdated>2022-03-11T14:20:55.985958Z</lastUpdated>
+            <dateCreated>2022-03-11T14:20:55.608124Z</dateCreated>
+            <datePublished>2022-03-11T14:20:55.920682Z</datePublished>
+            <author>Dante</author>
+            <description>Baal is the nominal homeworld of the Blood Angels Chapter of the Adeptus Astartes located in the Baal System of the Segmentum Ultima. Baal itself is a dry, dusty Desert World, scarcely inhabited by anyone other than mutants and feral animals.
+However its two moons, Baal Prime and Baal Secundus, support notable Human settlements and were once "paradises for mortal men" though now they are classified as savage Feral Worlds by the Imperium.
+
+Little is known about the past circumstances of these two moons, but at some time in the distant past, probably during the Age of Technology or the Age of Strife, a cataclysmic conflict arose and led to the widespread use of both viral and nuclear weapons of mass destruction, destroying the ecosystems of both satellites and contaminating their biospheres with intense radioactive fallout, chemical pollution and deadly biological agents.
+
+The mighty fortress-monastery of the Blood Angels, the Arx Angelicum, was built on the desert surface of the world of Baal proper, and since the time of Sanguinius, the Blood Angels have continued to recruit from among the tribes of the people known as "the Blood" on Baal Secundus and the tribes of Baal Prime, where a Human colony was reestablished shortly after the time of the Horus Heresy.</description>
+            <links>
+                <link>
+                    <contentType>application/mdm+json</contentType>
+                    <url>http://localhost:8080/api/dataModels/c5aa8cc0-4517-4606-981d-e55a39f4c10c/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1</url>
+                </link>
+                <link>
+                    <contentType>application/mdm+xml</contentType>
+                    <url>http://localhost:8080/api/dataModels/c5aa8cc0-4517-4606-981d-e55a39f4c10c/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1</url>
+                </link>
+            </links>
+        </publishedModel>
+        <publishedModel>
+            <modelId>28cde18f-f052-4fa7-b93a-5e07d0dc4d35</modelId>
+            <title>Model Version Tree DataModel 5.0.0</title>
+            <label>Model Version Tree DataModel</label>
+            <version>5.0.0</version>
+            <modelType>DataModel</modelType>
+            <lastUpdated>2022-03-11T14:20:56.423496Z</lastUpdated>
+            <dateCreated>2022-03-11T14:20:56.313869Z</dateCreated>
+            <datePublished>2022-03-11T14:20:56.353947Z</datePublished>
+            <author>Dante</author>
+            <description>Baal is the nominal homeworld of the Blood Angels Chapter of the Adeptus Astartes located in the Baal System of the Segmentum Ultima. Baal itself is a dry, dusty Desert World, scarcely inhabited by anyone other than mutants and feral animals.
+However its two moons, Baal Prime and Baal Secundus, support notable Human settlements and were once "paradises for mortal men" though now they are classified as savage Feral Worlds by the Imperium.
+
+Little is known about the past circumstances of these two moons, but at some time in the distant past, probably during the Age of Technology or the Age of Strife, a cataclysmic conflict arose and led to the widespread use of both viral and nuclear weapons of mass destruction, destroying the ecosystems of both satellites and contaminating their biospheres with intense radioactive fallout, chemical pollution and deadly biological agents.
+
+The mighty fortress-monastery of the Blood Angels, the Arx Angelicum, was built on the desert surface of the world of Baal proper, and since the time of Sanguinius, the Blood Angels have continued to recruit from among the tribes of the people known as "the Blood" on Baal Secundus and the tribes of Baal Prime, where a Human colony was reestablished shortly after the time of the Horus Heresy.</description>
+            <links>
+                <link>
+                    <contentType>application/mdm+json</contentType>
+                    <url>http://localhost:8080/api/dataModels/28cde18f-f052-4fa7-b93a-5e07d0dc4d35/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1</url>
+                </link>
+                <link>
+                    <contentType>application/mdm+xml</contentType>
+                    <url>http://localhost:8080/api/dataModels/28cde18f-f052-4fa7-b93a-5e07d0dc4d35/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1</url>
+                </link>
+            </links>
+        </publishedModel>
+        <publishedModel>
+            <modelId>ef410847-c589-4107-8efa-f6c8e0d12b5c</modelId>
+            <title>Dynamic Profile 1 3.0.0</title>
+            <label>Dynamic Profile 1</label>
+            <version>3.0.0</version>
+            <modelType>DataModel</modelType>
+            <lastUpdated>2022-03-14T12:16:43.335297Z</lastUpdated>
+            <dateCreated>2022-03-14T10:51:46.394254Z</dateCreated>
+            <datePublished>2022-03-14T12:16:43.147881Z</datePublished>
+            <links>
+                <link>
+                    <contentType>application/mdm+json</contentType>
+                    <url>http://localhost:8080/api/dataModels/ef410847-c589-4107-8efa-f6c8e0d12b5c/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1</url>
+                </link>
+                <link>
+                    <contentType>application/mdm+xml</contentType>
+                    <url>http://localhost:8080/api/dataModels/ef410847-c589-4107-8efa-f6c8e0d12b5c/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1</url>
+                </link>
+            </links>
+        </publishedModel>
+        <publishedModel>
+            <modelId>414679b8-f214-4889-a82a-acdedfa77a34</modelId>
+            <title>extra profile 1.0.0</title>
+            <label>extra profile</label>
+            <version>1.0.0</version>
+            <modelType>DataModel</modelType>
+            <lastUpdated>2022-04-04T16:33:39.112326+01:00</lastUpdated>
+            <dateCreated>2022-04-04T16:32:37.883422+01:00</dateCreated>
+            <datePublished>2022-04-04T16:33:39.043073+01:00</datePublished>
+            <links>
+                <link>
+                    <contentType>application/mdm+json</contentType>
+                    <url>http://localhost:8080/api/dataModels/414679b8-f214-4889-a82a-acdedfa77a34/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1</url>
+                </link>
+                <link>
+                    <contentType>application/mdm+xml</contentType>
+                    <url>http://localhost:8080/api/dataModels/414679b8-f214-4889-a82a-acdedfa77a34/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1</url>
+                </link>
+            </links>
+        </publishedModel>
+        <publishedModel>
+            <modelId>5d999434-1ea0-4704-9290-21dde0ea3b46</modelId>
+            <title>Dynamic Profile 1 4.0.0</title>
+            <label>Dynamic Profile 1</label>
+            <version>4.0.0</version>
+            <modelType>DataModel</modelType>
+            <lastUpdated>2022-03-16T16:56:21.331827Z</lastUpdated>
+            <dateCreated>2022-03-14T13:10:40.498550Z</dateCreated>
+            <datePublished>2022-03-16T16:56:21.153820Z</datePublished>
+            <links>
+                <link>
+                    <contentType>application/mdm+json</contentType>
+                    <url>http://localhost:8080/api/dataModels/5d999434-1ea0-4704-9290-21dde0ea3b46/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1</url>
+                </link>
+                <link>
+                    <contentType>application/mdm+xml</contentType>
+                    <url>http://localhost:8080/api/dataModels/5d999434-1ea0-4704-9290-21dde0ea3b46/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1</url>
+                </link>
+            </links>
+        </publishedModel>
+        <publishedModel>
+            <modelId>b1e8ec83-b122-45bb-ae68-d69941833aa0</modelId>
+            <title>Different Dynamic Profile 2.0.0</title>
+            <label>Different Dynamic Profile</label>
+            <version>2.0.0</version>
+            <modelType>DataModel</modelType>
+            <lastUpdated>2022-03-16T16:58:34.606629Z</lastUpdated>
+            <dateCreated>2022-03-16T16:58:17.196687Z</dateCreated>
+            <datePublished>2022-03-16T16:58:34.559659Z</datePublished>
+            <links>
+                <link>
+                    <contentType>application/mdm+json</contentType>
+                    <url>http://localhost:8080/api/dataModels/b1e8ec83-b122-45bb-ae68-d69941833aa0/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1</url>
+                </link>
+                <link>
+                    <contentType>application/mdm+xml</contentType>
+                    <url>http://localhost:8080/api/dataModels/b1e8ec83-b122-45bb-ae68-d69941833aa0/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1</url>
+                </link>
+            </links>
+        </publishedModel>
+        <publishedModel>
+            <modelId>29ea5d1f-7836-4d29-82f1-000426257213</modelId>
+            <title>FooBarBaz 1.0.0</title>
+            <label>FooBarBaz</label>
+            <version>1.0.0</version>
+            <modelType>DataModel</modelType>
+            <lastUpdated>2022-03-17T11:02:57.517147Z</lastUpdated>
+            <dateCreated>2022-03-17T11:00:19.954648Z</dateCreated>
+            <datePublished>2022-03-17T11:02:57.387897Z</datePublished>
+            <links>
+                <link>
+                    <contentType>application/mdm+json</contentType>
+                    <url>http://localhost:8080/api/dataModels/29ea5d1f-7836-4d29-82f1-000426257213/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1</url>
+                </link>
+                <link>
+                    <contentType>application/mdm+xml</contentType>
+                    <url>http://localhost:8080/api/dataModels/29ea5d1f-7836-4d29-82f1-000426257213/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1</url>
+                </link>
+            </links>
+        </publishedModel>
+        <publishedModel>
+            <modelId>e6d09657-7566-4867-b326-e09a09248440</modelId>
+            <title>FooBarBaz 2.0.0</title>
+            <label>FooBarBaz</label>
+            <version>2.0.0</version>
+            <modelType>DataModel</modelType>
+            <lastUpdated>2022-03-17T11:03:36.306146Z</lastUpdated>
+            <dateCreated>2022-03-17T11:03:11.329857Z</dateCreated>
+            <datePublished>2022-03-17T11:03:36.254891Z</datePublished>
+            <links>
+                <link>
+                    <contentType>application/mdm+json</contentType>
+                    <url>http://localhost:8080/api/dataModels/e6d09657-7566-4867-b326-e09a09248440/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1</url>
+                </link>
+                <link>
+                    <contentType>application/mdm+xml</contentType>
+                    <url>http://localhost:8080/api/dataModels/e6d09657-7566-4867-b326-e09a09248440/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1</url>
+                </link>
+            </links>
+        </publishedModel>
+    </publishedModels>
+</index>

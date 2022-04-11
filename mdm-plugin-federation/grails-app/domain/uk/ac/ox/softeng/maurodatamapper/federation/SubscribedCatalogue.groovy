@@ -35,7 +35,6 @@ class SubscribedCatalogue implements MdmDomain, SecurableResource, EditHistoryAw
 
     UUID id
     String url
-    SubscribedCatalogueType subscribedCatalogueType
     UUID apiKey
     Boolean readableByEveryone
     Boolean readableByAuthenticatedUsers

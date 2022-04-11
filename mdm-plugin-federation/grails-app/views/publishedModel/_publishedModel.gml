@@ -19,10 +19,8 @@ publishedModel {
     if (pm.description) description pm.description
     if (pm.previousModelId) previousModelId pm.previousModelId
     links {
-        if (pm.links) {
-            links.each {link ->
-                layout '/link/_link.gml', link: link
-            }
+        pm.links.each {link ->
+            layout '/link/_link.gml', link: link
         }
     }
 }

@@ -24,6 +24,7 @@ plugins {
 apply plugin: "idea"
 apply plugin: "org.grails.grails-plugin"
 apply plugin: "org.grails.plugins.views-json"
+apply plugin: "org.grails.plugins.views-markup"
 
 apply plugin: 'ox.softeng.grails'
 

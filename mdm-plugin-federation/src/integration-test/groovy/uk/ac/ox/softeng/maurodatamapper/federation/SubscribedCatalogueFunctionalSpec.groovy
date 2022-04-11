@@ -237,7 +237,8 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
             "modelId": "${json-unit.matches:id}",
             "modelType": "DataModel",
             "title": "Finalised Example Test DataModel 1.0.0",
-            "version": "1.0.0"
+            "version": "1.0.0",
+            "links": []
         }
     ]
 }'''
