@@ -736,7 +736,12 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
     @Override
     protected T createResource() {
         T model = super.createResource() as T
-        model.folder = folderService.get(params.folderId)
+        Folder folder = folderService.get(params.folderId)
+        // If the folder is inside/is a VF then we need to make sure the created DM uses the same branch name as the VF
+        if (versionedFolderService.isVersionedFolderFamily(folder)) {
+            model.branchName = versionedFolderService.getVersionedFolderParent(folder).branchName
+        }
+        model.folder = folder
         model.authority = authorityService.getDefaultAuthority()
         model
     }

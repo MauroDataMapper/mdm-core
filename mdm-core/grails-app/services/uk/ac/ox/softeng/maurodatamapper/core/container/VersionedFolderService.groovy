@@ -678,6 +678,11 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         VersionedFolder.byLabelAndBranchNameAndNotFinalised(label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).get()
     }
 
+    VersionedFolder getVersionedFolderParent(Folder folder) {
+        if (folder.instanceOf(VersionedFolder)) return proxyHandler.unwrapIfProxy(folder) as VersionedFolder
+        getVersionedFolderParent(folder.parentFolder)
+    }
+
     boolean hasVersionedFolderParent(Folder folder) {
         if (!folder.parentFolder) return false
         if (folder.parentFolder.instanceOf(VersionedFolder)) return true
