@@ -35,8 +35,8 @@ class ApiPropertyServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Api
     Path savedDefaultsPath
 
     def setup() {
-        tmpDir = System.getProperty("java.io.tmpdir")
-        tmpDir = Strings.isNullOrEmpty(tmpDir) ? "/tmp" : tmpDir
+        tmpDir = System.getProperty('java.io.tmpdir')
+        tmpDir = Strings.isNullOrEmpty(tmpDir) ? '/tmp' : tmpDir
 
         savedDefaultsPath = Paths.get(tmpDir).resolve('savedDefaults.properties')
         Properties legacy = new Properties()
@@ -45,7 +45,7 @@ class ApiPropertyServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Api
             OutputStream outputStream = new FileOutputStream(savedDefaultsPath.toFile())
             legacy.store(outputStream, 'Unit Test')
         } catch (IOException e) {
-            log.error("Something went wrong saving ApiProperties file", e)
+            log.error('Something went wrong saving ApiProperties file', e)
         }
         assert Files.exists(savedDefaultsPath)
         mockDomain(ApiProperty)

@@ -29,7 +29,7 @@ import groovy.util.logging.Slf4j
 @SuppressWarnings('GroovyAssignabilityCheck')
 class HQLPagedResultList<E> extends PagedResultList<E> {
 
-    private Class<E> gormEntityClass
+    private final Class<E> gormEntityClass
     private Map pagination
     private String listQuery
     private String countQuery
@@ -50,12 +50,10 @@ class HQLPagedResultList<E> extends PagedResultList<E> {
         this
     }
 
-
     HQLPagedResultList queryParams(Map<String, Object> queryParams) {
         this.queryParams = queryParams
         this
     }
-
 
     HQLPagedResultList paginate(Map pagination) {
         this.pagination = pagination
@@ -67,7 +65,7 @@ class HQLPagedResultList<E> extends PagedResultList<E> {
         this
     }
 
-    HQLPagedResultList postProcess(Closure closure){
+    HQLPagedResultList postProcess(Closure closure) {
         resultList.each closure
         this
     }
@@ -76,5 +74,31 @@ class HQLPagedResultList<E> extends PagedResultList<E> {
     protected void initialize() {
         log.trace('Getting count for query \n{}', countQuery)
         totalCount = gormEntityClass.executeQuery(countQuery, queryParams).first()
+    }
+
+    @Override
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+        if (!super.equals(o)) return false
+
+        HQLPagedResultList that = (HQLPagedResultList) o
+
+        if (countQuery != that.countQuery) return false
+        if (gormEntityClass != that.gormEntityClass) return false
+        if (listQuery != that.listQuery) return false
+        if (pagination != that.pagination) return false
+        queryParams == that.queryParams
+    }
+
+    @Override
+    int hashCode() {
+        int result = super.hashCode()
+        result = 31 * result + gormEntityClass.hashCode()
+        result = 31 * result + (pagination != null ? pagination.hashCode() : 0)
+        result = 31 * result + (listQuery != null ? listQuery.hashCode() : 0)
+        result = 31 * result + (countQuery != null ? countQuery.hashCode() : 0)
+        result = 31 * result + (queryParams != null ? queryParams.hashCode() : 0)
+        result
     }
 }

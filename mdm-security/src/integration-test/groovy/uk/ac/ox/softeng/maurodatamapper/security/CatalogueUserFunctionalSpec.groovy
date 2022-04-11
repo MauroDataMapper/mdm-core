@@ -195,12 +195,12 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
 }'''
     }
 
-    void "1 : Test the index action"() {
+    void '1 : Test the index action'() {
 
         when:
         GET('catalogueUsers', STRING_ARG)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyJsonResponse OK, '''{
   "count": 9,
   "items": [
@@ -321,54 +321,54 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
 }'''
     }
 
-    void "2 : Test the save/self registration action correctly persists an instance"() {
+    void '2 : Test the save/self registration action correctly persists an instance'() {
         given:
         reconfigureDefaultUserPrivileges(false)
 
-        when: "The save action is executed with no content"
+        when: 'The save action is executed with no content'
         POST('catalogueUsers', [:])
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyResponse UNPROCESSABLE_ENTITY, response
 
-        when: "The save action is executed with invalid data"
+        when: 'The save action is executed with invalid data'
         POST('catalogueUsers', invalidJson)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyResponse UNPROCESSABLE_ENTITY, response
 
-        when: "The save action is executed with valid data"
+        when: 'The save action is executed with valid data'
         String emailId = UUID.randomUUID().toString()
         POST('catalogueUsers', getValidJson(emailId), STRING_ARG)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyJsonResponse CREATED, getSelfRegisteredJson(emailId)
 
         cleanup:
         cleanupUser("${emailId}@functional-test.com")
     }
 
-    void "3 : Test the admin registration action correctly persists an instance"() {
+    void '3 : Test the admin registration action correctly persists an instance'() {
         given:
         String endpoint = 'admin/catalogueUsers/adminRegister'
 
-        when: "The admin registration  action is executed with no content"
+        when: 'The admin registration  action is executed with no content'
         POST(endpoint, [:])
 
         then:
         verifyResponse UNPROCESSABLE_ENTITY, response
 
-        when: "The save action is executed with invalid data"
+        when: 'The save action is executed with invalid data'
         POST(endpoint, invalidJson)
 
         then:
         verifyResponse UNPROCESSABLE_ENTITY, response
 
-        when: "The save action is executed with valid data"
+        when: 'The save action is executed with valid data'
         String emailId = UUID.randomUUID().toString()
         POST(endpoint, getValidJson(emailId), STRING_ARG)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyJsonResponse CREATED, '''{
   "firstName": "a",
   "lastName": "new user",
@@ -386,7 +386,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
         cleanupUser("${emailId}@functional-test.com")
     }
 
-    void "4 : Test the update action correctly updates an instance"() {
+    void '4 : Test the update action correctly updates an instance'() {
         given:
         String id = adminRegisterNewUser()
         Map update = [firstName: 'hello']
@@ -394,7 +394,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
         when:
         PUT("catalogueUsers/$id", update)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyResponse OK, response
 
         and:
@@ -404,14 +404,14 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
         cleanupUser(id)
     }
 
-    void "5 : Test the show action correctly renders an instance"() {
+    void '5 : Test the show action correctly renders an instance'() {
         given:
         String id = getEditorId().toString()
 
         when:
         GET("catalogueUsers/$id", STRING_ARG)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyJsonResponse OK, '''{
   "firstName": "editor",
   "lastName": "User",
@@ -425,20 +425,20 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
 }'''
     }
 
-    void "6 : Test the delete action correctly deletes an instance"() {
+    void '6 : Test the delete action correctly deletes an instance'() {
         given:
         String id = adminRegisterNewUser()
 
-        when: "When the delete action is executed on an unknown instance"
+        when: 'When the delete action is executed on an unknown instance'
         DELETE("catalogueUsers/${UUID.randomUUID()}")
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyResponse NOT_FOUND, response
 
-        when: "When the delete action is executed on an existing instance"
+        when: 'When the delete action is executed on an existing instance'
         DELETE("catalogueUsers/$id")
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyResponse OK, response
 
         and:
@@ -448,19 +448,19 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
         cleanupUser(id)
     }
 
-    void "7 : Test getting the user preferences"() {
+    void '7 : Test getting the user preferences'() {
         given:
         def id = getEditorId()
 
         when:
         GET("catalogueUsers/$id/userPreferences")
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyResponse OK, response
 
     }
 
-    void "8 : Test updating the user preferences"() {
+    void '8 : Test updating the user preferences'() {
         given:
         String id = adminRegisterNewUser()
         Map update = [
@@ -471,7 +471,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
         when: 'logged in as user whose id it is'
         PUT("catalogueUsers/$id/userPreferences", update)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyResponse OK, response
 
         and:
@@ -481,7 +481,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
         when: 'getting the preferences back'
         GET("catalogueUsers/$id/userPreferences", STRING_ARG)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyJsonResponse OK, '''{"something":"hello","anotherThing":"wibble"}'''
 
         cleanup:
@@ -491,7 +491,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
     void '9 : Test user exists'() {
 
         when: 'checking non-existent user'
-        GET("admin/catalogueUsers/userExists/unknown@test.com", MAP_ARG)
+        GET('admin/catalogueUsers/userExists/unknown@test.com', MAP_ARG)
 
         then:
         verifyResponse OK, response
@@ -533,7 +533,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
         cleanupUser(id)
     }
 
-    void "11 : Test the approve registration works"() {
+    void '11 : Test the approve registration works'() {
         given: 'user self registered'
         String id = selfRegisterNewUser()
 
@@ -550,7 +550,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
         cleanupUser(id)
     }
 
-    void "12 : Test the reject registration works"() {
+    void '12 : Test the reject registration works'() {
         given: 'user self registered'
         String id = selfRegisterNewUser()
 

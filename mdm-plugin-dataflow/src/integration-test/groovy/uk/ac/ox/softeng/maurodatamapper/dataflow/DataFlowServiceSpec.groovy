@@ -101,7 +101,7 @@ class DataFlowServiceSpec extends BaseDataFlowIntegrationSpec {
         id = dataFlow.id
     }
 
-    void "test get"() {
+    void 'test get'() {
         given:
         setupData()
 
@@ -109,7 +109,7 @@ class DataFlowServiceSpec extends BaseDataFlowIntegrationSpec {
         dataFlowService.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         given:
         setupData()
 
@@ -127,7 +127,7 @@ class DataFlowServiceSpec extends BaseDataFlowIntegrationSpec {
 
     }
 
-    void "test count"() {
+    void 'test count'() {
         given:
         setupData()
 
@@ -135,7 +135,7 @@ class DataFlowServiceSpec extends BaseDataFlowIntegrationSpec {
         dataFlowService.count() == 9
     }
 
-    void "test delete"() {
+    void 'test delete'() {
         given:
         setupData()
 

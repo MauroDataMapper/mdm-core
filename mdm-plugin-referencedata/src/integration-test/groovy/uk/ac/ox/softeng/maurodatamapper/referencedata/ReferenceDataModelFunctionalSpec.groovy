@@ -185,7 +185,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "ReferenceDataModelExporter",
     "fileExtension": "json",
@@ -199,7 +199,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "ReferenceDataModelExporter",
     "fileExtension": "xml",
@@ -222,7 +222,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "ReferenceDataModelImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
@@ -236,7 +236,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "ReferenceDataModelImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
@@ -250,7 +250,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": false,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "ReferenceDataModelImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
@@ -339,7 +339,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
         and: 'There is not a CHANGE NOTICE edit'
         !response.body().items.find {
-            it.description == "Functional Test Change Notice"
+            it.description == 'Functional Test Change Notice'
         }
 
         cleanup:
@@ -369,7 +369,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
         and: 'There is a CHANGE NOTICE edit'
         response.body().items.find {
-            it.description == "Functional Test Change Notice"
+            it.description == 'Functional Test Change Notice'
         }
 
         cleanup:
@@ -1296,13 +1296,13 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
         when:
         PUT("$source/mergeInto/$target", [patch:
-            [
-                targetId : target,
-                sourceId: UUID.randomUUID().toString(),
-                label  : "Reference Data Functional Test Model",
-                count  : 0,
-                diffs  : []
-            ]
+                                              [
+                                                  targetId: target,
+                                                  sourceId: UUID.randomUUID().toString(),
+                                                  label   : 'Reference Data Functional Test Model',
+                                                  count   : 0,
+                                                  diffs   : []
+                                              ]
         ])
 
         then:
@@ -1311,13 +1311,13 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
         when:
         PUT("$source/mergeInto/$target", [patch:
-            [
-                targetId : UUID.randomUUID().toString(),
-                sourceId: source,
-                label  : "Reference Data Functional Test Model",
-                count  : 0,
-                diffs  : []
-            ]
+                                              [
+                                                  targetId: UUID.randomUUID().toString(),
+                                                  sourceId: source,
+                                                  label   : 'Reference Data Functional Test Model',
+                                                  count   : 0,
+                                                  diffs   : []
+                                              ]
         ])
 
         then:
@@ -1341,12 +1341,12 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         verifyResponse CREATED, response
 
         and: 'A ReferenceDataType is added to the ReferenceDataModel'
-        POST("$id/referenceDataTypes", ["label": "A", "domainType": "ReferencePrimitiveType"])
+        POST("$id/referenceDataTypes", ['label': 'A', 'domainType': 'ReferencePrimitiveType'])
         verifyResponse CREATED, response
         String referenceDataTypeId = response.body().id
 
         and: 'A ReferenceDataElement is added to the ReferenceDataModel'
-        POST("$id/referenceDataElements", ["label": "modifyLeftOnly", "referenceDataType": referenceDataTypeId])
+        POST("$id/referenceDataElements", ['label': 'modifyLeftOnly', 'referenceDataType': referenceDataTypeId])
         verifyResponse CREATED, response
         String referenceDataElement1Id = response.body().id
 
@@ -1413,8 +1413,8 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
         GET("$target/metadata")
         verifyResponse OK, response
-        deleteMetadataSource = responseBody().items.find { it.key == "deleteMetadataSource" }.id
-        modifyMetadataSource = responseBody().items.find { it.key == "modifyMetadataSource" }.id
+        deleteMetadataSource = responseBody().items.find {it.key == 'deleteMetadataSource'}.id
+        modifyMetadataSource = responseBody().items.find {it.key == 'modifyMetadataSource'}.id
 
         GET("$source/mergeDiff/$target", STRING_ARG)
         log.info('{}', jsonResponseBody())
@@ -1479,11 +1479,11 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         String id = createNewItem(validJson)
 
         and: 'A ReferenceDataType is added to the ReferenceDataModel'
-        POST("$id/referenceDataTypes", ["label": "A", "domainType": "ReferencePrimitiveType"])
+        POST("$id/referenceDataTypes", ['label': 'A', 'domainType': 'ReferencePrimitiveType'])
         String referenceDataTypeId = response.body().id
 
         when: 'A ReferenceDataElement is added to the ReferenceDataModel'
-        POST("$id/referenceDataElements", ["label": "RDE1", "referenceDataType": referenceDataTypeId])
+        POST("$id/referenceDataElements", ['label': 'RDE1', 'referenceDataType': referenceDataTypeId])
 
         then: 'The response is CREATED'
         verifyResponse CREATED, response
@@ -1518,14 +1518,14 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         String sourceReferenceDataElementId = response.body().items[0].id
 
         when: 'A new DataType is added to the source ReferenceDataModel'
-        POST("$sourceReferenceDataModelId/referenceDataTypes", ["label": "B", "domainType": "ReferencePrimitiveType"])
+        POST("$sourceReferenceDataModelId/referenceDataTypes", ['label': 'B', 'domainType': 'ReferencePrimitiveType'])
 
         then: 'The response is CREATED'
         verifyResponse CREATED, response
         String dataTypeId = response.body().id
 
         when: 'A new ReferenceDataElement is added to the source ReferenceDataModel'
-        POST("$sourceReferenceDataModelId/referenceDataElements", ["label": "RDE2", "referenceDataType": dataTypeId])
+        POST("$sourceReferenceDataModelId/referenceDataElements", ['label': 'RDE2', 'referenceDataType': dataTypeId])
 
         then: 'The response is CREATED'
         verifyResponse CREATED, response
@@ -1556,8 +1556,8 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         then: 'The response is OK and there are two ReferenceDataElements'
         verifyResponse OK, response
         response.body().count == 2
-        response.body().items.findAll{it.label == "RDE1"}.size() == 1
-        response.body().items.findAll{it.label == "RDE2"}.size() == 1
+        response.body().items.findAll {it.label == 'RDE1'}.size() == 1
+        response.body().items.findAll {it.label == 'RDE2'}.size() == 1
 
         cleanup:
         cleanUpData(sourceReferenceDataModelId)
@@ -1606,13 +1606,13 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
         when:
         PUT("$source/mergeInto/$target", [patch:
-                                                                 [
-                                                                     targetId: target,
-                                                                     sourceId: UUID.randomUUID().toString(),
-                                                                     label   : "Reference Data Functional Test Model",
-                                                                     count   : 0,
-                                                                     patches : []
-                                                                 ]
+                                              [
+                                                  targetId: target,
+                                                  sourceId: UUID.randomUUID().toString(),
+                                                  label   : 'Reference Data Functional Test Model',
+                                                  count   : 0,
+                                                  patches : []
+                                              ]
         ])
 
         then:
@@ -1621,13 +1621,13 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
         when:
         PUT("$source/mergeInto/$target", [patch:
-                                                  [
-                                                      targetId: UUID.randomUUID().toString(),
-                                                      sourceId: source,
-                                                      label   : "Reference Data Functional Test Model",
-                                                      count   : 0,
-                                                      patches : []
-                                                  ]
+                                              [
+                                                  targetId: UUID.randomUUID().toString(),
+                                                  sourceId: source,
+                                                  label   : 'Reference Data Functional Test Model',
+                                                  count   : 0,
+                                                  patches : []
+                                              ]
         ])
 
         then:
@@ -1636,13 +1636,13 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
         when:
         PUT("$source/mergeInto/$target", [patch:
-                                                  [
-                                                      targetId: target,
-                                                      sourceId: source,
-                                                      label   : "Reference Data Functional Test Model",
-                                                      count   : 0,
-                                                      patches : []
-                                                  ]
+                                              [
+                                                  targetId: target,
+                                                  sourceId: source,
+                                                  label   : 'Reference Data Functional Test Model',
+                                                  count   : 0,
+                                                  patches : []
+                                              ]
         ])
 
         then:
@@ -1743,7 +1743,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
         when:
         PUT("$source/mergeInto/$target", [
-            changeNotice: "Metadata test",
+            changeNotice: 'Metadata test',
             deleteBranch: false,
             patch       : [
                 sourceId: source,
@@ -1902,8 +1902,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(mergeData.commonAncestor)
     }
 
-
-    @PendingFeature(reason = "Not yet implemented")
+    @PendingFeature(reason = 'Not yet implemented')
     void 'test changing folder from ReferenceData context'() {
         given: 'The save action is executed with valid data'
         String id = createNewItem(validJson)
@@ -1931,7 +1930,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(id)
     }
 
-    @PendingFeature(reason = "Not yet implemented")
+    @PendingFeature(reason = 'Not yet implemented')
     void 'test changing folder from Folder context'() {
         given: 'The save action is executed with valid data'
         String id = createNewItem(validJson)
@@ -2304,7 +2303,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(id)
     }
 
-    @PendingFeature(reason = "Not yet implemented")
+    @PendingFeature(reason = 'Not yet implemented')
     void 'test diffing 2 complex and simple ReferenceData'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataJsonImporterService/2.0', [
@@ -2603,7 +2602,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(simpleDataModelId)
     }
 
-    @PendingFeature(reason = "Not yet implemented")
+    @PendingFeature(reason = 'Not yet implemented')
     void 'test searching for label "emptyclass" in complex model'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataJsonImporterService/2.0', [
@@ -2652,7 +2651,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(id)
     }
 
-    @PendingFeature(reason = "Not yet implemented")
+    @PendingFeature(reason = 'Not yet implemented')
     void 'test searching for label "emptyclass" in simple model'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataJsonImporterService/2.0', [
@@ -2686,11 +2685,10 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     }
 
     @Transactional
-    @PendingFeature(reason = "Not yet implemented")
+    @PendingFeature(reason = 'Not yet implemented')
     void setupForLinkSuggestions(String simpleDataModelId) {
         //DataClass dataClass = DataClass.byDataModelId(Utils.toUuid(simpleDataModelId)).eq('label', 'simple').find()
         //assert dataClass
-
 
         POST("${simpleDataModelId}/dataTypes", [
             domainType: 'PrimitiveType',
@@ -2722,7 +2720,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         verifyResponse CREATED, response
     }
 
-    @PendingFeature(reason = "Not yet implemented")
+    @PendingFeature(reason = 'Not yet implemented')
     void 'test get link suggestions for a model with no data elements in the target'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataJsonImporterService/2.0', [
@@ -2767,7 +2765,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(simpleDataModelId)
     }
 
-    @PendingFeature(reason = "Not yet implemented")
+    @PendingFeature(reason = 'Not yet implemented')
     void 'test get link suggestions for a model'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataJsonImporterService/2.0', [

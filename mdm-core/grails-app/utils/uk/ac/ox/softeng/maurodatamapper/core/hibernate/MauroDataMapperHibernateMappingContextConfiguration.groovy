@@ -121,9 +121,8 @@ class MauroDataMapperHibernateMappingContextConfiguration extends HibernateMappi
         checkConfig config, 'hibernate.search.default.indexBase', 'hibernate.search.backend.directory.root'
 
         String hsDir = config.getProperty('hibernate.search.backend.directory.root', String)
-        log.info("Using hibernate search index directory of: {}", hsDir)
+        log.info('Using hibernate search index directory of: {}', hsDir)
     }
-
 
     void checkConfig(Config config, String oldProp, String newProp) {
         if (config.containsProperty(oldProp)) {

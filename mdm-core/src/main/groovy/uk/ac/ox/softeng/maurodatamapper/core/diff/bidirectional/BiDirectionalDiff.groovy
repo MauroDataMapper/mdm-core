@@ -38,9 +38,7 @@ abstract class BiDirectionalDiff<B> extends Diff<B> {
         BiDirectionalDiff<B> diff = (BiDirectionalDiff<B>) o
 
         if (left != diff.left) return false
-        if (right != diff.right) return false
-
-        return true
+        right == diff.right
     }
 
     BiDirectionalDiff<B> leftHandSide(B lhs) {
@@ -59,5 +57,12 @@ abstract class BiDirectionalDiff<B> extends Diff<B> {
 
     B getLeft() {
         this.value
+    }
+
+    @Override
+    int hashCode() {
+        int result = super.hashCode()
+        result = 31 * result + (right != null ? right.hashCode() : 0)
+        result
     }
 }

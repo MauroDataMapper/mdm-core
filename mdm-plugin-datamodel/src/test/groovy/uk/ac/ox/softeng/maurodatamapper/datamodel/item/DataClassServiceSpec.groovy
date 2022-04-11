@@ -114,13 +114,13 @@ class DataClassServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         id = parent.id
     }
 
-    void "test get"() {
+    void 'test get'() {
 
         expect:
         service.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
 
         when:
         List<DataClass> dataClassList = service.list(max: 2, offset: 3)
@@ -142,12 +142,12 @@ class DataClassServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
     }
 
 
-    void "test count"() {
+    void 'test count'() {
         expect:
         service.count() == 5
     }
 
-    void "test save"() {
+    void 'test save'() {
 
         when:
         DataClass dataClass = new DataClass(createdBy: StandardEmailAddress.UNIT_TEST, label: 'saving test', dataModel: dataModel)
@@ -164,7 +164,7 @@ class DataClassServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         saved.breadcrumbTree.domainId == saved.id
     }
 
-    void "test copy a data element which has a reference type"() {
+    void 'test copy a data element which has a reference type'() {
         given:
         UnloggedUser user = UnloggedUser.instance
 

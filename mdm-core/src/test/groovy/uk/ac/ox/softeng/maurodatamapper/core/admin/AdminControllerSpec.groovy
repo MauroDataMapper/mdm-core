@@ -40,8 +40,8 @@ class AdminControllerSpec extends BaseUnitSpec implements ControllerUnitTest<Adm
     def currentVersion
 
     def setup() {
-        String tmpDir = System.getProperty("java.io.tmpdir")
-        tmpDir = Strings.isNullOrEmpty(tmpDir) ? "/tmp" : tmpDir
+        String tmpDir = System.getProperty('java.io.tmpdir')
+        tmpDir = Strings.isNullOrEmpty(tmpDir) ? '/tmp' : tmpDir
 
         mockDomain(ApiProperty)
 

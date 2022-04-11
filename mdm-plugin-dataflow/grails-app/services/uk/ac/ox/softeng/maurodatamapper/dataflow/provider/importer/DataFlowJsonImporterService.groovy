@@ -27,7 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 import groovy.util.logging.Slf4j
 
 @Slf4j
-class DataFlowJsonImporterService extends DataBindDataFlowImporterProviderService<DataFlowFileImporterProviderServiceParameters> 
+class DataFlowJsonImporterService extends DataBindDataFlowImporterProviderService<DataFlowFileImporterProviderServiceParameters>
     implements JsonImportMapping {
 
     @Override

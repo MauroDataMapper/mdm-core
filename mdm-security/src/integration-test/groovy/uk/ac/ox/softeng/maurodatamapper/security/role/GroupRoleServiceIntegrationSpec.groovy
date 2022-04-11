@@ -45,7 +45,7 @@ class GroupRoleServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
         id = GroupRole.findByName('reader').id
     }
 
-    void "test get"() {
+    void 'test get'() {
         given:
         setupData()
 
@@ -53,7 +53,7 @@ class GroupRoleServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
         groupRoleService.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         given:
         setupData()
 
@@ -76,7 +76,7 @@ class GroupRoleServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
         b.displayName == 'Container Group Administrator'
     }
 
-    void "test count"() {
+    void 'test count'() {
         given:
         setupData()
 
@@ -84,7 +84,7 @@ class GroupRoleServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
         groupRoleService.count() == 10
     }
 
-    void "test delete"() {
+    void 'test delete'() {
         given:
         setupData()
 

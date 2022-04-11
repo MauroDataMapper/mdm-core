@@ -72,7 +72,7 @@ class TreeItemService {
         CatalogueItemService service = catalogueItemServices.find {it.handles(catalogueItemClass)}
         if (!service) throw new ApiBadRequestException('TIS01',
                                                        "Catalogue Item retrieval for catalogue item [${catalogueItemClass.simpleName}] with no " +
-                                                       "supporting service")
+                                                       'supporting service')
         service.get(catalogueItemId)
     }
 
@@ -82,7 +82,7 @@ class TreeItemService {
         ContainerService service = containerServices.find {it.handles(containerClass)}
         if (!service) throw new ApiBadRequestException('TIS01',
                                                        "Container retrieval for container [${containerClass.simpleName}] with no " +
-                                                       "supporting service")
+                                                       'supporting service')
         service.get(containerId)
     }
 
@@ -257,7 +257,7 @@ class TreeItemService {
                                                                                                             searchTerm, domainType)
             log.debug("Found ${readableModelTreeItems.size()} model tree items")
 
-            log.debug("Wrapping models in container tree items", containerClass.simpleName)
+            log.debug('Wrapping models in container tree items', containerClass.simpleName)
             List<ContainerTreeItem> containerTreeItems = getAllReadableContainerTreeItems(containerClass, userSecurityPolicyManager)
             tree = wrapModelTreeItemsInContainerTreeItems(readableModelTreeItems, containerTreeItems,
                                                           true)
@@ -712,7 +712,7 @@ class TreeItemService {
                                                                                               UserSecurityPolicyManager userSecurityPolicyManager,
                                                                                               List<ModelTreeItem> modelTreeItems,
                                                                                               boolean removeEmptyContainers) {
-        log.debug("Wrapping models in container tree items", containerClass.simpleName)
+        log.debug('Wrapping models in container tree items', containerClass.simpleName)
         List<ContainerTreeItem> containerTreeItems = getAllReadableContainerTreeItems(containerClass, userSecurityPolicyManager)
         wrapModelTreeItemsInContainerTreeItems(modelTreeItems, containerTreeItems, removeEmptyContainers)
     }

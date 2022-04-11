@@ -37,9 +37,9 @@ class UrlMappings {
                 put "/codeSets/$codeSetId"(controller: 'codeSet', action: 'changeFolder')
 
                 // Allows us to control posting models into folders
-                post "/terminologies"(controller: 'terminology', action: 'save') // new URL
+                post '/terminologies'(controller: 'terminology', action: 'save') // new URL
                 // Allows us to control posting models into folders
-                post "/codeSets"(controller: 'codeSet', action: 'save') // new URL
+                post '/codeSets'(controller: 'codeSet', action: 'save') // new URL
             }
 
             put "/admin/terminologies/$id/undoSoftDelete"(controller: 'terminology', action: 'undoSoftDelete')

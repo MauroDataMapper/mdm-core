@@ -36,7 +36,7 @@ abstract class FacetInterceptor implements MdmInterceptor {
     @Autowired(required = false)
     List<ModelItemService> modelItemServices
 
-    protected static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
+    protected static final HibernateProxyHandler hibernateProxyHandler = new HibernateProxyHandler();
 
     abstract Class getFacetClass()
 
@@ -76,7 +76,7 @@ abstract class FacetInterceptor implements MdmInterceptor {
             return checkActionAuthorisationOnUnsecuredResource(getFacetClass(), params.id, getOwningClass(), getOwningId())
         }
 
-        Model model = proxyHandler.unwrapIfProxy(getOwningModel())
+        Model model = hibernateProxyHandler.unwrapIfProxy(getOwningModel())
         return checkActionAuthorisationOnUnsecuredResource(getFacetClass(), params.id, model.getClass(), model.getId())
     }
 

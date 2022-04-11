@@ -74,12 +74,12 @@ class AuthenticatingServiceSpec extends BaseUnitSpec implements ServiceUnitTest<
 
     void 'test second user authentication'() {
         expect:
-        service.authenticateAndObtainUser(username: admin.emailAddress, password: "password")
-        !service.authenticateAndObtainUser(username: admin.emailAddress, password: "Password")
-        !service.authenticateAndObtainUser(username: admin.emailAddress, password: "password1234")
-        service.authenticateAndObtainUser(username: admin.emailAddress, password: "    password")
-        service.authenticateAndObtainUser(username: admin.emailAddress, password: "password     ")
-        !service.authenticateAndObtainUser(username: admin.emailAddress, password: "pass   word")
+        service.authenticateAndObtainUser(username: admin.emailAddress, password: 'password')
+        !service.authenticateAndObtainUser(username: admin.emailAddress, password: 'Password')
+        !service.authenticateAndObtainUser(username: admin.emailAddress, password: 'password1234')
+        service.authenticateAndObtainUser(username: admin.emailAddress, password: '    password')
+        service.authenticateAndObtainUser(username: admin.emailAddress, password: 'password     ')
+        !service.authenticateAndObtainUser(username: admin.emailAddress, password: 'pass   word')
     }
 
     void 'test user authentication by scheme'() {

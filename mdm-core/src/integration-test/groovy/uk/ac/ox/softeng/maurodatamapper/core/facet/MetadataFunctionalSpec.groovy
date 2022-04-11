@@ -50,7 +50,7 @@ class MetadataFunctionalSpec extends BaseFunctionalSpec {
     "defaultNamespace": true,
     "editable": true,
     "keys": [
-      
+
     ],
     "namespace": "uk.ac.ox.softeng.maurodatamapper.core.provider.email"
   },
@@ -58,7 +58,7 @@ class MetadataFunctionalSpec extends BaseFunctionalSpec {
     "defaultNamespace": true,
     "editable": true,
     "keys": [
-    
+
     ],
     "namespace": "uk.ac.ox.softeng.maurodatamapper.core.container.provider.exporter"
   }
@@ -81,7 +81,7 @@ class MetadataFunctionalSpec extends BaseFunctionalSpec {
     "defaultNamespace": true,
     "editable": true,
     "keys": [
-      
+
     ],
     "namespace": "uk.ac.ox.softeng.maurodatamapper.core.provider.email"
   }

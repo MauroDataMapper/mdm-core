@@ -37,7 +37,7 @@ class DataElementComponentServiceSpec extends BaseDataFlowIntegrationSpec {
         id = dataElementComponentService.findAllByDataClassComponentId(dcc.id, [sort: 'label']).first().id
     }
 
-    void "test get"() {
+    void 'test get'() {
         given:
         setupData()
 
@@ -45,7 +45,7 @@ class DataElementComponentServiceSpec extends BaseDataFlowIntegrationSpec {
         dataElementComponentService.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         given:
         setupData()
 
@@ -66,7 +66,7 @@ class DataElementComponentServiceSpec extends BaseDataFlowIntegrationSpec {
         dataElementComponents[1].targetDataElements.size() == 1
     }
 
-    void "test count"() {
+    void 'test count'() {
         given:
         setupData()
 
@@ -74,7 +74,7 @@ class DataElementComponentServiceSpec extends BaseDataFlowIntegrationSpec {
         dataElementComponentService.count() == 10
     }
 
-    void "test delete"() {
+    void 'test delete'() {
         given:
         setupData()
 

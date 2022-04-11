@@ -30,7 +30,7 @@ class ExportMetadata {
     }
 
     ExportMetadata(ExporterProviderService exporterProviderService, String firstName, String lastName) {
-        this(exporterProviderService, firstName + " " + lastName)
+        this(exporterProviderService, firstName + ' ' + lastName)
     }
 
     ExportMetadata(ExporterProviderService exporterProviderService, String exportedBy) {

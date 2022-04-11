@@ -64,7 +64,7 @@ class Edit implements MdmDomain {
         title
     }
 
-    @SuppressWarnings("UnnecessaryQualifiedReference")
+    @SuppressWarnings('UnnecessaryQualifiedReference')
     static List<Edit> findAllByResource(String resourceDomainType, UUID resourceId, Map pagination = [:]) {
         Edit.findAllByResourceDomainTypeAndResourceId(resourceDomainType, resourceId, pagination)
     }

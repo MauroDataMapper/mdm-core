@@ -121,7 +121,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
     @Override
     String getUrlResourceName() {
-        "dataModels"
+        'dataModels'
     }
 
     Long count() {
@@ -1115,7 +1115,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             Path pathInTarget = pathInSource.getChildPath()
 
             if (pathInTarget.size() < 2)
-                throw new ApiInternalException("DMSXX", "Path ${pathInTarget} was shorter than expected")
+                throw new ApiInternalException('DMSXX', "Path ${pathInTarget} was shorter than expected")
 
             // Now iterate forwards through the path, making sure that a domain exists for each node of the path
             // Assumption is that the first node of pathInTarget is a dc.
@@ -1155,10 +1155,10 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     private DataElement getDataElementInModel(DataModel dataModel, UUID dataElementId) {
         DataElement dataElementInModel = dataElementService.get(dataElementId)
         if (!dataElementInModel)
-            throw new ApiInternalException("DMSXX", "Data Element ${dataElementId} not found")
+            throw new ApiInternalException('DMSXX', "Data Element ${dataElementId} not found")
 
         if (dataElementInModel.modelId != dataModel.id)
-            throw new ApiInternalException("DMSXX", "Data Element ${dataElementId} does not belong to specified model")
+            throw new ApiInternalException('DMSXX', "Data Element ${dataElementId} does not belong to specified model")
 
         dataElementInModel
     }

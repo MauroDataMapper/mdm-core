@@ -55,7 +55,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.core.container.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-    
+
     ],
     "providerType": "FolderExporter",
     "fileExtension": "json",
@@ -75,7 +75,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
     "order": ''' + Ordered.LOWEST_PRECEDENCE + ''',
     "providerType": "Email",
     "knownMetadataKeys": [
-      
+
     ],
     "displayName": "Basic Email Provider",
     "name": "BasicEmailProviderService",

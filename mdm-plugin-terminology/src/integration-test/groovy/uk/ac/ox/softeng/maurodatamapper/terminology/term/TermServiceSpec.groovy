@@ -48,14 +48,14 @@ class TermServiceSpec extends BaseTerminologyIntegrationSpec {
         id = term1.id
     }
 
-    void "test get"() {
+    void 'test get'() {
         setupData()
 
         expect:
         termService.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         setupData()
 
         when:
@@ -75,14 +75,14 @@ class TermServiceSpec extends BaseTerminologyIntegrationSpec {
         tm2.code == 'IT02'
     }
 
-    void "test count"() {
+    void 'test count'() {
         setupData()
 
         expect:
         termService.count() == 107
     }
 
-    void "test delete"() {
+    void 'test delete'() {
         setupData()
 
         expect:

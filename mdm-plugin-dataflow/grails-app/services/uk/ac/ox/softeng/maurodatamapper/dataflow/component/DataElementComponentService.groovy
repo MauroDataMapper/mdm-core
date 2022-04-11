@@ -32,13 +32,10 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 
 @Slf4j
 @Transactional
 class DataElementComponentService extends ModelItemService<DataElementComponent> {
-
-    private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
 
     PathService pathService
 
@@ -51,7 +48,6 @@ class DataElementComponentService extends ModelItemService<DataElementComponent>
     List<DataElementComponent> getAll(Collection<UUID> ids) {
         DataElementComponent.getAll(ids).findAll()
     }
-
 
     List<DataElementComponent> list(Map args) {
         DataElementComponent.list(args)

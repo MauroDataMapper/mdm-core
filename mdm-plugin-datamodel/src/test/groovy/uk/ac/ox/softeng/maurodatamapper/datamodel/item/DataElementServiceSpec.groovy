@@ -91,14 +91,13 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
         id = element.id
     }
 
-    void "test get"() {
-
+    void 'test get'() {
 
         expect:
         service.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
 
         when:
         List<DataElement> dataElementList = service.list(max: 2, offset: 2)
@@ -121,13 +120,13 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
         dataElementList[1].dataTypeId == DataType.findByLabel('integer').id
     }
 
-    void "test count"() {
+    void 'test count'() {
 
         expect:
         service.count() == 5
     }
 
-    void "test delete"() {
+    void 'test delete'() {
 
         expect:
         service.count() == 5
@@ -139,7 +138,7 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
         service.count() == 4
     }
 
-    void "test save"() {
+    void 'test save'() {
 
         when:
         DataElement dataElement = new DataElement(createdBy: StandardEmailAddress.UNIT_TEST, label: 'saving test', dataClass: DataClass.get(contentId),

@@ -87,7 +87,7 @@ trait CsvComparer {
 
             if (!actualParser.iterator().hasNext()) {
                 // Number of records in expected exceeds that in actual
-                log.error("\nCould not find next actual record")
+                log.error('\nCould not find next actual record')
                 result = false
             }
 
@@ -110,7 +110,7 @@ trait CsvComparer {
 
         if (result && actualParser.iterator().hasNext()) {
             // Number of records in actual exceeds that in expected
-            log.error("\nAdditional actual record found")
+            log.error('\nAdditional actual record found')
             result = false
         }
 

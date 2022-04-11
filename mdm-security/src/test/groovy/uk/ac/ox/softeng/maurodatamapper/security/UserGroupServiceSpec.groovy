@@ -48,12 +48,12 @@ class UserGroupServiceSpec extends BaseUnitSpec implements ServiceUnitTest<UserG
         id = readers.id
     }
 
-    void "test get"() {
+    void 'test get'() {
         expect:
         service.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         when:
         List<UserGroup> userGroupList = service.list(max: 2, offset: 2)
 
@@ -83,12 +83,12 @@ class UserGroupServiceSpec extends BaseUnitSpec implements ServiceUnitTest<UserG
 
     }
 
-    void "test count"() {
+    void 'test count'() {
         expect:
         service.count() == 5
     }
 
-    void "test delete"() {
+    void 'test delete'() {
         expect:
         service.count() == 5
 
@@ -99,7 +99,7 @@ class UserGroupServiceSpec extends BaseUnitSpec implements ServiceUnitTest<UserG
         service.count() == 4
     }
 
-    void "test save"() {
+    void 'test save'() {
         when:
         UserGroup userGroup = service.createNewGroup(admin, 'pending', 'group for pending people', [pending])
         checkAndSave(userGroup)

@@ -191,8 +191,8 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
     }
 
 
-    void "Test the save action correctly persists an instance for enumeration type"() {
-        when: "The save action is executed with valid data"
+    void 'Test the save action correctly persists an instance for enumeration type'() {
+        when: 'The save action is executed with valid data'
         POST('',
              [
                  domainType       : 'EnumerationType',
@@ -203,7 +203,7 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
                  ]
              ], STRING_ARG)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyJsonResponse CREATED, '''{
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "domainType": "EnumerationType",
@@ -238,9 +238,9 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
     }'''
     }
 
-    void "RT01 : Test the save action correctly persists an instance for reference type"() {
+    void 'RT01 : Test the save action correctly persists an instance for reference type'() {
 
-        when: "The save action is executed with valid data"
+        when: 'The save action is executed with valid data'
         POST('',
              [
                  domainType    : 'ReferenceType',
@@ -249,7 +249,7 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
              ]
              , STRING_ARG)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyJsonResponse CREATED, '''{
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "domainType": "ReferenceType",
@@ -282,9 +282,9 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
     }'''
     }
 
-    void "RT02 : Test reference type saves without a label"() {
+    void 'RT02 : Test reference type saves without a label'() {
 
-        when: "The save action is executed with valid data"
+        when: 'The save action is executed with valid data'
         POST('',
              [
                  domainType    : 'ReferenceType',
@@ -292,7 +292,7 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
              ]
              , STRING_ARG)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyJsonResponse CREATED, '''{
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "domainType": "ReferenceType",
@@ -325,9 +325,9 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
     }'''
     }
 
-    void "RT03 : Test reference type saves without a label for a second time"() {
+    void 'RT03 : Test reference type saves without a label for a second time'() {
 
-        when: "The save action is executed with valid data"
+        when: 'The save action is executed with valid data'
         POST('',
              [
                  domainType    : 'ReferenceType',
@@ -335,7 +335,7 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
              ]
              , STRING_ARG)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyJsonResponse CREATED, '''{
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "domainType": "ReferenceType",
@@ -367,7 +367,7 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
       }
     }'''
 
-        when: "The save action is executed with valid data again"
+        when: 'The save action is executed with valid data again'
         POST('',
              [
                  domainType    : 'ReferenceType',
@@ -375,7 +375,7 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
              ]
              , STRING_ARG)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyJsonResponse CREATED, '''{
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "domainType": "ReferenceType",
@@ -409,8 +409,8 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
     }
 
 
-    void "MDT01 : Test the save action correctly persists an instance for modeldata type"() {
-        when: "The save action is executed with valid data"
+    void 'MDT01 : Test the save action correctly persists an instance for modeldata type'() {
+        when: 'The save action is executed with valid data'
         POST('', [
             domainType             : 'ModelDataType',
             label                  : 'functional modeldata',
@@ -418,7 +418,7 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
             modelResourceDomainType: 'DataModel'
         ], STRING_ARG)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyJsonResponse CREATED, '''{
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "domainType": "ModelDataType",
@@ -439,15 +439,15 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
     }'''
     }
 
-    void "MDT02 :  Test model data type saves without a label"() {
-        when: "The save action is executed with valid data"
+    void 'MDT02 :  Test model data type saves without a label'() {
+        when: 'The save action is executed with valid data'
         POST('', [
             domainType             : 'ModelDataType',
             modelResourceId        : otherDataModelId,
             modelResourceDomainType: 'DataModel'
         ], STRING_ARG)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyJsonResponse CREATED, '''{
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "domainType": "ModelDataType",

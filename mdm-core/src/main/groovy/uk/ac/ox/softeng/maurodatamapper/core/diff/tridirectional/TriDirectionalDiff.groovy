@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.BiDirectionalDiff
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 
@@ -41,13 +40,22 @@ abstract class TriDirectionalDiff<T> extends BiDirectionalDiff<T> {
     boolean equals(o) {
         if (this.is(o)) return true
         if (getClass() != o.class) return false
+        if (!super.equals(o)) return false
 
-        TriDirectionalDiff<T> diff = (TriDirectionalDiff<T>) o
+        TriDirectionalDiff that = (TriDirectionalDiff) o
 
-        if (source != diff.source) return false
-        if (target != diff.target) return false
+        if (commonAncestor != that.commonAncestor) return false
+        if (fullyQualifiedObjectPath != that.fullyQualifiedObjectPath) return false
+        mergeConflict == that.mergeConflict
+    }
 
-        return true
+    @Override
+    int hashCode() {
+        int result = super.hashCode()
+        result = 31 * result + (fullyQualifiedObjectPath != null ? fullyQualifiedObjectPath.hashCode() : 0)
+        result = 31 * result + (mergeConflict != null ? mergeConflict.hashCode() : 0)
+        result = 31 * result + (commonAncestor != null ? commonAncestor.hashCode() : 0)
+        result
     }
 
     TriDirectionalDiff<T> insideFullyQualifiedObjectPath(Path fullyQualifiedObjectPath) {

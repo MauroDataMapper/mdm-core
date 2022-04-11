@@ -43,10 +43,11 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 
-@SuppressWarnings("ClashingTraitMethods")
+@SuppressWarnings('ClashingTraitMethods')
 @Slf4j
 @Transactional
 class DataTypeService extends ModelItemService<DataType> implements DefaultDataTypeProvider, SummaryMetadataAwareService {
@@ -69,7 +70,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     @Override
     boolean handlesPathPrefix(String pathPrefix) {
         // Have to override as the DataType class is abstract and can therefore not be instantiated
-        pathPrefix == "dt"
+        pathPrefix == 'dt'
     }
 
     Long count() {
@@ -346,6 +347,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         }
     }
 
+    @SuppressFBWarnings('UPM_UNCALLED_PRIVATE_METHOD')
     private void matchReferenceClass(DataModel dataModel, ReferenceType referenceType, Map bindingMap = [:]) {
 
         if (bindingMap.dataClassPath) {
@@ -562,13 +564,13 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         } else if (resource.instanceOf(ModelDataType) && !resource.label) {
             ModelDataType modelDataType = resource as ModelDataType
             Model model = modelDataTypeService.findModelByDomainTypeAndDomainId(modelDataType.modelResourceDomainType, modelDataType.modelResourceId)
-            if (!model) {
+            if (model) {
+                String label = "Reference to ${model.label}"
+                resource.label = generateLabel ? generateDefaultLabel(dataModelId, label) : label
+            } else {
                 // If no model then unset everything to make sure the validation fails
                 modelDataType.modelResourceDomainType = null
                 modelDataType.modelResourceId = null
-            } else {
-                String label = "Reference to ${model.label}"
-                resource.label = generateLabel ? generateDefaultLabel(dataModelId, label) : label
             }
         }
         resource

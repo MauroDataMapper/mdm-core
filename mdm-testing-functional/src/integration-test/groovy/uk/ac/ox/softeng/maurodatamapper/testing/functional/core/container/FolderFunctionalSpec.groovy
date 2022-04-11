@@ -368,7 +368,7 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
       "id": "${json-unit.matches:id}",
       "domainType": "ReferenceDataModel",
       "label": "Simple Reference Data Model"
-    },    
+    },
     {
       "id": "${json-unit.matches:id}",
       "domainType": "DataModel",
@@ -459,7 +459,7 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
       "id": "${json-unit.matches:id}",
       "domainType": "ReferenceDataModel",
       "label": "Simple Reference Data Model"
-    },    
+    },
     {
       "id": "${json-unit.matches:id}",
       "domainType": "DataModel",
@@ -782,7 +782,7 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
         then:
         verifyJsonResponse OK, '''{
             "count": 0,
-            "items": [                
+            "items": [
             ]
         }'''
 

@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.api.exception
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.context.MessageSource
@@ -26,6 +27,7 @@ import org.springframework.validation.FieldError
 /**
  * @since 13/02/2018
  */
+@SuppressFBWarnings(value = 'SE_BAD_FIELD', justification = 'We need the fields and they can\'t be transient')
 class ApiInvalidModelException extends ApiException {
 
     private static final Logger logger = LoggerFactory.getLogger(ApiInvalidModelException)

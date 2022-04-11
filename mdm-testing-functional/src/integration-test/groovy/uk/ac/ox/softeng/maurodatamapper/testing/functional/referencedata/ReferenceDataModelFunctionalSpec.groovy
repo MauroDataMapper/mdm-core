@@ -241,7 +241,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "ReferenceDataModelExporter",
     "fileExtension": "json",
@@ -255,7 +255,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "ReferenceDataModelExporter",
     "fileExtension": "xml",
@@ -286,7 +286,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "ReferenceDataModelImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
@@ -300,7 +300,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "ReferenceDataModelImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
@@ -314,7 +314,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": false,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "ReferenceDataModelImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +

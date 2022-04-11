@@ -96,7 +96,7 @@ class ReferenceModelDataTypeValueConverter implements ValueConverter {
 
     protected static String[] getMessageCodes(String messageCode,
                                               Class objectType) {
-        String[] codes = [objectType.getName() + "." + messageCode, messageCode]
+        String[] codes = [objectType.getName() + '.' + messageCode, messageCode]
         codes
     }
 }

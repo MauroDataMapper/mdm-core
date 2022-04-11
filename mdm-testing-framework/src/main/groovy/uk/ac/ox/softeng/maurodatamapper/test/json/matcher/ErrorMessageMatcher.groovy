@@ -39,12 +39,12 @@ class ErrorMessageMatcher extends BaseMatcher<String> implements ParametrizedMat
 
     @Override
     void describeTo(Description description) {
-        description.appendText("It must be match the expected message")
+        description.appendText('It must be match the expected message')
     }
 
     @Override
     void describeMismatch(Object item, Description description) {
-        description.appendText("It must be match the expected message")
+        description.appendText('It must be match the expected message')
     }
 
     @Override

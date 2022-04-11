@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import grails.compiler.GrailsCompileStatic
 import groovy.transform.CompileDynamic
 import org.slf4j.Logger
@@ -41,7 +42,7 @@ trait MultiFacetItemAware extends MdmDomain {
 
     abstract String getEditLabel()
 
-  abstract def beforeInsert()
+    abstract beforeInsert()
 
     /**
      * Checks the status of the multiFacetAwareItemId field and sets it from the multiFacetAwareItem.
@@ -82,6 +83,7 @@ trait MultiFacetItemAware extends MdmDomain {
      * @param multiFacetAwareItemIfUnset The MFA to path from incase the facet only has the MFA id and MFA domaintype
      * @return
      */
+    @SuppressFBWarnings('BC_IMPOSSIBLE_INSTANCEOF')
     Path getFullPathInsideMultiFacetAwareItem(MultiFacetAware multiFacetAwareItemIfUnset = multiFacetAwareItem) {
         if (!multiFacetAwareItemIfUnset) {
             log.error('The MultiFacetAware Item is not set inside the facet, it needs to be passed into the method')

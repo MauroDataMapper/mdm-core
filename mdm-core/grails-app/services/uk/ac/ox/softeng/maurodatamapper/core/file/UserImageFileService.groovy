@@ -92,7 +92,7 @@ class UserImageFileService implements CatalogueFileService<UserImageFile> {
     }
 
     UserImageFile getDefaultNoProfileImageForUser(User user) {
-        log.info("Loading default profile image")
+        log.info('Loading default profile image')
         Resource resource = assetResourceLocator.findAssetForURI(UserImageFile.NO_PROFILE_IMAGE_FILE_NAME)
 
         if (resource) {

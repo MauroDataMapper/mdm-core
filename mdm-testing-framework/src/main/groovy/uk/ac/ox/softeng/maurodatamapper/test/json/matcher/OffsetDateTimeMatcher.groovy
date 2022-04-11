@@ -37,11 +37,11 @@ class OffsetDateTimeMatcher extends BaseMatcher<OffsetDateTime> {
 
     @Override
     void describeTo(Description description) {
-        description.appendText("It must be parseable by OffsetDateTime")
+        description.appendText('It must be parseable by OffsetDateTime')
     }
 
     @Override
     void describeMismatch(Object item, Description description) {
-        description.appendText("It must be parseable by OffsetDateTime")
+        description.appendText('It must be parseable by OffsetDateTime')
     }
 }

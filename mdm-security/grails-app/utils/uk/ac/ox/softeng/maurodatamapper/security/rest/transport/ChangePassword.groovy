@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security.rest.transport
 
-import grails.validation.Validateable;
+import grails.validation.Validateable
 
 class ChangePassword implements Validateable {
 

@@ -57,7 +57,7 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         String simpleTerminologyId = getSimpleTerminologyId()
 
         loginEditor()
-        POST("versionedFolders", [
+        POST('versionedFolders', [
             label: 'Functional Test VersionedFolder Complex'
         ])
         verifyResponse(CREATED, response)
@@ -93,7 +93,7 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
 
         loginEditor()
 
-        POST("versionedFolders", [
+        POST('versionedFolders', [
             label: 'Functional Test VersionedFolder With Sub Folders'
         ])
         verifyResponse(CREATED, response)
@@ -142,7 +142,7 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
 
     TestMergeData buildSimpleVersionedFoldersForMerging(boolean readLhs = true, boolean readRhs = true) {
         loginEditor()
-        POST("versionedFolders", [
+        POST('versionedFolders', [
             label: 'Functional Test VersionedFolder Simple'
         ])
         verifyResponse(CREATED, response)
@@ -374,7 +374,7 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
 
     String getSimpleTerminologyId() {
         loginEditor()
-        GET("terminologies/path/te:Simple%20Test%20Terminology")
+        GET('terminologies/path/te:Simple%20Test%20Terminology')
         verifyResponse(OK, response)
         String simpleTerminologyId = responseBody().id
         logout()
@@ -383,7 +383,7 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
 
     String getComplexTerminologyId() {
         loginEditor()
-        GET("terminologies/path/te:Complex%20Test%20Terminology")
+        GET('terminologies/path/te:Complex%20Test%20Terminology')
         verifyResponse(OK, response)
         String complexTerminologyId = responseBody().id
         logout()

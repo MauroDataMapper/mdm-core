@@ -589,7 +589,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
     "label": "Parent Functional Test Folder",
     "hasChildren": true,
     "availableActions": [
-      
+
     ],
     "deleted": false
   },
@@ -617,7 +617,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
   }
 ]''', '''[
       {
-  
+
     "id": "${json-unit.matches:id}",
     "domainType": "Folder",
     "label": "Functional Test Folder",

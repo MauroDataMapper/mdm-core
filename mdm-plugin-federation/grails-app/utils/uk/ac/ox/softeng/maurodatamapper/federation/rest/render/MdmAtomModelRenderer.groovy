@@ -47,9 +47,6 @@ import java.time.ZoneOffset
 @Slf4j
 class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
 
-    //Make our own Atom date format because AtomRenderer.ATOM_DATE_FORMAT does not pass validation
-    public static SimpleDateFormat MDM_ATOM_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
-
     public static final LocalDate MINTED_DATE = LocalDate.of(2021, 1, 27)
     public static final String AUTHOR_TAG = 'author'
     public static final String AUTHOR_NAME_TAG = 'name'
@@ -88,7 +85,7 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
 
         Set writtenObjects = []
         XMLStreamWriter writer = xml.getWriter()
-        writer.startDocument(encoding, "1.0")
+        writer.startDocument(encoding, '1.0')
 
         if (isDomain) {
             writeDomainWithEmbeddedAndLinks(entity, object, context, xml, writtenObjects)
@@ -189,10 +186,10 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
         }
 
         if (link.templated) {
-            writer.attribute(TEMPLATED_ATTRIBUTE, "true")
+            writer.attribute(TEMPLATED_ATTRIBUTE, 'true')
         }
         if (link.deprecated) {
-            writer.attribute(DEPRECATED_ATTRIBUTE, "true")
+            writer.attribute(DEPRECATED_ATTRIBUTE, 'true')
         }
         writer.end()
     }
@@ -223,7 +220,7 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
      */
     @Override
     protected String formatAtomDate(Date dateCreated) {
-        MDM_ATOM_DATE_FORMAT.format(dateCreated)
+        getMdmAtomDateFormat().format(dateCreated)
     }
 
     /**
@@ -293,7 +290,7 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
 
         //Use model label as the title
         writer.startNode(TITLE_ATTRIBUTE)
-            .characters(object.label + " " + object.modelVersion.toString())
+            .characters(object.label + ' ' + object.modelVersion.toString())
             .end()
 
         writer.startNode(UPDATED_TAG)
@@ -353,5 +350,10 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
 
     Date getMintedDate() {
         Date.from(MINTED_DATE.atStartOfDay().toInstant(ZoneOffset.UTC))
+    }
+
+    //Make our own Atom date format because AtomRenderer.ATOM_DATE_FORMAT does not pass validation
+    static SimpleDateFormat getMdmAtomDateFormat() {
+        new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
     }
 }

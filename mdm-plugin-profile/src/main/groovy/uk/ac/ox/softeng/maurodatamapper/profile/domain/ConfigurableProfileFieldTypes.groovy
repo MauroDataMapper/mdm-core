@@ -17,7 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile.domain
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+
 @Singleton
+@SuppressFBWarnings('MS_PKGPROTECT')
 class ConfigurableProfileFieldTypes {
 
     public static final String DATE_FORMAT_KEY = 'datatype.date.formats'

@@ -10,7 +10,7 @@ dependencies {
     implementation group: 'org.grails', name: 'grails-plugin-validation'
     implementation group: 'org.grails.plugins', name: 'views-json'
     implementation group: 'io.micronaut', name: 'micronaut-http'
-    implementation group: 'com.github.spotbugs', name: 'spotbugs-annotations'
+    api group: 'com.github.spotbugs', name: 'spotbugs-annotations'
 
     testImplementation 'org.spockframework:spock-core'
 

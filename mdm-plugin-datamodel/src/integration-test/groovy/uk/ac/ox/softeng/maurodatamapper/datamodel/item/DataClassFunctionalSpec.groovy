@@ -779,11 +779,11 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
          -> dataClass "content" @ 2
          */
         when: 'Three children are added to parent and are then listed'
-        POST("${bId}/dataClasses", [label: "child1", index: 0])
+        POST("${bId}/dataClasses", [label: 'child1', index: 0])
         String child1Id = responseBody().id
-        POST("${bId}/dataClasses", [label: "child2", index: 1])
+        POST("${bId}/dataClasses", [label: 'child2', index: 1])
         String child2Id = responseBody().id
-        POST("${bId}/dataClasses", [label: "child3", index: 2])
+        POST("${bId}/dataClasses", [label: 'child3', index: 2])
         String child3Id = responseBody().id
         GET("${bId}/dataClasses")
 

@@ -93,7 +93,7 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     String getUrlResourceName() {
-        "terminologies"
+        'terminologies'
     }
 
     Long count() {
@@ -637,7 +637,7 @@ class TerminologyService extends ModelService<Terminology> {
             tr.createdBy = tr.createdBy ?: terminology.createdBy
         }
 
-        log.debug("Terminology associations checked")
+        log.debug('Terminology associations checked')
     }
 
     @Override

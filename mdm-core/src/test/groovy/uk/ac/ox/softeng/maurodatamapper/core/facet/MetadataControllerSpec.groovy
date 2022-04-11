@@ -47,7 +47,7 @@ class MetadataControllerSpec extends ResourceControllerSpec<Metadata> implements
         mockDomains(Folder, BasicModel, Authority)
         log.debug('Setting up metadata controller unit')
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
-        Authority  testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: 'https://localhost', createdBy: UNIT_TEST)
         checkAndSave(testAuthority)
         basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
                                     authority: testAuthority)
@@ -88,7 +88,7 @@ class MetadataControllerSpec extends ResourceControllerSpec<Metadata> implements
     }
 
     @Unroll
-    void "Test the save action with using the same key"() {
+    void 'Test the save action with using the same key'() {
         given:
         givenParameters()
 

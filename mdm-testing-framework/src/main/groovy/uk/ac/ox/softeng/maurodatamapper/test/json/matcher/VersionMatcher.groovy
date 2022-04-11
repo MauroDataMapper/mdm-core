@@ -39,11 +39,11 @@ class VersionMatcher extends BaseMatcher<Version> {
 
     @Override
     void describeTo(Description description) {
-        description.appendText("It must be parseable to a version")
+        description.appendText('It must be parseable to a version')
     }
 
     @Override
     void describeMismatch(Object item, Description description) {
-        description.appendText("It must be parseable to a version")
+        description.appendText('It must be parseable to a version')
     }
 }

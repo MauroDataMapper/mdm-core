@@ -96,14 +96,14 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         id = element.id
     }
 
-    void "test get"() {
+    void 'test get'() {
         setupData()
 
         expect:
         dataElementService.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         setupData()
 
         when:
@@ -127,14 +127,14 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dataElementList[1].dataTypeId == DataType.findByLabel('integer').id
     }
 
-    void "test count"() {
+    void 'test count'() {
         setupData()
 
         expect:
         dataElementService.count() == 5
     }
 
-    void "test delete"() {
+    void 'test delete'() {
         setupData()
 
         expect:

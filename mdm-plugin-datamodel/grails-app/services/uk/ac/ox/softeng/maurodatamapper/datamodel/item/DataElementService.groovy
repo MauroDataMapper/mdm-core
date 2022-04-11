@@ -213,7 +213,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
 
     void matchUpDataTypes(DataModel dataModel, Collection<DataElement> dataElements) {
         if (dataElements) {
-            log.debug("Matching up {} DataElements to a possible {} DataTypes", dataElements.size(), dataModel.dataTypes.size())
+            log.debug('Matching up {} DataElements to a possible {} DataTypes', dataElements.size(), dataModel.dataTypes.size())
             def grouped = dataElements.groupBy {it.dataType.label}.sort {a, b ->
                 def res = a.value.size() <=> b.value.size()
                 if (res == 0) res = a.key <=> b.key

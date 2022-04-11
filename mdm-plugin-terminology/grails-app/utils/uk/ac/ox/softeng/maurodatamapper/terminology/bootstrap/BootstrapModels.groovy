@@ -83,7 +83,7 @@ class BootstrapModels {
         checkAndSave(messageSource, classifier1)
         checkAndSave(messageSource, terminology)
 
-        terminology.addToRules(name: "Bootstrapped Functional Test Rule",
+        terminology.addToRules(name: 'Bootstrapped Functional Test Rule',
                                description: 'Functional Test Description',
                                createdBy: DEVELOPMENT)
 
@@ -160,16 +160,16 @@ class BootstrapModels {
         }
         checkAndSave(messageSource, terminology)
 
-        narrowerThan.addToRules(name: "Bootstrapped Functional Test Rule",
+        narrowerThan.addToRules(name: 'Bootstrapped Functional Test Rule',
                                 description: 'Functional Test Description',
                                 createdBy: DEVELOPMENT)
-        terminology.findTermByCode('CTT1').addToRules(name: "Bootstrapped Functional Test Rule",
+        terminology.findTermByCode('CTT1').addToRules(name: 'Bootstrapped Functional Test Rule',
                                                       description: 'Functional Test Description',
                                                       createdBy: DEVELOPMENT)
         terminology.findTermByCode('CTT1').sourceTermRelationships[0]
-                   .addToRules(name: "Bootstrapped Functional Test Rule",
-                               description: 'Functional Test Description',
-                               createdBy: DEVELOPMENT)
+            .addToRules(name: 'Bootstrapped Functional Test Rule',
+                        description: 'Functional Test Description',
+                        createdBy: DEVELOPMENT)
 
         checkAndSave(messageSource, terminology)
 
@@ -255,7 +255,7 @@ class BootstrapModels {
 
         checkAndSave(messageSource, codeSet)
 
-        codeSet.addToRules(name: "Bootstrapped Functional Test Rule",
+        codeSet.addToRules(name: 'Bootstrapped Functional Test Rule',
                            description: 'Functional Test Description',
                            createdBy: DEVELOPMENT)
 

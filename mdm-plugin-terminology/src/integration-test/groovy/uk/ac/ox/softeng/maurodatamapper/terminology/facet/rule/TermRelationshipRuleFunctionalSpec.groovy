@@ -96,7 +96,7 @@ class TermRelationshipRuleFunctionalSpec extends CatalogueItemRuleFunctionalSpec
 
     @Override
     String getCatalogueItemDomainResourcePath() {
-        "termRelationships"
+        'termRelationships'
     }
 
     @Override

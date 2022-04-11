@@ -724,7 +724,7 @@ abstract class ModelService<K extends Model>
         if (leftModel.label != rightModel.label) {
             throw new ApiBadRequestException('MS03',
                                              "Model [${leftModel.id}] does not share its label with [${leftModel.id}] therefore they cannot have a " +
-                                             "common ancestor")
+                                             'common ancestor')
         }
 
         K finalisedLeftParent = getFinalisedParent(leftModel)

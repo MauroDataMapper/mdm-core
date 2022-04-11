@@ -34,7 +34,7 @@ class VersionLinkSpec extends MdmDomainSpec<VersionLink> implements DomainUnitTe
 
     def setup() {
         mockDomains(Folder, BasicModel, Authority)
-        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: 'https://localhost', createdBy: UNIT_TEST)
         checkAndSave(testAuthority)
         misc = new Folder(createdBy: admin.emailAddress, label: 'misc')
         db = new BasicModel(createdBy: admin.emailAddress, label: 'test', folder: misc, authority: testAuthority)

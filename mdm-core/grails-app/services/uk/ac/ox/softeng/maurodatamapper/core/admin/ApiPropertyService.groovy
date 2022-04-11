@@ -222,7 +222,7 @@ class ApiPropertyService {
                     log.warn('URL loading of API defaults file failed as asset not found')
                 }
             } else {
-                log.error("Cannot find the defaults.properties file")
+                log.error('Cannot find the defaults.properties file')
             }
         } catch (IOException e) {
             log.error('Something went wrong trying to load default API Properties', e)

@@ -49,7 +49,7 @@ class IdSecureFilterFactory extends FilterFactory {
     }
 
     static SearchPredicate createFilterPredicate(SearchPredicateFactory factory, String idField, Collection<UUID> allowedIds) {
-        if (idField) log.warn("DEPRECATED: Use of the idField in IdSecureFilterFactory")
+        if (idField) log.warn('DEPRECATED: Use of the idField in IdSecureFilterFactory')
         createFilter(factory, allowedIds).toPredicate()
     }
 }

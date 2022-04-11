@@ -437,7 +437,7 @@ class XmlReferenceDataImporterExporterServiceSpec extends BaseReferenceDataModel
 
         //Classifiers
         rdm.classifiers.size() == 1
-        rdm.classifiers[0].label == "An imported classifier"
+        rdm.classifiers[0].label == 'An imported classifier'
 
         //Reference Data Types
         rdm.referenceDataTypes.size() == 2

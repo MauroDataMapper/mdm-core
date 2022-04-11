@@ -65,14 +65,14 @@ class TermRelationshipServiceSpec extends BaseTerminologyIntegrationSpec {
         id = relationship1.id
     }
 
-    void "test get"() {
+    void 'test get'() {
         setupData()
 
         expect:
         termRelationshipService.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         setupData()
 
         when:
@@ -83,14 +83,14 @@ class TermRelationshipServiceSpec extends BaseTerminologyIntegrationSpec {
 
     }
 
-    void "test count"() {
+    void 'test count'() {
         setupData()
 
         expect:
         termRelationshipService.count() == 119
     }
 
-    void "test delete"() {
+    void 'test delete'() {
         setupData()
 
         expect:

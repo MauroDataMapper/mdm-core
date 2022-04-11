@@ -17,11 +17,11 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.unidirectional.CreationDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.unidirectional.DeletionDiff
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import groovy.transform.CompileStatic
 
 import static uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder.creationDiff
@@ -32,6 +32,7 @@ import static uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder.deletionDif
  * These collections are mutually exclusive
  */
 @CompileStatic
+@SuppressFBWarnings(value = 'EQ_DOESNT_OVERRIDE_EQUALS')
 class ArrayDiff<C extends Diffable> extends FieldDiff<Collection<C>> {
 
     Collection<CreationDiff<C>> created

@@ -99,7 +99,7 @@ class CodeSetSubscribedModelServiceIntegrationSpec extends BaseSubscribedModelSe
                 }
             }
         }'''
-    }    
+    }
 
     //Version link between Model versions 2 and 1
     String getRemoteModelVersion2VersionLinks() {

@@ -85,23 +85,22 @@ class HibernateSearch {
     static <T> PaginatedHibernateSearchResult<T> handleSearchException(Class<T> clazz, Closure closure, SearchException ex) {
         if (isTooManyClausesException(ex)) {
             log.warn('Initial search failed with {} exception and message [{}]', ex.class, ex.message)
-            String defaultQueries = Integer.toString(BooleanQuery.getMaxClauseCount());
-            int oldQueries = Integer.parseInt(System.getProperty("org.apache.lucene.maxClauseCount", defaultQueries))
+            String defaultQueries = Integer.toString(BooleanQuery.getMaxClauseCount())
+            int oldQueries = Integer.parseInt(System.getProperty('org.apache.lucene.maxClauseCount', defaultQueries))
             int newQueries = oldQueries * 2
             log.info('Too many clauses for query set to {}, increasing org.apache.lucene.maxClauseCount to {}', oldQueries, newQueries)
-            System.setProperty("org.apache.lucene.maxClauseCount", Integer.toString(newQueries))
+            System.setProperty('org.apache.lucene.maxClauseCount', Integer.toString(newQueries))
             BooleanQuery.setMaxClauseCount(newQueries)
             return paginatedList(clazz, [:], closure) as PaginatedHibernateSearchResult<T>
-        } else {
-            log.error('Search failed for unhandled reason', ex)
-            throw ex
         }
+        log.error('Search failed for unhandled reason', ex)
+        throw ex
     }
 
     static boolean isTooManyClausesException(Throwable throwable) {
         if (!throwable) return null
         if (throwable instanceof BooleanQuery.TooManyClauses) return true
         if (!throwable.cause) return false
-        return isTooManyClausesException(throwable.cause)
+        isTooManyClausesException(throwable.cause)
     }
 }

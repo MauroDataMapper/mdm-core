@@ -33,7 +33,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 
 @Slf4j
 @Transactional
@@ -41,8 +40,6 @@ class DataFlowService extends ModelItemService<DataFlow> {
 
     DataClassComponentService dataClassComponentService
     PathService pathService
-
-    private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler()
 
     @Override
     DataFlow get(Serializable id) {

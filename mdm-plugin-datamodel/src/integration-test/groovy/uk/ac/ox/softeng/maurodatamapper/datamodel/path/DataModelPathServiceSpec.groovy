@@ -155,7 +155,7 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
     Get each of the three DataClasses in data model 1, by specifying the data class ID and label
      */
 
-    void "test get of data classes in data model 1 by data class ID"() {
+    void 'test get of data classes in data model 1 by data class ID'() {
         given:
         setupData()
         CatalogueItem catalogueItem
@@ -165,8 +165,8 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         catalogueItem = pathService.findResourceByPathFromRootClass(DataModel, path) as CatalogueItem
 
         then:
-        catalogueItem.label == "data class 1"
-        catalogueItem.domainType == "DataClass"
+        catalogueItem.label == 'data class 1'
+        catalogueItem.domainType == 'DataClass'
         catalogueItem.model.id == dataModel1.id
 
         //This one (data class 1_1) is nested inside data class 1
@@ -175,8 +175,8 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         catalogueItem = pathService.findResourceByPathFromRootClass(DataModel, path) as CatalogueItem
 
         then:
-        catalogueItem.label == "data class 1_1"
-        catalogueItem.domainType == "DataClass"
+        catalogueItem.label == 'data class 1_1'
+        catalogueItem.domainType == 'DataClass'
         catalogueItem.model.id == dataModel1.id
 
         when:
@@ -184,8 +184,8 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         catalogueItem = pathService.findResourceByPathFromRootClass(DataModel, path) as CatalogueItem
 
         then:
-        catalogueItem.label == "data class 2"
-        catalogueItem.domainType == "DataClass"
+        catalogueItem.label == 'data class 2'
+        catalogueItem.domainType == 'DataClass'
         catalogueItem.model.id == dataModel1.id
 
         when:
@@ -193,8 +193,8 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         catalogueItem = pathService.findResourceByPathFromRootClass(DataModel, path) as CatalogueItem
 
         then:
-        catalogueItem.label == "data class 3"
-        catalogueItem.domainType == "DataClass"
+        catalogueItem.label == 'data class 3'
+        catalogueItem.domainType == 'DataClass'
         catalogueItem.model.id == dataModel1.id
     }
 
@@ -202,7 +202,7 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
     Get each of the four DataClasses in data model 2, by specifying the data class ID and label
      */
 
-    void "test get of data classes in data model 2 by data class ID"() {
+    void 'test get of data classes in data model 2 by data class ID'() {
         given:
         setupData()
         CatalogueItem catalogueItem
@@ -212,8 +212,8 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         catalogueItem = pathService.findResourceByPathFromRootClass(DataModel, path) as CatalogueItem
 
         then:
-        catalogueItem.label == "data class 1"
-        catalogueItem.domainType == "DataClass"
+        catalogueItem.label == 'data class 1'
+        catalogueItem.domainType == 'DataClass'
         catalogueItem.model.id == dataModel2.id
 
         when:
@@ -221,8 +221,8 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         catalogueItem = pathService.findResourceByPathFromRootClass(DataModel, path) as CatalogueItem
 
         then:
-        catalogueItem.label == "data class 2"
-        catalogueItem.domainType == "DataClass"
+        catalogueItem.label == 'data class 2'
+        catalogueItem.domainType == 'DataClass'
         catalogueItem.model.id == dataModel2.id
 
         when:
@@ -230,8 +230,8 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         catalogueItem = pathService.findResourceByPathFromRootClass(DataModel, path) as CatalogueItem
 
         then:
-        catalogueItem.label == "data class 3"
-        catalogueItem.domainType == "DataClass"
+        catalogueItem.label == 'data class 3'
+        catalogueItem.domainType == 'DataClass'
         catalogueItem.model.id == dataModel2.id
 
         when:
@@ -239,17 +239,16 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         catalogueItem = pathService.findResourceByPathFromRootClass(DataModel, path) as CatalogueItem
 
         then:
-        catalogueItem.label == "data class 4"
-        catalogueItem.domainType == "DataClass"
+        catalogueItem.label == 'data class 4'
+        catalogueItem.domainType == 'DataClass'
         catalogueItem.model.id == dataModel2.id
     }
-
 
     /*
     Get data model 1 by specifying its ID and label
      */
 
-    void "test get of data model 1"() {
+    void 'test get of data model 1'() {
         given:
         setupData()
 
@@ -258,22 +257,22 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         CatalogueItem catalogueItem = pathService.findResourceByPathFromRootClass(DataModel, path) as CatalogueItem
 
         then:
-        catalogueItem.label == "data model 1"
-        catalogueItem.domainType == "DataModel"
+        catalogueItem.label == 'data model 1'
+        catalogueItem.domainType == 'DataModel'
 
         when: 'providing the ID and using absolute path from the id'
         catalogueItem = pathService.findResourceByPathFromRootResource(dataModel1, path) as CatalogueItem
 
         then:
-        catalogueItem.label == "data model 1"
-        catalogueItem.domainType == "DataModel"
+        catalogueItem.label == 'data model 1'
+        catalogueItem.domainType == 'DataModel'
     }
 
     /*
     Get data model 2 by specifying its ID and label
     */
 
-    void "test get of data model 2"() {
+    void 'test get of data model 2'() {
         given:
         setupData()
 
@@ -282,15 +281,15 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         CatalogueItem catalogueItem = pathService.findResourceByPathFromRootClass(DataModel, path) as CatalogueItem
 
         then:
-        catalogueItem.label == "data model 2"
-        catalogueItem.domainType == "DataModel"
+        catalogueItem.label == 'data model 2'
+        catalogueItem.domainType == 'DataModel'
     }
 
     /*
     Get the data classes in data model 1 by specifying the ID of the data model and the label of the data class
      */
 
-    void "test get of data classes by label in data model 1"() {
+    void 'test get of data classes by label in data model 1'() {
         given:
         setupData()
         Map params
@@ -301,8 +300,8 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         catalogueItem = pathService.findResourceByPathFromRootResource(dataModel1, path) as CatalogueItem
 
         then:
-        catalogueItem.label == "data class 1"
-        catalogueItem.domainType == "DataClass"
+        catalogueItem.label == 'data class 1'
+        catalogueItem.domainType == 'DataClass'
         catalogueItem.model.id == dataModel1.id
 
         //This is the nested data class
@@ -311,8 +310,8 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         catalogueItem = pathService.findResourceByPathFromRootResource(dataModel1, path) as CatalogueItem
 
         then:
-        catalogueItem.label == "data class 1_1"
-        catalogueItem.domainType == "DataClass"
+        catalogueItem.label == 'data class 1_1'
+        catalogueItem.domainType == 'DataClass'
         catalogueItem.model.id == dataModel1.id
 
         when:
@@ -320,8 +319,8 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         catalogueItem = pathService.findResourceByPathFromRootResource(dataModel1, path) as CatalogueItem
 
         then:
-        catalogueItem.label == "data class 2"
-        catalogueItem.domainType == "DataClass"
+        catalogueItem.label == 'data class 2'
+        catalogueItem.domainType == 'DataClass'
         catalogueItem.model.id == dataModel1.id
 
         when:
@@ -329,8 +328,8 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         catalogueItem = pathService.findResourceByPathFromRootResource(dataModel1, path) as CatalogueItem
 
         then:
-        catalogueItem.label == "data class 3"
-        catalogueItem.domainType == "DataClass"
+        catalogueItem.label == 'data class 3'
+        catalogueItem.domainType == 'DataClass'
         catalogueItem.model.id == dataModel1.id
 
         when:
@@ -345,8 +344,8 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         catalogueItem = pathService.findResourceByPathFromRootResource(dataModel1, path) as CatalogueItem
 
         then:
-        catalogueItem.label == "data class 1"
-        catalogueItem.domainType == "DataClass"
+        catalogueItem.label == 'data class 1'
+        catalogueItem.domainType == 'DataClass'
         catalogueItem.model.id == dataModel1.id
     }
 
@@ -354,7 +353,7 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
     Get the data classes in data model 2 by specifying the ID of the data model and the label of the data class
     */
 
-    void "test get of data classes by label in data model 2"() {
+    void 'test get of data classes by label in data model 2'() {
         given:
         setupData()
         Map params
@@ -365,8 +364,8 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         catalogueItem = pathService.findResourceByPathFromRootResource(dataModel2, path) as CatalogueItem
 
         then:
-        catalogueItem.label == "data class 1"
-        catalogueItem.domainType == "DataClass"
+        catalogueItem.label == 'data class 1'
+        catalogueItem.domainType == 'DataClass'
         catalogueItem.model.id == dataModel2.id
 
         when:
@@ -374,8 +373,8 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         catalogueItem = pathService.findResourceByPathFromRootResource(dataModel2, path) as CatalogueItem
 
         then:
-        catalogueItem.label == "data class 2"
-        catalogueItem.domainType == "DataClass"
+        catalogueItem.label == 'data class 2'
+        catalogueItem.domainType == 'DataClass'
         catalogueItem.model.id == dataModel2.id
 
         when:
@@ -383,8 +382,8 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         catalogueItem = pathService.findResourceByPathFromRootResource(dataModel2, path) as CatalogueItem
 
         then:
-        catalogueItem.label == "data class 3"
-        catalogueItem.domainType == "DataClass"
+        catalogueItem.label == 'data class 3'
+        catalogueItem.domainType == 'DataClass'
         catalogueItem.model.id == dataModel2.id
 
         when:
@@ -392,8 +391,8 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         catalogueItem = pathService.findResourceByPathFromRootResource(dataModel2, path) as CatalogueItem
 
         then:
-        catalogueItem.label == "data class 4"
-        catalogueItem.domainType == "DataClass"
+        catalogueItem.label == 'data class 4'
+        catalogueItem.domainType == 'DataClass'
         catalogueItem.model.id == dataModel2.id
     }
 
@@ -401,7 +400,7 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
     Get the data element 1 in data model 2
     */
 
-    void "test get of data element"() {
+    void 'test get of data element'() {
         given:
         setupData()
         CatalogueItem catalogueItem
@@ -412,8 +411,8 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         catalogueItem = pathService.findResourceByPathFromRootClass(DataModel, path) as CatalogueItem
 
         then:
-        catalogueItem.label == "data element 1"
-        catalogueItem.domainType == "DataElement"
+        catalogueItem.label == 'data element 1'
+        catalogueItem.domainType == 'DataElement'
         catalogueItem.model.id == dataModel2.id
 
         //When the data model is root
@@ -422,8 +421,8 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         catalogueItem = pathService.findResourceByPathFromRootResource(dataModel2, path) as CatalogueItem
 
         then:
-        catalogueItem.label == "data element 1"
-        catalogueItem.domainType == "DataElement"
+        catalogueItem.label == 'data element 1'
+        catalogueItem.domainType == 'DataElement'
         catalogueItem.model.id == dataModel2.id
     }
 
@@ -431,7 +430,7 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
     Get the data type in data model 2
     */
 
-    void "test get of data type"() {
+    void 'test get of data type'() {
         given:
         setupData()
         CatalogueItem catalogueItem
@@ -442,8 +441,8 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         catalogueItem = pathService.findResourceByPathFromRootResource(dataModel2, path) as CatalogueItem
 
         then:
-        catalogueItem.label == "path service test data type"
-        catalogueItem.domainType == "PrimitiveType"
+        catalogueItem.label == 'path service test data type'
+        catalogueItem.domainType == 'PrimitiveType'
         catalogueItem.model.id == dataModel2.id
 
         //When the data model label is provided
@@ -452,8 +451,8 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         catalogueItem = pathService.findResourceByPathFromRootClass(DataModel, path) as CatalogueItem
 
         then:
-        catalogueItem.label == "path service test data type"
-        catalogueItem.domainType == "PrimitiveType"
+        catalogueItem.label == 'path service test data type'
+        catalogueItem.domainType == 'PrimitiveType'
         catalogueItem.model.id == dataModel2.id
     }
 
@@ -467,8 +466,8 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         catalogueItem = pathService.findResourceByPathFromRootClass(DataModel, path) as CatalogueItem
 
         then: 'we find the class called data class 1 which does not have a parent data class'
-        catalogueItem.label == "data class 1"
-        catalogueItem.domainType == "DataClass"
+        catalogueItem.label == 'data class 1'
+        catalogueItem.domainType == 'DataClass'
         catalogueItem.model.id == dataModel3.id
         !catalogueItem.parentDataClass
 
@@ -477,9 +476,9 @@ class DataModelPathServiceSpec extends BaseDataModelIntegrationSpec {
         catalogueItem = pathService.findResourceByPathFromRootClass(DataModel, path) as CatalogueItem
 
         then: 'we find the class called data class 1 which does have a parent data class called data class core'
-        catalogueItem.label == "data class 1"
-        catalogueItem.domainType == "DataClass"
+        catalogueItem.label == 'data class 1'
+        catalogueItem.domainType == 'DataClass'
         catalogueItem.model.id == dataModel3.id
-        catalogueItem.parentDataClass.label == "data class core"
+        catalogueItem.parentDataClass.label == 'data class core'
     }
 }

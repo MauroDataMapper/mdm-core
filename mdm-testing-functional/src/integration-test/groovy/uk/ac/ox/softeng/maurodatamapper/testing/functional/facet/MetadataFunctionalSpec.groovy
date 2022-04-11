@@ -108,7 +108,7 @@ class MetadataFunctionalSpec extends FunctionalSpec {
     "defaultNamespace": true,
     "editable": true,
     "keys": [
-      
+
     ],
     "namespace": "uk.ac.ox.softeng.maurodatamapper.core.provider.email"
   },
@@ -116,7 +116,7 @@ class MetadataFunctionalSpec extends FunctionalSpec {
     "defaultNamespace": true,
     "editable": true,
     "keys": [
-    
+
     ],
     "namespace": "uk.ac.ox.softeng.maurodatamapper.core.container.provider.exporter"
   },
@@ -124,7 +124,7 @@ class MetadataFunctionalSpec extends FunctionalSpec {
     "defaultNamespace": true,
     "editable": true,
     "keys": [
-      
+
     ],
     "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter"
   },
@@ -132,7 +132,7 @@ class MetadataFunctionalSpec extends FunctionalSpec {
     "defaultNamespace": true,
     "editable": true,
     "keys": [
-      
+
     ],
     "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer"
   },
@@ -140,7 +140,7 @@ class MetadataFunctionalSpec extends FunctionalSpec {
     "defaultNamespace": true,
     "editable": true,
     "keys": [
-      
+
     ],
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter"
   },
@@ -148,7 +148,7 @@ class MetadataFunctionalSpec extends FunctionalSpec {
     "defaultNamespace": true,
     "editable": true,
     "keys": [
-      
+
     ],
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer"
   },
@@ -156,7 +156,7 @@ class MetadataFunctionalSpec extends FunctionalSpec {
     "defaultNamespace": true,
     "editable": true,
     "keys": [
-      
+
     ],
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter"
   },
@@ -164,7 +164,7 @@ class MetadataFunctionalSpec extends FunctionalSpec {
     "defaultNamespace": true,
     "editable": true,
     "keys": [
-      
+
     ],
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer"
   },
@@ -172,7 +172,7 @@ class MetadataFunctionalSpec extends FunctionalSpec {
     "defaultNamespace": true,
     "editable": true,
     "keys": [
-      
+
     ],
     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter"
   },
@@ -180,7 +180,7 @@ class MetadataFunctionalSpec extends FunctionalSpec {
     "defaultNamespace": true,
     "editable": true,
     "keys": [
-      
+
     ],
     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer"
   }

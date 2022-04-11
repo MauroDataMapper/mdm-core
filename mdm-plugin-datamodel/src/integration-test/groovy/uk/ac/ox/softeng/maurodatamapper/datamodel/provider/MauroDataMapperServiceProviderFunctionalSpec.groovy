@@ -55,7 +55,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "DataModelExporter",
     "fileExtension": "json",
@@ -69,7 +69,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "DataModelExporter",
     "fileExtension": "xml",
@@ -83,7 +83,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.core.container.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-    
+
     ],
     "providerType": "FolderExporter",
     "fileExtension": "json",
@@ -103,7 +103,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
     "order": ''' + Ordered.LOWEST_PRECEDENCE + ''',
     "providerType": "Email",
     "knownMetadataKeys": [
-      
+
     ],
     "displayName": "Basic Email Provider",
     "name": "BasicEmailProviderService",
@@ -127,7 +127,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "DataModelImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters",
@@ -140,7 +140,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "DataModelImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters",

@@ -44,7 +44,7 @@ class MetadataServiceSpec extends MultiFacetItemAwareServiceSpec<Metadata, Metad
         MauroDataMapperServiceProviderService mauroDataMapperServiceProviderService =
             applicationContext.getBean(MauroDataMapperServiceProviderService)
 
-        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: 'https://localhost', createdBy: UNIT_TEST)
         checkAndSave(testAuthority)
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
         basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
@@ -75,12 +75,12 @@ class MetadataServiceSpec extends MultiFacetItemAwareServiceSpec<Metadata, Metad
 
     }
 
-    void "test get"() {
+    void 'test get'() {
         expect:
         service.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         when:
         List<Metadata> metadataList = service.list(max: 2, offset: 2)
 
@@ -98,12 +98,12 @@ class MetadataServiceSpec extends MultiFacetItemAwareServiceSpec<Metadata, Metad
         metadataList[1].value == 'value4'
     }
 
-    void "test count"() {
+    void 'test count'() {
         expect:
         service.count() == 6
     }
 
-    void "test delete"() {
+    void 'test delete'() {
         expect:
         service.count() == 6
 

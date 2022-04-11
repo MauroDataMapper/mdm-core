@@ -107,12 +107,12 @@ class SendEmailTask implements Runnable {
             log.warn("Possible failure to send email due to IllegalStateException: ${illegalStateException.message}")
         }
         catch (RuntimeException runtimeException) {
-            log.error("Unhandled runtime exception", runtimeException)
-            throw new ApiInternalException("ES01", "Something went wrong sending email", runtimeException)
+            log.error('Unhandled runtime exception', runtimeException)
+            throw new ApiInternalException('ES01', 'Something went wrong sending email', runtimeException)
         }
         catch (Exception exception) {
-            log.error("Unhandled exception", exception)
-            throw new ApiInternalException("ES02", "Something went wrong sending email", exception)
+            log.error('Unhandled exception', exception)
+            throw new ApiInternalException('ES02', 'Something went wrong sending email', exception)
         }
     }
 }

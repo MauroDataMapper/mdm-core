@@ -46,51 +46,51 @@ class EmailFunctionalSpec extends BaseFunctionalSpec {
         ]
     }
 
-    void "Test the index action"() {
-        when: "The index action is requested"
+    void 'Test the index action'() {
+        when: 'The index action is requested'
         HttpResponse<Map> response = client.toBlocking().exchange(HttpRequest.GET(resourcePath), Map)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         response.status == HttpStatus.OK
         response.body() == [count: 0, items: []]
     }
 
-    void "Test the save action correctly persists an instance"() {
-        when: "The save action is executed with valid data"
+    void 'Test the save action correctly persists an instance'() {
+        when: 'The save action is executed with valid data'
         client.toBlocking().exchange(HttpRequest.POST(resourcePath, validJson), Map)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         def e = thrown(HttpClientResponseException)
         e.response.status == HttpStatus.NOT_FOUND
     }
 
-    void "Test the update action correctly updates an instance"() {
-        when: "The update action is executed with valid data"
+    void 'Test the update action correctly updates an instance'() {
+        when: 'The update action is executed with valid data'
         String path = "${resourcePath}/1"
         client.toBlocking().exchange(HttpRequest.PUT(path, validJson), Map)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         def e = thrown(HttpClientResponseException)
         e.response.status == HttpStatus.NOT_FOUND
     }
 
-    void "Test the show action correctly renders an instance"() {
-        when: "When the show action is called to retrieve a resource"
+    void 'Test the show action correctly renders an instance'() {
+        when: 'When the show action is called to retrieve a resource'
         def id = '1'
         String path = "${resourcePath}/${id}"
         client.toBlocking().exchange(HttpRequest.GET(path), Map)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         def e = thrown(HttpClientResponseException)
         e.response.status == HttpStatus.NOT_FOUND
     }
 
-    void "Test the delete action correctly deletes an instance"() {
-        when: "When the delete action is executed on an unknown instance"
+    void 'Test the delete action correctly deletes an instance'() {
+        when: 'When the delete action is executed on an unknown instance'
         def path = "${resourcePath}/99999"
         client.toBlocking().exchange(HttpRequest.DELETE(path))
 
-        then: "The response is correct"
+        then: 'The response is correct'
         def e = thrown(HttpClientResponseException)
         e.response.status == HttpStatus.NOT_FOUND
     }

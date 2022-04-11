@@ -84,7 +84,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
         Set<ProfileProviderService> usedProfiles = profileService.getUsedProfileServices(multiFacetAware)
         Set<String> profileNamespaces = usedProfiles.collect {it.metadataNamespace}
         respond metadataService.findAllByMultiFacetAwareItemIdAndNotNamespaces(multiFacetAware.id, profileNamespaces.asList(), params),
-                view: "/metadata/index"
+                view: '/metadata/index'
     }
 
     @Transactional
@@ -174,7 +174,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
     }
 
     def validate() {
-        log.debug("Validating profile")
+        log.debug('Validating profile')
         MultiFacetAware multiFacetAware = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
 
         if (!multiFacetAware) {
@@ -210,7 +210,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
      * @return
      */
     private handleMany(boolean validateOnly, ProfileProvidedCollection profileProvidedCollection) {
-        log.debug("Handling many items profiles")
+        log.debug('Handling many items profiles')
 
         // The multiFacetAware item referenced in the URI, is expected to be a model
         MultiFacetAware model = profileService.findMultiFacetAwareItemByDomainTypeAndId(

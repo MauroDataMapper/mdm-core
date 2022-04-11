@@ -141,7 +141,6 @@ class EnumerationValueService extends ModelItemService<EnumerationValue> impleme
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(DataModel)
         if (!readableIds) return []
 
-
         List<EnumerationValue> results = []
         if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
             log.debug('Performing hs label search')
@@ -160,7 +159,7 @@ class EnumerationValueService extends ModelItemService<EnumerationValue> impleme
         EnumerationValue.byIdAndEnumerationType(resourceId, enumerationTypeId).find()
     }
 
-    private List<EnumerationValue> findAllByEnumerationType(UUID enumerationTypeId, Map pagination = [:]) {
+    List<EnumerationValue> findAllByEnumerationType(UUID enumerationTypeId, Map pagination = [:]) {
         EnumerationValue.byEnumerationType(enumerationTypeId).list(pagination)
     }
 

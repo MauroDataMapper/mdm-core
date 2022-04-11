@@ -242,7 +242,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
         assert body.lastUpdated
     }
 
-    void "DT01: Test the save action correctly persists an instance for enumeration type"() {
+    void 'DT01: Test the save action correctly persists an instance for enumeration type'() {
         given:
         loginCreator()
         Map validJson = [
@@ -254,10 +254,10 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
             ]
         ]
 
-        when: "The save action is executed with valid data"
+        when: 'The save action is executed with valid data'
         POST('', validJson)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyResponse HttpStatus.CREATED, response
         String id = responseBody().id
         assert responseBody().domainType == 'EnumerationType'
@@ -308,12 +308,12 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
         removeValidIdObject(id)
     }
 
-    void "DT02: Test the save action correctly persists an instance for reference type"() {
+    void 'DT02: Test the save action correctly persists an instance for reference type'() {
         given:
         loginCreator()
 
 
-        when: "The save action is executed with valid data"
+        when: 'The save action is executed with valid data'
         POST('', [
             domainType    : 'ReferenceType',
             label         : 'Functional Reference Type',
@@ -321,7 +321,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
         ])
 
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyResponse HttpStatus.CREATED, response
         String id = responseBody().id
         assert responseBody().domainType == 'ReferenceType'
@@ -371,7 +371,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
         removeValidIdObject(id)
     }
 
-    void "DT03: Test the save action correctly persists an instance for model data type"() {
+    void 'DT03: Test the save action correctly persists an instance for model data type'() {
         given:
         UUID modelId = UUID.randomUUID()
         loginCreator()
@@ -382,10 +382,10 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
             modelResourceDomainType: 'Terminology'
         ]
 
-        when: "The save action is executed with valid data"
+        when: 'The save action is executed with valid data'
         POST('', validJson)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyResponse HttpStatus.CREATED, response
         String id = responseBody().id
         responseBody().domainType == 'ModelDataType'

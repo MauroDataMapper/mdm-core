@@ -40,11 +40,11 @@ class IdMatcher extends BaseMatcher<UUID> {
 
     @Override
     void describeTo(Description description) {
-        description.appendText("It must be parseable to UUID")
+        description.appendText('It must be parseable to UUID')
     }
 
     @Override
     void describeMismatch(Object item, Description description) {
-        description.appendText("It must be parseable to UUID")
+        description.appendText('It must be parseable to UUID')
     }
 }

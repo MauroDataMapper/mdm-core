@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import groovy.transform.CompileStatic
 
 /**
@@ -27,6 +28,7 @@ import groovy.transform.CompileStatic
  * These collections are mutually exclusive
  */
 @CompileStatic
+@SuppressFBWarnings(value = 'EQ_DOESNT_OVERRIDE_EQUALS')
 class ArrayMergeDiff<C extends Diffable> extends FieldMergeDiff<Collection<C>> {
 
     Collection<CreationMergeDiff<C>> created

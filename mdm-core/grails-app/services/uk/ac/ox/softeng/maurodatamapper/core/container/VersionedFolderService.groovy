@@ -76,7 +76,6 @@ import org.grails.datastore.gorm.GormValidateable
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.orm.hibernate.cfg.JoinTable
 import org.grails.orm.hibernate.cfg.PropertyConfig
-import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 import org.hibernate.engine.spi.SessionFactoryImplementor
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
@@ -88,8 +87,6 @@ import java.util.function.Predicate
 @Transactional
 @Slf4j
 class VersionedFolderService extends ContainerService<VersionedFolder> implements VersionLinkAwareService<VersionedFolder> {
-
-    protected static HibernateProxyHandler proxyHandler = new HibernateProxyHandler()
 
     FolderService folderService
     EditService editService
@@ -644,8 +641,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         if (leftModel.label != rightModel.label) {
             throw new ApiBadRequestException('VFS03',
                                              "VersionedFolder [${leftModel.id}] does not share its label with [${rightModel.id}] therefore they " +
-                                             "cannot have a " +
-                                             "common ancestor")
+                                             'cannot have a common ancestor')
         }
 
         VersionedFolder finalisedLeftParent = getFinalisedParent(leftModel)

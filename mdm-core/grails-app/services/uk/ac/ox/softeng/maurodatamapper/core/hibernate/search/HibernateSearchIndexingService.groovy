@@ -82,7 +82,7 @@ class HibernateSearchIndexingService {
     void purgeAllIndexes() {
         log.warn('Purging all existing indexes from hs')
         Search.mapping(sessionFactory).allIndexedEntities().each {domain ->
-            searchSession.workspace(domain.javaClass()).purge();
+            searchSession.workspace(domain.javaClass()).purge()
         }
     }
 

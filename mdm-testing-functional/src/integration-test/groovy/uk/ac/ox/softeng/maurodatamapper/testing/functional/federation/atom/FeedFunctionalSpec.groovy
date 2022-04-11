@@ -49,9 +49,9 @@ class FeedFunctionalSpec extends FunctionalSpec implements XmlComparer {
 
     void 'Get Atom feed when not logged in'() {
         when:
-        HttpResponse<String> xmlResponse = GET("feeds/all", STRING_ARG)
+        HttpResponse<String> xmlResponse = GET('feeds/all', STRING_ARG)
 
-        then: "The response is OK with no entries"
+        then: 'The response is OK with no entries'
         verifyBaseAtomResponse(xmlResponse, false, 'localhost')
     }
 
@@ -60,7 +60,7 @@ class FeedFunctionalSpec extends FunctionalSpec implements XmlComparer {
         loginReader()
 
         when:
-        HttpResponse<String> xmlResponse = GET("feeds/all", STRING_ARG)
+        HttpResponse<String> xmlResponse = GET('feeds/all', STRING_ARG)
 
         then:
         GPathResult feed = verifyBaseAtomResponse(xmlResponse, true, 'localhost')
@@ -80,7 +80,7 @@ class FeedFunctionalSpec extends FunctionalSpec implements XmlComparer {
         verifyResponse CREATED, response
 
         when:
-        HttpResponse<String> xmlResponse = GET("feeds/all", STRING_ARG)
+        HttpResponse<String> xmlResponse = GET('feeds/all', STRING_ARG)
 
         then:
         GPathResult feed = verifyBaseAtomResponse(xmlResponse, true, 'www.mauro-data-mapper.com', '/cdw')

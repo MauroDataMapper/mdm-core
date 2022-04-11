@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security.policy
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup

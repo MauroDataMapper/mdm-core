@@ -59,7 +59,7 @@ class UserGroupServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
         id = readers.id
     }
 
-    void "test get"() {
+    void 'test get'() {
         given:
         setupData()
 
@@ -67,7 +67,7 @@ class UserGroupServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
         userGroupService.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         given:
         setupData()
 
@@ -100,7 +100,7 @@ class UserGroupServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
 
     }
 
-    void "test count"() {
+    void 'test count'() {
         given:
         setupData()
 
@@ -108,7 +108,7 @@ class UserGroupServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
         userGroupService.count() == 5
     }
 
-    void "test delete"() {
+    void 'test delete'() {
         given:
         setupData()
 
@@ -122,7 +122,7 @@ class UserGroupServiceIntegrationSpec extends BaseIntegrationSpec implements Sec
         userGroupService.count() == 4
     }
 
-    void "test save"() {
+    void 'test save'() {
         given:
         setupData()
 

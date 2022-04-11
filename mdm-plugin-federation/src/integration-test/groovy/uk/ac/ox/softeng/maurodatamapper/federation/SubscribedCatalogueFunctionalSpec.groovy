@@ -84,14 +84,14 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
         verifyResponse CREATED, response
         String newerId1 = response.body().id
 
-        PUT("dataModels/${newerId1}/finalise", [versionChangeType: "Major"], MAP_ARG, true)
+        PUT("dataModels/${newerId1}/finalise", [versionChangeType: 'Major'], MAP_ARG, true)
         verifyResponse OK, response
 
         PUT("dataModels/${newerId1}/newBranchModelVersion", [:], MAP_ARG, true)
         verifyResponse CREATED, response
         String newerId2 = response.body().id
 
-        PUT("dataModels/${newerId2}/finalise", [versionChangeType: "Major"], MAP_ARG, true)
+        PUT("dataModels/${newerId2}/finalise", [versionChangeType: 'Major'], MAP_ARG, true)
         verifyResponse OK, response
 
         new Tuple(newerId1, newerId2)

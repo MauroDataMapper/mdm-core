@@ -48,7 +48,7 @@ trait MdmInterceptor implements UserSecurityPolicyManagerAware, WebAttributes {
         String lookup = params[resourceParam]
 
         if (!lookup) {
-            throw new ApiBadRequestException('MCI01', "No domain class resource provided")
+            throw new ApiBadRequestException('MCI01', 'No domain class resource provided')
         }
 
         GrailsClass grailsClass = Utils.lookupGrailsDomain(grailsApplication, lookup)

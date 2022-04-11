@@ -89,26 +89,26 @@ abstract class BaseSubscribedModelServiceIntegrationSpec<K extends Model> extend
 
         //Note: ID is hardcoded because we are mocking an external input rather than a domain created locally.
         //Don't need to save AvailableModel
-        availableModelVersion1 = new PublishedModel(modelId: Utils.toUuid("c8023de6-5329-4b8b-8a1b-27c2abeaffcd"),
+        availableModelVersion1 = new PublishedModel(modelId: Utils.toUuid('c8023de6-5329-4b8b-8a1b-27c2abeaffcd'),
                                                     title: 'Remote Model 1.0.0',
                                                     description: 'Remote Model Description',
                                                     modelType: getModelType(),
                                                     lastUpdated: OffsetDateTime.now())
 
-        availableModelVersion2 = new PublishedModel(modelId: Utils.toUuid("d8023de6-5329-4b8b-8a1b-27c2abeaffcd"),
+        availableModelVersion2 = new PublishedModel(modelId: Utils.toUuid('d8023de6-5329-4b8b-8a1b-27c2abeaffcd'),
                                                     title: 'Remote Model 2.0.0',
                                                     description: 'Remote Model Description',
                                                     modelType: getModelType(),
                                                     lastUpdated: OffsetDateTime.now())
 
-        subscribedModelVersion1 = new SubscribedModel(subscribedModelId: Utils.toUuid("c8023de6-5329-4b8b-8a1b-27c2abeaffcd"),
+        subscribedModelVersion1 = new SubscribedModel(subscribedModelId: Utils.toUuid('c8023de6-5329-4b8b-8a1b-27c2abeaffcd'),
                                                       folderId: getFolder().id,
                                                       subscribedCatalogue: subscribedCatalogue,
                                                       createdBy: StandardEmailAddress.ADMIN,
                                                       subscribedModelType: getModelType())
         checkAndSave(subscribedModelVersion1)
 
-        subscribedModelVersion2 = new SubscribedModel(subscribedModelId: Utils.toUuid("d8023de6-5329-4b8b-8a1b-27c2abeaffcd"),
+        subscribedModelVersion2 = new SubscribedModel(subscribedModelId: Utils.toUuid('d8023de6-5329-4b8b-8a1b-27c2abeaffcd'),
                                                       folderId: getFolder().id,
                                                       subscribedCatalogue: subscribedCatalogue,
                                                       createdBy: editor.emailAddress,
@@ -117,7 +117,7 @@ abstract class BaseSubscribedModelServiceIntegrationSpec<K extends Model> extend
     }
 
 
-    void "Test version linking of federated model"() {
+    void 'Test version linking of federated model'() {
 
         given:
         setupData()

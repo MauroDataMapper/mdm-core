@@ -87,7 +87,7 @@ abstract class CatalogueItemReferenceFileFunctionalSpec extends UserAccessFuncti
     void verify03ValidResponseBody(HttpResponse<Map> response) {
         assert responseBody().id
         assert responseBody().fileName == 'functional test file.txt'
-        assert responseBody().fileType == "text/plain"
+        assert responseBody().fileType == 'text/plain'
         assert responseBody().fileSize == 6
     }
 
@@ -106,7 +106,7 @@ abstract class CatalogueItemReferenceFileFunctionalSpec extends UserAccessFuncti
         [
             fileName    : 'functional test file.txt',
             fileContents: [104, 101, 108, 108, 111, 10],
-            fileType    : "text/plain",
+            fileType    : 'text/plain',
             fileSize    : 6
         ]
     }
@@ -116,7 +116,7 @@ abstract class CatalogueItemReferenceFileFunctionalSpec extends UserAccessFuncti
         [
             fileName    : '',
             fileContents: [104, 101, 108, 108, 111, 10],
-            fileType    : "text/plain",
+            fileType    : 'text/plain',
             fileSize    : 6
         ]
     }

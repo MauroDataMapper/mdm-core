@@ -20,7 +20,9 @@ package uk.ac.ox.softeng.maurodatamapper.test.functional.merge
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 
-import static io.micronaut.http.HttpStatus.*
+import static io.micronaut.http.HttpStatus.CREATED
+import static io.micronaut.http.HttpStatus.NO_CONTENT
+import static io.micronaut.http.HttpStatus.OK
 
 /**
  * @since 03/08/2021
@@ -142,7 +144,7 @@ class ReferenceDataPluginMergeBuilder extends BaseTestMergeBuilder {
         POST("referenceDataModels/$sourceMap.referenceDataModelId/referenceDataElements", [label: 'addAndAddReturningDifference', referenceDataType: sourceMap.addLeftOnlyDataType, description: 'DescriptionLeft'])
         verifyResponse CREATED, response
         sourceMap.addAndAddReturningDifference = responseBody().id
-        
+
         PUT("referenceDataModels/$sourceMap.referenceDataModelId", [description: 'DescriptionLeft'])
         verifyResponse OK, response
 

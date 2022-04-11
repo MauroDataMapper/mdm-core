@@ -60,8 +60,8 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec implements CsvComparer, X
     }
 
     String getValidCsv() {
-        "id,key,value,category,publiclyVisible,lastUpdatedBy,createdBy,lastUpdated\r\n" +
-        "e2b3398f-f3e5-4d70-8793-25526bbe0dbe,a.csv.key,a.csv.value,csvs,false,updater@example.com,creator@example.com,2021-10-27T11:02:32.682Z"
+        'id,key,value,category,publiclyVisible,lastUpdatedBy,createdBy,lastUpdated\r\n' +
+        'e2b3398f-f3e5-4d70-8793-25526bbe0dbe,a.csv.key,a.csv.value,csvs,false,updater@example.com,creator@example.com,2021-10-27T11:02:32.682Z'
     }
 
     String getValidXml() {
@@ -104,8 +104,9 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec implements CsvComparer, X
     }
 
     String getShowCsv() {
-        "id,key,value,category,publiclyVisible,lastUpdatedBy,createdBy,lastUpdated\n" +
-        "91e1c67a-58fb-4610-929a-d823cf926bf2,functional.test.key,Some random thing,Functional Test,false,admin@maurodatamapper.com,admin@maurodatamapper.com,2021-10-29T10:33:23.142473+01:00"
+        'id,key,value,category,publiclyVisible,lastUpdatedBy,createdBy,lastUpdated\n' +
+        '91e1c67a-58fb-4610-929a-d823cf926bf2,functional.test.key,Some random thing,Functional Test,false,admin@maurodatamapper.com,admin@maurodatamapper.com,' +
+        '2021-10-29T10:33:23.142473+01:00'
     }
 
     Map getValidJsonCollection() {
@@ -146,16 +147,17 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec implements CsvComparer, X
                     <lastUpdatedBy>bootstrap.user@maurodatamapper.com</lastUpdatedBy>
                     <createdBy>example@maurodatamapper.com</createdBy>
                     <lastUpdated>2021-10-26T13:57:57.342140+01:00</lastUpdated>
-                </apiProperty>                
+                </apiProperty>
             </items>
         </apiProperties>
         """.stripIndent()
     }
 
     String getValidCsvCollection() {
-        "id,key,value,category,publiclyVisible,lastUpdatedBy,createdBy,lastUpdated\r\n" +
-        "e2b3398f-f3e5-4d70-8793-25526bbe0dbe,a.csv.collection.key,a.csv.collection.value,csvs,false,updater@example.com,creator@example.com,2021-10-27T11:02:32.682Z\r\n" +
-        "d2b3398f-f3e5-4d70-8793-25526bbe0dbe,another.csv.collection.key,another.csv.collection.value,csvs,false,updater@example.com,creator@example.com,2021-10-27T11:02:32.682Z"
+        'id,key,value,category,publiclyVisible,lastUpdatedBy,createdBy,lastUpdated\r\n' +
+        'e2b3398f-f3e5-4d70-8793-25526bbe0dbe,a.csv.collection.key,a.csv.collection.value,csvs,false,updater@example.com,creator@example.com,2021-10-27T11:02:32.682Z\r\n' +
+        'd2b3398f-f3e5-4d70-8793-25526bbe0dbe,another.csv.collection.key,another.csv.collection.value,csvs,false,updater@example.com,creator@example.com,2021-10-27T11:02:32' +
+        '.682Z'
     }
 
     String getPublicIndexJson() {
@@ -242,9 +244,9 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec implements CsvComparer, X
 
         and:
         String[] lines = jsonCapableResponse.body().toString().split("\r\n")
-        Assert.assertEquals "The header row is correct",
-                "id,key,value,category,publiclyVisible,lastUpdatedBy,createdBy,lastUpdated",
-                lines[0]
+        Assert.assertEquals 'The header row is correct',
+                            'id,key,value,category,publiclyVisible,lastUpdatedBy,createdBy,lastUpdated',
+                            lines[0]
 
         and:
         ApiPropertyEnum.values()
@@ -270,14 +272,14 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec implements CsvComparer, X
 
         then: 'The response is correct'
         verifyResponse OK, jsonCapableResponse
-        Assert.assertTrue "Retrieved XML is as expected", compareXml(getShowXml(), jsonCapableResponse.body().toString())
+        Assert.assertTrue 'Retrieved XML is as expected', compareXml(getShowXml(), jsonCapableResponse.body().toString())
 
         when: 'When the show action is called to retrieve a resource as CSV'
         GET("$id?format=csv", STRING_ARG)
 
         then: 'The response is correct'
         verifyResponse OK, jsonCapableResponse
-        Assert.assertTrue "Retrieved CSV is as expected", compareCsv(getShowCsv(), jsonCapableResponse.body().toString())
+        Assert.assertTrue 'Retrieved CSV is as expected', compareCsv(getShowCsv(), jsonCapableResponse.body().toString())
 
         cleanup:
         removeValidIdObject(id)
@@ -428,7 +430,7 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec implements CsvComparer, X
         loginAdmin()
 
         and: 'Count the number of properties before the test'
-        GET("")
+        GET('')
         verifyResponse OK, response
         def propertyCount = response.body().count
 
@@ -439,10 +441,10 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec implements CsvComparer, X
         then: 'The response is correct and contains properties with keys functional.test.key1 and functional.test.key2'
         verifyResponse OK, response
         response.body().count == propertyCount + 2
-        response.body().items.any{it.key == "functional.test.key.one"}
-        response.body().items.any{it.key == "functional.test.key.two"}
-        String id1 = response.body().items.find{it.key == "functional.test.key.one"}.id
-        String id2 = response.body().items.find{it.key == "functional.test.key.two"}.id
+        response.body().items.any {it.key == 'functional.test.key.one'}
+        response.body().items.any {it.key == 'functional.test.key.two'}
+        String id1 = response.body().items.find {it.key == 'functional.test.key.one'}.id
+        String id2 = response.body().items.find {it.key == 'functional.test.key.two'}.id
 
         when: 'Replay the POST'
         POST('/apply', getValidJsonCollection(), MAP_ARG, false)
@@ -460,7 +462,7 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec implements CsvComparer, X
         loginAdmin()
 
         and: 'Count the number of properties before the test'
-        GET("")
+        GET('')
         verifyResponse OK, response
         def propertyCount = response.body().count
 
@@ -471,16 +473,16 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec implements CsvComparer, X
         then: 'The response is correct and contains properties with keys functional.test.key1 and functional.test.key2'
         verifyResponse(OK, response)
         response.body().count == propertyCount + 2
-        response.body().items.any{it.key == "a.csv.collection.key"}
-        response.body().items.any{it.key == "another.csv.collection.key"}
+        response.body().items.any {it.key == 'a.csv.collection.key'}
+        response.body().items.any {it.key == 'another.csv.collection.key'}
 
         and: 'The lastUpdatedBy and createdBy properties were ignored from the posted data'
-        response.body().items.find{it.key == "a.csv.collection.key"}.lastUpdatedBy == "admin@maurodatamapper.com"
-        response.body().items.find{it.key == "another.csv.collection.key"}.lastUpdatedBy == "admin@maurodatamapper.com"
-        response.body().items.find{it.key == "a.csv.collection.key"}.createdBy == "admin@maurodatamapper.com"
-        response.body().items.find{it.key == "another.csv.collection.key"}.createdBy == "admin@maurodatamapper.com"
-        String id1 = response.body().items.find{it.key == "a.csv.collection.key"}.id
-        String id2 = response.body().items.find{it.key == "another.csv.collection.key"}.id
+        response.body().items.find {it.key == 'a.csv.collection.key'}.lastUpdatedBy == 'admin@maurodatamapper.com'
+        response.body().items.find {it.key == 'another.csv.collection.key'}.lastUpdatedBy == 'admin@maurodatamapper.com'
+        response.body().items.find {it.key == 'a.csv.collection.key'}.createdBy == 'admin@maurodatamapper.com'
+        response.body().items.find {it.key == 'another.csv.collection.key'}.createdBy == 'admin@maurodatamapper.com'
+        String id1 = response.body().items.find {it.key == 'a.csv.collection.key'}.id
+        String id2 = response.body().items.find {it.key == 'another.csv.collection.key'}.id
 
         when: 'Replay the POST'
         POST('/apply', getValidCsvCollection(), MAP_ARG, false, 'text/csv')
@@ -498,7 +500,7 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec implements CsvComparer, X
         loginAdmin()
 
         and: 'Count the number of properties before the test'
-        GET("")
+        GET('')
         verifyResponse OK, response
         def propertyCount = response.body().count
 
@@ -509,19 +511,19 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec implements CsvComparer, X
         then: 'The response is correct and contains properties with keys functional.test.key.one and functional.test.key.two'
         verifyResponse(OK, response)
         response.body().count == propertyCount + 2
-        response.body().items.any{it.key == "functional.test.xml.key.one"}
-        response.body().items.any{it.key == "functional.test.xml.key.two"}
+        response.body().items.any {it.key == 'functional.test.xml.key.one'}
+        response.body().items.any {it.key == 'functional.test.xml.key.two'}
 
         and: 'The lastUpdatedBy and createdBy properties were ignored from the posted data'
-        response.body().items.find{it.key == "functional.test.xml.key.one"}.lastUpdatedBy == "admin@maurodatamapper.com"
-        response.body().items.find{it.key == "functional.test.xml.key.two"}.lastUpdatedBy == "admin@maurodatamapper.com"
-        response.body().items.find{it.key == "functional.test.xml.key.one"}.createdBy == "admin@maurodatamapper.com"
-        response.body().items.find{it.key == "functional.test.xml.key.two"}.createdBy == "admin@maurodatamapper.com"
-        String id1 = response.body().items.find{it.key == "functional.test.xml.key.one"}.id
-        String id2 = response.body().items.find{it.key == "functional.test.xml.key.two"}.id
+        response.body().items.find {it.key == 'functional.test.xml.key.one'}.lastUpdatedBy == 'admin@maurodatamapper.com'
+        response.body().items.find {it.key == 'functional.test.xml.key.two'}.lastUpdatedBy == 'admin@maurodatamapper.com'
+        response.body().items.find {it.key == 'functional.test.xml.key.one'}.createdBy == 'admin@maurodatamapper.com'
+        response.body().items.find {it.key == 'functional.test.xml.key.two'}.createdBy == 'admin@maurodatamapper.com'
+        String id1 = response.body().items.find {it.key == 'functional.test.xml.key.one'}.id
+        String id2 = response.body().items.find {it.key == 'functional.test.xml.key.two'}.id
 
         when: 'Replay the POST'
-        POST('/apply', getValidXmlCollection(), MAP_ARG, false,'application/xml')
+        POST('/apply', getValidXmlCollection(), MAP_ARG, false, 'application/xml')
 
         then: 'It is unprocessable'
         verifyResponse UNPROCESSABLE_ENTITY, response
@@ -551,7 +553,7 @@ class ApiPropertyFunctionalSpec extends FunctionalSpec implements CsvComparer, X
         then:
         verifyResponse OK, response
         response.body().id == id1
-        response.body().value == "Some different random thing"
+        response.body().value == 'Some different random thing'
         response.body().lastUpdatedBy == userEmailAddresses.creator
 
         cleanup:

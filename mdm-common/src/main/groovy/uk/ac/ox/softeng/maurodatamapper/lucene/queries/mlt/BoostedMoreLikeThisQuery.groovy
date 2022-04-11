@@ -96,6 +96,28 @@ class BoostedMoreLikeThisQuery extends MoreLikeThisQuery {
         }
         //make at least half the terms match
         newBq.setMinimumNumberShouldMatch((int) (bq.clauses().size() * percentTermsToMatch))
-        return newBq.build()
+        newBq.build()
+    }
+
+    @Override
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+        if (!super.equals(o)) return false
+
+        BoostedMoreLikeThisQuery that = (BoostedMoreLikeThisQuery) o
+
+        if (minWordLength != that.minWordLength) return false
+        if (boost != that.boost) return false
+        localFieldName == that.localFieldName
+    }
+
+    @Override
+    int hashCode() {
+        int result = super.hashCode()
+        result = 31 * result + (boost != null ? boost.hashCode() : 0)
+        result = 31 * result + (localFieldName != null ? localFieldName.hashCode() : 0)
+        result = 31 * result + minWordLength
+        result
     }
 }

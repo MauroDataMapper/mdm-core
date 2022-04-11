@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.version
 
-import grails.databinding.DataBindingSource;
+import grails.databinding.DataBindingSource
 
 enum VersionChangeType {
     MAJOR('Major'),

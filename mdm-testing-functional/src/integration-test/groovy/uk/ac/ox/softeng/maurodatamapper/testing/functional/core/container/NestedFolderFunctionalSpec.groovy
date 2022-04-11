@@ -187,7 +187,7 @@ class NestedFolderFunctionalSpec extends UserAccessFunctionalSpec {
       "id": "${json-unit.matches:id}",
       "domainType": "ReferenceDataModel",
       "label": "Simple Reference Data Model"
-    },    
+    },
     {
       "id": "${json-unit.matches:id}",
       "domainType": "DataModel",

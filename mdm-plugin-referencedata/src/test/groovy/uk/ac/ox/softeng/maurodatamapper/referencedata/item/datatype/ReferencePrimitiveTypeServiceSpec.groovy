@@ -101,13 +101,13 @@ class ReferencePrimitiveTypeServiceSpec extends BaseUnitSpec implements ServiceU
 
     }
 
-    void "test get"() {
+    void 'test get'() {
 
         expect:
         service.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
 
         when:
         List<ReferencePrimitiveType> primitiveTypeList = service.list(max: 2, offset: 1)
@@ -122,12 +122,12 @@ class ReferencePrimitiveTypeServiceSpec extends BaseUnitSpec implements ServiceU
         primitiveTypeList[1].label == 'integer'
     }
 
-    void "test count"() {
+    void 'test count'() {
         expect:
         service.count() == 3
     }
 
-    void "test delete"() {
+    void 'test delete'() {
 
         expect:
         service.count() == 3

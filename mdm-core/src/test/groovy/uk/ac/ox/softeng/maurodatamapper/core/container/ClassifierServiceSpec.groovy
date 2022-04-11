@@ -56,12 +56,12 @@ class ClassifierServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Clas
         id = nested.id
     }
 
-    void "test get"() {
+    void 'test get'() {
         expect:
         service.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         when:
         List<Classifier> classifierList = service.list(max: 2, offset: 3, sort: 'dateCreated')
 
@@ -81,12 +81,12 @@ class ClassifierServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Clas
         classifierList[1].label == 'editor classifier'
     }
 
-    void "test count"() {
+    void 'test count'() {
         expect:
         service.count() == 5
     }
 
-    void "test delete"() {
+    void 'test delete'() {
         expect:
         service.count() == 5
 
@@ -97,7 +97,7 @@ class ClassifierServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Clas
         service.count() == 3
     }
 
-    void "test save"() {
+    void 'test save'() {
         when:
         Classifier classifier = new Classifier(createdBy: reader1.emailAddress, label: 'another')
         parent.addToChildClassifiers(classifier)
@@ -140,7 +140,7 @@ class ClassifierServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Clas
     void 'test edit details'() {
         when:
         Classifier ci = service.get(id)
-        def result = service.editInformation(ci, "new label", "new description")
+        def result = service.editInformation(ci, 'new label', 'new description')
         checkAndSave(ci)
 
         then:
@@ -150,8 +150,8 @@ class ClassifierServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Clas
         Classifier ci2 = service.get(ci.getId())
 
         then:
-        ci2.getLabel() == "new label"
-        ci2.getDescription() == "new description"
+        ci2.getLabel() == 'new label'
+        ci2.getDescription() == 'new description'
 
     }
 
@@ -204,7 +204,7 @@ class ClassifierServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Clas
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(Classifier) >> Classifier.list().collect {it.id}
 
-        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: 'https://localhost', createdBy: UNIT_TEST)
         checkAndSave(testAuthority)
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
         BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
@@ -253,7 +253,7 @@ class ClassifierServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Clas
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(Classifier) >> [Classifier.findByLabel('classifier1').id]
 
-        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: 'https://localhost', createdBy: UNIT_TEST)
         checkAndSave(testAuthority)
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
         BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),

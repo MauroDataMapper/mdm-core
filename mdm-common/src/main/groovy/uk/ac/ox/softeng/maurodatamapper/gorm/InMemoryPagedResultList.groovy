@@ -28,13 +28,31 @@ class InMemoryPagedResultList<E> extends PagedResultList<E> {
         totalCount = results.size()
         this.pagination = pagination
 
-        Integer max = pagination.max?: 10
-        Integer offset = pagination.offset?: 0
+        Integer max = pagination.max ?: 10
+        Integer offset = pagination.offset ?: 0
         resultList = results.subList(Math.min(totalCount, offset), Math.min(totalCount, offset + max))
     }
 
     @Override
     protected void initialize() {
         // no-op, already initialized
+    }
+
+    @Override
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+        if (!super.equals(o)) return false
+
+        InMemoryPagedResultList that = (InMemoryPagedResultList) o
+
+        pagination == that.pagination
+    }
+
+    @Override
+    int hashCode() {
+        int result = super.hashCode()
+        result = 31 * result + (pagination != null ? pagination.hashCode() : 0)
+        result
     }
 }

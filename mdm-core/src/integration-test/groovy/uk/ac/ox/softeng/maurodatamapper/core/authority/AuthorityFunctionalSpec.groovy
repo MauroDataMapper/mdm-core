@@ -98,8 +98,8 @@ class AuthorityFunctionalSpec extends ResourceFunctionalSpec<Authority> {
         responseBody().defaultAuthority
         responseBody().readableByEveryone
         responseBody().readableByAuthenticatedUsers
-        responseBody().availableActions.sort() == ["show",
-                                                   "update"].sort()
+        responseBody().availableActions.sort() == ['show',
+                                                   'update'].sort()
     }
 
     void 'test trying to delete the default authority'() {

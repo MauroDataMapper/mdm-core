@@ -42,12 +42,12 @@ class UserImageFileServiceSpec extends BaseUnitSpec implements ServiceUnitTest<U
         id = userImageFile.id
     }
 
-    void "test get"() {
+    void 'test get'() {
         expect:
         service.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
 
         when:
         List<UserImageFile> userImageFileList = service.list(max: 2, offset: 1)
@@ -71,12 +71,12 @@ class UserImageFileServiceSpec extends BaseUnitSpec implements ServiceUnitTest<U
         userImageFileList[1].userId == reader1Id
     }
 
-    void "test count"() {
+    void 'test count'() {
         expect:
         service.count() == 4
     }
 
-    void "test delete"() {
+    void 'test delete'() {
         expect:
         service.count() == 4
 
@@ -87,7 +87,7 @@ class UserImageFileServiceSpec extends BaseUnitSpec implements ServiceUnitTest<U
         service.count() == 3
     }
 
-    void "test save"() {
+    void 'test save'() {
         when:
         UserImageFile userImageFile = service.createNewFile(Paths.get('src/test/resources/userimagefile_string_content.txt'), reader1)
         checkAndSave(userImageFile)

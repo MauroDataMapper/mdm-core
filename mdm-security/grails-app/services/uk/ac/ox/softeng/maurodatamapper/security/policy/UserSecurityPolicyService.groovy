@@ -44,6 +44,7 @@ import grails.core.GrailsApplication
 import grails.gorm.transactions.Transactional
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
+import org.grails.datastore.gorm.GormEntityApi
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 
@@ -306,7 +307,6 @@ class UserSecurityPolicyService {
     }
 
     private Set<VirtualSecurableResourceGroupRole> buildControlledAccessToFoldersOfModel(Model model,
-                                                                                         ModelService modelService,
                                                                                          UserGroup userGroup,
                                                                                          GroupRole appliedGroupRole) {
 
@@ -409,23 +409,23 @@ class UserSecurityPolicyService {
                 }
             )
 
-            // If we're securing a container then we need to create virtual roles for all its contents
-            ContainerService containerService = containerServices.find {it.handles(sgr.securableResourceDomainType)}
-            if (containerService) {
-                virtualSecurableResourceGroupRoles.addAll(buildControlledAccessToContentsOfContainer(sgr.securableResource as Container,
-                                                                                                     containerService,
-                                                                                                     allowedRoles,
-                                                                                                     sgr.userGroup,
-                                                                                                     sgr.groupRole))
+            if ((sgr.securableResource as GormEntityApi).instanceOf(Container)) {
+                // If we're securing a container then we need to create virtual roles for all its contents
+                ContainerService containerService = containerServices.find {it.handles(sgr.securableResourceDomainType)}
+                if (containerService) {
+                    virtualSecurableResourceGroupRoles.addAll(buildControlledAccessToContentsOfContainer(sgr.securableResource as Container,
+                                                                                                         containerService,
+                                                                                                         allowedRoles,
+                                                                                                         sgr.userGroup,
+                                                                                                         sgr.groupRole))
 
+                }
             }
 
-            // If we're securing a model we need to make sure the model's folder tree is readable
-            // As we're only adding the folder as readable the other contents wont be visible as they arent iterated through
-            ModelService modelService = modelServices.find {it.handles(sgr.securableResourceDomainType)}
-            if (modelService) {
+            if ((sgr.securableResource as GormEntityApi).instanceOf(Model)) {
+                // If we're securing a model we need to make sure the model's folder tree is readable
+                // As we're only adding the folder as readable the other contents wont be visible as they arent iterated through
                 virtualSecurableResourceGroupRoles.addAll(buildControlledAccessToFoldersOfModel(sgr.securableResource as Model,
-                                                                                                modelService,
                                                                                                 sgr.userGroup,
                                                                                                 sgr.groupRole))
             }

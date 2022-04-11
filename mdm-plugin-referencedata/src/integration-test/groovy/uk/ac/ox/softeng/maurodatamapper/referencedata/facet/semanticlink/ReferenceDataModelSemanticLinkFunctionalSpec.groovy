@@ -156,14 +156,14 @@ class ReferenceDataModelSemanticLinkFunctionalSpec extends CatalogueItemSemantic
         String id = createNewItem(validJson)
 
         when: 'finalise and create a new copy of the finalised model'
-        PUT("referenceDataModels/${referenceDataModel.id}/finalise", [versionChangeType: "Major"], MAP_ARG, true)
+        PUT("referenceDataModels/${referenceDataModel.id}/finalise", [versionChangeType: 'Major'], MAP_ARG, true)
         PUT("referenceDataModels/${referenceDataModel.id}/newForkModel", ['label': 'Functional Test Fork'], MAP_ARG, true)
 
         then:
         verifyResponse(HttpStatus.CREATED, response)
 
         when: 'Get the forked models SLs'
-        String forkId = responseBody().get("id")
+        String forkId = responseBody().get('id')
         GET("referenceDataModels/${forkId}/semanticLinks", MAP_ARG, true)
 
         then:

@@ -100,7 +100,7 @@ class PathService {
         def child = domainService.findByParentIdAndPathIdentifier(rootResourceOfPath.id, childNode.getFullIdentifier(modelIdentifierOverride))
 
         if (!child) {
-            log.warn("Child [{}] does not exist in root resource [{}]", childNode, Path.from(rootResourceOfPath))
+            log.warn('Child [{}] does not exist in root resource [{}]', childNode, Path.from(rootResourceOfPath))
             return null
         }
 

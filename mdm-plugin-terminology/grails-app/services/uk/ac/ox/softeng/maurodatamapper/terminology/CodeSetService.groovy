@@ -81,7 +81,7 @@ class CodeSetService extends ModelService<CodeSet> {
 
     @Override
     String getUrlResourceName() {
-        "codeSets"
+        'codeSets'
     }
 
     Long count() {

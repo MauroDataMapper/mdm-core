@@ -31,11 +31,11 @@ class UserImageFileInterceptorSpec extends Specification implements InterceptorU
 
     }
 
-    void "Test userImageFile interceptor matching"() {
-        when: "A request matches the interceptor"
-        withRequest(controller: "userImageFile")
+    void 'Test userImageFile interceptor matching'() {
+        when: 'A request matches the interceptor'
+        withRequest(controller: 'userImageFile')
 
-        then: "The interceptor does match"
+        then: 'The interceptor does match'
         interceptor.doesMatch()
     }
 }

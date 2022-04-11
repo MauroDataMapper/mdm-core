@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.markup.view
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import grails.plugin.markup.view.MarkupViewConfiguration
 import grails.plugin.markup.view.MarkupViewTemplateEngine as GrailsMarkupViewTemplateEngine
 import groovy.text.markup.MarkupTemplateEngine
@@ -26,6 +27,7 @@ import groovy.text.markup.TemplateResolver
 /**
  * @since 25/03/2021
  */
+@SuppressFBWarnings('NM_SAME_SIMPLE_NAME_AS_SUPERCLASS')
 class MarkupViewTemplateEngine extends GrailsMarkupViewTemplateEngine {
 
     MarkupTemplateEngine.CachingTemplateResolver cachingTemplateResolver

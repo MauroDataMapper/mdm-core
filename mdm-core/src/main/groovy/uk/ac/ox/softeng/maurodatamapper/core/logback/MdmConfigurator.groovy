@@ -68,7 +68,7 @@ class MdmConfigurator extends ContextAwareBase implements Configurator {
     // Message
 
     static final String nonAnsiPattern = '%d{ISO8601} [%10.10thread] %-5level %-40.40logger{39} : %msg%n'
-    static final String DEFAULT_LOG_FILENAME = "mauro-data-mapper"
+    static final String DEFAULT_LOG_FILENAME = 'mauro-data-mapper'
 
     boolean ciEnv
     boolean testEnv
@@ -116,7 +116,6 @@ class MdmConfigurator extends ContextAwareBase implements Configurator {
         rootLogger.setLevel(INFO)
         configureLogLevels()
 
-
         // This stops spring boot from initialising its own logging
         // Otherwise spring just overrides anything we do here as its coded to only not do this if a xml or groovy file exist
         lc.putObject(LoggingSystem.getName(), new Object())
@@ -160,10 +159,10 @@ class MdmConfigurator extends ContextAwareBase implements Configurator {
     }
 
     ConsoleAppender createConsoleAppender(LoggerContext lc) {
-        addInfo("Creating ConsoleAppender with name [STDOUT]")
+        addInfo('Creating ConsoleAppender with name [STDOUT]')
         new ConsoleAppender<ILoggingEvent>().tap {
             setContext(lc)
-            setName("STDOUT")
+            setName('STDOUT')
             setEncoder(createPatternEncoder(lc, ciEnv || testEnv ? nonAnsiPattern : ansiPattern))
             addFilter(new ThresholdFilter().tap {
                 setLevel(testEnv ? 'INFO' : 'WARN')
@@ -175,13 +174,13 @@ class MdmConfigurator extends ContextAwareBase implements Configurator {
     }
 
     FileAppender createFileAppender(LoggerContext lc) {
-        addInfo("Creating FileAppender with name [FILE]")
+        addInfo('Creating FileAppender with name [FILE]')
 
         File logDir = runningInTomcat ? new File(baseDir, '/logs/mauro-data-mapper') : new File(baseDir, 'logs')
         if (!logDir) logDir.mkdirs()
         addInfo("Using log directory for logs ${logDir}")
 
-        String logFileName = System.getProperty('mdm.logFileName') ?: prodEnv ? DEFAULT_LOG_FILENAME : prodEnv ? baseDir.name : baseDir.parentFile.name
+        String logFileName = System.getProperty('mdm.logFileName') ?: prodEnv ? DEFAULT_LOG_FILENAME : baseDir.parentFile.name
         FileAppender<ILoggingEvent> appender
         TimeBasedRollingPolicy timeBasedRollingPolicy
 
@@ -200,7 +199,7 @@ class MdmConfigurator extends ContextAwareBase implements Configurator {
 
         appender.tap {
             setContext(lc)
-            setName("FILE")
+            setName('FILE')
             setEncoder(createPatternEncoder(lc, nonAnsiPattern))
             setAppend(false)
             setFile("${logDir}/${logFileName}.log")
@@ -227,11 +226,11 @@ class MdmConfigurator extends ContextAwareBase implements Configurator {
 
         Map<String, String> ruleRegistry = (Map) context.getObject(CoreConstants.PATTERN_RULE_REGISTRY)
         if (ruleRegistry == null) {
-            ruleRegistry = new HashMap<String, String>()
+            ruleRegistry = [:]
             context.putObject(CoreConstants.PATTERN_RULE_REGISTRY, ruleRegistry)
         }
         // put the new rule into the rule registry
-        addInfo("Registering conversion word " + conversionWord + " with class [" + converterClassName + "]")
+        addInfo('Registering conversion word ' + conversionWord + ' with class [' + converterClassName + ']')
         ruleRegistry[conversionWord] = converterClassName
     }
 
@@ -246,7 +245,7 @@ class MdmConfigurator extends ContextAwareBase implements Configurator {
 
     void setLoggerLevel(String name, Level level) {
         Logger logger = ((LoggerContext) context).getLogger(name)
-        addInfo("Setting level of logger [${name}] to " + level)
+        addInfo("Setting level of logger [${name}] to ${level}")
         logger.level = level
     }
 

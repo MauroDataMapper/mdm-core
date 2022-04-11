@@ -39,7 +39,6 @@ enum ApiPropertyEnum {
     EMAIL_PASSWORD_RESET_SUBJECT('email.password_reset.subject'),
     EMAIL_PASSWORD_RESET_BODY('email.password_reset.body')
 
-
     String key
 
     ApiPropertyEnum(String key) {
@@ -47,7 +46,7 @@ enum ApiPropertyEnum {
     }
 
     String toString() {
-        return key
+        key
     }
 
     static ApiPropertyEnum findApiProperty(String key) {

@@ -198,7 +198,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
         String id = createNewItem(validJson)
 
         when:
-        PUT("$id/finalise", [versionChangeType: "Major"])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
 
         then:
         verifyResponse OK, response
@@ -216,7 +216,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
 
         and: 'There is not a CHANGENOTICE edit'
         !response.body().items.find {
-            it.description == "Functional Test Change Notice"
+            it.description == 'Functional Test Change Notice'
         }
 
         cleanup:
@@ -228,7 +228,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
         String id = createNewItem(validJson)
 
         when:
-        PUT("$id/finalise", [versionChangeType: "Major", changeNotice: "Functional Test Change Notice"])
+        PUT("$id/finalise", [versionChangeType: 'Major', changeNotice: 'Functional Test Change Notice'])
 
         then:
         verifyResponse OK, response
@@ -246,7 +246,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
 
         and: 'There is a CHANGENOTICE edit'
         response.body().items.find {
-            it.title == "CHANGENOTICE" && it.description == "Functional Test Change Notice"
+            it.title == 'CHANGENOTICE' && it.description == 'Functional Test Change Notice'
         }
 
         cleanup:
@@ -292,7 +292,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
     void 'VF01 : test creating a new fork model of a Terminology'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [versionChangeType: "Major"])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
 
         when: 'adding one new model'
@@ -449,7 +449,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
     void 'VD01 : test creating a new documentation version of a Terminology'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [versionChangeType: "Major"])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
 
         when:
@@ -526,7 +526,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
     void 'VB01 : test creating a new main branch model version of a Terminology'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [versionChangeType: "Major"])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
 
         when:
@@ -592,7 +592,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
     void 'VB02 : test creating a main branch model version finalising and then creating another main branch of a DataModel'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [versionChangeType: "Major"])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
 
         when: 'create second model'
@@ -603,7 +603,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
 
         when: 'finalising second model'
         String secondId = responseBody().id
-        PUT("$secondId/finalise", [versionChangeType: "Major"])
+        PUT("$secondId/finalise", [versionChangeType: 'Major'])
 
         then:
         verifyResponse OK, response
@@ -687,7 +687,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
     void 'VB03 : test creating a main branch model version when one already exists'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [versionChangeType: "Major"])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
 
         when: 'create default main'
@@ -711,7 +711,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
     void 'VB04 : test creating a non-main branch model version without main existing'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [versionChangeType: "Major"])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
 
         when: 'create default main'
@@ -738,7 +738,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
     void 'VB05 : test finding common ancestor of two Model<T> (as editor)'() {
         given:
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [versionChangeType: "Major"])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
         PUT("$id/newBranchModelVersion", [branchName: 'left'])
         verifyResponse CREATED, response
@@ -768,7 +768,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
         */
         given:
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [versionChangeType: "Major"])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
         PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
@@ -776,7 +776,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
         PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
         verifyResponse CREATED, response
         String newBranchId = responseBody().id
-        PUT("$expectedId/finalise", [versionChangeType: "Major"])
+        PUT("$expectedId/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
         PUT("$expectedId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
@@ -814,7 +814,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
         */
         given:
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [versionChangeType: "Major"])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
         PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
@@ -822,7 +822,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
         PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
         verifyResponse CREATED, response
         String newBranchId = responseBody().id
-        PUT("$expectedId/finalise", [versionChangeType: "Major"])
+        PUT("$expectedId/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
         PUT("$expectedId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
@@ -941,7 +941,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
     void 'MD01 : test finding merge difference of two Model<T> (as editor)'() {
         given:
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [versionChangeType: "Major"])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
         PUT("$id/newBranchModelVersion", [:])
         verifyResponse CREATED, response
@@ -1043,7 +1043,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
                                               [
                                                   targetId: target,
                                                   sourceId: UUID.randomUUID().toString(),
-                                                  label   : "Functional Test Model",
+                                                  label   : 'Functional Test Model',
                                                   count   : 0,
                                                   patches : []
                                               ]
@@ -1058,7 +1058,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
                                               [
                                                   targetId: UUID.randomUUID().toString(),
                                                   sourceId: source,
-                                                  label   : "Functional Test Model",
+                                                  label   : 'Functional Test Model',
                                                   count   : 0,
                                                   patches : []
                                               ]
@@ -1678,7 +1678,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
                 "allowsExtraMetadataKeys": true,
                 "knownMetadataKeys": [
-      
+
                 ],
                 "providerType": "TerminologyImporter",
                 "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter''' +
@@ -1692,7 +1692,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> impl
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
                 "allowsExtraMetadataKeys": true,
                 "knownMetadataKeys": [
-      
+
                 ],
                 "providerType": "TerminologyImporter",
                 "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter''' +

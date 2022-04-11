@@ -19,10 +19,10 @@ package uk.ac.ox.softeng.maurodatamapper.testing.functional.profile
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.profile.DerivedFieldProfileService
+import uk.ac.ox.softeng.maurodatamapper.profile.InvalidProfileService
 import uk.ac.ox.softeng.maurodatamapper.profile.PostFinalisedEditableProfileService
 import uk.ac.ox.softeng.maurodatamapper.profile.ProfileSpecificationFieldProfileService
 import uk.ac.ox.softeng.maurodatamapper.profile.ProfileSpecificationProfileService
-import uk.ac.ox.softeng.maurodatamapper.profile.InvalidProfileService
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 
 import grails.gorm.transactions.Transactional
@@ -68,7 +68,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
 
     String getDataModelId() {
         loginCreator()
-        POST("folders/${getTestFolderId()}/dataModels", [label: "profile functional model"])
+        POST("folders/${getTestFolderId()}/dataModels", [label: 'profile functional model'])
         verifyResponse(CREATED, response)
         String id = responseBody().id
         logout()
@@ -79,73 +79,73 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         loginCreator()
 
         // Create a Data Model
-        POST("folders/${getTestFolderId()}/dataModels", [label: "second profile functional model"])
+        POST("folders/${getTestFolderId()}/dataModels", [label: 'second profile functional model'])
         verifyResponse(CREATED, response)
         String id = responseBody().id
         addAccessShares(id, 'dataModels/')
 
         // Add a Data Type
-        POST("dataModels/${id}/dataTypes", [label: "profile functional data type", domainType: "PrimitiveType"])
+        POST("dataModels/${id}/dataTypes", [label: 'profile functional data type', domainType: 'PrimitiveType'])
         verifyResponse(CREATED, response)
         String dataTypeId = responseBody().id
 
         // Add a Data Class
-        POST("dataModels/${id}/dataClasses", [label: "profile functional class"])
+        POST("dataModels/${id}/dataClasses", [label: 'profile functional class'])
         verifyResponse(CREATED, response)
         String dataClassId = responseBody().id
 
         // Add a Data Element
-        POST("dataModels/${id}/dataClasses/${dataClassId}/dataElements", [label: "first data element in profile functional class", dataType: [id: dataTypeId]])
+        POST("dataModels/${id}/dataClasses/${dataClassId}/dataElements", [label: 'first data element in profile functional class', dataType: [id: dataTypeId]])
         verifyResponse(CREATED, response)
         String firstDataElementId = responseBody().id
 
         // And another Data Element
-        POST("dataModels/${id}/dataClasses/${dataClassId}/dataElements", [label: "second data element in profile functional class", dataType: [id: dataTypeId]])
+        POST("dataModels/${id}/dataClasses/${dataClassId}/dataElements", [label: 'second data element in profile functional class', dataType: [id: dataTypeId]])
         verifyResponse(CREATED, response)
         String secondDataElementId = responseBody().id
 
         logout()
 
-        ["dataModelId": id, "dataTypeId": dataTypeId, "dataClassId": dataClassId, "firstDataElementId": firstDataElementId, "secondDataElementId": secondDataElementId]
+        ['dataModelId': id, 'dataTypeId': dataTypeId, 'dataClassId': dataClassId, 'firstDataElementId': firstDataElementId, 'secondDataElementId': secondDataElementId]
     }
 
     Map<String, String> getThirdDataModelIds() {
         loginCreator()
 
         // Create a Data Model
-        POST("folders/${getTestFolderId()}/dataModels", [label: "third profile functional model"])
+        POST("folders/${getTestFolderId()}/dataModels", [label: 'third profile functional model'])
         verifyResponse(CREATED, response)
         String id = responseBody().id
         addAccessShares(id, 'dataModels/')
 
         // Add a Data Type
-        POST("dataModels/${id}/dataTypes", [label: "profile functional data type", domainType: "PrimitiveType"])
+        POST("dataModels/${id}/dataTypes", [label: 'profile functional data type', domainType: 'PrimitiveType'])
         verifyResponse(CREATED, response)
         String dataTypeId = responseBody().id
 
         // Add a Data Class
-        POST("dataModels/${id}/dataClasses", [label: "profile functional class"])
+        POST("dataModels/${id}/dataClasses", [label: 'profile functional class'])
         verifyResponse(CREATED, response)
         String dataClassId = responseBody().id
 
         // Add a Data Element
-        POST("dataModels/${id}/dataClasses/${dataClassId}/dataElements", [label: "first data element in profile functional class", dataType: [id: dataTypeId]])
+        POST("dataModels/${id}/dataClasses/${dataClassId}/dataElements", [label: 'first data element in profile functional class', dataType: [id: dataTypeId]])
         verifyResponse(CREATED, response)
         String firstDataElementId = responseBody().id
 
         // And another Data Element
-        POST("dataModels/${id}/dataClasses/${dataClassId}/dataElements", [label: "second data element in profile functional class", dataType: [id: dataTypeId]])
+        POST("dataModels/${id}/dataClasses/${dataClassId}/dataElements", [label: 'second data element in profile functional class', dataType: [id: dataTypeId]])
         verifyResponse(CREATED, response)
         String secondDataElementId = responseBody().id
 
         logout()
-        ["dataModelId": id, "dataTypeId": dataTypeId, "dataClassId": dataClassId, "firstDataElementId": firstDataElementId, "secondDataElementId": secondDataElementId]
+        ['dataModelId': id, 'dataTypeId': dataTypeId, 'dataClassId': dataClassId, 'firstDataElementId': firstDataElementId, 'secondDataElementId': secondDataElementId]
     }
 
     String getDynamicProfileModelId() {
 
         loginCreator()
-        POST("folders/${getTestFolderId()}/dataModels?defaultDataTypeProvider=ProfileSpecificationDataTypeProvider", [label: "Dynamic Profile Model"])
+        POST("folders/${getTestFolderId()}/dataModels?defaultDataTypeProvider=ProfileSpecificationDataTypeProvider", [label: 'Dynamic Profile Model'])
         verifyResponse(CREATED, response)
         String dynamicProfileModelId = responseBody().id
         addAccessShares(dynamicProfileModelId, 'dataModels/')
@@ -226,7 +226,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
     String getSecondDynamicProfileModelId() {
 
         loginCreator()
-        POST("folders/${getTestFolderId()}/dataModels?defaultDataTypeProvider=ProfileSpecificationDataTypeProvider", [label: "Second Dynamic Profile Model"])
+        POST("folders/${getTestFolderId()}/dataModels?defaultDataTypeProvider=ProfileSpecificationDataTypeProvider", [label: 'Second Dynamic Profile Model'])
         verifyResponse(CREATED, response)
         String dynamicProfileModelId = responseBody().id
         addAccessShares(dynamicProfileModelId, 'dataModels/')
@@ -424,10 +424,10 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         given:
         String id = getDataModelId()
         Map namespaceFieldMap = [
-            metadataPropertyName: "metadataNamespace",
+            metadataPropertyName: 'metadataNamespace',
         ]
         Map domainsFieldMap = [
-            metadataPropertyName: "domainsApplicable",
+            metadataPropertyName: 'domainsApplicable',
         ]
         Map profileMap = [
             sections  : [
@@ -477,11 +477,11 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         String id = getDataModelId()
         Map namespaceFieldMap = [
             currentValue        : 'functional.test.profile',
-            metadataPropertyName: "metadataNamespace",
+            metadataPropertyName: 'metadataNamespace',
         ]
         Map domainsFieldMap = [
             currentValue        : 'DataModel',
-            metadataPropertyName: "domainsApplicable",
+            metadataPropertyName: 'domainsApplicable',
         ]
         Map profileMap = [
             sections  : [
@@ -536,11 +536,11 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         String id = getDataModelId()
         Map namespaceFieldMap = [
             currentValue        : 'functional.test.profile',
-            metadataPropertyName: "metadataNamespace",
+            metadataPropertyName: 'metadataNamespace',
         ]
         Map domainsFieldMap = [
             currentValue        : 'DataModel',
-            metadataPropertyName: "domainsApplicable",
+            metadataPropertyName: 'domainsApplicable',
         ]
         Map profileMap = [
             sections  : [
@@ -626,11 +626,11 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         String id = getDataModelId()
         Map namespaceFieldMap = [
             currentValue        : 'functional.test.profile',
-            metadataPropertyName: "metadataNamespace",
+            metadataPropertyName: 'metadataNamespace',
         ]
         Map domainsFieldMap = [
             currentValue        : 'DataModel',
-            metadataPropertyName: "domainsApplicable",
+            metadataPropertyName: 'domainsApplicable',
         ]
         Map profileMap = [
             sections  : [
@@ -679,11 +679,11 @@ class ProfileFunctionalSpec extends FunctionalSpec {
 
         Map namespaceFieldMap = [
             currentValue        : 'functional.test.profile',
-            metadataPropertyName: "metadataNamespace",
+            metadataPropertyName: 'metadataNamespace',
         ]
         Map domainsFieldMap = [
             currentValue        : 'DataModel',
-            metadataPropertyName: "domainsApplicable",
+            metadataPropertyName: 'domainsApplicable',
         ]
         Map profileMap = [
             sections  : [
@@ -721,11 +721,11 @@ class ProfileFunctionalSpec extends FunctionalSpec {
 
         Map namespaceFieldMap = [
             currentValue        : 'functional.test.profile',
-            metadataPropertyName: "metadataNamespace",
+            metadataPropertyName: 'metadataNamespace',
         ]
         Map domainsFieldMap = [
             currentValue        : 'DataModel',
-            metadataPropertyName: "domainsApplicable",
+            metadataPropertyName: 'domainsApplicable',
         ]
         Map profileMap = [
             sections  : [
@@ -811,15 +811,15 @@ class ProfileFunctionalSpec extends FunctionalSpec {
 
         Map namespaceFieldMap = [
             currentValue        : 'functional.test.profile',
-            metadataPropertyName: "metadataNamespace",
+            metadataPropertyName: 'metadataNamespace',
         ]
         Map domainsFieldMap = [
             currentValue        : 'DataModel',
-            metadataPropertyName: "domainsApplicable",
+            metadataPropertyName: 'domainsApplicable',
         ]
         Map notEditableAfterFinalisationFieldMap = [
             currentValue        : 'value after finalisation',
-            metadataPropertyName: "notEditableAfterFinalisedField",
+            metadataPropertyName: 'notEditableAfterFinalisedField',
         ]
         Map profileMap = [
             sections  : [
@@ -871,15 +871,15 @@ class ProfileFunctionalSpec extends FunctionalSpec {
 
         Map namespaceFieldMap = [
             currentValue        : 'functional.test.profile',
-            metadataPropertyName: "metadataNamespace",
+            metadataPropertyName: 'metadataNamespace',
         ]
         Map domainsFieldMap = [
             currentValue        : 'DataModel',
-            metadataPropertyName: "domainsApplicable",
+            metadataPropertyName: 'domainsApplicable',
         ]
         Map notEditableAfterFinalisationFieldMap = [
             currentValue        : 'value before finalisation',
-            metadataPropertyName: "notEditableAfterFinalisedField",
+            metadataPropertyName: 'notEditableAfterFinalisedField',
         ]
         Map profileMap = [
             sections  : [
@@ -979,11 +979,11 @@ class ProfileFunctionalSpec extends FunctionalSpec {
                     fields: [
                         [
                             currentValue        : 'functional.test.profile',
-                            metadataPropertyName: "plainField",
+                            metadataPropertyName: 'plainField',
                         ],
                         [
                             currentValue        : 'functional.test.profile',
-                            metadataPropertyName: "uneditableFieldOptional",
+                            metadataPropertyName: 'uneditableFieldOptional',
                         ],
                     ],
                     name  : 'Profile Derived Specification'
@@ -1041,7 +1041,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         String simpleModelId = getDataModelId()
 
         loginCreator()
-        POST("folders/${getTestFolderId()}/dataModels?defaultDataTypeProvider=ProfileSpecificationDataTypeProvider", [label: "Dynamic Profile Model"])
+        POST("folders/${getTestFolderId()}/dataModels?defaultDataTypeProvider=ProfileSpecificationDataTypeProvider", [label: 'Dynamic Profile Model'])
         verifyResponse(CREATED, response)
         String dynamicProfileModelId = responseBody().id
         addAccessShares(dynamicProfileModelId, 'dataModels/')
@@ -1243,7 +1243,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         String simpleModelId = getDataModelId()
 
         loginCreator()
-        POST("folders/${getTestFolderId()}/dataModels?defaultDataTypeProvider=ProfileSpecificationDataTypeProvider", [label: "Dynamic Profile Model"])
+        POST("folders/${getTestFolderId()}/dataModels?defaultDataTypeProvider=ProfileSpecificationDataTypeProvider", [label: 'Dynamic Profile Model'])
         verifyResponse(CREATED, response)
         String dynamicProfileModelId = responseBody().id
         addAccessShares(dynamicProfileModelId, 'dataModels/')
@@ -1362,13 +1362,13 @@ class ProfileFunctionalSpec extends FunctionalSpec {
     void 'N12 : test validating valid dynamic profiles using validateMany (as reader)'() {
         given:
         Map<String, String> secondIds = getSecondDataModelIds()
-        String secondModelId = secondIds["dataModelId"]
-        String secondModelFirstDataElementId = secondIds["firstDataElementId"]
-        String secondModelSecondDataElementId = secondIds["secondDataElementId"]
+        String secondModelId = secondIds['dataModelId']
+        String secondModelFirstDataElementId = secondIds['firstDataElementId']
+        String secondModelSecondDataElementId = secondIds['secondDataElementId']
         Map<String, String> thirdIds = getThirdDataModelIds()
-        String thirdModelId = thirdIds["dataModelId"]
-        String thirdModelFirstDataElementId = thirdIds["firstDataElementId"]
-        String thirdModelSecondDataElementId = thirdIds["secondDataElementId"]
+        String thirdModelId = thirdIds['dataModelId']
+        String thirdModelFirstDataElementId = thirdIds['firstDataElementId']
+        String thirdModelSecondDataElementId = thirdIds['secondDataElementId']
         String dynamicProfileModelId = getDynamicProfileModelId()
         String secondDynamicProfileModelId = getSecondDynamicProfileModelId()
 
@@ -1417,7 +1417,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
                             ]
                         ],
                         id        : secondModelFirstDataElementId,
-                        label     : "first data element in profile functional class",
+                        label     : 'first data element in profile functional class',
                         domainType: 'DataElement'],
                     profileProviderService: [
                         namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
@@ -1437,7 +1437,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
                             ]
                         ],
                         id        : secondModelSecondDataElementId,
-                        label     : "second data element in profile functional class",
+                        label     : 'second data element in profile functional class',
                         domainType: 'DataElement'],
                     profileProviderService: [
                         namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
@@ -1458,12 +1458,12 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap1.fieldName}.currentValue == mandatoryFieldMap1.currentValue
         responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}.currentValue == defaultOptionalFieldMap1.currentValue
         responseBody().profilesProvided[0].profile.id == secondModelFirstDataElementId
-        responseBody().profilesProvided[0].profile.domainType == "DataElement"
+        responseBody().profilesProvided[0].profile.domainType == 'DataElement'
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2_1.fieldName}.currentValue == optionalFieldMap2_1.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2_1.fieldName}.currentValue == mandatoryFieldMap2_1.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2_1.fieldName}.currentValue == defaultOptionalFieldMap2_1.currentValue
         responseBody().profilesProvided[1].profile.id == secondModelSecondDataElementId
-        responseBody().profilesProvided[1].profile.domainType == "DataElement"
+        responseBody().profilesProvided[1].profile.domainType == 'DataElement'
 
         when: 'used profiles are retrieved for the first data element'
         HttpResponse<List<Map>> localResponse = GET("dataElements/$secondModelFirstDataElementId/profiles/used", Argument.listOf(Map))
@@ -1489,13 +1489,13 @@ class ProfileFunctionalSpec extends FunctionalSpec {
     void 'N13 : test validating invalid dynamic profiles using validateMany (as reader)'() {
         given:
         Map<String, String> secondIds = getSecondDataModelIds()
-        String secondModelId = secondIds["dataModelId"]
-        String secondModelFirstDataElementId = secondIds["firstDataElementId"]
-        String secondModelSecondDataElementId = secondIds["secondDataElementId"]
+        String secondModelId = secondIds['dataModelId']
+        String secondModelFirstDataElementId = secondIds['firstDataElementId']
+        String secondModelSecondDataElementId = secondIds['secondDataElementId']
         Map<String, String> thirdIds = getThirdDataModelIds()
-        String thirdModelId = thirdIds["dataModelId"]
-        String thirdModelFirstDataElementId = thirdIds["firstDataElementId"]
-        String thirdModelSecondDataElementId = thirdIds["secondDataElementId"]
+        String thirdModelId = thirdIds['dataModelId']
+        String thirdModelFirstDataElementId = thirdIds['firstDataElementId']
+        String thirdModelSecondDataElementId = thirdIds['secondDataElementId']
         String dynamicProfileModelId = getDynamicProfileModelId()
         String secondDynamicProfileModelId = getSecondDynamicProfileModelId()
 
@@ -1544,7 +1544,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
                             ]
                         ],
                         id        : secondModelFirstDataElementId,
-                        label     : "first data element in profile functional class",
+                        label     : 'first data element in profile functional class',
                         domainType: 'DataElement'],
                     profileProviderService: [
                         namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
@@ -1557,14 +1557,14 @@ class ProfileFunctionalSpec extends FunctionalSpec {
                             [
                                 fields: [
                                     optionalFieldMap2_1,
-                                     mandatoryFieldMap2_1,
-                                      defaultOptionalFieldMap2_1
+                                    mandatoryFieldMap2_1,
+                                    defaultOptionalFieldMap2_1
                                 ],
                                 name  : 'Profile Section Class'
                             ]
                         ],
                         id        : secondModelSecondDataElementId,
-                        label     : "second data element in profile functional class",
+                        label     : 'second data element in profile functional class',
                         domainType: 'DataElement'],
                     profileProviderService: [
                         namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
@@ -1585,16 +1585,16 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap1.fieldName}.currentValue == mandatoryFieldMap1.currentValue
         responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}.currentValue == defaultOptionalFieldMap1.currentValue
         responseBody().profilesProvided[0].profile.id == secondModelFirstDataElementId
-        responseBody().profilesProvided[0].profile.domainType == "DataElement"
+        responseBody().profilesProvided[0].profile.domainType == 'DataElement'
         responseBody().profilesProvided[0].errors.errors.size == 1
-        responseBody().profilesProvided[0].errors.errors[0].message == "This field cannot be empty"
+        responseBody().profilesProvided[0].errors.errors[0].message == 'This field cannot be empty'
         responseBody().profilesProvided[0].errors.errors[0].fieldName == "Dynamic Profile Elem (Mandatory)"
 
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2_1.fieldName}.currentValue == optionalFieldMap2_1.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2_1.fieldName}.currentValue == mandatoryFieldMap2_1.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2_1.fieldName}.currentValue == defaultOptionalFieldMap2_1.currentValue
         responseBody().profilesProvided[1].profile.id == secondModelSecondDataElementId
-        responseBody().profilesProvided[1].profile.domainType == "DataElement"
+        responseBody().profilesProvided[1].profile.domainType == 'DataElement'
         !responseBody().profilesProvided[1].errors
 
         when: 'used profiles are retrieved for the first data element'
@@ -1633,13 +1633,13 @@ class ProfileFunctionalSpec extends FunctionalSpec {
     void 'N14 : test saving and retrieving dynamic profiles using saveMany and getMany (as author and reader)'() {
         given:
         Map<String, String> secondIds = getSecondDataModelIds()
-        String secondModelId = secondIds["dataModelId"]
-        String secondModelFirstDataElementId = secondIds["firstDataElementId"]
-        String secondModelSecondDataElementId = secondIds["secondDataElementId"]
+        String secondModelId = secondIds['dataModelId']
+        String secondModelFirstDataElementId = secondIds['firstDataElementId']
+        String secondModelSecondDataElementId = secondIds['secondDataElementId']
         Map<String, String> thirdIds = getThirdDataModelIds()
-        String thirdModelId = thirdIds["dataModelId"]
-        String thirdModelFirstDataElementId = thirdIds["firstDataElementId"]
-        String thirdModelSecondDataElementId = thirdIds["secondDataElementId"]
+        String thirdModelId = thirdIds['dataModelId']
+        String thirdModelFirstDataElementId = thirdIds['firstDataElementId']
+        String thirdModelSecondDataElementId = thirdIds['secondDataElementId']
         String dynamicProfileModelId = getDynamicProfileModelId()
         String secondDynamicProfileModelId = getSecondDynamicProfileModelId()
 
@@ -1685,7 +1685,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
                             ]
                         ],
                         id        : secondModelFirstDataElementId,
-                        label     : "first data element in profile functional class",
+                        label     : 'first data element in profile functional class',
                         domainType: 'DataElement'],
                     profileProviderService: [
                         namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
@@ -1705,7 +1705,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
                             ]
                         ],
                         id        : secondModelFirstDataElementId,
-                        label     : "first data element in profile functional class",
+                        label     : 'first data element in profile functional class',
                         domainType: 'DataElement'],
                     profileProviderService: [
                         namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
@@ -1737,12 +1737,12 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap1.fieldName}.currentValue == mandatoryFieldMap1.currentValue
         responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}.currentValue == defaultOptionalFieldMap1.currentValue
         responseBody().profilesProvided[0].profile.id == secondModelFirstDataElementId
-        responseBody().profilesProvided[0].profile.domainType == "DataElement"
+        responseBody().profilesProvided[0].profile.domainType == 'DataElement'
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2_1.fieldName}.currentValue == optionalFieldMap2_1.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2_1.fieldName}.currentValue == mandatoryFieldMap2_1.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2_1.fieldName}.currentValue == defaultOptionalFieldMap2_1.currentValue
         responseBody().profilesProvided[1].profile.id == secondModelFirstDataElementId
-        responseBody().profilesProvided[1].profile.domainType == "DataElement"
+        responseBody().profilesProvided[1].profile.domainType == 'DataElement'
 
         when: 'used profiles are retrieved for the first data element'
         HttpResponse<List<Map>> localResponse = GET("dataElements/$secondModelFirstDataElementId/profiles/used", Argument.listOf(Map))
@@ -1871,7 +1871,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
                             ]
                         ],
                         id        : secondModelFirstDataElementId,
-                        label     : "first data element in profile functional class",
+                        label     : 'first data element in profile functional class',
                         domainType: 'DataElement'],
                     profileProviderService: [
                         namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
@@ -1891,7 +1891,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
                             ]
                         ],
                         id        : secondModelSecondDataElementId,
-                        label     : "second data element in profile functional class",
+                        label     : 'second data element in profile functional class',
                         domainType: 'DataElement'],
                     profileProviderService: [
                         namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
@@ -1911,12 +1911,12 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap1.fieldName}.currentValue == mandatoryFieldMap1.currentValue
         responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}.currentValue == defaultOptionalFieldMap1.currentValue
         responseBody().profilesProvided[0].profile.id == secondModelFirstDataElementId
-        responseBody().profilesProvided[0].profile.domainType == "DataElement"
+        responseBody().profilesProvided[0].profile.domainType == 'DataElement'
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2.fieldName}.currentValue == optionalFieldMap2.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2.fieldName}.currentValue == mandatoryFieldMap2.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2.fieldName}.currentValue == defaultOptionalFieldMap2.currentValue
         responseBody().profilesProvided[1].profile.id == secondModelSecondDataElementId
-        responseBody().profilesProvided[1].profile.domainType == "DataElement"
+        responseBody().profilesProvided[1].profile.domainType == 'DataElement'
 
         when:
         loginReader()
@@ -2136,7 +2136,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
                             ]
                         ],
                         id        : secondModelFirstDataElementId,
-                        label     : "first data element in profile functional class",
+                        label     : 'first data element in profile functional class',
                         domainType: 'DataElement'],
                     profileProviderService: [
                         namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
@@ -2156,7 +2156,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
                             ]
                         ],
                         id        : secondModelSecondDataElementId,
-                        label     : "second data element in profile functional class",
+                        label     : 'second data element in profile functional class',
                         domainType: 'DataElement'],
                     profileProviderService: [
                         namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
@@ -2176,7 +2176,7 @@ class ProfileFunctionalSpec extends FunctionalSpec {
                             ]
                         ],
                         id        : thirdModelFirstDataElementId,
-                        label     : "first data element in profile functional class",
+                        label     : 'first data element in profile functional class',
                         domainType: 'DataElement'],
                     profileProviderService: [
                         namespace : 'uk.ac.ox.softeng.maurodatamapper.profile.provider',
@@ -2196,12 +2196,12 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap1.fieldName}.currentValue == mandatoryFieldMap1.currentValue
         responseBody().profilesProvided[0].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap1.fieldName}.currentValue == defaultOptionalFieldMap1.currentValue
         responseBody().profilesProvided[0].profile.id == secondModelFirstDataElementId
-        responseBody().profilesProvided[0].profile.domainType == "DataElement"
+        responseBody().profilesProvided[0].profile.domainType == 'DataElement'
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == optionalFieldMap2.fieldName}.currentValue == optionalFieldMap2.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == mandatoryFieldMap2.fieldName}.currentValue == mandatoryFieldMap2.currentValue
         responseBody().profilesProvided[1].profile.sections.first().fields.find {it.fieldName == defaultOptionalFieldMap2.fieldName}.currentValue == defaultOptionalFieldMap2.currentValue
         responseBody().profilesProvided[1].profile.id == secondModelSecondDataElementId
-        responseBody().profilesProvided[1].profile.domainType == "DataElement"
+        responseBody().profilesProvided[1].profile.domainType == 'DataElement'
 
         when:
         loginReader()
@@ -2390,20 +2390,20 @@ class ProfileFunctionalSpec extends FunctionalSpec {
         when: 'request made against a MultiFacetAwareItem that is not a model'
         loginAuthor()
         Map getManyMap = [
-            "multiFacetAwareItems"   : [
+            'multiFacetAwareItems'   : [
                 [
-                    "multiFacetAwareItemDomainType": "dataElement",
-                    "multiFacetAwareItemId"        : secondModelFirstDataElementId
+                    'multiFacetAwareItemDomainType': 'dataElement',
+                    'multiFacetAwareItemId'        : secondModelFirstDataElementId
                 ],
                 [
-                    "multiFacetAwareItemDomainType": "dataElement",
-                    "multiFacetAwareItemId"        : secondModelSecondDataElementId
+                    'multiFacetAwareItemDomainType': 'dataElement',
+                    'multiFacetAwareItemId'        : secondModelSecondDataElementId
                 ]
             ],
-            "profileProviderServices": [
+            'profileProviderServices': [
                 [
-                    "name"     : "Dynamic%20Profile%20Model",
-                    "namespace": "uk.ac.ox.softeng.maurodatamapper.profile.provider"
+                    'name'     : "Dynamic%20Profile%20Model",
+                    'namespace': "uk.ac.ox.softeng.maurodatamapper.profile.provider"
                 ]
             ]
         ]

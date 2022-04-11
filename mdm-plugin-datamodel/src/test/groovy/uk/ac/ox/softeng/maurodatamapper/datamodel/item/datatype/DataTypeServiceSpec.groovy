@@ -123,13 +123,13 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
 
     }
 
-    void "test get"() {
+    void 'test get'() {
 
         expect:
         service.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
 
         when:
         List<DataType> dataTypeList = service.list(max: 2, offset: 2, sort: 'label')
@@ -146,12 +146,12 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
         dataTypeList[1].domainType == 'PrimitiveType'
     }
 
-    void "test count"() {
+    void 'test count'() {
         expect:
         service.count() == 8
     }
 
-    void "test delete"() {
+    void 'test delete'() {
         given:
         DataType pt = service.get(id)
 
@@ -169,7 +169,7 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
         !DataElement.findByLabel('varcharel')
     }
 
-    void "test save"() {
+    void 'test save'() {
 
         when:
         DataType dataType = new PrimitiveType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'saving test', dataModel: dataModel)

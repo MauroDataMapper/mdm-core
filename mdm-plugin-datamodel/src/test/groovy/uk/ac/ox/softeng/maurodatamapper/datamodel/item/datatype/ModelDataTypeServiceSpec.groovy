@@ -146,13 +146,13 @@ class ModelDataTypeServiceSpec extends BaseUnitSpec implements ServiceUnitTest<M
 
     }
 
-    void "test get"() {
+    void 'test get'() {
 
         expect:
         service.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
 
         when:
         List<ModelDataType> modelDataTypeList = service.list(max: 2, offset: 1)
@@ -167,12 +167,12 @@ class ModelDataTypeServiceSpec extends BaseUnitSpec implements ServiceUnitTest<M
         modelDataTypeList[1].label == 'terminology type 3'
     }
 
-    void "test count"() {
+    void 'test count'() {
         expect:
         service.count() == 3
     }
 
-    void "test delete"() {
+    void 'test delete'() {
 
         expect:
         service.count() == 3

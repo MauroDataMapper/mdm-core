@@ -24,7 +24,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
@@ -129,7 +128,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         checkAndSave(dataModel)
     }
 
-    void "test get"() {
+    void 'test get'() {
         given:
         setupData()
 
@@ -137,7 +136,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dataClassService.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         given:
         setupData()
 
@@ -160,7 +159,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dataClassList[1].dataClasses.find {it.label == 'Integration child'}
     }
 
-    void "test count"() {
+    void 'test count'() {
         given:
         setupData()
 
@@ -168,7 +167,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dataClassService.count() == 5
     }
 
-    void "test delete child dataclass"() {
+    void 'test delete child dataclass'() {
         given:
         setupData()
         DataClass dataClass = DataClass.findByLabel('Integration child')

@@ -18,10 +18,12 @@
 package uk.ac.ox.softeng.maurodatamapper.profile.domain
 
 import grails.validation.Validateable
+import groovy.transform.AutoClone
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.SimpleType
 
-class ProfileSection implements Cloneable, Validateable {
+@AutoClone
+class ProfileSection implements Validateable {
 
     String name
     String description

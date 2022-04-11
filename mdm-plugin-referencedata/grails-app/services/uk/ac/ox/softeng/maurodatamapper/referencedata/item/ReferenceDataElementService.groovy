@@ -164,7 +164,7 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
     void matchUpDataTypes(ReferenceDataModel referenceDataModel, Collection<ReferenceDataElement> dataElements) {
         if (referenceDataModel.referenceDataTypes == null) referenceDataModel.referenceDataTypes = [] as HashSet
         if (dataElements) {
-            log.debug("Matching up {} DataElements to a possible {} DataTypes", dataElements.size(), referenceDataModel.referenceDataTypes.size())
+            log.debug('Matching up {} DataElements to a possible {} DataTypes', dataElements.size(), referenceDataModel.referenceDataTypes.size())
             def grouped = dataElements.groupBy {it.referenceDataType.label}.sort {a, b ->
                 def res = a.value.size() <=> b.value.size()
                 if (res == 0) res = a.key <=> b.key

@@ -1403,13 +1403,13 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
                                  sourceId: source,
                                  label   : label,
                                  count   : 1,
-                                 patches : [[fieldName          : "description",
+                                 patches : [[fieldName          : 'description',
                                              path               : pathToChange,
-                                             sourceValue        : "modifiedDescriptionSource",
+                                             sourceValue        : 'modifiedDescriptionSource',
                                              targetValue        : null,
                                              commonAncestorValue: null,
                                              isMergeConflict    : false,
-                                             type               : "modification",]]]]
+                                             type               : 'modification',]]]]
         // merging a patch
         login(name)
         PUT("$source/mergeInto/$target", patchJson)
@@ -1604,7 +1604,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
     "isNewDocumentationVersion": false,
     "isNewFork": false,
     "targets": [
-      
+
     ]
   }]"""
 
@@ -2160,7 +2160,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         "id": "${data.newBranch}",
         "description": "New Model Version Of"
       }
-      
+
     ]
   },
   {
@@ -2173,7 +2173,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
     "isNewDocumentationVersion": false,
     "isNewFork": false,
     "targets": [
-      
+
     ]
   },
   {
@@ -2186,7 +2186,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
     "isNewDocumentationVersion": false,
     "isNewFork": true,
     "targets": [
-      
+
     ]
   },
   {
@@ -2235,7 +2235,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
     "isNewDocumentationVersion": false,
     "isNewFork": false,
     "targets": [
-      
+
     ]
   },
   {
@@ -2268,7 +2268,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
     "isNewDocumentationVersion": false,
     "isNewFork": true,
     "targets": [
-      
+
     ]
   },
   {
@@ -2305,7 +2305,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
     "isNewDocumentationVersion": false,
     "isNewFork": false,
     "targets": [
-      
+
     ]
   },
     {
@@ -2318,7 +2318,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
     "isNewDocumentationVersion": false,
     "isNewFork": false,
     "targets": [
-      
+
     ]
   },
   {
@@ -2331,7 +2331,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
     "isNewDocumentationVersion": false,
     "isNewFork": false,
     "targets": [
-      
+
     ]
   }
 ]"""

@@ -35,7 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired
  */
 @Rollback
 @Slf4j
-@SuppressWarnings("DuplicatedCode")
+@SuppressWarnings('DuplicatedCode')
 abstract class DataBindDataFlowImporterProviderServiceSpec<K extends DataBindDataFlowImporterProviderService> extends BaseImportExportSpec {
 
     abstract K getDataFlowImporterService()
@@ -52,7 +52,7 @@ abstract class DataBindDataFlowImporterProviderServiceSpec<K extends DataBindDat
 
         dataFlowImporterService.checkImport(admin, imported)
         check(imported)
-        
+
         dataFlowService.save(imported)
         sessionFactory.currentSession.flush()
         assert dataFlowService.count() == 2
@@ -252,7 +252,7 @@ abstract class DataBindDataFlowImporterProviderServiceSpec<K extends DataBindDat
         DataFlow.count() == 1
         ApiBadRequestException exception = thrown(ApiBadRequestException)
         exception.message.contains('Target DataModel retrieval for dm:Invalid TargetFlowDataModel$main failed')
-    }    
+    }
 
     void 'I10 : test import with failed pathing on a source dataclass'() {
         given:
@@ -300,7 +300,7 @@ abstract class DataBindDataFlowImporterProviderServiceSpec<K extends DataBindDat
         DataFlow.count() == 1
         ApiBadRequestException exception = thrown(ApiBadRequestException)
         exception.message.contains('Source DataElement retrieval for dm:SourceFlowDataModel$main|dc:tableA|de:Invalid columnA failed')
-    }     
+    }
 
     void 'I13 : test import with failed pathing on a source dataelement when the dataclass label is wrong'() {
         given:
@@ -316,7 +316,7 @@ abstract class DataBindDataFlowImporterProviderServiceSpec<K extends DataBindDat
         DataFlow.count() == 1
         ApiBadRequestException exception = thrown(ApiBadRequestException)
         exception.message.contains('Source DataElement retrieval for dm:SourceFlowDataModel$main|dc:Invalid tableA|de:columnA failed')
-    }   
+    }
 
     void 'I14 : test import with failed pathing on a target dataelement'() {
         given:
@@ -332,7 +332,7 @@ abstract class DataBindDataFlowImporterProviderServiceSpec<K extends DataBindDat
         DataFlow.count() == 1
         ApiBadRequestException exception = thrown(ApiBadRequestException)
         exception.message.contains('Target DataElement retrieval for dm:TargetFlowDataModel$main|dc:tableD|de:Invalid columnN failed')
-    }     
+    }
 
     void 'I15 : test import with failed pathing on a target dataelement when the dataclass label is wrong'() {
         given:
@@ -348,6 +348,6 @@ abstract class DataBindDataFlowImporterProviderServiceSpec<K extends DataBindDat
         DataFlow.count() == 1
         ApiBadRequestException exception = thrown(ApiBadRequestException)
         exception.message.contains('Target DataElement retrieval for dm:TargetFlowDataModel$main|dc:Invalid tableD|de:columnN failed')
-    }          
+    }
 
 }
