@@ -29,7 +29,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelItemConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
-import uk.ac.ox.softeng.maurodatamapper.core.search.ModelItemSearch
+import uk.ac.ox.softeng.maurodatamapper.core.search.StandardWithoutLabelSearch
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
 import uk.ac.ox.softeng.maurodatamapper.path.Path
@@ -106,7 +106,8 @@ class Term implements ModelItem<Term, Terminology> {
     static transients = ['aliases', 'model']
 
     static search = {
-        CallableSearch.call(ModelItemSearch, delegate)
+        CallableSearch.call(StandardWithoutLabelSearch, delegate)
+        label searchable: 'yes', analyzer: 'termLabel', sortable: [name: 'label_sort', normalizer: 'lowercase'], termVector: 'with_positions'
         code searchable: 'yes', analyzer: 'keyword', sortable: [name: 'code_sort', normalizer: 'lowercase'], termVector: 'with_positions'
         definition termVector: 'with_positions'
         modelId searchable: 'yes', indexingDependency: [reindexOnUpdate: 'shallow', derivedFrom: 'terminology']

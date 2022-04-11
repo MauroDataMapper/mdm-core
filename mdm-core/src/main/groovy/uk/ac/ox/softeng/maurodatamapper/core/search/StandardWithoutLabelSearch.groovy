@@ -17,15 +17,21 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.search
 
-import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
+import uk.ac.ox.softeng.maurodatamapper.core.hibernate.search.mapper.pojo.binder.MetadataBinder
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.mapper.pojo.bridge.binder.PathBinder
 
 /**
  * @since 27/02/2020
  */
-class StandardSearch {
+class StandardWithoutLabelSearch {
 
     static search = {
-        label searchable: 'yes', analyzer: 'wordDelimiter', sortable: [name: 'label_sort', normalizer: 'lowercase'], termVector: 'with_positions'
-        CallableSearch.call(StandardWithoutLabelSearch, delegate)
+        description termVector: 'with_positions'
+        aliasesString searchable: 'yes', analyzer: 'pipe'
+        metadata binder: MetadataBinder, indexingDependency: [reindexOnUpdate: 'shallow'], indexEmbedded: [includePaths: ['key', 'value', 'namespace']]
+        classifiers indexingDependency: [reindexOnUpdate: 'shallow'], indexEmbedded: [includePaths: ['label', 'description']]
+        lastUpdated searchable: 'yes'
+        dateCreated searchable: 'yes'
+        path valueBinder: new PathBinder()
     }
 }
