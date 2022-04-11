@@ -120,7 +120,7 @@ ruleset {
     FieldTypeRequired
     HashtableIsObsolete
     IfStatementCouldBeTernary
-    ImplicitClosureParameter
+    //    ImplicitClosureParameter
     //    ImplicitReturnStatement
     InvertedCondition
     InvertedIfElse
@@ -134,12 +134,12 @@ ruleset {
     NoJavaUtilDate
     NoTabCharacter
     ParameterReassignment
-//    PublicMethodsBeforeNonPublicMethods
+    //    PublicMethodsBeforeNonPublicMethods
     // Don't require static fields above instance fields for Grails domain classes.
     StaticFieldsBeforeInstanceFields {
         doNotApplyToFilesMatching = '.+/grails\\-app/domain/.+'
     }
-//    StaticMethodsBeforeInstanceMethods // Static methods are better at the bottom
+    //    StaticMethodsBeforeInstanceMethods // Static methods are better at the bottom
     TernaryCouldBeElvis
     TrailingComma
     VariableTypeRequired
@@ -230,7 +230,7 @@ ruleset {
     //    FileEndsWithoutNewline
     //    Indentation
     LineLength {
-        length = 150
+        length = 175
     }
     MissingBlankLineAfterImports
     MissingBlankLineAfterPackage
@@ -313,7 +313,7 @@ ruleset {
     ExplicitStackInstantiation
     ExplicitTreeSetInstantiation
     GStringAsMapKey
-//    GStringExpressionWithinString // This is used a lot in the json comparison strings
+    //    GStringExpressionWithinString // This is used a lot in the json comparison strings
     //    GetterMethodCouldBeProperty
     GroovyLangImmutable
     UseCollectMany
@@ -347,14 +347,14 @@ ruleset {
     JUnitAssertAlwaysFails
     JUnitAssertAlwaysSucceeds
     JUnitFailWithoutMessage
-    JUnitLostTest
-    JUnitPublicField
-    JUnitPublicNonTestMethod
-    JUnitPublicProperty
+//    JUnitLostTest
+    //    JUnitPublicField
+    //    JUnitPublicNonTestMethod
+    //    JUnitPublicProperty
     JUnitSetUpCallsSuper
     //    JUnitStyleAssertions
     JUnitTearDownCallsSuper
-    JUnitTestMethodWithoutAssert
+//    JUnitTestMethodWithoutAssert
     JUnitUnnecessarySetUp
     JUnitUnnecessaryTearDown
     JUnitUnnecessaryThrowsException
@@ -471,7 +471,7 @@ ruleset {
     UnnecessaryFinalOnPrivateMethod
     UnnecessaryFloatInstantiation
     UnnecessaryGString
-    UnnecessaryGetter
+//    UnnecessaryGetter
     UnnecessaryIfStatement
     UnnecessaryInstanceOfCheck
     UnnecessaryInstantiationToGetClass
