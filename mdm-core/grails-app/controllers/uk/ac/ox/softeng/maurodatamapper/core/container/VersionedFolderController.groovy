@@ -448,6 +448,24 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
         throw new ApiNotYetImplementedException('MC01', 'serviceDeleteResource')
     }
 
+    @Override
+    @Transactional
+    protected boolean validateResource(VersionedFolder instance, String view) {
+        if (instance.hasErrors()) {
+            transactionStatus.setRollbackOnly()
+            respond instance.errors, view: view // STATUS CODE 422
+            return false
+        }
+        if (view == 'update') versionedFolderService.shallowValidate(instance)
+        else versionedFolderService.validate(instance)
+        if (instance.hasErrors()) {
+            transactionStatus.setRollbackOnly()
+            respond instance.errors, view: view // STATUS CODE 422
+            return false
+        }
+        true
+    }
+
     protected VersionedFolder updateSecurity(VersionedFolder instance, Set<String> changedProperties) {
         modelServices.each {service ->
             Collection<Model> modelsInFolder = service.findAllByFolderId(instance.id)

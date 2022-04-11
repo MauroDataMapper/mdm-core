@@ -3,7 +3,7 @@
   "targetId": "${json-unit.matches:id}",
   "path": "vf:Functional Test VersionedFolder With Sub Folders$source",
   "label": "Functional Test VersionedFolder With Sub Folders",
-  "count": 104,
+  "count": 105,
   "diffs": [
     {
       "fieldName": "description",
@@ -499,6 +499,12 @@
       "commonAncestorValue": null,
       "isMergeConflict": false,
       "type": "modification"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder With Sub Folders$source|dm:Created DataModel in Source$source",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
     },
     {
       "fieldName": "description",

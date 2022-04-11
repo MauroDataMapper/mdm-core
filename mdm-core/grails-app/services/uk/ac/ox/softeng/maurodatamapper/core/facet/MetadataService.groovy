@@ -148,9 +148,9 @@ class MetadataService implements MultiFacetItemAwareService<Metadata> {
         log.debug('{} Metadata batch saved, took {}', metadata.size(), Utils.timeTaken(start))
     }
 
-    boolean validate(Metadata metadata) {
+    Metadata validate(Metadata metadata) {
         boolean valid = metadata.validate()
-        if (!valid) return false
+        if (!valid) return metadata
 
         MultiFacetAware multiFacetAwareItem =
             metadata.multiFacetAwareItem ?: findMultiFacetAwareItemByDomainTypeAndId(metadata.multiFacetAwareItemDomainType,
@@ -159,9 +159,8 @@ class MetadataService implements MultiFacetItemAwareService<Metadata> {
         if (multiFacetAwareItem.metadata.any {md -> md != metadata && md.namespace == metadata.namespace && md.key == metadata.key}) {
             metadata.errors.rejectValue('key', 'default.not.unique.message', ['key', Metadata.name, metadata.value].toArray(),
                                         'Property [{0}] of class [{1}] with value [{2}] must be unique')
-            return false
         }
-        true
+        metadata
     }
 
     @Override

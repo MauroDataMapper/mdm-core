@@ -226,6 +226,8 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         PUT("versionedFolders/$target", [description: 'Target modified description'])
         verifyResponse OK, response
 
+        POST("folders/$source/dataModels", [label: 'Created DataModel in Source'])
+        verifyResponse(CREATED, response)
 
         POST("folders/${source}/folders", [
             label: 'New Sub Folder in VersionedFolder'
@@ -233,6 +235,8 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         verifyResponse(CREATED, response)
         sourceMap.newSubFolderId = responseBody().id
 
+        POST("folders/${sourceMap.newSubFolderId}/dataModels", [label: 'Created DataModel in sub folder'])
+        verifyResponse(CREATED, response)
 
         POST("folders/${sourceMap.subFolder2Id}/folders", [
             label: 'New Sub-Sub Folder 2 in VersionedFolder'
@@ -240,11 +244,14 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
         verifyResponse(CREATED, response)
         sourceMap.newSubSubFolder2Id = responseBody().id
 
+        POST("folders/${sourceMap.newSubSubFolder2Id}/dataModels", [label: 'Created DataModel in sub sub folder'])
+        verifyResponse(CREATED, response)
+
         //       sourceMap.dataModel4 = dataModelPluginMergeBuilder.buildCommonAncestorDataModel(sourceMap.newSubSubFolder2Id.toString(),'4')
 
         // Point the Model Data Type in the source to point at the Code Set rather than Terminology
         PUT("dataModels/$sourceMap.dataModel1.dataModelId/dataTypes/$sourceMap.dataModel1.modelDataTypeId", [
-                modelResourceDomainType: 'CodeSet', modelResourceId: sourceMap.codeSet.codeSetId
+            modelResourceDomainType: 'CodeSet', modelResourceId: sourceMap.codeSet.codeSetId
         ])
         verifyResponse OK, response
         logout()
@@ -304,9 +311,12 @@ class VersionedFolderMergeBuilder extends BaseTestMergeBuilder {
 
         // Point the Model Data Type in the source to point at the Code Set rather than Terminology
         PUT("dataModels/$sourceMap.dataModel.dataModelId/dataTypes/$sourceMap.dataModel.modelDataTypeId", [
-                modelResourceDomainType: 'CodeSet', modelResourceId: sourceMap.codeSet.codeSetId
+            modelResourceDomainType: 'CodeSet', modelResourceId: sourceMap.codeSet.codeSetId
         ])
         verifyResponse OK, response
+
+        POST("folders/$source/dataModels", [label: 'Created DataModel in Source'])
+        verifyResponse(CREATED, response)
 
 
         //        POST("$source/metadata", [namespace: 'functional.test', key: 'addToSourceOnly', value: 'adding to source only'])

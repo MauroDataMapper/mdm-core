@@ -3,7 +3,7 @@
   "targetId": "${json-unit.matches:id}",
   "path": "vf:Functional Test VersionedFolder Complex$source",
   "label": "Functional Test VersionedFolder Complex",
-  "count": 65,
+  "count": 66,
   "diffs": [
     {
       "fieldName": "description",
@@ -13,6 +13,12 @@
       "commonAncestorValue": null,
       "isMergeConflict": true,
       "type": "modification"
+    },
+    {
+      "path": "vf:Functional Test VersionedFolder Complex$source|dm:Created DataModel in Source$source",
+      "isMergeConflict": false,
+      "isSourceModificationAndTargetDeletion": false,
+      "type": "creation"
     },
     {
       "fieldName": "description",

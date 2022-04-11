@@ -68,16 +68,15 @@ class MetadataControllerSpec extends ResourceControllerSpec<Metadata> implements
             //findByMultiFacetAwareItemIdAndId(basicModelId, metadataId) >> basicModel.metadata[0]
             validate(_) >> {Metadata res ->
                 boolean valid = res.validate()
-                if (!valid) return false
+                if (!valid) return res
 
                 MultiFacetAware multiFacetAwareItem = res.multiFacetAwareItem ?: basicModel
 
                 if (multiFacetAwareItem.metadata.any {md -> md != res && md.namespace == res.namespace && md.key == res.key}) {
                     res.errors.rejectValue('key', 'default.not.unique.message', ['key', Metadata.toString(), res.key].toArray(),
                                            'Property [{0}] of class [{1}] with value [{2}] must be unique')
-                    return false
                 }
-                true
+                res
             }
             addFacetToDomain(_, _, _) >> {Metadata md, String domain, UUID bid ->
                 if (basicModel.id == bid) {

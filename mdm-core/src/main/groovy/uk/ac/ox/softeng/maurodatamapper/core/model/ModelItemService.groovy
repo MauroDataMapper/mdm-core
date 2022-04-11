@@ -48,10 +48,6 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
         throw new ApiNotYetImplementedException('MIS01', "deleteAllByModelIds for ${getDomainClass().simpleName}")
     }
 
-    K validate(K modelItem) {
-        throw new ApiNotYetImplementedException('MIS01', "validate for ${getDomainClass().simpleName}")
-    }
-
     K copy(Model copiedModelInto, K original, CatalogueItem nonModelParent, UserSecurityPolicyManager userSecurityPolicyManager) {
         throw new ApiNotYetImplementedException('MIS03', "copy [for ModelItem ${getDomainClass().simpleName}]")
     }
