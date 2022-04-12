@@ -19,13 +19,12 @@ package uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.validator
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
-import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.Validator
 
 /**
  *
  * @since 30/01/2018
  */
-class ModelLabelValidator implements Validator<String>, VersionAwareValidator {
+class ModelLabelValidator extends LabelValidator implements VersionAwareValidator {
 
     final Model model
 
@@ -44,8 +43,8 @@ class ModelLabelValidator implements Validator<String>, VersionAwareValidator {
 
     @Override
     Object isValid(String value) {
-        if (value == null) return ['default.null.message']
-        if (!value) return ['default.blank.message']
+        def res = super.isValid(value)
+        if (res !instanceof Boolean) return res
 
         List<Model> modelsWithTheSameLabel
         // Existing models can change label but it must not already be in use

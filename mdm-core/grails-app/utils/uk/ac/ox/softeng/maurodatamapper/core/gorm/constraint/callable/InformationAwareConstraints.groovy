@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable
 
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.validator.LabelValidator
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstraints
 
 /**
@@ -25,7 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.MdmDomainConstr
 class InformationAwareConstraints extends MdmDomainConstraints {
 
     static constraints = {
-        label nullable: false, blank: false
+        label nullable: false, blank: false, validator: {val -> new LabelValidator().isValid(val)}
         description nullable: true, blank: false
     }
 }
