@@ -78,7 +78,7 @@ class AuthenticatingFunctionalSpec extends FunctionalSpec {
         response.body().authenticatedSession == true
     }
 
-    void "test logout"() {
+    void 'test logout'() {
         when:
         loginAdmin()
         GET('session/isAuthenticated', MAP_ARG, true)

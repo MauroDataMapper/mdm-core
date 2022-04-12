@@ -60,6 +60,11 @@ trait MdmDomainService<K extends MdmDomain> implements AnonymisableService{
         domain.save(args)
     }
 
+    K validate(K domain) {
+        domain.validate()
+        domain
+    }
+
     K unwrapIfProxy(def ge) {
         proxyHandler.unwrapIfProxy(ge) as K
     }

@@ -36,7 +36,7 @@ class UserGroupSpec extends MdmDomainSpec<UserGroup> implements DomainUnitTest<U
 
     @Override
     void setValidDomainOtherValues() {
-        domain.name = "test"
+        domain.name = 'test'
         domain.addToGroupMembers(admin)
     }
 
@@ -47,7 +47,7 @@ class UserGroupSpec extends MdmDomainSpec<UserGroup> implements DomainUnitTest<U
         assert domain.groupMembers.first().id == admin.id
     }
 
-    void "test properly created usergroup"() {
+    void 'test properly created usergroup'() {
 
         when:
         setValidDomainValues()

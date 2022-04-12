@@ -46,7 +46,7 @@ class ReferenceDataElementSpec extends ModelItemSpec<ReferenceDataElement> imple
         assert ReferenceDataModel.count() == 1
 
         referenceDataType = new ReferencePrimitiveType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'datatype')
-        
+
         dataSet.addToReferenceDataTypes(referenceDataType)
         checkAndSave(dataSet)
     }

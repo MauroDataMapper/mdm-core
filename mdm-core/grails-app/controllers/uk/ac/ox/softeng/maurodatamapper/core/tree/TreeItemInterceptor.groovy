@@ -38,7 +38,7 @@ class TreeItemInterceptor implements MdmInterceptor {
     @Autowired(required = false)
     List<ModelItemService> modelItemServices
 
-    private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
+    private static final HibernateProxyHandler hibernateProxyHandler = new HibernateProxyHandler()
 
     @Override
     boolean isShow() {
@@ -59,7 +59,7 @@ class TreeItemInterceptor implements MdmInterceptor {
             }
 
             if (Utils.parentClassIsAssignableFromChild(VersionedFolder, params.containerClass)) {
-                throw new ApiBadRequestException('TII02', "Tree called for VersionedFolder, this is not allowed")
+                throw new ApiBadRequestException('TII02', 'Tree called for VersionedFolder, this is not allowed')
             }
 
             if (actionName in ['documentationSupersededModels', 'modelSupersededModels', 'deletedModels']) {
@@ -77,7 +77,7 @@ class TreeItemInterceptor implements MdmInterceptor {
                                                                        params.catalogueItemId)
                 }
 
-                Model model = proxyHandler.unwrapIfProxy(getOwningModel())
+                Model model = hibernateProxyHandler.unwrapIfProxy(getOwningModel())
                 return checkActionAuthorisationOnUnsecuredResource(params.catalogueItemClass, params.catalogueItemId, model.getClass(), model.getId())
             }
             // Otherwise top level action so should be allowed through
@@ -100,7 +100,7 @@ class TreeItemInterceptor implements MdmInterceptor {
                 return false
             }
         }
-        throw new ApiBadRequestException('MCI01', "No domain class resource provided")
+        throw new ApiBadRequestException('MCI01', 'No domain class resource provided')
     }
 
     Model getOwningModel() {

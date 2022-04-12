@@ -179,11 +179,8 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
 
     @Override
     UserSecurityPolicyManager reloadUserSecurityPolicyManager(String userEmailAddress) {
-        // Rather than removing the policy which will then result in any calls being no-accessed, we should lock it
-        // This will allow the lock timeout to work while we rebuild the policy
-        retrieveUserSecurityPolicyManager(userEmailAddress).lock()
-        UserSecurityPolicyManager reloaded = buildNewUserSecurityPolicyManager(catalogueUserService.findByEmailAddress(userEmailAddress))
-        storeUserSecurityPolicyManager(reloaded)
+        CatalogueUser catalogueUser = catalogueUserService.findByEmailAddress(userEmailAddress)
+        refreshUserSecurityPolicyManager(catalogueUser)
     }
 
     @Override

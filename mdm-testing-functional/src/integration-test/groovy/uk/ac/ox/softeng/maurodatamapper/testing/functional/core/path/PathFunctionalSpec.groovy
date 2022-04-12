@@ -90,7 +90,7 @@ class PathFunctionalSpec extends FunctionalSpec {
     }
 
     String makePathNode(String prefix, String label) {
-        prefix + ":" + label
+        prefix + ':' + label
     }
 
     String makePathNodes(String... pathNodes) {
@@ -116,7 +116,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         node = makePathNode('te', SIMPLE_TERMINOLOGY_NAME)
         GET("/api/terminologies/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, node)
 
         //With ID
@@ -124,7 +124,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         node = makePathNode('te', SIMPLE_TERMINOLOGY_NAME)
         GET("/api/terminologies/${getSimpleTerminologyId()}/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, getSimpleTerminologyId(), Terminology)
 
         //No ID
@@ -132,7 +132,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         node = makePathNode('te', COMPLEX_TERMINOLOGY_NAME)
         GET("/api/terminologies/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, node)
 
         //With ID
@@ -140,7 +140,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         node = makePathNode('te', COMPLEX_TERMINOLOGY_NAME)
         GET("/api/terminologies/${getComplexTerminologyId()}/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, getComplexTerminologyId(), Terminology)
     }
 
@@ -153,7 +153,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         node = makePathNode('te', SIMPLE_TERMINOLOGY_NAME)
         GET("/api/terminologies/path/${makePath(node)}", STRING_ARG)
 
-        then: "The response is OK"
+        then: 'The response is OK'
         verifyJsonResponse OK, getExpectedSimpleTerminologyJson()
 
         //With ID
@@ -161,7 +161,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         node = makePathNode('te', SIMPLE_TERMINOLOGY_NAME)
         GET("/api/terminologies/${getSimpleTerminologyId()}/path/${makePath(node)}", STRING_ARG)
 
-        then: "The response is OK"
+        then: 'The response is OK'
         verifyJsonResponse OK, getExpectedSimpleTerminologyJson()
 
         //No ID
@@ -169,7 +169,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         node = makePathNode('te', COMPLEX_TERMINOLOGY_NAME)
         GET("/api/terminologies/path/${makePath(node)}", STRING_ARG)
 
-        then: "The response is OK"
+        then: 'The response is OK'
         verifyJsonResponse OK, getExpectedComplexTerminologyJson()
 
         //With ID
@@ -177,7 +177,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         node = makePathNode('te', COMPLEX_TERMINOLOGY_NAME)
         GET("/api/terminologies/${getComplexTerminologyId()}/path/${makePath(node)}", STRING_ARG)
 
-        then: "The response is OK"
+        then: 'The response is OK'
         verifyJsonResponse OK, getExpectedComplexTerminologyJson()
     }
 
@@ -187,7 +187,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         node = makePathNode('tm', SIMPLE_TERMINOLOGY_NAME)
         GET("/api/terminologies/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, node)
 
         //With ID (this shouldnt work as no read access to simple terminology id)
@@ -195,7 +195,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         node = makePathNode('tm', SIMPLE_TERMINOLOGY_NAME)
         GET("/api/terminologies/${getSimpleTerminologyId()}/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, getSimpleTerminologyId(), Terminology)
     }
 
@@ -208,7 +208,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         node = makePathNode('tm', SIMPLE_TERMINOLOGY_NAME)
         GET("/api/terminologies/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, node)
 
         //With ID (shouldnt work as the prefix is wrong)
@@ -216,7 +216,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         node = makePathNode('tm', SIMPLE_TERMINOLOGY_NAME)
         GET("/api/terminologies/${getSimpleTerminologyId()}/path/${makePath(node)}")
 
-        then: "The response is OK because the ID is used"
+        then: 'The response is OK because the ID is used'
         verifyNotFound(response, node)
     }
 
@@ -226,7 +226,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         node = makePathNode('cs', SIMPLE_CODESET_NAME)
         GET("/api/codeSets/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, node)
 
         //With ID
@@ -234,7 +234,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         node = makePathNode('cs', SIMPLE_CODESET_NAME)
         GET("/api/codeSets/${getSimpleCodeSetId()}/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, getSimpleCodeSetId(), CodeSet)
     }
 
@@ -247,7 +247,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         node = makePathNode('cs', SIMPLE_CODESET_NAME)
         GET("/api/codeSets/path/${makePath(node)}", STRING_ARG)
 
-        then: "The response is OK"
+        then: 'The response is OK'
         verifyJsonResponse OK, getExpectedSimpleCodeSetJson()
 
         //With ID
@@ -255,7 +255,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         node = makePathNode('cs', SIMPLE_CODESET_NAME)
         GET("/api/codeSets/${getSimpleCodeSetId()}/path/${makePath(node)}", STRING_ARG)
 
-        then: "The response is OK"
+        then: 'The response is OK'
         verifyJsonResponse OK, getExpectedSimpleCodeSetJson()
     }
 
@@ -265,7 +265,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         node = makePathNode('tm', SIMPLE_CODESET_NAME)
         GET("/api/codeSets/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, node)
 
         //With ID (no access to the ID'd codeset)
@@ -273,7 +273,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         node = makePathNode('tm', SIMPLE_CODESET_NAME)
         GET("/api/codeSets/${getSimpleCodeSetId()}/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, getSimpleCodeSetId(), CodeSet)
     }
 
@@ -286,7 +286,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         node = makePathNode('tm', SIMPLE_CODESET_NAME)
         GET("/api/codeSets/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, node)
 
         //With ID (shouldnt work as the prefix is wrong)
@@ -294,7 +294,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         node = makePathNode('tm', SIMPLE_CODESET_NAME)
         GET("/api/codeSets/${getSimpleCodeSetId()}/path/${makePath(node)}")
 
-        then: "The response is OK because the ID is used"
+        then: 'The response is OK because the ID is used'
         verifyNotFound(response, node)
     }
 
@@ -305,7 +305,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('tm', 'STT01: Simple Test Term 01'))
         GET("/api/terminologies/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, node)
 
         //With Terminology ID and label
@@ -314,7 +314,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('tm', 'STT01: Simple Test Term 01'))
         GET("/api/terminologies/${getSimpleTerminologyId()}/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, getSimpleTerminologyId(), Terminology)
 
         //With Terminology ID and no label
@@ -323,7 +323,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('tm', 'STT01: Simple Test Term 01'))
         GET("/api/terminologies/${getSimpleTerminologyId()}/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, getSimpleTerminologyId(), Terminology)
     }
 
@@ -337,7 +337,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('tm', 'STT01: Simple Test Term 01'))
         GET("/api/terminologies/path/${makePath(node)}", STRING_ARG)
 
-        then: "The response is OK"
+        then: 'The response is OK'
         verifyJsonResponse OK, getExpectedSimpleTermJson()
 
         //With Terminology ID and label
@@ -346,7 +346,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('tm', 'STT01: Simple Test Term 01'))
         GET("/api/terminologies/${getSimpleTerminologyId()}/path/${makePath(node)}", STRING_ARG)
 
-        then: "The response is OK"
+        then: 'The response is OK'
         verifyJsonResponse OK, getExpectedSimpleTermJson()
 
         //With Terminology ID and no label
@@ -354,7 +354,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         node = makePathNodes(makePathNode('tm', 'STT01: Simple Test Term 01'))
         GET("/api/terminologies/${getSimpleTerminologyId()}/path/${makePath(node)}", STRING_ARG)
 
-        then: "The response is OK"
+        then: 'The response is OK'
         verifyJsonResponse OK, getExpectedSimpleTermJson()
     }
 
@@ -365,7 +365,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('tm', 'STT01: Simple Test Term 01'))
         GET("/api/codeSets/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, node)
 
         //With CodeSet ID and label
@@ -374,7 +374,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('tm', 'STT01: Simple Test Term 01'))
         GET("/api/codeSets/${getSimpleCodeSetId()}/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, getSimpleCodeSetId(), CodeSet)
 
         //With CodeSet ID and no label
@@ -382,7 +382,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         node = makePathNodes(makePathNode('tm', 'STT01: Simple Test Term 01'))
         GET("/api/codeSets/${getSimpleCodeSetId()}/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, getSimpleCodeSetId(), CodeSet)
     }
 
@@ -396,7 +396,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('tm', 'STT01: Simple Test Term 01'))
         GET("/api/codeSets/path/${makePath(node)}", STRING_ARG)
 
-        then: "The response is OK"
+        then: 'The response is OK'
         verifyJsonResponse OK, getExpectedSimpleTermJson()
 
         //With CodeSet ID and label
@@ -405,7 +405,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('tm', 'STT01: Simple Test Term 01'))
         GET("/api/codeSets/${getSimpleCodeSetId()}/path/${makePath(node)}", STRING_ARG)
 
-        then: "The response is OK"
+        then: 'The response is OK'
         verifyJsonResponse OK, getExpectedSimpleTermJson()
 
         //With CodeSet ID and no label
@@ -413,7 +413,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         node = makePathNodes(makePathNode('tm', 'STT01: Simple Test Term 01'))
         GET("/api/codeSets/${getSimpleCodeSetId()}/path/${makePath(node)}", STRING_ARG)
 
-        then: "The response is OK"
+        then: 'The response is OK'
         verifyJsonResponse OK, getExpectedSimpleTermJson()
     }
 
@@ -427,7 +427,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('tm', 'CTT01'))
         GET("/api/terminologies/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, node)
 
         //With Terminology ID and label
@@ -436,7 +436,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('tm', 'CTT01'))
         GET("/api/terminologies/${getSimpleTerminologyId()}/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, node)
     }
 
@@ -446,7 +446,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         node = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
         GET("/api/dataModels/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, node)
 
         //With ID
@@ -454,7 +454,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         node = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
         GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, getComplexDataModelId(), DataModel)
     }
 
@@ -467,7 +467,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         node = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
         GET("/api/dataModels/path/${makePath(node)}", STRING_ARG)
 
-        then: "The response is OK"
+        then: 'The response is OK'
         verifyJsonResponse OK, getExpectedComplexDataModelJson()
 
         //With ID
@@ -475,7 +475,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         node = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
         GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath(node)}", STRING_ARG)
 
-        then: "The response is OK"
+        then: 'The response is OK'
         verifyJsonResponse OK, getExpectedComplexDataModelJson()
     }
 
@@ -486,7 +486,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('dc', PARENT_DATACLASS_NAME))
         GET("/api/dataModels/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, node)
 
         //With ID
@@ -495,7 +495,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('dc', PARENT_DATACLASS_NAME))
         GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, getComplexDataModelId(), DataModel)
     }
 
@@ -509,7 +509,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('dc', PARENT_DATACLASS_NAME))
         GET("/api/dataModels/path/${makePath(node)}", STRING_ARG)
 
-        then: "The response is OK"
+        then: 'The response is OK'
         verifyJsonResponse OK, getExpectedParentDataClassJson()
 
         //With ID
@@ -518,7 +518,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('dc', PARENT_DATACLASS_NAME))
         GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath(node)}", STRING_ARG)
 
-        then: "The response is OK"
+        then: 'The response is OK'
         verifyJsonResponse OK, getExpectedParentDataClassJson()
     }
 
@@ -532,7 +532,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('dc', 'simple'))
         GET("/api/dataModels/path/${makePath(node)}")
 
-        then: "The response is OK"
+        then: 'The response is OK'
         verifyNotFound(response, node)
 
         //With ID
@@ -541,7 +541,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('dc', 'simple'))
         GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath(node)}")
 
-        then: "The response is OK"
+        then: 'The response is OK'
         verifyNotFound(response, node)
     }
 
@@ -553,7 +553,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('de', DATA_ELEMENT_NAME))
         GET("/api/dataModels/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, node)
 
         //With ID
@@ -563,7 +563,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('de', DATA_ELEMENT_NAME))
         GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, getComplexDataModelId(), DataModel)
     }
 
@@ -578,7 +578,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('de', DATA_ELEMENT_NAME))
         GET("/api/dataModels/path/${makePath(node)}", STRING_ARG)
 
-        then: "The response is OK"
+        then: 'The response is OK'
         verifyJsonResponse OK, getExpectedDataElementJson()
 
         //With ID
@@ -588,7 +588,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('de', DATA_ELEMENT_NAME))
         GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath(node)}", STRING_ARG)
 
-        then: "The response is OK"
+        then: 'The response is OK'
         verifyJsonResponse OK, getExpectedDataElementJson()
     }
 
@@ -599,7 +599,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('dt', PRIMITIVE_DATA_TYPE_NAME))
         GET("/api/dataModels/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, node)
 
         //With ID
@@ -608,7 +608,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('dt', PRIMITIVE_DATA_TYPE_NAME))
         GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, getComplexDataModelId(), DataModel)
     }
 
@@ -622,7 +622,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('dt', PRIMITIVE_DATA_TYPE_NAME))
         GET("/api/dataModels/path/${makePath(node)}", STRING_ARG)
 
-        then: "The response is OK"
+        then: 'The response is OK'
         verifyJsonResponse OK, getExpectedPrimitiveTypeJson()
 
         //With ID
@@ -631,7 +631,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('dt', PRIMITIVE_DATA_TYPE_NAME))
         GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath(node)}", STRING_ARG)
 
-        then: "The response is OK"
+        then: 'The response is OK'
         verifyJsonResponse OK, getExpectedPrimitiveTypeJson()
     }
 
@@ -642,7 +642,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('dt', ENUMERATION_DATA_TYPE_NAME))
         GET("/api/dataModels/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, node)
 
         //With ID
@@ -651,7 +651,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('dt', ENUMERATION_DATA_TYPE_NAME))
         GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, getComplexDataModelId(), DataModel)
     }
 
@@ -665,7 +665,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('dt', ENUMERATION_DATA_TYPE_NAME))
         GET("/api/dataModels/path/${makePath(node)}", STRING_ARG)
 
-        then: "The response is OK"
+        then: 'The response is OK'
         verifyJsonResponse OK, getExpectedEnumerationTypeJson()
 
         //With ID
@@ -674,7 +674,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('dt', ENUMERATION_DATA_TYPE_NAME))
         GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath(node)}", STRING_ARG)
 
-        then: "The response is OK"
+        then: 'The response is OK'
         verifyJsonResponse OK, getExpectedEnumerationTypeJson()
     }
 
@@ -685,7 +685,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('dt', REFERENCE_DATA_TYPE_NAME))
         GET("/api/dataModels/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, node)
 
         //With ID
@@ -694,7 +694,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('dt', REFERENCE_DATA_TYPE_NAME))
         GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath(node)}")
 
-        then: "The response is Not Found"
+        then: 'The response is Not Found'
         verifyNotFound(response, getComplexDataModelId(), DataModel)
     }
 
@@ -708,7 +708,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('dt', REFERENCE_DATA_TYPE_NAME))
         GET("/api/dataModels/path/${makePath(node)}", STRING_ARG)
 
-        then: "The response is OK"
+        then: 'The response is OK'
         verifyJsonResponse OK, getExpectedReferenceTypeJson()
 
         //With ID
@@ -717,7 +717,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                              makePathNode('dt', REFERENCE_DATA_TYPE_NAME))
         GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath(node)}", STRING_ARG)
 
-        then: "The response is OK"
+        then: 'The response is OK'
         verifyJsonResponse OK, getExpectedReferenceTypeJson()
     }
 
@@ -809,7 +809,7 @@ class PathFunctionalSpec extends FunctionalSpec {
             "url": "http://localhost",
             "label": "Mauro Data Mapper",
             "defaultAuthority": true
-          }          
+          }
         }'''
     }
 
@@ -847,7 +847,7 @@ class PathFunctionalSpec extends FunctionalSpec {
             "url": "http://localhost",
             "label": "Mauro Data Mapper",
             "defaultAuthority": true
-          }          
+          }
         }'''
     }
 
@@ -870,7 +870,7 @@ class PathFunctionalSpec extends FunctionalSpec {
           ],
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "code": "STT01",
-          "definition": "Simple Test Term 01"            
+          "definition": "Simple Test Term 01"
         }'''
     }
 
@@ -931,7 +931,7 @@ class PathFunctionalSpec extends FunctionalSpec {
             ],
             "lastUpdated": "${json-unit.matches:offsetDateTime}",
             "maxMultiplicity": -1,
-            "minMultiplicity": 1      
+            "minMultiplicity": 1
         }'''
     }
 
@@ -958,7 +958,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                 "show"
             ],
             "lastUpdated": "${json-unit.matches:offsetDateTime}",
-            "parentDataClass": "${json-unit.matches:id}"   
+            "parentDataClass": "${json-unit.matches:id}"
         }'''
     }
 
@@ -999,7 +999,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                   "finalised": false
                 }
             ]
-            },            
+            },
             "maxMultiplicity": 20,
             "minMultiplicity": 0
         }'''
@@ -1022,7 +1022,7 @@ class PathFunctionalSpec extends FunctionalSpec {
             "availableActions": [
                 "show"
             ],
-            "lastUpdated": "${json-unit.matches:offsetDateTime}"        
+            "lastUpdated": "${json-unit.matches:offsetDateTime}"
         }'''
     }
 
@@ -1066,7 +1066,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                 "value": "Yes",
                 "category": null
               }
-            ]            
+            ]
         }'''
     }
 
@@ -1107,7 +1107,7 @@ class PathFunctionalSpec extends FunctionalSpec {
                 }
               ],
               "parentDataClass": "${json-unit.matches:id}"
-            }            
+            }
         }'''
     }
 

@@ -27,7 +27,7 @@ import grails.gorm.transactions.Transactional
 
 class UserGroupController extends EditLoggingController<UserGroup> {
 
-    static allowedMethods = [alterMembers: ["DELETE", "PUT"]]
+    static allowedMethods = [alterMembers: ['DELETE', 'PUT']]
 
     static responseFormats = ['json', 'xml']
 
@@ -133,7 +133,7 @@ class UserGroupController extends EditLoggingController<UserGroup> {
         }
 
         if (instance.undeleteable) {
-            forbidden "UserGroup is undeleteable"
+            forbidden 'UserGroup is undeleteable'
         } else {
             deleteResource instance
 

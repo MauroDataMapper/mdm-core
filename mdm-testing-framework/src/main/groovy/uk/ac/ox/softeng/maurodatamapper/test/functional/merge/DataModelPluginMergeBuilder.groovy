@@ -67,7 +67,7 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
     String buildCommonAncestorDataModel(String folderId, String suffix = 1, String terminologyId = null) {
         // Unclear why this is needed, but without it, when running the full DataModelFunctionSpec, test MI07 fails
         // at this point because there seems to be no authenticated session.
-        GET("session/isAuthenticated")
+        GET('session/isAuthenticated')
         verifyResponse OK, response
         if (!responseBody().authenticatedSession) {
             POST('authentication/login', [
@@ -135,10 +135,10 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         // pointing to the Terminology
 
         POST("dataModels/$dataModelId/dataTypes", [
-            label: "Functional Test Model Data Type",
-            domainType: "ModelDataType",
-            modelResourceDomainType: "Terminology",
-            modelResourceId: terminologyId
+            label                  : 'Functional Test Model Data Type',
+            domainType             : 'ModelDataType',
+            modelResourceDomainType: 'Terminology',
+            modelResourceId        : terminologyId
         ])
         verifyResponse(CREATED, response)
         String modelDataTypeId = responseBody().id
@@ -149,9 +149,9 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         String dataClassId = responseBody().id
 
         POST("dataModels/$dataModelId/dataClasses/$dataClassId/dataElements", [
-            label: "Functional Test Data Element with Model Data Type",
-            domainType: "DataElement",
-            dataType: [id: modelDataTypeId],
+            label          : 'Functional Test Data Element with Model Data Type',
+            domainType     : 'DataElement',
+            dataType       : [id: modelDataTypeId],
             minMultiplicity: 1,
             maxMultiplicity: 1
         ])
@@ -166,10 +166,10 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         // pointing to a terminology in an external folder
 
         POST("dataModels/$dataModelId/dataTypes", [
-                label: "Functional Test Model Data Type Pointing Externally",
-                domainType: "ModelDataType",
-                modelResourceDomainType: "Terminology",
-                modelResourceId: terminologyId
+            label                  : 'Functional Test Model Data Type Pointing Externally',
+            domainType             : 'ModelDataType',
+            modelResourceDomainType: 'Terminology',
+            modelResourceId        : terminologyId
         ])
         verifyResponse(CREATED, response)
         String modelDataTypeId = responseBody().id
@@ -180,11 +180,11 @@ class DataModelPluginMergeBuilder extends BaseTestMergeBuilder {
         String dataClassId = responseBody().id
 
         POST("dataModels/$dataModelId/dataClasses/$dataClassId/dataElements", [
-                label: "Functional Test Data Element with Model Data Type Pointing Externally",
-                domainType: "DataElement",
-                dataType: [id: modelDataTypeId],
-                minMultiplicity: 1,
-                maxMultiplicity: 1
+            label          : 'Functional Test Data Element with Model Data Type Pointing Externally',
+            domainType     : 'DataElement',
+            dataType       : [id: modelDataTypeId],
+            minMultiplicity: 1,
+            maxMultiplicity: 1
         ])
         verifyResponse(CREATED, response)
         String dataElementId = responseBody().id

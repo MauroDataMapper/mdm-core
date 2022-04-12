@@ -25,7 +25,7 @@ import groovy.transform.CompileStatic
  * @since 07/01/2020
  */
 @CompileStatic
-class ModelItemTreeItem extends TreeItem {
+class ModelItemTreeItem extends TreeItem implements Comparable<TreeItem> {
 
     int order
     boolean imported
@@ -46,5 +46,25 @@ class ModelItemTreeItem extends TreeItem {
         if (res == 0) res = this.order <=> other.order
         if (res == 0) res = this.label <=> other.label
         res
+    }
+
+    @Override
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+        if (!super.equals(o)) return false
+
+        ModelItemTreeItem that = (ModelItemTreeItem) o
+
+        if (imported != that.imported) return false
+        order == that.order
+    }
+
+    @Override
+    int hashCode() {
+        int result = super.hashCode()
+        result = 31 * result + order
+        result = 31 * result + (imported ? 1 : 0)
+        result
     }
 }

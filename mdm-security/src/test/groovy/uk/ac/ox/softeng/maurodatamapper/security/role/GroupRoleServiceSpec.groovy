@@ -43,12 +43,12 @@ class GroupRoleServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Group
         id = GroupRole.findByName('reader').id
     }
 
-    void "test get"() {
+    void 'test get'() {
         expect:
         service.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         when:
         List<GroupRole> groupRoleList = service.list(max: 2, offset: 2, sort: 'name')
 
@@ -68,12 +68,12 @@ class GroupRoleServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Group
         b.displayName == 'Container Group Administrator'
     }
 
-    void "test count"() {
+    void 'test count'() {
         expect:
         service.count() == 10
     }
 
-    void "test delete"() {
+    void 'test delete'() {
         expect:
         service.count() == 10
 

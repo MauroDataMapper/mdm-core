@@ -34,7 +34,6 @@ import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import org.junit.jupiter.api.Tag
 import org.spockframework.util.Assert
-import spock.lang.PendingFeature
 
 @Slf4j
 @Integration
@@ -105,7 +104,7 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         referenceDataModelService.get(id)
     }
 
-    void "test get"() {
+    void 'test get'() {
         given:
         setupData()
 
@@ -113,7 +112,7 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         referenceDataModelService.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         given:
         setupData()
 
@@ -129,15 +128,15 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
 
         then:
         dm1.label == 'test database'
-        dm1.modelType == "ReferenceDataModel"
+        dm1.modelType == 'ReferenceDataModel'
 
         and:
         dm2.label == 'test form'
-        dm1.modelType == "ReferenceDataModel"
+        dm1.modelType == 'ReferenceDataModel'
 
     }
 
-    void "test count"() {
+    void 'test count'() {
         given:
         setupData()
 
@@ -145,7 +144,7 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         referenceDataModelService.count() == 5
     }
 
-    void "test delete"() {
+    void 'test delete'() {
         given:
         setupData()
 
@@ -163,7 +162,7 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         ReferenceDataModel.countByDeleted(true) == 1
     }
 
-    void "test save"() {
+    void 'test save'() {
         given:
         setupData()
 

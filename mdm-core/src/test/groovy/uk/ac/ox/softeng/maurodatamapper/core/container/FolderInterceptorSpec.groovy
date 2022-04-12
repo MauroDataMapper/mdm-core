@@ -120,7 +120,7 @@ class FolderInterceptorSpec extends ResourceInterceptorUnitSpec implements Inter
                resourceId == readAccessId ? 'read access' :
                resourceId == writeAccessId ? 'write access' : 'broken'
     }
-    
+
     @Unroll
     void 'test access to changeFolder using destination folder: #destinationFolderIdStr folder: #folderIdStr is #allowedStr'() {
 
@@ -177,5 +177,5 @@ class FolderInterceptorSpec extends ResourceInterceptorUnitSpec implements Inter
         expectedStatus = folderId == writeAccessId ?
                          destinationFolderId == writeAccessId ? HttpStatus.OK : destinationFolderId == readAccessId ? HttpStatus.FORBIDDEN : HttpStatus.NOT_FOUND
                                                       : folderId == readAccessId ? HttpStatus.FORBIDDEN : HttpStatus.NOT_FOUND
-    }  
+    }
 }

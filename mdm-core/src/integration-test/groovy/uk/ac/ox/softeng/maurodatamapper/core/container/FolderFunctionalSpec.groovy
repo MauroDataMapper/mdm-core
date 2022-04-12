@@ -313,7 +313,7 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
 
     void 'MV01 : Test saving a folder inside a folder and then moving it to another folder'() {
         when: 'Create Parent Folder 1'
-        POST('', ["label": "Fuctional Test Parent Folder 1"])
+        POST('', ['label': 'Fuctional Test Parent Folder 1'])
 
         then: 'The response is correct'
         response.status == HttpStatus.CREATED
@@ -327,7 +327,7 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
         response.body().count == 0
 
         when: 'Create Parent Folder 2'
-        POST('', ["label": "Fuctional Test Parent Folder 2"])
+        POST('', ['label': 'Fuctional Test Parent Folder 2'])
 
         then: 'The response is correct'
         response.status == HttpStatus.CREATED
@@ -341,7 +341,7 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
         response.body().count == 0
 
         when: 'A child folder is added to Parent Folder 1'
-        POST("$parentFolder1Id/folders", ["label": "Functional Test Moved Folder"])
+        POST("$parentFolder1Id/folders", ['label': 'Functional Test Moved Folder'])
 
         then: 'The response is correct'
         response.status == HttpStatus.CREATED
@@ -385,7 +385,7 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
 
     void 'MV02 : Test saving a folder inside a folder and then moving it to the root'() {
         when: 'Create Parent Folder 1'
-        POST('', ["label": "Fuctional Test Parent Folder 1"])
+        POST('', ['label': 'Fuctional Test Parent Folder 1'])
 
         then: 'The response is correct'
         response.status == HttpStatus.CREATED
@@ -399,7 +399,7 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
         response.body().count == 0
 
         when: 'A child folder is added to Parent Folder 1'
-        POST("$parentFolder1Id/folders", ["label": "Functional Test Moved Folder"])
+        POST("$parentFolder1Id/folders", ['label': 'Functional Test Moved Folder'])
 
         then: 'The response is correct'
         response.status == HttpStatus.CREATED

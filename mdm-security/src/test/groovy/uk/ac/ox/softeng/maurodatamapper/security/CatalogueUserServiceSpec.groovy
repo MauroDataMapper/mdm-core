@@ -59,7 +59,7 @@ class CatalogueUserServiceSpec extends BaseUnitSpec implements ServiceUnitTest<C
         id = editor.id
     }
 
-    void "test get"() {
+    void 'test get'() {
         expect:
         service.get(id) != null
 
@@ -67,7 +67,7 @@ class CatalogueUserServiceSpec extends BaseUnitSpec implements ServiceUnitTest<C
         service.get('admin@maurodatamapper.com')
     }
 
-    void "test list"() {
+    void 'test list'() {
         when:
         List<CatalogueUser> catalogueUserList = service.list(max: 2, offset: 1, sort: 'emailAddress', order: 'desc')
 
@@ -92,13 +92,13 @@ class CatalogueUserServiceSpec extends BaseUnitSpec implements ServiceUnitTest<C
         catalogueUserList[1].password == SecurityUtils.getHash('test password', catalogueUserList[1].salt)
     }
 
-    void "test count"() {
+    void 'test count'() {
 
         expect:
         service.count() == 8
     }
 
-    void "test save"() {
+    void 'test save'() {
         when:
         CatalogueUser catalogueUser = service.createNewUser(
             emailAddress: 'newtester@email.com', firstName: 'wibble', password: 'wobble',
@@ -325,32 +325,32 @@ class CatalogueUserServiceSpec extends BaseUnitSpec implements ServiceUnitTest<C
 
     void 'second simple search'() {
         given:
-        CatalogueUser a = service.administratorRegisterNewUser(admin, "john.smith@test2.com", "John", "Smith", "Manager",
-                                                               "My Organisation")
-        CatalogueUser b = service.administratorRegisterNewUser(admin, "james.smith@test2.com", "James", "Smith", "Manager",
-                                                               "Acme Inc")
-        CatalogueUser c = service.administratorRegisterNewUser(admin, "john.jones@test2.com", "John", "Jones", "Manager",
-                                                               "Acme Inc")
-        CatalogueUser d = service.administratorRegisterNewUser(admin, "james.jones@test2.com", "James", "Jones", "Assistant",
-                                                               "My Organisation")
+        CatalogueUser a = service.administratorRegisterNewUser(admin, 'john.smith@test2.com', 'John', 'Smith', 'Manager',
+                                                               'My Organisation')
+        CatalogueUser b = service.administratorRegisterNewUser(admin, 'james.smith@test2.com', 'James', 'Smith', 'Manager',
+                                                               'Acme Inc')
+        CatalogueUser c = service.administratorRegisterNewUser(admin, 'john.jones@test2.com', 'John', 'Jones', 'Manager',
+                                                               'Acme Inc')
+        CatalogueUser d = service.administratorRegisterNewUser(admin, 'james.jones@test2.com', 'James', 'Jones', 'Assistant',
+                                                               'My Organisation')
         checkAndSave(a, b, c, d)
 
         when:
-        def foundUsers = service.findAllWhereAnyMatchToTerm("Smith", [offset: 0, max: 10])
+        def foundUsers = service.findAllWhereAnyMatchToTerm('Smith', [offset: 0, max: 10])
 
         then:
         foundUsers instanceof List
         foundUsers.size() == 2
 
         when:
-        foundUsers = service.findAllWhereAnyMatchToTerm("@test2.com", [offset: 0, max: 10])
+        foundUsers = service.findAllWhereAnyMatchToTerm('@test2.com', [offset: 0, max: 10])
 
         then:
         foundUsers instanceof List
         foundUsers.size() == 4
 
         when:
-        foundUsers = service.findAllWhereAnyMatchToTerm("Acme", [offset: 0, max: 10])
+        foundUsers = service.findAllWhereAnyMatchToTerm('Acme', [offset: 0, max: 10])
 
         then:
         foundUsers instanceof List
@@ -361,7 +361,7 @@ class CatalogueUserServiceSpec extends BaseUnitSpec implements ServiceUnitTest<C
         given:
 
         when: 'and search'
-        SearchParams searchParams = new SearchParams(search: "User")
+        SearchParams searchParams = new SearchParams(search: 'User')
 
         then:
         check searchParams
@@ -449,17 +449,17 @@ class CatalogueUserServiceSpec extends BaseUnitSpec implements ServiceUnitTest<C
         lines.any {it == 'newtester2@email.com,wibble2,scruff2,,organisation,chef but good,true,false'}
     }
 
-    void "test permanent deletion and anonymisation"() {
+    void 'test permanent deletion and anonymisation'() {
         given:
         CatalogueUser catalogueUserAdmin = service.createNewUser(
-                emailAddress: 'admin@email.com', firstName: 'admin', lastName: 'scruff1', lastLogin: null, password: 'wobble',
-                organisation: 'organisation', jobTitle: 'admin', disabled: false, pending: false)
+            emailAddress: 'admin@email.com', firstName: 'admin', lastName: 'scruff1', lastLogin: null, password: 'wobble',
+            organisation: 'organisation', jobTitle: 'admin', disabled: false, pending: false)
         CatalogueUser catalogueUser1 = service.createNewUser(
-                emailAddress: 'newtester1@email.com', firstName: 'wibble1', lastName: 'scruff1', lastLogin: null, password: 'wobble',
-                organisation: 'organisation', jobTitle: 'chef', disabled: false, pending: false)
+            emailAddress: 'newtester1@email.com', firstName: 'wibble1', lastName: 'scruff1', lastLogin: null, password: 'wobble',
+            organisation: 'organisation', jobTitle: 'chef', disabled: false, pending: false)
         CatalogueUser catalogueUser2 = service.createNewUser(
-                emailAddress: 'newtester2@email.com', firstName: 'wibble2', lastName: 'scruff2', lastLogin: null, password: 'wobble',
-                organisation: 'organisation', jobTitle: 'chef but good', disabled: false, pending: false)
+            emailAddress: 'newtester2@email.com', firstName: 'wibble2', lastName: 'scruff2', lastLogin: null, password: 'wobble',
+            organisation: 'organisation', jobTitle: 'chef but good', disabled: false, pending: false)
 
         UserGroup group = new UserGroup(name: 'readersOnly', createdBy: reader.emailAddress)
                 .addToGroupMembers(catalogueUser1)

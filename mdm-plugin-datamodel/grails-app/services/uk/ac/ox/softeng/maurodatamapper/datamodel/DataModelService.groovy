@@ -121,7 +121,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
     @Override
     String getUrlResourceName() {
-        "dataModels"
+        'dataModels'
     }
 
     Long count() {
@@ -1115,7 +1115,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             Path pathInTarget = pathInSource.getChildPath()
 
             if (pathInTarget.size() < 2)
-                throw new ApiInternalException("DMSXX", "Path ${pathInTarget} was shorter than expected")
+                throw new ApiInternalException('DMSXX', "Path ${pathInTarget} was shorter than expected")
 
             // Now iterate forwards through the path, making sure that a domain exists for each node of the path
             // Assumption is that the first node of pathInTarget is a dc.
@@ -1155,10 +1155,10 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     private DataElement getDataElementInModel(DataModel dataModel, UUID dataElementId) {
         DataElement dataElementInModel = dataElementService.get(dataElementId)
         if (!dataElementInModel)
-            throw new ApiInternalException("DMSXX", "Data Element ${dataElementId} not found")
+            throw new ApiInternalException('DMSXX', "Data Element ${dataElementId} not found")
 
         if (dataElementInModel.modelId != dataModel.id)
-            throw new ApiInternalException("DMSXX", "Data Element ${dataElementId} does not belong to specified model")
+            throw new ApiInternalException('DMSXX', "Data Element ${dataElementId} does not belong to specified model")
 
         dataElementInModel
     }
@@ -1253,5 +1253,28 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
                 createCatalogueItemDiffCaches(dtDiffCache, 'enumerationValues', enumerationValuesMap[dt.id], facetData)
             }
         }
+    }
+
+    boolean validateImportAddition(DataModel instance, ModelItem importingItem) {
+        if (importingItem.model.id == instance.id) {
+            instance.errors.reject('invalid.imported.modelitem.same.datamodel',
+                                   [importingItem.class.simpleName, importingItem.id].toArray(),
+                                   '{0} [{1}] to be imported belongs to the DataModel already')
+        }
+        if (!importingItem.model.finalised && !areModelsInsideSameVersionedFolder(instance, importingItem.model)) {
+            instance.errors.reject('invalid.imported.modelitem.model.not.finalised',
+                                   [importingItem.class.simpleName, importingItem.id].toArray(),
+                                   '{0} [{1}] to be imported does not belong to a finalised DataModel or reside inside the same VersionedFolder')
+        }
+        !instance.hasErrors()
+    }
+
+    boolean validateImportRemoval(DataModel instance, ModelItem importingItem) {
+        if (importingItem.model.id == instance.id) {
+            instance.errors.reject('invalid.imported.deletion.modelitem.same.datamodel',
+                                   [importingItem.class.simpleName, importingItem.id].toArray(),
+                                   '{0} [{1}] belongs to the DataModel and cannot be removed as an import')
+        }
+        !instance.hasErrors()
     }
 }

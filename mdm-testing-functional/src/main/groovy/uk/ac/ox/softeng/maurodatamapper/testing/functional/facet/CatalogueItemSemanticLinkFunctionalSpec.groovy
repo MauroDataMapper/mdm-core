@@ -144,7 +144,7 @@ abstract class CatalogueItemSemanticLinkFunctionalSpec extends UserAccessFunctio
         '''{
   "count": 0,
   "items": [
-    
+
   ]
 }'''
     }

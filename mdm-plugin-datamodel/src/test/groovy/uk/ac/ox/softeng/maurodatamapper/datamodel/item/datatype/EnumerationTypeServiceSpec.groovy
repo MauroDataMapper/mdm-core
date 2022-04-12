@@ -133,13 +133,13 @@ class EnumerationTypeServiceSpec extends BaseUnitSpec implements ServiceUnitTest
 
     }
 
-    void "test get"() {
+    void 'test get'() {
 
         expect:
         service.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
 
         when:
         List<EnumerationType> enumerationTypeList = service.list(max: 2, offset: 1)
@@ -156,12 +156,12 @@ class EnumerationTypeServiceSpec extends BaseUnitSpec implements ServiceUnitTest
         enumerationTypeList[1].enumerationValues.size() == 3
     }
 
-    void "test count"() {
+    void 'test count'() {
         expect:
         service.count() == 3
     }
 
-    void "test delete"() {
+    void 'test delete'() {
 
         expect:
         service.count() == 3

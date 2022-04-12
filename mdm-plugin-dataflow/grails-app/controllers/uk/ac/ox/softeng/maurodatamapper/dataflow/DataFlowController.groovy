@@ -63,12 +63,12 @@ class DataFlowController extends EditLoggingController<DataFlow> {
     }
 
     def exporterProviders() {
-        log.debug("exporterProviders")
+        log.debug('exporterProviders')
         respond exporterProviders: getExporterProviderServices()
     }
 
     def importerProviders() {
-        log.debug("importerProviders")
+        log.debug('importerProviders')
         respond importerProviders: getImporterProviderServices()
     }
 
@@ -262,7 +262,7 @@ class DataFlowController extends EditLoggingController<DataFlow> {
 
         respond savedDataFlows, status: CREATED, view: 'index'
 
-    }    
+    }
 
     protected DataFlow queryForResource(Serializable id) {
         dataFlowService.findByTargetDataModelIdAndId(params.dataModelId, id)

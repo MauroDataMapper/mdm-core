@@ -27,7 +27,7 @@ import groovy.util.logging.Slf4j
  * @since 28/08/2020
  */
 @Slf4j
-class PathNode implements Serializable {
+class PathNode implements Serializable, Cloneable {
 
     static final String MODEL_PATH_IDENTIFIER_SEPARATOR = '$'
     static final String ESCAPED_MODEL_PATH_IDENTIFIER_SEPARATOR = "\\${MODEL_PATH_IDENTIFIER_SEPARATOR}"
@@ -118,7 +118,7 @@ class PathNode implements Serializable {
             return modelIdentifier == pathNode.modelIdentifier
         }
 
-        return true
+        true
     }
 
     int hashCode() {
@@ -141,7 +141,7 @@ class PathNode implements Serializable {
 
     boolean matchesPrefix(String otherPrefix) {
         if (prefix != otherPrefix) {
-            log.trace("Resource prefix [{}] does not match the path node [{}]", otherPrefix, this)
+            log.trace('Resource prefix [{}] does not match the path node [{}]', otherPrefix, this)
             return false
         }
         true
@@ -169,7 +169,7 @@ class PathNode implements Serializable {
 
         identifierSplit = otherPathNode.identifier.split(/:/)
         if (identifier == identifierSplit[0]) return true
-        log.trace("Resource identifier [{}] does not match the path node [{}]", otherPathNode, this)
+        log.trace('Resource identifier [{}] does not match the path node [{}]', otherPathNode, this)
         false
     }
 

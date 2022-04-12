@@ -20,10 +20,12 @@ package uk.ac.ox.softeng.maurodatamapper.profile.object
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileField
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import grails.validation.Validateable
 import groovy.transform.CompileStatic
 
 @CompileStatic
+@SuppressFBWarnings('NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE')
 abstract class Profile implements Comparable<Profile>, Validateable {
 
     List<ProfileSection> sections

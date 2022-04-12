@@ -81,13 +81,13 @@ class ReferenceDataTypeServiceSpec extends CatalogueItemServiceSpec implements S
         id = primitiveType.id
     }
 
-    void "test get"() {
+    void 'test get'() {
 
         expect:
         service.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
 
         //referenceDataTypes are varchar, string, integer, et1, moreet, yesnounknown
         //Ordered by label: et1, integer, moreet, string, varchar, yesnounknown
@@ -107,12 +107,12 @@ class ReferenceDataTypeServiceSpec extends CatalogueItemServiceSpec implements S
         dataTypeList[1].domainType == 'ReferencePrimitiveType'
     }
 
-    void "test count"() {
+    void 'test count'() {
         expect:
         service.count() == 6
     }
 
-    void "test delete ReferencePrimitiveType"() {
+    void 'test delete ReferencePrimitiveType'() {
         given:
         ReferenceDataType pt = service.get(id)
 
@@ -131,7 +131,7 @@ class ReferenceDataTypeServiceSpec extends CatalogueItemServiceSpec implements S
     }
 
 
-    void "test save"() {
+    void 'test save'() {
 
         when:
         ReferenceDataType dataType = new ReferencePrimitiveType(createdBy: StandardEmailAddress.UNIT_TEST, label: 'saving test', referenceDataModel: referenceDataModel)

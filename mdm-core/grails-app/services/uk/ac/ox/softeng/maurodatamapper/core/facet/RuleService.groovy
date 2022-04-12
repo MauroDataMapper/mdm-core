@@ -89,9 +89,9 @@ class RuleService implements MultiFacetItemAwareService<Rule> {
         domain.addToRules(facet)
     }
 
-    boolean validate(Rule rule) {
+    Rule validate(Rule rule) {
         boolean valid = rule.validate()
-        if (!valid) return false
+        if (!valid) return rule
 
         MultiFacetAware multiFacetAwareItem = rule.multiFacetAwareItem ?: findMultiFacetAwareItemByDomainTypeAndId(rule.multiFacetAwareItemDomainType,
                                                                                                                    rule.multiFacetAwareItemId)
@@ -103,9 +103,8 @@ class RuleService implements MultiFacetItemAwareService<Rule> {
         }) {
             rule.errors.rejectValue('name', 'default.not.unique.message', ['name', Rule, rule.name].toArray(),
                                     'Property [{0}] of class [{1}] with value [{2}] must be unique')
-            return false
         }
-        true
+        rule
     }
 
 

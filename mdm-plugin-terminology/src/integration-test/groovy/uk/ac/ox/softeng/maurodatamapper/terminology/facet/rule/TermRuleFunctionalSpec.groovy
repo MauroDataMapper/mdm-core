@@ -83,7 +83,7 @@ class TermRuleFunctionalSpec extends CatalogueItemRuleFunctionalSpec {
 
     @Override
     String getCatalogueItemDomainResourcePath() {
-        "terms"
+        'terms'
     }
 
     @Override

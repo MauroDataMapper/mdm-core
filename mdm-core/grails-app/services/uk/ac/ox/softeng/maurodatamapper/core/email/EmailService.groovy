@@ -26,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.AnonymisableService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.apache.commons.text.StringSubstitutor
@@ -34,6 +35,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 @Slf4j
+@SuppressFBWarnings('LI_LAZY_INIT_STATIC')
 class EmailService implements AnonymisableService {
 
     MauroDataMapperServiceProviderService mauroDataMapperServiceProviderService

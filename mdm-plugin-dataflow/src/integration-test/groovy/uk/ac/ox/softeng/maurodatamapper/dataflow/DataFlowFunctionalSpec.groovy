@@ -192,7 +192,7 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "DataFlowExporter",
     "fileExtension": "xml",
@@ -206,7 +206,7 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "DataFlowExporter",
     "fileExtension": "json",
@@ -226,7 +226,7 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer.parameter.DataFlowFileImporterProviderServiceParameters",
     "providerType": "DataFlowImporter",
     "knownMetadataKeys": [
-      
+
     ],
     "displayName": "XML DataFlow Importer",
     "name": "DataFlowXmlImporterService",
@@ -239,7 +239,7 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer.parameter.DataFlowFileImporterProviderServiceParameters",
     "providerType": "DataFlowImporter",
     "knownMetadataKeys": [
-      
+
     ],
     "displayName": "JSON DataFlow Importer",
     "name": "DataFlowJsonImporterService",
@@ -302,7 +302,7 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
         ])
 
         when:
-        POST("export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/4.0",
+        POST('export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/4.0',
              [dataFlowIds: [id, id2]], STRING_ARG
         )
 
@@ -355,7 +355,7 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
         exportedJsonString
 
         when:
-        POST("import/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer/DataFlowJsonImporterService/4.0", [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer/DataFlowJsonImporterService/4.0', [
             modelName : 'Functional Test Import',
             importFile: [
                 fileName    : 'FT Import',

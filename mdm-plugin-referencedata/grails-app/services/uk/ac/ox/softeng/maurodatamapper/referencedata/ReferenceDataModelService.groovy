@@ -117,7 +117,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
 
     @Override
     String getUrlResourceName() {
-        "referenceDataModels"
+        'referenceDataModels'
     }
 
     void delete(UUID id) {

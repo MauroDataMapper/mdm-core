@@ -35,12 +35,12 @@ class MdmCsvApiPropertyRenderer<T> extends AbstractIncludeExcludeRenderer<T> {
     MappingContext mappingContext
 
     MdmCsvApiPropertyRenderer(Class<T> targetType) {
-        super(targetType, new MimeType("text/csv", "csv"))
+        super(targetType, new MimeType('text/csv', 'csv'))
     }
 
     @Override
     void render(T object, RenderContext context) {
-        context.contentType = "text/csv"
+        context.contentType = 'text/csv'
         final entity = mappingContext.getPersistentEntity(object.class.name)
         boolean isDomain = entity != null
 
@@ -62,7 +62,7 @@ class MdmCsvApiPropertyRenderer<T> extends AbstractIncludeExcludeRenderer<T> {
     }
 
     private void printHeader(CSVPrinter printer) {
-        printer.printRecord(["id", "key", "value", "category", "publiclyVisible", "lastUpdatedBy", "createdBy", "lastUpdated"])
+        printer.printRecord(['id', 'key', 'value', 'category', 'publiclyVisible', 'lastUpdatedBy', 'createdBy', 'lastUpdated'])
     }
 
     private void printApiProperty(CSVPrinter printer, ApiProperty o) {

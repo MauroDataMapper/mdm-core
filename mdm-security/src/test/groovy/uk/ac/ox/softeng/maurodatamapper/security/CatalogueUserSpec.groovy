@@ -40,7 +40,7 @@ class CatalogueUserSpec extends MdmDomainSpec<CatalogueUser> implements DomainUn
         domain.lastName == 'user'
     }
 
-    void "test saving user with nothing set"() {
+    void 'test saving user with nothing set'() {
 
         when:
         checkAndSave(domain)
@@ -57,7 +57,7 @@ class CatalogueUserSpec extends MdmDomainSpec<CatalogueUser> implements DomainUn
         domain.salt.length == 8
     }
 
-    void "test saving user with bare bones set"() {
+    void 'test saving user with bare bones set'() {
         given:
         domain.emailAddress = 'test@admin.com'
         domain.firstName = 'test'

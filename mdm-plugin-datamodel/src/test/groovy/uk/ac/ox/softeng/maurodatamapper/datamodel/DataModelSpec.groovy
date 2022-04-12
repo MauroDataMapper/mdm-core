@@ -287,7 +287,7 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
         diff.getNumberOfDiffs() == 2
 
         when:
-        dm2.label = "test model 2"
+        dm2.label = 'test model 2'
         diff = dm1.diff(dm2, null)
 
         then:

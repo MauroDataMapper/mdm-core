@@ -46,7 +46,7 @@ class ProxyEmailProviderServiceSpec extends MdmSpecification implements JsonComp
         proxyEmailProviderService.namespace == 'uk.ac.ox.softeng.maurodatamapper.plugin.email.proxy'
     }
 
-    void "Build basic message for special email service"() {
+    void 'Build basic message for special email service'() {
         given:
         proxyEmailProviderService.allProps.emailServiceUsername = 'svc_user'
         proxyEmailProviderService.allProps.emailServicePassword = 'svc_password'
@@ -67,7 +67,7 @@ class ProxyEmailProviderServiceSpec extends MdmSpecification implements JsonComp
                    msg)
     }
 
-    void "Build multiple to and cc basic message"() {
+    void 'Build multiple to and cc basic message'() {
         given:
         proxyEmailProviderService.allProps.emailServiceUsername = 'svc_user'
         proxyEmailProviderService.allProps.emailServicePassword = 'svc_password'

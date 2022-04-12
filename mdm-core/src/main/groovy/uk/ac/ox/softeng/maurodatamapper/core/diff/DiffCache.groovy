@@ -19,15 +19,18 @@ package uk.ac.ox.softeng.maurodatamapper.core.diff
 
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+
 import java.util.concurrent.ConcurrentHashMap
 
 /**
  * @since 21/02/2022
  */
+@SuppressFBWarnings('LI_LAZY_INIT_STATIC')
 class DiffCache {
 
-    private ConcurrentHashMap<String, Collection<? extends Diffable>> fieldCollections
-    private ConcurrentHashMap<String, DiffCache> pathDiffCaches
+    private final Map<String, Collection<? extends Diffable>> fieldCollections
+    private final Map<String, DiffCache> pathDiffCaches
 
     DiffCache() {
         fieldCollections = new ConcurrentHashMap<>()

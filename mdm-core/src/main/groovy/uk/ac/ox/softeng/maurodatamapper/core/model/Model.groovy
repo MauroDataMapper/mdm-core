@@ -73,12 +73,12 @@ trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableRes
         int res = 0
         if (that instanceof CatalogueItem) {
             if (that.class != this.class) res = this.order <=> that.order
-            if (res == 0) this.label <=> that.label
+            if (res == 0) res = this.label <=> that.label
         }
         if (that instanceof Model) {
-            res == 0 ? this.documentationVersion <=> that.documentationVersion : res
-            res == 0 ? this.modelVersion <=> that.modelVersion : res
-            res == 0 ? this.branchName <=> that.branchName : res
+            res = res == 0 ? this.documentationVersion <=> that.documentationVersion : res
+            res = res == 0 ? this.modelVersion <=> that.modelVersion : res
+            res = res == 0 ? this.branchName <=> that.branchName : res
         }
         res
     }

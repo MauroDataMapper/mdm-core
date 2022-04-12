@@ -62,7 +62,6 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
  *  | GET    | /api/referenceDataModels/${id} | Action: show   |
  *
  *  | GET    | /api/referenceDataModels/types                                   | Action: types                   |
- *  | GET    | /api/referenceDataModels/${referenceDataModelId}/hierarchy                | Action: hierarchy               |
  *  | PUT    | /api/referenceDataModels/${referenceDataModelId}/newVersion               | Action: newVersion              |
  *  | PUT    | /api/referenceDataModels/${referenceDataModelId}/newBranchModelVersion  | Action: newBranchModelVersion |
  *  | PUT    | /api/referenceDataModels/${referenceDataModelId}/newDocumentationVersion  | Action: newDocumentationVersion |
@@ -186,7 +185,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "ReferenceDataModelExporter",
     "fileExtension": "json",
@@ -200,7 +199,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "ReferenceDataModelExporter",
     "fileExtension": "xml",
@@ -223,7 +222,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "ReferenceDataModelImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
@@ -237,7 +236,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "ReferenceDataModelImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
@@ -251,7 +250,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": false,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "ReferenceDataModelImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
@@ -340,7 +339,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
         and: 'There is not a CHANGE NOTICE edit'
         !response.body().items.find {
-            it.description == "Functional Test Change Notice"
+            it.description == 'Functional Test Change Notice'
         }
 
         cleanup:
@@ -370,7 +369,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
         and: 'There is a CHANGE NOTICE edit'
         response.body().items.find {
-            it.description == "Functional Test Change Notice"
+            it.description == 'Functional Test Change Notice'
         }
 
         cleanup:
@@ -1297,13 +1296,13 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
         when:
         PUT("$source/mergeInto/$target", [patch:
-            [
-                targetId : target,
-                sourceId: UUID.randomUUID().toString(),
-                label  : "Reference Data Functional Test Model",
-                count  : 0,
-                diffs  : []
-            ]
+                                              [
+                                                  targetId: target,
+                                                  sourceId: UUID.randomUUID().toString(),
+                                                  label   : 'Reference Data Functional Test Model',
+                                                  count   : 0,
+                                                  diffs   : []
+                                              ]
         ])
 
         then:
@@ -1312,13 +1311,13 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
         when:
         PUT("$source/mergeInto/$target", [patch:
-            [
-                targetId : UUID.randomUUID().toString(),
-                sourceId: source,
-                label  : "Reference Data Functional Test Model",
-                count  : 0,
-                diffs  : []
-            ]
+                                              [
+                                                  targetId: UUID.randomUUID().toString(),
+                                                  sourceId: source,
+                                                  label   : 'Reference Data Functional Test Model',
+                                                  count   : 0,
+                                                  diffs   : []
+                                              ]
         ])
 
         then:
@@ -1342,12 +1341,12 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         verifyResponse CREATED, response
 
         and: 'A ReferenceDataType is added to the ReferenceDataModel'
-        POST("$id/referenceDataTypes", ["label": "A", "domainType": "ReferencePrimitiveType"])
+        POST("$id/referenceDataTypes", ['label': 'A', 'domainType': 'ReferencePrimitiveType'])
         verifyResponse CREATED, response
         String referenceDataTypeId = response.body().id
 
         and: 'A ReferenceDataElement is added to the ReferenceDataModel'
-        POST("$id/referenceDataElements", ["label": "modifyLeftOnly", "referenceDataType": referenceDataTypeId])
+        POST("$id/referenceDataElements", ['label': 'modifyLeftOnly', 'referenceDataType': referenceDataTypeId])
         verifyResponse CREATED, response
         String referenceDataElement1Id = response.body().id
 
@@ -1414,8 +1413,8 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
         GET("$target/metadata")
         verifyResponse OK, response
-        deleteMetadataSource = responseBody().items.find { it.key == "deleteMetadataSource" }.id
-        modifyMetadataSource = responseBody().items.find { it.key == "modifyMetadataSource" }.id
+        deleteMetadataSource = responseBody().items.find {it.key == 'deleteMetadataSource'}.id
+        modifyMetadataSource = responseBody().items.find {it.key == 'modifyMetadataSource'}.id
 
         GET("$source/mergeDiff/$target", STRING_ARG)
         log.info('{}', jsonResponseBody())
@@ -1480,11 +1479,11 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         String id = createNewItem(validJson)
 
         and: 'A ReferenceDataType is added to the ReferenceDataModel'
-        POST("$id/referenceDataTypes", ["label": "A", "domainType": "ReferencePrimitiveType"])
+        POST("$id/referenceDataTypes", ['label': 'A', 'domainType': 'ReferencePrimitiveType'])
         String referenceDataTypeId = response.body().id
 
         when: 'A ReferenceDataElement is added to the ReferenceDataModel'
-        POST("$id/referenceDataElements", ["label": "RDE1", "referenceDataType": referenceDataTypeId])
+        POST("$id/referenceDataElements", ['label': 'RDE1', 'referenceDataType': referenceDataTypeId])
 
         then: 'The response is CREATED'
         verifyResponse CREATED, response
@@ -1519,14 +1518,14 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         String sourceReferenceDataElementId = response.body().items[0].id
 
         when: 'A new DataType is added to the source ReferenceDataModel'
-        POST("$sourceReferenceDataModelId/referenceDataTypes", ["label": "B", "domainType": "ReferencePrimitiveType"])
+        POST("$sourceReferenceDataModelId/referenceDataTypes", ['label': 'B', 'domainType': 'ReferencePrimitiveType'])
 
         then: 'The response is CREATED'
         verifyResponse CREATED, response
         String dataTypeId = response.body().id
 
         when: 'A new ReferenceDataElement is added to the source ReferenceDataModel'
-        POST("$sourceReferenceDataModelId/referenceDataElements", ["label": "RDE2", "referenceDataType": dataTypeId])
+        POST("$sourceReferenceDataModelId/referenceDataElements", ['label': 'RDE2', 'referenceDataType': dataTypeId])
 
         then: 'The response is CREATED'
         verifyResponse CREATED, response
@@ -1557,8 +1556,8 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         then: 'The response is OK and there are two ReferenceDataElements'
         verifyResponse OK, response
         response.body().count == 2
-        response.body().items.findAll{it.label == "RDE1"}.size() == 1
-        response.body().items.findAll{it.label == "RDE2"}.size() == 1
+        response.body().items.findAll {it.label == 'RDE1'}.size() == 1
+        response.body().items.findAll {it.label == 'RDE2'}.size() == 1
 
         cleanup:
         cleanUpData(sourceReferenceDataModelId)
@@ -1607,13 +1606,13 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
         when:
         PUT("$source/mergeInto/$target", [patch:
-                                                                 [
-                                                                     targetId: target,
-                                                                     sourceId: UUID.randomUUID().toString(),
-                                                                     label   : "Reference Data Functional Test Model",
-                                                                     count   : 0,
-                                                                     patches : []
-                                                                 ]
+                                              [
+                                                  targetId: target,
+                                                  sourceId: UUID.randomUUID().toString(),
+                                                  label   : 'Reference Data Functional Test Model',
+                                                  count   : 0,
+                                                  patches : []
+                                              ]
         ])
 
         then:
@@ -1622,13 +1621,13 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
         when:
         PUT("$source/mergeInto/$target", [patch:
-                                                  [
-                                                      targetId: UUID.randomUUID().toString(),
-                                                      sourceId: source,
-                                                      label   : "Reference Data Functional Test Model",
-                                                      count   : 0,
-                                                      patches : []
-                                                  ]
+                                              [
+                                                  targetId: UUID.randomUUID().toString(),
+                                                  sourceId: source,
+                                                  label   : 'Reference Data Functional Test Model',
+                                                  count   : 0,
+                                                  patches : []
+                                              ]
         ])
 
         then:
@@ -1637,13 +1636,13 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
         when:
         PUT("$source/mergeInto/$target", [patch:
-                                                  [
-                                                      targetId: target,
-                                                      sourceId: source,
-                                                      label   : "Reference Data Functional Test Model",
-                                                      count   : 0,
-                                                      patches : []
-                                                  ]
+                                              [
+                                                  targetId: target,
+                                                  sourceId: source,
+                                                  label   : 'Reference Data Functional Test Model',
+                                                  count   : 0,
+                                                  patches : []
+                                              ]
         ])
 
         then:
@@ -1744,7 +1743,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
         when:
         PUT("$source/mergeInto/$target", [
-            changeNotice: "Metadata test",
+            changeNotice: 'Metadata test',
             deleteBranch: false,
             patch       : [
                 sourceId: source,
@@ -1903,8 +1902,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(mergeData.commonAncestor)
     }
 
-
-    @PendingFeature(reason = "Not yet implemented")
+    @PendingFeature(reason = 'Not yet implemented')
     void 'test changing folder from ReferenceData context'() {
         given: 'The save action is executed with valid data'
         String id = createNewItem(validJson)
@@ -1932,7 +1930,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(id)
     }
 
-    @PendingFeature(reason = "Not yet implemented")
+    @PendingFeature(reason = 'Not yet implemented')
     void 'test changing folder from Folder context'() {
         given: 'The save action is executed with valid data'
         String id = createNewItem(validJson)
@@ -2305,532 +2303,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(id)
     }
 
-    @PendingFeature(reason = "Not yet implemented")
-    void 'test getting simple ReferenceData hierarchy'() {
-        given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataJsonImporterService/2.0', [
-            finalised                      : false,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('simpleDataModel').toList()
-            ]
-        ])
-        verifyResponse CREATED, response
-        def id = response.body().items[0].id
-
-        expect:
-        id
-
-        when:
-        GET("${id}/hierarchy", STRING_ARG)
-
-        then:
-        verifyJsonResponse OK, '''{
-  "childDataClasses": [
-    {
-      "dataClasses": [],
-      "lastUpdated": "${json-unit.matches:offsetDateTime}",
-      "dataElements": [],
-      "domainType": "DataClass",
-      "availableActions": ["delete","show","update"],
-      "model": "${json-unit.matches:id}",
-      "id": "${json-unit.matches:id}",
-      "label": "simple",
-      "breadcrumbs": [
-        {
-          "domainType": "DataModel",
-          "finalised": false,
-          "id": "${json-unit.matches:id}",
-          "label": "Simple Test DataModel"
-        }
-      ]
-    }
-  ],
-  "lastUpdated": "${json-unit.matches:offsetDateTime}",
-  "dataTypes": [],
-  "domainType": "DataModel",
-  "documentationVersion": "1.0.0",
-  "availableActions": ["delete","show","update"],
-  "branchName":"main",
-  "finalised": false,
-  "authority": {
-      "id": "${json-unit.matches:id}",
-      "url": "http://localhost",
-      "label": "Test Authority"
-    },
-  "id": "${json-unit.matches:id}",
-  "label": "Simple Test DataModel",
-  "type": "Data Standard",
-  "readableByEveryone": false,
-  "readableByAuthenticatedUsers": false,
-  "classifiers": [
-    {
-      "id": "${json-unit.matches:id}",
-      "label": "test classifier simple",
-      "lastUpdated": "${json-unit.matches:offsetDateTime}"
-    }
-  ]
-}'''
-
-        cleanup:
-        cleanUpData(id)
-    }
-
-    @PendingFeature(reason = "Not yet implemented")
-    void 'test getting complex ReferenceData hierarchy'() {
-        given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataJsonImporterService/2.0', [
-            finalised                      : false,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('complexDataModel').toList()
-            ]
-        ])
-        verifyResponse CREATED, response
-        def id = response.body().items[0].id
-
-        expect:
-        id
-
-        when:
-        GET("${id}/hierarchy", STRING_ARG)
-
-        then:
-        verifyJsonResponse OK, '''{
-  "id": "${json-unit.matches:id}",
-  "domainType": "DataModel",
-  "label": "Complex Test DataModel",
-  "availableActions": [
-    "delete",
-    "show",
-    "update"
-  ],
-  "branchName":"main",
-  "lastUpdated": "${json-unit.matches:offsetDateTime}",
-  "classifiers": [
-    {
-      "id": "${json-unit.matches:id}",
-      "label": "test classifier2",
-      "lastUpdated": "${json-unit.matches:offsetDateTime}"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "label": "test classifier",
-      "lastUpdated": "${json-unit.matches:offsetDateTime}"
-    }
-  ],
-  "type": "Data Standard",
-  "documentationVersion": "1.0.0",
-  "finalised": false,
-  "authority": {
-      "id": "${json-unit.matches:id}",
-      "url": "http://localhost",
-      "label": "Test Authority"
-  },
-  "readableByEveryone": false,
-  "readableByAuthenticatedUsers": false,
-  "author": "admin person",
-  "organisation": "brc",
-  "dataTypes": [
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "EnumerationType",
-      "label": "yesnounknown",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Complex Test DataModel",
-          "domainType": "DataModel",
-          "finalised": false
-        }
-      ],
-      "availableActions": [
-        "delete",
-        "show",
-        "update"
-      ],
-      "lastUpdated": "${json-unit.matches:offsetDateTime}",
-      "enumerationValues": [
-        {
-          "index": 2,
-          "id": "${json-unit.matches:id}",
-          "key": "U",
-          "value": "Unknown",
-          "category": null
-        },
-        {
-          "index": 0,
-          "id": "${json-unit.matches:id}",
-          "key": "Y",
-          "value": "Yes",
-          "category": null
-        },
-        {
-          "index": 1,
-          "id": "${json-unit.matches:id}",
-          "key": "N",
-          "value": "No",
-          "category": null
-        }
-      ]
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "PrimitiveType",
-      "label": "integer",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Complex Test DataModel",
-          "domainType": "DataModel",
-          "finalised": false
-        }
-      ],
-      "availableActions": [
-        "delete",
-        "show",
-        "update"
-      ],
-      "lastUpdated": "${json-unit.matches:offsetDateTime}"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "PrimitiveType",
-      "label": "string",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Complex Test DataModel",
-          "domainType": "DataModel",
-          "finalised": false
-        }
-      ],
-      "availableActions": [
-        "delete",
-        "show",
-        "update"
-      ],
-      "lastUpdated": "${json-unit.matches:offsetDateTime}"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "ReferenceType",
-      "label": "child",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Complex Test DataModel",
-          "domainType": "DataModel",
-          "finalised": false
-        }
-      ],
-      "availableActions": [
-        "delete",
-        "show",
-        "update"
-      ],
-      "lastUpdated": "${json-unit.matches:offsetDateTime}",
-      "referenceClass": {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataClass",
-        "label": "child",
-        "model": "${json-unit.matches:id}",
-        "breadcrumbs": [
-          {
-            "id": "${json-unit.matches:id}",
-            "label": "Complex Test DataModel",
-            "domainType": "DataModel",
-            "finalised": false
-          },
-          {
-            "id": "${json-unit.matches:id}",
-            "label": "parent",
-            "domainType": "DataClass"
-          }
-        ],
-        "parentDataClass": "${json-unit.matches:id}"
-      }
-    }
-  ],
-  "childDataClasses": [
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataClass",
-      "label": "content",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Complex Test DataModel",
-          "domainType": "DataModel",
-          "finalised": false
-        }
-      ],
-      "description": "A dataclass with elements",
-      "availableActions": [
-        "delete",
-        "show",
-        "update"
-      ],
-      "lastUpdated": "${json-unit.matches:offsetDateTime}",
-      "maxMultiplicity": 1,
-      "minMultiplicity": 0,
-      "dataClasses": [
-        
-      ],
-      "dataElements": [
-        {
-          "id": "${json-unit.matches:id}",
-          "domainType": "DataElement",
-          "label": "element2",
-          "model": "${json-unit.matches:id}",
-          "breadcrumbs": [
-            {
-              "id": "${json-unit.matches:id}",
-              "label": "Complex Test DataModel",
-              "domainType": "DataModel",
-              "finalised": false
-            },
-            {
-              "id": "${json-unit.matches:id}",
-              "label": "content",
-              "domainType": "DataClass"
-            }
-          ],
-          "availableActions": [
-            "delete",
-            "show",
-            "update"
-          ],
-          "lastUpdated": "${json-unit.matches:offsetDateTime}",
-          "dataClass": "${json-unit.matches:id}",
-          "dataType": {
-            "id": "${json-unit.matches:id}",
-            "domainType": "PrimitiveType",
-            "label": "integer",
-            "model": "${json-unit.matches:id}",
-            "breadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Complex Test DataModel",
-                "domainType": "DataModel",
-                "finalised": false
-              }
-            ]
-          },
-          "maxMultiplicity": 1,
-          "minMultiplicity": 1
-        },
-        {
-          "id": "${json-unit.matches:id}",
-          "domainType": "DataElement",
-          "label": "ele1",
-          "model": "${json-unit.matches:id}",
-          "breadcrumbs": [
-            {
-              "id": "${json-unit.matches:id}",
-              "label": "Complex Test DataModel",
-              "domainType": "DataModel",
-              "finalised": false
-            },
-            {
-              "id": "${json-unit.matches:id}",
-              "label": "content",
-              "domainType": "DataClass"
-            }
-          ],
-          "availableActions": [
-            "delete",
-            "show",
-            "update"
-          ],
-          "lastUpdated": "${json-unit.matches:offsetDateTime}",
-          "dataClass": "${json-unit.matches:id}",
-          "dataType": {
-            "id": "${json-unit.matches:id}",
-            "domainType": "PrimitiveType",
-            "label": "string",
-            "model": "${json-unit.matches:id}",
-            "breadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Complex Test DataModel",
-                "domainType": "DataModel",
-                "finalised": false
-              }
-            ]
-          },
-          "maxMultiplicity": 20,
-          "minMultiplicity": 0
-        }
-      ]
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataClass",
-      "label": "emptyclass",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Complex Test DataModel",
-          "domainType": "DataModel",
-          "finalised": false
-        }
-      ],
-      "description": "dataclass with desc",
-      "availableActions": [
-        "delete",
-        "show",
-        "update"
-      ],
-      "lastUpdated": "${json-unit.matches:offsetDateTime}",
-      "dataClasses": [
-        
-      ],
-      "dataElements": [
-        
-      ]
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataClass",
-      "label": "parent",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Complex Test DataModel",
-          "domainType": "DataModel",
-          "finalised": false
-        }
-      ],
-      "availableActions": [
-        "delete",
-        "show",
-        "update"
-      ],
-      "lastUpdated": "${json-unit.matches:offsetDateTime}",
-      "maxMultiplicity": -1,
-      "minMultiplicity": 1,
-      "dataClasses": [
-        {
-          "id": "${json-unit.matches:id}",
-          "domainType": "DataClass",
-          "label": "child",
-          "model": "${json-unit.matches:id}",
-          "breadcrumbs": [
-            {
-              "id": "${json-unit.matches:id}",
-              "label": "Complex Test DataModel",
-              "domainType": "DataModel",
-              "finalised": false
-            },
-            {
-              "id": "${json-unit.matches:id}",
-              "label": "parent",
-              "domainType": "DataClass"
-            }
-          ],
-          "availableActions": [
-            "delete",
-            "show",
-            "update"
-          ],
-          "lastUpdated": "${json-unit.matches:offsetDateTime}",
-          "parentDataClass": "${json-unit.matches:id}",
-          "dataClasses": [
-            
-          ],
-          "dataElements": [
-            
-          ],
-          "parentDataClass": "${json-unit.matches:id}"
-        }
-      ],
-      "dataElements": [
-        {
-          "id": "${json-unit.matches:id}",
-          "domainType": "DataElement",
-          "label": "child",
-          "model": "${json-unit.matches:id}",
-          "breadcrumbs": [
-            {
-              "id": "${json-unit.matches:id}",
-              "label": "Complex Test DataModel",
-              "domainType": "DataModel",
-              "finalised": false
-            },
-            {
-              "id": "${json-unit.matches:id}",
-              "label": "parent",
-              "domainType": "DataClass"
-            }
-          ],
-          "availableActions": [
-            "delete",
-            "show",
-            "update"
-          ],
-          "lastUpdated": "${json-unit.matches:offsetDateTime}",
-          "dataClass": "${json-unit.matches:id}",
-          "dataType": {
-            "id": "${json-unit.matches:id}",
-            "domainType": "ReferenceType",
-            "label": "child",
-            "model": "${json-unit.matches:id}",
-            "breadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Complex Test DataModel",
-                "domainType": "DataModel",
-                "finalised": false
-              }
-            ],
-            "referenceClass": {
-              "id": "${json-unit.matches:id}",
-              "domainType": "DataClass",
-              "label": "child",
-              "model": "${json-unit.matches:id}",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test DataModel",
-                  "domainType": "DataModel",
-                  "finalised": false
-                },
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "parent",
-                  "domainType": "DataClass"
-                }
-              ],
-              "parentDataClass": "${json-unit.matches:id}"
-            }
-          },
-          "maxMultiplicity": 1,
-          "minMultiplicity": 1
-        }
-      ]
-    }
-  ]
-}'''
-
-        cleanup:
-        cleanUpData(id)
-    }
-
-    @PendingFeature(reason = "Not yet implemented")
+    @PendingFeature(reason = 'Not yet implemented')
     void 'test diffing 2 complex and simple ReferenceData'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataJsonImporterService/2.0', [
@@ -3129,7 +2602,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(simpleDataModelId)
     }
 
-    @PendingFeature(reason = "Not yet implemented")
+    @PendingFeature(reason = 'Not yet implemented')
     void 'test searching for label "emptyclass" in complex model'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataJsonImporterService/2.0', [
@@ -3178,7 +2651,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(id)
     }
 
-    @PendingFeature(reason = "Not yet implemented")
+    @PendingFeature(reason = 'Not yet implemented')
     void 'test searching for label "emptyclass" in simple model'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataJsonImporterService/2.0', [
@@ -3212,11 +2685,10 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     }
 
     @Transactional
-    @PendingFeature(reason = "Not yet implemented")
+    @PendingFeature(reason = 'Not yet implemented')
     void setupForLinkSuggestions(String simpleDataModelId) {
         //DataClass dataClass = DataClass.byDataModelId(Utils.toUuid(simpleDataModelId)).eq('label', 'simple').find()
         //assert dataClass
-
 
         POST("${simpleDataModelId}/dataTypes", [
             domainType: 'PrimitiveType',
@@ -3248,7 +2720,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         verifyResponse CREATED, response
     }
 
-    @PendingFeature(reason = "Not yet implemented")
+    @PendingFeature(reason = 'Not yet implemented')
     void 'test get link suggestions for a model with no data elements in the target'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataJsonImporterService/2.0', [
@@ -3293,7 +2765,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(simpleDataModelId)
     }
 
-    @PendingFeature(reason = "Not yet implemented")
+    @PendingFeature(reason = 'Not yet implemented')
     void 'test get link suggestions for a model'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataJsonImporterService/2.0', [

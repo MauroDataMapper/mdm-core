@@ -79,14 +79,14 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
         id = element.id
     }
 
-    void "test get"() {
+    void 'test get'() {
         setupData()
 
         expect:
         referenceDataElementService.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         setupData()
 
         when:
@@ -108,14 +108,14 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
         dataElementList[1].referenceDataTypeId == referenceDataModel.findReferenceDataTypeByLabel('integer').id
     }
 
-    void "test count"() {
+    void 'test count'() {
         setupData()
 
         expect:
         referenceDataElementService.count() == 2
     }
 
-    void "test delete"() {
+    void 'test delete'() {
         setupData()
 
         expect:

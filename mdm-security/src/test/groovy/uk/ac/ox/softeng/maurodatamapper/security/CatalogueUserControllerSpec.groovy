@@ -367,7 +367,7 @@ json {
     if (catalogueUser.jobTitle) jobTitle catalogueUser.jobTitle
     if (catalogueUser.userPreferences) userPreferences catalogueUser.userPreferences
     if (catalogueUser.groups) groups catalogueUser.groups.collect{it.id}
-    
+
 }
 """
     }
@@ -506,7 +506,7 @@ json {
         new ChangePassword(oldPassword: 'readerpwd', newPassword: 'another')
     }
 
-    void "test save/self registration with an existing email instance"() {
+    void 'test save/self registration with an existing email instance'() {
         given:
         controller.emailService = Mock(EmailService) {
             0 * sendEmailToUser(*_)
@@ -583,7 +583,7 @@ json {
     }
 
 
-    void "test pending returns the correct response"() {
+    void 'test pending returns the correct response'() {
 
         controller.catalogueUserService = Mock(CatalogueUserService) {
             findAllPendingUsers(_) >> {
@@ -594,7 +594,7 @@ json {
         when:
         controller.pending()
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyJsonResponse OK, '''{
       "count": 1,
       "items": [
@@ -615,7 +615,7 @@ json {
     }'''
     }
 
-    void "test pending count returns the correct response"() {
+    void 'test pending count returns the correct response'() {
 
         controller.catalogueUserService = Mock(CatalogueUserService) {
             countPendingUsers(_) >> {
@@ -626,7 +626,7 @@ json {
         when:
         controller.pendingCount()
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyJsonResponse OK, '{"count": 1}'
     }
 

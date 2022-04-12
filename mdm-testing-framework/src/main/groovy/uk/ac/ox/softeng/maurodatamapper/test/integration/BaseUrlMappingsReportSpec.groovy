@@ -285,7 +285,7 @@ abstract class BaseUrlMappingsReportSpec extends MdmSpecification {
 
     private String establishUrlPattern(UrlMapping urlMapping, boolean apiDocumentation) {
         if (urlMapping instanceof ResponseCodeUrlMapping) {
-            def errorCode = "ERROR: " + ((ResponseCodeMappingData) urlMapping.urlData).responseCode
+            def errorCode = 'ERROR: ' + ((ResponseCodeMappingData) urlMapping.urlData).responseCode
             return errorCode
         }
         final constraints = urlMapping.constraints

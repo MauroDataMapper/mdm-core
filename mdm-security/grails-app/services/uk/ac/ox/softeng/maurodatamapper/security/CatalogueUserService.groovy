@@ -162,7 +162,7 @@ class CatalogueUserService implements UserService, MdmDomainService<CatalogueUse
                                    'Cannot change password for user [{0}] as old password is not valid')
             }
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
-            log.error("Something went wrong", e)
+            log.error('Something went wrong', e)
         }
         user
     }
@@ -180,7 +180,7 @@ class CatalogueUserService implements UserService, MdmDomainService<CatalogueUse
                                    'Cannot change password for user [{0}] as old password is not valid')
             }
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
-            log.error("Something went wrong", e)
+            log.error('Something went wrong', e)
         }
         user
     }
@@ -194,7 +194,7 @@ class CatalogueUserService implements UserService, MdmDomainService<CatalogueUse
     }
 
     CatalogueUser createInitialAdminUser(CatalogueUser initialAdminUser) {
-        log.debug("Creating initial admin user")
+        log.debug('Creating initial admin user')
 
         initialAdminUser.pending = false
         initialAdminUser.createdBy = StandardEmailAddress.ADMIN

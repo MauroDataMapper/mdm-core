@@ -37,7 +37,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 import org.springframework.context.MessageSource
 
 @Slf4j
@@ -48,8 +47,6 @@ class TermService extends ModelItemService<Term> {
     MessageSource messageSource
     TerminologyService terminologyService
     TreeItemService treeItemService
-
-    private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
 
     @Override
     Term get(Serializable id) {
@@ -386,35 +383,11 @@ class TermService extends ModelItemService<Term> {
         Term.byTerminologyIdAndDepth(terminologyId, depth).list()
     }
 
-    private Boolean hasParentToRelationship(Term parent, Term child) {
-        parent.sourceTermRelationships.any { it.sourceIsParentToTarget() && it.targetTerm == child }
-    }
-
     private boolean hasChild(Term parent, List<TermRelationship> knowledge) {
         knowledge.any {
             (it.targetTerm == parent && it.relationshipType.childRelationship) ||
             (it.sourceTerm == parent && it.relationshipType.parentalRelationship)
         }
-    }
-
-    /*
-     * Find a Term belonging to terminology and whose label is label
-     * @param terminology The Terminology to which the sought Term belongs
-     * @param label The label of the sought Term
-     */
-
-    private Term findTerm(Terminology terminology, String label) {
-        terminology.terms.find { it.label == label.trim() }
-    }
-
-    /*
-     * Find a Term belonging to codeSet and whose label is label
-     * @param codeSet The CodeSet to which the sought Term belongs
-     * @param label The label of the sought Term
-     */
-
-    private Term findTerm(CodeSet codeSet, String label) {
-        codeSet.terms.find { it.label == label.trim() }
     }
 
     /*

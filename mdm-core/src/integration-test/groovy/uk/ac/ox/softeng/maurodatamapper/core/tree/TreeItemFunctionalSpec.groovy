@@ -504,7 +504,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         verifyResponse HttpStatus.CREATED, response
 
         when: 'requesting VF tree'
-        GET("tree/versionedFolders", STRING_ARG)
+        GET('tree/versionedFolders', STRING_ARG)
 
         then: 'theres no tree at the root for VFs'
         verifyResponse HttpStatus.BAD_REQUEST, jsonCapableResponse
@@ -531,7 +531,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 ]'''
 
         when: 'creating new versioned folder'
-        POST("versionedFolders", [label: 'Functional Test Versioned Folder'])
+        POST('versionedFolders', [label: 'Functional Test Versioned Folder'])
 
         then:
         def parentId = responseBody().id
@@ -545,7 +545,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         verifyResponse HttpStatus.CREATED, response
 
         when: 'requesting VF tree'
-        GET("tree/versionedFolders", STRING_ARG)
+        GET('tree/versionedFolders', STRING_ARG)
 
         then:
         verifyResponse HttpStatus.BAD_REQUEST, jsonCapableResponse

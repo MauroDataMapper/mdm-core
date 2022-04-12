@@ -83,12 +83,12 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
         id = terminology1.id
     }
 
-    void "test get"() {
+    void 'test get'() {
         expect:
         service.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         when:
         List<Terminology> terminologyList = service.list(max: 2, offset: 2, sort: 'dateCreated')
 
@@ -109,13 +109,13 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
     }
 
-    void "test count"() {
+    void 'test count'() {
 
         expect:
         service.count() == 5
     }
 
-    void "test delete"() {
+    void 'test delete'() {
 
         expect:
         service.count() == 5
@@ -130,7 +130,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
         Terminology.countByDeleted(true) == 1
     }
 
-    void "test save"() {
+    void 'test save'() {
 
         when:
         Terminology terminology = new Terminology(createdBy: UNIT_TEST, label: 'saving test', folder: testFolder, authority: testAuthority)

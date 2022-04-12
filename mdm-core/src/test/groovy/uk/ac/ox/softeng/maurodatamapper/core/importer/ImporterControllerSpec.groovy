@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.importer
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
@@ -61,7 +60,7 @@ class ImporterControllerSpec extends BaseUnitSpec implements ControllerUnitTest<
         "namespace": "uk.ac.ox.softeng.maurodatamapper.core.importer",
         "allowsExtraMetadataKeys": true,
         "knownMetadataKeys": [
-            
+
         ],
         "providerType": "Importer",
         "paramClassType": "uk.ac.ox.softeng.maurodatamapper.core.importer.ImporterControllerSpec.TestFileImporterProviderServiceParameters",
@@ -101,8 +100,8 @@ class ImporterControllerSpec extends BaseUnitSpec implements ControllerUnitTest<
                     "displayName": "Import as New Documentation Version",
                     "description": "Should the DataModel/s be imported as new Documentation Version/s.\\nIf selected then any models with the ''' +
                               'same name will be superseded and the imported models will be given the latest documentation version ' +
-                              'of the \\nexisting DataModels.\\nIf not selected then the \'DataModel Name\' field should be used to ensure ' +
-                              '''the imported DataModel is uniquely named, \\notherwise you could get an error."
+                              'of the\\nexisting DataModels.\\nIf not selected then the \'DataModel Name\' field should be used to ensure ' +
+                              '''the imported DataModel is uniquely named,\\notherwise you could get an error."
                 }
             ]
         },
@@ -170,9 +169,9 @@ Note that if the model is already finalised this will not be overridden.''',
         @ImportParameterConfig(
             displayName = 'Import as New Documentation Version',
             description = '''Should the DataModel/s be imported as new Documentation Version/s.
-If selected then any models with the same name will be superseded and the imported models will be given the latest documentation version of the 
+If selected then any models with the same name will be superseded and the imported models will be given the latest documentation version of the
 existing DataModels.
-If not selected then the 'DataModel Name' field should be used to ensure the imported DataModel is uniquely named, 
+If not selected then the 'DataModel Name' field should be used to ensure the imported DataModel is uniquely named,
 otherwise you could get an error.''',
             order = 0,
             group = @ImportGroupConfig(

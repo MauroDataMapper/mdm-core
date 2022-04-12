@@ -191,7 +191,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         verifyResponse(CREATED, response)
         String firstId = response.body().id
         // Finalise model
-        PUT("referenceDataModels/$firstId/finalise", [versionChangeType: "Major"], MAP_ARG, true)
+        PUT("referenceDataModels/$firstId/finalise", [versionChangeType: 'Major'], MAP_ARG, true)
         verifyResponse OK, response
         // Create a new documentation version
         PUT("referenceDataModels/$firstId/newDocumentationVersion", [:], MAP_ARG, true)
@@ -249,7 +249,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         verifyResponse(CREATED, response)
         String firstId = response.body().id
         // Finalise first model
-        PUT("referenceDataModels/$firstId/finalise", [versionChangeType: "Major"], MAP_ARG, true)
+        PUT("referenceDataModels/$firstId/finalise", [versionChangeType: 'Major'], MAP_ARG, true)
         verifyResponse OK, response
         // Create a new branch
         PUT("referenceDataModels/$firstId/newBranchModelVersion", [:], MAP_ARG, true)
@@ -296,7 +296,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         }
 
         when: 'Finalise the branch'
-        PUT("referenceDataModels/$secondId/finalise", [versionChangeType: "Major"], MAP_ARG, true)
+        PUT("referenceDataModels/$secondId/finalise", [versionChangeType: 'Major'], MAP_ARG, true)
         verifyResponse OK, response
 
         // 'Getting tree after finalisation'
@@ -346,7 +346,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         verifyResponse(CREATED, response)
         String firstId = response.body().id
         // Finalise first model
-        PUT("referenceDataModels/$firstId/finalise", [versionChangeType: "Major"], MAP_ARG, true)
+        PUT("referenceDataModels/$firstId/finalise", [versionChangeType: 'Major'], MAP_ARG, true)
         verifyResponse OK, response
         // Create a new branch
         PUT("referenceDataModels/$firstId/newBranchModelVersion", [:], MAP_ARG, true)
@@ -413,7 +413,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         ], MAP_ARG, true)
         verifyResponse(CREATED, response)
         String firstId = response.body().id
-        PUT("referenceDataModels/$firstId/finalise", [versionChangeType: "Major"], MAP_ARG, true)
+        PUT("referenceDataModels/$firstId/finalise", [versionChangeType: 'Major'], MAP_ARG, true)
 
         expect:
         firstId
@@ -478,7 +478,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         verifyResponse(CREATED, response)
         String firstId = response.body().id
         // Finalise model
-        PUT("referenceDataModels/$firstId/finalise", [versionChangeType: "Major"], MAP_ARG, true)
+        PUT("referenceDataModels/$firstId/finalise", [versionChangeType: 'Major'], MAP_ARG, true)
         verifyResponse OK, response
         // Create a new documentation version
         PUT("referenceDataModels/$firstId/newDocumentationVersion", [:], MAP_ARG, true)
@@ -543,13 +543,13 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         verifyResponse(CREATED, response)
         String firstId = response.body().id
         // Finalise first model
-        PUT("referenceDataModels/$firstId/finalise", [versionChangeType: "Major"], MAP_ARG, true)
+        PUT("referenceDataModels/$firstId/finalise", [versionChangeType: 'Major'], MAP_ARG, true)
         verifyResponse OK, response
         // Create a new branch
         PUT("referenceDataModels/$firstId/newBranchModelVersion", [:], MAP_ARG, true)
         verifyResponse CREATED, response
         String secondId = response.body().id
-        PUT("referenceDataModels/$secondId/finalise", [versionChangeType: "Major"], MAP_ARG, true)
+        PUT("referenceDataModels/$secondId/finalise", [versionChangeType: 'Major'], MAP_ARG, true)
         verifyResponse OK, response
 
         expect:

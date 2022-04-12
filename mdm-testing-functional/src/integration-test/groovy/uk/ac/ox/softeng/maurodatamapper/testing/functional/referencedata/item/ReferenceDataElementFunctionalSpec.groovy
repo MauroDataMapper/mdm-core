@@ -60,7 +60,7 @@ class ReferenceDataElementFunctionalSpec extends UserAccessFunctionalSpec {
 
     @Transactional
     String getReferenceDataTypeId() {
-        ReferencePrimitiveType.findByLabel("string").id.toString()
+        ReferencePrimitiveType.findByLabel('string').id.toString()
     }
 
     @Override

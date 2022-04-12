@@ -44,6 +44,11 @@ class Authority implements MdmDomain, InformationAware, SecurableResource, EditH
         CallableConstraints.call(InformationAwareConstraints, delegate)
         label unique: 'url'
         url blank: false
+        defaultAuthority validator: {val, obj ->
+            if (val && Authority.countByDefaultAuthorityAndIdNotEqual(true, obj.id)) {
+                return ['invalid.authority.default']
+            }
+        }
     }
 
     static mapping = {

@@ -35,7 +35,7 @@ class MetadataSpec extends MdmDomainSpec<Metadata> implements DomainUnitTest<Met
     def setup() {
         mockDomains(Folder, Authority)
         misc = new Folder(createdBy: admin.emailAddress, label: 'misc')
-        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: 'https://localhost', createdBy: UNIT_TEST)
         checkAndSave(testAuthority)
         db = new BasicModel(createdBy: admin.emailAddress, label: 'test', folder: misc, authority: testAuthority)
         mockDomains(Folder, BasicModel)
@@ -45,7 +45,7 @@ class MetadataSpec extends MdmDomainSpec<Metadata> implements DomainUnitTest<Met
 
     void 'test no catalogue item'() {
         given:
-        domain.namespace = "http://test.com/valid"
+        domain.namespace = 'http://test.com/valid'
         domain.key = 'test_key'
         domain.value = 'a value'
         domain.createdBy = admin.emailAddress
@@ -62,7 +62,7 @@ class MetadataSpec extends MdmDomainSpec<Metadata> implements DomainUnitTest<Met
 
     @Override
     void setValidDomainOtherValues() {
-        domain.namespace = "http://test.com/valid"
+        domain.namespace = 'http://test.com/valid'
         domain.key = 'test_key'
         domain.value = 'a value'
         domain.multiFacetAwareItem = db
@@ -70,7 +70,7 @@ class MetadataSpec extends MdmDomainSpec<Metadata> implements DomainUnitTest<Met
 
     @Override
     void verifyDomainOtherConstraints(Metadata domain) {
-        assert domain.namespace == "http://test.com/valid"
+        assert domain.namespace == 'http://test.com/valid'
         assert domain.key == 'test_key'
         assert domain.value == 'a value'
         assert domain.multiFacetAwareItem.id

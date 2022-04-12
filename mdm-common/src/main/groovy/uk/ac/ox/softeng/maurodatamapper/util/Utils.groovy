@@ -85,7 +85,7 @@ class Utils {
         List<String> arguments = runtimeMxBean.getInputArguments()
         Logger logger = LoggerFactory.getLogger(clazz)
 
-        logger.warn("Running with JVM args : {}", arguments.size())
+        logger.warn('Running with JVM args : {}', arguments.size())
         Map<String, String> map = arguments.collectEntries {arg ->
             arg.split('=').toList()
         }.sort() as Map<String, String>

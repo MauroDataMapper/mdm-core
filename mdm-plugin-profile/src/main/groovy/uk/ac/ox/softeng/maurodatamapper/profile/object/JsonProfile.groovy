@@ -49,7 +49,7 @@ class JsonProfile extends Profile {
                 if (field.metadataPropertyName) {
                     fields.add(field.metadataPropertyName)
                 } else {
-                    log.info("No metadataPropertyName set for field: " + field.fieldName)
+                    log.info('No metadataPropertyName set for field: {}', field.fieldName)
                     fields.add("${section.name}/${field.fieldName}")
                 }
             }

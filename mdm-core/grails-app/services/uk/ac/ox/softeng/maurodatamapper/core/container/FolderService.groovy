@@ -44,6 +44,7 @@ import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
@@ -261,7 +262,7 @@ class FolderService extends ContainerService<Folder> {
         log.debug('Loading models into folder object diff for [{}] <> [{}] under context {}', leftHandSide.label, rightHandSide.label, context)
         List<Model> lhsModels = findAllModelsInFolder(leftHandSide)
         List<Model> rhsModels = findAllModelsInFolder(rightHandSide)
-        log.debug("{} models on LHS <> {} models on RHS", lhsModels.size(), rhsModels.size())
+        log.debug('{} models on LHS <> {} models on RHS', lhsModels.size(), rhsModels.size())
 
         appendModelsToDiffList(diff, 'models', lhsModels, rhsModels, context)
 
@@ -270,7 +271,7 @@ class FolderService extends ContainerService<Folder> {
 
         Collection<Folder> lhsFolders = childFolderDiff.left
         Collection<Folder> rhsFolders = childFolderDiff.right
-        log.debug("{} child folders on LHS <> {} child folders on RHS", lhsFolders.size(), rhsFolders.size())
+        log.debug('{} child folders on LHS <> {} child folders on RHS', lhsFolders.size(), rhsFolders.size())
 
         if (lhsFolders || rhsFolders) {
             log.debug('Loading child folder model content diffs')
@@ -525,6 +526,7 @@ class FolderService extends ContainerService<Folder> {
      * @return
      * @throws ApiDiffException
      */
+    @SuppressFBWarnings('UPM_UNCALLED_PRIVATE_METHOD')
     private void appendModelsToDiffList(ObjectDiff folderDiff, String fieldName,
                                         Collection<Model> appendingLhs, Collection<Model> appendingRhs, String context = null) throws ApiDiffException {
 

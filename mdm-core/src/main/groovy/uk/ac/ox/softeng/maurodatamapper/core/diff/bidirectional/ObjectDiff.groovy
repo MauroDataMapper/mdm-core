@@ -41,7 +41,7 @@ Always in relation to the lhs
 @Slf4j
 class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
 
-    private final static HibernateProxyHandler proxyHandler = new HibernateProxyHandler()
+    private static final HibernateProxyHandler hibernateProxyHandler = new HibernateProxyHandler()
 
     DiffCache lhsDiffCache
     DiffCache rhsDiffCache
@@ -51,7 +51,6 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
     String leftId
     String rightId
     boolean versionedDiff
-
 
     ObjectDiff(Class<O> targetClass) {
         this(targetClass, new DiffCache(), new DiffCache())
@@ -74,9 +73,16 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
 
         if (leftId != objectDiff.leftId) return false
         if (rightId != objectDiff.rightId) return false
-        if (diffs != objectDiff.diffs) return false
+        diffs == objectDiff.diffs
+    }
 
-        return true
+    @Override
+    int hashCode() {
+        int result = super.hashCode()
+        result = 31 * result + (diffs != null ? diffs.hashCode() : 0)
+        result = 31 * result + leftId.hashCode()
+        result = 31 * result + rightId.hashCode()
+        result
     }
 
     @Override
@@ -190,8 +196,8 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
         Collection<K> lhs
         Collection<K> rhs
         if (GormEntity.isAssignableFrom(diffableClass)) {
-            lhs = appendingLhs.collect {proxyHandler.unwrapIfProxy(it)} as Collection<K>
-            rhs = appendingRhs.collect {proxyHandler.unwrapIfProxy(it)} as Collection<K>
+            lhs = appendingLhs.collect {hibernateProxyHandler.unwrapIfProxy(it)} as Collection<K>
+            rhs = appendingRhs.collect {hibernateProxyHandler.unwrapIfProxy(it)} as Collection<K>
         } else {
             lhs = appendingLhs
             rhs = appendingRhs

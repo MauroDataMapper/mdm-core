@@ -52,12 +52,12 @@ class ReferenceDataModelSpec extends ModelSpec<ReferenceDataModel> implements Do
 
     @Override
     void setValidDomainOtherValues() {
-        
+
     }
 
     @Override
     void verifyDomainOtherConstraints(ReferenceDataModel domain) {
-        
+
     }
 
     void 'test example ReferenceDataModel valid'() {
@@ -71,7 +71,7 @@ class ReferenceDataModelSpec extends ModelSpec<ReferenceDataModel> implements Do
         checkAndSave(simple)
     }
 
-    
+
     void 'simple diff of label'() {
         when:
         def dm1 = new ReferenceDataModel(label: 'test model 1', folder: testFolder, authority: testAuthority, createdBy: UNIT_TEST)
@@ -114,7 +114,7 @@ class ReferenceDataModelSpec extends ModelSpec<ReferenceDataModel> implements Do
         domain.errors.allErrors.size() == 1
     }
 
-    
+
     void 'diff in ReferenceDataElement'() {
         when:
         def dm1 = new ReferenceDataModel(label: 'test model', createdBy: UNIT_TEST, folder: testFolder, authority: testAuthority)
@@ -134,7 +134,7 @@ class ReferenceDataModelSpec extends ModelSpec<ReferenceDataModel> implements Do
 
 
         when:
-        dm2.label = "test model 2"
+        dm2.label = 'test model 2'
         diff = dm1.diff(dm2, null)
 
         then:

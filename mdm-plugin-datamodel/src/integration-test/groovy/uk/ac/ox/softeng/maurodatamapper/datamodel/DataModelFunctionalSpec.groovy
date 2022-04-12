@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
@@ -86,6 +87,12 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
     UUID folderId
 
     @Shared
+    UUID versionedFolderId
+
+    @Shared
+    UUID otherVersionedFolderId
+
+    @Shared
     UUID movingFolderId
 
     @Shared
@@ -100,6 +107,11 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         assert folderId
         movingFolderId = new Folder(label: 'Functional Test Folder 2', createdBy: FUNCTIONAL_TEST).save(flush: true).id
         assert movingFolderId
+
+        versionedFolderId = new VersionedFolder(label: 'Functional Test VersionedFolder', createdBy: FUNCTIONAL_TEST, authority: testAuthority).save(flush: true).id
+        assert versionedFolderId
+        otherVersionedFolderId = new VersionedFolder(label: 'Functional Test VersionedFolder 2', createdBy: FUNCTIONAL_TEST, authority: testAuthority).save(flush: true).id
+        assert otherVersionedFolderId
         builder = new DataModelPluginMergeBuilder(this)
     }
 
@@ -181,7 +193,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
   {
     "providerType": "DataModelExporter",
     "knownMetadataKeys": [
-      
+
     ],
     "displayName": "XML DataModel Exporter",
     "fileExtension": "xml",
@@ -195,7 +207,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
   {
     "providerType": "DataModelExporter",
     "knownMetadataKeys": [
-      
+
     ],
     "displayName": "JSON DataModel Exporter",
     "fileExtension": "json",
@@ -219,7 +231,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters",
     "providerType": "DataModelImporter",
     "knownMetadataKeys": [
-      
+
     ],
     "displayName": "XML DataModel Importer",
     "name": "DataModelXmlImporterService",
@@ -232,7 +244,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters",
     "providerType": "DataModelImporter",
     "knownMetadataKeys": [
-      
+
     ],
     "displayName": "JSON DataModel Importer",
     "name": "DataModelJsonImporterService",
@@ -323,7 +335,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         and: 'There is not a CHANGE NOTICE edit'
         !response.body().items.find {
-            it.description == "Functional Test Change Notice"
+            it.description == 'Functional Test Change Notice'
         }
 
         cleanup:
@@ -353,7 +365,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         and: 'There is a CHANGE NOTICE edit'
         response.body().items.find {
-            it.title == "CHANGENOTICE" && it.description == "Functional Test Change Notice"
+            it.title == 'CHANGENOTICE' && it.description == 'Functional Test Change Notice'
         }
 
         cleanup:
@@ -1527,8 +1539,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         GET("$target/metadata")
         verifyResponse OK, response
-        deleteMetadataSource = responseBody().items.find { it.key == "deleteMetadataSource" }.id
-        modifyMetadataSource = responseBody().items.find { it.key == "modifyMetadataSource" }.id
+        deleteMetadataSource = responseBody().items.find {it.key == 'deleteMetadataSource'}.id
+        modifyMetadataSource = responseBody().items.find {it.key == 'modifyMetadataSource'}.id
 
         GET("$source/mergeDiff/$target", STRING_ARG)
         log.info('{}', jsonResponseBody())
@@ -1585,7 +1597,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         String id = createNewItem(validJson)
 
         when: 'A DataClass is added to the DataModel'
-        POST("$id/dataClasses", ["label": "Functional Test DataClass"])
+        POST("$id/dataClasses", ['label': "Functional Test DataClass"])
 
         then: 'The response is CREATED'
         verifyResponse CREATED, response
@@ -1620,14 +1632,14 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         def sourceDataClassId = response.body().items[0].id
 
         when: 'A new DataType is added to the source DataModel'
-        POST("$sourceDataModelId/dataTypes", ["label": "A", "domainType": "PrimitiveType"])
+        POST("$sourceDataModelId/dataTypes", ['label': 'A', 'domainType': 'PrimitiveType'])
 
         then: 'The response is CREATED'
         verifyResponse CREATED, response
         def dataTypeId = response.body().id
 
         when: 'A new DataElement is added to the source DataClass'
-        POST("$sourceDataModelId/dataClasses/$sourceDataClassId/dataElements", ["label": "New Data Element", "dataType": ["id": dataTypeId]])
+        POST("$sourceDataModelId/dataClasses/$sourceDataClassId/dataElements", ['label': "New Data Element", 'dataType': ['id': dataTypeId]])
 
         then: 'The response is CREATED'
         verifyResponse CREATED, response
@@ -3262,7 +3274,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
       "maxMultiplicity": 1,
       "minMultiplicity": 0,
       "dataClasses": [
-        
+
       ],
       "dataElements": [
         {
@@ -3372,10 +3384,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
       ],
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "dataClasses": [
-        
+
       ],
       "dataElements": [
-        
+
       ]
     },
     {
@@ -3426,10 +3438,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "parentDataClass": "${json-unit.matches:id}",
           "dataClasses": [
-            
+
           ],
           "dataElements": [
-            
+
           ],
           "parentDataClass": "${json-unit.matches:id}"
         }
@@ -3889,7 +3901,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         then:
         verifyResponse UNPROCESSABLE_ENTITY, response
-        responseBody().errors.first().message == "PrimitiveType [${nonImportableId}] to be imported does not belong to a finalised DataModel"
+        responseBody().errors.first().message ==
+        "PrimitiveType [${nonImportableId}] to be imported does not belong to a finalised DataModel or reside inside the same VersionedFolder"
 
         when: 'importing internal id'
         PUT("$id/dataTypes/$id/$internalId", [:])
@@ -4036,7 +4049,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         then:
         verifyResponse UNPROCESSABLE_ENTITY, response
-        responseBody().errors.first().message == "DataClass [${nonImportableId}] to be imported does not belong to a finalised DataModel"
+        responseBody().errors.first().message ==
+        "DataClass [${nonImportableId}] to be imported does not belong to a finalised DataModel or reside inside the same VersionedFolder"
 
         when: 'importing internal id'
         PUT("$id/dataClasses/$id/$internalId", [:])
@@ -4128,11 +4142,106 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         then:
         verifyResponse OK, response
         responseBody().items.size() == 1
-        responseBody().items.any { it.id == internalId }
+        responseBody().items.any {it.id == internalId}
 
         cleanup:
         cleanUpData(id)
         cleanUpData(finalisedId)
+    }
+
+    void 'IMI05 : test importing DataClasses inside same VF'() {
+        given:
+        // Get DataModel inside VF
+        POST("folders/${versionedFolderId}/${getResourcePath()}", validJson, MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String id = responseBody().id
+
+        // Get second DataModel inside same VF
+
+        POST("folders/${versionedFolderId}/${getResourcePath()}", [
+            label: 'Functional Test Model 1'
+        ], MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String sameVfId = responseBody().id
+
+        POST("folders/${otherVersionedFolderId}/${getResourcePath()}", [
+            label: 'Functional Test Model 2'
+        ], MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String otherVfId = responseBody().id
+
+        // Get finalised DataModel
+        String finalisedId = createNewItem([
+            label: 'Functional Test Model 3'
+        ])
+        PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        // Get finalised DataModel
+        String nonFinalisedId = createNewItem([
+            label: 'Functional Test Model 4'
+        ])
+
+        // Get internal DC
+        POST("$id/dataClasses", [
+            label: 'Functional Test DataClass',])
+        verifyResponse CREATED, response
+        String internalId = responseBody().id
+
+        POST("$sameVfId/dataClasses", [
+            label: 'Functional Test DataClass 2',])
+        verifyResponse CREATED, response
+        String vfImportableId = responseBody().id
+
+        POST("$finalisedId/dataClasses", [
+            label: 'Functional Test DataClass 3',])
+        verifyResponse CREATED, response
+        String finalisedImportableId = responseBody().id
+
+        POST("$nonFinalisedId/dataClasses", [
+            label: 'Functional Test DataClass 4',])
+        verifyResponse CREATED, response
+        String nonImportableId = responseBody().id
+
+        POST("$otherVfId/dataClasses", [
+            label: 'Functional Test DataClass 5',])
+        verifyResponse CREATED, response
+        String otherVfNonImportableId = responseBody().id
+
+        when: 'importing non importable id'
+        PUT("$id/dataClasses/$nonFinalisedId/$nonImportableId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message ==
+        "DataClass [${nonImportableId}] to be imported does not belong to a finalised DataModel or reside inside the same VersionedFolder"
+
+        when: 'importing non importable id'
+        PUT("$id/dataClasses/$otherVfId/$otherVfNonImportableId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message ==
+        "DataClass [${otherVfNonImportableId}] to be imported does not belong to a finalised DataModel or reside inside the same VersionedFolder"
+
+        when: 'importing importable id'
+        PUT("$id/dataClasses/$sameVfId/$vfImportableId", [:])
+
+        then:
+        verifyResponse OK, response
+
+        when: 'importing importable id'
+        PUT("$id/dataClasses/$finalisedId/$finalisedImportableId", [:])
+
+        then:
+        verifyResponse OK, response
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(sameVfId)
+        cleanUpData(otherVfId)
+        cleanUpData(finalisedId)
+        cleanUpData(nonFinalisedId)
     }
 
     @Unroll
@@ -4341,12 +4450,12 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
         and:
         GET("/${source.dataModelId}/dataClasses/${source.parentClass.id}/dataClasses")
         verifyResponse OK, response
-        source.parentClass.childClass = response.body().items.find { it.label == "child" }
+        source.parentClass.childClass = response.body().items.find {it.label == 'child'}
 
         and: 'there is a Data Element called grandchild on the child Data Class'
         POST("/${source.dataModelId}/dataClasses/${source.parentClass.childClass.id}/dataElements", [
-            "label"   : "grandchild",
-            "dataType": ["label": "string", "domainType": "PrimitiveType"]
+            'label'   : 'grandchild',
+            'dataType': ['label': 'string', 'domainType': 'PrimitiveType']
         ])
         verifyResponse CREATED, response
         source.parentClass.childClass.grandchild = response.body()
@@ -4364,7 +4473,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
          * 2. Appear in the /intersects response
          */
         when: 'subset ele1'
-        PUT("/${source.dataModelId}/subset/${target.dataModelId}", ["additions": [source.contentClass.ele1.id], "deletions": []])
+        PUT("/${source.dataModelId}/subset/${target.dataModelId}", ['additions': [source.contentClass.ele1.id], 'deletions': []])
 
         then: 'The response is OK'
         verifyResponse OK, response
@@ -4402,7 +4511,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
          * 2. Remove ele1 from the /intersects response
          */
         when: 'subset ele1'
-        PUT("/${source.dataModelId}/subset/${target.dataModelId}", ["additions": [], "deletions": [source.contentClass.ele1.id]])
+        PUT("/${source.dataModelId}/subset/${target.dataModelId}", ['additions': [], 'deletions': [source.contentClass.ele1.id]])
 
         then: 'The response is OK'
         verifyResponse OK, response
@@ -4437,12 +4546,12 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
          */
         when: 'subset ele1, element2 and child'
         PUT("/${source.dataModelId}/subset/${target.dataModelId}", [
-            "additions": [
+            'additions': [
                 source.contentClass.ele1.id,
                 source.contentClass.element2.id,
                 source.parentClass.childClass.grandchild.id
             ],
-            "deletions": []
+            'deletions': []
         ])
 
         then: 'The response is OK'
@@ -4496,8 +4605,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> implemen
 
         when: 'Delete the grandchild from the subset'
         PUT("/${source.dataModelId}/subset/${target.dataModelId}", [
-            "additions": [],
-            "deletions": [source.parentClass.childClass.grandchild.id]
+            'additions': [],
+            'deletions': [source.parentClass.childClass.grandchild.id]
         ])
 
         then: 'The response is OK'

@@ -36,7 +36,7 @@ class SemanticLinkInterceptor extends FacetInterceptor {
 
     @Override
     void checkAdditionalIds() {
-        Utils.toUuid(params,"semanticLinkId")
+        Utils.toUuid(params, 'semanticLinkId')
     }
 
     boolean before() {

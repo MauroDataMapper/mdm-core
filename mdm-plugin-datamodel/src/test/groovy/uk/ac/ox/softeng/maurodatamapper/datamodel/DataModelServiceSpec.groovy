@@ -37,11 +37,9 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.test.unit.service.CatalogueItemServiceSpec
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
-import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.testing.services.ServiceUnitTest
 import groovy.util.logging.Slf4j
-import org.hibernate.SessionFactory
 
 @Slf4j
 class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUnitTest<DataModelService> {
@@ -105,12 +103,12 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         BootstrapModels.buildAndSaveComplexDataModel(messageSource, testFolder, testAuthority)
     }
 
-    void "test get"() {
+    void 'test get'() {
         expect:
         service.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         when:
         List<DataModel> dataModelList = service.list(max: 2, offset: 2, sort: 'dateCreated')
 
@@ -131,13 +129,13 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     }
 
-    void "test count"() {
+    void 'test count'() {
 
         expect:
         service.count() == 5
     }
 
-    void "test delete"() {
+    void 'test delete'() {
 
         expect:
         service.count() == 5
@@ -152,7 +150,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         DataModel.countByDeleted(true) == 1
     }
 
-    void "test save"() {
+    void 'test save'() {
 
         when:
         DataModel dataModel = new DataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'saving test', type: DataModelType.DATA_STANDARD, folder: testFolder,

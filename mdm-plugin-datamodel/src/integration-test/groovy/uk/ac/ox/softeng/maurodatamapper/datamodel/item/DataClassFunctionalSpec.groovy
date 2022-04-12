@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
@@ -86,6 +87,12 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
     @Shared
     Folder folder
 
+    @Shared
+    UUID versionedFolderId
+
+    @Shared
+    UUID otherVersionedFolderId
+
     @RunOnce
     @Transactional
     def setup() {
@@ -111,6 +118,11 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
                                                 dataModel: finalisedDataModel).save(flush: true).id
         otherDataTypeId = new PrimitiveType(label: 'string', createdBy: FUNCTIONAL_TEST,
                                             dataModel: otherDataModel).save(flush: true).id
+
+        versionedFolderId = new VersionedFolder(label: 'Functional Test VersionedFolder', createdBy: FUNCTIONAL_TEST, authority: testAuthority).save(flush: true).id
+        assert versionedFolderId
+        otherVersionedFolderId = new VersionedFolder(label: 'Functional Test VersionedFolder 2', createdBy: FUNCTIONAL_TEST, authority: testAuthority).save(flush: true).id
+        assert otherVersionedFolderId
 
         sessionFactory.currentSession.flush()
     }
@@ -767,11 +779,11 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
          -> dataClass "content" @ 2
          */
         when: 'Three children are added to parent and are then listed'
-        POST("${bId}/dataClasses", [label: "child1", index: 0])
+        POST("${bId}/dataClasses", [label: 'child1', index: 0])
         String child1Id = responseBody().id
-        POST("${bId}/dataClasses", [label: "child2", index: 1])
+        POST("${bId}/dataClasses", [label: 'child2', index: 1])
         String child2Id = responseBody().id
-        POST("${bId}/dataClasses", [label: "child3", index: 2])
+        POST("${bId}/dataClasses", [label: 'child3', index: 2])
         String child3Id = responseBody().id
         GET("${bId}/dataClasses")
 
@@ -957,7 +969,8 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
 
         then:
         verifyResponse UNPROCESSABLE_ENTITY, response
-        responseBody().errors.first().message == "DataElement [${nonImportableId}] to be imported does not belong to a finalised DataModel"
+        responseBody().errors.first().message ==
+        "DataElement [${nonImportableId}] to be imported does not belong to a finalised DataModel or reside inside the same VersionedFolder"
 
         when: 'importing internal id'
         PUT("$id/dataElements/$dataModelId/$id/$internalId", [:])
@@ -1107,7 +1120,8 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
 
         then:
         verifyResponse UNPROCESSABLE_ENTITY, response
-        responseBody().errors.first().message == "DataClass [${nonImportableId}] to be imported does not belong to a finalised DataModel"
+        responseBody().errors.first().message ==
+        "DataClass [${nonImportableId}] to be imported does not belong to a finalised DataModel or reside inside the same VersionedFolder"
 
         when: 'importing internal id'
         PUT("$id/dataClasses/$dataModelId/$internalId", [:])
@@ -1211,11 +1225,90 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         then:
         verifyResponse OK, response
         responseBody().items.size() == 1
-        responseBody().items.any { it.id == internalId }
+        responseBody().items.any {it.id == internalId}
 
         cleanup:
         cleanUpData(id)
         DELETE("dataModels/$finalisedDataModelId/dataClasses/$importableId", MAP_ARG, true)
         assert response.status() == HttpStatus.NO_CONTENT
+    }
+
+    void 'IMI05 : test importing DataClasses inside same VF'() {
+        given:
+        // Get DataModel inside VF
+        POST("folders/${versionedFolderId}/dataModels", [
+            label: 'Functional Test Model 1'
+        ], MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String sameVfId = responseBody().id
+
+        // Get second DataModel inside same VF
+        POST("folders/${versionedFolderId}/dataModels", [
+            label: 'Functional Test Model 2'
+        ], MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String sameVfId2 = responseBody().id
+
+        POST("folders/${otherVersionedFolderId}/dataModels", [
+            label: 'Functional Test Model 3'
+        ], MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String otherVfId = responseBody().id
+
+
+        POST("${getResourcePath(sameVfId)}", [
+            label: 'Functional Test DataClass',], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String sameVfIdDcId = responseBody().id
+
+        POST("${getResourcePath(sameVfId2)}", [
+            label: 'Functional Test DataClass 2',], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String vfImportableId = responseBody().id
+
+        POST("${getResourcePath(finalisedDataModelId)}", [
+            label: 'Functional Test DataClass 3'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String finalisedImportableId = responseBody().id
+
+        POST("${getResourcePath(otherDataModelId)}", [
+            label: 'Functional Test DataClass 3'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String nonImportableId = responseBody().id
+
+        POST("${getResourcePath(otherVfId)}", [
+            label: 'Functional Test DataClass 5',], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String otherVfNonImportableId = responseBody().id
+
+
+        when: 'importing non finalised different DM DC'
+        PUT("${getResourcePath(sameVfId)}/${sameVfIdDcId}/dataClasses/$otherDataModelId/$nonImportableId", [:], MAP_ARG, true)
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message ==
+        "DataClass [${nonImportableId}] to be imported does not belong to a finalised DataModel or reside inside the same VersionedFolder"
+
+        when: 'importing non finalised different DM different VF DC'
+        PUT("${getResourcePath(sameVfId)}/${sameVfIdDcId}/dataClasses/$otherVfId/$otherVfNonImportableId", [:], MAP_ARG, true)
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message ==
+        "DataClass [${otherVfNonImportableId}] to be imported does not belong to a finalised DataModel or reside inside the same VersionedFolder"
+
+        when: 'importing finalised different DM  DC'
+        PUT("${getResourcePath(sameVfId)}/${sameVfIdDcId}/dataClasses/$finalisedDataModelId/$finalisedImportableId", [:], MAP_ARG, true)
+
+        then:
+        verifyResponse OK, response
+
+        when: 'importing non finalised different DM same VF DC'
+        PUT("${getResourcePath(sameVfId)}/${sameVfIdDcId}/dataClasses/$sameVfId2/$vfImportableId", [:], MAP_ARG, true)
+
+        then:
+        verifyResponse OK, response
+
     }
 }

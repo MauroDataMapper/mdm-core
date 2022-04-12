@@ -235,7 +235,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
         String id = createNewItem(validJson)
 
         when:
-        PUT("$id/finalise", [versionChangeType: "Major"])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
 
         then:
         verifyResponse OK, response
@@ -253,7 +253,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
 
         and: 'There is not a CHANGENOTICE edit'
         !response.body().items.find {
-            it.description == "Functional Test Change Notice"
+            it.description == 'Functional Test Change Notice'
         }
 
         cleanup:
@@ -265,7 +265,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
         String id = createNewItem(validJson)
 
         when:
-        PUT("$id/finalise", [versionChangeType: "Major", changeNotice: "Functional Test Change Notice"])
+        PUT("$id/finalise", [versionChangeType: 'Major', changeNotice: 'Functional Test Change Notice'])
 
         then:
         verifyResponse OK, response
@@ -283,7 +283,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
 
         and: 'There is a CHANGENOTICE edit'
         response.body().items.find {
-            it.title == "CHANGENOTICE" && it.description == "Functional Test Change Notice"
+            it.title == 'CHANGENOTICE' && it.description == 'Functional Test Change Notice'
         }
 
         cleanup:
@@ -329,7 +329,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
     void 'VF01 : test creating a new fork model of a CodeSet'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [versionChangeType: "Major"])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
 
         when: 'adding one new model'
@@ -486,7 +486,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
     void 'VD01 : test creating a new documentation version of a CodeSet'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [versionChangeType: "Major"])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
 
         when:
@@ -563,7 +563,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
     void 'VB01 : test creating a new main branch model version of a CodeSet'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [versionChangeType: "Major"])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
 
         when:
@@ -629,7 +629,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
     void 'VB02 : test creating a main branch model version finalising and then creating another main branch of a CodeSet'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [versionChangeType: "Major"])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
 
         when: 'create second model'
@@ -640,7 +640,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
 
         when: 'finalising second model'
         String secondId = responseBody().id
-        PUT("$secondId/finalise", [versionChangeType: "Major"])
+        PUT("$secondId/finalise", [versionChangeType: 'Major'])
 
         then:
         verifyResponse OK, response
@@ -724,7 +724,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
     void 'VB03 : test creating a main branch model version when one already exists'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [versionChangeType: "Major"])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
 
         when: 'create default main'
@@ -748,7 +748,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
     void 'VB04 : test creating a non-main branch model version without main existing'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [versionChangeType: "Major"])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
 
         when: 'create default main'
@@ -775,7 +775,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
     void 'VB05 : test finding common ancestor of two Model<T> (as editor)'() {
         given:
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [versionChangeType: "Major"])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
         PUT("$id/newBranchModelVersion", [branchName: 'left'])
         verifyResponse CREATED, response
@@ -805,7 +805,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
         */
         given:
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [versionChangeType: "Major"])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
         PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
@@ -813,7 +813,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
         PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
         verifyResponse CREATED, response
         String newBranchId = responseBody().id
-        PUT("$expectedId/finalise", [versionChangeType: "Major"])
+        PUT("$expectedId/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
         PUT("$expectedId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
@@ -851,7 +851,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
         */
         given:
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [versionChangeType: "Major"])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
         PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
@@ -859,7 +859,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
         PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
         verifyResponse CREATED, response
         String newBranchId = responseBody().id
-        PUT("$expectedId/finalise", [versionChangeType: "Major"])
+        PUT("$expectedId/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
         PUT("$expectedId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
@@ -889,7 +889,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
     void 'VB08 : test finding merge difference of two Model<T> (as editor)'() {
         given:
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [versionChangeType: "Major"])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
         PUT("$id/newBranchModelVersion", [:])
         verifyResponse CREATED, response
@@ -977,7 +977,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
                                               [
                                                   targetId: target,
                                                   sourceId: UUID.randomUUID().toString(),
-                                                  label   : "Functional Test Model",
+                                                  label   : 'Functional Test Model',
                                                   count   : 0,
                                                   patches : []
                                               ]
@@ -992,7 +992,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
                                               [
                                                   targetId: UUID.randomUUID().toString(),
                                                   sourceId: source,
-                                                  label   : "Functional Test Model",
+                                                  label   : 'Functional Test Model',
                                                   count   : 0,
                                                   patches : []
                                               ]
@@ -1697,7 +1697,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
                 "allowsExtraMetadataKeys": true,
                 "knownMetadataKeys": [
-      
+
                 ],
                 "providerType": "CodeSetImporter",
                 "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter''' +
@@ -1711,7 +1711,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
                 "allowsExtraMetadataKeys": true,
                 "knownMetadataKeys": [
-      
+
                 ],
                 "providerType": "CodeSetImporter",
                 "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter''' +
@@ -2208,7 +2208,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
     }
 
     Map buildTestData() {
-        log.info("building test data for codeset test")
+        log.info('building test data for codeset test')
 
         POST("folders/${folderId}/terminologies", [
             label: 'Functional Test Terminology H'
@@ -2217,17 +2217,17 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> implements X
         String terminologyId = responseBody().id
 
         POST("terminologies/${terminologyId}/terms", [
-            code: "T01", definition: "term 01"
+            code: 'T01', definition: 'term 01'
         ], MAP_ARG, true)
         verifyResponse(CREATED, response)
         String term1Id = responseBody().id
         POST("terminologies/${terminologyId}/terms", [
-            code: "T02", definition: "term 02"
+            code: 'T02', definition: 'term 02'
         ], MAP_ARG, true)
         verifyResponse(CREATED, response)
         String term2Id = responseBody().id
         POST("terminologies/${terminologyId}/terms", [
-            code: "T03", definition: "term 03"
+            code: 'T03', definition: 'term 03'
         ], MAP_ARG, true)
         verifyResponse(CREATED, response)
         String term3Id = responseBody().id

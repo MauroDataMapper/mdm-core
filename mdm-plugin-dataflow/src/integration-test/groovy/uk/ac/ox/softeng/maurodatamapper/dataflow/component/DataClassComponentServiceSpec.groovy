@@ -35,7 +35,7 @@ class DataClassComponentServiceSpec extends BaseDataFlowIntegrationSpec {
         id = dataClassComponentService.findAllByDataFlowId(dataFlow.id, [sort: 'label']).first().id
     }
 
-    void "test get"() {
+    void 'test get'() {
         given:
         setupData()
 
@@ -43,7 +43,7 @@ class DataClassComponentServiceSpec extends BaseDataFlowIntegrationSpec {
         dataClassComponentService.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         given:
         setupData()
 
@@ -55,14 +55,14 @@ class DataClassComponentServiceSpec extends BaseDataFlowIntegrationSpec {
 
         and:
         dataClassComponents[0].label == 'aToD'
-        dataClassComponents[0].definition == '''SELECT * 
-INTO TargetFlowDataModel.tableD 
+        dataClassComponents[0].definition == '''SELECT *
+INTO TargetFlowDataModel.tableD
 FROM SourceFlowDataModel.tableA'''
 
         and:
         dataClassComponents[1].label == 'bAndCToE'
         dataClassComponents[1].definition == '''INSERT INTO TargetFlowDataModel.tableE
-SELECT  
+SELECT
     b.columnE1                                      AS columnE,
     b.columnF                                       AS columnR,
     CONCAT(b.columnG,'_',c.columnJ)                 AS columnS,
@@ -77,7 +77,7 @@ INNER JOIN SourceFlowDataModel.tableC c ON b.columnE1 = c.columnE2'''
 
     }
 
-    void "test count"() {
+    void 'test count'() {
         given:
         setupData()
 
@@ -85,7 +85,7 @@ INNER JOIN SourceFlowDataModel.tableC c ON b.columnE1 = c.columnE2'''
         dataClassComponentService.count() == 2
     }
 
-    void "test delete"() {
+    void 'test delete'() {
         given:
         setupData()
 

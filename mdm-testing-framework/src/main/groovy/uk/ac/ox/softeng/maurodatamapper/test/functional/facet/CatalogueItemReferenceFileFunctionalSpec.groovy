@@ -48,7 +48,7 @@ abstract class CatalogueItemReferenceFileFunctionalSpec extends CatalogueItemFac
         [
             fileName    : 'functional test file.txt',
             fileContents: [104, 101, 108, 108, 111, 10],
-            fileType    : "text/plain",
+            fileType    : 'text/plain',
             fileSize    : 6
         ]
     }
@@ -58,7 +58,7 @@ abstract class CatalogueItemReferenceFileFunctionalSpec extends CatalogueItemFac
         [
             fileName    : '',
             fileContents: [104, 101, 108, 108, 111, 10],
-            fileType    : "text/plain",
+            fileType    : 'text/plain',
             fileSize    : 6
         ]
     }

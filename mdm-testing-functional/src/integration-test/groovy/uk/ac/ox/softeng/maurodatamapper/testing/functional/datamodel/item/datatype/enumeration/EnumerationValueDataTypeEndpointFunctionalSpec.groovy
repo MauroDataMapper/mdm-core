@@ -142,21 +142,21 @@ class EnumerationValueDataTypeEndpointFunctionalSpec extends UserAccessFunctiona
     {
       "index": 0,
       "id": "${json-unit.matches:id}",
-      "category": null, 
+      "category": null,
       "value": "Yes",
       "key": "Y"
     },
     {
       "index": 1,
       "id": "${json-unit.matches:id}",
-      "category": null, 
+      "category": null,
       "value": "No",
       "key": "N"
     },
     {
       "index": 2,
       "id": "${json-unit.matches:id}",
-      "category": null, 
+      "category": null,
       "value": "Unknown",
       "key": "U"
     }
@@ -169,7 +169,7 @@ class EnumerationValueDataTypeEndpointFunctionalSpec extends UserAccessFunctiona
         '''{
   "index": 3,
   "id": "${json-unit.matches:id}",
-  "category": null, 
+  "category": null,
   "value": "Other",
   "key": "O"
 }'''

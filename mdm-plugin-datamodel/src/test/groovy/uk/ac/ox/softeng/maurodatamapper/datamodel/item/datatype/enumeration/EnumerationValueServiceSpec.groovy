@@ -114,13 +114,13 @@ class EnumerationValueServiceSpec extends CatalogueItemServiceSpec implements Se
 
     }
 
-    void "test get"() {
+    void 'test get'() {
 
         expect:
         service.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
 
         when:
         List<EnumerationValue> enumerationValueList = service.list(max: 2, offset: 3)
@@ -137,12 +137,12 @@ class EnumerationValueServiceSpec extends CatalogueItemServiceSpec implements Se
         enumerationValueList[1].value == 'val3'
     }
 
-    void "test count"() {
+    void 'test count'() {
         expect:
         service.count() == 9
     }
 
-    void "test delete"() {
+    void 'test delete'() {
 
         expect:
         service.count() == 9
@@ -155,7 +155,7 @@ class EnumerationValueServiceSpec extends CatalogueItemServiceSpec implements Se
         EnumerationValue.count() == 8
     }
 
-    void "test save"() {
+    void 'test save'() {
 
         when:
         EnumerationValue enumerationValue = new EnumerationValue(createdBy: StandardEmailAddress.UNIT_TEST, key: 'st', value: 'saving test',

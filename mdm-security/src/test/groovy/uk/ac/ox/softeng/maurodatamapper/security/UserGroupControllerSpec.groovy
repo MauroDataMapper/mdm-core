@@ -133,7 +133,7 @@ class UserGroupControllerSpec extends ResourceControllerSpec<UserGroup> implemen
     String getExpectedValidSavedJson() {
         '''{
         "name": "valid",
-        "description": "a description", 
+        "description": "a description",
         "id":"${json-unit.ignore}",
         "createdBy":"unlogged_user@mdm-core.com",
         "availableActions": ["delete","show","update"]
@@ -190,7 +190,7 @@ class UserGroupControllerSpec extends ResourceControllerSpec<UserGroup> implemen
         new UserGroup(name: 'valid', description: 'a description')
     }
 
-    void "RU01 - Test remove null user from null group"() {
+    void 'RU01 - Test remove null user from null group'() {
         when:
         params.userGroupId = null
         params.catalogueUserId = null
@@ -201,7 +201,7 @@ class UserGroupControllerSpec extends ResourceControllerSpec<UserGroup> implemen
         verifyJsonResponse NOT_FOUND, getNotFoundNullJson()
     }
 
-    void "RU01 - Test remove null user from unknown group"() {
+    void 'RU01 - Test remove null user from unknown group'() {
         when:
         params.userGroupId = UUID.randomUUID()
         params.catalogueUserId = null
@@ -212,7 +212,7 @@ class UserGroupControllerSpec extends ResourceControllerSpec<UserGroup> implemen
         verifyJsonResponse NOT_FOUND, getNotFoundIdJson()
     }
 
-    void "RU02 - Test remove null user from known group"() {
+    void 'RU02 - Test remove null user from known group'() {
         when:
         params.userGroupId = domain.id
         params.catalogueUserId = null
@@ -223,7 +223,7 @@ class UserGroupControllerSpec extends ResourceControllerSpec<UserGroup> implemen
         verifyJsonResponse NOT_FOUND, getNotFoundNullJson(CatalogueUser)
     }
 
-    void "RU03 - Test remove known user from null group"() {
+    void 'RU03 - Test remove known user from null group'() {
         when:
         params.userGroupId = null
         params.catalogueUserId = reader.id
@@ -234,7 +234,7 @@ class UserGroupControllerSpec extends ResourceControllerSpec<UserGroup> implemen
         verifyJsonResponse NOT_FOUND, getNotFoundNullJson()
     }
 
-    void "RU04 - Test remove random user from known group"() {
+    void 'RU04 - Test remove random user from known group'() {
         when:
         params.userGroupId = domain.id
         params.catalogueUserId = UUID.randomUUID()
@@ -245,7 +245,7 @@ class UserGroupControllerSpec extends ResourceControllerSpec<UserGroup> implemen
         verifyJsonResponse NOT_FOUND, getNotFoundIdJson(CatalogueUser)
     }
 
-    void "RU05 - Test remove known user from known group"() {
+    void 'RU05 - Test remove known user from known group'() {
         when:
         params.userGroupId = domain.id
         params.catalogueUserId = reader.id
@@ -263,7 +263,7 @@ class UserGroupControllerSpec extends ResourceControllerSpec<UserGroup> implemen
         CatalogueUser.get(reader.id).groups.isEmpty()
     }
 
-    void "AU01 - Test add null user to null group"() {
+    void 'AU01 - Test add null user to null group'() {
         when:
         params.userGroupId = null
         params.catalogueUserId = null
@@ -274,7 +274,7 @@ class UserGroupControllerSpec extends ResourceControllerSpec<UserGroup> implemen
         verifyJsonResponse NOT_FOUND, getNotFoundNullJson()
     }
 
-    void "AU02 - Test add null user to unknown group"() {
+    void 'AU02 - Test add null user to unknown group'() {
         when:
         params.userGroupId = UUID.randomUUID()
         params.catalogueUserId = null
@@ -285,7 +285,7 @@ class UserGroupControllerSpec extends ResourceControllerSpec<UserGroup> implemen
         verifyJsonResponse NOT_FOUND, getNotFoundIdJson()
     }
 
-    void "AU03 - Test add null user to known group"() {
+    void 'AU03 - Test add null user to known group'() {
         when:
         params.userGroupId = domain.id
         params.catalogueUserId = null
@@ -296,7 +296,7 @@ class UserGroupControllerSpec extends ResourceControllerSpec<UserGroup> implemen
         verifyJsonResponse NOT_FOUND, getNotFoundNullJson(CatalogueUser)
     }
 
-    void "AU03 - Test add known user to null group"() {
+    void 'AU03 - Test add known user to null group'() {
         when:
         params.userGroupId = null
         params.catalogueUserId = editor.id
@@ -307,7 +307,7 @@ class UserGroupControllerSpec extends ResourceControllerSpec<UserGroup> implemen
         verifyJsonResponse NOT_FOUND, getNotFoundNullJson()
     }
 
-    void "AU04 - Test add random user to known group"() {
+    void 'AU04 - Test add random user to known group'() {
         when:
         params.userGroupId = domain.id
         params.catalogueUserId = UUID.randomUUID()
@@ -318,7 +318,7 @@ class UserGroupControllerSpec extends ResourceControllerSpec<UserGroup> implemen
         verifyJsonResponse NOT_FOUND, getNotFoundIdJson(CatalogueUser)
     }
 
-    void "AU05 - Test add known user to known group"() {
+    void 'AU05 - Test add known user to known group'() {
         when:
         params.userGroupId = domain.id
         params.catalogueUserId = editor.id

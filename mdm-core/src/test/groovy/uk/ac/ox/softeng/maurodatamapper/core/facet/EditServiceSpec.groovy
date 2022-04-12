@@ -42,12 +42,12 @@ class EditServiceSpec extends BaseUnitSpec implements ServiceUnitTest<EditServic
         id = edit.id
     }
 
-    void "test get"() {
+    void 'test get'() {
         expect:
         service.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         when:
         List<Edit> editList = service.list(max: 2, offset: 2)
 
@@ -65,12 +65,12 @@ class EditServiceSpec extends BaseUnitSpec implements ServiceUnitTest<EditServic
         editList[1].description == 'Edit 4'
     }
 
-    void "test count"() {
+    void 'test count'() {
         expect:
         service.count() == 5
     }
 
-    void "find all classifier edits"() {
+    void 'find all classifier edits'() {
         given:
         Classifier classifier = new Classifier(label: 'integration test', createdBy: admin.emailAddress)
         checkAndSave(classifier)
@@ -86,7 +86,7 @@ class EditServiceSpec extends BaseUnitSpec implements ServiceUnitTest<EditServic
         edits.size() == 2
     }
 
-    void "find all Folder edits"() {
+    void 'find all Folder edits'() {
         given:
         Folder folder = new Folder(label: 'integration test', createdBy: admin.emailAddress)
         checkAndSave(folder)

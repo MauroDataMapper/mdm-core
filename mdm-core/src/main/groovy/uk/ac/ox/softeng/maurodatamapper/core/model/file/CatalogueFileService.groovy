@@ -56,7 +56,7 @@ trait CatalogueFileService<T> {
         try {
             Files.write(path, file.fileContents)
         } catch (IOException e) {
-            throw new ApiInternalException('CFS01', "Cannot output file to ${path}", e);
+            throw new ApiInternalException('CFS01', "Cannot output file to ${path}", e)
         }
     }
 

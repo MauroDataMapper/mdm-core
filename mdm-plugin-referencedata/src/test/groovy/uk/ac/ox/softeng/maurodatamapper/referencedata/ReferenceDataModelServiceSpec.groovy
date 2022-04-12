@@ -23,7 +23,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
 import uk.ac.ox.softeng.maurodatamapper.core.diff.MergeDiffService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
-import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
@@ -36,11 +35,9 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePri
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.test.unit.service.CatalogueItemServiceSpec
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
-import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.testing.services.ServiceUnitTest
 import groovy.util.logging.Slf4j
-import spock.lang.PendingFeature
 
 @Slf4j
 class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUnitTest<ReferenceDataModelService> {
@@ -96,13 +93,12 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
         BootstrapModels.buildAndSaveExampleReferenceDataModel(messageSource, testFolder, testAuthority)
     }
 
-
-    void "test get"() {
+    void 'test get'() {
         expect:
         service.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         when:
         List<ReferenceDataModel> referenceDataModelList = service.list(max: 2, offset: 2, sort: 'dateCreated')
 
@@ -121,13 +117,13 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
 
     }
 
-    void "test count"() {
+    void 'test count'() {
 
         expect:
         service.count() == 4
     }
 
-    void "test delete"() {
+    void 'test delete'() {
 
         expect:
         service.count() == 4
@@ -142,7 +138,7 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
         ReferenceDataModel.countByDeleted(true) == 1
     }
 
-    void "test save"() {
+    void 'test save'() {
 
         when:
         ReferenceDataModel referenceDataModel = new ReferenceDataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'saving test', folder: testFolder,

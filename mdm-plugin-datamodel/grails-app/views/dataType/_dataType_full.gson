@@ -19,7 +19,7 @@ json {
 
     if (dataType.instanceOf(EnumerationType)) {
         EnumerationType et = dataType as EnumerationType
-        enumerationValues g.render(et.enumerationValues.sort())
+        enumerationValues g.render(et.enumerationValues?.sort() ?: [])
     }
     if (dataType.instanceOf(ReferenceType)) {
         ReferenceType rt = dataType as ReferenceType

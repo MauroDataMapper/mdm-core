@@ -44,10 +44,10 @@ class MdmOpmlSubscribedCatalogueRenderer<T> extends HalXmlRenderer<T> {
     public static final String OPML_TAG = 'opml'
     public static final String VERSION_ATTRIBUTE = 'version'
     public static final String VERSION = '2.0'
-    public static final String TITLE = "Subscribed Catalogues"
+    public static final String TITLE = 'Subscribed Catalogues'
 
     MdmOpmlSubscribedCatalogueRenderer(Class<T> targetType) {
-        super(targetType, new MimeType("text/x-opml", "opml"))
+        super(targetType, new MimeType('text/x-opml', 'opml'))
     }
 
     /**
@@ -65,25 +65,25 @@ class MdmOpmlSubscribedCatalogueRenderer<T> extends HalXmlRenderer<T> {
         boolean isDomain = entity != null
 
         Set writtenObjects = []
-        w.startDocument(encoding, "1.0")
+        w.startDocument(encoding, '1.0')
 
         if (isDomain) {
             writeSubscribedCatalogue(entity, object, context, xml, writtenObjects)
         } else if (object instanceof Collection) {
             XMLStreamWriter writer = xml.getWriter()
             writer
-            .startNode(OPML_TAG)
-            .attribute(VERSION_ATTRIBUTE, VERSION)
-            .startNode(HEAD_TAG)
-            .startNode(TITLE_TAG)
-            .characters(TITLE)
-            .end()
-            .end()
-            .startNode(BODY_TAG)
-            .startNode(OUTLINE_TAG)
-            .attribute("text", "Subscriptions")
-            .attribute("title", "Subscriptions")
-            .attribute("type", "Catalogues")
+                .startNode(OPML_TAG)
+                .attribute(VERSION_ATTRIBUTE, VERSION)
+                .startNode(HEAD_TAG)
+                .startNode(TITLE_TAG)
+                .characters(TITLE)
+                .end()
+                .end()
+                .startNode(BODY_TAG)
+                .startNode(OUTLINE_TAG)
+                .attribute('text', 'Subscriptions')
+                .attribute('title', 'Subscriptions')
+                .attribute('type', 'Catalogues')
 
             for (o in ((Collection) object)) {
                 final currentEntity = mappingContext.getPersistentEntity(o.class.name)
@@ -109,9 +109,9 @@ class MdmOpmlSubscribedCatalogueRenderer<T> extends HalXmlRenderer<T> {
 
         //Write a single outline tag for a single SubscribedCatalogue
         writer.startNode(OUTLINE_TAG)
-              .attribute("text", subscribedCatalogue.url)
-              .attribute("xmlUrl", subscribedCatalogue.url)
-              .attribute("type", "Catalogue")
+            .attribute('text', subscribedCatalogue.url)
+            .attribute('xmlUrl', subscribedCatalogue.url)
+            .attribute('type', 'Catalogue')
               .end()
 
     }

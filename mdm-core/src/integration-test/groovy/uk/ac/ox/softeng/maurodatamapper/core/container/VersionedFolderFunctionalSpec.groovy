@@ -293,7 +293,7 @@ class VersionedFolderFunctionalSpec extends ResourceFunctionalSpec<VersionedFold
 
     void 'MV01 : Test saving a Versioned folder inside a folder and then moving it to another folder'() {
         when: 'Create Parent Folder 1'
-        POST('folders', ["label": "Fuctional Test Parent Folder 1"], MAP_ARG, true)
+        POST('folders', ['label': 'Fuctional Test Parent Folder 1'], MAP_ARG, true)
 
         then: 'The response is correct'
         response.status == HttpStatus.CREATED
@@ -307,7 +307,7 @@ class VersionedFolderFunctionalSpec extends ResourceFunctionalSpec<VersionedFold
         response.body().count == 0
 
         when: 'Create Parent Folder 2'
-        POST('folders', ["label": "Fuctional Test Parent Folder 2"], MAP_ARG, true)
+        POST('folders', ['label': 'Fuctional Test Parent Folder 2'], MAP_ARG, true)
 
         then: 'The response is correct'
         response.status == HttpStatus.CREATED
@@ -321,7 +321,7 @@ class VersionedFolderFunctionalSpec extends ResourceFunctionalSpec<VersionedFold
         response.body().count == 0
 
         when: 'A child VF is added to Parent Folder 1'
-        POST("folders/$parentFolder1Id/versionedFolders", ["label": "Functional Test Moved Folder"], MAP_ARG, true)
+        POST("folders/$parentFolder1Id/versionedFolders", ['label': 'Functional Test Moved Folder'], MAP_ARG, true)
 
         then: 'The response is correct'
         response.status == HttpStatus.CREATED
@@ -368,7 +368,7 @@ class VersionedFolderFunctionalSpec extends ResourceFunctionalSpec<VersionedFold
 
     void 'MV02 : Test saving a Versioned folder inside a folder and then moving it to root'() {
         when: 'Create Parent Folder 1'
-        POST('folders', ["label": "Fuctional Test Parent Folder 1"], MAP_ARG, true)
+        POST('folders', ['label': 'Fuctional Test Parent Folder 1'], MAP_ARG, true)
 
         then: 'The response is correct'
         response.status == HttpStatus.CREATED
@@ -382,7 +382,7 @@ class VersionedFolderFunctionalSpec extends ResourceFunctionalSpec<VersionedFold
         response.body().count == 0
 
         when: 'A child VF is added to Parent Folder 1'
-        POST("folders/$parentFolder1Id/versionedFolders", ["label": "Functional Test Moved Folder"], MAP_ARG, true)
+        POST("folders/$parentFolder1Id/versionedFolders", ['label': 'Functional Test Moved Folder'], MAP_ARG, true)
 
         then: 'The response is correct'
         response.status == HttpStatus.CREATED
@@ -410,7 +410,7 @@ class VersionedFolderFunctionalSpec extends ResourceFunctionalSpec<VersionedFold
         response.body().count == 0
 
         when: 'List folders at root'
-        GET("folders", MAP_ARG, true)
+        GET('folders', MAP_ARG, true)
 
         then: 'The response is OK with 2 child folders'
         response.status == HttpStatus.OK

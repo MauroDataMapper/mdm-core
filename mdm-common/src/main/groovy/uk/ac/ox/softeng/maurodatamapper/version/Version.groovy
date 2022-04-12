@@ -54,9 +54,7 @@ class Version implements Comparable<Version> {
         if (major != version.major) return false
         if (minor != version.minor) return false
         if (patch != version.patch) return false
-        if (snapshot != version.snapshot) return false
-
-        return true
+        snapshot == version.snapshot
     }
 
     @Override
@@ -66,7 +64,7 @@ class Version implements Comparable<Version> {
         result = 31 * result + minor
         result = 31 * result + patch
         result = 31 * result + (snapshot ? 1 : 0)
-        return result
+        result
     }
 
     @Override
@@ -81,7 +79,6 @@ class Version implements Comparable<Version> {
         new Version(major: version.major + 1, minor: 0, patch: 0)
     }
 
-
     static Version nextMinorVersion(Version version) {
         new Version(major: version.major, minor: version.minor + 1, patch: 0)
     }
@@ -92,7 +89,7 @@ class Version implements Comparable<Version> {
 
     static Version from(String versionStr) {
 
-        if (!versionStr) throw new IllegalStateException("Must have a version")
+        if (!versionStr) throw new IllegalStateException('Must have a version')
 
         if (versionStr == 'SNAPSHOT') return new Version(major: 0, minor: 0, patch: 0, snapshot: true)
 

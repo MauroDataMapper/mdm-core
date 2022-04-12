@@ -76,7 +76,6 @@ import org.grails.datastore.gorm.GormValidateable
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.orm.hibernate.cfg.JoinTable
 import org.grails.orm.hibernate.cfg.PropertyConfig
-import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 import org.hibernate.engine.spi.SessionFactoryImplementor
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
@@ -88,8 +87,6 @@ import java.util.function.Predicate
 @Transactional
 @Slf4j
 class VersionedFolderService extends ContainerService<VersionedFolder> implements VersionLinkAwareService<VersionedFolder> {
-
-    protected static HibernateProxyHandler proxyHandler = new HibernateProxyHandler()
 
     FolderService folderService
     EditService editService
@@ -644,8 +641,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         if (leftModel.label != rightModel.label) {
             throw new ApiBadRequestException('VFS03',
                                              "VersionedFolder [${leftModel.id}] does not share its label with [${rightModel.id}] therefore they " +
-                                             "cannot have a " +
-                                             "common ancestor")
+                                             'cannot have a common ancestor')
         }
 
         VersionedFolder finalisedLeftParent = getFinalisedParent(leftModel)
@@ -676,6 +672,11 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     VersionedFolder findCurrentMainBranchByLabel(String label) {
         VersionedFolder.byLabelAndBranchNameAndNotFinalised(label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).get()
+    }
+
+    VersionedFolder getVersionedFolderParent(Folder folder) {
+        if (folder.instanceOf(VersionedFolder)) return proxyHandler.unwrapIfProxy(folder) as VersionedFolder
+        getVersionedFolderParent(folder.parentFolder)
     }
 
     boolean hasVersionedFolderParent(Folder folder) {
@@ -809,19 +810,27 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         log.debug('Merging patch data into {}', targetVersionedFolder.id)
 
         getSortedFieldPatchDataForMerging(objectPatchData).each {fieldPatch ->
+            // Flush and clear the session before each patch
+            // This ensures all "retrieved" objects are properly loaded into the session and that all objects are stored correctly
+            // This will also keep the session small so kep speed high
+            sessionFactory.currentSession.flush()
+            sessionFactory.currentSession.clear()
+            // Load the target VF after the session has been cleared
+            VersionedFolder target = get(targetVersionedFolder.id)
             switch (fieldPatch.type) {
                 case 'creation':
-                    return processCreationPatchIntoVersionedFolder(fieldPatch, targetVersionedFolder, sourceVersionedFolder,
+                    return processCreationPatchIntoVersionedFolder(fieldPatch, target, get(sourceVersionedFolder.id),
                                                                    userSecurityPolicyManager)
                 case 'deletion':
-                    return processDeletionPatchIntoVersionedFolder(fieldPatch, targetVersionedFolder)
+                    return processDeletionPatchIntoVersionedFolder(fieldPatch, target)
                 case 'modification':
-                    return processModificationPatchIntoVersionedFolder(fieldPatch, targetVersionedFolder)
+                    return processModificationPatchIntoVersionedFolder(fieldPatch, target)
                 default:
                     log.warn('Unknown field patch type [{}]', fieldPatch.type)
             }
         }
-        targetVersionedFolder
+        sessionFactory.currentSession.flush()
+        get(targetVersionedFolder.id)
     }
 
     List<FieldPatchData> getSortedFieldPatchDataForMerging(ObjectPatchData objectPatchData) {
@@ -921,7 +930,9 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
             domain."${fieldName}" = modificationPatch.sourceValue
         }
 
-        if (!domain.validate())
+        // Use the domain service validation to ensure proper object validation
+        domainService.validate(domain)
+        if (domain.hasErrors())
             throw new ApiInvalidModelException('MS01', 'Modified domain is invalid', domain.errors, messageSource)
         domainService.save(domain, flush: false, validate: false)
     }
@@ -1050,6 +1061,14 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     VersionedFolder validate(VersionedFolder folder) {
         folderService.validate(folder) as VersionedFolder
+    }
+
+    VersionedFolder shallowValidate(VersionedFolder versionedFolder) {
+        log.debug('Shallow validating VersionedFolder')
+        long st = System.currentTimeMillis()
+        versionedFolder.validate(deepValidate: false)
+        log.debug('Validated VersionedFolder in {}', Utils.timeTaken(st))
+        versionedFolder
     }
 
     private Map<String, Object> findModelInformationForModelItemMergePatch(VersionedFolder targetVersionedFolder, Path relativePathToMergeTo,

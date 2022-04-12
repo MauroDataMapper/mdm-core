@@ -126,16 +126,16 @@ class ReferenceDataValue implements MdmDomain, Diffable<ReferenceDataValue> {
     static DetachedCriteria<ReferenceDataValue> countByReferenceDataModelId(Serializable referenceDataModelId) {
         ReferenceDataValue.byReferenceDataModelId(referenceDataModelId)
             .projections {
-                countDistinct("rowNumber")
+                countDistinct('rowNumber')
             }
     }
 
     static DetachedCriteria<ReferenceDataValue> distinctRowNumbersByReferenceDataModelIdAndValueIlike(Serializable referenceDataModelId, String valueSearch) {
         ReferenceDataValue.byReferenceDataModelIdAndValueIlike(referenceDataModelId, valueSearch)
             .projections {
-                distinct("rowNumber")
+                distinct('rowNumber')
             }
-            .order("rowNumber", "asc")
+            .order('rowNumber', 'asc')
     }
 
     static DetachedCriteria<ReferenceDataValue> byReferenceDataModelIdAndValueIlike(Serializable referenceDataModelId, String valueSearch) {

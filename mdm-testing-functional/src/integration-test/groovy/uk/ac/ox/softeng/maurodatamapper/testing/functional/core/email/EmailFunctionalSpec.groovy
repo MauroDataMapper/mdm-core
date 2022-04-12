@@ -72,7 +72,7 @@ class EmailFunctionalSpec extends FunctionalSpec {
 
     void selfRegister() {
         logout()
-        POST("catalogueUsers", [
+        POST('catalogueUsers', [
             emailAddress: 'user@functional-test.com',
             password    : 'password',
             firstName   : 'a',
@@ -88,26 +88,26 @@ class EmailFunctionalSpec extends FunctionalSpec {
         user.delete(flush: true)
     }
 
-    void "Test the index action"() {
-        when: "The index action is requested unlogged in"
+    void 'Test the index action'() {
+        when: 'The index action is requested unlogged in'
         GET('')
 
-        then: "The response is unauth"
+        then: 'The response is unauth'
         verifyForbidden response
 
-        when: "The index action is requested as normal user"
+        when: 'The index action is requested as normal user'
         loginAuthenticated()
         GET('')
 
-        then: "The response is unauth"
+        then: 'The response is unauth'
         verifyForbidden response
 
-        when: "The index action is requested as admin user"
+        when: 'The index action is requested as admin user'
         logout()
         loginAdmin()
         GET('', STRING_ARG)
 
-        then: "The response is correct but no emails"
+        then: 'The response is correct but no emails'
         verifyJsonResponse OK, '{"count":0,"items":[]}'
     }
 
@@ -138,16 +138,16 @@ class EmailFunctionalSpec extends FunctionalSpec {
         cleanupFunctionalSpecUser()
     }
 
-    void "Test the save action isnt found"() {
-        when: "The save action is executed with no content"
+    void 'Test the save action isnt found'() {
+        when: 'The save action is executed with no content'
         loginAdmin()
         POST('', [:])
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyResponse(NOT_FOUND, response)
     }
 
-    void "Test the update action isnt found"() {
+    void 'Test the update action isnt found'() {
         given: 'self registering a user'
         selfRegister()
 
@@ -163,14 +163,14 @@ class EmailFunctionalSpec extends FunctionalSpec {
         def id = response.body().items[0].id
         PUT("$id", validJson)
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyResponse(NOT_FOUND, response)
 
         cleanup:
         cleanupFunctionalSpecUser()
     }
 
-    void "Test the show action isnt found"() {
+    void 'Test the show action isnt found'() {
         given: 'self registering a user'
         selfRegister()
 
@@ -186,14 +186,14 @@ class EmailFunctionalSpec extends FunctionalSpec {
         def id = response.body().items[0].id
         GET("$id")
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyResponse(NOT_FOUND, response)
 
         cleanup:
         cleanupFunctionalSpecUser()
     }
 
-    void "Test the delete action isnt found"() {
+    void 'Test the delete action isnt found'() {
         given: 'self registering a user'
         selfRegister()
 

@@ -23,7 +23,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.config.
 
 import groovy.transform.AutoClone
 
-
 /**
  * Created by james on 01/06/2017.
  */

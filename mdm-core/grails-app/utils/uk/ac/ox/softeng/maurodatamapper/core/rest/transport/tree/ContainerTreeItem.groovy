@@ -84,4 +84,40 @@ class ContainerTreeItem extends TreeItem {
         }
         res
     }
+
+    @Override
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+        if (!super.equals(o)) return false
+
+        ContainerTreeItem that = (ContainerTreeItem) o
+
+        if (versionAware != that.versionAware) return false
+        if (branchName != that.branchName) return false
+        if (containerId != that.containerId) return false
+        if (containerType != that.containerType) return false
+        if (deleted != that.deleted) return false
+        if (depth != that.depth) return false
+        if (documentationVersion != that.documentationVersion) return false
+        if (finalised != that.finalised) return false
+        if (modelVersion != that.modelVersion) return false
+        modelVersionTag == that.modelVersionTag
+    }
+
+    @Override
+    int hashCode() {
+        int result = super.hashCode()
+        result = 31 * result + (deleted != null ? deleted.hashCode() : 0)
+        result = 31 * result + (containerType != null ? containerType.hashCode() : 0)
+        result = 31 * result + (containerId != null ? containerId.hashCode() : 0)
+        result = 31 * result + (finalised != null ? finalised.hashCode() : 0)
+        result = 31 * result + (documentationVersion != null ? documentationVersion.hashCode() : 0)
+        result = 31 * result + (modelVersion != null ? modelVersion.hashCode() : 0)
+        result = 31 * result + (modelVersionTag != null ? modelVersionTag.hashCode() : 0)
+        result = 31 * result + (branchName != null ? branchName.hashCode() : 0)
+        result = 31 * result + (versionAware ? 1 : 0)
+        result = 31 * result + (depth != null ? depth.hashCode() : 0)
+        result
+    }
 }

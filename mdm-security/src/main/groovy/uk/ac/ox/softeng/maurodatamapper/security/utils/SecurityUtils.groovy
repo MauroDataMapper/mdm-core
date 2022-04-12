@@ -35,10 +35,10 @@ class SecurityUtils {
 
     static byte[] getHash(String password, byte[] salt) throws NoSuchAlgorithmException, UnsupportedEncodingException {
         if (!password) return new byte[0]
-        MessageDigest digest = MessageDigest.getInstance("SHA-256")
+        MessageDigest digest = MessageDigest.getInstance('SHA-256')
         digest.reset()
         digest.update(salt)
-        return digest.digest(password.trim().getBytes("UTF-8"))
+        return digest.digest(password.trim().getBytes('UTF-8'))
     }
 
     static String saltPassword(String password, byte[] salt) throws NoSuchAlgorithmException, UnsupportedEncodingException {

@@ -45,7 +45,7 @@ import spock.lang.Shared
 @Requires({
     String url = 'https://modelcatalogue.cs.ox.ac.uk/continuous-deployment'
     HttpURLConnection connection = url.toURL().openConnection() as HttpURLConnection
-    connection.setRequestMethod("GET")
+    connection.setRequestMethod('GET')
     connection.connect()
     connection.getResponseCode() == 200
 })

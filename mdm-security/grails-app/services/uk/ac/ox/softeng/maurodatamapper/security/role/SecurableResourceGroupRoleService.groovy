@@ -157,7 +157,7 @@ class SecurableResourceGroupRoleService implements MdmDomainService<SecurableRes
         SecurableResourceService service = securableResourceServices.find { it.handles(clazz) }
         if (!service) throw new ApiBadRequestException('SRGRS01',
                                                        "SecurableResourceGroupRole retrieval for securable resource [${clazz.simpleName}] with no " +
-                                                       "supporting service")
+                                                       'supporting service')
         service.get(id)
     }
 
@@ -165,7 +165,7 @@ class SecurableResourceGroupRoleService implements MdmDomainService<SecurableRes
         SecurableResourceService service = securableResourceServices.find { it.handles(domainType) }
         if (!service) throw new ApiBadRequestException('SRGRS01',
                                                        "SecurableResourceGroupRole retrieval for securable resource [${domainType}] with no " +
-                                                       "supporting service")
+                                                       'supporting service')
         service.get(id)
     }
 }

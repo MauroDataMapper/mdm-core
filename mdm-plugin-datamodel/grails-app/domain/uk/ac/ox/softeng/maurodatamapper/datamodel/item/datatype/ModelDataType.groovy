@@ -73,7 +73,7 @@ class ModelDataType extends DataType<ModelDataType> {
             Model model = resourceClass.get(modelDataType.modelResourceId)
             if (model) return model
             throw new ApiInternalException('MDT',
-                                           "ModelDataType exists which points to a non-existent model " +
+                                           'ModelDataType exists which points to a non-existent model ' +
                                            "${modelDataType.modelResourceDomainType}:${modelDataType.modelResourceId}")
         }
         return null

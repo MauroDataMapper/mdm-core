@@ -123,7 +123,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         log.debug('{} new or dirty used datatypes inside dataclass', dataTypes.size())
         // Validation should have already been done
         dataTypes.each {it.skipValidation(true)}
-        dataTypeService.saveAll(dataTypes, false)
+        dataTypeService.saveAll(dataTypes, false) as Collection<DataType>
     }
 
     Set<DataType> extractAllUsedNewOrDirtyDataTypes(DataClass dataClass) {
@@ -506,9 +506,9 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         findAllDataClassesByHQLQuery('''
 FROM DataClass dc
 LEFT JOIN dc.importingDataModels idm
-WHERE  
+WHERE
 (
-    (dc.dataModel.id = :dataModelId AND dc.parentDataClass.id is null)   
+    (dc.dataModel.id = :dataModelId AND dc.parentDataClass.id is null)
     OR
     idm.id = :dataModelId
 )''', queryParams, filters, pagination)
@@ -523,10 +523,10 @@ WHERE
         findAllDataClassesByHQLQuery('''
 FROM DataClass dc
 LEFT JOIN dc.importingDataModels idm
-WHERE  
+WHERE
 (
-    dc.dataModel.id = :dataModelId 
-    OR 
+    dc.dataModel.id = :dataModelId
+    OR
     idm.id = :dataModelId
 )''', queryParams, filters, pagination)
     }
@@ -543,14 +543,14 @@ WHERE
         findAllDataClassesByHQLQuery('''
 FROM DataClass dc
 LEFT JOIN dc.importingDataModels idm
-WHERE  
+WHERE
 (
-    dc.dataModel.id = :dataModelId 
-    OR 
+    dc.dataModel.id = :dataModelId
+    OR
     idm.id = :dataModelId
 )
 AND (
-    lower(dc.label) like lower(:searchTerm) 
+    lower(dc.label) like lower(:searchTerm)
     OR
     lower(dc.description) like lower(:searchTerm)
 )''', queryParams, filters, pagination)
@@ -566,7 +566,7 @@ AND (
         findAllDataClassesByHQLQuery('''
 FROM DataClass dc
 LEFT JOIN dc.importingDataClasses idc
-WHERE  
+WHERE
 (
     (dc.dataModel.id = :dataModelId AND dc.parentDataClass.id = :dataClassId)
     OR
@@ -686,12 +686,12 @@ WHERE
         if (!pathLabels) return null
 
         // If no parent class then assume we are looking in the data model
-        if (!parentDataClassInSource) {
-            sourceDataClass = findDataClass(sourceDataModel, pathLabels[0])
-            targetDataClass = findDataClass(targetDataModel, pathLabels[0])
-        } else {
+        if (parentDataClassInSource) {
             sourceDataClass = findDataClass(parentDataClassInSource, pathLabels[0])
             targetDataClass = findDataClass(parentDataClassInTarget, pathLabels[0])
+        } else {
+            sourceDataClass = findDataClass(sourceDataModel, pathLabels[0])
+            targetDataClass = findDataClass(targetDataModel, pathLabels[0])
         }
 
         if (!targetDataClass) {
@@ -1092,7 +1092,7 @@ WHERE
                      DataClass parentDataClassInSource = null, DataClass parentDataClassInTarget = null) {
 
         if (pathInTarget.size() < 2)
-            throw new ApiInternalException("DCS03", "Path ${pathInTarget} was shorter than expected")
+            throw new ApiInternalException('DCS03', "Path ${pathInTarget} was shorter than expected")
 
         // Get the first node, which should be a dc
         PathNode dataClassNode = pathInTarget.getPathNodes()[0]
@@ -1103,7 +1103,7 @@ WHERE
                                     findByDataModelIdAndLabel(sourceDataModel.id, dataClassNode.identifier)
 
         if (!sourceDataClass)
-            throw new ApiInternalException("DCS04", "Source Data Class does not exist")
+            throw new ApiInternalException('DCS04', 'Source Data Class does not exist')
 
         DataClass targetDataClass = parentDataClassInTarget ?
                                     parentDataClassInTarget.getDataClasses().find {it.label == dataClassNode.identifier} :
@@ -1143,7 +1143,7 @@ WHERE
             matchUpAndAddMissingReferenceTypeClasses(targetDataModel, sourceDataModel, userSecurityPolicyManager.user, userSecurityPolicyManager)
             if (!dataElementService.validate(dataElementInTarget)) {
                 throw new ApiInvalidModelException(
-                    "DCS06",
+                    'DCS06',
                     "dataElementInTarget ${dataElementInTarget.id} failed validation",
                     dataElementInTarget.errors,
                     messageSource)
@@ -1156,5 +1156,37 @@ WHERE
         validate(targetDataClass)
 
         targetDataClass
+    }
+
+    boolean validateImportAddition(DataClass instance, ModelItem importingItem) {
+        if (instance.id == importingItem.id) {
+            instance.errors.reject('invalid.imported.dataclass.into.self',
+                                   [importingItem.id].toArray(),
+                                   'DataClass [{0}] cannot be imported into itself')
+        }
+        UUID owningDataClassId = importingItem.instanceOf(DataClass) ? importingItem.parentDataClass?.id : importingItem.dataClass.id
+        if (owningDataClassId == instance.id) {
+            instance.errors.reject('invalid.imported.modelitem.same.dataclass',
+                                   [importingItem.class.simpleName, importingItem.id].toArray(),
+                                   '{0} [{1}] to be imported belongs to the DataClass already')
+        }
+        if (importingItem.model.id != instance.model.id &&
+            !importingItem.model.finalised &&
+            !dataModelService.areModelsInsideSameVersionedFolder(instance.model, importingItem.model)) {
+            instance.errors.reject('invalid.imported.modelitem.model.not.finalised',
+                                   [importingItem.class.simpleName, importingItem.id].toArray(),
+                                   '{0} [{1}] to be imported does not belong to a finalised DataModel or reside inside the same VersionedFolder')
+        }
+        !instance.hasErrors()
+    }
+
+    boolean validateImportRemoval(DataClass instance, ModelItem importingItem) {
+        UUID owningDataClassId = importingItem.instanceOf(DataClass) ? importingItem.parentDataClass?.id : importingItem.dataClass.id
+        if (owningDataClassId == instance.id) {
+            instance.errors.reject('invalid.imported.deletion.modelitem.same.dataclass',
+                                   [importingItem.class.simpleName, importingItem.id].toArray(),
+                                   '{0} [{1}] belongs to the DataClass and cannot be removed as an import')
+        }
+        !instance.hasErrors()
     }
 }

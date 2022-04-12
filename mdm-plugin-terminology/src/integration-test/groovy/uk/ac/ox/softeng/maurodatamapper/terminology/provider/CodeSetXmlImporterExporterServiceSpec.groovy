@@ -548,8 +548,8 @@ class CodeSetXmlImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         Term term1 = cs.terms[1]
 
         then:
-        term0.label == "STT01: Simple Test Term 01" || term0.label == "STT02: Simple Test Term 02"
-        term1.label == "STT01: Simple Test Term 01" || term1.label == "STT02: Simple Test Term 02"
+        term0.label == 'STT01: Simple Test Term 01' || term0.label == 'STT02: Simple Test Term 02'
+        term1.label == 'STT01: Simple Test Term 01' || term1.label == 'STT02: Simple Test Term 02'
         term0.label != term1.label
 
         when:

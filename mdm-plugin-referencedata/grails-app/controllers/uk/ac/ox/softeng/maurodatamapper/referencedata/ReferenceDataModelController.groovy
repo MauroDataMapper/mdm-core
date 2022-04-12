@@ -25,11 +25,8 @@ import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearc
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.ReferenceDataModelExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.ReferenceDataModelImporterProviderService
 
-import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
-
-import static org.springframework.http.HttpStatus.NO_CONTENT
 
 @Slf4j
 class ReferenceDataModelController extends ModelController<ReferenceDataModel> {
@@ -64,12 +61,6 @@ class ReferenceDataModelController extends ModelController<ReferenceDataModel> {
 
     def defaultReferenceDataTypeProviders() {
         respond providers: referenceDataModelService.defaultReferenceDataTypeProviders
-    }
-
-    def hierarchy() {
-        params.deep = true
-        def resource = queryForResource(params.referenceDataModelId)
-        resource ? respond(resource, [model: [userSecurityPolicyManager: currentUserSecurityPolicyManager], view: 'hierarchy']) : notFound(params.id)
     }
 
     def search(SearchParams searchParams) {

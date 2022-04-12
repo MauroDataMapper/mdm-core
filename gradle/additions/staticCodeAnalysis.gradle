@@ -1,4 +1,4 @@
-sca.ciEnabled project.hasProperty('ciRun') ? project.findProperty('ciRun').toBoolean() : false
+sca.ciEnabled = project.hasProperty('ciRun') ? project.findProperty('ciRun').toBoolean() : false
 
 codenarc {
     configFile = file("${rootDir}/gradle/static_code_analysis/codenarc_rules.groovy")

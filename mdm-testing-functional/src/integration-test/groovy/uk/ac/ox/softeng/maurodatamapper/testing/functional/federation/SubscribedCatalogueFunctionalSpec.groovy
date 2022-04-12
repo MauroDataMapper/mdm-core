@@ -59,7 +59,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
 
     @Override
     String getResourcePath() {
-        "admin/subscribedCatalogues"
+        'admin/subscribedCatalogues'
     }
 
     String getValidId() {
@@ -90,7 +90,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         verifyResponse CREATED, response
         String newerPublicId = response.body().id
 
-        PUT("dataModels/${newerPublicId}/finalise", [versionChangeType: "Major"], MAP_ARG, true)
+        PUT("dataModels/${newerPublicId}/finalise", [versionChangeType: 'Major'], MAP_ARG, true)
         verifyResponse OK, response
 
         PUT("dataModels/${newerPublicId}/readByEveryone", [:], MAP_ARG, true)
@@ -100,7 +100,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         verifyResponse CREATED, response
         String newerId = response.body().id
 
-        PUT("dataModels/${newerId}/finalise", [versionChangeType: "Major"], MAP_ARG, true)
+        PUT("dataModels/${newerId}/finalise", [versionChangeType: 'Major'], MAP_ARG, true)
         verifyResponse OK, response
 
         logout()
@@ -203,7 +203,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         verifyJsonResponse OK, getExpectedOpenAccessShowJson()
 
         when: 'When the open access index action is called'
-        GET("subscribedCatalogues", STRING_ARG, true)
+        GET('subscribedCatalogues', STRING_ARG, true)
 
         then:
         verifyJsonResponse OK, getExpectedIndexJson()
@@ -240,7 +240,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         verifyResponse NOT_FOUND, response
 
         when: 'When the open access index action is called'
-        GET("subscribedCatalogues", MAP_ARG, true)
+        GET('subscribedCatalogues', MAP_ARG, true)
 
         then:
         verifyResponse NOT_FOUND, response
@@ -298,7 +298,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         verifyJsonResponse OK, getExpectedOpenAccessShowJson()
 
         when: 'When the open access index action is called'
-        GET("subscribedCatalogues", STRING_ARG, true)
+        GET('subscribedCatalogues', STRING_ARG, true)
 
         then:
         verifyJsonResponse OK, getExpectedIndexJson()
@@ -335,7 +335,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         verifyJsonResponse OK, getExpectedOpenAccessShowJson()
 
         when: 'When the open access index action is called'
-        GET("subscribedCatalogues", STRING_ARG, true)
+        GET('subscribedCatalogues', STRING_ARG, true)
 
         then:
         verifyJsonResponse OK, getExpectedIndexJson()
@@ -373,7 +373,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         verifyJsonResponse OK, getExpectedOpenAccessShowJson()
 
         when: 'When the open access index action is called'
-        GET("subscribedCatalogues", STRING_ARG, true)
+        GET('subscribedCatalogues', STRING_ARG, true)
 
         then:
         verifyJsonResponse OK, getExpectedIndexJson()
@@ -754,7 +754,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
 
         given:
         Map apiKeyJson = [
-            name      : "Functional Test",
+            name      : 'Functional Test',
             expiryDate: LocalDate.now().plusDays(5).format(DateTimeFormatter.ISO_LOCAL_DATE)
         ]
 
@@ -867,7 +867,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
     void 'A07 : Test the newerModels endpoint (with no newer models)'() {
         given:
         Map apiKeyJson = [
-            name      : "Functional Test",
+            name      : 'Functional Test',
             expiryDate: LocalDate.now().plusDays(5).format(DateTimeFormatter.ISO_LOCAL_DATE)
         ]
         loginAdmin()
@@ -909,7 +909,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         String newerPublicId = tuple.v1
         String newerId = tuple.v2
         Map apiKeyJson = [
-            name      : "Functional Test",
+            name      : 'Functional Test',
             expiryDate: LocalDate.now().plusDays(5).format(DateTimeFormatter.ISO_LOCAL_DATE)
         ]
         loginAdmin()
@@ -1025,7 +1025,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
     void 'A10 : Test the testConnection action'() {
         given:
         Map apiKeyJson = [
-            name      : "Functional Test",
+            name      : 'Functional Test',
             expiryDate: LocalDate.now().plusDays(5).format(DateTimeFormatter.ISO_LOCAL_DATE)
         ]
 

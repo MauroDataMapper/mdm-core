@@ -80,7 +80,7 @@ class SecurableResourceGroupRoleServiceIntegrationSpec extends BaseIntegrationSp
 
     }
 
-    void "test get"() {
+    void 'test get'() {
         given:
         setupData()
 
@@ -88,7 +88,7 @@ class SecurableResourceGroupRoleServiceIntegrationSpec extends BaseIntegrationSp
         securableResourceGroupRoleService.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         given:
         setupData()
 
@@ -117,7 +117,7 @@ class SecurableResourceGroupRoleServiceIntegrationSpec extends BaseIntegrationSp
         b.groupRole.id == groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole.id
     }
 
-    void "test count"() {
+    void 'test count'() {
         given:
         setupData()
 
@@ -125,7 +125,7 @@ class SecurableResourceGroupRoleServiceIntegrationSpec extends BaseIntegrationSp
         securableResourceGroupRoleService.count() == 4
     }
 
-    void "test delete"() {
+    void 'test delete'() {
         given:
         setupData()
 

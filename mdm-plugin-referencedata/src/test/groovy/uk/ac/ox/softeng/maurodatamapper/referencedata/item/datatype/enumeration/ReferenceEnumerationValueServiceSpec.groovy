@@ -67,13 +67,13 @@ class ReferenceEnumerationValueServiceSpec extends CatalogueItemServiceSpec impl
         id = ev1.id
     }
 
-    void "test get"() {
+    void 'test get'() {
 
         expect:
         service.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
 
         when:
         List<ReferenceEnumerationValue> enumerationValueList = service.list(max: 2, offset: 3)
@@ -90,12 +90,12 @@ class ReferenceEnumerationValueServiceSpec extends CatalogueItemServiceSpec impl
         enumerationValueList[1].value == 'val3'
     }
 
-    void "test count"() {
+    void 'test count'() {
         expect:
         service.count() == 9
     }
 
-    void "test delete"() {
+    void 'test delete'() {
 
         expect:
         service.count() == 9
@@ -108,7 +108,7 @@ class ReferenceEnumerationValueServiceSpec extends CatalogueItemServiceSpec impl
         ReferenceEnumerationValue.count() == 8
     }
 
-    void "test save"() {
+    void 'test save'() {
 
         when:
         ReferenceEnumerationValue referenceEnumerationValue = new ReferenceEnumerationValue(createdBy: StandardEmailAddress.UNIT_TEST, key: 'st', value: 'saving test',

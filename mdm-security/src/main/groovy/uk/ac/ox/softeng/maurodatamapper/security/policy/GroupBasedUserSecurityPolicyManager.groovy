@@ -112,7 +112,7 @@ import static uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole.USER_ADMI
 @CompileStatic
 class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
 
-    HibernateProxyHandler hibernateProxyHandler = new HibernateProxyHandler()
+    private static final HibernateProxyHandler hibernateProxyHandler = new HibernateProxyHandler()
     private UserSecurityPolicy userPolicy
     private GrailsApplication grailsApplication
 

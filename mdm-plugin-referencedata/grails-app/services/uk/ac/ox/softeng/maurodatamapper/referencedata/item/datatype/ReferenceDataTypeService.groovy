@@ -40,7 +40,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 
-@SuppressWarnings("ClashingTraitMethods")
+@SuppressWarnings('ClashingTraitMethods')
 @Slf4j
 @Transactional
 class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> implements DefaultReferenceDataTypeProvider,
@@ -61,7 +61,7 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
     @Override
     boolean handlesPathPrefix(String pathPrefix) {
         // Have to override as the DataType class is abstract and can therefore not be instantiated
-        pathPrefix == "rdt"
+        pathPrefix == 'rdt'
     }
 
     Long count() {

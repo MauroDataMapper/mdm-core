@@ -394,7 +394,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     "label": "Parent Functional Test Folder",
     "hasChildren": true,
     "availableActions": [
-      
+
     ],
     "deleted": false,
     "children": [
@@ -404,7 +404,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "label": "Functional Test Folder",
         "hasChildren": true,
         "availableActions": [
-          
+
         ],
         "deleted": false,
         "parentFolder": "${json-unit.matches:id}",
@@ -415,7 +415,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
             "label": "Complex Test DataModel",
             "hasChildren": false,
             "availableActions": [
-              
+
             ],
             "deleted": false,
             "finalised": false,
@@ -431,7 +431,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
             "label": "Finalised Example Test DataModel",
             "hasChildren": false,
             "availableActions": [
-              
+
             ],
             "deleted": false,
             "finalised": true,
@@ -447,7 +447,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
             "label": "Second Simple Reference Data Model",
             "hasChildren": false,
             "availableActions": [
-              
+
             ],
             "deleted": false,
             "finalised": false,
@@ -463,7 +463,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
             "label": "Simple Reference Data Model",
             "hasChildren": false,
             "availableActions": [
-              
+
             ],
             "deleted": false,
             "finalised": false,
@@ -479,7 +479,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
             "label": "Simple Test DataModel",
             "hasChildren": false,
             "availableActions": [
-              
+
             ],
             "deleted": false,
             "finalised": false,
@@ -495,7 +495,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
             "label": "SourceFlowDataModel",
             "hasChildren": false,
             "availableActions": [
-              
+
             ],
             "deleted": false,
             "finalised": false,
@@ -511,7 +511,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
             "label": "TargetFlowDataModel",
             "hasChildren": false,
             "availableActions": [
-              
+
             ],
             "deleted": false,
             "finalised": false,
@@ -905,7 +905,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     void 'L05 : test searching for "emptyclass" (as not logged in)'() {
 
         when: 'not logged in'
-        GET("search/emptyclass")
+        GET('search/emptyclass')
 
         then:
         verifyResponse OK, response
@@ -916,7 +916,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
 
         when:
         loginAuthenticated()
-        GET("search/emptyclass")
+        GET('search/emptyclass')
 
         then:
         verifyResponse OK, response
@@ -926,7 +926,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     void 'R05 : test searching for "emptyclass" (as reader)'() {
         when: 'logged in as reader'
         loginReader()
-        GET("search/emptyclass", STRING_ARG)
+        GET('search/emptyclass', STRING_ARG)
 
         then:
         verifyJsonResponse OK, '''[
@@ -936,7 +936,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     "label": "Parent Functional Test Folder",
     "hasChildren": true,
     "availableActions": [
-      
+
     ],
     "deleted": false,
     "children": [
@@ -946,7 +946,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "label": "Functional Test Folder",
         "hasChildren": true,
         "availableActions": [
-          
+
         ],
         "deleted": false,
         "parentFolder": "${json-unit.matches:id}",
@@ -957,7 +957,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
             "label": "Complex Test DataModel",
             "hasChildren": true,
             "availableActions": [
-              
+
             ],
             "deleted": false,
             "finalised": false,
@@ -973,7 +973,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
                 "label": "emptyclass",
                 "hasChildren": false,
                 "availableActions": [
-                  
+
                 ],
                 "modelId": "${json-unit.matches:id}"
               }
@@ -989,7 +989,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     void 'E05 : test searching for "emptyclass" (as editor)'() {
         when: 'logged in as normal user'
         loginEditor()
-        GET("search/emptyclass", STRING_ARG)
+        GET('search/emptyclass', STRING_ARG)
 
         then:
         verifyJsonResponse OK, '''[
@@ -1065,7 +1065,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     void 'A05 : test searching for "emptyclass" (as admin)'() {
         when: 'logged in as admin user'
         loginAdmin()
-        GET("search/emptyclass", STRING_ARG)
+        GET('search/emptyclass', STRING_ARG)
 
         then:
         verifyJsonResponse OK, '''[
@@ -1176,7 +1176,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     "label": "Parent Functional Test Folder",
     "hasChildren": true,
     "availableActions": [
-      
+
     ],
     "deleted": false,
     "children": [
@@ -1186,7 +1186,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "label": "Functional Test Folder",
         "hasChildren": false,
         "availableActions": [
-          
+
         ],
         "deleted": false,
         "parentFolder": "${json-unit.matches:id}"

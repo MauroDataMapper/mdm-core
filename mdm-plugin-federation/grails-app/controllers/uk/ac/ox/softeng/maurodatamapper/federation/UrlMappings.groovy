@@ -26,7 +26,7 @@ class UrlMappings {
             /*
            ATOM feed
            */
-            get "/feeds/all"(controller: 'feed', action: 'index')
+            get '/feeds/all'(controller: 'feed', action: 'index')
 
             group '/admin', {
                 '/subscribedCatalogues'(resources: 'subscribedCatalogue', excludes: DEFAULT_EXCLUDES) {

@@ -43,13 +43,15 @@ abstract class Diff<T> {
         if (getClass() != o.class) return false
 
         Diff<T> diff = (Diff<T>) o
-
-        if (value != diff.value) return false
-
-        return true
+        value == diff.value
     }
 
     boolean objectsAreIdentical() {
         !getNumberOfDiffs()
+    }
+
+    @Override
+    int hashCode() {
+        (value != null ? value.hashCode() : 0)
     }
 }

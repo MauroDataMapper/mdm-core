@@ -185,7 +185,7 @@ class SearchFunctionalSpec extends FunctionalSpec {
       "id": "${json-unit.matches:id}",
       "domainType": "ReferenceDataModel",
       "label": "Simple Reference Data Model"
-    },    
+    },
     {
       "id": "${json-unit.matches:id}",
       "domainType": "DataModel",
@@ -263,7 +263,7 @@ class SearchFunctionalSpec extends FunctionalSpec {
       "id": "${json-unit.matches:id}",
       "domainType": "ReferenceDataModel",
       "label": "Simple Reference Data Model"
-    },    
+    },
     {
       "id": "${json-unit.matches:id}",
       "domainType": "DataModel",

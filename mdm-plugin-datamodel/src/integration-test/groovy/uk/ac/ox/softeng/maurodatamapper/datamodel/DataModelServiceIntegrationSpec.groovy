@@ -220,7 +220,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dataModelService.get(id)
     }
 
-    void "test get"() {
+    void 'test get'() {
         given:
         setupData()
 
@@ -228,7 +228,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dataModelService.get(id) != null
     }
 
-    void "test list"() {
+    void 'test list'() {
         given:
         setupData()
 
@@ -252,7 +252,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
     }
 
-    void "test count"() {
+    void 'test count'() {
         given:
         setupData()
 
@@ -260,7 +260,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dataModelService.count() == 5
     }
 
-    void "test delete"() {
+    void 'test delete'() {
         given:
         setupData()
 
@@ -278,7 +278,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         DataModel.countByDeleted(true) == 1
     }
 
-    void "test save"() {
+    void 'test save'() {
         given:
         setupData()
 

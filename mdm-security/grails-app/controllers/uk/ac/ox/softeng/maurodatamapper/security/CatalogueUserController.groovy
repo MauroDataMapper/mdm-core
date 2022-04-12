@@ -343,7 +343,7 @@ class CatalogueUserController extends EditLoggingController<CatalogueUser> /* im
             return errorResponse(UNPROCESSABLE_ENTITY, 'Users could not be exported')
         }
 
-        render(file: outputStream.toByteArray(), fileName: "mauroDataMapperUsers.csv", contentType: 'text/csv')
+        render(file: outputStream.toByteArray(), fileName: 'mauroDataMapperUsers.csv', contentType: 'text/csv')
     }
 
     /**

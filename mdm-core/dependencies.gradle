@@ -22,6 +22,6 @@ dependencies {
 
     testImplementation project(':mdm-testing-framework')
 
-    implementation group: 'com.github.spotbugs', name: 'spotbugs-annotations'
+    api group: 'com.github.spotbugs', name: 'spotbugs-annotations'
 }
 

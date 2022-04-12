@@ -270,7 +270,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
     void 'DM02 : Test getting available DataModel default datatype providers'() {
         when: 'not logged in'
-        GET("providers/defaultDataTypeProviders")
+        GET('providers/defaultDataTypeProviders')
 
         then:
         verifyForbidden response
@@ -449,7 +449,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "DataModelImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters",
@@ -462,7 +462,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "DataModelImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters",
@@ -518,7 +518,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
   "dataTypes": [
-    
+
   ],
   "childDataClasses": [
     {
@@ -537,10 +537,10 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
       "availableActions":''' + JsonOutput.toJson(miActions) + ''',
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "dataClasses": [
-        
+
       ],
       "dataElements": [
-        
+
       ]
     }
   ]
@@ -730,7 +730,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
       "maxMultiplicity": 1,
       "minMultiplicity": 0,
       "dataClasses": [
-        
+
       ],
       "dataElements": [
         {
@@ -828,10 +828,10 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
       "availableActions": ''' + JsonOutput.toJson(miActions) + ''',
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "dataClasses": [
-        
+
       ],
       "dataElements": [
-        
+
       ]
     },
     {
@@ -874,10 +874,10 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "parentDataClass": "${json-unit.matches:id}",
           "dataClasses": [
-            
+
           ],
           "dataElements": [
-            
+
           ],
           "parentDataClass": "${json-unit.matches:id}"
         }
@@ -1540,7 +1540,8 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
         then:
         verifyResponse UNPROCESSABLE_ENTITY, response
-        responseBody().errors.first().message == "PrimitiveType [${data.nonImportableId}] to be imported does not belong to a finalised DataModel"
+        responseBody().errors.first().message ==
+        "PrimitiveType [${data.nonImportableId}] to be imported does not belong to a finalised DataModel or reside inside the same VersionedFolder"
 
         when: 'importing internal id'
         PUT("$data.id/dataTypes/$data.id/$data.internalId", [:])
@@ -1741,7 +1742,8 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
         then:
         verifyResponse UNPROCESSABLE_ENTITY, response
-        responseBody().errors.first().message == "DataClass [${data.nonImportableId}] to be imported does not belong to a finalised DataModel"
+        responseBody().errors.first().message ==
+        "DataClass [${data.nonImportableId}] to be imported does not belong to a finalised DataModel or reside inside the same VersionedFolder"
 
         when: 'importing internal id'
         PUT("$data.id/dataClasses/$data.id/$data.internalId", [:])
@@ -2258,10 +2260,10 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         then: 'the diffs include a modification to the Model Data Type'
         verifyResponse OK, response
         def postDiffs = responseBody().diffs
-        def modelResourcePath = responseBody().diffs.find{it.fieldName == 'modelResourcePath'}
-        modelResourcePath.sourceValue.contains("Complex Test Terminology")
-        modelResourcePath.targetValue.contains("Simple Test Terminology")
-        modelResourcePath.type == "modification"
+        def modelResourcePath = responseBody().diffs.find {it.fieldName == 'modelResourcePath'}
+        modelResourcePath.sourceValue.contains('Complex Test Terminology')
+        modelResourcePath.targetValue.contains('Simple Test Terminology')
+        modelResourcePath.type == 'modification'
 
         when: 'Merge the diffs from source to target'
         loginEditor()
@@ -2270,7 +2272,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
                 [
                     targetId: mergeData.target,
                     sourceId: mergeData.source,
-                    label   : "Functional Test Model",
+                    label   : 'Functional Test Model',
                     count   : postDiffs.size(),
                     patches : postDiffs
                 ]
@@ -2303,7 +2305,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
         and:
         loginAdmin()
-        POST(getSavePath(), ["label": "Target of Subset"], MAP_ARG, true)
+        POST(getSavePath(), ['label': 'Target of Subset'], MAP_ARG, true)
         verifyResponse CREATED, response
         target.dataModelId = response.body().id
 
@@ -2329,17 +2331,17 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         and:
         GET("/${source.dataModelId}/dataClasses/${source.parentClass.id}/dataClasses")
         verifyResponse OK, response
-        source.parentClass.childClass = response.body().items.find { it.label == "child" }
+        source.parentClass.childClass = response.body().items.find {it.label == 'child'}
 
         and:
         GET("/${source.dataModelId}/dataTypes")
         verifyResponse OK, response
-        def dataTypeId = responseBody().items.find { it.label == "string" }.id
+        def dataTypeId = responseBody().items.find {it.label == 'string'}.id
 
         and: 'there is a Data Element called grandchild on the child Data Class'
         POST("/${source.dataModelId}/dataClasses/${source.parentClass.childClass.id}/dataElements", [
-            "label"   : "grandchild",
-            "dataType": dataTypeId
+            'label'   : 'grandchild',
+            'dataType': dataTypeId
         ])
         verifyResponse CREATED, response
         source.parentClass.childClass.grandchild = response.body()
@@ -2366,21 +2368,21 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
          */
         when: 'subset ele1 (not logged in)'
         logout()
-        PUT("/${source.dataModelId}/subset/${target.dataModelId}", ["additions": [source.contentClass.ele1.id], "deletions": []])
+        PUT("/${source.dataModelId}/subset/${target.dataModelId}", ['additions': [source.contentClass.ele1.id], 'deletions': []])
 
         then: 'The response is NOT_FOUND'
         verifyResponse NOT_FOUND, response
 
         when: 'subset ele1 (logged in as reader)'
         loginReader()
-        PUT("/${source.dataModelId}/subset/${target.dataModelId}", ["additions": [source.contentClass.ele1.id], "deletions": []])
+        PUT("/${source.dataModelId}/subset/${target.dataModelId}", ['additions': [source.contentClass.ele1.id], 'deletions': []])
 
         then: 'The response is FORBIDDEN'
         verifyForbidden response
 
         when: 'subset ele1 (logged in as editor)'
         loginEditor()
-        PUT("/${source.dataModelId}/subset/${target.dataModelId}", ["additions": [source.contentClass.ele1.id], "deletions": []])
+        PUT("/${source.dataModelId}/subset/${target.dataModelId}", ['additions': [source.contentClass.ele1.id], 'deletions': []])
 
         then: 'The response is OK'
         verifyResponse OK, response
@@ -2418,7 +2420,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
          * 2. Remove ele1 from the /intersects response
          */
         when: 'subset ele1'
-        PUT("/${source.dataModelId}/subset/${target.dataModelId}", ["additions": [], "deletions": [source.contentClass.ele1.id]])
+        PUT("/${source.dataModelId}/subset/${target.dataModelId}", ['additions': [], 'deletions': [source.contentClass.ele1.id]])
 
         then: 'The response is OK'
         verifyResponse OK, response
@@ -2453,12 +2455,12 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
          */
         when: 'subset ele1, element2 and child'
         PUT("/${source.dataModelId}/subset/${target.dataModelId}", [
-            "additions": [
+            'additions': [
                 source.contentClass.ele1.id,
                 source.contentClass.element2.id,
                 source.parentClass.childClass.grandchild.id
             ],
-            "deletions": []
+            'deletions': []
         ])
 
         then: 'The response is OK'
@@ -2512,8 +2514,8 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
 
         when: 'Delete the grandchild from the subset'
         PUT("/${source.dataModelId}/subset/${target.dataModelId}", [
-            "additions": [],
-            "deletions": [source.parentClass.childClass.grandchild.id]
+            'additions': [],
+            'deletions': [source.parentClass.childClass.grandchild.id]
         ])
 
         then: 'The response is OK'

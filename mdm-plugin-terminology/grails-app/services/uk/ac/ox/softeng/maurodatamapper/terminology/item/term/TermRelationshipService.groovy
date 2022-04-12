@@ -165,18 +165,6 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
         copy
     }
 
-    private void singleBatchSave(Collection<TermRelationship> termRelationships) {
-        long start = System.currentTimeMillis()
-        log.trace('Batch saving {} termRelationships', termRelationships.size())
-
-        TermRelationship.saveAll(termRelationships)
-
-        sessionFactory.currentSession.flush()
-        sessionFactory.currentSession.clear()
-
-        log.trace('Batch save took {}', Utils.getTimeString(System.currentTimeMillis() - start))
-    }
-
     @Override
     TermRelationship findByIdJoinClassifiers(UUID id) {
         TermRelationship.findById(id, [fetch: [classifiers: 'join']])

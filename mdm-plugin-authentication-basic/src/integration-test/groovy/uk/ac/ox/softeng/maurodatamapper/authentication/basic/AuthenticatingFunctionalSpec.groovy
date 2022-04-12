@@ -135,15 +135,15 @@ class AuthenticatingFunctionalSpec extends BaseFunctionalSpec implements Securit
         response.body().authenticatedSession == true
     }
 
-    void "test isAuthenticatedSession"() {
-        when: "Unlogged in call to check"
+    void 'test isAuthenticatedSession'() {
+        when: 'Unlogged in call to check'
         GET('session/isAuthenticated', MAP_ARG, true)
 
-        then: "The response is OK but false"
+        then: 'The response is OK but false'
         verifyResponse(OK, response)
         response.body().authenticatedSession == false
 
-        when: "logged in"
+        when: 'logged in'
         POST('login', [
             username: 'admin@maurodatamapper.com',
             password: 'password'
@@ -151,12 +151,12 @@ class AuthenticatingFunctionalSpec extends BaseFunctionalSpec implements Securit
         verifyResponse(OK, response)
         GET('session/isAuthenticated', MAP_ARG, true)
 
-        then: "The response is OK and true"
+        then: 'The response is OK and true'
         verifyResponse(OK, response)
         response.body().authenticatedSession == true
     }
 
-    void "test logout"() {
+    void 'test logout'() {
         given:
         POST('login', [
             username: 'admin@maurodatamapper.com',

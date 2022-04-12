@@ -146,8 +146,8 @@ class CsvDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceCr
             throw new InvalidRequestBodyException(e)
         }
 
-        result["count"] = items.size()
-        result["items"] = items
+        result['count'] = items.size()
+        result['items'] = items
 
         parser.close()
         result

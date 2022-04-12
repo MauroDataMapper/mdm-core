@@ -61,7 +61,7 @@ class ReferenceDataValueController extends EditLoggingController<ReferenceDataVa
         params.max = params.max ? Integer.parseInt(params.max) : searchParams.max ?: 10
         params.offset = params.offset ? Integer.parseInt(params.offset) : searchParams.offset ?: 0
 
-        String searchTerm = params.search ?: searchParams.searchTerm ?: ""
+        String searchTerm = params.search ?: searchParams.searchTerm ?: ''
 
         if (params.asRows) {
             List referenceDataRows = []
@@ -121,7 +121,7 @@ class ReferenceDataValueController extends EditLoggingController<ReferenceDataVa
             }
 
             //Default to returning all rows, but adjust this if max is set
-            Integer toRowNumber = Integer.MAX_VALUE;
+            Integer toRowNumber = Integer.MAX_VALUE
             if (params.max) {
                 toRowNumber = fromRowNumber + params.max
             }

@@ -47,6 +47,6 @@ class ReferenceDataModelFileImporterProviderServiceParameters extends ReferenceD
             name = 'Model',
             order = 0
         ))
-    String modelName    
+    String modelName
 
 }

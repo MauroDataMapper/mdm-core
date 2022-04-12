@@ -68,7 +68,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         log.debug('Check and setup test data')
         folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
         checkAndSave(folder)
-        folder.addToMetadata(new Metadata(namespace: "test.namespace", key: "propertyKey", value: "propertyValue", createdBy: FUNCTIONAL_TEST))
+        folder.addToMetadata(new Metadata(namespace: 'test.namespace', key: 'propertyKey', value: 'propertyValue', createdBy: FUNCTIONAL_TEST))
         checkAndSave(folder)
 
         complexDataModelId = BootstrapModels.buildAndSaveComplexDataModel(messageSource, folder, testAuthority).id
@@ -113,7 +113,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
     "metadataNamespace":"uk.ac.ox.softeng.maurodatamapper.profile",
     "domains":["DataModel"],
     "editableAfterFinalisation": false
-}, 
+},
 {
     "name":"ProfileSpecificationFieldProfileService",
     "version":"${json-unit.matches:version}",
@@ -450,10 +450,10 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
     void 'N01 : test validating profile on DataModel'() {
         given:
         Map namespaceFieldMap = [
-            metadataPropertyName: "metadataNamespace",
+            metadataPropertyName: 'metadataNamespace',
         ]
         Map domainsFieldMap = [
-            metadataPropertyName: "domainsApplicable",
+            metadataPropertyName: 'domainsApplicable',
         ]
         Map profileMap = [
             sections  : [
@@ -498,11 +498,11 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         given:
         Map namespaceFieldMap = [
             currentValue        : 'functional.test.profile',
-            metadataPropertyName: "metadataNamespace"
+            metadataPropertyName: 'metadataNamespace'
         ]
         Map domainsFieldMap = [
             currentValue        : 'DataModel',
-            metadataPropertyName: "domainsApplicable",
+            metadataPropertyName: 'domainsApplicable',
         ]
         Map profileMap = [
             sections  : [
@@ -551,11 +551,11 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         given:
         Map namespaceFieldMap = [
             currentValue        : 'functional.test.profile',
-            metadataPropertyName: "metadataNamespace"
+            metadataPropertyName: 'metadataNamespace'
         ]
         Map domainsFieldMap = [
             currentValue        : 'DataModel',
-            metadataPropertyName: "domainsApplicable",
+            metadataPropertyName: 'domainsApplicable',
         ]
         Map profileMap = [
             sections  : [
@@ -637,11 +637,11 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         given:
         Map namespaceFieldMap = [
             currentValue        : 'functional.test.profile',
-            metadataPropertyName: "metadataNamespace"
+            metadataPropertyName: 'metadataNamespace'
         ]
         Map domainsFieldMap = [
             currentValue        : 'DataModel',
-            metadataPropertyName: "domainsApplicable",
+            metadataPropertyName: 'domainsApplicable',
         ]
         Map profileMap = [
             sections  : [
@@ -683,7 +683,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         given:
         String simpleModelId = getSimpleDataModelId()
 
-        POST("folders/${folder.id}/dataModels?defaultDataTypeProvider=ProfileSpecificationDataTypeProvider", [label: "Dynamic Profile Model"])
+        POST("folders/${folder.id}/dataModels?defaultDataTypeProvider=ProfileSpecificationDataTypeProvider", [label: 'Dynamic Profile Model'])
         verifyResponse(CREATED, response)
         String dynamicProfileModelId = responseBody().id
 
@@ -898,7 +898,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         given:
         String simpleModelId = getSimpleDataModelId()
 
-        POST("folders/${folder.id}/dataModels?defaultDataTypeProvider=ProfileSpecificationDataTypeProvider", [label: "Dynamic Profile Model"])
+        POST("folders/${folder.id}/dataModels?defaultDataTypeProvider=ProfileSpecificationDataTypeProvider", [label: 'Dynamic Profile Model'])
         verifyResponse(CREATED, response)
         String dynamicProfileModelId = responseBody().id
 

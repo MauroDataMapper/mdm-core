@@ -469,7 +469,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         then:
         verifyJsonResponse OK, '''{
             "count": 0,
-            "items": [                
+            "items": [
             ]
         }'''
 
@@ -629,7 +629,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         verifyResponse(OK, response)
 
         when: 'finalised'
-        PUT("$data.id/finalise", ["version": "3.9.0"])
+        PUT("$data.id/finalise", ['version': "3.9.0"])
 
         then:
         verifyForbidden response
@@ -1976,7 +1976,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "isNewDocumentationVersion": false,
     "isNewFork": false,
     "targets": [
-      
+
     ]
   }]"""
 
@@ -2363,7 +2363,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                                                                   [
                                                                       targetId: mergeData.target,
                                                                       sourceId: UUID.randomUUID().toString(),
-                                                                      label   : "Functional Test Model",
+                                                                      label   : 'Functional Test Model',
                                                                       count   : 0,
                                                                       patches : []
                                                                   ]
@@ -2378,7 +2378,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                                                                   [
                                                                       targetId: UUID.randomUUID().toString(),
                                                                       sourceId: mergeData.source,
-                                                                      label   : "Functional Test Model",
+                                                                      label   : 'Functional Test Model',
                                                                       count   : 0,
                                                                       patches : []
                                                                   ]
@@ -2393,7 +2393,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                                                                   [
                                                                       targetId: mergeData.target,
                                                                       sourceId: mergeData.source,
-                                                                      label   : "Functional Test Model",
+                                                                      label   : 'Functional Test Model',
                                                                       count   : 0,
                                                                       patches : []
                                                                   ]
@@ -2418,7 +2418,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                 [
                     targetId: mergeData.target,
                     sourceId: mergeData.source,
-                    label   : "Functional Test Model",
+                    label   : 'Functional Test Model',
                     count   : 0,
                     patches : []
                 ]
@@ -2458,7 +2458,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                 [
                     targetId: mergeData.target,
                     sourceId: mergeData.source,
-                    label   : "Functional Test Model",
+                    label   : 'Functional Test Model',
                     count   : diffs.size(),
                     patches : diffs
                 ]
@@ -2696,7 +2696,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                 [
                     targetId: mergeData.target,
                     sourceId: mergeData.source,
-                    label   : "Functional Test Model",
+                    label   : 'Functional Test Model',
                     count   : diffs.size(),
                     patches : diffs
                 ]
@@ -3117,7 +3117,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         // If the 'Other Non-Versioned Folder' exists then delete it
         // Doing the cleanup here because it is difficult to pass the folder ID
         // to this method in all circumstances
-        GET("folders", MAP_ARG, true)
+        GET('folders', MAP_ARG, true)
         response.status() == OK
         def externalFolder = responseBody().items.find {it.label == 'Other Non-Versioned Folder'}
         if (externalFolder) {
@@ -3162,7 +3162,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         "id": "${data.newBranch}",
         "description": "New Model Version Of"
       }
-      
+
     ]
   },
   {
@@ -3175,7 +3175,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "isNewDocumentationVersion": false,
     "isNewFork": false,
     "targets": [
-      
+
     ]
   },
   {
@@ -3188,7 +3188,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "isNewDocumentationVersion": false,
     "isNewFork": true,
     "targets": [
-      
+
     ]
   },
   {
@@ -3237,7 +3237,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "isNewDocumentationVersion": false,
     "isNewFork": false,
     "targets": [
-      
+
     ]
   },
   {
@@ -3270,7 +3270,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "isNewDocumentationVersion": false,
     "isNewFork": true,
     "targets": [
-      
+
     ]
   },
   {
@@ -3307,7 +3307,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "isNewDocumentationVersion": false,
     "isNewFork": false,
     "targets": [
-      
+
     ]
   },
     {
@@ -3320,7 +3320,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "isNewDocumentationVersion": false,
     "isNewFork": false,
     "targets": [
-      
+
     ]
   },
   {
@@ -3333,7 +3333,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     "isNewDocumentationVersion": false,
     "isNewFork": false,
     "targets": [
-      
+
     ]
   }
 ]"""

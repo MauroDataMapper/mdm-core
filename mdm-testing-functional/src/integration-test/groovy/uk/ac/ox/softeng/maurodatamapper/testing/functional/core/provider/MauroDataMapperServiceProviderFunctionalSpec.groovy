@@ -84,7 +84,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "CodeSetExporter",
     "fileExtension": "xml",
@@ -98,7 +98,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "ReferenceDataModelExporter",
     "fileExtension": "json",
@@ -112,7 +112,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "DataModelExporter",
     "fileExtension": "xml",
@@ -126,7 +126,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "ReferenceDataModelExporter",
     "fileExtension": "xml",
@@ -140,7 +140,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "CodeSetExporter",
     "fileExtension": "json",
@@ -154,7 +154,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "DataModelExporter",
     "fileExtension": "json",
@@ -168,7 +168,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "TerminologyExporter",
     "fileExtension": "json",
@@ -182,7 +182,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "TerminologyExporter",
     "fileExtension": "xml",
@@ -196,13 +196,13 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "DataFlowExporter",
     "fileExtension": "json",
     "fileType": "text/json",
     "canExportMultipleDomains": false
-  },  
+  },
   {
     "name": "DataFlowXmlExporterService",
     "version": "${json-unit.matches:version}",
@@ -210,7 +210,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "DataFlowExporter",
     "fileExtension": "xml",
@@ -224,7 +224,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.core.container.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-    
+
     ],
     "providerType": "FolderExporter",
     "fileExtension": "json",
@@ -245,7 +245,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "order": ''' + Ordered.LOWEST_PRECEDENCE + ''',
     "providerType": "Email",
     "knownMetadataKeys": [
-      
+
     ],
     "displayName": "Basic Email Provider",
     "name": "BasicEmailProviderService",
@@ -270,7 +270,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "CodeSetImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters",
@@ -283,7 +283,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "ReferenceDataModelImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
@@ -297,7 +297,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "CodeSetImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters",
@@ -310,7 +310,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "TerminologyImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters",
@@ -323,7 +323,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "DataModelImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters",
@@ -336,7 +336,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "ReferenceDataModelImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
@@ -350,7 +350,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": false,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "ReferenceDataModelImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
@@ -364,7 +364,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "DataModelImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters",
@@ -377,7 +377,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "TerminologyImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters",
@@ -390,7 +390,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "DataFlowImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer.parameter.DataFlowFileImporterProviderServiceParameters",
@@ -403,7 +403,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
-      
+
     ],
     "providerType": "DataFlowImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer.parameter.DataFlowFileImporterProviderServiceParameters",

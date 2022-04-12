@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.path.Path
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 
@@ -48,7 +49,6 @@ class TreeItem implements Comparable<TreeItem> {
 
     int domainTypeIndex
     List<String> availableActions
-
 
     protected TreeItem(MdmDomain domain, String label, Boolean childrenExist, List<String> availableTreeActions) {
         childSet = [] as HashSet
@@ -93,6 +93,7 @@ class TreeItem implements Comparable<TreeItem> {
     }
 
     @Override
+    @SuppressFBWarnings(value = ['NP_NULL_PARAM_DEREF', 'NP_NULL_PARAM_DEREF', 'NP_NULL_ON_SOME_PATH'], justification = 'Groovy elvis operator')
     int compareTo(TreeItem that) {
         def res = this.domainTypeIndex <=> that.domainTypeIndex
         if (res == 0) res = this.label?.toLowerCase() <=> that.label?.toLowerCase()

@@ -82,20 +82,19 @@ abstract class ResourceControllerSpec<D> extends BaseUnitSpec implements JsonWeb
         testIndex = specificationContext.currentIteration.name.find(/R\d(\.\d)?/)
     }
 
-    void "R1 - Test the index action returns the correct response"() {
+    void 'R1 - Test the index action returns the correct response'() {
         given:
         response.reset()
         givenParameters()
 
-        when: "The index action is executed"
+        when: 'The index action is executed'
         controller.index()
 
-        then: "The response is correct"
+        then: 'The response is correct'
         verifyJsonResponse OK, getExpectedIndexJson()
     }
 
-
-    void "R2.1 - Test the save action with a null instance"() {
+    void 'R2.1 - Test the save action with a null instance'() {
         given:
         response.reset()
         givenParameters()
@@ -108,7 +107,7 @@ abstract class ResourceControllerSpec<D> extends BaseUnitSpec implements JsonWeb
         verifyJsonResponse UNPROCESSABLE_ENTITY, getExpectedNullSavedJson(), Option.IGNORING_EXTRA_FIELDS
     }
 
-    void "R2.2 - Test the save action with an invalid instance"() {
+    void 'R2.2 - Test the save action with an invalid instance'() {
         given:
         response.reset()
         givenParameters()
@@ -122,7 +121,7 @@ abstract class ResourceControllerSpec<D> extends BaseUnitSpec implements JsonWeb
         verifyJsonResponse UNPROCESSABLE_ENTITY, getExpectedInvalidSavedJson(), Option.IGNORING_EXTRA_FIELDS
     }
 
-    void "R2.3 - Test the save action correctly persists"() {
+    void 'R2.3 - Test the save action correctly persists'() {
         given:
         response.reset()
         givenParameters()
@@ -137,46 +136,46 @@ abstract class ResourceControllerSpec<D> extends BaseUnitSpec implements JsonWeb
         verifyJsonResponse CREATED, getExpectedValidSavedJson()
     }
 
-    void "R3.1 - Test the show action with a null id"() {
+    void 'R3.1 - Test the show action with a null id'() {
         given:
         response.reset()
         givenParameters()
 
-        when: "The show action is executed with a null domain"
+        when: 'The show action is executed with a null domain'
         controller.show()
 
-        then: "A 404 error is returned"
+        then: 'A 404 error is returned'
         verifyR31ShowNullIdResponse()
     }
 
-    void "R3.2 - Test the show action with an invalid id"() {
+    void 'R3.2 - Test the show action with an invalid id'() {
         given:
         response.reset()
         givenParameters()
 
-        when: "A domain instance is passed to the show action"
+        when: 'A domain instance is passed to the show action'
         params.id = randomId1
         controller.show()
 
-        then: "A model is populated containing the domain instance"
+        then: 'A model is populated containing the domain instance'
         verifyR32ShowInvalidIdResponse()
     }
 
-    void "R3.3 - Test the show action with a valid id"() {
+    void 'R3.3 - Test the show action with a valid id'() {
         given:
         response.reset()
         givenParameters()
         assert domain.id
 
-        when: "A domain instance is passed to the show action"
+        when: 'A domain instance is passed to the show action'
         params.id = domain.id
         controller.show()
 
-        then: "A model is populated containing the domain instance"
+        then: 'A model is populated containing the domain instance'
         verifyJsonResponse OK, getExpectedShowJson()
     }
 
-    void "R4.1 - Test the update action with a null instance"() {
+    void 'R4.1 - Test the update action with a null instance'() {
         given:
         response.reset()
         givenParameters()
@@ -190,7 +189,7 @@ abstract class ResourceControllerSpec<D> extends BaseUnitSpec implements JsonWeb
         verifyResponse NOT_FOUND
     }
 
-    void "R4.2 - Test the update action with an invalid instance"() {
+    void 'R4.2 - Test the update action with an invalid instance'() {
         given:
         response.reset()
         givenParameters()
@@ -207,7 +206,7 @@ abstract class ResourceControllerSpec<D> extends BaseUnitSpec implements JsonWeb
         verifyR42UpdateInvalidInstanceResponse()
     }
 
-    void "R4.3 - Test the update action correctly persists"() {
+    void 'R4.3 - Test the update action correctly persists'() {
         given:
         response.reset()
         givenParameters()
@@ -224,7 +223,7 @@ abstract class ResourceControllerSpec<D> extends BaseUnitSpec implements JsonWeb
         verifyJsonResponse OK, getExpectedValidUpdatedJson()
     }
 
-    void "R5.1 - Test the delete action with a null instance"() {
+    void 'R5.1 - Test the delete action with a null instance'() {
         given:
         response.reset()
         givenParameters()
@@ -237,7 +236,7 @@ abstract class ResourceControllerSpec<D> extends BaseUnitSpec implements JsonWeb
         verifyJsonResponse NOT_FOUND, getNotFoundNullJson()
     }
 
-    void "R5.2 - Test the delete action with an invalid instance"() {
+    void 'R5.2 - Test the delete action with an invalid instance'() {
         given:
         response.reset()
         givenParameters()
@@ -251,7 +250,7 @@ abstract class ResourceControllerSpec<D> extends BaseUnitSpec implements JsonWeb
         verifyJsonResponse NOT_FOUND, getNotFoundIdJson()
     }
 
-    void "R5.3 - Test the delete action with an instance"() {
+    void 'R5.3 - Test the delete action with an instance'() {
         given:
         response.reset()
         givenParameters()

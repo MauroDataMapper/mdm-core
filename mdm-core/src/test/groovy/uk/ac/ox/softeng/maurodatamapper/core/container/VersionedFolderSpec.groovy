@@ -55,7 +55,7 @@ class VersionedFolderSpec extends FolderContainerSpec<VersionedFolder> implement
     @Override
     def setup() {
         mockDomains(Authority, Folder)
-        checkAndSave(new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST))
+        checkAndSave(new Authority(label: 'Test Authority', url: 'https://localhost', createdBy: UNIT_TEST))
     }
 
     VersionedFolder createValidDomain(String label) {
