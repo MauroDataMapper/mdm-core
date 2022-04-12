@@ -238,7 +238,16 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
             "modelType": "DataModel",
             "title": "Finalised Example Test DataModel 1.0.0",
             "version": "1.0.0",
-            "links": []
+            "links": [
+                {
+                    "contentType": "application/mdm+json",
+                    "url": "${json-unit.any-string}"
+                },
+                {
+                    "contentType": "application/mdm+xml",
+                    "url": "${json-unit.any-string}"
+                }
+            ]
         }
     ]
 }'''
@@ -291,7 +300,17 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
             "modelType": "DataModel",
             "previousModelId": "${json-unit.matches:id}",
             "title": "Finalised Example Test DataModel 2.0.0",
-            "version": "2.0.0"
+            "version": "2.0.0",
+            "links": [
+                {
+                    "contentType": "application/mdm+json",
+                    "url": "${json-unit.any-string}"
+                },
+                {
+                    "contentType": "application/mdm+xml",
+                    "url": "${json-unit.any-string}"
+                }
+            ]
         },
         {
             "dateCreated": "${json-unit.matches:offsetDateTime}",
@@ -302,7 +321,17 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
             "modelType": "DataModel",
             "previousModelId": "${json-unit.matches:id}",
             "title": "Finalised Example Test DataModel 3.0.0",
-            "version": "3.0.0"
+            "version": "3.0.0",
+            "links": [
+                {
+                    "contentType": "application/mdm+json",
+                    "url": "${json-unit.any-string}"
+                },
+                {
+                    "contentType": "application/mdm+xml",
+                    "url": "${json-unit.any-string}"
+                }
+            ]
         }
     ]
 }'''

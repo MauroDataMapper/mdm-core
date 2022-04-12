@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.federation
 
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter.DataModelJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -26,6 +27,7 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
+import org.springframework.beans.factory.annotation.Autowired
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -61,6 +63,9 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
     String getResourcePath() {
         'admin/subscribedCatalogues'
     }
+
+    @Autowired
+    DataModelJsonExporterService dataModelJsonExporterService
 
     String getValidId() {
         loginAdmin()
@@ -797,7 +802,17 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
       "modelType": "DataModel",
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "dateCreated": "${json-unit.matches:offsetDateTime}",
-      "datePublished": "${json-unit.matches:offsetDateTime}"
+      "datePublished": "${json-unit.matches:offsetDateTime}",
+      "links": [
+        {
+            "contentType": "application/mdm+json",
+            "url": "${json-unit.any-string}"
+        },
+        {
+            "contentType": "application/mdm+xml",
+            "url": "${json-unit.any-string}"
+        }
+      ]
     },
     {
       "modelId": "${json-unit.matches:id}",
@@ -808,7 +823,17 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "dateCreated": "${json-unit.matches:offsetDateTime}",
       "datePublished": "${json-unit.matches:offsetDateTime}",
-      "author": "Test Bootstrap"
+      "author": "Test Bootstrap",
+      "links": [
+        {
+            "contentType": "application/mdm+json",
+            "url": "${json-unit.any-string}"
+        },
+        {
+            "contentType": "application/mdm+xml",
+            "url": "${json-unit.any-string}"
+        }
+      ]
     },
     {
       "modelId": "${json-unit.matches:id}",
@@ -819,7 +844,17 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "dateCreated": "${json-unit.matches:offsetDateTime}",
       "datePublished": "${json-unit.matches:offsetDateTime}",
-      "author": "Test Bootstrap"
+      "author": "Test Bootstrap",
+      "links": [
+        {
+            "contentType": "application/mdm+json",
+            "url": "${json-unit.any-string}"
+        },
+        {
+            "contentType": "application/mdm+xml",
+            "url": "${json-unit.any-string}"
+        }
+      ]
     }
   ]
 }
@@ -943,7 +978,17 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
             "modelType": "DataModel",
             "previousModelId": "${json-unit.matches:id}",
             "title": "Finalised Example Test DataModel 2.0.0",
-            "version": "2.0.0"
+            "version": "2.0.0",
+            "links": [
+                {
+                    "contentType": "application/mdm+json",
+                    "url": "${json-unit.any-string}"
+                },
+                {
+                    "contentType": "application/mdm+xml",
+                    "url": "${json-unit.any-string}"
+                }
+            ]
         },
         {
             "dateCreated": "${json-unit.matches:offsetDateTime}",
@@ -954,7 +999,17 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
             "modelType": "DataModel",
             "previousModelId": "${json-unit.matches:id}",
             "title": "Finalised Example Test DataModel 3.0.0",
-            "version": "3.0.0"
+            "version": "3.0.0",
+            "links": [
+                {
+                    "contentType": "application/mdm+json",
+                    "url": "${json-unit.any-string}"
+                },
+                {
+                    "contentType": "application/mdm+xml",
+                    "url": "${json-unit.any-string}"
+                }
+            ]
         }
     ]
 }'''
@@ -1006,7 +1061,17 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
             "modelType": "DataModel",
             "previousModelId": "${json-unit.matches:id}",
             "title": "Finalised Example Test DataModel 2.0.0",
-            "version": "2.0.0"
+            "version": "2.0.0",
+            "links": [
+                {
+                    "contentType": "application/mdm+json",
+                    "url": "${json-unit.any-string}"
+                },
+                {
+                    "contentType": "application/mdm+xml",
+                    "url": "${json-unit.any-string}"
+                }
+            ]
         }
     ]
 }'''

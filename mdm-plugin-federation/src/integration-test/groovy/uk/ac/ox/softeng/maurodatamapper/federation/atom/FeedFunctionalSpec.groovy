@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.federation.atom
 
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
@@ -29,15 +30,25 @@ import grails.testing.mixin.integration.Integration
 import grails.testing.spock.RunOnce
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
+import groovy.xml.XmlSlurper
+import groovy.xml.slurpersupport.GPathResult
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
+import org.grails.web.mapping.DefaultLinkGenerator
 import spock.lang.Shared
 
 import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
+
+import static io.micronaut.http.HttpStatus.CREATED
+import static io.micronaut.http.HttpStatus.NO_CONTENT
+import static io.micronaut.http.HttpStatus.OK
 
 @Slf4j
 @Integration
 class FeedFunctionalSpec extends BaseFunctionalSpec implements XmlComparer {
+
+    DefaultLinkGenerator grailsLinkGenerator
 
     @Shared
     String folderId
@@ -61,16 +72,15 @@ class FeedFunctionalSpec extends BaseFunctionalSpec implements XmlComparer {
         cleanUpResources(DataModel, Folder)
     }
 
-    void 'test getting published models when no models available'() {
+    void 'F01 : Test getting published models when no models available'() {
         when:
         HttpResponse<String> localResponse = GET('all', STRING_ARG, false, MimeType.ATOM_XML.name)
 
         then:
-        verifyResponse(HttpStatus.OK, localResponse)
-        log.warn(prettyPrintXml(localResponse.body()))
+        verifyBaseAtomResponse(localResponse, false, 'localhost', "http://localhost:$serverPort")
     }
 
-    void 'test getting published models when model available'() {
+    void 'F02 : Test getting published models when model available'() {
         given:
         POST("folders/${folderId}/dataModels", [
             label             : 'FunctionalTest DataModel',
@@ -85,46 +95,95 @@ class FeedFunctionalSpec extends BaseFunctionalSpec implements XmlComparer {
         HttpResponse<String> localResponse = GET('all', STRING_ARG, false, MimeType.ATOM_XML.name)
 
         then:
-        verifyResponse(HttpStatus.OK, localResponse)
-        log.warn(prettyPrintXml(localResponse.body()))
+        GPathResult feed = verifyBaseAtomResponse(localResponse, true, 'localhost', "http://localhost:$serverPort")
+        feed.entry.size() == 1
+        verifyEntry(feed.entry.find {it.title == 'FunctionalTest DataModel 1.0.0'}, 'DataModel', "http://localhost:$serverPort", 'dataModels', getDataModelExporters())
     }
 
-    String expectedNoModelsAtom() {
-        '''<?xml version="1.0" encoding="UTF-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
-  <title>Mauro Data Mapper - All Models</title>
-  <id>tag:localhost,2021-01-27:/api/feeds/all</id>
-  <author>
-    <name>Mauro Data Mapper</name>
-    <uri>http://localhost</uri>
-  </author>
-  <updated>2022-01-13T09:56:22Z</updated>
-  <link rel="self" href="http://localhost:51077/api/feeds/all" hreflang="en" title="Mauro Data Mapper - All Models"/>
-  <link rel="alternate" href="http://localhost:51077/api/feeds/all" hreflang="en" title="Mauro Data Mapper - All Models"/>
-</feed>'''
+    void 'F03 : Test links render when site url property set'() {
+        given:
+        POST('admin/properties', [
+            key  : ApiPropertyEnum.SITE_URL.toString(),
+            value: 'https://www.mauro-data-mapper.com/cdw'
+        ], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String sitePropertyId = responseBody().id
+
+        when:
+        HttpResponse<String> xmlResponse = GET('all', STRING_ARG)
+
+        then:
+        GPathResult feed = verifyBaseAtomResponse(xmlResponse, true, 'www.mauro-data-mapper.com', 'https://www.mauro-data-mapper.com/cdw', '/cdw')
+
+        when:
+        def selfLink = feed.link.find {it.@rel == 'self'}
+
+        then:
+        selfLink
+        selfLink.@href == 'https://www.mauro-data-mapper.com/cdw/api/feeds/all'
+
+        and:
+        verifyEntry(feed.entry.find {it.title == 'FunctionalTest DataModel 1.0.0'}, 'DataModel', 'https://www.mauro-data-mapper.com/cdw', 'dataModels', getDataModelExporters())
+
+        cleanup:
+        DELETE("admin/properties/$sitePropertyId", MAP_ARG, true)
+        verifyResponse NO_CONTENT, response
+        grailsLinkGenerator.setConfiguredServerBaseURL(null)
     }
 
-    String expectedModelsAtom() {
-        '''<?xml version="1.0" encoding="UTF-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
-  <title>Mauro Data Mapper - All Models</title>
-  <id>tag:localhost,2021-01-27:/api/feeds/all</id>
-  <author>
-    <name>Mauro Data Mapper</name>
-    <uri>http://localhost</uri>
-  </author>
-  <updated>2022-01-13T10:22:26Z</updated>
-  <link rel="self" href="http://localhost:51386/api/feeds/all" hreflang="en" title="Mauro Data Mapper - All Models"/>
-  <link rel="alternate" href="http://localhost:51386/api/feeds/all" hreflang="en" title="Mauro Data Mapper - All Models"/>
-  <entry>
-    <id>urn:uuid:91c4b8fb-a6f8-477c-b42c-5f6dd510c3e6</id>
-    <title>FunctionalTest DataModel 1.0.0</title>
-    <updated>2022-01-13T10:22:26Z</updated>
-    <published>2022-01-13T10:22:26Z</published>
-    <category term="DataModel"/>
-    <link rel="self" href="http://localhost:51386/api/dataModels/91c4b8fb-a6f8-477c-b42c-5f6dd510c3e6" hreflang="en"/>
-    <link rel="alternate" href="http://localhost:51386/api/dataModels/91c4b8fb-a6f8-477c-b42c-5f6dd510c3e6" hreflang="en"/>
-  </entry>
-</feed>'''
+    /**
+     * Check that the response - which is expected to be XML as Atom, looks OK.
+     */
+    private GPathResult verifyBaseAtomResponse(HttpResponse<String> xmlResponse, boolean expectEntries, String host, String linkBaseUrl, String contextPath = '') {
+        log.warn('XML \n{}', prettyPrintXml(xmlResponse.body()))
+
+        //Use the jsonCapableResponse even though it is a string of XML
+        assert xmlResponse.status() == OK
+
+        //Slurp the response
+        GPathResult result = new XmlSlurper().parseText(xmlResponse.body())
+        assert result.name() == 'feed'
+        assert result.namespaceURI() == 'http://www.w3.org/2005/Atom'
+        assert result.title == 'Mauro Data Mapper - All Models'
+        assert result.id == "tag:$host,2021-01-27:$contextPath/api/feeds/all"
+        assert result.author.name == 'Mauro Data Mapper'
+        assert result.author.uri == 'http://localhost'
+        assert OffsetDateTime.parse(result.updated.text(), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+
+        assert result.link.size() == 1
+        assert result.link.@rel == 'self'
+        assert result.link.@type == 'application/atom+xml'
+        assert result.link.@href == "$linkBaseUrl/api/feeds/all"
+        assert result.link.@title == 'Mauro Data Mapper - All Models'
+
+        if (expectEntries) {
+            assert result.entry.size() > 0
+        } else {
+            assert result.entry.size() == 0
+        }
+        result
+    }
+
+    private void verifyEntry(def entry, String category, String linkBaseUrl, String modelEndpoint, Map<String, String> exporters) {
+        assert entry.id.text() ==~ /urn:uuid:\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
+        assert OffsetDateTime.parse(entry.updated.text(), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        assert OffsetDateTime.parse(entry.published.text(), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        assert entry.category.@term == category
+
+        assert entry.link.size() == 2
+        entry.link.each {it ->
+            assert it.@rel == 'alternate'
+            String contentType = it.@type
+            assert contentType
+            String exporterUrl = exporters.get(contentType)
+            assert it.@href ==~ /$linkBaseUrl\/api\/${modelEndpoint}\/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}\/export\/${exporterUrl}/
+        }
+    }
+
+    private static Map<String, String> getDataModelExporters() {
+        [
+            'application/mdm+json': 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/3.1',
+            'application/mdm+xml' : 'uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelXmlExporterService/5.1'
+        ]
     }
 }

@@ -1,4 +1,5 @@
 import uk.ac.ox.softeng.maurodatamapper.federation.PublishedModel
+import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
 
 model {
     PublishedModel publishedModel
@@ -12,9 +13,9 @@ publishedModel {
     label pm.modelLabel
     version pm.modelVersion
     modelType pm.modelType
-    lastUpdated pm.lastUpdated
-    dateCreated pm.dateCreated
-    datePublished pm.datePublished
+    lastUpdated OffsetDateTimeConverter.toString(pm.lastUpdated)
+    dateCreated OffsetDateTimeConverter.toString(pm.dateCreated)
+    datePublished OffsetDateTimeConverter.toString(pm.datePublished)
     if (pm.author) author pm.author
     if (pm.description) description pm.description
     if (pm.previousModelId) previousModelId pm.previousModelId
