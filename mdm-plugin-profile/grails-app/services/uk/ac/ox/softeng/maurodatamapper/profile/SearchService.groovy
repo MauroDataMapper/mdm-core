@@ -19,14 +19,12 @@ package uk.ac.ox.softeng.maurodatamapper.profile
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.SearchParamFilter
 import uk.ac.ox.softeng.maurodatamapper.core.search.AbstractCatalogueItemSearchService
 import uk.ac.ox.softeng.maurodatamapper.core.search.SearchService as CoreSearchService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
-import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.search.searchparamfilter.DataModelTypeFilter
 import uk.ac.ox.softeng.maurodatamapper.gorm.InMemoryPagedResultList
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
@@ -47,11 +45,6 @@ class SearchService extends AbstractCatalogueItemSearchService<DataModel> {
 
     @Autowired
     DataModelService dataModelService
-
-    @Override
-    Set<Class<SearchParamFilter>> getSearchParamFilters() {
-        super.getSearchParamFilters() + ([DataModelTypeFilter] as HashSet<Class<SearchParamFilter>>)
-    }
 
     PaginatedHibernateSearchResult<CatalogueItem> findAllReadableByHibernateSearch(UserSecurityPolicyManager userSecurityPolicyManager,
                                                                                    SearchParams searchParams,

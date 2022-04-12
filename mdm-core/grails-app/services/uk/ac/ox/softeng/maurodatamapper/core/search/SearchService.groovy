@@ -25,7 +25,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.SearchParamFilter
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
@@ -76,15 +75,6 @@ class SearchService extends AbstractCatalogueItemSearchService<CatalogueItem> {
             provider.searchableCatalogueItemDomains
         }
         allSearchableDomains ? allSearchableDomains.toSet() : new HashSet<Class<CatalogueItem>>()
-    }
-
-    @Override
-    Set<Class<SearchParamFilter>> getSearchParamFilters() {
-        if (!catalogueItemSearchDomainProviders) return new HashSet<Class<SearchParamFilter>>()
-        List<Class<SearchParamFilter>> allSearchParamFilters = catalogueItemSearchDomainProviders.collectMany {provider ->
-            provider.searchParamFilters
-        }
-        allSearchParamFilters ? allSearchParamFilters.toSet() : new HashSet<Class<SearchParamFilter>>()
     }
 
     protected List<UUID> getAllReadableContainerIds(UserSecurityPolicyManager userSecurityPolicyManager) {

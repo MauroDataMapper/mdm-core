@@ -22,7 +22,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfi
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelType
 
 import grails.plugins.hibernate.search.HibernateSearchApi
+import org.springframework.stereotype.Component
 
+@Component
 class DataModelTypeFilter implements SearchParamFilter {
 
     boolean doesApply(SearchParams searchParams) {
@@ -31,7 +33,7 @@ class DataModelTypeFilter implements SearchParamFilter {
 
     Closure getClosure(SearchParams searchParams) {
         List<String> validModelTypes = searchParams.dataModelTypes.collect {dt -> DataModelType.findForLabel(dt).toString()}.findAll()
-        HibernateSearchApi.defineSearchQuery() {
+        HibernateSearchApi.defineSearchQuery {
             should {
                 validModelTypes.each {dt ->
                     phrase 'modelType', dt

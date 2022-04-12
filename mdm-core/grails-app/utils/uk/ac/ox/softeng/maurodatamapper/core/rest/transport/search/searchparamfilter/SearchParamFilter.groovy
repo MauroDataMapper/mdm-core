@@ -19,11 +19,13 @@ package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamf
 
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 
+/**
+ * Implementing classes should also use the {@link org.springframework.stereotype.Component} annotation to ensure the filter is wired into the search service.
+ */
 interface SearchParamFilter {
 
     abstract boolean doesApply(SearchParams searchParams)
 
     abstract Closure getClosure(SearchParams searchParams)
-
 
 }

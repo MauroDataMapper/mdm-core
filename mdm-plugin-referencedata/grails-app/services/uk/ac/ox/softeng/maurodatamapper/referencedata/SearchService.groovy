@@ -39,7 +39,6 @@ class SearchService extends AbstractCatalogueItemSearchService<ModelItem> implem
         (getSearchableCatalogueItemDomains() - [ReferenceDataModel]) as HashSet<Class<ModelItem>>
     }
 
-
     @Override
     Set<Class<CatalogueItem>> getSearchableCatalogueItemDomains() {
         [ReferenceDataModel, ReferenceDataElement, ReferenceEnumerationType, ReferencePrimitiveType, ReferenceEnumerationValue] as HashSet<Class<CatalogueItem>>

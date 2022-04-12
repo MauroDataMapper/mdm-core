@@ -17,14 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.search
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.ClassifierFilterFilter
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.ClassifiersFilter
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.CreatedAfterFilter
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.CreatedBeforeFilter
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.SearchParamFilter
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.UpdatedAfterFilter
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.UpdatedBeforeFilter
@@ -46,24 +41,16 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
     @Autowired
     PathService pathService
 
-    abstract Set<Class<K>> getDomainsToSearch()
+    @Autowired
+    Set<SearchParamFilter> searchParamFilters
 
-    Set<Class<SearchParamFilter>> getSearchParamFilters() {
-        [
-            UpdatedBeforeFilter,
-            UpdatedAfterFilter,
-            CreatedBeforeFilter,
-            CreatedAfterFilter,
-            ClassifiersFilter,
-            ClassifierFilterFilter
-        ] as HashSet<Class<SearchParamFilter>>
-    }
+    abstract Set<Class<K>> getDomainsToSearch()
 
     Set<Class<K>> getFilteredDomainsToSearch(SearchParams searchParams) {
         Set<Class<K>> allDomains = getDomainsToSearch()
         if (!searchParams.domainTypes) return allDomains
 
-        allDomains.findAll { domainClass ->
+        allDomains.findAll {domainClass ->
             domainClass.simpleName in searchParams.domainTypes
         }
     }
@@ -72,15 +59,11 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
                                                                                               SearchParams searchParams,
                                                                                               boolean removeOwningIds,
                                                                                               Map pagination = [:],
-                                                                                              @DelegatesTo(HibernateSearchApi)
-                                                                                                  Closure customSearch = null) {
+                                                                                              @DelegatesTo(HibernateSearchApi) Closure customSearch = null) {
         Closure additional = null
 
-        Set<Class<SearchParamFilter>> searchParamFilters = getSearchParamFilters()
-
         int addtlClauseCount = 0
-        searchParamFilters.each { f ->
-            SearchParamFilter filter = f.getDeclaredConstructor().newInstance()
+        searchParamFilters.each { filter ->
             if (filter.doesApply(searchParams)) {
                 addtlClauseCount++
                 if (additional) {
@@ -93,7 +76,7 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
         Set<Class<K>> filteredDomainsToSearch = getFilteredDomainsToSearch(searchParams)
 
         if (!filteredDomainsToSearch) {
-            return new PaginatedHibernateSearchResult<K>(new ArrayList<K>(), 0)
+            return new PaginatedHibernateSearchResult<K>([], 0)
         }
 
         // Do an estimated increase to the clause count, this should make sure at least the number of owningIds and paths clauses dont cause an initial failure
@@ -134,7 +117,7 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
         }
 
         log.debug('Performing hs standard search')
-        return performStandardSearch(filteredDomainsToSearch, owningIds, searchTerm, additional)
+        performStandardSearch(filteredDomainsToSearch, owningIds, searchTerm, additional)
     }
 
     @CompileDynamic
