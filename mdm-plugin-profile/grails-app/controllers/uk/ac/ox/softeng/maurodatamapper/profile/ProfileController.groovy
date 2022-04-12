@@ -266,15 +266,10 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
 
-        /*        if (!(profileProviderService instanceof DataModelProfileProviderService)) {
-                    throw new ApiNotYetImplementedException('PCXX', 'Non-DataModel Based searching in profiles')
-                }
-        */
         searchParams.searchTerm = searchParams.searchTerm ?: params.search
-        searchParams.offset = 0
-        searchParams.max = null
-        params.offset = 0
-        params.max = null
+        params.max = params.max ?: searchParams.max ?: 10
+        params.offset = params.offset ?: searchParams.offset ?: 0
+        params.sort = params.sort ?: searchParams.sort ?: 'label'
 
         List<Profile> profileObjects = mdmPluginProfileSearchService.findAllDataModelProfileObjectsForProfileProviderByHibernateSearch(
             currentUserSecurityPolicyManager, profileProviderService, searchParams, params

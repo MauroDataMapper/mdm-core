@@ -52,7 +52,6 @@ class PaginatedHibernateSearchResult<K> {
         String sortKey = pagination.sort ?: 'label'
         String order = pagination.order ?: 'asc'
 
-
         List<D> sortedList = fullResultSet.sort {a, b ->
             if (order == 'asc') {
                 a."$sortKey" <=> b."${sortKey}"

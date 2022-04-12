@@ -27,6 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.search.searchparamfilter.DataModelTypeFilter
+import uk.ac.ox.softeng.maurodatamapper.gorm.InMemoryPagedResultList
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
@@ -58,13 +59,13 @@ class SearchService extends AbstractCatalogueItemSearchService<DataModel> {
         mdmCoreSearchService.findAllReadableByHibernateSearch(userSecurityPolicyManager, searchParams, pagination)
     }
 
-    List<Profile> findAllDataModelProfileObjectsForProfileProviderByHibernateSearch(UserSecurityPolicyManager userSecurityPolicyManager,
-                                                                                    ProfileProviderService dataModelProfileProviderService,
-                                                                                    SearchParams searchParams, Map pagination = [:]) {
+    InMemoryPagedResultList<Profile> findAllDataModelProfileObjectsForProfileProviderByHibernateSearch(UserSecurityPolicyManager userSecurityPolicyManager,
+                                                                                                       ProfileProviderService dataModelProfileProviderService,
+                                                                                                       SearchParams searchParams, Map pagination = [:]) {
 
         // Limit domain types to only those we know we care about
         if (searchParams.domainTypes) {
-            searchParams.domainTypes.removeIf([test: { String s ->
+            searchParams.domainTypes.removeIf([test: {String s ->
                 !(s in getDomainsToSearchInside())
             }] as Predicate)
         } else {
@@ -75,16 +76,15 @@ class SearchService extends AbstractCatalogueItemSearchService<DataModel> {
         System.setProperty('hibernate.search.index_uninverting_allowed', 'true')
 
         // Find all catalogue items which meet the initial search parameters
-        PaginatedHibernateSearchResult<CatalogueItem> result =
-            mdmCoreSearchService.findAllReadableByHibernateSearch(userSecurityPolicyManager, searchParams,
-                                                                  pagination)
+        // We dont want to paginate the results at all as we need ALL the results
+        PaginatedHibernateSearchResult<CatalogueItem> result = mdmCoreSearchService.findAllReadableByHibernateSearch(userSecurityPolicyManager, searchParams, [:])
         log.debug('Results size: ' + result.count)
-        if (result.isEmpty()) return []
+        if (result.isEmpty()) return new InMemoryPagedResultList<Profile>([], [:])
 
         Set<UUID> foundDataModelIds = [] as HashSet
 
         // Extract the DataModel ids for all the found catalogue items
-        result.each { resultCatalogueItem ->
+        result.each {resultCatalogueItem ->
             if ((resultCatalogueItem as GormEntity).instanceOf(DataModel)) {
                 foundDataModelIds.add(resultCatalogueItem.id)
             } else if ((resultCatalogueItem as GormEntity).instanceOf(DataClass)) {
@@ -112,7 +112,7 @@ class SearchService extends AbstractCatalogueItemSearchService<DataModel> {
         }
 
         log.debug('profiledResults size: ' + profiledResults.size())
-        profiledResults
+        new InMemoryPagedResultList<>(profiledResults, pagination)
     }
 
     Set<String> getDomainsToSearchInside() {
