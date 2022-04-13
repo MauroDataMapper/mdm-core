@@ -28,11 +28,11 @@ import org.springframework.stereotype.Component
 class DataModelTypeFilter implements SearchParamFilter {
 
     boolean doesApply(SearchParams searchParams) {
-        searchParams.dataModelTypes
+        searchParams.containsKey('dataModelTypes')
     }
 
     Closure getClosure(SearchParams searchParams) {
-        List<String> validModelTypes = searchParams.dataModelTypes.collect {dt -> DataModelType.findForLabel(dt).toString()}.findAll()
+        List<String> validModelTypes = searchParams.getValue('dataModelTypes').collect {dt -> DataModelType.findForLabel(dt).toString()}.findAll()
         HibernateSearchApi.defineSearchQuery {
             should {
                 validModelTypes.each {dt ->

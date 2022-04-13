@@ -83,7 +83,8 @@ class DataModelController extends ModelController<DataModel> {
         dataModelService
     }
 
-    def search(SearchParams searchParams) {
+    def search() {
+        SearchParams searchParams = SearchParams.bind(grailsApplication, getRequest())
 
         if (searchParams.hasErrors()) {
             respond searchParams.errors
@@ -98,8 +99,7 @@ class DataModelController extends ModelController<DataModel> {
             params.order = searchParams.order
         }
 
-        PaginatedHibernateSearchResult<ModelItem> result = mdmPluginDataModelSearchService.findAllByDataModelIdByHibernateSearch(params.dataModelId,
-                                                                                                                                 searchParams, params)
+        PaginatedHibernateSearchResult<ModelItem> result = mdmPluginDataModelSearchService.findAllByDataModelIdByHibernateSearch(params.dataModelId, searchParams, params)
         respond result
     }
 

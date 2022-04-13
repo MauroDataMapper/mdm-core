@@ -251,7 +251,8 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
         respond allValuesMap
     }
 
-    def search(SearchParams searchParams) {
+    def search() {
+        SearchParams searchParams = SearchParams.bind(grailsApplication, getRequest())
 
         if (searchParams.hasErrors()) {
             respond searchParams.errors

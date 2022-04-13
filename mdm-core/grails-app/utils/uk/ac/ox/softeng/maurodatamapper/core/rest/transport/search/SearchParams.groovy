@@ -17,7 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search
 
+import grails.core.GrailsApplication
+import grails.databinding.DataBindingSource
 import grails.validation.Validateable
+import grails.web.databinding.DataBindingUtils
 
 class SearchParams implements Validateable {
 
@@ -30,13 +33,13 @@ class SearchParams implements Validateable {
     String searchTerm
     Boolean labelOnly
     List<String> domainTypes
-    List<String> dataModelTypes
     Date lastUpdatedBefore
     Date lastUpdatedAfter
     Date createdBefore
     Date createdAfter
     List<String> classifiers
     List<List> classifierFilter
+    Map<String, Object> additionalParams = [:]
 
     static constraints = {
         offset nullable: true, min: 0
@@ -50,9 +53,8 @@ class SearchParams implements Validateable {
         order nullable: true
     }
 
-    SearchParams() {
+    private SearchParams() {
         domainTypes = []
-        dataModelTypes = []
         classifiers = []
         classifierFilter = []
         labelOnly = false
@@ -68,5 +70,32 @@ class SearchParams implements Validateable {
 
     void setDomainType(String domainType) {
         domainTypes = [domainType]
+    }
+
+    def propertyMissing(String name) {
+        additionalParams[name]
+    }
+
+    def propertyMissing(String name, def arg) {
+        additionalParams[name] = arg
+    }
+
+    boolean containsKey(String key) {
+        hasProperty(key) ?: additionalParams.containsKey(key)
+    }
+
+    Object getValue(String key) {
+        additionalParams[key]
+    }
+
+    static SearchParams bind(GrailsApplication grailsApplication, def objectToBind) {
+
+        DataBindingSource bindingSource = DataBindingUtils.createDataBindingSource(grailsApplication, SearchParams, objectToBind)
+        SearchParams searchParams = new SearchParams()
+        bindingSource.propertyNames.each {propName ->
+            searchParams.setProperty(propName, bindingSource.getPropertyValue(propName))
+        }
+        searchParams.validate()
+        searchParams
     }
 }

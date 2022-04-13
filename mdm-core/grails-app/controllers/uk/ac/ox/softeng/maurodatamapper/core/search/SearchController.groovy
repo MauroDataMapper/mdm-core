@@ -28,7 +28,9 @@ class SearchController implements ResourcelessMdmController {
 
     SearchService mdmCoreSearchService
 
-    def search(SearchParams searchParams) {
+    def search() {
+
+        SearchParams searchParams = SearchParams.bind(grailsApplication, getRequest())
 
         if (searchParams.hasErrors()) {
             respond searchParams.errors
@@ -43,11 +45,7 @@ class SearchController implements ResourcelessMdmController {
             params.order = searchParams.order
         }
 
-        PaginatedHibernateSearchResult<CatalogueItem> results =
-            mdmCoreSearchService.findAllReadableByHibernateSearch(currentUserSecurityPolicyManager,
-                                                                  searchParams,
-                                                                  params)
-
+        PaginatedHibernateSearchResult<CatalogueItem> results = mdmCoreSearchService.findAllReadableByHibernateSearch(currentUserSecurityPolicyManager, searchParams, params)
         respond results
     }
 }
