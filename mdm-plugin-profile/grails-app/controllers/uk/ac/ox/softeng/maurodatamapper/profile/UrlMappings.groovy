@@ -41,6 +41,8 @@ class UrlMappings {
                     post "/$multiFacetAwareItemDomainType/$multiFacetAwareItemId"(controller: 'profile', action: 'save')
                     post "/$multiFacetAwareItemDomainType/$multiFacetAwareItemId/validate"(controller: 'profile', action: 'validate')
                     delete "/$multiFacetAwareItemDomainType/$multiFacetAwareItemId"(controller: 'profile', action: 'delete')
+
+                    post "/${modelDomainType}/${modelId}/search"(controller: 'profile', action: 'search')
                 }
             }
 
@@ -62,6 +64,7 @@ class UrlMappings {
                 post '/profile/getMany'(controller: 'profile', action: 'getMany')
                 post '/profile/validateMany'(controller: 'profile', action: 'validateMany')
                 post '/profile/saveMany'(controller: 'profile', action: 'saveMany')
+                post "/profiles/$profileNamespace/$profileName/search"(controller: 'profile', action: 'search')
             }
         }
     }

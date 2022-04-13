@@ -17,7 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.search.AbstractCatalogueItemSearchService
 import uk.ac.ox.softeng.maurodatamapper.core.search.SearchService as CoreSearchService
@@ -30,6 +33,7 @@ import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearc
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.datamodel.SearchService as DataModelSearchService
 
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
@@ -44,12 +48,23 @@ class SearchService extends AbstractCatalogueItemSearchService<DataModel> {
     CoreSearchService mdmCoreSearchService
 
     @Autowired
+    DataModelSearchService mdmPluginDataModelSearchService
+
+    @Autowired
     DataModelService dataModelService
 
     PaginatedHibernateSearchResult<CatalogueItem> findAllReadableByHibernateSearch(UserSecurityPolicyManager userSecurityPolicyManager,
                                                                                    SearchParams searchParams,
                                                                                    Map pagination = [:]) {
         mdmCoreSearchService.findAllReadableByHibernateSearch(userSecurityPolicyManager, searchParams, pagination)
+    }
+
+    PaginatedHibernateSearchResult<ModelItem> findAllByModelByHibernateSearch(Model model, SearchParams searchParams, Map pagination = [:]) {
+        if (model instanceof DataModel) {
+            mdmPluginDataModelSearchService.findAllByDataModelIdByHibernateSearch(model.id, searchParams, pagination)
+        } else {
+            throw new ApiNotYetImplementedException('PSS', "${model.domainType} findAllByModelDomainTypeAndModelIdByHibernateSearch")
+        }
     }
 
     InMemoryPagedResultList<Profile> findAllDataModelProfileObjectsForProfileProviderByHibernateSearch(UserSecurityPolicyManager userSecurityPolicyManager,
@@ -100,7 +115,7 @@ class SearchService extends AbstractCatalogueItemSearchService<DataModel> {
                                                                                                     searchParams,
                                                                                                     pagination)
 
-        List<Profile> profiledResults = filteredDataModels.results.collect { dataModel ->
+        List<Profile> profiledResults = filteredDataModels.results.collect {dataModel ->
             dataModelProfileProviderService.createProfileFromEntity(dataModel)
         }
 
@@ -109,7 +124,7 @@ class SearchService extends AbstractCatalogueItemSearchService<DataModel> {
     }
 
     Set<String> getDomainsToSearchInside() {
-        [DataModel, DataClass, DataElement].collect { it.simpleName }.toSet()
+        [DataModel, DataClass, DataElement].collect {it.simpleName}.toSet()
     }
 
     @Override
@@ -123,7 +138,7 @@ class SearchService extends AbstractCatalogueItemSearchService<DataModel> {
         log.debug('Filtering found DataModel ids')
         // Execute the profile filtered search on the found datamodels
 
-        Map<String, Object> filters = pagination.findAll { k, v ->
+        Map<String, Object> filters = pagination.findAll {k, v ->
             k in dataModelProfileProviderService.getKnownMetadataKeys()
         }
 
@@ -138,20 +153,20 @@ class SearchService extends AbstractCatalogueItemSearchService<DataModel> {
                                                                     searchParams,
                                                                     false,
                                                                     pagination) {
-                filters.each { metadataKey, filter ->
+                filters.each {metadataKey, filter ->
                     if (filter instanceof String) {
                         simpleQueryString(filter as String,
                                           "${dataModelProfileProviderService.metadataNamespace} | ${metadataKey}")
                     } else {
                         // We've got a list of filters
                         should {
-                            ((List<String>) filter).each { filterValue ->
+                            ((List<String>) filter).each {filterValue ->
                                 simpleQueryString(filterValue, "${dataModelProfileProviderService.metadataNamespace} | ${metadataKey}")
                             }
+                        }
                     }
                 }
             }
-        }
 
         log.debug('filteredDataModels size: {}', filteredDataModels.results.size())
         filteredDataModels
