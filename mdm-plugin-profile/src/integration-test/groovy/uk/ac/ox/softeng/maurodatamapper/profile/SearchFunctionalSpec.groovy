@@ -8,14 +8,22 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 
 import grails.gorm.transactions.Transactional
+import grails.testing.mixin.integration.Integration
 import grails.testing.spock.RunOnce
+import groovy.util.logging.Slf4j
+import org.junit.jupiter.api.Tag
 import spock.lang.Shared
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
 
+import static io.micronaut.http.HttpStatus.OK
+
 /**
  * @since 12/04/2022
  */
+@Tag('non-parallel')
+@Integration
+@Slf4j
 class SearchFunctionalSpec extends BaseFunctionalSpec {
 
     @Shared
@@ -27,7 +35,7 @@ class SearchFunctionalSpec extends BaseFunctionalSpec {
     @Shared
     UUID simpleDataModelId
 
-    ProfileSpecificationProfileService profileSpecificationProfileService
+    ProfileSpecificationFieldProfileService profileSpecificationFieldProfileService
 
     @Transactional
     Authority getTestAuthority() {
@@ -43,9 +51,14 @@ class SearchFunctionalSpec extends BaseFunctionalSpec {
         folder.addToMetadata(new Metadata(namespace: 'test.namespace', key: 'propertyKey', value: 'propertyValue', createdBy: FUNCTIONAL_TEST))
         checkAndSave(folder)
 
-        complexDataModelId = BootstrapModels.buildAndSaveComplexDataModel(messageSource, folder, testAuthority).id
-        simpleDataModelId = BootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder, testAuthority).id
+        DataModel dataModel = BootstrapModels.buildAndSaveComplexDataModel(messageSource, folder, testAuthority)
+        complexDataModelId = dataModel.id
 
+        dataModel.allDataElements.eachWithIndex {de, i ->
+            profileSpecificationFieldProfileService.storeFieldInEntity(de, "value $i", 'metadataPropertyName', FUNCTIONAL_TEST)
+            if (de.label == 'ele1') profileSpecificationFieldProfileService.storeFieldInEntity(de, "value type $i", 'metadataPropertyName', FUNCTIONAL_TEST)
+            de.save()
+        }
         sessionFactory.currentSession.flush()
     }
 
@@ -60,11 +73,83 @@ class SearchFunctionalSpec extends BaseFunctionalSpec {
         ''
     }
 
-    String getProfilePath() {
-        'uk.ac.ox.softeng.maurodatamapper.plugins.profile/testingProfile'
+    void 'S01 : test searching using profile filter for single result'() {
+        when:
+        POST("dataModels/${complexDataModelId}/search", [
+            searchTerm   : "child",
+            domainTypes  : ["DataElement"],
+            labelOnly    : true,
+            profileFields: [
+                [
+                    metadataNamespace   : profileSpecificationFieldProfileService.metadataNamespace,
+                    metadataPropertyName: 'metadataPropertyName',
+                    filterTerm          : 'value'
+                ],
+            ]
+        ])
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+        responseBody().items.first().label == 'child'
+
+        when:
+        POST("dataModels/${complexDataModelId}/search", [
+            searchTerm   : "child",
+            domainTypes  : ["DataElement"],
+            labelOnly    : true,
+            profileFields: [
+                [
+                    metadataNamespace   : profileSpecificationFieldProfileService.metadataNamespace,
+                    metadataPropertyName: 'metadataPropertyName',
+                    filterTerm          : 'blob'
+                ],
+            ]
+        ])
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 0
     }
 
-    String getProfileId() {
-        getProfilePath().replace('/', ':')
+    void 'S02 : test searching using profile filter for multiple results'() {
+        when:
+        POST("dataModels/${complexDataModelId}/search", [
+            searchTerm   : "ele*",
+            domainTypes  : ["DataElement"],
+            labelOnly    : true,
+            profileFields: [
+                [
+                    metadataNamespace   : profileSpecificationFieldProfileService.metadataNamespace,
+                    metadataPropertyName: 'metadataPropertyName',
+                    filterTerm          : 'value'
+                ],
+            ]
+        ])
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().items.any {it.label == 'ele1'}
+        responseBody().items.any {it.label == 'element2'}
+
+        when:
+        POST("dataModels/${complexDataModelId}/search", [
+            searchTerm   : "ele*",
+            domainTypes  : ["DataElement"],
+            labelOnly    : true,
+            profileFields: [
+                [
+                    metadataNamespace   : profileSpecificationFieldProfileService.metadataNamespace,
+                    metadataPropertyName: 'metadataPropertyName',
+                    filterTerm          : 'value type'
+                ],
+            ]
+        ])
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+        responseBody().items.any {it.label == 'ele1'}
     }
 }

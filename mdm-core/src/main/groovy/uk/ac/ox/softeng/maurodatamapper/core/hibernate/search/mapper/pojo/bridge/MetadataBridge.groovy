@@ -52,7 +52,7 @@ class MetadataBridge implements PropertyBridge<Set<Metadata>> {
         }
     }
 
-    String makeSafeFieldName(String unsafeFieldName) {
+    static String makeSafeFieldName(String unsafeFieldName) {
         unsafeFieldName.replaceAll('\\.', '_')
     }
 }
