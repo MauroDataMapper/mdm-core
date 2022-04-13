@@ -18,9 +18,20 @@
 package uk.ac.ox.softeng.maurodatamapper.core.container.provider.importer.parameter
 
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ImporterProviderServiceParameters
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.config.ImportGroupConfig
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.config.ImportParameterConfig
 
 import groovy.transform.CompileStatic
 
 @CompileStatic
 class FolderImporterProviderServiceParameters implements ImporterProviderServiceParameters {
+    @ImportParameterConfig(
+        displayName = 'Parent Folder',
+        description = 'The parent folder into which the Model/s should be imported.',
+        order = 0,
+        group = @ImportGroupConfig(
+            name = 'Model',
+            order = 0
+        ))
+    UUID parentFolderId
 }

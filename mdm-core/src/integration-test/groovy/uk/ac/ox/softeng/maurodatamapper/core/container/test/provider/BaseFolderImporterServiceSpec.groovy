@@ -53,6 +53,10 @@ abstract class BaseFolderImporterServiceSpec extends BaseIntegrationSpec {
 
     abstract String getImportType()
 
+    Folder getTestFolder() {
+        folder
+    }
+
     @Override
     def setupSpec() {
         basicParameters = new FolderFileImporterProviderServiceParameters()
@@ -80,6 +84,7 @@ abstract class BaseFolderImporterServiceSpec extends BaseIntegrationSpec {
         basicParameters.importFile = new FileParameter(fileContents: bytes)
 
         Folder imported = importerService.importDomain(admin, basicParameters) as Folder
+        imported.parentFolder = testFolder
         check(imported)
         folderService.save(imported)
         // sessionFactory.currentSession.flush()
