@@ -99,11 +99,11 @@ class SearchParams implements Validateable {
         searchParams
     }
 
-    void crossValuesIntoParametersMap(Map params){
+    void crossValuesIntoParametersMap(Map params, String defaultSortField) {
         this.searchTerm = this.searchTerm ?: params.search
         params.max = params.max ?: this.max ?: 10
         params.offset = params.offset ?: this.offset ?: 0
-        params.sort = params.sort ?: this.sort ?: 'label'
+        params.sort = params.sort ?: this.sort ?: defaultSortField
         if (this.order) {
             params.order = this.order
         }

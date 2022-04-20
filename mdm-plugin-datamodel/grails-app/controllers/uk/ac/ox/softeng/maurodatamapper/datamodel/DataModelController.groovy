@@ -91,7 +91,7 @@ class DataModelController extends ModelController<DataModel> {
             return
         }
 
-        searchParams.crossValuesIntoParametersMap(params)
+        searchParams.crossValuesIntoParametersMap(params, 'label')
 
         PaginatedHibernateSearchResult<ModelItem> result = mdmPluginDataModelSearchService.findAllByDataModelIdByHibernateSearch(params.dataModelId, searchParams, params)
         respond result

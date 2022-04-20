@@ -48,13 +48,7 @@ class TermController extends CatalogueItemController<Term> {
             return
         }
 
-        searchParams.searchTerm = searchParams.searchTerm ?: params.search
-        params.max = params.max ?: searchParams.max ?: 10
-        params.offset = params.offset ?: searchParams.offset ?: 0
-        params.sort = params.sort ?: searchParams.sort ?: 'code'
-        if (searchParams.order) {
-            params.order = searchParams.order
-        }
+        searchParams.crossValuesIntoParametersMap(params, 'code')
 
         PaginatedHibernateSearchResult<ModelItem> result =
             mdmPluginTerminologySearchService.findAllByTerminologyIdByHibernateSearch(params.terminologyId,

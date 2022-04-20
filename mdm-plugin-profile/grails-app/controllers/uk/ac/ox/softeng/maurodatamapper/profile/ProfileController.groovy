@@ -260,7 +260,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
             respond searchParams.errors
             return
         }
-        searchParams.crossValuesIntoParametersMap(params)
+        searchParams.crossValuesIntoParametersMap(params, 'label')
 
         ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName, params.profileVersion)
 
@@ -283,8 +283,7 @@ class ProfileController implements ResourcelessMdmController, DataBinder {
         } else {
             results = mdmPluginProfileSearchService.findAllReadableByHibernateSearch(currentUserSecurityPolicyManager, searchParams, params)
         }
-        def r = profileService.loadProfilesIntoCatalogueItems(profileProviderService, results)
-        respond r
+        respond profileService.loadProfilesIntoCatalogueItems(profileProviderService, results)
     }
 
     protected String getProfileProviderServiceId(Map params) {
