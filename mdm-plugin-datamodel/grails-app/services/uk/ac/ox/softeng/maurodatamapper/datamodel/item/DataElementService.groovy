@@ -327,6 +327,10 @@ WHERE (de.dataClass.id = :dataClassId OR idc.id = :dataClassId)''', 'de', filter
         DataElement.byDataClassIdAndLabel(dataClassId, label).get()
     }
 
+    DataElement findByDataModelIdAndId(Serializable dataModelId, Serializable id) {
+        DataElement.byDataModelIdAndId(dataModelId, id).get()
+    }
+
     DataElement findOrCreateDataElementForDataClass(DataClass parentClass, String label, String description, User createdBy,
                                                     DataType dataType,
                                                     Integer minMultiplicity = 0, Integer maxMultiplicity = 1) {

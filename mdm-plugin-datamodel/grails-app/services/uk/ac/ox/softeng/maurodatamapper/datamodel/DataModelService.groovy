@@ -56,6 +56,8 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.Enum
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.DefaultDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter.DataModelJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelJsonImporterService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.Intersects
+import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.SourceTargetIntersects
 import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.Subset
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
@@ -1184,6 +1186,53 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         }
 
         intersection
+    }
+
+    /**
+     * Return the Data Element intersection between source and many target Data Models, checking only the list
+     * of Data Elements provided i.e. for each target model listed in intersects.targetDataModelIds, of the Data Elements listed
+     * in intersects.dataElementsIds from the sourceDataModel, which are also present (i.e. match by path) in the targetDataModel
+     * @param sourceDataModel
+     * @param intersects
+     * @return
+     */
+    Collection<UUID> intersectsMany(DataModel sourceDataModel, Intersects intersects) {
+        Collection<SourceTargetIntersects> manySourceTargetIntersects = []
+
+        // Get all the data elements once. Using findByDataModelIdAndId means we are checking that data element
+        // does belong to the source data model, which is the secured item
+        Collection<DataElement> sourceDataElements = []
+        intersects.dataElementIds.each {dataElementId ->
+            DataElement sourceDataElement = dataElementService.findByDataModelIdAndId(sourceDataModel.id, dataElementId)
+
+            if (sourceDataElement) {
+                sourceDataElements << sourceDataElement
+            }
+        }
+
+        // TODO check user has read access on all the target data models
+
+        intersects.targetDataModelIds.each {targetDataModelId ->
+            DataModel targetDataModel = get(targetDataModelId)
+
+            SourceTargetIntersects sourceTargetIntersects = new SourceTargetIntersects()
+            sourceTargetIntersects.sourceDataModelId = sourceDataModel.id
+            sourceTargetIntersects.targetDataModelId = targetDataModelId
+
+            sourceDataElements.each {sourceDataElement ->
+                Path pathInSource = sourceDataElement.getPath()
+
+                DataElement dataElementInTarget = pathService.findResourceByPathFromRootResource(targetDataModel, pathInSource.getChildPath())
+
+                if (dataElementInTarget) {
+                    sourceTargetIntersects.intersects << sourceDataElement.id
+                }
+            }
+
+            manySourceTargetIntersects << sourceTargetIntersects
+        }
+
+        manySourceTargetIntersects
     }
 
     @Override
