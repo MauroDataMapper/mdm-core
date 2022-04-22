@@ -197,4 +197,12 @@ class PathNode implements Serializable, Cloneable {
     PathNode clone() {
         new PathNode(this.prefix, this.identifier, this.modelIdentifier, this.attribute)
     }
+
+    double getLatitudeValue() {
+        prefix.chars().sum() + (modelIdentifier?.chars()?.sum() ?: 0)
+    }
+
+    double getLongitudeValue() {
+        getFullIdentifier().chars().sum()
+    }
 }

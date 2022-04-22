@@ -32,6 +32,6 @@ class StandardWithoutLabelSearch {
         classifiers indexingDependency: [reindexOnUpdate: 'shallow'], indexEmbedded: [includePaths: ['label', 'description']]
         lastUpdated searchable: 'yes'
         dateCreated searchable: 'yes'
-        path valueBinder: new PathBinder()
+        path binder: PathBinder
     }
 }
