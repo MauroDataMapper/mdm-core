@@ -194,10 +194,12 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     }
 
     @Override
-    List<UUID> listReadableSecuredResourceIds(Class<? extends SecurableResource> securableResourceClass) {
-        userPolicy.getVirtualSecurableResourceGroupRoles()
-            .findAll {it.value.first().matchesDomainResourceType(securableResourceClass)}
-            .collect {it.key}
+    List<UUID> listReadableSecuredResourceIds(Class<? extends SecurableResource>... securableResourceClasses) {
+        securableResourceClasses.collectMany {securableResourceClass ->
+            userPolicy.getVirtualSecurableResourceGroupRoles()
+                .findAll {it.value.first().matchesDomainResourceType(securableResourceClass)}
+                .collect {it.key}
+        }
     }
 
     @Override

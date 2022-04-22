@@ -25,7 +25,7 @@ interface UserSecurityPolicyManager {
 
     User getUser()
 
-    List<UUID> listReadableSecuredResourceIds(Class<? extends SecurableResource> securableResourceClass)
+    List<UUID> listReadableSecuredResourceIds(Class<? extends SecurableResource>... securableResourceClasses)
 
     boolean userCanReadResourceId(Class resourceClass, UUID id,
                                   Class<? extends SecurableResource> owningSecureResourceClass, UUID owningSecureResourceId)

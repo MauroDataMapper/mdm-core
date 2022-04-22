@@ -45,7 +45,7 @@ class DelegatingSecurityPolicyManager implements UserSecurityPolicyManager {
 
     @Override
     List<UUID> listReadableSecuredResourceIds(
-        Class<? extends SecurableResource> securableResourceClass) {
+        Class<? extends SecurableResource>... securableResourceClass) {
         return delegate.listReadableSecuredResourceIds(securableResourceClass)
     }
 
