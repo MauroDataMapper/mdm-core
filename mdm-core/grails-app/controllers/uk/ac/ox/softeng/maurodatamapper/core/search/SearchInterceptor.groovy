@@ -23,9 +23,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmInterceptor
 class SearchInterceptor implements MdmInterceptor {
 
     boolean before() {
+        mapDomainTypeToClass('catalogueItem')
         // Allow anyone to search as returned items will be constrained by what they can read
-        if (actionName == 'search') return true
-
-        false
+        true
     }
 }

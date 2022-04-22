@@ -42,4 +42,23 @@ class SearchController implements ResourcelessMdmController {
         PaginatedHibernateSearchResult<CatalogueItem> results = mdmCoreSearchService.findAllReadableByHibernateSearch(currentUserSecurityPolicyManager, searchParams, params)
         respond results
     }
+
+    def prefixLabelSearch() {
+        SearchParams searchParams = SearchParams.bind(grailsApplication, getRequest())
+
+        if (searchParams.hasErrors()) {
+            respond searchParams.errors
+            return
+        }
+
+        searchParams.crossValuesIntoParametersMap(params, null)
+
+        CatalogueItem catalogueItem = mdmCoreSearchService.findCatalogueItem(params.catalogueItemDomainType, params.catalogueItemId)
+        if (!catalogueItem) return notFound(params.catalogueItemClass, params.catalogueItemId)
+
+        PaginatedHibernateSearchResult<CatalogueItem> results = mdmCoreSearchService.findAllReadableByHibernateSearchSortedByProximityToCatalogueItem(
+            catalogueItem,
+            currentUserSecurityPolicyManager, searchParams, params)
+        respond results
+    }
 }

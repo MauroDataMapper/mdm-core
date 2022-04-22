@@ -17,15 +17,18 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.search
 
-import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.engine.search.predicate.ExcludedIdsFilterFactory
+import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 import grails.compiler.GrailsCompileStatic
@@ -49,6 +52,10 @@ class SearchService extends AbstractCatalogueItemSearchService<CatalogueItem> {
     @Autowired(required = false)
     List<CatalogueItemSearchDomainProvider> catalogueItemSearchDomainProviders
 
+    @Autowired(required = false)
+    List<CatalogueItemService> catalogueItemServices
+
+
     PaginatedHibernateSearchResult<CatalogueItem> findAllByFolderIdByHibernateSearch(UUID folderId, SearchParams searchParams, Map pagination = [:]) {
         List<UUID> modelIds = getAllModelIdsInFolderId(folderId)
         findAllCatalogueItemsOfTypeByOwningIdsByHibernateSearch(modelIds, searchParams, false, pagination)
@@ -57,15 +64,29 @@ class SearchService extends AbstractCatalogueItemSearchService<CatalogueItem> {
     PaginatedHibernateSearchResult<CatalogueItem> findAllReadableByHibernateSearch(UserSecurityPolicyManager userSecurityPolicyManager,
                                                                                    SearchParams searchParams, Map pagination = [:]) {
 
-        if (!modelServices) return new PaginatedHibernateSearchResult<CatalogueItem>([], 0)
-
-        List<UUID> readableFolderIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Folder)
-
-        if (!readableFolderIds) return new PaginatedHibernateSearchResult<CatalogueItem>([], 0)
-
-        List<UUID> readableModelIds = readableFolderIds.collectMany { containerId -> getAllModelIdsInFolderId(containerId) }
-
+        List<UUID> readableModelIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Model)
         findAllCatalogueItemsOfTypeByOwningIdsByHibernateSearch(readableModelIds, searchParams, false, pagination)
+    }
+
+    PaginatedHibernateSearchResult<CatalogueItem> findAllReadableByHibernateSearchSortedByProximityToCatalogueItem(
+        CatalogueItem catalogueItem,
+        UserSecurityPolicyManager userSecurityPolicyManager,
+        SearchParams searchParams,
+        Map pagination = [:]) {
+
+        Class<Model>[] classes = modelServices.collect {it.domainClass as Class<SecurableResource>}.toArray() as Class<Model>[]
+        List<UUID> readableModelIds = userSecurityPolicyManager.listReadableSecuredResourceIds(classes)
+
+        //distance('path_geopoint', catalogueItem.path.geoPoint)
+        pagination.sort = 'distance'
+        pagination.sortField = 'path_geopoint'
+        pagination.center = catalogueItem.path.geoPoint
+        pagination.remove('order')
+
+        findAllCatalogueItemsOfTypeByOwningIdsByHibernateSearch(readableModelIds, searchParams, false, pagination) {
+            simpleQueryString "${searchParams.searchTerm}*", 'label_sort'
+            filter(ExcludedIdsFilterFactory.createFilterPredicate(searchPredicateFactory, [catalogueItem.id]))
+        }
     }
 
     @Override
@@ -111,5 +132,11 @@ class SearchService extends AbstractCatalogueItemSearchService<CatalogueItem> {
                 (service.findAllByContainerId(fId) as List<Model>).collect {model -> model.id}
             }
         }
+    }
+
+    CatalogueItem findCatalogueItem(String catalogueItemDomainType, UUID catalogueItemId) {
+        CatalogueItemService service = catalogueItemServices.find {it.handles(catalogueItemDomainType)}
+        if (!service) throw new ApiBadRequestException('SS01', "No supporting service for ${catalogueItemDomainType}")
+        service.get(catalogueItemId)
     }
 }
