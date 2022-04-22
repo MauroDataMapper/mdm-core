@@ -17,9 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.hibernate.search
 
+import uk.ac.ox.softeng.maurodatamapper.hibernate.search.comparator.PathDistanceComparator
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.MdmDomain
+
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.FromString
 import groovy.util.logging.Slf4j
+import org.hibernate.search.engine.spatial.GeoPoint
 
 /**
  * @since 27/04/2018
@@ -49,16 +53,32 @@ class PaginatedHibernateSearchResult<K> {
 
         Integer max = pagination.max?.toInteger()
         Integer offsetAmount = pagination.offset?.toInteger()
-        String sortKey = pagination.sort ?: 'label'
+        String sortKey = pagination.sort
         String order = pagination.order ?: 'asc'
 
-        List<D> sortedList = fullResultSet.sort {a, b ->
-            if (order == 'asc') {
-                a."$sortKey" <=> b."${sortKey}"
-            } else {
-                b."$sortKey" <=> a."${sortKey}"
+        List<D> sortedList = fullResultSet
+        if ('distance' == sortKey) {
+            String sortField = pagination.sortField
+            GeoPoint center = pagination.center as GeoPoint
+
+            log.debug('Performing distance sort on field [{}] from [{}]', sortField, center)
+            switch (sortField) {
+                case 'path_geopoint':
+                    (sortedList as List<MdmDomain>).sort(new PathDistanceComparator(center, order == 'asc'))
+                    break
+                default:
+                    log.warn('Unknown sortfield for distance sorting {}', sortField)
+            }
+        } else if (sortKey) {
+            sortedList = fullResultSet.sort {a, b ->
+                if (order == 'asc') {
+                    a."$sortKey" <=> b."${sortKey}"
+                } else {
+                    b."$sortKey" <=> a."${sortKey}"
+                }
             }
         }
+
 
         List<D> offsetList = offsetAmount == null ? sortedList : sortedList.drop(offsetAmount)
         List<D> maxList = max == null ? offsetList : offsetList.take(max)

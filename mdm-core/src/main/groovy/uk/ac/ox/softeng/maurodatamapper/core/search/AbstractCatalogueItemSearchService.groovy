@@ -21,8 +21,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.SearchParamFilter
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.UpdatedAfterFilter
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.UpdatedBeforeFilter
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.HibernateSearch
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.PaginatedHibernateSearchResult
 import uk.ac.ox.softeng.maurodatamapper.path.PathNode
@@ -77,6 +75,30 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
 
         if (!filteredDomainsToSearch) {
             return new PaginatedHibernateSearchResult<K>([], 0)
+        }
+
+        // If only 1 domain to search then we can get HS to do all the pagination
+        // This will be faster than doing it in memory
+        // As geopoint distances in HS are in metres, for the time being we will do that in-memory
+        if (filteredDomainsToSearch.size() == 1 && pagination.sort != 'distance') {
+            String sortField = pagination.remove('sort')
+            String order = pagination.remove('order') ?: 'asc'
+            Integer max = removePaginationInteger(pagination, 'max')
+            Integer offsetAmount = removePaginationInteger(pagination, 'offset')
+
+            Closure paginationClosure = HibernateSearchApi.defineSearchQuery {
+                if (max) maxResults(max)
+                if (offsetAmount) offset(offsetAmount)
+                if (sortField) {
+                    sort("${sortField}_sort", order)
+                }
+            }
+            addtlClauseCount++
+            if (additional) {
+                additional <<= paginationClosure
+            } else {
+                additional = paginationClosure
+            }
         }
 
         // Do an estimated increase to the clause count, this should make sure at least the number of owningIds and paths clauses dont cause an initial failure
@@ -154,5 +176,12 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
             domain.customHibernateSearch(domain, owningIds, pathNodes, [:], additional,
                                          customSearch).results
         }.flatten().findAll() as List<K>
+    }
+
+    private static Integer removePaginationInteger(Map pagination, String field) {
+        def value = pagination.remove(field)
+        if (!value) return null
+        if (value instanceof Integer) return value
+        value.toString().toInteger()
     }
 }
