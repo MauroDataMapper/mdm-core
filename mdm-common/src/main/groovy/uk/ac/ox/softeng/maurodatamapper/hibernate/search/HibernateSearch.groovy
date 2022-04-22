@@ -25,7 +25,6 @@ import grails.plugins.hibernate.search.HibernateSearchApi
 import groovy.util.logging.Slf4j
 import org.apache.lucene.search.BooleanQuery
 import org.grails.datastore.mapping.reflect.ClassPropertyFetcher
-import org.hibernate.search.util.common.SearchException
 
 /**
  * @since 19/03/2020
@@ -77,20 +76,17 @@ class HibernateSearch {
 
         try {
             return new PaginatedHibernateSearchResult<>(clazz.search().list(paginatedClosure), clazz.search().count(paginatedClosure))
-        } catch (SearchException ex) {
+        } catch (RuntimeException ex) {
             handleSearchException(clazz, closure, ex)
         }
     }
 
-    static <T> PaginatedHibernateSearchResult<T> handleSearchException(Class<T> clazz, Closure closure, SearchException ex) {
+    static <T> PaginatedHibernateSearchResult<T> handleSearchException(Class<T> clazz, Closure closure, RuntimeException ex) {
         if (isTooManyClausesException(ex)) {
             log.warn('Initial search failed with {} exception and message [{}]', ex.class, ex.message)
-            String defaultQueries = Integer.toString(BooleanQuery.getMaxClauseCount())
-            int oldQueries = Integer.parseInt(System.getProperty('org.apache.lucene.maxClauseCount', defaultQueries))
+            int oldQueries = getCurrentMaxClauseCount()
             int newQueries = oldQueries * 2
-            log.info('Too many clauses for query set to {}, increasing org.apache.lucene.maxClauseCount to {}', oldQueries, newQueries)
-            System.setProperty('org.apache.lucene.maxClauseCount', Integer.toString(newQueries))
-            BooleanQuery.setMaxClauseCount(newQueries)
+            increaseMaxClauseCount(newQueries)
             return paginatedList(clazz, [:], closure) as PaginatedHibernateSearchResult<T>
         }
         log.error('Search failed for unhandled reason', ex)
@@ -102,5 +98,16 @@ class HibernateSearch {
         if (throwable instanceof BooleanQuery.TooManyClauses) return true
         if (!throwable.cause) return false
         isTooManyClausesException(throwable.cause)
+    }
+
+    static void increaseMaxClauseCount(int maxClauseCount) {
+        log.info('Increasing org.apache.lucene.maxClauseCount to {}', maxClauseCount)
+        System.setProperty('org.apache.lucene.maxClauseCount', Integer.toString(maxClauseCount))
+        BooleanQuery.setMaxClauseCount(maxClauseCount)
+    }
+
+    static int getCurrentMaxClauseCount() {
+        String defaultQueries = Integer.toString(BooleanQuery.getMaxClauseCount())
+        Integer.parseInt(System.getProperty('org.apache.lucene.maxClauseCount', defaultQueries))
     }
 }
