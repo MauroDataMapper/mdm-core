@@ -38,8 +38,10 @@ class ReferenceDataValue implements MdmDomain, Diffable<ReferenceDataValue> {
 
     int rowNumber
     String value
+    ReferenceDataModel referenceDataModel
+    ReferenceDataElement referenceDataElement
 
-    static belongsTo = [referenceDataModel: ReferenceDataModel, referenceDataElement: ReferenceDataElement]
+    static belongsTo = [ReferenceDataModel, ReferenceDataElement]
 
     static constraints = {
         value blank: true, nullable: true, unique: ['rowNumber', 'referenceDataElement']
@@ -48,8 +50,8 @@ class ReferenceDataValue implements MdmDomain, Diffable<ReferenceDataValue> {
     static mapping = {
         rowNumber type: 'integer'
         value type: 'text'
-        referenceDataModel index: 'reference_data_value_reference_data_model_idx'
-        referenceDataElement index: 'reference_data_value_reference_data_element_idx', cascade: 'save-update', fetch: 'join'
+        referenceDataModel index: 'reference_data_value_reference_data_model_idx', cascadeValidate: 'none' //, cascade: 'none'
+        referenceDataElement index: 'reference_data_value_reference_data_element_idx', cascade: 'none', fetch: 'join', cascadeValidate: 'dirty'
     }
 
     ReferenceDataValue() {

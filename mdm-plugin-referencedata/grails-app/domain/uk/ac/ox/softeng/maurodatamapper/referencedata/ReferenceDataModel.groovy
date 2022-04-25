@@ -85,9 +85,9 @@ class ReferenceDataModel implements Model<ReferenceDataModel>, ReferenceSummaryM
         modelVersion type: VersionUserType
         folder cascade: 'none'
         authority fetch: 'join'
-        referenceDataTypes cascade: 'all-delete-orphan', cascadeValidate: 'dirty'
-        referenceDataElements cascade: 'all-delete-orphan', cascadeValidate: 'dirty'
-        referenceDataValues cascade: 'all-delete-orphan', cascadeValidate: 'dirty'
+        referenceDataTypes cascade: 'all-delete-orphan'
+        referenceDataElements cascade: 'all-delete-orphan'
+        referenceDataValues cascade: 'all-delete-orphan'
     }
 
     static mappedBy = [
@@ -142,8 +142,6 @@ class ReferenceDataModel implements Model<ReferenceDataModel>, ReferenceSummaryM
 
     def beforeValidate() {
         beforeValidateCatalogueItem()
-        this.referenceDataTypes?.each {it.beforeValidate()}
-        this.referenceDataElements?.each {it.beforeValidate()}
     }
 
     ReferenceDataType findReferenceDataTypeByLabel(String label) {

@@ -72,7 +72,7 @@ abstract class ReferenceDataType<D> implements ModelItem<D, ReferenceDataModel>,
     }
 
     static mapping = {
-        referenceDataElements cascade: 'delete,lock,refresh,evict,replicate'
+        referenceDataElements cascade: 'delete,lock,refresh,evict,replicate', cascadeValidate: 'none'
         referenceSummaryMetadata cascade: 'all-delete-orphan'
         referenceDataModel index: 'data_type_reference_data_model_idx', cascade: 'none'
     }

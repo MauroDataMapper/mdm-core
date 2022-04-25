@@ -245,7 +245,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
   },
   {
     "name": "ReferenceDataCsvImporterService",
-    "version": "4.0",
+    "version": "4.1",
     "displayName": "CSV Reference Data Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": false,
@@ -715,7 +715,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
     void 'VB01b : performance test creating a new main branch model version of a small ReferenceData'() {
         given: 'finalised model is created'
-        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataCsvImporterService/4.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataCsvImporterService/4.1', [
             finalised                      : true,
             folderId                       : folderId.toString(),
             modelName                      : 'FT Test Reference Data Model',
@@ -745,7 +745,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
     void 'VB01c : performance test creating a new main branch model version of a big ReferenceData'() {
         given: 'finalised model is created'
-        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataCsvImporterService/4.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataCsvImporterService/4.1', [
             finalised                      : true,
             folderId                       : folderId.toString(),
             modelName                      : 'FT Test Reference Data Model',
@@ -2229,7 +2229,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         log.debug("${loadCsvFile('simpleCSV').toList().toString()}")
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataCsvImporterService/4.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataCsvImporterService/4.1', [
             finalised                      : true,
             folderId                       : folderId.toString(),
             modelName                      : 'FT Test Reference Data Model',
@@ -3085,7 +3085,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         log.debug("${loadCsvFile('simpleCSV').toList().toString()}")
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataCsvImporterService/4.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataCsvImporterService/4.1', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             modelName                      : 'FT Test Reference Data Model',

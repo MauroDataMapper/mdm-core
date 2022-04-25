@@ -660,7 +660,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
         loginEditor()
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataCsvImporterService/4.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataCsvImporterService/4.1', [
             finalised                      : true,
             folderId                       : testFolderId.toString(),
             modelName                      : 'FT Test Reference Data Model',

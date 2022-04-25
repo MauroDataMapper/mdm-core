@@ -57,11 +57,17 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.similarity.ReferenceDataEl
 import uk.ac.ox.softeng.maurodatamapper.referencedata.traits.service.ReferenceSummaryMetadataAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Transactional
+import grails.util.Environment
 import groovy.util.logging.Slf4j
+import org.hibernate.engine.spi.SessionFactoryImplementor
+import org.hibernate.search.mapper.orm.Search
+import org.hibernate.search.mapper.orm.automaticindexing.session.AutomaticIndexingSynchronizationStrategy
+import org.hibernate.search.mapper.orm.session.SearchSession
 import org.springframework.beans.factory.annotation.Autowired
 
 import java.time.OffsetDateTime
@@ -153,8 +159,8 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
 
     ReferenceDataModel saveModelWithContent(ReferenceDataModel referenceDataModel) {
 
-        if (referenceDataModel.referenceDataTypes.any { it.id } ||
-            referenceDataModel.referenceDataValues.any { it.id }) {
+        if (referenceDataModel.referenceDataTypes.any {it.id} ||
+            referenceDataModel.referenceDataValues.any {it.id}) {
             throw new ApiInternalException('DMSXX', 'Cannot use saveWithBatching method to save ReferenceDataModel',
                                            new IllegalStateException('ReferenceDataModel has previously saved content'))
         }
@@ -179,16 +185,21 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
             referenceDataModel.referenceDataElements.clear()
         }
 
-        if (referenceDataModel.breadcrumbTree.children) {
-            referenceDataModel.breadcrumbTree.disableValidation()
-        }
-
         if (referenceDataModel.referenceDataValues) {
             referenceDataValues.addAll referenceDataModel.referenceDataValues
             referenceDataModel.referenceDataValues.clear()
         }
 
+        if (referenceDataModel.breadcrumbTree.children) {
+            referenceDataModel.breadcrumbTree.disableValidation()
+        }
+
+        // Set this HS session to be async mode, this is faster and as we dont need to read the indexes its perfectly safe
+        SearchSession searchSession = Search.session(sessionFactory.currentSession)
+        searchSession.automaticIndexingSynchronizationStrategy(AutomaticIndexingSynchronizationStrategy.async())
+
         save(failOnError: true, validate: false, flush: false, ignoreBreadcrumbs: true, referenceDataModel)
+
         sessionFactory.currentSession.flush()
 
         saveContent(referenceDataTypes, referenceDataElements, referenceDataValues)
@@ -209,15 +220,15 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
         }
 
         if (referenceDataModel.referenceDataTypes) {
-            referenceDataTypes.addAll referenceDataModel.referenceDataTypes.findAll { !it.id }
+            referenceDataTypes.addAll referenceDataModel.referenceDataTypes.findAll {!it.id}
         }
 
         if (referenceDataModel.referenceDataElements) {
-            referenceDataElements.addAll referenceDataModel.referenceDataElements.findAll { !it.id }
+            referenceDataElements.addAll referenceDataModel.referenceDataElements.findAll {!it.id}
         }
 
         if (referenceDataModel.referenceDataValues) {
-            referenceDataValues.addAll referenceDataModel.referenceDataValues.findAll { !it.id }
+            referenceDataValues.addAll referenceDataModel.referenceDataValues.findAll {!it.id}
         }
 
         saveContent(referenceDataTypes, referenceDataElements, referenceDataValues)
@@ -228,30 +239,49 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
 
     void saveContent(Collection<ReferenceDataType> referenceDataTypes, Collection<ReferenceDataElement> referenceDataElements,
                      Collection<ReferenceDataValue> referenceDataValues) {
+
         sessionFactory.currentSession.clear()
 
         //Skip validation on all contents
         long start = System.currentTimeMillis()
-        log.debug('Skip validation')
-        referenceDataTypes.each { it.skipValidation(true) }
-        referenceDataElements.each { it.skipValidation(true) }
-        referenceDataValues.each { it.skipValidation(true) }
-        log.debug('skip validation took {}', Utils.timeTaken(start))
+        log.debug('Disabling validation on contents')
+        referenceDataTypes.each {
+            it.skipValidation(true)
+            it.referenceDataElements?.clear()
+        }
+        referenceDataElements.each {
+            it.skipValidation(true)
+            it.referenceDataValues?.clear()
+        }
+        referenceDataValues.each {
+            it.skipValidation(true)
+        }
 
-        log.trace('Saving {} referenceDataTypes', referenceDataTypes.size())
-        start = System.currentTimeMillis()
+        // During testing its very important that we dont disable constraints otherwise we may miss an invalid model,
+        // The disabling is done to provide a speed up during saving which is not necessary during test
+        if (Environment.current != Environment.TEST) {
+            log.debug('Disabling database constraints')
+            GormUtils.disableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
+        }
+
+        long subStart = System.currentTimeMillis()
         referenceDataTypeService.saveAll(referenceDataTypes)
-        log.debug('referenceDataTypeService.saveAll took {}', Utils.timeTaken(start))
+        log.debug('Saved {} referenceDataTypes took {}', referenceDataTypes.size(), Utils.timeTaken(subStart))
 
-        log.trace('Saving {} referenceDataElements ', referenceDataElements.size())
-        start = System.currentTimeMillis()
+        subStart = System.currentTimeMillis()
         referenceDataElementService.saveAll(referenceDataElements)
-        log.debug('referenceDataElementService.saveAll took {}', Utils.timeTaken(start))
+        log.debug('Saved {} referenceDataElements took {}', referenceDataElements.size(), Utils.timeTaken(subStart))
 
-        start = System.currentTimeMillis()
-        log.trace('Saving {} referenceDataValues ', referenceDataValues.size())
+        subStart = System.currentTimeMillis()
         referenceDataValueService.saveAll(referenceDataValues)
-        log.debug('referenceDataValueService.saveAll took {}', Utils.timeTaken(start))
+        log.debug('Saved {} referenceDataValues took {}', referenceDataValues.size(), Utils.timeTaken(subStart))
+
+        if (Environment.current != Environment.TEST) {
+            log.debug('Enabling database constraints')
+            GormUtils.enableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
+        }
+
+        log.trace('Content save of ReferenceDataModel complete in {}', Utils.timeTaken(start))
     }
 
     @Override
@@ -323,7 +353,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
 
     void deleteAllUnusedDataTypes(ReferenceDataModel referenceDataModel) {
         log.debug('Cleaning ReferenceDataModel {} of DataTypes', referenceDataModel.label)
-        referenceDataModel.referenceDataTypes.findAll { !it.referenceDataElements }.each {
+        referenceDataModel.referenceDataTypes.findAll {!it.referenceDataElements}.each {
             referenceDataTypeService.delete(it)
         }
     }
@@ -359,19 +389,19 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
         checkFacetsAfterImportingCatalogueItem(referenceDataModel)
 
         if (referenceDataModel.referenceDataTypes) {
-            referenceDataModel.referenceDataTypes.each { rdt ->
+            referenceDataModel.referenceDataTypes.each {rdt ->
                 referenceDataTypeService.checkImportedReferenceDataTypeAssociations(importingUser, referenceDataModel, rdt)
             }
         }
 
         if (referenceDataModel.referenceDataElements) {
-            referenceDataModel.referenceDataElements.each { rde ->
+            referenceDataModel.referenceDataElements.each {rde ->
                 referenceDataElementService.checkImportedReferenceDataElementAssociations(importingUser, referenceDataModel, rde)
             }
         }
 
         if (referenceDataModel.referenceDataValues) {
-            referenceDataModel.referenceDataValues.each { rdv ->
+            referenceDataModel.referenceDataValues.each {rdv ->
                 referenceDataValueService.checkImportedReferenceDataValueAssociations(importingUser, referenceDataModel, rdv)
             }
         }
@@ -380,8 +410,8 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
 
     ReferenceDataModel ensureAllEnumerationTypesHaveValues(ReferenceDataModel referenceDataModel) {
         referenceDataModel.referenceDataTypes.
-            findAll { it.instanceOf(ReferenceEnumerationType) && !(it as ReferenceEnumerationType).getReferenceEnumerationValues() }.
-            each { ReferenceEnumerationType et ->
+            findAll {it.instanceOf(ReferenceEnumerationType) && !(it as ReferenceEnumerationType).getReferenceEnumerationValues()}.
+            each {ReferenceEnumerationType et ->
                 et.addToReferenceEnumerationValues(key: '-', value: '-')
             }
         referenceDataModel
@@ -395,7 +425,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
         if (!dataElementNames) return []
         getAllDataElementsOfDataModel(dataModel).findAll {
             caseInsensitive ?
-            it.label.toLowerCase() in dataElementNames.collect { it.toLowerCase() } :
+            it.label.toLowerCase() in dataElementNames.collect {it.toLowerCase()} :
             it.label in dataElementNames
         }
     }
@@ -403,9 +433,9 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
     Set<ReferenceEnumerationType> findAllEnumerationTypeByNames(ReferenceDataModel referenceDataModel, Set<String> enumerationTypeNames,
                                                                 boolean caseInsensitive) {
         if (!enumerationTypeNames) return []
-        referenceDataModel.referenceDataTypes.findAll { it.instanceOf(ReferenceEnumerationType) }.findAll {
+        referenceDataModel.referenceDataTypes.findAll {it.instanceOf(ReferenceEnumerationType)}.findAll {
             caseInsensitive ?
-            it.label.toLowerCase() in enumerationTypeNames.collect { it.toLowerCase() } :
+            it.label.toLowerCase() in enumerationTypeNames.collect {it.toLowerCase()} :
             it.label in enumerationTypeNames
         } as Set<ReferenceEnumerationType>
     }
@@ -461,7 +491,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
         CopyInformation referenceDataTypeCopyInformation = new CopyInformation(copyIndex: true)
         if (original.referenceDataTypes) {
             // Copy all the referencedatatypes
-            original.referenceDataTypes.sort().each { dt ->
+            original.referenceDataTypes.sort().each {dt ->
                 referenceDataTypeService.copyReferenceDataType(copy, dt, copier, userSecurityPolicyManager, copySummaryMetadata, referenceDataTypeCopyInformation)
             }
         }
@@ -469,7 +499,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
         CopyInformation referenceDataElementCopyInformation = new CopyInformation(copyIndex: true)
         if (original.referenceDataElements) {
             // Copy all the referencedataelements
-            original.referenceDataElements.sort().each { de ->
+            original.referenceDataElements.sort().each {de ->
                 log.debug("copy element ${de}")
                 referenceDataElementService.copyReferenceDataElement(copy, de, copier, userSecurityPolicyManager, copySummaryMetadata, referenceDataElementCopyInformation)
             }
@@ -503,7 +533,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
     List<ReferenceDataElementSimilarityResult> suggestLinksBetweenModels(ReferenceDataModel referenceDataModel,
                                                                          ReferenceDataModel otherReferenceDataModel,
                                                                          int maxResults) {
-        referenceDataModel.referenceDataElements.collect { de ->
+        referenceDataModel.referenceDataElements.collect {de ->
             referenceDataElementService.findAllSimilarReferenceDataElementsInReferenceDataModel(otherReferenceDataModel, de, maxResults)
         }
     }
@@ -561,7 +591,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
 
     @Override
     List<ReferenceDataModel> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        findAllByClassifier(classifier).findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(ReferenceDataModel, it.id) }
+        findAllByClassifier(classifier).findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(ReferenceDataModel, it.id)}
     }
 
     @Override
@@ -745,7 +775,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
     }
 
     private void createReferenceDataTypeDiffCaches(DiffCache diffCache, List<ReferenceDataType> dataTypes, Map<UUID, List<ReferenceEnumerationValue>> enumerationValuesMap,
-                                          Map<String, Map<UUID, List<Diffable>>> facetData) {
+                                                   Map<String, Map<UUID, List<Diffable>>> facetData) {
         diffCache.addField('referenceDataTypes', dataTypes)
         dataTypes.each {dt ->
             DiffCache dtDiffCache = createCatalogueItemDiffCache(diffCache, dt, facetData)
@@ -757,7 +787,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
 
 
     private void createReferenceDataElementDiffCaches(DiffCache diffCache, List<ReferenceDataElement> dataElements, Map<UUID, List<ReferenceDataValue>> referenceDataValues,
-                                                   Map<String, Map<UUID, List<Diffable>>> facetData) {
+                                                      Map<String, Map<UUID, List<Diffable>>> facetData) {
         diffCache.addField('referenceDataElements', dataElements)
         dataElements.each {de ->
             DiffCache deDiffCache = createCatalogueItemDiffCache(diffCache, de, facetData)
