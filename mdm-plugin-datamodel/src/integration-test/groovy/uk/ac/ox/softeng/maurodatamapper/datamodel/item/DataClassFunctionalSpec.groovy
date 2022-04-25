@@ -722,7 +722,6 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
     }'''
 
         cleanup:
-        sessionFactory.currentSession.flush()
         DELETE("dataModels/${importedId}?permanent=true", MAP_ARG, true)
         assert response.status() == HttpStatus.NO_CONTENT
     }
@@ -757,7 +756,6 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         responseBody().items.size() == 0
 
         cleanup:
-        sessionFactory.currentSession.flush()
         DELETE("dataModels/${importedId}?permanent=true", MAP_ARG, true)
         assert response.status() == HttpStatus.NO_CONTENT
     }
