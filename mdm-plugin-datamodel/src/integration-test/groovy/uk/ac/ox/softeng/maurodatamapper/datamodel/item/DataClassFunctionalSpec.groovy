@@ -33,6 +33,7 @@ import grails.testing.spock.RunOnce
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
+import spock.lang.Retry
 import spock.lang.Shared
 
 import java.time.OffsetDateTime
@@ -667,7 +668,12 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         cleanUpData()
     }
 
-    @Rollback
+    @Transactional
+    UUID getDataClassId(String label) {
+        DataClass.findByLabel(label).id
+    }
+
+    @Retry
     void 'test searching for metadata "mdk1" in content dataclass'() {
         given:
         POST('dataModels/import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
@@ -684,7 +690,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         verifyResponse CREATED, response
         def importedId = responseBody().items[0].id
         def term = 'mdk1'
-        def id = DataClass.findByLabel('content').id
+        def id = getDataClassId('content')
 
         when: 'not logged in'
         GET("${getResourcePath(importedId)}/${id}/search?search=${term}", STRING_ARG, true)
@@ -721,7 +727,6 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         assert response.status() == HttpStatus.NO_CONTENT
     }
 
-    @Rollback
     void 'test searching for metadata "mdk1" in empty dataclass'() {
         given:
         POST('dataModels/import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/3.1', [
@@ -738,7 +743,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         verifyResponse CREATED, response
         def importedId = responseBody().items[0].id
         def term = 'mdk1'
-        def id = DataClass.findByLabel('emptyclass').id
+        def id = getDataClassId('emptyclass')
 
         expect:
         id

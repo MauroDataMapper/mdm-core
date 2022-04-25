@@ -7,6 +7,8 @@ Core API for Mauro Data Mapper
 | main | [![Build Status](https://jenkins.cs.ox.ac.uk/buildStatus/icon?job=Mauro+Data+Mapper%2Fmdm-core%2Fmain)](https://jenkins.cs.ox.ac.uk/blue/organizations/jenkins/Mauro%20Data%20Mapper%2Fmdm-core/branches) |
 | develop | [![Build Status](https://jenkins.cs.ox.ac.uk/buildStatus/icon?job=Mauro+Data+Mapper%2Fmdm-core%2Fdevelop)](https://jenkins.cs.ox.ac.uk/blue/organizations/jenkins/Mauro%20Data%20Mapper%2Fmdm-core/branches) |
 
+[![Quality gate](https://jenkins.cs.ox.ac.uk/sonarqube/api/project_badges/quality_gate?project=uk.ac.ox.softeng.maurodatamapper%3Amdm-core.ROOT)](https://jenkins.cs.ox.ac.uk/sonarqube/dashboard?id=uk.ac.ox.softeng.maurodatamapper%3Amdm-core.ROOT)
+
 ## Requirements
 
 * Grails 5.1.1+
