@@ -85,9 +85,8 @@ class ReferenceDataElement implements ModelItem<ReferenceDataElement, ReferenceD
 
     static mapping = {
         referenceSummaryMetadata cascade: 'all-delete-orphan'
-        referenceDataModel index: 'data_element_reference_data_model_idx' //, cascade: 'none'
-        referenceDataType index: 'data_element_data_type_idx', cascade: 'save-update', fetch: 'join'
-        model cascade: 'none'
+        referenceDataModel index: 'data_element_reference_data_model_idx', cascadeValidate: 'none' //, cascade: 'none'
+        referenceDataType index: 'data_element_data_type_idx', cascade: 'none', fetch: 'join', cascadeValidate: 'dirty'
     }
 
     static mappedBy = [
