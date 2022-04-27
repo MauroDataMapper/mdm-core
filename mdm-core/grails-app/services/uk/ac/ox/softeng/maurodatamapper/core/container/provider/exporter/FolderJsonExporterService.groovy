@@ -61,7 +61,7 @@ class FolderJsonExporterService extends FolderExporterProviderService implements
     }
 
     @Override
-    Boolean getIsPreferred() {
+    boolean getIsPreferred() {
         true
     }
 

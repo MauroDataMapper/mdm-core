@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-    XSD schema for Mauro /api/published/models/$publishedModelId/newerVersions?format=xml XML endpoint.
+    XSD schema for Mauro /api/published/models?format=xml XML endpoint.
 -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
-    <xs:element name="newerVersions" type="newerVersionsType"></xs:element>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0">
+    <xs:element name="index" type="indexType"></xs:element>
     <xs:simpleType name="mandatoryString">
         <xs:restriction base="xs:string">
             <xs:minLength value="1" />
@@ -49,13 +49,14 @@
     </xs:complexType>
     <xs:complexType name="publishedModelsType">
         <xs:sequence>
-            <xs:element maxOccurs="unbounded" name="publishedModel" type="publishedModelType" />
+            <xs:element minOccurs="0" maxOccurs="unbounded" name="publishedModel" type="publishedModelType" />
         </xs:sequence>
     </xs:complexType>
-    <xs:complexType name="newerVersionsType">
+    <xs:complexType name="indexType">
         <xs:sequence>
+            <xs:element name="authority" type="authorityType" />
             <xs:element name="lastUpdated" type="xs:dateTime" />
-            <xs:element name="newerPublishedModels" type="publishedModelsType"></xs:element>
+            <xs:element name="publishedModels" type="publishedModelsType"></xs:element>
         </xs:sequence>
     </xs:complexType>
 </xs:schema>

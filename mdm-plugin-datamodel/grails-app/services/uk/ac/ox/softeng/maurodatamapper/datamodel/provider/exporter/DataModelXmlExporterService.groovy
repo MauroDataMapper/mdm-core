@@ -61,7 +61,7 @@ class DataModelXmlExporterService extends DataModelExporterProviderService imple
     }
 
     @Override
-    Boolean getIsPreferred() {
+    boolean getIsPreferred() {
         true
     }
 

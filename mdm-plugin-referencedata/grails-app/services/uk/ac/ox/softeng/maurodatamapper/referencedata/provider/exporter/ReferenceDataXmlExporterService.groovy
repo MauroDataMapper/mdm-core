@@ -49,7 +49,7 @@ class ReferenceDataXmlExporterService extends ReferenceDataModelExporterProvider
     }
 
     @Override
-    Boolean getIsPreferred() {
+    boolean getIsPreferred() {
         true
     }
 

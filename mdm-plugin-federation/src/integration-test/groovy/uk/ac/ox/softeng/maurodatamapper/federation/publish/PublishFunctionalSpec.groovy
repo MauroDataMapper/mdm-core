@@ -21,7 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
-import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlComparer
+import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlValidator
 import uk.ac.ox.softeng.maurodatamapper.version.Version
 
 import grails.gorm.transactions.Transactional
@@ -49,7 +49,7 @@ import static io.micronaut.http.HttpStatus.OK
  */
 @Slf4j
 @Integration
-class PublishFunctionalSpec extends BaseFunctionalSpec implements XmlComparer {
+class PublishFunctionalSpec extends BaseFunctionalSpec implements XmlValidator {
 
     @Shared
     String folderId
@@ -110,6 +110,9 @@ class PublishFunctionalSpec extends BaseFunctionalSpec implements XmlComparer {
         then:
         verifyResponse OK, xmlResponse
         verifyBaseXmlResponse(xmlResponse, false)
+
+        and:
+        validateXml('publishedModels', '1.0', xmlResponse.body())
     }
 
     void 'P02J : Get published models when model available as JSON'() {
@@ -135,7 +138,7 @@ class PublishFunctionalSpec extends BaseFunctionalSpec implements XmlComparer {
         responseBody().publishedModels.size() == 1
 
         and:
-        verifyJsonPublishedModel(responseBody().publishedModels.find {it.title == 'FunctionalTest DataModel 1.0.0' }, 'DataModel', 'dataModels', getDataModelExporters())
+        verifyJsonPublishedModel(responseBody().publishedModels.find {it.title == 'FunctionalTest DataModel 1.0.0'}, 'DataModel', 'dataModels', getDataModelExporters())
 
         when:
         Map<String, Object> publishedModel = responseBody().publishedModels.first()
@@ -159,7 +162,7 @@ class PublishFunctionalSpec extends BaseFunctionalSpec implements XmlComparer {
         result.publishedModels.children().size() == 1
 
         and:
-        verifyXmlPublishedModel(result.publishedModels.publishedModel.find {it.title == 'FunctionalTest DataModel 1.0.0' }, 'DataModel', 'dataModels', getDataModelExporters())
+        verifyXmlPublishedModel(result.publishedModels.publishedModel.find {it.title == 'FunctionalTest DataModel 1.0.0'}, 'DataModel', 'dataModels', getDataModelExporters())
 
         when:
         GPathResult publishedModel = result.publishedModels.publishedModel.first()
@@ -168,6 +171,9 @@ class PublishFunctionalSpec extends BaseFunctionalSpec implements XmlComparer {
         publishedModel.modelId == dataModelId
         publishedModel.description == 'Some random desc'
         publishedModel.datePublished.text() == publishedDateStr
+
+        and:
+        validateXml('publishedModels', '1.0', xmlResponse.body())
     }
 
     void 'N01J : Test the newerVersions endpoint (with no newer versions) as JSON'() {
@@ -186,6 +192,9 @@ class PublishFunctionalSpec extends BaseFunctionalSpec implements XmlComparer {
         then:
         verifyResponse OK, xmlResponse
         verifyBaseNewerVersionsXmlResponse(xmlResponse, false)
+
+        and:
+        validateXml('newerPublishedModels', '1.0', xmlResponse.body())
     }
 
     void 'N02J : Test the newerVersions endpoint (with newer versions) as JSON'() {
@@ -201,8 +210,10 @@ class PublishFunctionalSpec extends BaseFunctionalSpec implements XmlComparer {
         responseBody().newerPublishedModels.size() == 2
 
         and:
-        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.title == 'FunctionalTest DataModel 2.0.0' }, 'DataModel', 'dataModels', getDataModelExporters(), true)
-        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.title == 'FunctionalTest DataModel 3.0.0' }, 'DataModel', 'dataModels', getDataModelExporters(), true)
+        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.title == 'FunctionalTest DataModel 2.0.0'}, 'DataModel', 'dataModels', getDataModelExporters(),
+                                 true)
+        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.title == 'FunctionalTest DataModel 3.0.0'}, 'DataModel', 'dataModels', getDataModelExporters(),
+                                 true)
         responseBody().newerPublishedModels.each {publishedModel ->
             assert publishedModel.description == 'Some random desc'
         }
@@ -227,11 +238,16 @@ class PublishFunctionalSpec extends BaseFunctionalSpec implements XmlComparer {
         result.newerPublishedModels.children().size() == 2
 
         and:
-        verifyXmlPublishedModel(result.newerPublishedModels.publishedModel.find {it.title == 'FunctionalTest DataModel 2.0.0' }, 'DataModel', 'dataModels', getDataModelExporters(), true)
-        verifyXmlPublishedModel(result.newerPublishedModels.publishedModel.find {it.title == 'FunctionalTest DataModel 3.0.0' }, 'DataModel', 'dataModels', getDataModelExporters(), true)
+        verifyXmlPublishedModel(result.newerPublishedModels.publishedModel.find {it.title == 'FunctionalTest DataModel 2.0.0'}, 'DataModel', 'dataModels',
+                                getDataModelExporters(), true)
+        verifyXmlPublishedModel(result.newerPublishedModels.publishedModel.find {it.title == 'FunctionalTest DataModel 3.0.0'}, 'DataModel', 'dataModels',
+                                getDataModelExporters(), true)
         result.newerPublishedModels.publishedModel.each {publishedModel ->
             assert publishedModel.description == 'Some random desc'
         }
+
+        and:
+        validateXml('newerPublishedModels', '1.0', xmlResponse.body())
 
         cleanup:
         DELETE("dataModels/${tuple.v1}?permanent=true", MAP_ARG, true)

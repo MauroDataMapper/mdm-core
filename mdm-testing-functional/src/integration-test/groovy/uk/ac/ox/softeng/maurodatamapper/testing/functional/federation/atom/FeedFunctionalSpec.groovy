@@ -103,7 +103,8 @@ class FeedFunctionalSpec extends FunctionalSpec implements XmlComparer {
         and:
         verifyEntry(feed.entry.find {it.title == 'Simple Test CodeSet 1.0.0'}, 'CodeSet', 'https://www.mauro-data-mapper.com/cdw', 'codeSets', getCodeSetExporters())
         verifyEntry(feed.entry.find {it.title == 'Complex Test CodeSet 1.0.0'}, 'CodeSet', 'https://www.mauro-data-mapper.com/cdw', 'codeSets', getCodeSetExporters())
-        verifyEntry(feed.entry.find {it.title == 'Finalised Example Test DataModel 1.0.0'}, 'DataModel', 'https://www.mauro-data-mapper.com/cdw', 'dataModels', getDataModelExporters())
+        verifyEntry(feed.entry.find {it.title == 'Finalised Example Test DataModel 1.0.0'}, 'DataModel', 'https://www.mauro-data-mapper.com/cdw', 'dataModels',
+                    getDataModelExporters())
 
         cleanup:
         DELETE("admin/properties/$sitePropertyId", MAP_ARG, true)
@@ -114,7 +115,7 @@ class FeedFunctionalSpec extends FunctionalSpec implements XmlComparer {
     /**
      * Check that the response - which is expected to be XML as Atom, looks OK.
      */
-    private GPathResult verifyBaseAtomResponse(HttpResponse<String> xmlResponse, boolean expectEntries, String host,  String linkBaseUrl, String contextPath = '') {
+    private GPathResult verifyBaseAtomResponse(HttpResponse<String> xmlResponse, boolean expectEntries, String host, String linkBaseUrl, String contextPath = '') {
         log.warn('XML \n{}', prettyPrintXml(xmlResponse.body()))
 
         //Use the jsonCapableResponse even though it is a string of XML

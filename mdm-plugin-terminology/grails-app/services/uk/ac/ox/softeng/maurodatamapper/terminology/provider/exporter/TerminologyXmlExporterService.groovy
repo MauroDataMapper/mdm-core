@@ -61,7 +61,7 @@ class TerminologyXmlExporterService extends TerminologyExporterProviderService i
     }
 
     @Override
-    Boolean getIsPreferred() {
+    boolean getIsPreferred() {
         true
     }
 

@@ -23,7 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
-import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlComparer
+import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlValidator
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -46,7 +46,7 @@ import static io.micronaut.http.HttpStatus.OK
 
 @Slf4j
 @Integration
-class FeedFunctionalSpec extends BaseFunctionalSpec implements XmlComparer {
+class FeedFunctionalSpec extends BaseFunctionalSpec implements XmlValidator {
 
     DefaultLinkGenerator grailsLinkGenerator
 
@@ -78,6 +78,9 @@ class FeedFunctionalSpec extends BaseFunctionalSpec implements XmlComparer {
 
         then:
         verifyBaseAtomResponse(localResponse, false, 'localhost', "http://localhost:$serverPort")
+
+        and:
+        validateXml('feed', '1.0', localResponse.body())
     }
 
     void 'F02 : Test getting published models when model available'() {
@@ -98,6 +101,9 @@ class FeedFunctionalSpec extends BaseFunctionalSpec implements XmlComparer {
         GPathResult feed = verifyBaseAtomResponse(localResponse, true, 'localhost', "http://localhost:$serverPort")
         feed.entry.size() == 1
         verifyEntry(feed.entry.find {it.title == 'FunctionalTest DataModel 1.0.0'}, 'DataModel', "http://localhost:$serverPort", 'dataModels', getDataModelExporters())
+
+        and:
+        validateXml('feed', '1.0', localResponse.body())
     }
 
     void 'F03 : Test links render when site url property set'() {
@@ -123,7 +129,11 @@ class FeedFunctionalSpec extends BaseFunctionalSpec implements XmlComparer {
         selfLink.@href == 'https://www.mauro-data-mapper.com/cdw/api/feeds/all'
 
         and:
-        verifyEntry(feed.entry.find {it.title == 'FunctionalTest DataModel 1.0.0'}, 'DataModel', 'https://www.mauro-data-mapper.com/cdw', 'dataModels', getDataModelExporters())
+        verifyEntry(feed.entry.find {it.title == 'FunctionalTest DataModel 1.0.0'}, 'DataModel', 'https://www.mauro-data-mapper.com/cdw', 'dataModels',
+                    getDataModelExporters())
+
+        and:
+        validateXml('feed', '1.0', xmlResponse.body())
 
         cleanup:
         DELETE("admin/properties/$sitePropertyId", MAP_ARG, true)

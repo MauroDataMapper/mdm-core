@@ -58,7 +58,7 @@ class TerminologyJsonExporterService extends TerminologyExporterProviderService 
     }
 
     @Override
-    Boolean getIsPreferred() {
+    boolean getIsPreferred() {
         true
     }
 

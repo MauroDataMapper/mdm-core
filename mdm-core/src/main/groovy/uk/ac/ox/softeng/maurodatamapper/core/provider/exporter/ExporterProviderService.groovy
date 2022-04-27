@@ -55,7 +55,7 @@ abstract class ExporterProviderService extends MauroDataMapperService {
      * Flag preferred/native ExporterProviderService, to be sorted first.
      * @return true if preferred
      */
-    Boolean getIsPreferred() {
+    boolean getIsPreferred() {
         false
     }
 

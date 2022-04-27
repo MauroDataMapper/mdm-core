@@ -58,7 +58,7 @@ class DataModelJsonExporterService extends DataModelExporterProviderService impl
     }
 
     @Override
-    Boolean getIsPreferred() {
+    boolean getIsPreferred() {
         true
     }
 

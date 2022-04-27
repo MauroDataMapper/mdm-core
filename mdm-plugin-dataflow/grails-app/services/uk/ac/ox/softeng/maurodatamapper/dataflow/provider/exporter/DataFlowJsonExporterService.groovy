@@ -52,7 +52,7 @@ class DataFlowJsonExporterService extends DataFlowExporterProviderService implem
     }
 
     @Override
-    Boolean getIsPreferred() {
+    boolean getIsPreferred() {
         true
     }
 

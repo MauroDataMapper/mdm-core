@@ -116,9 +116,10 @@ class PublishFunctionalSpec extends FunctionalSpec implements XmlComparer {
         responseBody().publishedModels.size() == 3
 
         and:
-        verifyJsonPublishedModel(responseBody().publishedModels.find {it.title == 'Simple Test CodeSet 1.0.0' }, 'CodeSet', 'codeSets', getCodeSetExporters())
-        verifyJsonPublishedModel(responseBody().publishedModels.find {it.title == 'Complex Test CodeSet 1.0.0' }, 'CodeSet', 'codeSets', getCodeSetExporters())
-        verifyJsonPublishedModel(responseBody().publishedModels.find {it.title == 'Finalised Example Test DataModel 1.0.0' }, 'DataModel', 'dataModels', getDataModelExporters())
+        verifyJsonPublishedModel(responseBody().publishedModels.find {it.title == 'Simple Test CodeSet 1.0.0'}, 'CodeSet', 'codeSets', getCodeSetExporters())
+        verifyJsonPublishedModel(responseBody().publishedModels.find {it.title == 'Complex Test CodeSet 1.0.0'}, 'CodeSet', 'codeSets', getCodeSetExporters())
+        verifyJsonPublishedModel(responseBody().publishedModels.find {it.title == 'Finalised Example Test DataModel 1.0.0'}, 'DataModel', 'dataModels',
+                                 getDataModelExporters())
     }
 
     void 'R01X : Get published models when logged in as reader as XML'() {
@@ -134,9 +135,10 @@ class PublishFunctionalSpec extends FunctionalSpec implements XmlComparer {
         result.publishedModels.children().size() == 3
 
         and:
-        verifyXmlPublishedModel(result.publishedModels.publishedModel.find {it.title == 'Simple Test CodeSet 1.0.0' }, 'CodeSet', 'codeSets', getCodeSetExporters())
-        verifyXmlPublishedModel(result.publishedModels.publishedModel.find {it.title == 'Complex Test CodeSet 1.0.0' }, 'CodeSet', 'codeSets', getCodeSetExporters())
-        verifyXmlPublishedModel(result.publishedModels.publishedModel.find {it.title == 'Finalised Example Test DataModel 1.0.0' }, 'DataModel', 'dataModels', getDataModelExporters())
+        verifyXmlPublishedModel(result.publishedModels.publishedModel.find {it.title == 'Simple Test CodeSet 1.0.0'}, 'CodeSet', 'codeSets', getCodeSetExporters())
+        verifyXmlPublishedModel(result.publishedModels.publishedModel.find {it.title == 'Complex Test CodeSet 1.0.0'}, 'CodeSet', 'codeSets', getCodeSetExporters())
+        verifyXmlPublishedModel(result.publishedModels.publishedModel.find {it.title == 'Finalised Example Test DataModel 1.0.0'}, 'DataModel', 'dataModels',
+                                getDataModelExporters())
     }
 
     void 'L02J : Test the newerVersions endpoint with no newer versions (as not logged in) as JSON'() {
@@ -235,8 +237,10 @@ class PublishFunctionalSpec extends FunctionalSpec implements XmlComparer {
         responseBody().newerPublishedModels.size() == 2
 
         and:
-        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.title == 'Finalised Example Test DataModel 2.0.0' }, 'DataModel', 'dataModels', getDataModelExporters(), true)
-        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.title == 'Finalised Example Test DataModel 3.0.0' }, 'DataModel', 'dataModels', getDataModelExporters(), true)
+        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.title == 'Finalised Example Test DataModel 2.0.0'}, 'DataModel', 'dataModels',
+                                 getDataModelExporters(), true)
+        verifyJsonPublishedModel(responseBody().newerPublishedModels.find {it.title == 'Finalised Example Test DataModel 3.0.0'}, 'DataModel', 'dataModels',
+                                 getDataModelExporters(), true)
 
         cleanup:
         loginAdmin()
@@ -262,8 +266,10 @@ class PublishFunctionalSpec extends FunctionalSpec implements XmlComparer {
         result.newerPublishedModels.children().size() == 2
 
         and:
-        verifyXmlPublishedModel(result.newerPublishedModels.publishedModel.find {it.title == 'Finalised Example Test DataModel 2.0.0' }, 'DataModel', 'dataModels', getDataModelExporters(), true)
-        verifyXmlPublishedModel(result.newerPublishedModels.publishedModel.find {it.title == 'Finalised Example Test DataModel 3.0.0' }, 'DataModel', 'dataModels', getDataModelExporters(), true)
+        verifyXmlPublishedModel(result.newerPublishedModels.publishedModel.find {it.title == 'Finalised Example Test DataModel 2.0.0'}, 'DataModel', 'dataModels',
+                                getDataModelExporters(), true)
+        verifyXmlPublishedModel(result.newerPublishedModels.publishedModel.find {it.title == 'Finalised Example Test DataModel 3.0.0'}, 'DataModel', 'dataModels',
+                                getDataModelExporters(), true)
 
         cleanup:
         loginAdmin()

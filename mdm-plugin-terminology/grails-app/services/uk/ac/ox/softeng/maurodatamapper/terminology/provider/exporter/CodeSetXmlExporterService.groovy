@@ -61,7 +61,7 @@ class CodeSetXmlExporterService extends CodeSetExporterProviderService implement
     }
 
     @Override
-    Boolean getIsPreferred() {
+    boolean getIsPreferred() {
         true
     }
 

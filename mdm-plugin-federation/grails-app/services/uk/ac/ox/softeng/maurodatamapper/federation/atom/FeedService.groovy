@@ -17,23 +17,18 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.federation.atom
 
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.federation.PublishedModel
 import uk.ac.ox.softeng.maurodatamapper.federation.publish.PublishService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import org.springframework.beans.factory.annotation.Autowired
 
 @Transactional
 @Slf4j
 class FeedService {
 
     PublishService publishService
-
-    @Autowired(required = false)
-    List<ModelService> modelServices
 
     List<PublishedModel> findPublishedModels(UserSecurityPolicyManager userSecurityPolicyManager) {
         publishService.findAllPublishedReadableModels(userSecurityPolicyManager)
