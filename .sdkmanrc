@@ -1,6 +1,6 @@
 # Enable auto-env through the sdkman_auto_env config
 # Add key=value pairs of SDKs to use below
-java=17.0.1-tem
+java=17.0.3-tem
 gradle=7.3.3
-grails=5.1.2
-groovy=3.0.9
+grails=5.1.7
+groovy=3.0.10

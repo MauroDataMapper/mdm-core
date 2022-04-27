@@ -12,6 +12,7 @@ buildscript {
 
 plugins {
     id 'java-platform'
+    id 'org.springframework.boot' // Apply the plugin so we get the correct spring boot bom coordinates as per the root project
     id "io.spring.dependency-management"
 }
 
@@ -56,13 +57,7 @@ publishing {
             }
             pom.withXml {
                 Node xml = asNode()
-                Properties deps = new Properties()
-                deps.load(new StringReader(new File("$projectDir/gradle.properties").text))
-                Map imported = dependencyManagement.importedProperties
-
-                deps.each {dep ->
-                    imported["${dep.key}.version".toString()] = dep.value
-                }
+                Map imported = getControlledProperties(dependencyManagement)
 
                 xml.children().last() + {
                     def mkp = delegate
@@ -81,12 +76,12 @@ publishing {
 
 // Need this to get the complete list of bom properties for the pom file
 // But dont want to actually use spring dependency management
+// The spring boot plugin will apply the spring boot bom for us
 dependencyManagement {
     generatedPomCustomization {
         enabled = false
     }
     imports {
-        mavenBom "org.springframework.boot:spring-boot-dependencies:$springBoot"
         mavenBom "org.grails:grails-bom:$grails"
     }
 }
@@ -98,24 +93,27 @@ javaPlatform {
 
 dependencies {
 
+    // We're using the gradle java platform system to build the bom file so we have to define the same dependencies on the bom files as per the spring dependencyManagement
     api platform("org.springframework.boot:spring-boot-dependencies:$springBoot")
     api platform("org.grails:grails-bom:$grails")
 
     constraints {
+
         api group: 'com.google.guava', name: 'guava', version: guava
         api group: 'org.grails', name: 'grails-core', version: grails
         api group: 'org.grails.plugins', name: 'views-json', version: grailsViews
+        api group: 'org.grails.plugins', name: 'cache', version: cache
         api group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: spotbugsAnnotation
         api group: 'com.bertramlabs.plugins', name: 'asset-pipeline-core', version: assetPipeline
         api "org.javassist:javassist:$javaAssist"
 
-        api group: 'org.slf4j', name: 'slf4j-api', version: slf4j
-        api group: 'ch.qos.logback', name: 'logback-classic', version: logback
+        api group: 'org.slf4j', name: 'slf4j-api' //, version: slf4j
+        api group: 'ch.qos.logback', name: 'logback-classic' //, version: logback
 
         //mathpere/grails-hibernate-search-plugin
         api "org.grails.plugins:hibernate-search:$hibernateSearch"
-        api "org.hibernate:hibernate-core:$hibernate"
-        api "org.hibernate:hibernate-ehcache:$hibernate"
+        api "org.hibernate:hibernate-core" //:$hibernate"
+        api "org.hibernate:hibernate-ehcache" //:$hibernate"
         api group: 'org.hibernate.search', name: 'hibernate-search-mapper-orm', version: hibernateSearchOrm
         api group: 'org.hibernate.search', name: 'hibernate-search-backend-lucene', version: hibernateSearchOrm
         api group: 'org.hibernate.search', name: 'hibernate-search-v5migrationhelper-orm', version: hibernateSearchOrm
@@ -131,11 +129,23 @@ dependencies {
         api group: 'commons-beanutils', name: 'commons-beanutils', version: commonsBeanutils
 
         api group: 'net.javacrumbs.json-unit', name: 'json-unit', version: jsonunit
-        api group: 'org.xmlunit', name: 'xmlunit-core', version: xmlunit
+        api group: 'org.xmlunit', name: 'xmlunit-core' //, version: xmlunit2
     }
-
-
 }
+
+tasks.register("managedVersions") {
+    group = 'Introspection'
+    doLast {
+        if (project.hasProperty('dependencyManagement')) {
+            Map imported = dependencyManagement.getManagedVersions()
+            logger.quiet 'Project :: {}\n{}', project.name, imported.collect {k, v ->
+                "api ${k}:${v}"
+            }.sort().join('\n')
+        }
+    }
+}
+
+ext['controlledProperties'] = getControlledProperties(dependencyManagement)
 
 // Gradle doesnt rebuild the pom or metadata file if we change the dependencies because it doesnt see there to be a change
 // So we just force it to
@@ -146,4 +156,15 @@ afterEvaluate {
     tasks.withType(GenerateModuleMetadata).configureEach {
         it.outputs.upToDateWhen {false}
     }
+}
+
+Map<String, String> getControlledProperties(dependencyManagementExtension) {
+    Properties deps = new Properties()
+    deps.load(new StringReader(new File("$projectDir/gradle.properties").text))
+    Map imported = dependencyManagementExtension.importedProperties
+
+    deps.each {dep ->
+        imported["${dep.key}.version".toString()] = dep.value
+    }
+    imported.sort()
 }

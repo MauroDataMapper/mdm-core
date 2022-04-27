@@ -50,6 +50,8 @@ import grails.plugins.Plugin
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import org.grails.web.databinding.bindingsource.DataBindingSourceRegistry
+import org.grails.web.servlet.view.CompositeViewResolver
+import org.grails.web.servlet.view.SitemeshLayoutViewResolver
 import org.hibernate.dialect.PostgreSQL94Dialect
 import org.springframework.boot.web.servlet.ServletListenerRegistrationBean
 import org.springframework.util.ClassUtils
@@ -63,7 +65,7 @@ class MdmCoreGrailsPlugin extends Plugin {
     static String DEFAULT_USER_SECURITY_POLICY_MANAGER_BEAN_NAME = 'defaultUserSecurityPolicyManager'
 
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = '5.1.1 > *'
+    def grailsVersion = '5.1.7 > *'
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
         'grails-app/views/error.gsp'
@@ -102,6 +104,7 @@ This is basically the backend API.
         hibernate      : '7.2.0 > *',
         interceptors   : grailsVersion,
         services       : grailsVersion,
+        controllers    : grailsVersion,
         assetPipeline  : '3.3.6 > *',
         jsonView       : '2.2.0 > *',
         markupView     : '2.2.0 > *',
@@ -135,7 +138,7 @@ This is basically the backend API.
                     String dialect = ds.dialect
                     Class dialectClass = ClassUtils.forName(dialect, this.class.classLoader)
                     if (Utils.parentClassIsAssignableFromChild(PostgreSQL94Dialect, dialectClass)) {
-                        Map dsProperties = ds.properties?:[:]
+                        Map dsProperties = ds.properties ?: [:]
                         String connectionProperties = dsProperties.connectionProperties ?: ''
                         if (!connectionProperties.contains('reWriteBatchedInserts')) {
                             String key = dataSourcesConfig ? "dataSources.${k}.properties.connectionProperties" : 'dataSource.properties.connectionProperties'
@@ -243,6 +246,15 @@ This is basically the backend API.
          */
         DataBindingSourceRegistry registry = applicationContext.getBean(DataBindingSourceRegistry.BEAN_NAME)
         registry.addDataBindingSourceCreator(applicationContext.getBean(CsvDataBindingSourceCreator))
+
+        /**
+         * Remove the SitemeshLayoutViewResolver as this resolves GSP files which we dont need or use
+         */
+        SitemeshLayoutViewResolver sitemeshLayoutViewResolver = applicationContext.getBean(SitemeshLayoutViewResolver)
+        if (sitemeshLayoutViewResolver) {
+            CompositeViewResolver compositeViewResolver = applicationContext.getBean(CompositeViewResolver.BEAN_NAME, CompositeViewResolver)
+            compositeViewResolver.viewResolvers.remove(sitemeshLayoutViewResolver)
+        }
     }
 
     void outputRuntimeArgs() {

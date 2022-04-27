@@ -27,6 +27,11 @@ import org.springframework.context.annotation.ComponentScan
 @ComponentScan(basePackages = ['uk.ac.ox.softeng.maurodatamapper'])
 class Application extends GrailsAutoConfiguration {
     static void main(String[] args) {
+        //        // assume SLF4J is bound to logback in the current environment
+        //        LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+        //        // print logback's internal status
+        //        StatusPrinter.print(lc);
+
         GrailsApp.run(Application, args)
     }
 }

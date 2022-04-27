@@ -19,3 +19,4 @@ include(
     'mdm-plugin-profile',
     'mdm-plugin-federation',
     )
+

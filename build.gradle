@@ -13,15 +13,7 @@ buildscript {
     }
     dependencies {
         classpath "ox.softeng.gradle:oxbrcinformatics-gradle-plugins:$oxbrcinformaticsGradlePluginsVersion"
-
-        // The version of spring-core included is 3.1.3.RELEASE which is incompatible with the grails-gradle-plugin used by all the
-        // the Grails modules and causes issues when trying to run-app therefore we exclude it
-        classpath("gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:$licenseGradlePluginVersion") {
-            exclude group: 'org.springframework', module: 'spring-core'
-        }
-        // However without spring-core the license plugin won't work so we need to include it at the top level
-        // this version will need to be kept inline with Grails' spring-core
-        classpath "org.springframework:spring-core:$licenseGradlePluginSpringCoreOverrideVersion"
+        classpath("gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:$licenseGradlePluginVersion")
     }
     configurations.all {
         // check for updates every build
@@ -32,10 +24,13 @@ buildscript {
 plugins {
     id 'maven-publish'
     id "org.sonarqube" version "3.1.1"
+    id "com.github.hierynomus.license" version "${licenseGradlePluginVersion}"
+    // The springboot plugin is loaded in by grails and if the version of the plugin isnt right it will override all versions of imported spring boot dependencies
+    // Therefore we can define it here (but not apply it to the root) and then ALL subprojects will use this version rather than another version
+    id 'org.springframework.boot' version "${springBootVersion}" apply false
 }
 
 apply plugin: 'ox.softeng.ox-brc-base'
-apply plugin: "com.github.hierynomus.license"
 
 task unitTest() {
     group 'testing'
@@ -169,8 +164,6 @@ allprojects {
 
 subprojects {
 
-    apply plugin: 'com.github.hierynomus.license'
-
     license {
         header = file("${rootDir}/gradle/NOTICE.tmpl")
         ext.year = Calendar.getInstance().get(Calendar.YEAR)
@@ -196,7 +189,7 @@ subprojects {
             if (project.hasProperty('dependencyManagement')) {
                 Map imported = dependencyManagement.importedProperties
                 logger.quiet 'Project :: {}\n{}', project.name, imported.collect {k, v ->
-                    def projProp = project.hasProperty(k) ? project.getProperty(k) : null
+                    def projProp = project.hasProperty(k) ? project.getProperty(k) : project.hasProperty(k - '.version') ? project.getProperty(k - '.version') : null
                     "$k,$v,${projProp ?: ''}"
                 }.sort().join('\n')
             }
@@ -213,6 +206,14 @@ subprojects {
     }
 
     afterEvaluate {
+
+        // This doubles down on making sure the imported and overridden properties from mdm-bom are properly enforced on all sub projects
+        if (project.name != 'mdm-bom') {
+            project.getRootProject().findProject(':mdm-bom').ext['controlledProperties'].each {k, v ->
+                project.ext[k] = v
+            }
+        }
+
         def addtlJvmArgs = ['-XX:+UseG1GC', '-XX:+UseStringDeduplication', '-XX:+UseCompressedOops', '-Dfile.encoding=UTF-8',
                             '-XX:ReservedCodeCacheSize=128M', '-XX:+UseCodeCacheFlushing']
         //
