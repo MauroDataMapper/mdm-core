@@ -1,5 +1,44 @@
 {
   "extends": [
-    "config:base"
+    "config:base",
+    ":dependencyDashboard",
+    ":reviewer(olliefreeman)",
+    ":label(dependencies)",
+    "schedule:nonOfficeHours",
+    ":prHourlyLimit1"
+  ],
+  "rebaseWhen": "conflicted",
+  "prConcurrentLimit": 5,
+  "prCreation": "not-pending",
+  "ignoreDeps": [
+    "gradle"
+  ],
+  "packageRules": [
+    {
+      "groupName": "Grails Packages",
+      "description": "Packages that will be controlled by updating grails",
+      "matchPackagePrefixes": [
+        "org.grails",
+        "org.springframework",
+        "io.micronaut",
+        "org.hibernate",
+        "com.bertramlabs.plugins",
+        "org.codehaus.groovy"
+      ],
+      "excludePackagePrefixes": [
+        "org.hibernate.search"
+      ]
+    },
+    {
+      "groupName": "Hibernate Search Packages",
+      "description": "Packages that will be controlled by updating grails",
+      "matchPackagePrefixes": [
+        "org.hibernate.search",
+        "org.apache.lucene"
+      ],
+      "excludePackagePrefixes": [
+        "org.hibernate:"
+      ]
+    }
   ]
 }
