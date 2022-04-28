@@ -107,13 +107,13 @@ dependencies {
         api group: 'com.bertramlabs.plugins', name: 'asset-pipeline-core', version: assetPipeline
         api "org.javassist:javassist:$javaAssist"
 
-        api group: 'org.slf4j', name: 'slf4j-api' //, version: slf4j
-        api group: 'ch.qos.logback', name: 'logback-classic' //, version: logback
+        api group: 'org.slf4j', name: 'slf4j-api', version: slf4j
+        api group: 'ch.qos.logback', name: 'logback-classic', version: logback
 
         //mathpere/grails-hibernate-search-plugin
         api "org.grails.plugins:hibernate-search:$hibernateSearch"
-        api "org.hibernate:hibernate-core" //:$hibernate"
-        api "org.hibernate:hibernate-ehcache" //:$hibernate"
+        api "org.hibernate:hibernate-core:$hibernate"
+        api "org.hibernate:hibernate-ehcache:$hibernate"
         api group: 'org.hibernate.search', name: 'hibernate-search-mapper-orm', version: hibernateSearchOrm
         api group: 'org.hibernate.search', name: 'hibernate-search-backend-lucene', version: hibernateSearchOrm
         api group: 'org.hibernate.search', name: 'hibernate-search-v5migrationhelper-orm', version: hibernateSearchOrm
@@ -129,7 +129,6 @@ dependencies {
         api group: 'commons-beanutils', name: 'commons-beanutils', version: commonsBeanutils
 
         api group: 'net.javacrumbs.json-unit', name: 'json-unit', version: jsonunit
-        api group: 'org.xmlunit', name: 'xmlunit-core' //, version: xmlunit2
     }
 }
 

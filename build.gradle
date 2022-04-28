@@ -23,7 +23,7 @@ buildscript {
 
 plugins {
     id 'maven-publish'
-    id "org.sonarqube" version "3.1.1"
+    id "org.sonarqube" version "3.3"
     id "com.github.hierynomus.license" version "${licenseGradlePluginVersion}"
     // The springboot plugin is loaded in by grails and if the version of the plugin isnt right it will override all versions of imported spring boot dependencies
     // Therefore we can define it here (but not apply it to the root) and then ALL subprojects will use this version rather than another version
@@ -188,7 +188,7 @@ subprojects {
         doLast {
             if (project.hasProperty('dependencyManagement')) {
                 Map imported = dependencyManagement.importedProperties
-                logger.quiet 'Project :: {}\n{}', project.name, imported.collect {k, v ->
+                logger.quiet 'Project :: {}\nproperty,version,overriden_version\n{}', project.name, imported.collect {k, v ->
                     def projProp = project.hasProperty(k) ? project.getProperty(k) : project.hasProperty(k - '.version') ? project.getProperty(k - '.version') : null
                     "$k,$v,${projProp ?: ''}"
                 }.sort().join('\n')

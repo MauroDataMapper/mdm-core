@@ -79,7 +79,7 @@ dependencies {
     testImplementation "io.micronaut:micronaut-http-client"
     testImplementation "org.grails:grails-web-testing-support"
     testImplementation "org.grails:views-json-testing-support"
-    testImplementation "org.hibernate.validator:hibernate-validator:6.2.0.Final"
+    testImplementation "org.hibernate.validator:hibernate-validator"
     testImplementation "io.micronaut:micronaut-http-client"
 }
 
