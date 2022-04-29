@@ -32,6 +32,7 @@ import grails.gorm.transactions.Transactional
 import grails.rest.Link
 import grails.util.Environment
 import groovy.util.logging.Slf4j
+import groovy.xml.slurpersupport.GPathResult
 import io.micronaut.http.client.HttpClientConfiguration
 import io.micronaut.http.client.netty.ssl.NettyClientSslBuilder
 import io.micronaut.http.codec.MediaTypeCodecRegistry
@@ -79,7 +80,7 @@ class SubscribedCatalogueService implements XmlImportMapping, AnonymisableServic
 
     void verifyConnectionToSubscribedCatalogue(SubscribedCatalogue subscribedCatalogue) {
         try {
-            Map<String, Object> catalogueModels = getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
+            /*Map<String, Object> catalogueModels = getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
                 client.getSubscribedCatalogueModels(subscribedCatalogue.apiKey)
             }
             if (!catalogueModels.containsKey('publishedModels') || !catalogueModels.authority) {
@@ -99,7 +100,24 @@ class SubscribedCatalogueService implements XmlImportMapping, AnonymisableServic
                          catalogueModels.authority.url].toArray(),
                         'Invalid subscription to catalogue at [{0}] as it has the same Authority as this instance [{1}:{2}]')
                 }
+            }*/
+
+            def (Authority subscribedAuthority, List<PublishedModel> publishedModels) = listPublishedModels(subscribedCatalogue, true)
+
+            Authority thisAuthority = authorityService.defaultAuthority
+
+            // Under prod mode dont let a connection to ourselves exist
+            if (Environment.current == Environment.PRODUCTION) {
+                if (subscribedAuthority.label == thisAuthority.label && subscribedAuthority.url == thisAuthority.url) {
+                    subscribedCatalogue.errors.reject(
+                        'invalid.subscription.url.authority',
+                        [subscribedCatalogue.url,
+                         subscribedAuthority.label,
+                         subscribedAuthority.url].toArray(),
+                        'Invalid subscription to catalogue at [{0}] as it has the same Authority as this instance [{1}:{2}]')
+                }
             }
+
         } catch (ApiException exception) {
             subscribedCatalogue.errors.reject('invalid.subscription.url.connection',
                                               [subscribedCatalogue.url, exception.message].toArray(),
@@ -123,27 +141,68 @@ class SubscribedCatalogueService implements XmlImportMapping, AnonymisableServic
      * @return List<PublishedModel> The list of published models returned by the catalogue
      *
      */
-    List<PublishedModel> listPublishedModels(SubscribedCatalogue subscribedCatalogue) {
-        Map<String, Object> subscribedCatalogueModels = getFederationClientForSubscribedCatalogue(subscribedCatalogue).withCloseable {client ->
-            client.getSubscribedCatalogueModels(subscribedCatalogue.apiKey)
-        }
-        if (subscribedCatalogueModels.publishedModels.isEmpty()) return []
+    Object listPublishedModels(SubscribedCatalogue subscribedCatalogue, boolean includeAuthority = false) {
+        FederationClient federationClient = getFederationClientForSubscribedCatalogue(subscribedCatalogue)
 
-        (subscribedCatalogueModels.publishedModels as List<Map<String, Object>>).collect {pm ->
-            new PublishedModel().tap {
-                modelId = Utils.toUuid(pm.modelId)
-                title = pm.title // for compatibility with remote catalogue versions prior to 4.12
-                if (pm.label) modelLabel = pm.label
-                if (pm.version) modelVersion = Version.from(pm.version)
-                modelType = pm.modelType
-                lastUpdated = OffsetDateTime.parse(pm.lastUpdated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-                dateCreated = OffsetDateTime.parse(pm.dateCreated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-                datePublished = OffsetDateTime.parse(pm.datePublished, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-                author = pm.author
-                description = pm.description
-                if (pm.links) links = pm.links.collect {link -> new Link(LINK_RELATIONSHIP_ALTERNATE, link.url).tap {contentType = link.contentType}}
-            }
-        }.sort()
+        switch (subscribedCatalogue.subscribedCatalogueType) {
+            case SubscribedCatalogueType.MDM_JSON:
+                Map<String, Object> subscribedCatalogueModels = federationClient.withCloseable {client ->
+                    client.getSubscribedCatalogueModels(subscribedCatalogue.apiKey)
+                }
+
+                Authority subscribedAuthority
+                if (includeAuthority) {
+                    subscribedAuthority = new Authority(label: subscribedCatalogueModels.authority.label, url: subscribedCatalogueModels.authority.url)
+                }
+
+                List<PublishedModel> publishedModels = (subscribedCatalogueModels.publishedModels as List<Map<String, Object>>).collect {pm ->
+                    new PublishedModel().tap {
+                        modelId = Utils.toUuid(pm.modelId)
+                        title = pm.title // for compatibility with remote catalogue versions prior to 4.12
+                        if (pm.label) modelLabel = pm.label
+                        if (pm.version) modelVersion = Version.from(pm.version)
+                        modelType = pm.modelType
+                        lastUpdated = OffsetDateTime.parse(pm.lastUpdated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                        dateCreated = OffsetDateTime.parse(pm.dateCreated, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                        datePublished = OffsetDateTime.parse(pm.datePublished, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                        author = pm.author
+                        description = pm.description
+                        if (pm.links) links = pm.links.collect {link -> new Link(LINK_RELATIONSHIP_ALTERNATE, link.url).tap {contentType = link.contentType}}
+                    }
+                }.sort()
+
+                return [subscribedAuthority, publishedModels]
+
+                break
+            case SubscribedCatalogueType.ATOM:
+                GPathResult subscribedCatalogueModelsFeed = federationClient.withCloseable {client ->
+                    client.getSubscribedCatalogueModelsFromAtomFeed(subscribedCatalogue.apiKey)
+                }
+
+                Authority subscribedAuthority
+                if (includeAuthority) {
+                    subscribedAuthority = new Authority(label: subscribedCatalogueModelsFeed.author.name, url: subscribedCatalogueModelsFeed.author.uri)
+                }
+
+                List<PublishedModel> publishedModels = subscribedCatalogueModelsFeed.entry.collect {entry ->
+                    new PublishedModel().tap {
+                        modelId = Utils.toUuid(extractUuidFromUrn(entry.id))
+                        title = entry.title
+                        modelType = entry.category.@term
+                        lastUpdated = OffsetDateTime.parse(entry.updated.text(), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                        datePublished = OffsetDateTime.parse(entry.published.text(), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                        author = entry.author.name
+                        description = entry.summary
+                        links = entry.link.collect {link ->
+                            new Link(LINK_RELATIONSHIP_ALTERNATE, link.href).tap {contentType = link.@type}
+                        }
+                    }
+                }
+
+                return [subscribedAuthority, publishedModels]
+
+                break
+        }
     }
 
     List<Map<String, Object>> getAvailableExportersForResourceType(SubscribedCatalogue subscribedCatalogue, String urlResourceType) {

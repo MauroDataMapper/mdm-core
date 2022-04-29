@@ -39,14 +39,17 @@ class SubscribedCatalogue implements MdmDomain, SecurableResource, EditHistoryAw
     Boolean readableByEveryone
     Boolean readableByAuthenticatedUsers
 
-    //Refresh period is assumed to be in units of days
+    // Refresh period is assumed to be in units of days
     Integer refreshPeriod
 
-    //The last time that we checked the catalogue for models to export
+    // The last time that we checked the catalogue for models to export
     OffsetDateTime lastRead
 
-    //HTTP read connection timeout in minutes
+    // HTTP read connection timeout in minutes
     Integer connectionTimeout
+
+    // Connection type to remote catalogue
+    SubscribedCatalogueType subscribedCatalogueType
 
     static hasMany = [
         subscribedModels: SubscribedModel

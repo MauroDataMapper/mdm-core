@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogue
+import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedCatalogueType
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import groovy.util.logging.Slf4j
@@ -39,6 +40,7 @@ import io.micronaut.http.client.netty.DefaultHttpClient
 import io.micronaut.http.client.netty.ssl.NettyClientSslBuilder
 import io.micronaut.http.codec.MediaTypeCodecRegistry
 import io.micronaut.http.exceptions.HttpException
+import io.micronaut.http.uri.DefaultUriBuilder
 import io.micronaut.http.uri.UriBuilder
 import io.netty.channel.MultithreadEventLoopGroup
 import io.netty.util.concurrent.DefaultThreadFactory
@@ -87,11 +89,15 @@ class FederationClient implements Closeable {
         // The http client resolves using URI.resolve which ignores anything in the url path,
         // therefore we need to make sure its part of the context path.
         URI hostUri = hostUrl.toURI()
-        if (hostUri.path && !hostUri.path.endsWith('api')) {
-            String path = hostUri.path.endsWith('/') ? hostUri.path : "${hostUri.path}/"
-            this.contextPath = "${path}api"
+        if (subscribedCatalogue.subscribedCatalogueType == SubscribedCatalogueType.MDM_JSON) {
+            if (hostUri.path && !hostUri.path.endsWith('api')) {
+                String path = hostUri.path.endsWith('/') ? hostUri.path : "${hostUri.path}/"
+                this.contextPath = "${path}api"
+            } else {
+                this.contextPath = 'api'
+            }
         } else {
-            this.contextPath = 'api'
+            this.contextPath = hostUri.path
         }
         client = new DefaultHttpClient(LoadBalancer.fixed(hostUrl.toURL().toURI()),
                                        httpClientConfiguration,
@@ -111,7 +117,7 @@ class FederationClient implements Closeable {
 
     GPathResult getSubscribedCatalogueModelsFromAtomFeed(UUID apiKey) {
         // Currently we use the ATOM feed which is XML and the micronaut client isnt designed to decode XML
-        retrieveXmlDataFromClient(UriBuilder.of('feeds/all'), apiKey)
+        retrieveXmlDataFromClient(UriBuilder.of(''), apiKey)
     }
 
     Map<String, Object> getSubscribedCatalogueModels(UUID apiKey) {
